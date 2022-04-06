@@ -81,7 +81,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private final static int LAZY_LOAD_DELAY = 100;
     private final static Object NULL_VALUE = new Object();
     private static final String EMPTY_STRING = "";
-    public static final String EMPTY_GROUPING_LABEL = "<None>";
+    private static final String EMPTY_GROUPING_LABEL = "<None>";
 
     private boolean isFitWidth;
     private boolean isTree;
@@ -692,10 +692,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (element instanceof ObjectsGroupingWrapper) {
             if (objectColumn == groupingColumn) {
                 Object groupingKey = ((ObjectsGroupingWrapper) element).groupingKey;
-                if (groupingKey == null || "".equals(groupingKey)) {
-                    return EMPTY_GROUPING_LABEL;
+                List<Object> elements = ((ObjectsGroupingWrapper) element).groupedElements;
+                int groupElementsSize = 0;
+                if (!CommonUtils.isEmpty(elements)) {
+                    groupElementsSize = elements.size();
                 }
-                return groupingKey;
+                if (groupingKey == null || "".equals(groupingKey)) {
+                    return EMPTY_GROUPING_LABEL + (groupElementsSize > 0 ? " (" + groupElementsSize + ")" : "");
+                }
+                return groupingKey + (groupElementsSize > 0 ? " (" + groupElementsSize + ")" : "");
             }
             return null;
         }
