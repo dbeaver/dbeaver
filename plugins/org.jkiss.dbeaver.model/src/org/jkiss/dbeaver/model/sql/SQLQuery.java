@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
 /**
  * SQLQuery
  */
-public class SQLQuery implements SQLScriptElement, SQLQueryErrorHandler {
+public class SQLQuery implements SQLScriptElement {
 
     private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("^\\s*(?:--|//|/\\*)\\s*(?:name|title)\\s*:\\s*(.+)$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
@@ -389,7 +389,6 @@ public class SQLQuery implements SQLScriptElement, SQLQueryErrorHandler {
         return text;
     }
 
-    @Override
     public String getExtraErrorMessage() {
         return extraErrorMessage;
     }

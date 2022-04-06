@@ -73,7 +73,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
-import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.util.Iterator;
@@ -856,8 +855,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             }
                         }
                         if (originalQuery != null) {
-                            originalQuery.addExtraErrorMessage((pos.line > 0 ? System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + "Error line number: " + pos.line : "") +
-                                (pos.position > 0 ? System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + "Error position: " + pos.position : ""));
+                            originalQuery.addExtraErrorMessage("\n" + SQLEditorMessages.sql_editor_error_position + ":" + (pos.line > 0 ? " line: " + pos.line : "") +
+                                (pos.position > 0 ? " position: " + pos.position : ""));
                         }
                     }
                 }

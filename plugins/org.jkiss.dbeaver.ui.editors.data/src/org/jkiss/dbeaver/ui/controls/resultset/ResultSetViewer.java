@@ -4916,8 +4916,8 @@ public class ResultSetViewer extends Viewer
                             sqlText = getActiveQueryText();
                         }
 
-                        if (CommonUtils.isNotEmpty(errorMessage) && query instanceof SQLQueryErrorHandler) {
-                            String extraErrorMessage = ((SQLQueryErrorHandler) query).getExtraErrorMessage();
+                        if (CommonUtils.isNotEmpty(errorMessage) && query instanceof SQLQuery) {
+                            String extraErrorMessage = ((SQLQuery) query).getExtraErrorMessage();
                             if (CommonUtils.isNotEmpty(extraErrorMessage)) {
                                 errorMessage = errorMessage + System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + extraErrorMessage;
                             }
