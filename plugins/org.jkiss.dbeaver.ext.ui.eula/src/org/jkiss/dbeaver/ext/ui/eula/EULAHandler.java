@@ -19,35 +19,35 @@ package org.jkiss.dbeaver.ext.ui.eula;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 public class EULAHandler extends AbstractHandler {
 
-    public static void showEula(@NotNull IWorkbenchWindow window, boolean needsConfirmation) {
+    public static void showEula(@NotNull Shell shell, boolean needsConfirmation) {
         String eula = EULAUtils.getPackageEula();
         if (needsConfirmation) {
-            showEulaConfirmationDialog(window, eula);
+            showEulaConfirmationDialog(shell, eula);
         } else {
-            showEulaInfoDialog(window, eula);
+            showEulaInfoDialog(shell, eula);
         }
     }
 
-    private static void showEulaConfirmationDialog(@NotNull IWorkbenchWindow window, @Nullable String eula) {
-        EULAConfirmationDialog eulaDialog = new EULAConfirmationDialog(window.getShell(), eula);
+    private static void showEulaConfirmationDialog(@NotNull Shell shell, @Nullable String eula) {
+        EULAConfirmationDialog eulaDialog = new EULAConfirmationDialog(shell, eula);
         eulaDialog.open();
     }
 
-    private static void showEulaInfoDialog(@NotNull IWorkbenchWindow window, @Nullable String eula) {
-        EULAInfoDialog eulaDialog = new EULAInfoDialog(window.getShell(), eula);
+    private static void showEulaInfoDialog(@NotNull Shell shell, @Nullable String eula) {
+        EULAInfoDialog eulaDialog = new EULAInfoDialog(shell, eula);
         eulaDialog.open();
     }
 
     @Override
     public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
-        showEula(HandlerUtil.getActiveWorkbenchWindow(event), false);
+        showEula(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), false);
         return null;
     }
 }

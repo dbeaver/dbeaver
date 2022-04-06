@@ -31,13 +31,14 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 public abstract class EULABaseDialog extends BaseDialog {
     private final String eula;
 
-    public String getEula() {
-        return eula;
-    }
-
     public EULABaseDialog(@NotNull Shell parentShell, @Nullable String eula) {
         super(parentShell, EULAMessages.core_eula_dialog_title, DBIcon.TREE_INFO);
         this.eula = eula;
+    }
+
+    @Nullable
+    public String getEula() {
+        return eula;
     }
 
     @Override

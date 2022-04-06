@@ -16,10 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.ui.eula;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
+import org.jkiss.utils.IOUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -34,23 +35,20 @@ public class EULAUtils {
     //Only works for packaged version of dbeaver, will not find anything inside development environment
     private static final String EULA_PATH = SystemVariablesResolver.getInstallPath() + File.separator + "licenses" + File.separator + "dbeaver_license.txt";
 
+    @NotNull
     public static String getEulaVersion() {
         return eulaVersion;
     }
 
     public static String getPackageEula() {
-        StringBuilder eula = new StringBuilder();
-
-        try (BufferedReader fileReader = new BufferedReader(new FileReader(EULA_PATH))) {
-            String line;
-            while ((line = fileReader.readLine()) != null) {
-                eula.append(line).append('\n');
-            }
+        String eula;
+        try (FileReader reader = new FileReader(EULA_PATH)) {
+            eula = IOUtils.readToString(reader);
         } catch (IOException e) {
             log.error("Error reading End-user license agreement file", e);
             return null;
         }
-        return eula.toString();
+        return eula;
     }
 
 }

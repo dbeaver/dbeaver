@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.ui.eula;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -30,6 +31,7 @@ public class EULAConfirmationDialog extends EULABaseDialog {
 
     public EULAConfirmationDialog(@NotNull Shell parentShell, @Nullable String eula) {
         super(parentShell, eula);
+        super.setShellStyle(SWT.TITLE);
     }
 
     @Override
