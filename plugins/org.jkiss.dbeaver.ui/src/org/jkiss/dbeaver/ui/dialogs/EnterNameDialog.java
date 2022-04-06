@@ -71,6 +71,8 @@ public class EnterNameDialog extends Dialog {
         gd.widthHint = 300;
         propGroup.setLayoutData(gd);
 
+        createControlsBeforeName(propGroup);
+
         propNameText = UIUtils.createLabelText(propGroup, propertyName, null);
         if (propertyValue != null) {
             propNameText.setText(propertyValue);
@@ -79,6 +81,10 @@ public class EnterNameDialog extends Dialog {
         propNameText.addModifyListener(e -> updateButtonsState());
 
         return propGroup;
+    }
+
+    protected void createControlsBeforeName(Composite composite) {
+
     }
 
     @Override
