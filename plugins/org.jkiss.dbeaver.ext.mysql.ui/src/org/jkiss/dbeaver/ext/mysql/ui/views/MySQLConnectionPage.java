@@ -59,6 +59,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
 
     private final Image LOGO_MYSQL;
     private final Image LOGO_MARIADB;
+    private boolean needsPort;
 
     public MySQLConnectionPage() {
         LOGO_MYSQL = createImage("icons/mysql_logo.png");
@@ -103,7 +104,10 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
 
         Group serverGroup = UIUtils.createControlGroup(addrGroup, "Server", 2, GridData.FILL_HORIZONTAL, 0);
 
-        Label hostLabel = UIUtils.createControlLabel(serverGroup, MySQLUIMessages.dialog_connection_host);
+        needsPort = CommonUtils.getBoolean(getSite().getDriver().getDriverParameter("needsPort"), true);
+
+        Label hostLabel = UIUtils.createControlLabel(serverGroup,
+            needsPort ? MySQLUIMessages.dialog_connection_host : MySQLUIMessages.dialog_connection_instance);
         Composite hostComposite = UIUtils.createComposite(serverGroup, 3);
         hostComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -111,10 +115,14 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         hostText.addModifyListener(textListener);
 
-        portText = UIUtils.createLabelText(hostComposite, MySQLUIMessages.dialog_connection_port, null, SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        ((GridData)portText.getLayoutData()).widthHint = fontHeight * 10;
-        portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-        portText.addModifyListener(textListener);
+        if (needsPort) {
+            portText = UIUtils.createLabelText(hostComposite, MySQLUIMessages.dialog_connection_port, null, SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            ((GridData) portText.getLayoutData()).widthHint = fontHeight * 10;
+            portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+            portText.addModifyListener(textListener);
+        } else {
+            ((GridLayout)hostComposite.getLayout()).numColumns -= 2;
+        }
 
         dbText = UIUtils.createLabelText(serverGroup, MySQLUIMessages.dialog_connection_database, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
         dbText.addModifyListener(textListener);
@@ -149,9 +157,9 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     @Override
     public boolean isComplete() {
         return super.isComplete() &&
-            hostText != null && portText != null &&
+            hostText != null &&
             !CommonUtils.isEmpty(hostText.getText()) &&
-            !CommonUtils.isEmpty(portText.getText());
+            (!needsPort || !CommonUtils.isEmpty(portText.getText()));
     }
 
     @Override
