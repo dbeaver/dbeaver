@@ -56,11 +56,9 @@ public interface SMAdminController<USER extends SMUser, ROLE extends SMRole> ext
     @NotNull
     String[] getRoleSubjects(String roleId) throws DBCException;
 
-    //TODO params instead of ROLE
-    void createRole(ROLE role, String grantor) throws DBCException;
+    void createRole(String roleId, String name, String description, String grantor) throws DBCException;
 
-    //TODO params instead of ROLE
-    void updateRole(ROLE role) throws DBCException;
+    void updateRole(String roleId, String name, String description) throws DBCException;
 
     void deleteRole(String roleId) throws DBCException;
 
