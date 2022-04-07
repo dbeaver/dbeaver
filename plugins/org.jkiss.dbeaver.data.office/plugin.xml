@@ -11,6 +11,7 @@
                 icon="icons/excel.png"
                 label="%dataTransfer.processor.xlsx.name"
                 binary="true"
+                appendable="true"
                 contentType="application/vnd.ms-excel"
                 appFileExtension="xlsx"
                 appName="Excel"

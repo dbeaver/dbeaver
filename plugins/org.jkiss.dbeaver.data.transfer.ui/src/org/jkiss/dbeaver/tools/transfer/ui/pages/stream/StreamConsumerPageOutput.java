@@ -156,7 +156,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setUseSingleFile(singleFileCheck.getSelection());
-                    updatePageCompletion();
+                    updateControlsEnablement();
                 }
             });
             compressCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_compress, null, false, 1);
@@ -246,17 +246,16 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     private void updateControlsEnablement() {
         boolean isBinary = getWizard().getSettings().getProcessor().isBinaryFormat();
         boolean clipboard = !isBinary && clipboardCheck.getSelection();
-        boolean isMulti = getWizard().getSettings().getDataPipes().size() > 1;
-        boolean singleFile = singleFileCheck.getSelection();
-        boolean addToEnd = appendToEndOfFileCheck.getSelection();
+        boolean isMulti = getWizard().getSettings().getDataPipes().size() > 1 && getWizard().getSettings().getMaxJobCount() <= 1;
+        boolean isAppendable = getWizard().getSettings().getProcessor().isAppendable();
         boolean compress = compressCheckbox.getSelection();
         clipboardCheck.setEnabled(!isBinary);
-        singleFileCheck.setEnabled(isMulti && !clipboard && getWizard().getSettings().getMaxJobCount() <= 1);
+        singleFileCheck.setEnabled(!clipboard && !compress && isAppendable && isMulti);
+        appendToEndOfFileCheck.setEnabled(!clipboard && !compress && isAppendable);
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
-        compressCheckbox.setEnabled(!clipboard && !addToEnd);
+        compressCheckbox.setEnabled(!clipboard && !singleFileCheck.getSelection() && !appendToEndOfFileCheck.getSelection());
         splitFilesCheckbox.setEnabled(!clipboard);
-        appendToEndOfFileCheck.setEnabled(!isBinary && !clipboard && !compress);
         maximumFileSizeLabel.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         maximumFileSizeText.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         encodingCombo.setEnabled(!isBinary && !clipboard);
@@ -276,7 +275,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         clipboardCheck.setSelection(settings.isOutputClipboard());
         singleFileCheck.setSelection(settings.isUseSingleFile());
-        appendToEndOfFileCheck.setSelection(!settings.isAppendToFileEnd() && !settings.isCompressResults() && settings.isOutputClipboard());
+        appendToEndOfFileCheck.setSelection(settings.isAppendToFileEnd());
         directoryText.setText(CommonUtils.toString(settings.getOutputFolder()));
         fileNameText.setText(CommonUtils.toString(settings.getOutputFilePattern()));
         compressCheckbox.setSelection(settings.isCompressResults());
@@ -287,7 +286,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM());
 
         if (isBinary) {
-            appendToEndOfFileCheck.setSelection(false);
             clipboardCheck.setSelection(false);
             encodingBOMCheckbox.setSelection(false);
             settings.setOutputClipboard(false);

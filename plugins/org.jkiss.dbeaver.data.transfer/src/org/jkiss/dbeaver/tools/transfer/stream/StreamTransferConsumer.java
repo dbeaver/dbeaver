@@ -287,6 +287,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         } else {
             outputFile = null;
         }
+
+        if (processor instanceof IAppendableDataExporter && parameters.orderNumber > 0 && (settings.isAppendToFileEnd() || settings.isUseSingleFile())) {
+            try {
+                ((IAppendableDataExporter) processor).importData(exportSite);
+            } catch (DBException e) {
+                log.warn("Can't import existing data for appending, data may be lost", e);
+            }
+        }
+
         try {
             if (outputClipboard) {
                 this.outputBuffer = new StringWriter(2048);
@@ -329,8 +338,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     private void openOutputStreams() throws IOException {
-        this.statStream = new StatOutputStream(
-            new FileOutputStream(outputFile, settings.isAppendToFileEnd() || settings.isUseSingleFile()));
+        boolean append = settings.isAppendToFileEnd() || (settings.isUseSingleFile() && parameters.orderNumber > 0);
+        if (append && processor instanceof IAppendableDataExporter) {
+            append = !((IAppendableDataExporter) processor).isTruncateOutputFile();
+        }
+        this.statStream = new StatOutputStream(new FileOutputStream(outputFile, append));
         this.outputStream = new BufferedOutputStream(
             statStream,
             OUT_FILE_BUFFER_SIZE);
@@ -720,6 +732,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         @Override
         public PrintWriter getWriter() {
             return writer;
+        }
+
+        @Nullable
+        @Override
+        public File getOutputFile() {
+            return outputFile;
         }
 
         @Override

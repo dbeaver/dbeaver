@@ -51,8 +51,9 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     @NotNull
     private final DBPImage icon;
     private final DBPPropertyDescriptor[] properties;
-    private boolean isBinary;
-    private boolean isHTML;
+    private final boolean isBinary;
+    private final boolean isHTML;
+    private final boolean isAppendable;
 
     DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config) {
         super(config);
@@ -64,6 +65,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         this.icon = iconToImage(config.getAttribute("icon"), DBIcon.TYPE_UNKNOWN);
         this.isBinary = CommonUtils.getBoolean(config.getAttribute("binary"), false);
         this.isHTML = CommonUtils.getBoolean(config.getAttribute("html"), false);
+        this.isAppendable = CommonUtils.getBoolean(config.getAttribute("appendable"), !isBinary);
         this.contentType = CommonUtils.toString(config.getAttribute("contentType"), MimeTypes.OCTET_STREAM);
         this.appFileExtension = config.getAttribute("appFileExtension");
         this.appName = config.getAttribute("appName");
@@ -166,6 +168,10 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
 
     public boolean isHTMLFormat() {
         return isHTML;
+    }
+
+    public boolean isAppendable() {
+        return isAppendable;
     }
 
     public String getFullId() {

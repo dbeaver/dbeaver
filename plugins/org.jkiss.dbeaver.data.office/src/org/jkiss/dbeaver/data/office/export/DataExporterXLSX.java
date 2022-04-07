@@ -23,6 +23,8 @@ import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -36,13 +38,17 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +56,7 @@ import java.util.Map;
 /**
  * Export XLSX with Apache POI
  */
-public class DataExporterXLSX extends StreamExporterAbstract {
+public class DataExporterXLSX extends StreamExporterAbstract implements IAppendableDataExporter {
 
     private static final Log log = Log.getLog(DataExporterXLSX.class);
 
@@ -186,7 +192,9 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             dateFormat = "";
         }
 
-        wb = new SXSSFWorkbook(ROW_WINDOW);
+        if (wb == null) {
+            wb = new SXSSFWorkbook(ROW_WINDOW);
+        }
 
         worksheets = new HashMap<>(1);
 
@@ -318,6 +326,27 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         }
 
         super.dispose();
+    }
+
+    @Override
+    public void importData(@NotNull IStreamDataExporterSite site) throws DBException {
+        final File file = site.getOutputFile();
+        if (file == null || !file.exists()) {
+            return;
+        }
+        try {
+            // FIXME: We can't both read/write from/to the same file.
+            //        This approach is very inefficient and may bloat
+            //        RAM if our worksheet is really big.
+            wb = new SXSSFWorkbook(new XSSFWorkbook(new ByteArrayInputStream(Files.readAllBytes(file.toPath()))), ROW_WINDOW);
+        } catch (Exception e) {
+            throw new DBException("Can't load workbook", e);
+        }
+    }
+
+    @Override
+    public boolean isTruncateOutputFile() {
+        return true;
     }
 
     @Override

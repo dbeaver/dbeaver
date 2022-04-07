@@ -17,11 +17,13 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -43,6 +45,9 @@ public interface IStreamDataExporterSite {
     OutputStream getOutputStream();
 
     PrintWriter getWriter();
+
+    @Nullable
+    File getOutputFile();
 
     void flush() throws IOException;
 
