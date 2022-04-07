@@ -321,6 +321,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
                             ignoreDuplicateRows.setEnabled(true);
                         }
                     }
+                    onDuplicateKeyInsertMethods.setEnabled(!checkSelection);
                 }
             });
         }
@@ -409,6 +410,8 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         }
 
         loadInsertMethods();
+
+        onDuplicateKeyInsertMethods.setEnabled(!useBulkLoadCheck.getSelection());
     }
 
     private boolean confirmDataTruncate() {
