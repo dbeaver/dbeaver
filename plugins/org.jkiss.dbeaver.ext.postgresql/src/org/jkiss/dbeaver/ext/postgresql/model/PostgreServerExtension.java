@@ -142,8 +142,15 @@ public interface PostgreServerExtension {
 
     boolean supportsRolesWithCreateDBAbility();
 
+    /** True if supports role replication parameter.
+     * "A role must have this attribute (or be a superuser) in order to be able to connect to the server in replication mode (physical or logical replication)
+     * and in order to be able to create or drop replication slots."
+     * */
     boolean supportsRoleReplication();
 
+    /** True if supports role BYPASSRLS parameter.
+     * "These clauses determine whether a role bypasses every row-level security (RLS) policy."
+     * */
     boolean supportsRoleBypassRLS();
 
     /** True if supports serials - serial types are auto-incrementing integer data types */
@@ -159,6 +166,9 @@ public interface PostgreServerExtension {
 
     /** True if supports table generated columns */
     boolean supportsGeneratedColumns();
+
+    /** True if supports table rowid columns. Rowid columns usually replace primary key in the table */
+    boolean supportsRowidColumns();
 
     boolean supportsKeyAndIndexRename();
 

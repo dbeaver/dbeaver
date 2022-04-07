@@ -501,6 +501,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsRowidColumns() {
+        return false;
+    }
+
+    @Override
     public boolean supportsKeyAndIndexRename() {
         return false;
     }
