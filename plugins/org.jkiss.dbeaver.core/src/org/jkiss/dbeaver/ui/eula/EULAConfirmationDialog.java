@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.ui.eula;
+package org.jkiss.dbeaver.ui.eula;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.prefs.Preferences;
@@ -36,7 +37,7 @@ public class EULAConfirmationDialog extends EULABaseDialog {
 
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
-        createButton(parent, IDialogConstants.YES_ID, EULAMessages.core_eula_dialog_accept, false);
+        createButton(parent, IDialogConstants.YES_ID, CoreMessages.core_eula_dialog_accept, false);
         createButton(parent, IDialogConstants.NO_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 

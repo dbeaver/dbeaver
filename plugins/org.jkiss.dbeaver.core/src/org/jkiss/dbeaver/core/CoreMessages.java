@@ -22,6 +22,10 @@ import org.eclipse.osgi.util.NLS;
 public class CoreMessages extends NLS {
 	public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
 
+
+	public static String core_eula_dialog_accept;
+	public static String core_eula_dialog_title;
+
 	public static String actions_menu_about;
 	public static String actions_menu_check_update;
 	public static String actions_menu_database;

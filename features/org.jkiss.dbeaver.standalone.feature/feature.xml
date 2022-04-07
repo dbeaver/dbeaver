@@ -37,7 +37,6 @@
 
     <plugin id="org.jkiss.dbeaver.ext.sample.database" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.ui.tipoftheday" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.ui.eula" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- P2 for RCP -->
     <!-- Do not include p2.rcp as we don't need auto-update and scheduler -->

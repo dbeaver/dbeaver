@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.ui.eula;
+package org.jkiss.dbeaver.ui.eula;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -32,7 +33,7 @@ public abstract class EULABaseDialog extends BaseDialog {
     private final String eula;
 
     public EULABaseDialog(@NotNull Shell parentShell, @Nullable String eula) {
-        super(parentShell, EULAMessages.core_eula_dialog_title, DBIcon.TREE_INFO);
+        super(parentShell, CoreMessages.core_eula_dialog_title, DBIcon.TREE_INFO);
         this.eula = eula;
     }
 
