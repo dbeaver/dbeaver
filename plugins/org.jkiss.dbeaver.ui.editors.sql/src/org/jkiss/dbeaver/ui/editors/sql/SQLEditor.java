@@ -3901,6 +3901,7 @@ public class SQLEditor extends SQLEditorBase implements
                                 selectionProvider.setSelection(originalSelection);
                             }
                         }
+                        setLastQueryErrorResult(errorQueryOffset);
                     }
                 }
             } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {

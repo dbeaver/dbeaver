@@ -31,9 +31,14 @@ import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.eclipse.ui.views.IViewDescriptor;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.IErrorJumper;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -43,15 +48,17 @@ import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 /**
  * @since 3.1
  */
-public class ErrorDetailsPart {
+class ErrorDetailsPart {
 
 	private boolean showingDetails = false;
 	private Button detailsButton;
 	private Composite detailsArea;
 	private Control details = null;
 	private IStatus reason;
+	private IErrorJumper editorPart;
 
-	public ErrorDetailsPart(final Composite parent, IStatus reason_) {
+	ErrorDetailsPart(final Composite parent, IStatus reason_, @Nullable IErrorJumper editorPart) {
+		this.editorPart = editorPart;
 		Color bgColor = parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
 		Color fgColor = parent.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
 
@@ -93,7 +100,7 @@ public class ErrorDetailsPart {
 		Composite buttonParent = new Composite(parent, SWT.NONE);
 		buttonParent.setBackground(parent.getBackground());
 		GridLayout buttonsLayout = new GridLayout();
-		buttonsLayout.numColumns = 2;
+		buttonsLayout.numColumns = 3;
 		buttonsLayout.marginHeight = 0;
 		buttonsLayout.marginWidth = 0;
 		buttonsLayout.horizontalSpacing = 0;
@@ -107,6 +114,7 @@ public class ErrorDetailsPart {
 		detailsButton.setVisible(reason.getException() != null);
 
 		createShowLogButton(buttonParent);
+		createGoToErrorButton(buttonParent);
 
 		updateDetailsText();
 
@@ -200,5 +208,17 @@ public class ErrorDetailsPart {
 		button.setImage(image);
 		button.setToolTipText(WorkbenchMessages.ErrorLogUtil_ShowErrorLogTooltip);
 		button.addDisposeListener(e -> image.dispose());
+	}
+
+	private void createGoToErrorButton(@NotNull Composite parent) {
+		Button button = new Button(parent, SWT.PUSH);
+		button.addSelectionListener(widgetSelectedAdapter(e -> {
+				String message = reason.getMessage();
+				if (CommonUtils.isNotEmpty(message)) {
+					editorPart.jumpToError();
+				}
+		}));
+		button.setToolTipText(ResultSetMessages.error_part_button_go_to_error);
+		button.setVisible(reason.getException() != null && editorPart != null);
 	}
 }

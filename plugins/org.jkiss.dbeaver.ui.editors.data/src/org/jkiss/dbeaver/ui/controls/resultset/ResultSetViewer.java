@@ -37,6 +37,7 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
+import org.eclipse.ui.internal.EditorSite;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
@@ -703,12 +704,19 @@ public class ResultSetViewer extends Viewer
         updatePresentationInToolbar();
     }
 
-    void showErrorPresentation(String sqlText, String message, Throwable error) {
+    private void showErrorPresentation(String sqlText, String message, Throwable error) {
         activePresentationDescriptor = null;
+        IErrorJumper textEditor = null;
+        if (site instanceof EditorSite) {
+            IEditorPart editorPart = ((EditorSite) site).getEditorPart();
+            if (editorPart instanceof IErrorJumper) {
+                textEditor = (IErrorJumper) editorPart;
+            }
+        }
         setActivePresentation(
             new ErrorPresentation(
                 sqlText,
-                GeneralUtils.makeErrorStatus(message, error)));
+                GeneralUtils.makeErrorStatus(message, error), textEditor));
         updatePresentationInToolbar();
     }
 

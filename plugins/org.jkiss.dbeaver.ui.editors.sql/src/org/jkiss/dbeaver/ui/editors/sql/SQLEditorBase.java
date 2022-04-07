@@ -82,7 +82,7 @@ import java.util.ResourceBundle;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor implements DBPContextProvider, IErrorVisualizer, DBPPreferenceListener {
+public abstract class SQLEditorBase extends BaseTextEditor implements DBPContextProvider, IErrorVisualizer, DBPPreferenceListener, IErrorJumper {
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
@@ -125,6 +125,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private final SQLEditorCompletionContext completionContext;
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
+
+    private int lastQueryErrorResult = -1;
 
     public SQLEditorBase() {
         super();
@@ -804,10 +806,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
                     for (int index = 0; index < positions.length; index++) {
                         DBPErrorAssistant.ErrorPosition pos = positions[index];
+                        int errorOffset = 0;
                         if (pos.line < 0) {
                             if (pos.position >= 0) {
                                 // Only position
-                                int errorOffset = queryStartOffset + pos.position;
+                                errorOffset = queryStartOffset + pos.position;
                                 if (addProblem(GeneralUtils.getFirstMessage(error), new Position(errorOffset, queryLength - pos.position))) {
                                     scrolled = true;
                                 } else if (index == 0) {
@@ -830,7 +833,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             IDocument document = getDocument();
                             if (document != null) {
                                 int startLine = document.getLineOfOffset(queryStartOffset);
-                                int errorOffset = document.getLineOffset(startLine + pos.line);
+                                errorOffset = document.getLineOffset(startLine + pos.line);
                                 int errorLength;
                                 if (pos.position >= 0) {
                                     errorOffset += pos.position;
@@ -856,7 +859,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         }
                         if (originalQuery != null) {
                             originalQuery.addExtraErrorMessage("\n" + SQLEditorMessages.sql_editor_error_position + ":" + (pos.line > 0 ? " line: " + pos.line : "") +
-                                (pos.position > 0 ? " position: " + pos.position : ""));
+                                (pos.position > 0 ? " pos: " + pos.position : ""));
+                            if (index == 0) {
+                                lastQueryErrorResult = errorOffset;
+                            }
                         }
                     }
                 }
@@ -996,6 +1002,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
                 occurrencesHighlighter.updateInput(getEditorInput());
+        }
+    }
+
+    void setLastQueryErrorResult(int lastQueryErrorResult) {
+        this.lastQueryErrorResult = lastQueryErrorResult;
+    }
+
+    @Override
+    public void jumpToError() {
+        if (lastQueryErrorResult > -1) {
+            getSelectionProvider().setSelection(new TextSelection(lastQueryErrorResult, 0));
+            setFocus();
         }
     }
 
