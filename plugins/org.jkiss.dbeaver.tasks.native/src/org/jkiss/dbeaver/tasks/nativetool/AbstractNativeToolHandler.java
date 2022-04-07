@@ -52,6 +52,9 @@ import java.util.*;
 
 public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG> implements DBTTaskHandler {
 
+    private String taskErrorMessage;
+
+
     @Override
     @NotNull
     public DBTTaskRunStatus executeTask(
@@ -75,7 +78,10 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 listener.taskStarted(task);
                 Throwable error = null;
                 try {
-                    doExecute(monitor, task, settings, log);
+                    final boolean executionResult = doExecute(monitor, task, settings, log);
+                    if (!executionResult) {
+                        error = new DBCException("Task execution failed, reason: " + taskErrorMessage);
+                    }
                 } catch (Exception e) {
                     error = e;
                 } finally {
@@ -179,7 +185,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             task,
             settings,
             processBuilder,
-            isLogInputStream() ? process.getInputStream() : process.getErrorStream());
+            process,
+            isLogInputStream());
         logReaderJob.start();
     }
 
@@ -197,8 +204,9 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             }
             setupProcessParameters(monitor, settings, arg, processBuilder);
             Process process = processBuilder.start();
-
             startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
+
+
 
             monitor.subTask("Executing");
             Thread.sleep(100);
@@ -224,8 +232,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         } finally {
             monitor.done();
         }
-
-        return true;
+        return CommonUtils.isEmpty(taskErrorMessage);
     }
 
     public void validateErrorCode(int exitCode) throws IOException {
@@ -439,19 +446,21 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     }
 
     private class LogReaderJob extends Thread {
-        private DBTTask task;
-        private SETTINGS settings;
-        private PrintStream logWriter;
-        private ProcessBuilder processBuilder;
-        private InputStream input;
+        private final DBTTask task;
+        private final SETTINGS settings;
+        private final PrintStream logWriter;
+        private final ProcessBuilder processBuilder;
+        private final Process input;
+        private final boolean isLogInputStream;
 
-        protected LogReaderJob(DBTTask task, SETTINGS settings, ProcessBuilder processBuilder, InputStream stream) {
+        protected LogReaderJob(DBTTask task, SETTINGS settings, ProcessBuilder processBuilder, Process stream, boolean isLogInputStream) {
             super("Log reader for " + task.getName());
             this.task = task;
             this.settings = settings;
             this.logWriter = settings.getLogWriter();
             this.processBuilder = processBuilder;
             this.input = stream;
+            this.isLogInputStream = isLogInputStream;
         }
 
         @Override
@@ -476,24 +485,16 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 logWriter.print("Task '" + task.getName() + "' started at " + new Date() + lf);
                 logWriter.flush();
 
-                InputStream in = input;
-                try (Reader reader = new InputStreamReader(in, GeneralUtils.getDefaultConsoleEncoding())) {
-                    StringBuilder buf = new StringBuilder();
-                    for (; ; ) {
-                        int b = reader.read();
-                        if (b == -1) {
-                            break;
-                        }
-                        buf.append((char) b);
-                        if (b == '\n') {
-                            logWriter.println(buf.toString());
-                            logWriter.flush();
-                            buf.setLength(0);
-                        }
-                        //int avail = input.available();
-                    }
-                }
 
+                if (isLogInputStream) {
+                    String errorMessage = readStream(input.getErrorStream());
+                    readStream(input.getInputStream());
+                    if (!CommonUtils.isEmpty(errorMessage)) {
+                        taskErrorMessage = errorMessage;
+                    }
+                } else {
+                    readStream(input.getErrorStream());
+                }
             } catch (IOException e) {
                 // just skip
                 logWriter.println(e.getMessage() + lf);
@@ -501,6 +502,28 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 logWriter.print("Task '" + task.getName() + "' finished at " + new Date() + lf);
                 logWriter.flush();
             }
+        }
+
+        private String readStream(@NotNull InputStream inputStream) throws IOException {
+            StringBuilder message = new StringBuilder();
+            try (Reader reader = new InputStreamReader(inputStream, GeneralUtils.getDefaultConsoleEncoding())) {
+                StringBuilder buf = new StringBuilder();
+                for (; ; ) {
+                    int b = reader.read();
+                    if (b == -1) {
+                        break;
+                    }
+                    buf.append((char) b);
+                    if (b == '\n') {
+                        message.append(buf);
+                        logWriter.println(buf);
+                        logWriter.flush();
+                        buf.setLength(0);
+                    }
+                    //int avail = input.available();
+                }
+            }
+            return message.toString();
         }
     }
 
