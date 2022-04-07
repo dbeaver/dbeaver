@@ -32,7 +32,7 @@ public class EULAConfirmationDialog extends EULABaseDialog {
 
     public EULAConfirmationDialog(@NotNull Shell parentShell, @Nullable String eula) {
         super(parentShell, eula);
-        super.setShellStyle(SWT.TITLE);
+        super.setShellStyle(SWT.TITLE | SWT.APPLICATION_MODAL | SWT.RESIZE);
     }
 
     @Override
@@ -40,7 +40,6 @@ public class EULAConfirmationDialog extends EULABaseDialog {
         createButton(parent, IDialogConstants.YES_ID, CoreMessages.core_eula_dialog_accept, false);
         createButton(parent, IDialogConstants.NO_ID, IDialogConstants.CANCEL_LABEL, false);
     }
-
 
     @Override
     protected boolean canHandleShellCloseEvent() {

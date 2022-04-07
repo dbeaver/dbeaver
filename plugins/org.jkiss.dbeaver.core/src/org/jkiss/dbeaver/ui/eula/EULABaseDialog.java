@@ -54,7 +54,7 @@ public abstract class EULABaseDialog extends BaseDialog {
 
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = UIUtils.getFontHeight(eulaArea.getFont()) * 40;
-        gd.widthHint = UIUtils.getFontHeight(eulaArea.getFont()) * 40;
+        gd.widthHint = UIUtils.getFontHeight(eulaArea.getFont()) * 50;
 
         Text eulaText = new Text(eulaArea, SWT.V_SCROLL | SWT.MULTI | SWT.WRAP | SWT.READ_ONLY | SWT.NO_FOCUS);
         eulaText.setLayoutData(gd);
