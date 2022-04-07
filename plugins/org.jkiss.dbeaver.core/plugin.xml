@@ -21,6 +21,9 @@
 <plugin>
     <!-- UI extensions -->
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.eula.EULAInitializer"/>
+    </extension>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -111,6 +114,7 @@
 
     <extension point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.core.util" name="%category.utility.name" description="%category.utility.description"/>
+        <command id="org.jkiss.dbeaver.core.eula.showPopup" name="%command.org.jkiss.dbeaver.ui.eula.showPopup.name" description="%command.org.jkiss.dbeaver.ui.eula.showPopup.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
         <command id="org.jkiss.dbeaver.core.new.connection" name="%command.org.jkiss.dbeaver.core.new.connection.name" description="%command.org.jkiss.dbeaver.core.new.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.new.connection.from.url" name="%command.org.jkiss.dbeaver.core.new.connection.from.url.name" description="%command.org.jkiss.dbeaver.core.new.connection.from.url.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -264,6 +268,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.core.eula.showPopup" class="org.jkiss.dbeaver.ui.eula.EULAHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateHandler">
             <enabledWhen>
                 <with variable="activePart">
@@ -769,8 +774,9 @@
 					  <visibleWhen checkEnabled="true"/>
 			    </command>
             </menu>
+        </menuContribution><menuContribution allPopups="false" locationURI="menu:help?after=additions">
+            <command commandId="org.jkiss.dbeaver.core.eula.showPopup" label="%command.org.jkiss.dbeaver.ui.eula.showPopup.name"/>
         </menuContribution>
-
         <!-- Transaction mode menu -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.txn">
             <dynamic id="org.jkiss.dbeaver.core.menu.txn.isolation" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
