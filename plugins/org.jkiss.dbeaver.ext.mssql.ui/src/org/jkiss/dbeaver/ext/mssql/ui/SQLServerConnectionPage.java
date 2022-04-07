@@ -55,6 +55,8 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private Button showAllSchemas;
     private Button encryptPassword;
 
+    private boolean needsPort;
+
     private boolean activated;
 
     private final Image LOGO_AZURE;
@@ -94,6 +96,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         GridData gd = new GridData(GridData.FILL_BOTH);
         settingsGroup.setLayoutData(gd);
 
+        needsPort = CommonUtils.getBoolean(getSite().getDriver().getDriverParameter("needsPort"), true);
         {
             Label hostLabel = new Label(settingsGroup, SWT.NONE);
             hostLabel.setText(SQLServerUIMessages.dialog_connection_host_label);
@@ -104,7 +107,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
 
-            if (isDriverAzure) {
+            if (isDriverAzure || !needsPort) {
                 // no port number for Azure
                 gd.horizontalSpan = 3;
             } else {
