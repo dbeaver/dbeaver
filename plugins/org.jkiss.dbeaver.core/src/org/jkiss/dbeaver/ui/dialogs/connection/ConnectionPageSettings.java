@@ -65,7 +65,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @NotNull
     private final ConnectionWizard wizard;
     @NotNull
-    private DataSourceViewDescriptor viewDescriptor;
+    private final DataSourceViewDescriptor viewDescriptor;
     @Nullable
     private IDataSourceConnectionEditor connectionEditor;
     @Nullable

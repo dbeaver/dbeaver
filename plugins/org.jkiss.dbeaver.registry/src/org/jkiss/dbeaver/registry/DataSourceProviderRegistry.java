@@ -111,6 +111,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 if (p2 == null) return 1;
                 return 0;
             });
+
+            // Load datasource providers in three steps to link them with parent providers and load the rest of config
             for (IConfigurationElement ext : extElements) {
                 switch (ext.getName()) {
                     case RegistryConstants.TAG_DATASOURCE: {
@@ -128,6 +130,13 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
             for (IConfigurationElement ext : extElements) {
                 switch (ext.getName()) {
+                    case RegistryConstants.TAG_DATASOURCE: {
+                        DataSourceProviderDescriptor provider = getDataSourceProvider(ext.getAttribute(RegistryConstants.ATTR_ID));
+                        if (provider != null) {
+                            provider.linkParentProvider(ext);
+                        }
+                        break;
+                    }
                     case RegistryConstants.TAG_DATASOURCE_PATCH: {
                         String dsId = ext.getAttribute(RegistryConstants.ATTR_ID);
                         DataSourceProviderDescriptor dataSourceProvider = getDataSourceProvider(dsId);
@@ -146,6 +155,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                             descriptor.getCategory(), k -> new ArrayList<>());
                         list.add(descriptor);
                         break;
+                    }
+                }
+            }
+            for (IConfigurationElement ext : extElements) {
+                if (RegistryConstants.TAG_DATASOURCE.equals(ext.getName())) {
+                    DataSourceProviderDescriptor provider = getDataSourceProvider(ext.getAttribute(RegistryConstants.ATTR_ID));
+                    if (provider != null) {
+                        provider.loadExtraConfig(ext);
                     }
                 }
             }

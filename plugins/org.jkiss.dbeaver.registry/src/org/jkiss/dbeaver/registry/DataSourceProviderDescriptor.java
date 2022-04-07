@@ -74,19 +74,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private SQLDialectMetadata scriptDialect;
     private boolean inheritClients;
 
-    public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
-    {
+    public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config) {
         super(config);
         this.registry = registry;
         this.temporary = false;
-
-        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
-        if (!CommonUtils.isEmpty(parentId)) {
-            this.parentProvider = registry.getDataSourceProvider(parentId);
-            if (this.parentProvider == null) {
-                log.error("Provider '" + parentId + "' not found");
-            }
-        }
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
@@ -107,14 +98,29 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
         }
 
+        // Load tree structure
+        IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
+        if (!ArrayUtils.isEmpty(trees)) {
+            this.treeDescriptor = this.loadTreeInfo(trees[0]);
+        }
+    }
+
+    void linkParentProvider(IConfigurationElement config) {
+        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        if (!CommonUtils.isEmpty(parentId)) {
+            this.parentProvider = registry.getDataSourceProvider(parentId);
+            if (this.parentProvider == null) {
+                log.error("Provider '" + parentId + "' not found");
+            }
+        }
+    }
+
+    void loadExtraConfig(IConfigurationElement config) {
         {
             // Load tree structure
-            IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
-            if (!ArrayUtils.isEmpty(trees)) {
-                this.treeDescriptor = this.loadTreeInfo(trees[0]);
-            } else if (parentProvider != null) {
+            if (treeDescriptor == null && parentProvider != null) {
                 // Use parent's tree
-                this.treeDescriptor = new DBXTreeDescriptor(this, parentProvider.treeDescriptor);
+                this.treeDescriptor = new DBXTreeDescriptor(this, parentProvider.getTreeDescriptor());
             }
 
             // Load tree injections
@@ -267,9 +273,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     @Override
-    public DBXTreeDescriptor getTreeDescriptor()
-    {
-        return treeDescriptor;
+    public DBXTreeDescriptor getTreeDescriptor() {
+        return treeDescriptor == null ? (parentProvider == null ? null : parentProvider.getTreeDescriptor())
+            : treeDescriptor;
     }
 
     @NotNull
