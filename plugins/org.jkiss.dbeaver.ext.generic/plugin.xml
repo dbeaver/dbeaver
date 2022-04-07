@@ -686,7 +686,7 @@
                     category="Hadoop"
                     categories="hadoop">
                     <parameter name="omit-type-cache" value="true"/>
-                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE" ignore-dependencies="true"/>
+                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE[4.14.1-HBase-1.4]" ignore-dependencies="true"/>
                 </driver>
                 <driver
                     id="gemfire_xd"
