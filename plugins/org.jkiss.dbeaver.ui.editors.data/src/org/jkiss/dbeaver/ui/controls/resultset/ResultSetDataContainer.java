@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.data.AttributeMetaDataProxy;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -197,11 +198,12 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         return filtered.toArray(new DBDAttributeBinding[0]);
     }
 
-    private class ModelResultSet implements DBCResultSet {
+    private class ModelResultSet implements DBCResultSet, DBCResultFiltered {
 
         private final DBCSession session;
         private final long flags;
         private ResultSetRow curRow;
+        private CustomResultSetMeta meta;
 
         ModelResultSet(DBCSession session, long flags) {
             this.session = session;
@@ -270,15 +272,19 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         @NotNull
         @Override
         public DBCResultSetMetaData getMeta() throws DBCException {
-            List<DBDAttributeBinding> attributes = model.getVisibleAttributes();
-            List<DBCAttributeMetaData> meta = new ArrayList<>(attributes.size());
-            for (DBDAttributeBinding attribute : attributes) {
-                DBCAttributeMetaData metaAttribute = attribute.getMetaAttribute();
-                if (metaAttribute != null) {
-                    meta.add(metaAttribute);
+            if (this.meta == null) {
+                List<DBDAttributeBinding> attributes = model.getVisibleAttributes();
+                List<DBCAttributeMetaData> meta = new ArrayList<>(attributes.size());
+                for (int i = 0; i < attributes.size(); i++) {
+                    DBDAttributeBinding attribute = attributes.get(i);
+                    DBCAttributeMetaData metaAttribute = attribute.getMetaAttribute();
+                    if (metaAttribute != null) {
+                        meta.add(new ModelMetaAttribute(metaAttribute, i));
+                    }
                 }
+                this.meta = new CustomResultSetMeta(meta);
             }
-            return new CustomResultSetMeta(meta);
+            return this.meta;
         }
 
         @Override
@@ -307,4 +313,16 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
 
     }
 
+    private static class ModelMetaAttribute extends AttributeMetaDataProxy {
+        private final int position;
+        public ModelMetaAttribute(DBCAttributeMetaData metaAttribute, int position) {
+            super(metaAttribute);
+            this.position = position;
+        }
+
+        @Override
+        public int getOrdinalPosition() {
+            return position;
+        }
+    }
 }

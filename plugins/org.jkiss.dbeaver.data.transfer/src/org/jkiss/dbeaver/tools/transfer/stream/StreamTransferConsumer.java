@@ -664,7 +664,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     public static Object[] fetchRow(DBCSession session, DBCResultSet resultSet, DBDAttributeBinding[] attributes) throws DBCException {
-        int columnCount = resultSet.getMeta().getAttributes().size(); // Column count without virtual columns
+        int columnCount = attributes.length; // Column count without virtual columns
 
         Object[] row = new Object[columnCount];
         for (int i = 0 ; i < columnCount; i++) {

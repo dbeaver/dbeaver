@@ -634,7 +634,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     public static DataTransferWizard openWizard(@NotNull DBTTask task)
     {
         try {
-            DataTransferSettings settings = DataTransferSettings.loadSettings(new DBRRunnableWithResult<DataTransferSettings>() {
+            DataTransferSettings settings = DataTransferSettings.loadSettings(new DBRRunnableWithResult<>() {
                 @Override
                 public void run(DBRProgressMonitor monitor) {
                     result = new DataTransferSettings(
