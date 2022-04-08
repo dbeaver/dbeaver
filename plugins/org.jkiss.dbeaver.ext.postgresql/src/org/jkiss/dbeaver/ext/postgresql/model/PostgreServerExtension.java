@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -168,7 +169,10 @@ public interface PostgreServerExtension {
     boolean supportsGeneratedColumns();
 
     /** True if supports table rowid columns. Rowid columns usually replace primary key in the table */
-    boolean supportsRowidColumns();
+    boolean isHiddenRowidColumn(@NotNull PostgreAttribute attribute);
+
+    /** Nor all databases support all types of columns. Also, some databases return comments with table DDL from the server-side */
+    boolean supportsShowingOfExtraComments();
 
     boolean supportsKeyAndIndexRename();
 

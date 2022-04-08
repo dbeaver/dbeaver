@@ -288,8 +288,11 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Override
     public boolean supportsObjectDefinitionOption(String option) {
+        if (DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option) && getDataSource().getServerType().supportsShowingOfExtraComments()) {
+            return true;
+        }
         return DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option) || DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option)
-               || DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option) || DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
+               || DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option);
     }
 
     public static class TablespaceListProvider implements IPropertyValueListProvider<PostgreTableBase> {

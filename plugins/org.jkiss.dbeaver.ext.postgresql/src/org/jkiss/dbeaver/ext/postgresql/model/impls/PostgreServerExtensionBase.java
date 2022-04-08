@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -501,8 +502,13 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public boolean supportsRowidColumns() {
+    public boolean isHiddenRowidColumn(@NotNull PostgreAttribute attribute) {
         return false;
+    }
+
+    @Override
+    public boolean supportsShowingOfExtraComments() {
+        return true;
     }
 
     @Override

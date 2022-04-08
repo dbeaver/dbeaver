@@ -374,18 +374,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     public boolean isHidden() {
         if (isPersisted()) {
-            if (getDataSource().getServerType().supportsRowidColumns()) {
-                String defaultValue = getDefaultValue();
-                if (CommonUtils.isNotEmpty(defaultValue)) {
-                    // Rowid column is a special case in Cockroach #14557
-                    // Rowid column is hidden from DDL (we read it from Cocroach) and from the data viewer.
-                    // It will added automatically after table creation without keys.
-                    // But you can create rowid column by yourself with no restrictions, therefore, conditions below may accidentally hide the user column.
-                    // Let's hope that users do not create such columns independently
-                    return isRequired() && "unique_rowid()".equals(defaultValue) && "rowid".equals(name);
-                }
-            }
-            return getOrdinalPosition() < 0;
+            return getOrdinalPosition() < 0 || getDataSource().getServerType().isHiddenRowidColumn(this);
         }
         return false;
     }
