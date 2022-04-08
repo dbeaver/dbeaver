@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -58,7 +59,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     protected transient volatile Long diskSpace;
     protected transient volatile long tableRelSize;
     private final TriggerCache triggerCache = new TriggerCache();
-    private final RuleCache ruleCache = new RuleCache();
+    private final RuleCache ruleCache = getDataSource().getServerType().supportsRules() ? new RuleCache() : null;
 
     public boolean isRefreshSchemaStatisticsOnTableRefresh () {
         return true;
@@ -242,7 +243,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     public Collection<PostgreRule> getRules(DBRProgressMonitor monitor)
         throws DBException
     {
-        return ruleCache.getAllObjects(monitor, this);
+        return ruleCache != null ? ruleCache.getAllObjects(monitor, this) : Collections.emptyList();
     }
 
     @Override
