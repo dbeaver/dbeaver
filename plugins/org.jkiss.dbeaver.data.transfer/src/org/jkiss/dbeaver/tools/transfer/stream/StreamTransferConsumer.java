@@ -199,35 +199,31 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             // Get values
             Object[] srcRow = fetchRow(session, resultSet, columnMetas);
             Object[] targetRow;
-            if (processor instanceof IDocumentDataExporter) {
-                targetRow = srcRow;
-            } else {
-                targetRow = new Object[columnBindings.length];
-                for (int i = 0; i < columnBindings.length; i++) {
-                    DBDAttributeBinding column = columnBindings[i];
-                    Object value = DBUtils.getAttributeValue(column, columnMetas, srcRow);
-                    if (value instanceof DBDContent) {
-                        // Check for binary type export
-                        if (!ContentUtils.isTextContent((DBDContent) value)) {
-                            switch (settings.getLobExtractType()) {
-                                case SKIP:
-                                    // Set it it null
-                                    value = null;
-                                    break;
-                                case INLINE:
-                                    // Just pass content to exporter
-                                    break;
-                                case FILES:
-                                    if (!settings.isOutputClipboard()) {
-                                        // Save content to file and pass file reference to exporter
-                                        value = saveContentToFile(session.getProgressMonitor(), (DBDContent) value);
-                                    }
-                                    break;
-                            }
+            targetRow = new Object[columnBindings.length];
+            for (int i = 0; i < columnBindings.length; i++) {
+                DBDAttributeBinding column = columnBindings[i];
+                Object value = DBUtils.getAttributeValue(column, columnMetas, srcRow);
+                if (value instanceof DBDContent) {
+                    // Check for binary type export
+                    if (!ContentUtils.isTextContent((DBDContent) value)) {
+                        switch (settings.getLobExtractType()) {
+                            case SKIP:
+                                // Set it it null
+                                value = null;
+                                break;
+                            case INLINE:
+                                // Just pass content to exporter
+                                break;
+                            case FILES:
+                                if (!settings.isOutputClipboard()) {
+                                    // Save content to file and pass file reference to exporter
+                                    value = saveContentToFile(session.getProgressMonitor(), (DBDContent) value);
+                                }
+                                break;
                         }
                     }
-                    targetRow[i] = value;
                 }
+                targetRow[i] = value;
             }
             // Export row
             processor.exportRow(session, resultSet, targetRow);
