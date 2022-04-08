@@ -414,6 +414,10 @@ public final class DBStructUtils {
             String modifiers = dialect.getColumnTypeModifiers((DBPDataSource)objectContainer, srcTypedObject, typeName, dataKind);
             if (modifiers != null) {
                 typeName += modifiers;
+            } else if (dataKind == DBPDataKind.STRING && typeNameLower.equals("varchar")) {
+                // Most databases do not support varchar data type without modifiers.
+                // So let's add some default value
+                typeName = typeName + "(100)";
             }
         }
         return typeName;
