@@ -82,7 +82,7 @@ import java.util.ResourceBundle;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor implements DBPContextProvider, IErrorVisualizer, DBPPreferenceListener, IErrorJumper {
+public abstract class SQLEditorBase extends BaseTextEditor implements DBPContextProvider, IErrorVisualizer, DBPPreferenceListener {
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
@@ -126,7 +126,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
 
-    private int lastQueryErrorResult = -1;
+    private int lastQueryErrorPosition = -1;
 
     public SQLEditorBase() {
         super();
@@ -861,7 +861,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             originalQuery.addExtraErrorMessage("\n" + SQLEditorMessages.sql_editor_error_position + ":" + (pos.line > 0 ? " line: " + pos.line : "") +
                                 (pos.position > 0 ? " pos: " + pos.position : ""));
                             if (index == 0) {
-                                lastQueryErrorResult = errorOffset;
+                                lastQueryErrorPosition = errorOffset;
                             }
                         }
                     }
@@ -1005,16 +1005,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
     }
 
-    void setLastQueryErrorResult(int lastQueryErrorResult) {
-        this.lastQueryErrorResult = lastQueryErrorResult;
+    void setLastQueryErrorPosition(int lastQueryErrorPosition) {
+        this.lastQueryErrorPosition = lastQueryErrorPosition;
     }
 
-    @Override
-    public void jumpToError() {
-        if (lastQueryErrorResult > -1) {
-            getSelectionProvider().setSelection(new TextSelection(lastQueryErrorResult, 0));
-            setFocus();
-        }
+    int getLastQueryErrorPosition() {
+        return lastQueryErrorPosition;
     }
 
     ////////////////////////////////////////////////////////

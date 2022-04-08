@@ -36,13 +36,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
-import org.jkiss.dbeaver.ui.IErrorJumper;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
-import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -63,12 +59,12 @@ public class ErrorPresentation extends AbstractPresentation {
     private final IStatus status;
     private StyledText textWidget;
     private Object editorPanel;
-    private IErrorJumper editorPart;
+    private IResultSetContainerExt resultSetContainer;
 
-    public ErrorPresentation(String sqlText, IStatus status, @Nullable IErrorJumper editorPart) {
+    public ErrorPresentation(String sqlText, IStatus status, @Nullable IResultSetContainerExt resultSetContainer) {
         this.sqlText = sqlText;
         this.status = status;
-        this.editorPart = editorPart;
+        this.resultSetContainer = resultSetContainer;
     }
 
     @Override
@@ -80,7 +76,7 @@ public class ErrorPresentation extends AbstractPresentation {
 
         Composite errorComposite = UIUtils.createComposite(partDivider, 1);
         errorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        new ErrorDetailsPart(errorComposite, status, editorPart);
+        new ErrorDetailsPart(errorComposite, status, resultSetContainer);
 
         for (Control child : errorComposite.getChildren()) {
             if (child instanceof Text) {

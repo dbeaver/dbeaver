@@ -36,7 +36,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.IErrorJumper;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainerExt;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -55,10 +56,10 @@ class ErrorDetailsPart {
 	private Composite detailsArea;
 	private Control details = null;
 	private IStatus reason;
-	private IErrorJumper editorPart;
+	private IResultSetContainerExt resultSetContainer;
 
-	ErrorDetailsPart(final Composite parent, IStatus reason_, @Nullable IErrorJumper editorPart) {
-		this.editorPart = editorPart;
+	ErrorDetailsPart(final Composite parent, IStatus reason_, @Nullable IResultSetContainerExt resultSetContainer) {
+		this.resultSetContainer = resultSetContainer;
 		Color bgColor = parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
 		Color fgColor = parent.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
 
@@ -215,10 +216,11 @@ class ErrorDetailsPart {
 		button.addSelectionListener(widgetSelectedAdapter(e -> {
 				String message = reason.getMessage();
 				if (CommonUtils.isNotEmpty(message)) {
-					editorPart.jumpToError();
+					resultSetContainer.showCurrentError();
 				}
 		}));
+		button.setImage(DBeaverIcons.getImage(UIIcon.BUTTON_GO_TO_ERROR));
 		button.setToolTipText(ResultSetMessages.error_part_button_go_to_error);
-		button.setVisible(reason.getException() != null && editorPart != null);
+		button.setVisible(reason.getException() != null && resultSetContainer != null);
 	}
 }

@@ -3738,6 +3738,14 @@ public class SQLEditor extends SQLEditorBase implements
         public void handleExecuteResult(DBCExecutionResult result) {
             dumpQueryServerOutput(result);
         }
+
+        @Override
+        public void showCurrentError() {
+            if (getLastQueryErrorPosition() > -1) {
+                getSelectionProvider().setSelection(new TextSelection(getLastQueryErrorPosition(), 0));
+                setFocus();
+            }
+        }
     }
 
     private int getMaxResultsTabIndex() {
@@ -3901,7 +3909,7 @@ public class SQLEditor extends SQLEditorBase implements
                                 selectionProvider.setSelection(originalSelection);
                             }
                         }
-                        setLastQueryErrorResult(errorQueryOffset);
+                        setLastQueryErrorPosition(errorQueryOffset);
                     }
                 }
             } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {

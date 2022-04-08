@@ -245,6 +245,8 @@ public class UIIcon {
     public static final DBIcon BUTTON_TUNNEL = new DBIcon("buttons/tunnel.png"); //$NON-NLS-1$
     public static final DBIcon BUTTON_CLOUD = new DBIcon("buttons/cloud.png"); //$NON-NLS-1$
 
+    public static final DBIcon BUTTON_GO_TO_ERROR = new DBIcon("buttons/target_error.png"); //$NON-NLS-1$
+
     static  {
         DBIcon.loadIcons(UIIcon.class);
     }
