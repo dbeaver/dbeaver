@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.app;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DB application.
@@ -63,8 +64,9 @@ public interface DBPApplication {
     /**
      * Application information details.
      * Like license info or some custom produce info
+     * @param monitor
      */
-    String getInfoDetails();
+    String getInfoDetails(DBRProgressMonitor monitor);
 
     /**
      * Returns last user activity time

@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * EclipseApplicationImpl
@@ -55,7 +56,7 @@ class EclipseApplicationImpl extends BaseApplicationImpl {
     }
 
     @Override
-    public String getInfoDetails() {
+    public String getInfoDetails(DBRProgressMonitor monitor) {
         return "Eclipse";
     }
 
