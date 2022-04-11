@@ -174,7 +174,8 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
             } else {
-                hostText.setText(MySQLConstants.DEFAULT_HOST);
+                hostText.setText(
+                    CommonUtils.toString(site.getDriver().getDefaultHost(), MySQLConstants.DEFAULT_HOST));
             }
         }
         if (portText != null) {

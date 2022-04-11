@@ -169,8 +169,8 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
             } else {
-                Object defaultHost = driver.getDriverParameter("defaultHost");
-                hostText.setText(defaultHost != null ? defaultHost.toString() : PostgreConstants.DEFAULT_HOST);
+                hostText.setText(
+                    CommonUtils.toString(site.getDriver().getDefaultHost(), PostgreConstants.DEFAULT_HOST));
             }
         }
         if (portText != null) {

@@ -503,6 +503,7 @@
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql:///[{database}]?cloudSqlInstance={host}"
                         useURL="true"
+                        defaultHost="project:region:instance"
                         defaultPort="5432"
                         webURL="https://cloud.google.com/sql"
                         propertiesURL="https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory#postgresql-1"
@@ -516,7 +517,6 @@
                     <parameter name="serverType" value="gcloudpg"/>
                     <parameter name="hostType" value="instance"/>
                     <parameter name="needsPort" value="false"/>
-                    <parameter name="defaultHost" value="project:region:instance"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                     <property name="socketFactory" value="com.google.cloud.sql.postgres.SocketFactory"/>

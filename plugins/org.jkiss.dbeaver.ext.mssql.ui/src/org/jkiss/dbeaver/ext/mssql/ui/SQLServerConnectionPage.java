@@ -267,7 +267,11 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
             } else {
-                hostText.setText(isDriverAzure ? SQLServerConstants.DEFAULT_HOST_AZURE : SQLServerConstants.DEFAULT_HOST);
+                hostText.setText(
+                    CommonUtils.toString(
+                        site.getDriver().getDefaultHost(),
+                        isDriverAzure ? SQLServerConstants.DEFAULT_HOST_AZURE : SQLServerConstants.DEFAULT_HOST)
+                    );
             }
         }
         if (portText != null) {
