@@ -22,7 +22,9 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
 
-//
+/**
+ * Class used for skipping host verification for ssl
+ */
 public class NullHostnameVerifier implements HostnameVerifier {
     Log log = Log.getLog(NullHostnameVerifier.class);
 
