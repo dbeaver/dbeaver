@@ -176,6 +176,18 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         DBDAttributeBinding[] preFiltered;
         if (filterAttributes && !options.getSelectedColumns().isEmpty()) {
             preFiltered = options.getSelectedColumns().toArray(new DBDAttributeBinding[0]);
+            // Replace pre-filtered attributes with originally passed attributes
+            // This is important because they may be wrappers
+            for (int i = 0; i < preFiltered.length; i++) {
+                DBDAttributeBinding pfa = preFiltered[i];
+                for (DBDAttributeBinding oa : attributes) {
+                    if (oa.getMetaAttribute() instanceof ModelMetaAttribute &&
+                        ((ModelMetaAttribute) oa.getMetaAttribute()).getProxyAttribute() == pfa.getMetaAttribute()) {
+                        preFiltered[i] = oa;
+                        break;
+                    }
+                }
+            }
         } else {
             preFiltered = attributes;
         }

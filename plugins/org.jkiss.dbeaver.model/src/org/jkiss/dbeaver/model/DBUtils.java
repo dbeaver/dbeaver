@@ -727,7 +727,7 @@ public final class DBUtils {
             session.getDataSource(),
             dataContainer,
             result.toArray(new DBDAttributeBinding[0]),
-            !(resultSet instanceof DBCResultFiltered));
+            true);
     }
 
     private static void addLeafBindings(List<DBDAttributeBinding> result, DBDAttributeBinding binding) {
