@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.app;
 
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.jkiss.dbeaver.Log;
 
 import javax.net.ssl.HostnameVerifier;
@@ -23,10 +24,15 @@ import javax.net.ssl.SSLSession;
 
 
 /**
- * Class used for skipping host verification for ssl
+ * Class used for skipping host verification for SSL
  */
 public class NullHostnameVerifier implements HostnameVerifier {
-    Log log = Log.getLog(NullHostnameVerifier.class);
+    public static final NoopHostnameVerifier INSTANCE = new NoopHostnameVerifier();
+
+    private static final Log log = Log.getLog(NullHostnameVerifier.class);
+
+    private NullHostnameVerifier() {
+    }
 
     @Override
     public boolean verify(String hostname, SSLSession session) {
