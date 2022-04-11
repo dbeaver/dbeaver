@@ -52,7 +52,7 @@ public class EULAConfirmationDialog extends EULABaseDialog {
     protected void buttonPressed(int buttonId) {
         switch (buttonId) {
             case IDialogConstants.NO_ID:
-                System.exit(101);
+                System.exit(0);
                 break;
             case IDialogConstants.YES_ID:
                 Preferences preferences = Preferences.userNodeForPackage(DBWorkbench.getPlatform().getApplication().getClass());
