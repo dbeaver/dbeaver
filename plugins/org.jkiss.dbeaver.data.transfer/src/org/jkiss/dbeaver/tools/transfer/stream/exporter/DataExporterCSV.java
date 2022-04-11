@@ -16,23 +16,29 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -42,7 +48,7 @@ import java.util.Map;
 /**
  * CSV Exporter
  */
-public class DataExporterCSV extends StreamExporterAbstract {
+public class DataExporterCSV extends StreamExporterAbstract implements IAppendableDataExporter {
 
     private static final String PROP_DELIMITER = "delimiter";
     private static final String PROP_ROW_DELIMITER = "rowDelimiter";
@@ -108,7 +114,10 @@ public class DataExporterCSV extends StreamExporterAbstract {
         useQuotes = quoteChar != ' ';
         quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
 
-        headerPosition = CommonUtils.valueOf(HeaderPosition.class, String.valueOf(properties.get(PROP_HEADER)), HeaderPosition.top);
+        if (headerPosition == null) {
+            headerPosition = CommonUtils.valueOf(HeaderPosition.class, String.valueOf(properties.get(PROP_HEADER)), HeaderPosition.top);
+        }
+
         headerFormat = CommonUtils.valueOf(HeaderFormat.class, String.valueOf(properties.get(PROP_HEADER_FORMAT)), HeaderFormat.label);
         formatNumbers = CommonUtils.toBoolean(getSite().getProperties().get(PROP_FORMAT_NUMBERS));
     }
@@ -239,6 +248,21 @@ public class DataExporterCSV extends StreamExporterAbstract {
         if (headerPosition == HeaderPosition.bottom || headerPosition == HeaderPosition.both) {
             printHeader();
         }
+    }
+
+    @Override
+    public void importData(@NotNull IStreamDataExporterSite site) {
+        final File file = site.getOutputFile();
+        if (file == null || !file.exists()) {
+            return;
+        }
+        // FIXME: Sources may be different and thus may have a different set of attributes
+        headerPosition = HeaderPosition.none;
+    }
+
+    @Override
+    public boolean shouldTruncateOutputFileBeforeExport() {
+        return false;
     }
 
     private void writeCellValue(String value, boolean quote)

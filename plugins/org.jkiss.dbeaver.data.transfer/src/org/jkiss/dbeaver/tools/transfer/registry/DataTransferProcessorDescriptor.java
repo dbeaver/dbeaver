@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
+import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -166,6 +167,10 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
 
     public boolean isHTMLFormat() {
         return isHTML;
+    }
+
+    public boolean isAppendable() {
+        return IAppendableDataExporter.class.isAssignableFrom(processorType.getObjectClass());
     }
 
     public String getFullId() {

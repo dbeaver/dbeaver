@@ -283,6 +283,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         } else {
             outputFile = null;
         }
+
+        if (processor instanceof IAppendableDataExporter && (settings.isAppendToFileEnd() || (settings.isUseSingleFile() && parameters.orderNumber > 0))) {
+            try {
+                ((IAppendableDataExporter) processor).importData(exportSite);
+            } catch (DBException e) {
+                log.warn("Error importing existing data for appending, data loss might occur", e);
+            }
+        }
+
         try {
             if (outputClipboard) {
                 this.outputBuffer = new StringWriter(2048);
@@ -325,11 +334,18 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     private void openOutputStreams() throws IOException {
-        this.statStream = new StatOutputStream(
-            new FileOutputStream(outputFile, settings.isAppendToFileEnd() || settings.isUseSingleFile()));
-        this.outputStream = new BufferedOutputStream(
-            statStream,
-            OUT_FILE_BUFFER_SIZE);
+        final boolean truncate;
+
+        if (!settings.isAppendToFileEnd() && settings.isUseSingleFile() && parameters.orderNumber == 0) {
+            truncate = true;
+        } else if (processor instanceof IAppendableDataExporter && (settings.isAppendToFileEnd() || settings.isUseSingleFile())) {
+            truncate = ((IAppendableDataExporter) processor).shouldTruncateOutputFileBeforeExport();
+        } else {
+            truncate = true;
+        }
+
+        this.statStream = new StatOutputStream(new FileOutputStream(outputFile, !truncate));
+        this.outputStream = new BufferedOutputStream(statStream, OUT_FILE_BUFFER_SIZE);
         if (settings.isCompressResults()) {
             this.zipStream = new ZipOutputStream(this.outputStream);
             this.zipStream.putNextEntry(new ZipEntry(getOutputFileName()));
@@ -711,6 +727,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         @Override
         public OutputStream getOutputStream() {
             return outputStream;
+        }
+
+        @Nullable
+        @Override
+        public File getOutputFile() {
+            return outputFile;
         }
 
         @Override
