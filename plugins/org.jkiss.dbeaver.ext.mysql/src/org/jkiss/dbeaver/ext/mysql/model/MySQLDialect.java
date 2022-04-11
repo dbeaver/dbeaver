@@ -19,13 +19,16 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -33,11 +36,12 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Locale;
 
 /**
 * MySQL dialect
 */
-class MySQLDialect extends JDBCSQLDialect {
+class MySQLDialect extends JDBCSQLDialect implements SQLDataTypeConverter {
 
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
@@ -244,5 +248,24 @@ class MySQLDialect extends JDBCSQLDialect {
             return '\'' + escapeString(strValue) + '\'';
         }
         return super.escapeScriptValue(attribute, value, strValue);
+    }
+
+    @Override
+    public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
+        if (targetTypeProvider != null) {
+            String externalTypeName = sourceTypedObject.getTypeName().toLowerCase(Locale.ENGLISH);
+            if (MySQLConstants.TYPE_VARCHAR.equals(externalTypeName)) {
+                DBSDataType dataType = targetTypeProvider.getLocalDataType(externalTypeName);
+                if (dataType != null) {
+                    long maxLength = sourceTypedObject.getMaxLength();
+                    if (maxLength <= 0) {
+                        // Some databases do not have varchar data type modifiers, but MySQL is more strict in this case
+                        maxLength = 100;
+                    }
+                    return dataType.getName() + "(" + maxLength + ")";
+                }
+            }
+        }
+        return null;
     }
 }

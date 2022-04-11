@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -32,8 +33,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
@@ -44,6 +49,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -52,7 +58,7 @@ import java.util.Set;
  * @author Denis Forveille
  * 
  */
-public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
+public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDataTypeConverter {
 
     private static final Log log = Log.getLog(DB2SQLDialect.class);
 
@@ -162,5 +168,24 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
             rules.add(new SQLMultiWordRule(new String[]{"ROW", "BEGIN"}, keywordToken));
             rules.add(new SQLMultiWordRule(new String[]{"ROW", "END"}, keywordToken));
         }
+    }
+
+    @Override
+    public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
+        if (targetTypeProvider != null) {
+            String externalTypeName = sourceTypedObject.getTypeName().toUpperCase(Locale.ENGLISH);
+            if (DB2Constants.TYPE_VARCHAR.equals(externalTypeName)) {
+                DBSDataType dataType = targetTypeProvider.getLocalDataType(externalTypeName);
+                if (dataType != null) {
+                    long maxLength = sourceTypedObject.getMaxLength();
+                    if (maxLength <= 0) {
+                        // Some databases do not have varchar data type modifiers, but DB2 is more strict in this case
+                        maxLength = 100;
+                    }
+                    return dataType.getName() + "(" + maxLength + ")";
+                }
+            }
+        }
+        return null;
     }
 }

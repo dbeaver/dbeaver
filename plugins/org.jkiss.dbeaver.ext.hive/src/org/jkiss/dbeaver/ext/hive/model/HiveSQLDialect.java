@@ -16,14 +16,22 @@
  */
 package org.jkiss.dbeaver.ext.hive.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.Arrays;
+import java.util.Locale;
 
-public class HiveSQLDialect extends GenericSQLDialect {
+public class HiveSQLDialect extends GenericSQLDialect implements SQLDataTypeConverter {
 
     private static final String[][] DEFAULT_QUOTE_STRINGS = {{"`", "`"}};
 
@@ -129,5 +137,24 @@ public class HiveSQLDialect extends GenericSQLDialect {
     @Override
     public boolean supportsAlterTableStatement() {
         return false;
+    }
+
+    @Override
+    public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
+        if (targetTypeProvider != null) {
+            String externalTypeName = sourceTypedObject.getTypeName().toLowerCase(Locale.ENGLISH);
+            if ("varchar".equals(externalTypeName)) {
+                DBSDataType dataType = targetTypeProvider.getLocalDataType(externalTypeName);
+                if (dataType != null) {
+                    long maxLength = sourceTypedObject.getMaxLength();
+                    if (maxLength <= 0) {
+                        // Some databases do not have varchar data type modifiers, but Hive is more strict in this case
+                        maxLength = 100;
+                    }
+                    return dataType.getName() + "(" + maxLength + ")";
+                }
+            }
+        }
+        return null;
     }
 }

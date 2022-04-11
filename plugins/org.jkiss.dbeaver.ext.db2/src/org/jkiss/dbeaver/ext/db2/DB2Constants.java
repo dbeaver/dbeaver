@@ -52,6 +52,7 @@ public class DB2Constants {
     public static final Double             DB2v11_1                    = 11.1;
 
     public static final String             TYPE_NAME_DECFLOAT          = "DECFLOAT";
+    public static final String             TYPE_VARCHAR                = "VARCHAR";
     public static final int                EXT_TYPE_DECFLOAT           = -100001;                                                  // DB2Types.DECFLOAT
     public static final int                EXT_TYPE_CURSOR             = -100008;                                                  // DB2Types.CURSOR
 
