@@ -26,4 +26,6 @@ public interface IResultSetContainerExt {
 
     void handleExecuteResult(DBCExecutionResult result);
 
+    void showCurrentError();
+
 }

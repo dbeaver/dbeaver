@@ -64,10 +64,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
-import org.jkiss.dbeaver.model.sql.DBSQLException;
-import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
@@ -104,6 +101,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -705,12 +703,12 @@ public class ResultSetViewer extends Viewer
         updatePresentationInToolbar();
     }
 
-    void showErrorPresentation(String sqlText, String message, Throwable error) {
+    private void showErrorPresentation(String sqlText, String message, Throwable error) {
         activePresentationDescriptor = null;
         setActivePresentation(
             new ErrorPresentation(
                 sqlText,
-                GeneralUtils.makeErrorStatus(message, error)));
+                GeneralUtils.makeErrorStatus(message, error), container instanceof IResultSetContainerExt ? (IResultSetContainerExt) container : null));
         updatePresentationInToolbar();
     }
 
@@ -4905,13 +4903,24 @@ public class ResultSetViewer extends Viewer
                         setStatus(errorMessage, DBPMessageType.ERROR);
 
                         String sqlText;
+                        SQLScriptElement query = null;
+                        if (dataContainer instanceof SQLQueryContainer) {
+                            query = ((SQLQueryContainer) dataContainer).getQuery();
+                        }
+
                         if (error instanceof DBSQLException) {
                             sqlText = ((DBSQLException) error).getSqlQuery();
-                        } else if (dataContainer instanceof SQLQueryContainer) {
-                            SQLScriptElement query = ((SQLQueryContainer) dataContainer).getQuery();
-                            sqlText = query == null ? getActiveQueryText() : query.getText();
+                        } else if (query != null) {
+                            sqlText = query.getText();
                         } else {
                             sqlText = getActiveQueryText();
+                        }
+
+                        if (CommonUtils.isNotEmpty(errorMessage) && query instanceof SQLQuery) {
+                            String extraErrorMessage = ((SQLQuery) query).getExtraErrorMessage();
+                            if (CommonUtils.isNotEmpty(extraErrorMessage)) {
+                                errorMessage = errorMessage + System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + extraErrorMessage;
+                            }
                         }
 
                         if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {

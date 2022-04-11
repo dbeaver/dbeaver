@@ -388,6 +388,8 @@ public class ResultSetMessages extends NLS {
     public static String panel_editor_text_encoding_name;
     public static String panel_editor_text_encoding_title;
 
+    public static String error_part_button_go_to_error;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ResultSetMessages.class);
