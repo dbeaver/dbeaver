@@ -167,6 +167,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
             log.warn("Error reading active schema", e);
         }
 
+        ((JDBCObjectSimpleCache) dataTypeCache).setCaseSensitive(false);
         try {
             this.dataTypeCache.getAllObjects(monitor, this);
         } catch (DBException e) {

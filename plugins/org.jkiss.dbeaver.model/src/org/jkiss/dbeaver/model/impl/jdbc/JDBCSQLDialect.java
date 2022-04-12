@@ -21,15 +21,18 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -39,7 +42,7 @@ import java.util.*;
 /**
  * SQL Dialect JDBC API implementation
  */
-public class JDBCSQLDialect extends BasicSQLDialect {
+public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConverter {
 
     private static final Log log = Log.getLog(JDBCSQLDialect.class);
 
@@ -409,4 +412,28 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         return result;
     }
 
+    @Override
+    public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
+        if (targetTypeProvider != null) {
+            String externalTypeName = sourceTypedObject.getTypeName().toLowerCase(Locale.ENGLISH);
+            if ("varchar".equals(externalTypeName)) {
+                long maxLength = sourceTypedObject.getMaxLength();
+                if (maxLength <= 0) {
+                    DBSDataType textDataType = targetTypeProvider.getLocalDataType("text");
+                    if (textDataType != null) {
+                        // Some databases can not have varchar data type modifiers (like PostgreSQL where varchar without modifiers == text), but other are more strict in this case
+                        // Let's use TEXT data type instead
+                        return textDataType.getName();
+                    } else {
+                        // Didn't find TEXT data type, let's try to find CLOB
+                        DBSDataType clobDataType = targetTypeProvider.getLocalDataType("clob");
+                        if (clobDataType != null) {
+                            return clobDataType.getName();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }
