@@ -429,19 +429,24 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         return false;
     }
 
+    public void loadNodeSettings() {
+        if (getSettings().isNodeSettingsLoaded()) {
+            return;
+        }
+        try {
+            getRunnableContext().run(true, true, monitor -> {
+                getSettings().loadNodeSettings(monitor);
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Error loading settings", "Error loading data transfer settings", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
+        }
+    }
+
     @Override
     public void onWizardActivation() {
-        UIUtils.asyncExec(() -> {
-            try {
-                getRunnableContext().run(true, true, monitor -> {
-                    getSettings().loadNodeSettings(monitor);
-                });
-            } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Error loading settings", "Error loading data transfer settings", e.getTargetException());
-            } catch (InterruptedException e) {
-                // ignore
-            }
-        });
+        //UIUtils.asyncExec(this::loadNodeSettings);
     }
 
     NodePageSettings getNodeInfo(IDataTransferNode<?> node) {

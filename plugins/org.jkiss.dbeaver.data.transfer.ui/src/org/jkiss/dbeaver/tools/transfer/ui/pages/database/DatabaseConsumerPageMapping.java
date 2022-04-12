@@ -885,7 +885,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             } catch (InterruptedException ignored) {
             }
         }
-        loadAndUpdateColumnsModel();
+        //loadAndUpdateColumnsModel();
         for (TreeItem item : mappingViewer.getTree().getItems()) {
             Object element = item.getData();
             if (element instanceof DatabaseMappingContainer) {
@@ -1173,6 +1173,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
     @Override
     public void activatePage() {
+        getWizard().loadNodeSettings();
+
         DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         // Detect producer container (e.g. schema)
         DBSObjectContainer producerContainer = null;

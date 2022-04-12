@@ -102,6 +102,8 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
 
     @Override
     public void activatePage() {
+        getWizard().loadNodeSettings();
+
         resultTable.removeAll();
         DataTransferSettings settings = getWizard().getSettings();
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
