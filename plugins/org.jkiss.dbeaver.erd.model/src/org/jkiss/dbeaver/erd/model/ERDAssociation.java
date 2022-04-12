@@ -122,7 +122,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	/**
 	 * @return Returns the sourceEntity.
 	 */
-	public ERDElement getSourceEntity()
+	public ERDElement<?> getSourceEntity()
 	{
 		return sourceEntity;
 	}
@@ -130,12 +130,12 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	/**
 	 * @return Returns the targetEntity.
 	 */
-	public ERDElement getTargetEntity()
+	public ERDElement<?> getTargetEntity()
 	{
 		return targetEntity;
 	}
 
-	public void setTargetEntity(ERDElement targetPrimaryKey)
+	public void setTargetEntity(ERDElement<?> targetPrimaryKey)
 	{
 		this.targetEntity = targetPrimaryKey;
 	}
@@ -143,7 +143,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	/**
 	 * @param sourceForeignKey the foreign key table you are connecting from
 	 */
-	public void setSourceEntity(ERDElement sourceForeignKey)
+	public void setSourceEntity(ERDElement<?> sourceForeignKey)
 	{
 		this.sourceEntity = sourceForeignKey;
 	}
@@ -196,6 +196,11 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
     public String getName()
     {
         return getObject().getName();
+    }
+
+    @Override
+    public void fromMap(@NotNull ERDContext context, Map<String, Object> map) {
+
     }
 
     @Override

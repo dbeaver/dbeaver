@@ -23,13 +23,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IntKeyMap;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -413,6 +418,59 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
 
     public void clearErrorMessages() {
         errorMessages.clear();
+    }
+
+    @Override
+    public void fromMap(@NotNull ERDContext context, Map<String, Object> map) {
+        DBPDataSource dataSource = context.getDataSourceContainer().getDataSource();
+        if (dataSource == null) {
+            log.error("Can't detect datasource");
+            return;
+        }
+        DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        if (objectContainer == null) {
+            log.error("Can't detect root object container for " + dataSource.getName());
+            return;
+        }
+
+        SQLIdentifierDetector idd = new SQLIdentifierDetector(dataSource.getSQLDialect());
+
+        Map<String, Object> dataList = JSONUtils.getObject(map, "data");
+
+        IntKeyMap<ERDEntity> idMap = new IntKeyMap<>();
+
+        try {
+            for (Map<String, Object> entityMap : JSONUtils.getObjectList(dataList, "entities")) {
+                int entityId = JSONUtils.getInteger(entityMap, "id");
+                String entityFQN = JSONUtils.getString(entityMap, "fqn");
+                if (CommonUtils.isEmpty(entityFQN)) {
+                    entityFQN = JSONUtils.getString(entityMap, "name");
+                }
+                String[] idParts = idd.splitIdentifier(entityFQN);
+                String tableName = idParts[idParts.length - 1];
+                String schemaName = idParts.length > 2 ? idParts[1] : (idParts.length > 1 ? idParts[0] : null);
+                String catalogName = idParts.length > 2 ? idParts[0] : null;
+
+                DBSObject entity = DBUtils.getObjectByPath(
+                    context.getMonitor(),
+                    DBUtils.getDefaultContext(dataSource, true),
+                    objectContainer,
+                    catalogName,
+                    schemaName,
+                    tableName);
+                if (!(entity instanceof DBSEntity)) {
+                    log.error("Can't find entity " + entityFQN + " in " + objectContainer.getName());
+                    continue;
+                }
+
+                ERDEntity erdEntity = new ERDEntity((DBSEntity) entity);
+                erdEntity.fromMap(context, entityMap);
+                idMap.put(entityId, erdEntity);
+                addEntity(erdEntity, false);
+            }
+        } catch (DBException e) {
+            log.error(e);
+        }
     }
 
     @Override

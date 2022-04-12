@@ -20,8 +20,10 @@
 package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -267,6 +269,30 @@ public class ERDEntity extends ERDElement<DBSEntity> {
     @Override
     public String getName() {
         return getObject().getName();
+    }
+
+    @Override
+    public void fromMap(@NotNull ERDContext context, Map<String, Object> map) {
+        alias = JSONUtils.getString(map, "alias");
+
+        try {
+            for (Map<String, Object> attrMap : JSONUtils.getObjectList(map, "attributes")) {
+                String name = JSONUtils.getString(attrMap, "name");
+                if (CommonUtils.isEmpty(name)) {
+                    continue;
+                }
+                DBSEntityAttribute attribute = getObject().getAttribute(context.getMonitor(), name);
+                if (attribute == null) {
+                    log.error("Attribute '" + name + "' not found in entity " + getName());
+                    continue;
+                }
+                ERDEntityAttribute attr = new ERDEntityAttribute(attribute, false);
+                attr.fromMap(context, attrMap);
+                addAttribute(attr, false);
+            }
+        } catch (DBException e) {
+            log.error("Error reading entity attributes", e);
+        }
     }
 
     @Override

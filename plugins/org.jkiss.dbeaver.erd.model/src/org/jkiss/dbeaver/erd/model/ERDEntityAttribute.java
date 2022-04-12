@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
@@ -98,6 +99,14 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
     @Override
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public void fromMap(@NotNull ERDContext context, Map<String, Object> attrMap) {
+        alias = JSONUtils.getString(attrMap, "alias");
+        isChecked = JSONUtils.getBoolean(attrMap, "checked");
+        inPrimaryKey = JSONUtils.getBoolean(attrMap, "inPrimaryKey");
+        inForeignKey = JSONUtils.getBoolean(attrMap, "inForeignKey");
     }
 
     @Override

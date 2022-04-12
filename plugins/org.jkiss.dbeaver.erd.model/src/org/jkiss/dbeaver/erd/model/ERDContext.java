@@ -19,6 +19,7 @@
  */
 package org.jkiss.dbeaver.erd.model;
 
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,18 +31,24 @@ import java.util.Map;
 
 public class ERDContext {
     private final DBRProgressMonitor monitor;
+    private final DBPDataSourceContainer dataSourceContainer;
     private final DBNModel navigatorModel;
 
     private final List<String> icons = new ArrayList<>();
     private final Map<ERDElement<?>, ElementSaveInfo> elementInfoMap = new IdentityHashMap<>();
 
-    public ERDContext(DBRProgressMonitor monitor, DBNModel navigatorModel) {
+    public ERDContext(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer, DBNModel navigatorModel) {
         this.monitor = monitor;
+        this.dataSourceContainer = dataSourceContainer;
         this.navigatorModel = navigatorModel;
     }
 
     public DBRProgressMonitor getMonitor() {
         return monitor;
+    }
+
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
     }
 
     public List<String> getIcons() {
