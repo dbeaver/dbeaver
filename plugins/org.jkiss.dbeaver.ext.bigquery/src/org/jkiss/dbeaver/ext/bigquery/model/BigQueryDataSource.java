@@ -40,7 +40,9 @@ public class BigQueryDataSource extends GenericDataSource {
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Map<String, String> props = new HashMap<>();
         props.put(BigQueryConstants.DRIVER_PROP_PROJECT_ID, connectionInfo.getDatabaseName());
-        props.put(BigQueryConstants.DRIVER_PROP_ACCOUNT, connectionInfo.getUserName());
+        if (connectionInfo.getUserName() != null) {
+            props.put(BigQueryConstants.DRIVER_PROP_ACCOUNT, connectionInfo.getUserName());
+        }
 
         return props;
     }
