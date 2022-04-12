@@ -104,8 +104,16 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             return null;
         }
         String typeName = source.getTypeName();
-        if (source.getDataKind() == DBPDataKind.STRING) {
-            typeName += "(" + source.getMaxLength() + ")";
+        DBSDataContainer container = parent.getSource();
+        if (container != null && container.getDataSource() != null) {
+            String typeModifiers = container.getDataSource().getSQLDialect().getColumnTypeModifiers(
+                container.getDataSource(),
+                source,
+                typeName,
+                source.getDataKind());
+            if (typeModifiers != null) {
+                typeName += "(" + typeModifiers + ")";
+            }
         }
         return typeName;
     }
