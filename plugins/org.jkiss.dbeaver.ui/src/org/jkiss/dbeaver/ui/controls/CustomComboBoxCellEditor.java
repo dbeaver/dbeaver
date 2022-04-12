@@ -80,11 +80,11 @@ public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
         comboBox.setFont(parent.getFont());
         comboBox.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
-        if ((getStyle() & (SWT.READ_ONLY | SWT.DROP_DOWN)) == 0) {
+        if ((getStyle() & SWT.READ_ONLY) == 0) {
             // Install proposal provider for editable combos
             // In fact it was a bad idea to use proposals in inline combo editors (#2409)
             proposalProvider = new StringContentProposalProvider(true, comboBox.getItems());
-            ContentAssistUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider);
+            ContentAssistUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider, (getStyle() & SWT.DROP_DOWN) == 0);
         }
 
         return comboBox;
