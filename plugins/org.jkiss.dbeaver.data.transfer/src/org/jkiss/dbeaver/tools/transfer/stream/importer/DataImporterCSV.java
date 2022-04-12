@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.DbNumericTypeInfo;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.*;
@@ -73,6 +75,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         List<StreamDataImporterColumnInfo> columnsInfo = new ArrayList<>();
         Map<String, Object> processorProperties = getSite().getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(processorProperties);
+        SQLDialect dialect = entityMapping.getDataSource().getSQLDialect();
 
         final String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
         final int columnSamplesCount = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_SAMPLES), 100), 0);
@@ -113,14 +116,29 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     }
 
                     for (int i = 0; i < Math.min(line.length, header.length); i++) {
-                        Pair<DBPDataKind, String> dataType = DatabaseTransferUtils.getDataType(line[i]);
+                        Pair<DBPDataKind, String> dataType = DatabaseTransferUtils.getDataType(line[i], dialect);
                         StreamDataImporterColumnInfo columnInfo = columnsInfo.get(i);
 
                         switch (dataType.getFirst()) {
+                            case NUMERIC:
+                                switch (columnInfo.getDataKind()) {
+                                    case NUMERIC:
+                                        DbNumericTypeInfo<Long> inferredType = dialect.findKnownIntegerType(dataType.getSecond());
+                                        DbNumericTypeInfo<Long> presentedType = dialect.findKnownIntegerType(columnInfo.getTypeName());
+                                        if (inferredType.fitsIn(presentedType))
+                                            break;
+                                        /* fall-through */
+                                    case UNKNOWN:
+                                        columnInfo.setDataKind(dataType.getFirst());
+                                        columnInfo.setTypeName(dataType.getSecond());
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                break;
                             case STRING:
                                 columnInfo.updateMaxLength(columnIsByteLength ? line[i].getBytes(encoding).length : line[i].length());
                                 /* fall-through */
-                            case NUMERIC:
                             case BOOLEAN:
                                 columnInfo.updateType(dataType.getFirst(), dataType.getSecond());
                                 break;

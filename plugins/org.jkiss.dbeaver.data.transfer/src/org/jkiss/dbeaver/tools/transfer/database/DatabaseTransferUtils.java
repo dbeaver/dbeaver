@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.DbNumericTypeInfo;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -378,15 +380,14 @@ public class DatabaseTransferUtils {
         commandContext.saveChanges(monitor, options);
     }
 
-    public static Pair<DBPDataKind, String> getDataType(String value) {
+    public static Pair<DBPDataKind, String> getDataType(String value, SQLDialect dialect) {
         if (CommonUtils.isEmpty(value)) {
             return DATA_TYPE_UNKNOWN;
         }
         char firstChar = value.charAt(0);
         if (Character.isDigit(firstChar) || firstChar == '+' || firstChar == '-' || firstChar == '.') {
             try {
-                Long.parseLong(value);
-                return DATA_TYPE_INTEGER;
+                return new Pair<>(DBPDataKind.NUMERIC, inferIntegerDbTypeName(Long.parseLong(value), dialect));
             } catch (NumberFormatException ignored) {
             }
             try {
@@ -399,6 +400,15 @@ public class DatabaseTransferUtils {
             return DATA_TYPE_BOOLEAN;
         }
         return DATA_TYPE_STRING;
+    }
+    
+    public static String inferIntegerDbTypeName(Long rawValue, SQLDialect dialect) {
+        for (DbNumericTypeInfo<Long> typeInfo: dialect.getKnownIntegerTypesInfo()) {
+            if (rawValue >= typeInfo.getMinValue() && rawValue <= typeInfo.getMaxValue()) {
+                return typeInfo.getTypeName();
+            }
+        }
+        return DATA_TYPE_INTEGER.getSecond();
     }
 
     static class TargetCommandContext extends AbstractCommandContext {

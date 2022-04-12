@@ -456,4 +456,8 @@ public interface SQLDialect {
      * @return a set of SQLBlockCompletions with information about blocks for autoedit
      */
     SQLBlockCompletions getBlockCompletions();
+
+    List<DbNumericTypeInfo<Long>> getKnownIntegerTypesInfo();
+
+    DbNumericTypeInfo<Long> findKnownIntegerType(String typeName);
 }

@@ -36,6 +36,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Abstract SQL Dialect
@@ -67,6 +68,13 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         }, "END", "IF");   
     }};
 
+
+    private final static List<DbNumericTypeInfo<Long>> KNOWN_INTEGER_TYPES = List.of(
+            new DbNumericTypeInfo<Long>((long)Short.MIN_VALUE, (long)Short.MAX_VALUE, "SMALLINT"),
+            new DbNumericTypeInfo<Long>((long)Integer.MIN_VALUE, (long)Integer.MAX_VALUE, "INTEGER"),
+            new DbNumericTypeInfo<Long>((long)Long.MIN_VALUE, (long)Long.MAX_VALUE, "BIGINT")
+    );
+
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
 
@@ -78,6 +86,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     // Comments
     private Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
     private Map<String, Integer> keywordsIndent = new HashMap<>();
+    private Map<String, DbNumericTypeInfo<Long>> knownIntegerTypesByName = null; 
 
     protected AbstractSQLDialect() {
     }
@@ -876,6 +885,18 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     public SQLBlockCompletions getBlockCompletions() {
         return DEFAULT_SQL_BLOCK_COMPLETIONS;
     }
+    
+
+    @Override
+    public List<DbNumericTypeInfo<Long>> getKnownIntegerTypesInfo() {
+        return KNOWN_INTEGER_TYPES;
+    }
+    
+    @Override
+    public DbNumericTypeInfo<Long> findKnownIntegerType(String typeName) {
+        if (this.knownIntegerTypesByName == null) {
+            this.knownIntegerTypesByName = this.getKnownIntegerTypesInfo().stream().collect(Collectors.toMap(t -> t.getTypeName(), t -> t));
+        }
+        return this.knownIntegerTypesByName.get(typeName);
+    }
 }
-
-
