@@ -76,14 +76,16 @@ public class CSVImporterTest {
 
     @Test
     public void guessColumnTypes() throws DBException, IOException {
-        List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("1,2.0,abc,false", false);
-        Assert.assertEquals(4, columnsInfo.size());
+        List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("1,2.0,abc,false,2147483647", false);
+        Assert.assertEquals(5, columnsInfo.size());
         Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
-        Assert.assertEquals("INTEGER", columnsInfo.get(0).getTypeName());
+        Assert.assertEquals("SMALLINT", columnsInfo.get(0).getTypeName());
         Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
         Assert.assertEquals("REAL", columnsInfo.get(1).getTypeName());
         Assert.assertEquals(DBPDataKind.STRING, columnsInfo.get(2).getDataKind());
         Assert.assertEquals(DBPDataKind.BOOLEAN, columnsInfo.get(3).getDataKind());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(4).getDataKind());
+        Assert.assertEquals("INTEGER", columnsInfo.get(4).getTypeName());
     }
   
     @Test
@@ -91,9 +93,9 @@ public class CSVImporterTest {
     	List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("2147483648,-9223372036854775808", false);
     	Assert.assertEquals(2,  columnsInfo.size());
     	Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
-    	Assert.assertEquals("INTEGER", columnsInfo.get(0).getTypeName());
+    	Assert.assertEquals("BIGINT", columnsInfo.get(0).getTypeName());
     	Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
-    	Assert.assertEquals("INTEGER", columnsInfo.get(1).getTypeName());
+    	Assert.assertEquals("BIGINT", columnsInfo.get(1).getTypeName());
     }
     
     @Test
