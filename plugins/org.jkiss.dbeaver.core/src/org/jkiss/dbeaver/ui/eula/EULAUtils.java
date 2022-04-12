@@ -20,14 +20,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.prefs.Preferences;
 
 public class EULAUtils {
     private static final Log log = Log.getLog(EULAUtils.class);
@@ -54,16 +52,6 @@ public class EULAUtils {
             return null;
         }
         return eula;
-    }
-
-
-    public static void showEULAIfNeeded(@NotNull Shell shell) {
-        Preferences preferences = Preferences.userNodeForPackage(DBWorkbench.getPlatform().getApplication().getClass());
-        if (!EULAUtils.getEulaVersion().equals(preferences.get(DBEAVER_EULA, null))) {
-            //Used didn't accept EULA before or dialog was shown on different eula version
-            preferences.remove(DBEAVER_EULA);
-            showEula(shell, true);
-        }
     }
 
     public static void showEula(@NotNull Shell shell, boolean needsConfirmation) {
