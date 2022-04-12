@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
+import org.jkiss.dbeaver.model.auth.SMAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
@@ -69,7 +70,9 @@ public interface SMController<USER extends SMUser, ROLE extends SMRole> extends 
 
     boolean isSessionPersisted(String id) throws DBCException;
 
-    void createSession(@NotNull String appSessionId, @Nullable String userId, @NotNull Map<String, Object> parameters, @NotNull SMSessionType sessionType) throws DBCException;
+    SMAuthInfo authenticateAnonymousUser(@NotNull String appSessionId, @NotNull Map<String, Object> sessionParameters, @NotNull SMSessionType sessionType) throws DBCException;
+
+    SMAuthInfo authenticate(@NotNull String appSessionId, @NotNull Map<String, Object> sessionParameters, @NotNull SMSessionType sessionType, @NotNull String authProviderId, @NotNull Map<String, Object> userCredentials) throws DBCException;
 
     void updateSession(@NotNull String sessionId, @Nullable String userId, Map<String, Object> parameters) throws DBCException;
 

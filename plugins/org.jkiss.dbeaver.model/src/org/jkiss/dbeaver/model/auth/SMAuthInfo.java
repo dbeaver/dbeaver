@@ -16,27 +16,37 @@
  */
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.DBCException;
 
-import java.util.Map;
+import java.util.Set;
 
-/**
- * Credentials manager.
- * Keeps user credentials and provides low-level authentication mechanisms
- */
-public interface SMAuthCredentialsManager {
+public class SMAuthInfo {
+    @NotNull
+    private final String authToken;
+    @Nullable
+    private final String userId;
+    @NotNull
+    private final Set<String> permissions;
 
-//    /**
-//     * Find user with matching credentials.
-//     * It doesn't check credentials like passwords, just searches user id by identifying credentials.
-//     */
-//    @Nullable
-//    String getUserByCredentials(String authProviderId, Map<String, Object> authParameters) throws DBCException;
+    public SMAuthInfo(@NotNull String authToken, @Nullable String userId, @NotNull Set<String> permissions) {
+        this.authToken = authToken;
+        this.userId = userId;
+        this.permissions = permissions;
+    }
 
-    /**
-     * Get user credentials for specified provider
-     */
-    Map<String, Object> getUserCredentials(String userId, String authProviderId) throws DBCException;
+    @NotNull
+    public String getAuthToken() {
+        return authToken;
+    }
 
+    @NotNull
+    public Set<String> getPermissions() {
+        return permissions;
+    }
+
+    @Nullable
+    public String getUserId() {
+        return userId;
+    }
 }
