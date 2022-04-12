@@ -705,6 +705,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             if (typeName.indexOf('(') == -1) {
                 long maxLength = column.getMaxLength();
                 if (maxLength > 0) {
+                    boolean badValue = maxLength != Integer.MAX_VALUE && maxLength != Long.MAX_VALUE;
                     Object maxStringLength = dataSource.getDataSourceFeature(DBPDataSource.FEATURE_MAX_STRING_LENGTH);
                     if (maxStringLength instanceof Number) {
                         int lengthLimit = ((Number) maxStringLength).intValue();
@@ -713,6 +714,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
                         } else if (lengthLimit < maxLength) {
                             maxLength = lengthLimit;
                         }
+                    } else if (badValue) {
+                        return null;
                     }
                     return "(" + maxLength + ")";
                 }
