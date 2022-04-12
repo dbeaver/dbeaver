@@ -410,7 +410,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.WorkbenchInitializerNewConnection"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.WorkbenchInitializerNewConnection" priority="2"/>
     </extension>
 
     <extension point="org.eclipse.ui.activities">
