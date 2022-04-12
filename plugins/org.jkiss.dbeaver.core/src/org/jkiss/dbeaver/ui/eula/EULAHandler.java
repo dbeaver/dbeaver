@@ -19,35 +19,14 @@ package org.jkiss.dbeaver.ui.eula;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
 public class EULAHandler extends AbstractHandler {
 
-    public static void showEula(@NotNull Shell shell, boolean needsConfirmation) {
-        String eula = EULAUtils.getPackageEula();
-        if (needsConfirmation) {
-            showEulaConfirmationDialog(shell, eula);
-        } else {
-            showEulaInfoDialog(shell, eula);
-        }
-    }
-
-    private static void showEulaConfirmationDialog(@NotNull Shell shell, @Nullable String eula) {
-        EULAConfirmationDialog eulaDialog = new EULAConfirmationDialog(shell, eula);
-        eulaDialog.open();
-    }
-
-    private static void showEulaInfoDialog(@NotNull Shell shell, @Nullable String eula) {
-        EULAInfoDialog eulaDialog = new EULAInfoDialog(shell, eula);
-        eulaDialog.open();
-    }
-
     @Override
     public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
-        showEula(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), false);
+        EULAUtils.showEula(HandlerUtil.getActiveWorkbenchWindow(event).getShell(), false);
         return null;
     }
 }
