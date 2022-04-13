@@ -112,7 +112,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 typeName,
                 source.getDataKind());
             if (typeModifiers != null) {
-                typeName += "(" + typeModifiers + ")";
+                typeName += typeModifiers;
             }
         }
         return typeName;
