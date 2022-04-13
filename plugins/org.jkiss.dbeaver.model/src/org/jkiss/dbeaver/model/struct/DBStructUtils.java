@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -37,13 +38,39 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * DBUtils
  */
 public final class DBStructUtils {
+    private static final Pattern NUMERIC_PATTERN = Pattern.compile("(?<i>\\d+)?(\\.(?<f>\\d+))?");
+
+    private static class StandardNumericTypeInfo {
+        public final String name;
+        public final int precision, scale;
+        
+        public StandardNumericTypeInfo(String name, int precision, int scale) {
+            this.name = name;
+            this.precision = precision;
+            this.scale = scale;
+        }
+        
+        public static StandardNumericTypeInfo fromMaxValue(String name, Object maxValue) {
+            Pair<Integer, Integer> precision = obtainNumberPrecision(maxValue.toString());
+            return new StandardNumericTypeInfo(name, precision.getFirst(), precision.getSecond());
+        }
+    }
+
+    private static final List<StandardNumericTypeInfo> STANDARD_NUMERIC_TYPES = List.of(
+            StandardNumericTypeInfo.fromMaxValue("SMALLINT", Short.MAX_VALUE),
+            StandardNumericTypeInfo.fromMaxValue("INTEGER", Integer.MAX_VALUE),
+            StandardNumericTypeInfo.fromMaxValue("BIGINT", Long.MAX_VALUE)
+    );  
 
     private static final Log log = Log.getLog(DBStructUtils.class);
 
@@ -302,12 +329,29 @@ public final class DBStructUtils {
         }
 
         String typeName = srcTypedObject.getTypeName();
-        String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
         DBPDataKind dataKind = srcTypedObject.getDataKind();
 
         DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, objectContainer);
+        String typeNameLower = typeName.toLowerCase(Locale.ENGLISH);
+
         if (dataTypeProvider != null) {
-            DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
+            DBSDataType dataType = null;
+
+            if (dataKind == DBPDataKind.NUMERIC && srcTypedObject.getPrecision() != null && srcTypedObject.getScale() != null) {               
+                Optional<StandardNumericTypeInfo> standardType = STANDARD_NUMERIC_TYPES.stream()
+                    .filter(t -> t.precision >= srcTypedObject.getPrecision() && t.scale >= srcTypedObject.getScale())
+                    .findFirst();
+
+                if (standardType.isPresent()) {
+                    dataType = dataTypeProvider.getLocalDataType(standardType.get().name);
+                    typeName = dataType.getTypeName();
+                }
+            }
+
+            if (dataType == null) {
+                dataType = dataTypeProvider.getLocalDataType(typeName);
+            }
+
             if (dataType == null && typeName.contains("(")) {
                 // It seems this data type has modifiers. Try to find without modifiers
                 dataType = dataTypeProvider.getLocalDataType(SQLUtils.stripColumnTypeModifiers(typeName));
@@ -417,5 +461,17 @@ public final class DBStructUtils {
             }
         }
         return typeName;
+    }
+    
+    public static Pair<Integer, Integer> obtainNumberPrecision(String valueString) {
+        Matcher match = NUMERIC_PATTERN.matcher(valueString);
+        if (match.find()) {
+            int integerLength = CommonUtils.notNull(match.group("i"), "").length();
+            int fractionalLength = CommonUtils.notNull(match.group("f"), "").length();
+            int totalPrecision = integerLength + fractionalLength;
+            return new Pair<Integer, Integer>(totalPrecision, fractionalLength);
+        } else {
+            return null;
+        }
     }
 }

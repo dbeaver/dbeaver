@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.*;
@@ -117,10 +118,27 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         StreamDataImporterColumnInfo columnInfo = columnsInfo.get(i);
 
                         switch (dataType.getFirst()) {
+                            case NUMERIC:
+                                Integer knownPrecision = null, knownScale = null;
+                                if (columnInfo.getDataKind() == DBPDataKind.NUMERIC) {
+                                    knownPrecision = columnInfo.getPrecision();
+                                    knownScale = columnInfo.getScale();
+                                } else if (columnInfo.getDataKind() == DBPDataKind.UNKNOWN) {
+                                    columnInfo.setDataKind(dataType.getFirst());
+                                    columnInfo.setTypeName(dataType.getSecond());
+                                } else {
+                                    break;
+                                }
+
+                                Pair<Integer, Integer> valuePrecision = DBStructUtils.obtainNumberPrecision(line[i]);
+                                if (valuePrecision != null) {
+                                    columnInfo.setPrecision(Math.max(CommonUtils.notNull(knownPrecision, 0), valuePrecision.getFirst()));
+                                    columnInfo.setScale(Math.max(CommonUtils.notNull(knownScale, 0), valuePrecision.getSecond()));
+                                }
+                                break;
                             case STRING:
                                 columnInfo.updateMaxLength(columnIsByteLength ? line[i].getBytes(encoding).length : line[i].length());
                                 /* fall-through */
-                            case NUMERIC:
                             case BOOLEAN:
                                 columnInfo.updateType(dataType.getFirst(), dataType.getSecond());
                                 break;
