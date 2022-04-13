@@ -22,7 +22,7 @@
     <!-- UI extensions -->
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.eula.EULAInitializer"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.eula.EULAInitializer" priority="0"/>
     </extension>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">

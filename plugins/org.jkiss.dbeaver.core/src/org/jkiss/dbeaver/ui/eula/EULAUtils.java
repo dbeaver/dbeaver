@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.eula;
 
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.IOUtils;
@@ -28,6 +30,7 @@ import java.io.IOException;
 public class EULAUtils {
     private static final Log log = Log.getLog(EULAUtils.class);
 
+    public static final String DBEAVER_EULA = "DBeaver.eula";
 
     //TODO change hardcoded eula version to something more flexible
     private static final String eulaVersion = "1.0";
@@ -49,6 +52,25 @@ public class EULAUtils {
             return null;
         }
         return eula;
+    }
+
+    public static void showEula(@NotNull Shell shell, boolean needsConfirmation) {
+        String eula = EULAUtils.getPackageEula();
+        if (needsConfirmation) {
+            showEulaConfirmationDialog(shell, eula);
+        } else {
+            showEulaInfoDialog(shell, eula);
+        }
+    }
+
+    private static void showEulaConfirmationDialog(@NotNull Shell shell, @Nullable String eula) {
+        EULAConfirmationDialog eulaDialog = new EULAConfirmationDialog(shell, eula);
+        eulaDialog.open();
+    }
+
+    private static void showEulaInfoDialog(@NotNull Shell shell, @Nullable String eula) {
+        EULAInfoDialog eulaDialog = new EULAInfoDialog(shell, eula);
+        eulaDialog.open();
     }
 
 }

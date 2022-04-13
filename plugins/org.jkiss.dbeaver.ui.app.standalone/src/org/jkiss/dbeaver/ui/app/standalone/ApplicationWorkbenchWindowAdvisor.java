@@ -289,6 +289,14 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         }
     }
 
+    protected void initWorkbenchWindows() {
+        UIUtils.asyncExec(() -> {
+            for (IWorkbenchWindowInitializer wwInit : WorkbenchHandlerRegistry.getInstance().getWorkbenchWindowInitializers()) {
+                wwInit.initializeWorkbenchWindow(getWindowConfigurer().getWindow());
+            }
+        });
+    }
+
     @Override
     public void postWindowOpen() {
         log.debug("Finish initialization");
@@ -303,11 +311,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         }
         if (isRunWorkbenchInitializers()) {
             // Open New Connection wizard
-            UIUtils.asyncExec(() -> {
-                for (IWorkbenchWindowInitializer wwInit : WorkbenchHandlerRegistry.getInstance().getWorkbenchWindowInitializers()) {
-                    wwInit.initializeWorkbenchWindow(getWindowConfigurer().getWindow());
-                }
-            });
+                initWorkbenchWindows();
         }
     }
 

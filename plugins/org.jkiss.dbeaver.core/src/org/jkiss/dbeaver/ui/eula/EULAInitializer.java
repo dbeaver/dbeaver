@@ -31,7 +31,7 @@ public class EULAInitializer implements IWorkbenchWindowInitializer {
         if (!DBWorkbench.getPlatform().getApplication().isStandalone() || !isEulaDialogNeeded() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
             return;
         }
-        EULAHandler.showEula(window.getShell(), true);
+        EULAUtils.showEula(window.getShell(), true);
     }
 
     private boolean isEulaDialogNeeded() {

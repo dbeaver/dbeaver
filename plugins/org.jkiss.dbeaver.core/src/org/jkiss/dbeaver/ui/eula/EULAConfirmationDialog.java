@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import java.util.prefs.Preferences;
 
 public class EULAConfirmationDialog extends EULABaseDialog {
-    public static final String DBEAVER_EULA = "DBeaver.eula";
 
     public EULAConfirmationDialog(@NotNull Shell parentShell, @Nullable String eula) {
         super(parentShell, eula);
@@ -56,7 +55,7 @@ public class EULAConfirmationDialog extends EULABaseDialog {
                 break;
             case IDialogConstants.YES_ID:
                 Preferences preferences = Preferences.userNodeForPackage(DBWorkbench.getPlatform().getApplication().getClass());
-                preferences.put(DBEAVER_EULA, EULAUtils.getEulaVersion());
+                preferences.put(EULAUtils.DBEAVER_EULA, EULAUtils.getEulaVersion());
                 close();
                 break;
             default:
