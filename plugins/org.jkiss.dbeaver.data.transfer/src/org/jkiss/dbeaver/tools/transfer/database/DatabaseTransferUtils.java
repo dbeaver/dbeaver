@@ -55,41 +55,61 @@ public class DatabaseTransferUtils {
     private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
 
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
+        monitor.subTask("Refresh navigator model");
+        consumerSettings.getContainerNode().refreshNode(monitor, containerMapping);
+
+        refreshDatabaseMappings(monitor, consumerSettings, containerMapping, false);
+    }
+
+    public static void refreshDatabaseMappings(@NotNull DBRProgressMonitor monitor, @NotNull DatabaseConsumerSettings consumerSettings, @NotNull DatabaseMappingContainer containerMapping, boolean force) throws DBException {
         DBSObjectContainer container = consumerSettings.getContainer();
         if (container == null) {
             throw new DBException("Null target container");
         }
-        {
-            monitor.subTask("Refresh navigator model");
-            consumerSettings.getContainerNode().refreshNode(monitor, containerMapping);
-        }
 
         // Reflect database changes in mappings
         {
+            monitor.subTask("Refresh database mappings");
+
+            boolean updateMappingTarget = false;
+            boolean updateMappingAttributes = false;
+
             switch (containerMapping.getMappingType()) {
                 case create:
                 case recreate:
-                    DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
-                    if (newTarget == null) {
-                        throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
-                    } else if (!(newTarget instanceof DBSDataManipulator)) {
-                        throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
-                    }
-                    containerMapping.setTarget((DBSDataManipulator) newTarget);
-                    if (containerMapping.getMappingType() == DatabaseMappingType.create) {
-                        containerMapping.setMappingType(DatabaseMappingType.existing);
-                    }
-                    // ! Fall down is ok here
+                    updateMappingTarget = true;
+                    updateMappingAttributes = true;
+                    break;
                 case existing:
-                    for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                        if (attr.getMappingType() == DatabaseMappingType.create) {
-                            attr.updateMappingType(monitor, false);
-                            if (attr.getTarget() == null) {
-                                log.debug("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
-                            }
+                    updateMappingTarget = false;
+                    updateMappingAttributes = true;
+                    break;
+                default:
+                    break;
+            }
+
+            if (updateMappingTarget || force) {
+                DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
+                if (newTarget == null) {
+                    throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
+                } else if (!(newTarget instanceof DBSDataManipulator)) {
+                    throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
+                }
+                containerMapping.setTarget((DBSDataManipulator) newTarget);
+                if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+                    containerMapping.setMappingType(DatabaseMappingType.existing);
+                }
+            }
+
+            if (updateMappingAttributes || force) {
+                for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                    if (attr.getMappingType() == DatabaseMappingType.create || (attr.getMappingType().isValid() && force)) {
+                        attr.updateMappingType(monitor, false);
+                        if (attr.getTarget() == null) {
+                            log.debug("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
                         }
                     }
-                    break;
+                }
             }
         }
     }
