@@ -89,6 +89,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
             out.write("\"" + JSONUtils.escapeJsonString(tableName) + "\": ");
         }
         out.write("[\n");
+        rowNum = 0;
     }
 
     @Override

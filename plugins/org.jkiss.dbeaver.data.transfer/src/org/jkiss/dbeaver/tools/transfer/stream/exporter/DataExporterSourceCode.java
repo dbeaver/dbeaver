@@ -105,6 +105,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
         } else {
             out.write("[" + rowDelimiter);
         }
+        rowNum = 0;
     }
 
     @Override
