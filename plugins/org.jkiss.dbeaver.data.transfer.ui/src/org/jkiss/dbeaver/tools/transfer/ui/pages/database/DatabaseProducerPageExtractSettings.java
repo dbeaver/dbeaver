@@ -222,6 +222,8 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     @Override
     public void activatePage()
     {
+        getWizard().loadNodeSettings();
+
         final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
         threadsNumText.setText(String.valueOf(getWizard().getSettings().getMaxJobCount()));

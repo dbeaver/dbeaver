@@ -259,6 +259,8 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
 
     @Override
     public void activatePage() {
+        getWizard().loadNodeSettings();
+
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
 
         DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
