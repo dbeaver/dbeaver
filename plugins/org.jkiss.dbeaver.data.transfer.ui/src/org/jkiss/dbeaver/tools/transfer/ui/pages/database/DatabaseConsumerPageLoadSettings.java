@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
@@ -234,15 +235,18 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
                 multiRowInsertBatch.setEnabled(false);
             }
             multiRowInsertBatch.addModifyListener(e -> settings.setMultiRowInsertBatch(CommonUtils.toInt(multiRowInsertBatch.getText())));
-
-            skipBindValues = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_description, settings.isSkipBindValues(), 4);
-            skipBindValues.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setSkipBindValues(skipBindValues.getSelection());
-                }
-            });
-
+            //This settings may break import for drivers that does not support this feature, so it is disabled for non-JDBC drivers
+            if (settings.getContainer() != null && settings.getContainer().getDataSource() instanceof JDBCDataSource) {
+                skipBindValues = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_description, settings.isSkipBindValues(), 4);
+                skipBindValues.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        settings.setSkipBindValues(skipBindValues.getSelection());
+                    }
+                });
+            } else {
+                settings.setSkipBindValues(false);
+            }
             useBatchCheck = UIUtils.createCheckbox(
                 performanceSettings,
                 DTUIMessages.database_consumer_wizard_disable_import_batches_label,
