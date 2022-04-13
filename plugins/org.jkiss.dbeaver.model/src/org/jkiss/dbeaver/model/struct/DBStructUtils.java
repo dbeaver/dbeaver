@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
-import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -50,9 +49,18 @@ import java.util.regex.Pattern;
 public final class DBStructUtils {
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("(?<i>\\d+)?(\\.(?<f>\\d+))?");
 
+    private static final List<StandardNumericTypeInfo> STANDARD_NUMERIC_TYPES = List.of(
+            StandardNumericTypeInfo.fromMaxValue("SMALLINT", Short.MAX_VALUE),
+            StandardNumericTypeInfo.fromMaxValue("INTEGER", Integer.MAX_VALUE),
+            StandardNumericTypeInfo.fromMaxValue("BIGINT", Long.MAX_VALUE)
+    );  
+
+    private static final Log log = Log.getLog(DBStructUtils.class);
+
     private static class StandardNumericTypeInfo {
-        public final String name;
-        public final int precision, scale;
+        private final String name;
+        private final int precision;
+        private final int scale;
         
         public StandardNumericTypeInfo(String name, int precision, int scale) {
             this.name = name;
@@ -65,14 +73,6 @@ public final class DBStructUtils {
             return new StandardNumericTypeInfo(name, precision.getFirst(), precision.getSecond());
         }
     }
-
-    private static final List<StandardNumericTypeInfo> STANDARD_NUMERIC_TYPES = List.of(
-            StandardNumericTypeInfo.fromMaxValue("SMALLINT", Short.MAX_VALUE),
-            StandardNumericTypeInfo.fromMaxValue("INTEGER", Integer.MAX_VALUE),
-            StandardNumericTypeInfo.fromMaxValue("BIGINT", Long.MAX_VALUE)
-    );  
-
-    private static final Log log = Log.getLog(DBStructUtils.class);
 
     @Nullable
     public static DBSEntityReferrer getEnumerableConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attribute) throws DBException {

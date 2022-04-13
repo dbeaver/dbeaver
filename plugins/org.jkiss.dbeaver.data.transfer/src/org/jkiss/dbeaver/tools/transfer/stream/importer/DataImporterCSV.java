@@ -119,7 +119,8 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
                         switch (dataType.getFirst()) {
                             case NUMERIC:
-                                Integer knownPrecision = null, knownScale = null;
+                                Integer knownPrecision = null;
+                                Integer knownScale = null;
                                 if (columnInfo.getDataKind() == DBPDataKind.NUMERIC) {
                                     knownPrecision = columnInfo.getPrecision();
                                     knownScale = columnInfo.getScale();
