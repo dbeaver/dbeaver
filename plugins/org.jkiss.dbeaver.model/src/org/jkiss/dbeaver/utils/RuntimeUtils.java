@@ -194,6 +194,13 @@ public final class RuntimeUtils {
         // Escape spaces to avoid URI syntax error
         try {
             URI filePath = GeneralUtils.makeURIFromFilePath(fileURL.toString());
+            /*
+                File can't accept URI with file authority in it. This created a problem for shared folders.
+                see dbeaver#15117
+             */
+            if (filePath.getAuthority() != null) {
+                return new File(filePath.getSchemeSpecificPart());
+            }
             return new File(filePath);
         } catch (URISyntaxException e) {
             throw new IOException("Bad local file path: " + fileURL, e);
