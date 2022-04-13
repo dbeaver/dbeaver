@@ -171,13 +171,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         if (!initialized) {
             /*// For multi-streams export header only once
             if (!settings.isUseSingleFile() || parameters.orderNumber == 0) */{
-                try {
-                    processor.exportHeader(session);
-                } catch (DBException e) {
-                    log.warn("Error while exporting table header", e);
-                } catch (IOException e) {
-                    throw new DBCException("IO error", e);
-                }
+                exportHeaderInFile(session);
             }
         }
 
@@ -191,8 +185,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             if (settings.isSplitOutFiles() && !parameters.isBinary && !firstRow) {
                 writer.flush();
                 if (bytesWritten >= settings.getMaxOutFileSize()) {
-                    // Make new file
+                    // First add footer for the previous file
+                    exportFooterInFile(session.getProgressMonitor());
+                    // Make new file with the header
                     createNewOutFile();
+                    exportHeaderInFile(session);
                 }
             }
 
@@ -232,6 +229,26 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             throw new DBCException("IO error", e);
         } catch (Throwable e) {
             throw new DBCException("Error while exporting table row", e);
+        }
+    }
+
+    private void exportHeaderInFile(@NotNull DBCSession session) throws DBCException {
+        try {
+            processor.exportHeader(session);
+        } catch (DBException e) {
+            log.warn("Error while exporting table header", e);
+        } catch (IOException e) {
+            throw new DBCException("IO error", e);
+        }
+    }
+
+    private void exportFooterInFile(@NotNull DBRProgressMonitor monitor) {
+        if (processor != null) {
+            try {
+                processor.exportFooter(monitor);
+            } catch (Exception e) {
+                log.warn("Error while exporting table footer", e);
+            }
         }
     }
 
@@ -432,13 +449,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
         if (!last) {
-            if (processor != null) {
-                try {
-                    processor.exportFooter(monitor);
-                } catch (Exception e) {
-                    log.warn("Error while exporting table footer", e);
-                }
-            }
+            exportFooterInFile(monitor);
 
             closeExporter();
             return;
