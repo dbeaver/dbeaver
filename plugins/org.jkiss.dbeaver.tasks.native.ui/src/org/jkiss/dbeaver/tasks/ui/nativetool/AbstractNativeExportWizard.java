@@ -41,16 +41,15 @@ public abstract class AbstractNativeExportWizard<SETTINGS extends AbstractImport
 
     @Override
     public boolean performFinish() {
-        File dir = getSettings().getOutputFolder();
-        if (!dir.exists() && !dir.mkdirs()) {
-            logPage.setMessage("Can't create directory '" + dir.getAbsolutePath() + "'", IMessageProvider.ERROR);
-            getContainer().updateMessage();
-            return false;
-        }
-
         //verify that output files do not yet exist
         SETTINGS settings = getSettings();
         for (INFO info: settings.getExportObjects()) {
+            File dir = getSettings().getOutputFolder(info);
+            if (!dir.exists() && !dir.mkdirs()) {
+                logPage.setMessage("Can't create directory '" + dir.getAbsolutePath() + "'", IMessageProvider.ERROR);
+                getContainer().updateMessage();
+                continue;
+            }
             File file = settings.getOutputFile(info);
             if (!file.exists() || file.isDirectory()) {
                 continue;

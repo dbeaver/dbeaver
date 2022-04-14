@@ -49,7 +49,7 @@ public class PostgreMessages extends NLS {
     public static String wizard_backup_page_setting_checkbox_create_database;
     public static String wizard_backup_page_setting_checkbox_create_database_tip;
     public static String wizard_backup_page_setting_group_output;
-    public static String wizard_backup_page_setting_label_output_folder;
+    public static String wizard_backup_page_setting_label_output_folder_pattern;
     public static String wizard_backup_page_setting_label_file_name_pattern;
     public static String wizard_backup_page_setting_label_file_name_pattern_output;
     public static String wizard_backup_page_setting_group_security;

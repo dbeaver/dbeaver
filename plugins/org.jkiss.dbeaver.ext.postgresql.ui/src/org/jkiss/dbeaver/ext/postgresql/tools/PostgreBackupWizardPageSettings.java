@@ -61,7 +61,7 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
 
     @Override
     protected boolean determinePageCompletion() {
-        if (wizard.getSettings().getOutputFolder() == null) {
+        if (wizard.getSettings().getOutputFolderPattern() == null) {
             setErrorMessage("Output folder not specified");
             return false;
         }
@@ -159,8 +159,8 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         Group outputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_setting_group_output, 2, GridData.FILL_HORIZONTAL, 0);
         outputFolderText = DialogUtils.createOutputFolderChooser(
             outputGroup,
-            PostgreMessages.wizard_backup_page_setting_label_output_folder,
-            settings.getOutputFolder() != null ? settings.getOutputFolder().getAbsolutePath() : null,
+            PostgreMessages.wizard_backup_page_setting_label_output_folder_pattern,
+            settings.getOutputFolderPattern() != null ? settings.getOutputFolderPattern() : null,
             e -> updateState());
         outputFileText = UIUtils.createLabelText(
             outputGroup,
@@ -172,6 +172,11 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
             new SmartTextContentAdapter(),
             new StringContentProposalProvider(Arrays.stream(NativeToolUtils.ALL_VARIABLES).map(GeneralUtils::variablePattern).toArray(String[]::new)));
         outputFileText.addModifyListener(e -> settings.setOutputFilePattern(outputFileText.getText()));
+        UIUtils.setContentProposalToolTip(outputFolderText, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern_output, NativeToolUtils.LIMITED_VARIABLES);
+        ContentAssistUtils.installContentProposal(
+            outputFolderText,
+            new SmartTextContentAdapter(),
+            new StringContentProposalProvider(Arrays.stream(NativeToolUtils.LIMITED_VARIABLES).map(GeneralUtils::variablePattern).toArray(String[]::new)));
         fixOutputFileExtension();
 
         createExtraArgsInput(outputGroup);
@@ -221,7 +226,7 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         PostgreDatabaseBackupSettings settings = wizard.getSettings();
 
         String fileName = outputFolderText.getText();
-        settings.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+        settings.setOutputFolderPattern(CommonUtils.isEmpty(fileName) ? null : fileName);
         settings.setOutputFilePattern(outputFileText.getText());
 
         settings.setFormat(getChosenExportFormat());
