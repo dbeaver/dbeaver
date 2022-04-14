@@ -46,6 +46,14 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
 
     private static final Log log = Log.getLog(JDBCSQLDialect.class);
 
+    private static final String[] LONG_TEXT_TYPES = {
+        "longtext",
+        "clob",
+        "text",
+        "string",
+        "nclob"
+    };
+
     private String name;
     private String id;
     private String[][] identifierQuoteString = new String[][]{{SQLConstants.DEFAULT_IDENTIFIER_QUOTE, SQLConstants.DEFAULT_IDENTIFIER_QUOTE}};
@@ -416,19 +424,17 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
     public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
         if (targetTypeProvider != null) {
             String externalTypeName = sourceTypedObject.getTypeName().toLowerCase(Locale.ENGLISH);
-            if ("varchar".equals(externalTypeName)) {
+            if (SQLConstants.DATA_TYPE_VARCHAR.equals(externalTypeName)) {
                 long maxLength = sourceTypedObject.getMaxLength();
                 if (maxLength <= 0) {
-                    DBSDataType textDataType = targetTypeProvider.getLocalDataType("text");
-                    if (textDataType != null) {
-                        // Some databases can not have varchar data type modifiers (like PostgreSQL where varchar without modifiers == text), but other are more strict in this case
-                        // Let's use TEXT data type instead
-                        return textDataType.getName();
-                    } else {
-                        // Didn't find TEXT data type, let's try to find CLOB
-                        DBSDataType clobDataType = targetTypeProvider.getLocalDataType("clob");
-                        if (clobDataType != null) {
-                            return clobDataType.getName();
+                    // Some databases can not have varchar data type without modifiers.
+                    // Like PostgreSQL where varchar without modifiers == text.
+                    // But other databases are more strict in this case
+                    // Let's use another text data type instead
+                    for (String textType : LONG_TEXT_TYPES) {
+                        DBSDataType textDataType = targetTypeProvider.getLocalDataType(textType);
+                        if (textDataType != null) {
+                            return textDataType.getName();
                         }
                     }
                 }
