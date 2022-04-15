@@ -49,7 +49,7 @@ class IndentFormatter {
     private final String[] blockHeaderStrings;
     private boolean isFirstConditionInBrackets;
 
-    private static final String[] JOIN_BEGIN = {"LEFT", "RIGHT", "INNER", "OUTER", "FULL", "CROSS", "JOIN"};
+    private static final String[] JOIN_BEGIN = {"LEFT", "RIGHT", "INNER", "OUTER", "FULL", "CROSS", "NATURAL", "JOIN"};
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
     private static final String[] CONDITION_KEYWORDS = {"WHERE", "ON", "HAVING"};
 
@@ -206,6 +206,7 @@ class IndentFormatter {
                 case "OUTER":
                 case "FULL":
                 case "CROSS":
+                case "NATURAL":
                 case "JOIN":
                     if (isJoinStart(argList, index)) {
                         result += insertReturnAndIndent(argList, index, indent - 1);
