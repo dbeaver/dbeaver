@@ -279,7 +279,11 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                 return -1;
             }
         } else {
-            findPattern = Pattern.compile(Pattern.quote(findString), caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
+            String pattern = Pattern.quote(findString);
+            if (wholeWord) {
+                pattern = "\\b" + pattern + "\\b";
+            }
+            findPattern = Pattern.compile(pattern, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
         }
         int minColumnNum = owner.getController().isRecordMode() ? -1 : 0;
         for (GridPos curPosition = new GridPos(startPosition);;) {
