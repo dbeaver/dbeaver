@@ -680,6 +680,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         if (!last && settings.isOpenTableOnFinish()) {
+            try {
+                // Mappings can be outdated so is the target object.
+                // This may happen when several database consumers point to the same container node
+                DatabaseTransferUtils.refreshDatabaseMappings(monitor, settings, containerMapping, true);
+            } catch (Exception e) {
+                log.error("Error refreshing database model", e);
+            }
             DBSDataManipulator targetObject = getTargetObject();
             if (targetObject != null) {
                 // Refresh node first (this will refresh table data as well)
