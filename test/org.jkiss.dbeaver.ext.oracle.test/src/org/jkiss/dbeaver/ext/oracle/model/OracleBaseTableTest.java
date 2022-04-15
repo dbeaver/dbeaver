@@ -16,6 +16,28 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+
+
+
+
+
+
+
+
+
+// tut byl Roma
+
+
+
+
+
+
+
+
+
+
+
+
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleTableManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
