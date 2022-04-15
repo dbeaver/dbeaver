@@ -53,7 +53,7 @@
                         categories="sql,analytic">
                     <replace provider="postgresql" driver="postgres-greenplum-jdbc"/>
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]"
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]"
                           bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
                           optional="true" bundle="!drivers.postgresql"/>
