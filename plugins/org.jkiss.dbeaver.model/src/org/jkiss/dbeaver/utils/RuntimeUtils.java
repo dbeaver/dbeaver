@@ -199,6 +199,7 @@ public final class RuntimeUtils {
                 see dbeaver#15117
              */
             if (filePath.getAuthority() != null) {
+                log.warn("Workspace path contains authority, functionality may be limited.");
                 return new File(filePath.getSchemeSpecificPart());
             }
             return new File(filePath);
