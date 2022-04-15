@@ -476,6 +476,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             }
         }
         // Cache data types
+        dataTypeCache.setCaseSensitive(false);
         {
             List<OracleDataType> dtList = new ArrayList<>();
             for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {
@@ -595,6 +596,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @Override
     public OracleDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
+    }
+
+    public DataTypeCache getDataTypeCache() {
+        return dataTypeCache;
     }
 
     @Nullable
