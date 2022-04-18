@@ -235,12 +235,12 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM "+ OracleUtils.getSysSchemaPrefix(table.getDataSource()) + "ALL_TAB_SUBPARTITIONS " +
                 "WHERE TABLE_OWNER=? AND TABLE_NAME=? " +
-                (forObject == null ? "" : "AND PARTITION_NAME=?") +
+                (forObject == null ? "" : "AND PARTITION_NAME=? ") +
                 "ORDER BY SUBPARTITION_POSITION");
             dbStat.setString(1, table.getContainer().getName());
             dbStat.setString(2, table.getName());
             if (forObject != null) {
-                dbStat.setString(2, forObject.getName());
+                dbStat.setString(3, forObject.getName());
             }
             return dbStat;
         }
