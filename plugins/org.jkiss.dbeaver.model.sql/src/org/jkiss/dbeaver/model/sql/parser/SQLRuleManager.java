@@ -203,9 +203,11 @@ public class SQLRuleManager {
         {
             // Delimiter redefine
             String delimRedefine = dialect.getScriptDelimiterRedefiner();
+            if(ArrayUtils.contains(syntaxManager.getStatementDelimiters(), delimRedefine)) {
+                delimRedefine = null;
+            }
             if (!CommonUtils.isEmpty(delimRedefine)) {
                 final SQLSetDelimiterToken setDelimiterToken = new SQLSetDelimiterToken();
-
                 rules.add(0, new SQLDelimiterSetRule(delimRedefine, setDelimiterToken, delimRule));
             }
         }
