@@ -990,15 +990,15 @@ public final class SQLUtils {
                 .append(DBEAVER_DDL_WARNING).append(lineSeparator);
         }
         if (persistActions != null) {
-            String redefiner = sqlDialect.getScriptDelimiterRedefiner();
             for (DBEPersistAction action : persistActions) {
                 String scriptLine = action.getScript();
                 if (CommonUtils.isEmpty(scriptLine)) {
                     continue;
                 }
 
+                String redefiner = sqlDialect.getScriptDelimiterRedefiner();
                 String delimiter = getScriptLineDelimiter(sqlDialect);
-                if (action.isComplex() && redefiner != null) {
+                if (action.isComplex() && redefiner != null && !redefiner.equals(delimiter)) {
                     script.append(lineSeparator).append(redefiner).append(" ").append(DBEAVER_SCRIPT_DELIMITER).append(lineSeparator);
                     delimiter = DBEAVER_SCRIPT_DELIMITER;
                     script.append(delimiter).append(lineSeparator);
@@ -1028,7 +1028,7 @@ public final class SQLUtils {
                 }
                 script.append(lineSeparator);
 
-                if (action.isComplex() && redefiner != null) {
+                if (action.isComplex() && redefiner != null && !redefiner.equals(delimiter)) {
                     script.append(redefiner).append(" ").append(getScriptLineDelimiter(sqlDialect)).append(lineSeparator);
                 }
             }

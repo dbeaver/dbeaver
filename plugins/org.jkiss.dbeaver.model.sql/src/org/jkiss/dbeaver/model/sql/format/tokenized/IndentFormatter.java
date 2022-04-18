@@ -56,6 +56,9 @@ class IndentFormatter {
     IndentFormatter(SQLFormatterConfiguration formatterCfg, boolean isCompact) {
         this.formatterCfg = formatterCfg;
         delimiterRedefiner = formatterCfg.getSyntaxManager().getDialect().getScriptDelimiterRedefiner();
+        if (statementDelimiters.contains(delimiterRedefiner)) {
+            delimiterRedefiner = null;
+        }
         if (delimiterRedefiner != null) {
             delimiterRedefiner = delimiterRedefiner.toUpperCase(Locale.ENGLISH);
         }
