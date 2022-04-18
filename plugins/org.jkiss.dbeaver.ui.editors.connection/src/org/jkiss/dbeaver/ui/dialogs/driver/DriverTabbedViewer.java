@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.controls.finder.viewer.AdvancedListViewer;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolder;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderComposite;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderInfo;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -93,11 +94,11 @@ public class DriverTabbedViewer extends StructuredViewer {
         List<TabbedFolderInfo> folders = new ArrayList<>();
         folders.add(
             new TabbedFolderInfo(
-                "all", "All", DBIcon.TREE_DATABASE, "All drivers", false,
+                "all", UIConnectionMessages.dialog_driver_category_all_label, DBIcon.TREE_DATABASE, UIConnectionMessages.dialog_driver_category_all_tip, false,
                 new DriverListFolder(null, ratedDrivers)));
         folders.add(
             new TabbedFolderInfo(
-                "popular", "Popular", DBIcon.TREE_DATABASE, "Popular and recently used drivers", false,
+                "popular", UIConnectionMessages.dialog_driver_category_popular_label, DBIcon.TREE_DATABASE, UIConnectionMessages.dialog_driver_category_popular_tip, false,
                 new DriverListFolder(null, recentDrivers)));
 
         List<TabbedFolderInfo> extFolders = new ArrayList<>();
@@ -349,9 +350,9 @@ public class DriverTabbedViewer extends StructuredViewer {
                 toolTip.append(driver.getFullName());
                 toolTip.append("\n");
                 if (!usedBy.isEmpty()) {
-                    toolTip.append("Saved connections: ").append(usedBy.size());
+                    toolTip.append(UIConnectionMessages.driver_labal_provider_tip_saved_connections).append(" ").append(usedBy.size());
                 } else {
-                    toolTip.append("No saved connections yet");
+                    toolTip.append(UIConnectionMessages.driver_labal_provider_tip_no_saved_connections);
                 }
                 if (!CommonUtils.isEmpty(driver.getDescription())) {
                     if (toolTip.length() > 0) {

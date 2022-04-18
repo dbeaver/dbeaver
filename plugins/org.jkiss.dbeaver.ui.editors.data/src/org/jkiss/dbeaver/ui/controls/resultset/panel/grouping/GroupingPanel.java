@@ -267,7 +267,10 @@ public class GroupingPanel implements IResultSetPanel {
         private final Boolean descending;
 
         ChangeSortingAction(Boolean descending) {
-            super(descending == null ? "Unsorted" : (descending ? "Decending" : "Ascending"), Action.AS_CHECK_BOX);
+            super(descending == null ?
+                ResultSetMessages.grouping_panel_sorting_action_unsorted :
+                (descending ? ResultSetMessages.grouping_panel_sorting_action_decending : ResultSetMessages.grouping_panel_sorting_action_ascending),
+                Action.AS_CHECK_BOX);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(descending == null ? UIIcon.SORT_UNKNOWN : (descending ? UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE)));
             this.descending = descending;
         }
@@ -300,7 +303,7 @@ public class GroupingPanel implements IResultSetPanel {
             try {
                 getGroupingResultsContainer().rebuildGrouping();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change sort order", e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.grouping_panel_error_title, ResultSetMessages.grouping_panel_error_change_sort_message, e);
             }
         }
     }
@@ -332,7 +335,7 @@ public class GroupingPanel implements IResultSetPanel {
             try {
                 getGroupingResultsContainer().rebuildGrouping();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change duplicates presentation", e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.grouping_panel_error_title, ResultSetMessages.grouping_panel_error_change_duplicate_presentation_message, e);
             }
         }
     }

@@ -215,7 +215,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                                 DetailsListControl detailsProps = new DetailsListControl(detailsFolder, workbenchPart.getSite(), detailsInfo);
                                 extDetailsItem.setControl(detailsProps);
                             } else {
-                                extDetailsItem.setControl(UIUtils.createLabel(detailsFolder, "Unsupported details type: " + detailsType));
+                                extDetailsItem.setControl(UIUtils.createLabel(detailsFolder, SessionEditorMessages.viewer_unsupported_details_type_label + " " + detailsType));
                             }
                         }
                     }
@@ -317,7 +317,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
     private void showPlanNode()
     {
-        detailsItem.setText("Plan Details");
+        detailsItem.setText(SessionEditorMessages.viewer_plan_details_text);
 
         ISelection selection = planViewer.getSelection();
         if (selection.isEmpty()) {
@@ -461,10 +461,10 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             if (sessionManager instanceof DBAServerSessionManagerSQL &&
                 ((DBAServerSessionManagerSQL) sessionManager).canGenerateSessionReadQuery())
             {
-                contributionManager.add(ActionUtils.makeActionContribution(new Action("SQL", IAction.AS_PUSH_BUTTON) {
+                contributionManager.add(ActionUtils.makeActionContribution(new Action(SessionEditorMessages.viewer_open_sql_editor_text, IAction.AS_PUSH_BUTTON) {
                     {
                         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_SCRIPT));
-                        setToolTipText("Open SQL editor and execute session read SQL query");
+                        setToolTipText(SessionEditorMessages.viewer_open_sql_editor_tip);
                     }
                     @Override
                     public void run()
@@ -479,13 +479,14 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                                 SQLEditorHandlerOpenObjectConsole.openAndExecuteSQLScript(
                                     UIUtils.getActiveWorkbenchWindow(),
                                     navContext,
-                                    "Session manager SQL",
+                                    SessionEditorMessages.viewer_session_manager_sql_title,
                                     true,
                                     new StructuredSelection(),
                                     sqlScript
                                 );
                             } catch (CoreException e) {
-                                DBWorkbench.getPlatformUI().showError("Can not open editor", "Error opening SQL editor", e);
+                                DBWorkbench.getPlatformUI().showError(SessionEditorMessages.viewer_session_manager_error_opening_editor_title,
+                                    SessionEditorMessages.viewer_session_manager_error_opening_editor_message, e);
                             }
                         }
                     }
@@ -494,7 +495,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             }
 
             refreshControl.populateRefreshButton(contributionManager);
-            contributionManager.add(new Action("Refresh sessions", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
+            contributionManager.add(new Action(SessionEditorMessages.viewer_session_manager_refresh_sessions_action, DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
                 @Override
                 public void run()
                 {

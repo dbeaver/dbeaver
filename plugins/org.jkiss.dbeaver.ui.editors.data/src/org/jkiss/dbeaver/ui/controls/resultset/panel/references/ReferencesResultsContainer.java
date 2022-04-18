@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -88,7 +89,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 5;
         keySelectorPanel.setLayoutData(gd);
-        UIUtils.createControlLabel(keySelectorPanel, "Reference");
+        UIUtils.createControlLabel(keySelectorPanel, ResultSetMessages.refs_label);
         fkCombo = new CSmartCombo<>(keySelectorPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new RefKeyLabelProvider());
         fkCombo.addItem(null);
         fkCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -493,7 +494,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
         @Override
         public String getText(Object element) {
             if (element == null) {
-                return "<No references>";
+                return ResultSetMessages.refs_no_refs_text;
             }
             ReferenceKey key = (ReferenceKey) element;
             String title = "";

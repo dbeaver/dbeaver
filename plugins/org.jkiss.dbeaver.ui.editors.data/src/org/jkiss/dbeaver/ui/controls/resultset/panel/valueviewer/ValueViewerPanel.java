@@ -24,6 +24,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.graphics.Point;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
@@ -95,8 +97,8 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
                     ValueViewerPanel.this.presentation.getController().getSite(),
                     true);
 
-                UIUtils.drawMessageOverControl(viewPlaceholder, e, "Select a cell to view/edit value", 0);
-                UIUtils.drawMessageOverControl(viewPlaceholder, e, "Press " + hidePanelCmd + " to hide this panel", 20);
+                UIUtils.drawMessageOverControl(viewPlaceholder, e, ResultSetMessages.value_viewer_select_view_message, 0);
+                UIUtils.drawMessageOverControl(viewPlaceholder, e, NLS.bind(ResultSetMessages.value_viewer_hide_panel_message, hidePanelCmd), 20);
             }
         });
 
@@ -232,7 +234,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             try {
                 valueEditor = valueManager.createEditor(previewController);
             } catch (Throwable e) {
-                DBWorkbench.getPlatformUI().showError("Value preview", "Can't create value viewer", e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.value_viewer_preview_error_title, ResultSetMessages.value_viewer_preview_error_message, e);
                 return;
             }
             if (valueEditor != null) {
@@ -323,7 +325,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             previewController.updateValue(newValue, true);
             presentation.updateValueView();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Value apply", "Can't apply edited value", e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.value_viewer_apply_error_title, ResultSetMessages.value_viewer_apply_error_message, e);
         } finally {
             valueSaving = false;
         }
@@ -363,7 +365,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
                 ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
 
             contributionManager.add(
-                new Action("Auto-apply value", Action.AS_CHECK_BOX) {
+                new Action(ResultSetMessages.value_viewer_auto_apply_action_text, Action.AS_CHECK_BOX) {
                     {
                         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.AUTO_SAVE));
                     }
