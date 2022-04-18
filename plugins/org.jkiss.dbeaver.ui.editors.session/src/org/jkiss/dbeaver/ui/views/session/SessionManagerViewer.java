@@ -23,6 +23,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -215,7 +216,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                                 DetailsListControl detailsProps = new DetailsListControl(detailsFolder, workbenchPart.getSite(), detailsInfo);
                                 extDetailsItem.setControl(detailsProps);
                             } else {
-                                extDetailsItem.setControl(UIUtils.createLabel(detailsFolder, SessionEditorMessages.viewer_unsupported_details_type_label + " " + detailsType));
+                                extDetailsItem.setControl(UIUtils.createLabel(detailsFolder, NLS.bind(SessionEditorMessages.viewer_unsupported_details_type_label, detailsType)));
                             }
                         }
                     }

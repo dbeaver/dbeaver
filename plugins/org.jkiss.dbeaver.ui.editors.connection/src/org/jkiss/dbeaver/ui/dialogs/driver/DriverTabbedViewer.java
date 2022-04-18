@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -350,7 +351,7 @@ public class DriverTabbedViewer extends StructuredViewer {
                 toolTip.append(driver.getFullName());
                 toolTip.append("\n");
                 if (!usedBy.isEmpty()) {
-                    toolTip.append(UIConnectionMessages.driver_labal_provider_tip_saved_connections).append(" ").append(usedBy.size());
+                    toolTip.append(NLS.bind(UIConnectionMessages.driver_labal_provider_tip_saved_connections, usedBy.size()));
                 } else {
                     toolTip.append(UIConnectionMessages.driver_labal_provider_tip_no_saved_connections);
                 }

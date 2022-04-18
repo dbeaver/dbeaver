@@ -80,13 +80,13 @@ class ResultSetStatListener extends ResultSetListenerAdapter {
         private void updateSelectionStatistics(@NotNull DBPPreferenceStore preferenceStore, @Nullable IResultSetSelectionExt selectionExt) {
             StringJoiner slText = new StringJoiner(", ");
             if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS)) {
-                slText.add(NLS.bind(ResultSetMessages.result_set_stat_rows,(selectionExt == null ? 0 : selectionExt.getSelectedRowCount()))) ;// + "/" + selExt.getSelectedColumnCount() + "/" + selExt.getSelectedCellCount();
+                slText.add(NLS.bind(ResultSetMessages.result_set_stat_rows, selectionExt == null ? 0 : selectionExt.getSelectedRowCount())) ;// + "/" + selExt.getSelectedColumnCount() + "/" + selExt.getSelectedCellCount();
             }
             if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS)) {
-                slText.add(NLS.bind(ResultSetMessages.result_set_stat_columns,(selectionExt == null ? 0 : selectionExt.getSelectedColumnCount())));
+                slText.add(NLS.bind(ResultSetMessages.result_set_stat_columns, selectionExt == null ? 0 : selectionExt.getSelectedColumnCount()));
             }
             if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS)) {
-                slText.add(NLS.bind(ResultSetMessages.result_set_stat_cells,(selectionExt == null ? 0 : selectionExt.getSelectedCellCount())));
+                slText.add(NLS.bind(ResultSetMessages.result_set_stat_cells,selectionExt == null ? 0 : selectionExt.getSelectedCellCount()));
             }
             viewer.setSelectionStatistics(slText.toString());
         }
