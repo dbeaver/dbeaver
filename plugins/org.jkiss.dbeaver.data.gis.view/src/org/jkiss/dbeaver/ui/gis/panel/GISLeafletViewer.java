@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.*;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
@@ -67,10 +68,10 @@ import org.jkiss.utils.IOUtils;
 import org.locationtech.jts.geom.Geometry;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
-public class GISLeafletViewer implements IGeometryValueEditor {
+public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceListener {
     private static final Log log = Log.getLog(GISLeafletViewer.class);
 
     private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
@@ -117,6 +118,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
 
         browser.addDisposeListener(e -> {
             cleanupFiles();
+            GISViewerActivator.getDefault().getPreferences().removePropertyChangeListener(this);
             setClipboardContents.dispose();
         });
 
@@ -162,6 +164,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 }
             }
         }
+
+        GISViewerActivator.getDefault().getPreferences().addPropertyChangeListener(this);
     }
 
     @Override
@@ -210,6 +214,11 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Refresh", "Can't refresh value viewer", e);
         }
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent event) {
+        refresh();
     }
 
     public void setGeometryData(@Nullable DBGeometry[] values) throws DBException {
