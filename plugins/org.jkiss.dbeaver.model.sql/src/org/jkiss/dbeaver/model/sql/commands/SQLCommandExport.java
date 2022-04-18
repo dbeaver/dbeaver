@@ -16,11 +16,16 @@
  */
 package org.jkiss.dbeaver.model.sql.commands;
 
+import com.google.gson.Gson;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
+import org.jkiss.dbeaver.model.sql.SQLPragmaHandler;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
-import org.jkiss.dbeaver.model.sql.SQLScriptProcessConstants;
+
+import java.io.StringReader;
+import java.util.Map;
 
 /**
  * Control command handler
@@ -29,11 +34,16 @@ public class SQLCommandExport implements SQLControlCommandHandler {
 
     @Override
     public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
-        scriptContext.setStatementPragma(SQLScriptProcessConstants.PRAGMA_EXPORT, Boolean.TRUE);
+        final Map<String, Object> params;
+
+        try {
+            params = JSONUtils.parseMap(new Gson(), new StringReader(command.getParameter()));
+        } catch (Exception e) {
+            throw new DBException("Invalid syntax. Use '@export {\"type\": <type>, \"props\": {...}}'");
+        }
+
+        scriptContext.setPragma(SQLPragmaHandler.PRAGMA_EXPORT, params);
 
         return true;
     }
-
-    ;
-
 }

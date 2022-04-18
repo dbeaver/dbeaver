@@ -277,4 +277,8 @@
         <serializer id="databaseTransferConsumer" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumerSerializer"/>
         <serializer id="streamTransferConsumer" class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"/>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <pragma id="export" class="org.jkiss.dbeaver.tools.sql.pragma.SQLPragmaExport"/>
+    </extension>
 </plugin>

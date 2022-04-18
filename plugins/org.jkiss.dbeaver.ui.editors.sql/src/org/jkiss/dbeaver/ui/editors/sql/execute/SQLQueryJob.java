@@ -51,7 +51,10 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
+import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
+import org.jkiss.dbeaver.model.sql.registry.SQLPragmaHandlerDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -73,6 +76,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * SQLQueryJob
@@ -327,6 +331,35 @@ public class SQLQueryJob extends DataSourceJob
 
     private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element, final boolean fireEvents)
     {
+
+        if (!scriptContext.getPragmas().isEmpty() && element instanceof SQLQuery) {
+            final SQLQueryDataContainer container = new SQLQueryDataContainer(this::getExecutionContext, (SQLQuery) element, scriptContext, log);
+
+            for (var it = scriptContext.getPragmas().entrySet().iterator(); it.hasNext(); ) {
+                final Map.Entry<String, Map<String, Object>> entry = it.next();
+                final String id = entry.getKey();
+                final SQLPragmaHandlerDescriptor descriptor = SQLCommandsRegistry.getInstance().getPragmaHandler(id);
+
+                if (descriptor != null) {
+                    final int result;
+
+                    try {
+                        result = descriptor.createHandler().processPragma(session.getProgressMonitor(), container, entry.getValue());
+                    } catch (DBException e) {
+                        lastError = e;
+                        return false;
+                    }
+
+                    if (CommonUtils.isBitSet(result, SQLPragmaHandler.RESULT_POP_PRAGMA)) {
+                        it.remove();
+                    }
+
+                    if (CommonUtils.isBitSet(result, SQLPragmaHandler.RESULT_SKIP_QUERY)) {
+                        return false;
+                    }
+                }
+            }
+        }
         if (element instanceof SQLControlCommand) {
             try {
                 return scriptContext.executeControlCommand((SQLControlCommand)element);
@@ -477,8 +510,6 @@ public class SQLQueryJob extends DataSourceJob
             if (fireEvents && listener != null && startQueryAlerted) {
                 notifyQueryExecutionEnd(curResult);
             }
-
-            scriptContext.clearStatementContext();
 
             monitor.done();
         }
