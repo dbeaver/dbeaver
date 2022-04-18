@@ -2363,10 +2363,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         if (!export) {
-            // We only need to prompt user to close extra (unpinned) tabs if:
-            // 1. The user is not executing query in a new tab
-            // 2. The user is executing script that may open several result sets
-            if (!newTab && !isSingleQuery) {
+            // We only need to prompt user to close extra (unpinned) tabs if
+            // the user is not executing query in a new tab
+            if (!newTab) {
                 int tabsClosed = closeExtraResultTabs(null, true, false);
                 if (tabsClosed == IDialogConstants.CANCEL_ID) {
                     return false;
