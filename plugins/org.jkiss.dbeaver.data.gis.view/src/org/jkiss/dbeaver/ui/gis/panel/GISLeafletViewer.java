@@ -361,6 +361,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                         return geomCRS;
                     case "geomBounds":
                         return CommonUtils.toString(bounds, "undefined");
+                    case "minZoomLevel":
+                        return String.valueOf(GISViewerActivator.getDefault().getPreferences().getInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL));
                     case "defaultTiles":
                         LeafletTilesDescriptor descriptor = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
                         if (descriptor == null) {

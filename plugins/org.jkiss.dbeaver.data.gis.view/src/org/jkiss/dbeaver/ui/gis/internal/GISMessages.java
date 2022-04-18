@@ -35,7 +35,8 @@ public class GISMessages extends NLS {
 	public static String pref_page_gis_viewer_group;
 	public static String pref_page_gis_viewer_label_srid;
 	public static String pref_page_gis_viewer_label_max_objects;
-	
+	public static String pref_page_gis_viewer_spinner_min_zoom_level;
+
 	public static String panel_manage_crs_dialog_title_select_system;
 	public static String panel_manage_crs_dialog_tree_column_text_name;
 	public static String panel_manage_crs_dialog_tree_column_text_srid;

@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui.gis.preferences;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -38,6 +35,7 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
 
     private Text defaultSridText;
     private Text maxObjectsText;
+    private Spinner minZoomLevelSpinner;
 
     @Override
     public void init(IWorkbench workbench) {
@@ -57,6 +55,8 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
 
             maxObjectsText = UIUtils.createLabelText(group, GISMessages.pref_page_gis_viewer_label_max_objects, preferences.getString(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER), SWT.BORDER);
             maxObjectsText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+
+            minZoomLevelSpinner = UIUtils.createLabelSpinner(group, GISMessages.pref_page_gis_viewer_spinner_min_zoom_level, preferences.getInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL), GeometryViewerConstants.DEFAULT_MIN_ZOOM_LEVEL, GeometryViewerConstants.DEFAULT_MAX_ZOOM_LEVEL);
         }
 
         return composite;
@@ -67,6 +67,7 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
         final DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
         defaultSridText.setText(preferences.getDefaultString(GeometryViewerConstants.PREF_DEFAULT_SRID));
         maxObjectsText.setText(preferences.getDefaultString(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER));
+        minZoomLevelSpinner.setSelection(preferences.getDefaultInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL));
     }
 
     @Override
@@ -74,6 +75,7 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
         final DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
         preferences.setValue(GeometryViewerConstants.PREF_DEFAULT_SRID, CommonUtils.toInt(defaultSridText.getText()));
         preferences.setValue(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER, CommonUtils.toInt(maxObjectsText.getText()));
+        preferences.setValue(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL, CommonUtils.toInt(minZoomLevelSpinner.getText()));
         return true;
     }
 }
