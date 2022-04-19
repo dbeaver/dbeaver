@@ -39,7 +39,7 @@ public class SQLCommandExport implements SQLControlCommandHandler {
         try {
             params = JSONUtils.parseMap(new Gson(), new StringReader(command.getParameter()));
         } catch (Exception e) {
-            throw new DBException("Invalid syntax. Use '@export {\"type\": <type>, \"props\": {...}}'");
+            throw new DBException("Invalid syntax. Use '@export {\"type\": <type>, \"producer\": {...}}, \"consumer\": {...}}, \"processor\": {...}}'", e);
         }
 
         scriptContext.setPragma(SQLPragmaHandler.PRAGMA_EXPORT, params);
