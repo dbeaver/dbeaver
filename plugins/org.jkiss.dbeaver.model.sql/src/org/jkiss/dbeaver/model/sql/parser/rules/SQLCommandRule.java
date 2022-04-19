@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.text.parser.rules.EndOfLineRule;
 public class SQLCommandRule extends EndOfLineRule {
     public SQLCommandRule(String commandPrefix, SQLCommandHandlerDescriptor controlCommand, SQLControlToken controlToken) {
         super(commandPrefix + controlCommand.getId() + ' ', controlToken);
+        super.fExcludeLineDelimiter = true;
     }
 
     protected boolean sequenceDetected(TPCharacterScanner scanner, char[] sequence, boolean eofAllowed) {
