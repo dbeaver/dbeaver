@@ -350,11 +350,11 @@ public class SQLQueryJob extends DataSourceJob
                         return false;
                     }
 
-                    if (CommonUtils.isBitSet(result, SQLPragmaHandler.RESULT_POP_PRAGMA)) {
+                    if (CommonUtils.isBitSet(result, SQLPragmaHandler.RESULT_CONSUME_PRAGMA)) {
                         it.remove();
                     }
 
-                    if (CommonUtils.isBitSet(result, SQLPragmaHandler.RESULT_SKIP_QUERY)) {
+                    if (CommonUtils.isBitSet(result, SQLPragmaHandler.RESULT_CONSUME_QUERY)) {
                         return false;
                     }
                 }

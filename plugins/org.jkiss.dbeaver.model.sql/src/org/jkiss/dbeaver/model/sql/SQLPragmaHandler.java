@@ -27,18 +27,18 @@ public interface SQLPragmaHandler {
     String PRAGMA_EXPORT = "export";
 
     /**
-     * Whether the pragma was processed and should be removed from the {@code context}
+     * Whether the processed pragma should not be processed by following queries
      */
-    int RESULT_POP_PRAGMA = 1;
+    int RESULT_CONSUME_PRAGMA = 1;
 
     /**
      * Whether the processed query should not be run
      */
-    int RESULT_SKIP_QUERY = 1 << 1;
+    int RESULT_CONSUME_QUERY = 1 << 1;
 
     /**
      * @return a set of {@code RESULT_} constants.
      * @throws DBException on any error
      */
-    int processPragma(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer container, @NotNull Map<String, Object> params) throws DBException;
+    int processPragma(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer container, @NotNull Map<String, Object> parameters) throws DBException;
 }

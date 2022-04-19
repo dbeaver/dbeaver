@@ -52,12 +52,12 @@ public class SQLPragmaExport implements SQLPragmaHandler {
     @Override
     public int processPragma(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer container, @NotNull Map<String, Object> parameters) throws DBException {
         final String type = JSONUtils.getString(parameters, "type");
+
         if (CommonUtils.isEmpty(type)) {
             throw new DBException("`type` attribute is mandatory");
         }
 
         final DataTransferRegistry registry = DataTransferRegistry.getInstance();
-
         final DataTransferNodeDescriptor producerNode = registry.getNodeById(PRODUCER_NODE_ID);
         final DataTransferNodeDescriptor consumerNode = registry.getNodeById(CONSUMER_NODE_ID);
         final DataTransferProcessorDescriptor processor = registry.getProcessor(PROCESSOR_ID_PREFIX + type);
@@ -96,7 +96,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
             new TaskConfigurationWizardDialog(UIUtils.getActiveWorkbenchWindow(), wizard, null).open();
         });
 
-        return RESULT_POP_PRAGMA | RESULT_SKIP_QUERY;
+        return RESULT_CONSUME_PRAGMA | RESULT_CONSUME_QUERY;
     }
 
     @NotNull
