@@ -61,6 +61,7 @@ public interface DBPPlatformUI {
     void showMessageBox(@NotNull final String title, @Nullable final String message, boolean error);
     void showWarningMessageBox(@NotNull final String title, @Nullable final String message);
     boolean confirmAction(String title, String message);
+    boolean confirmAction(String title, String message, boolean isWarning);
 
     UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue);
 

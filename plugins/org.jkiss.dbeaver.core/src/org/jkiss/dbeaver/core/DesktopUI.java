@@ -276,6 +276,11 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
+    public boolean confirmAction(String title, String message, boolean isWarning) {
+        return UIUtils.confirmAction(null, title, message, isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION);
+    }
+
+    @Override
     public UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue) {
         return ExecutionQueueErrorJob.showError(task, error, queue);
     }
