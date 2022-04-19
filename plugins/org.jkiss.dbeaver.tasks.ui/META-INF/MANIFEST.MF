@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Tasks - General UI
 Bundle-SymbolicName: org.jkiss.dbeaver.tasks.ui;singleton:=true
-Bundle-Version: 1.0.56.qualifier
-Bundle-Release-Date: 20220321
+Bundle-Version: 1.0.58.qualifier
+Bundle-Release-Date: 20220418
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.tasks.ui
@@ -21,7 +21,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.navigator,
- org.jkiss.dbeaver.ui.editors.base
+ org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.tasks.native
 Export-Package: org.jkiss.dbeaver.tasks.ui,
  org.jkiss.dbeaver.tasks.ui.registry,
  org.jkiss.dbeaver.tasks.ui.wizard,

@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.registry.DataSourceOriginLocal;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
@@ -98,9 +97,9 @@ public class AuthModelSelector extends Composite {
             DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
         this.allAuthModels.removeIf(o -> modelFilter != null && !modelFilter.isValidElement(o));
         this.allAuthModels.sort((Comparator<DBPAuthModelDescriptor>) (o1, o2) ->
-            AuthModelDatabaseNative.ID.equals(o1.getId()) ? -1 :
-                (AuthModelDatabaseNative.ID.equals(o2.getId()) ? 1 :
-                    o1.getName().compareTo(o2.getName())));
+            o1.isDefaultModel() ? -1 :
+                o2.isDefaultModel() ? 1 :
+                    o1.getName().compareTo(o2.getName()));
         if (selectedAuthModel == null && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {

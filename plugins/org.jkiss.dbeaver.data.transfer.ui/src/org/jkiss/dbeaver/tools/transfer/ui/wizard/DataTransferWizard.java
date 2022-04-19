@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -430,19 +429,24 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         return false;
     }
 
+    public void loadNodeSettings() {
+        if (getSettings().isNodeSettingsLoaded()) {
+            return;
+        }
+        try {
+            getRunnableContext().run(true, true, monitor -> {
+                getSettings().loadNodeSettings(monitor);
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Error loading settings", "Error loading data transfer settings", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
+        }
+    }
+
     @Override
     public void onWizardActivation() {
-        UIUtils.asyncExec(() -> {
-            try {
-                getRunnableContext().run(true, true, monitor -> {
-                    getSettings().loadNodeSettings(monitor);
-                });
-            } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Error loading settings", "Error loading data transfer settings", e.getTargetException());
-            } catch (InterruptedException e) {
-                // ignore
-            }
-        });
+        //UIUtils.asyncExec(this::loadNodeSettings);
     }
 
     NodePageSettings getNodeInfo(IDataTransferNode<?> node) {
@@ -635,7 +639,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     public static DataTransferWizard openWizard(@NotNull DBTTask task)
     {
         try {
-            DataTransferSettings settings = DataTransferSettings.loadSettings(new DBRRunnableWithResult<DataTransferSettings>() {
+            DataTransferSettings settings = DataTransferSettings.loadSettings(new DBRRunnableWithResult<>() {
                 @Override
                 public void run(DBRProgressMonitor monitor) {
                     result = new DataTransferSettings(

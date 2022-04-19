@@ -94,6 +94,7 @@ public class SQLEditorMessages extends NLS {
 	public static String script_close_behavior_delete_only_new_scripts;
 	public static String script_close_behavior_do_not_delete;
 	public static String sql_editor_menu_format;
+    public static String sql_editor_error_position;
 
     public static String action_result_tabs_close_all_tabs;
     public static String action_result_tabs_close_query_tabs;
@@ -227,6 +228,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_group_misc;
     public static String pref_page_sql_completion_label_folding_enabled;
     public static String pref_page_sql_completion_label_folding_enabled_tip;
+    public static String pref_page_sql_completion_label_problem_markers_enabled;
+    public static String pref_page_sql_completion_label_problem_markers_enabled_tip;
     public static String pref_page_sql_completion_label_mark_occurrences;
     public static String pref_page_sql_completion_label_mark_occurrences_tip;
     public static String pref_page_sql_completion_label_mark_occurrences_for_selections;

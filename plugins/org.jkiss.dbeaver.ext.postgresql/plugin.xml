@@ -300,7 +300,7 @@
                     dialect="postgresql">
                     <replace provider="generic" driver="postgresql"/>
                     <replace provider="postgresql" driver="postgresql"/>
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" load-optional-dependencies="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
 
@@ -308,7 +308,8 @@
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <!-- Postgis -->
                     <file type="jar" path="drivers/postgis" optional="true" bundle="drivers.postgresql"/>
-<!--                    <file type="jar" path="drivers/waffle" optional="true" bundle="drivers.postgresql"/>-->
+                    <!-- Waffle JNA is an optional dependency of PostgreSQL JDBC. It's required for SSPI auth -->
+                    <file type="jar" path="drivers/waffle-jna" optional="true" bundle="drivers.postgresql"/>
 
                     <parameter name="serverType" value="postgresql"/>
                     <property name="loginTimeout" value="20"/>
@@ -362,7 +363,7 @@
                     description="%driver.timescale.description"
                     categories="timeseries"
                     dialect="postgresql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -387,7 +388,7 @@
                     description="Yellowbrick JDBC driver"
                     categories="sql"
                     dialect="postgresql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -412,7 +413,7 @@
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.yugabytedb.description"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -436,7 +437,7 @@
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.cockroach.description"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -503,14 +504,13 @@
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql:///[{database}]?cloudSqlInstance={host}"
                         useURL="true"
+                        defaultHost="project:region:instance"
                         defaultPort="5432"
                         webURL="https://cloud.google.com/sql"
                         propertiesURL="https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory#postgresql-1"
                         description="%driver.gcloudpg.description"
                         categories="sql,cloud">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]" bundle="!drivers.postgresql"/>
-                    <!-- FIXME: Specify dependency explicitly because we can't resolve the version because it contains variables. See #15459 -->
-                    <file type="jar" path="maven:/com.google.cloud.sql:jdbc-socket-factory-core:RELEASE"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/com.google.cloud.sql:postgres-socket-factory:RELEASE"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
@@ -518,7 +518,6 @@
                     <parameter name="serverType" value="gcloudpg"/>
                     <parameter name="hostType" value="instance"/>
                     <parameter name="needsPort" value="false"/>
-                    <parameter name="defaultHost" value="project:region:instance"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                     <property name="socketFactory" value="com.google.cloud.sql.postgres.SocketFactory"/>
@@ -539,13 +538,13 @@
 
             <nativeClients>
                 <client id="postgresql_client" label="PostgreSQL Binaries">
-                    <dist os="win32" targetPath="clients/postgresql/win/13" remotePath="repo:/drivers/postgresql/client/win/13" resourcePath="clients/postgresql/win/13">
+                    <dist os="win32" targetPath="clients/postgresql/win/14" remotePath="repo:/drivers/postgresql/client/win/14" resourcePath="clients/postgresql/win/14">
                         <file type="exec" name="psql.exe"/>
                         <file type="exec" name="pg_dump.exe"/>
                         <file type="exec" name="pg_restore.exe"/>
                         <file type="lib" name="libcrypto-1_1-x64.dll"/>
                         <file type="lib" name="libiconv-2.dll"/>
-                        <file type="lib" name="libintl-8.dll"/>
+                        <file type="lib" name="libintl-9.dll"/>
                         <file type="lib" name="libpq.dll"/>
                         <file type="lib" name="libssl-1_1-x64.dll"/>
                         <file type="lib" name="libwinpthread-1.dll"/>
@@ -636,7 +635,8 @@
             id="postgres_pgpass"
             label="PostgreSQL PgPass"
             description="PostgreSQL PGPASS password"
-            class="org.jkiss.dbeaver.ext.postgresql.model.AuthModelPgPass">
+            class="org.jkiss.dbeaver.ext.postgresql.model.AuthModelPgPass"
+            requiresLocalConfiguration="true">
             <datasource id="postgresql"/>
         </authModel>
     </extension>

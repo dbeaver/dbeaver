@@ -105,6 +105,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
         } else {
             out.write("[" + rowDelimiter);
         }
+        rowNum = 0;
     }
 
     @Override
@@ -126,7 +127,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
                 columnName = column.getName();
             }
             out.write("\t\t" + quoteChar + JSONUtils.escapeJsonString(columnName) + quoteChar + " => ");
-            Object cellValue = row[column.getOrdinalPosition()];
+            Object cellValue = row[i];
             if (DBUtils.isNullValue(cellValue)) {
                 writeTextCell(null);
             } else if (cellValue instanceof DBDContent) {

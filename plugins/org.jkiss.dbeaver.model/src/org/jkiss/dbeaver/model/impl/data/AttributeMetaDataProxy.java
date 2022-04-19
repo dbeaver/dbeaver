@@ -41,6 +41,11 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
         this.attribute = attribute;
     }
 
+    @NotNull
+    public DBSAttributeBase getProxyAttribute() {
+        return attribute;
+    }
+
     /**
      * Attribute index in result set
      * @return attribute index (zero based)

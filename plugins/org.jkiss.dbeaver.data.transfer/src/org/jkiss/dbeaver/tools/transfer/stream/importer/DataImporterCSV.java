@@ -56,6 +56,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
+    private static final String PROP_TRIM_WHITESPACES = "trimWhitespaces";
     public static final int READ_BUFFER_SIZE = 255 * 1024;
 
     public enum HeaderPosition {
@@ -201,6 +202,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         Map<String, Object> properties = site.getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(properties);
         boolean emptyStringNull = CommonUtils.getBoolean(properties.get(PROP_EMPTY_STRING_NULL), false);
+        boolean trimWhitespaces = CommonUtils.getBoolean(properties.get(PROP_TRIM_WHITESPACES), false);
         String nullValueMark = CommonUtils.toString(properties.get(PROP_NULL_STRING));
 
         DBCExecutionContext context = streamDataSource.getDefaultInstance().getDefaultContext(monitor, false);
@@ -246,6 +248,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
                                 newLine[i] = null;
                             }
                             line = newLine;
+                        }
+                        if (trimWhitespaces) {
+                            for (int i = 0; i < line.length; i++) {
+                                line[i] = line[i].trim();
+                            }
                         }
                         if (emptyStringNull) {
                             for (int i = 0; i < line.length; i++) {

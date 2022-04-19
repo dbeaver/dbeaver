@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraintBase;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -65,7 +66,6 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
     private final ResultSetViewer resultSetViewer;
     private final List<DBDAttributeBinding> attributes;
-
     private TreeViewer columnsViewer;
     private ViewerColumnController<Object, Object> columnsController;
     private DBDDataFilter dataFilter;
@@ -86,10 +86,11 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         this.resultSetViewer = resultSetViewer;
         this.dataFilter = new DBDDataFilter(resultSetViewer.getModel().getDataFilter());
         this.constraints = new ArrayList<>(dataFilter.getConstraints());
-
+        this.constraints.sort(Comparator.comparingInt(DBDAttributeConstraintBase::getVisualPosition));
         DBDAttributeBinding[] modelAttrs = resultSetViewer.getModel().getAttributes();
         this.attributes = new ArrayList<>(modelAttrs.length);
         Collections.addAll(this.attributes, modelAttrs);
+
     }
 
     @Override
@@ -360,15 +361,35 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         columnsViewer.expandAll();
     }
 
-
-    private void swapColumns(TreeItem curItem, int newIndex)
+    private void moveColumns(TreeItem curItem, int newIndex, boolean reverse)
     {
-        final DBDAttributeConstraint c1 = getBindingConstraint((DBDAttributeBinding) curItem.getData());
-        final DBDAttributeConstraint c2 = getBindingConstraint((DBDAttributeBinding) columnsViewer.getTree().getItem(newIndex).getData());
-        final int vp2 = c2.getVisualPosition();
-        c2.setVisualPosition(c1.getVisualPosition());
-        c1.setVisualPosition(vp2);
+
+        DBDAttributeConstraint start = getBindingConstraint((DBDAttributeBinding) curItem.getData());
+        DBDAttributeConstraint end = getBindingConstraint((DBDAttributeBinding) columnsViewer.getTree().getItem(newIndex).getData());
+        final int startingVisualPosition = start.getVisualPosition();
+        final int endingVisualPosition = end.getVisualPosition();
+        int currentVisualPosition = startingVisualPosition;
+        if (!reverse) {
+            for (int i = startingVisualPosition - 1; i >= endingVisualPosition; i--) {
+                currentVisualPosition = swapVisualPositions(currentVisualPosition, i);
+            }
+        } else {
+            for (int i = startingVisualPosition + 1; i <= endingVisualPosition; i++) {
+                currentVisualPosition = swapVisualPositions(currentVisualPosition, i);
+            }
+        }
         refreshData();
+    }
+
+    private int swapVisualPositions(int currentVisualPosition, int i) {
+        final DBDAttributeConstraint currentConstraint = constraints.get(currentVisualPosition);
+        currentVisualPosition = currentConstraint.getVisualPosition();
+        final DBDAttributeConstraint swappingConstraint = constraints.get(i);
+        final int swappingConstraintVisualPosition = swappingConstraint.getVisualPosition();
+        currentConstraint.setVisualPosition(swappingConstraintVisualPosition);
+        swappingConstraint.setVisualPosition(currentVisualPosition);
+        Collections.swap(constraints, i, currentVisualPosition);
+        return swappingConstraintVisualPosition;
     }
 
     private void moveColumns(int curIndex, int newIndex)
@@ -510,7 +531,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 if (singleStep && tree.indexOf(selection[i]) == tree.getItemCount() - 1 - j) {
                     continue;
                 }
-                swapColumns(selection[i], !singleStep ? getItemsCount() - 1 - j++ : tree.indexOf(selection[i]) + 1);
+                moveColumns(selection[i], !singleStep ? getItemsCount() - 1 - j++ : tree.indexOf(selection[i]) + 1, true);
                 updateButtons();
             }
         } else {
@@ -518,7 +539,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 if (singleStep && tree.indexOf(treeItem) == j) {
                     continue;
                 }
-                swapColumns(treeItem, !singleStep ? j++ : tree.indexOf(treeItem) - 1);
+                moveColumns(treeItem, !singleStep ? j++ : tree.indexOf(treeItem) - 1, false);
                 updateButtons();
             }
         }

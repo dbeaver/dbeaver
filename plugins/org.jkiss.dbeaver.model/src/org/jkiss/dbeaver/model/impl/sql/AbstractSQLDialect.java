@@ -58,6 +58,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     public static final String[] DML_KEYWORDS = new String[0];
     public static final Pair<String, String> IN_CLAUSE_PARENTHESES = new Pair<>("(", ")");
 
+    protected static final SQLBlockCompletions DEFAULT_SQL_BLOCK_COMPLETIONS = new SQLBlockCompletionsCollection() {{
+        registerCompletionPair("BEGIN", "END");
+        registerCompletionPair("CASE", "END");
+        registerCompletionPair("LOOP", "END", "LOOP");
+        registerCompletionInfo("IF", new String[] { " THEN", SQLBlockCompletions.NEW_LINE_COMPLETION_PART,
+            SQLBlockCompletions.ONE_INDENT_COMPLETION_PART, SQLBlockCompletions.NEW_LINE_COMPLETION_PART, "END IF", SQLBlockCompletions.NEW_LINE_COMPLETION_PART
+        }, "END", "IF");   
+    }};
+
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
 
@@ -695,7 +704,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         if (dataKind == DBPDataKind.STRING) {
             if (typeName.indexOf('(') == -1) {
                 long maxLength = column.getMaxLength();
-                if (maxLength > 0 && maxLength != Integer.MAX_VALUE && maxLength != Long.MAX_VALUE) {
+                if (maxLength > 0) {
+                    boolean badValue = maxLength == Integer.MAX_VALUE || maxLength == Long.MAX_VALUE;
                     Object maxStringLength = dataSource.getDataSourceFeature(DBPDataSource.FEATURE_MAX_STRING_LENGTH);
                     if (maxStringLength instanceof Number) {
                         int lengthLimit = ((Number) maxStringLength).intValue();
@@ -704,6 +714,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
                         } else if (lengthLimit < maxLength) {
                             maxLength = lengthLimit;
                         }
+                    } else if (badValue) {
+                        return null;
                     }
                     return "(" + maxLength + ")";
                 }
@@ -765,7 +777,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return maxParamLength;
     }
 
-    protected boolean useBracketsForExec() {
+    protected boolean useBracketsForExec(DBSProcedure procedure) {
         return false;
     }
 
@@ -791,7 +803,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             inParameters.addAll(parameters);
         }
         //getMaxParameterLength(parameters, inParameters);
-        boolean useBrackets = useBracketsForExec();
+        boolean useBrackets = useBracketsForExec(proc);
         if (useBrackets) sql.append("{ ");
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
         if (!inParameters.isEmpty()) {
@@ -861,6 +873,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public boolean hasCaseSensitiveFiltration() {
         return false;
+    }
+    
+    @Override
+    public SQLBlockCompletions getBlockCompletions() {
+        return DEFAULT_SQL_BLOCK_COMPLETIONS;
     }
 }
 

@@ -44,6 +44,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private static final Log log = Log.getLog(MavenArtifactVersion.class);
 
     public static final String PROP_PROJECT_VERSION = "project.version";
+    public static final String PROP_PROJECT_PARENT_VERSION = "project.parent.version";
     public static final String PROP_PROJECT_GROUP_ID = "project.groupId";
     public static final String PROP_PROJECT_ARTIFACT_ID = "project.artifactId";
     private static final String DEFAULT_PROFILE_ID = "#root";
@@ -66,6 +67,8 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             switch (name) {
                 case PROP_PROJECT_VERSION:
                     return version;
+                case PROP_PROJECT_PARENT_VERSION:
+                    return parent != null ? parent.version : null;
                 case PROP_PROJECT_GROUP_ID:
                     return artifact.getGroupId();
                 case PROP_PROJECT_ARTIFACT_ID:

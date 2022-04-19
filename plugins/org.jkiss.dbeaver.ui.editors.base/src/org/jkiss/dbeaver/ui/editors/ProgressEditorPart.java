@@ -25,6 +25,7 @@ import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -160,6 +161,7 @@ public class ProgressEditorPart extends EditorPart {
                 // Activate entity editor (we have changed inner editors and need to force contexts activation).
                 DBWorkbench.getPlatformUI().refreshPartState(ownerEditor);
             }
+            ActionUtils.evaluatePropertyState("org.jkiss.dbeaver.ui.editors.entity.hasSource");
         }
     }
 

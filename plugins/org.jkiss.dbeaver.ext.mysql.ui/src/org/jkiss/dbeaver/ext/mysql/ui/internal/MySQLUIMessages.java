@@ -32,6 +32,7 @@ public final class MySQLUIMessages extends NLS {
     public static String dialog_connection_general_tab;
     public static String dialog_connection_general_tab_tooltip;
     public static String dialog_connection_host;
+    public static String dialog_connection_instance;
     public static String dialog_connection_database;
     public static String dialog_connection_password;
     public static String dialog_connection_port;

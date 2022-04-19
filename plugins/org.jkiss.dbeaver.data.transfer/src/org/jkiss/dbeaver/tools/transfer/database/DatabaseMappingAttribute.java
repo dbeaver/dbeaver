@@ -104,8 +104,16 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             return null;
         }
         String typeName = source.getTypeName();
-        if (source.getDataKind() == DBPDataKind.STRING) {
-            typeName += "(" + source.getMaxLength() + ")";
+        DBSDataContainer container = parent.getSource();
+        if (container != null && container.getDataSource() != null) {
+            String typeModifiers = container.getDataSource().getSQLDialect().getColumnTypeModifiers(
+                container.getDataSource(),
+                source,
+                typeName,
+                source.getDataKind());
+            if (typeModifiers != null) {
+                typeName += typeModifiers;
+            }
         }
         return typeName;
     }
@@ -144,88 +152,84 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     public void updateMappingType(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
-        switch (parent.getMappingType()) {
-            case recreate:
-            case existing: {
-                if (mappingType == DatabaseMappingType.skip) {
-                    // We already have mapping for the attribute with the skip type
-                    break;
-                }
-                mappingType = DatabaseMappingType.unspecified;
-                if (parent.getTarget() instanceof DBSEntity) {
-                    if (forceRefresh || CommonUtils.isEmpty(targetName)) {
-                        targetName = getSourceLabelOrName(source, true);
-                    }
-                    DBSEntity targetEntity = (DBSEntity) parent.getTarget();
-                    List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
-                    if (targetAttributes != null) {
+        if (mappingType == DatabaseMappingType.skip) {
+            // We already have mapping for the attribute with the skip type
+            return;
+        }
+        if (parent.getMappingType() == DatabaseMappingType.skip) {
+            mappingType = DatabaseMappingType.skip;
+            return;
+        }
+
+        mappingType = DatabaseMappingType.unspecified;
+        if (parent.getTarget() instanceof DBSEntity) {
+            if (forceRefresh || CommonUtils.isEmpty(targetName)) {
+                targetName = getSourceLabelOrName(source, true);
+            }
+            DBSEntity targetEntity = (DBSEntity) parent.getTarget();
+            List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
+            if (CommonUtils.isEmpty(targetAttributes) && targetEntity instanceof DBPRefreshableObject) {
+                // Reload table attributes cache. It can be empty after table deleting
+                ((DBPRefreshableObject) targetEntity).refreshObject(monitor);
+                targetAttributes = targetEntity.getAttributes(monitor);
+            }
+            if (targetAttributes != null) {
+                target = CommonUtils.findBestCaseAwareMatch(
+                    targetAttributes,
+                    DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName),
+                    DBSEntityAttribute::getName
+                );
+            } else {
+                target = null;
+            }
+
+            if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null) {
+                StreamDataImporterColumnInfo source = (StreamDataImporterColumnInfo) this.source;
+
+                if (!source.isMappingMetadataPresent()) {
+                    List<DBSEntityAttribute> suitableTargetAttributes = targetAttributes
+                        .stream()
+                        .filter(attr -> !DBUtils.isPseudoAttribute(attr) && !DBUtils.isHiddenObject(attr))
+                        .sorted(Comparator.comparing(DBSEntityAttribute::getOrdinalPosition))
+                        .collect(Collectors.toList());
+
+                    if (source.getOrdinalPosition() < suitableTargetAttributes.size()) {
+                        DBSEntityAttribute targetAttribute = suitableTargetAttributes.get(source.getOrdinalPosition());
                         target = CommonUtils.findBestCaseAwareMatch(
                             targetAttributes,
                             DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName),
                             DBSEntityAttribute::getName
                         );
-                    } else {
-                        target = null;
-                    }
-
-                    if (source instanceof StreamDataImporterColumnInfo && targetAttributes != null) {
-                        StreamDataImporterColumnInfo source = (StreamDataImporterColumnInfo) this.source;
-
-                        if (!source.isMappingMetadataPresent()) {
-                            List<DBSEntityAttribute> suitableTargetAttributes = targetAttributes
-                                .stream()
-                                .filter(attr -> !DBUtils.isPseudoAttribute(attr) && !DBUtils.isHiddenObject(attr))
-                                .sorted(Comparator.comparing(DBSEntityAttribute::getOrdinalPosition))
-                                .collect(Collectors.toList());
-
-                            if (source.getOrdinalPosition() < suitableTargetAttributes.size()) {
-                                DBSEntityAttribute targetAttribute = suitableTargetAttributes.get(source.getOrdinalPosition());
-                                target = CommonUtils.findBestCaseAwareMatch(
-                                    targetAttributes,
-                                    DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName),
-                                    DBSEntityAttribute::getName
-                                );
-                                if (target != null && !targetAttribute.getName().equalsIgnoreCase(target.getName())) {
-                                    // In case of violated order (some columns are missing in the source, for example), if it turned out to find a suitable column by name
-                                    targetName = target.getName();
-                                } else {
-                                    targetName = targetAttribute.getName();
-                                }
-                            }
-                        }
-
-                        if (target != null) {
-                            source.setTypeName(target.getTypeName());
-                            source.setMaxLength(target.getMaxLength());
-                            source.setDataKind(target.getDataKind());
-                        }
-                    }
-                    if (this.target != null) {
-                        if (parent.getMappingType() == DatabaseMappingType.recreate) {
-                            mappingType = DatabaseMappingType.create;
+                        if (target != null && !targetAttribute.getName().equalsIgnoreCase(target.getName())) {
+                            // In case of violated order (some columns are missing in the source, for example), if it turned out to find a suitable column by name
+                            targetName = target.getName();
                         } else {
-                            mappingType = DatabaseMappingType.existing;
+                            targetName = targetAttribute.getName();
                         }
-                    } else {
-                        mappingType = DatabaseMappingType.create;
                     }
                 }
-                break;
+
+                if (target != null) {
+                    source.setTypeName(target.getTypeName());
+                    source.setMaxLength(target.getMaxLength());
+                    source.setDataKind(target.getDataKind());
+                }
             }
-            case create:
-                if (mappingType != DatabaseMappingType.skip) { // We already have mapping for the attribute with the skip type
+            if (this.target != null) {
+                if (parent.getMappingType() == DatabaseMappingType.recreate) {
                     mappingType = DatabaseMappingType.create;
+                } else {
+                    mappingType = DatabaseMappingType.existing;
                 }
-                if (forceRefresh || CommonUtils.isEmpty(targetName)) {
-                    targetName = getSourceLabelOrName(source, true);
-                }
-                break;
-            case skip:
-                mappingType = DatabaseMappingType.skip;
-                break;
-            default:
-                mappingType = DatabaseMappingType.unspecified;
-                break;
+            } else {
+                mappingType = DatabaseMappingType.create;
+            }
+        } else {
+            // Case recreate container mapping in the new table or just create
+            mappingType = DatabaseMappingType.create;
+            if (forceRefresh || CommonUtils.isEmpty(targetName)) {
+                targetName = getSourceLabelOrName(source, true);
+            }
         }
 
         if (mappingType == DatabaseMappingType.create && !CommonUtils.isEmpty(targetName)) {
@@ -349,8 +353,8 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     }
                 }
 
-                if (target != null && newMappingType == DatabaseMappingType.create) {
-                    // Change create to existing.
+                if (target != null && newMappingType == DatabaseMappingType.create && parent.getMappingType() != DatabaseMappingType.recreate) {
+                    // Change create to existing. Do not change mapping type for the recreate type
                     newMappingType = DatabaseMappingType.existing;
                 } else if (target == null && newMappingType == DatabaseMappingType.existing) {
                     newMappingType = DatabaseMappingType.create;

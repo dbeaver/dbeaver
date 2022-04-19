@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.db.feature"
       label="%featureName"
-      version="1.0.69.qualifier"
+      version="1.0.71.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -260,6 +260,13 @@
 
    <plugin
            id="org.jkiss.dbeaver.ext.denodo"
+           download-size="0"
+           install-size="0"
+           version="0.0.0"
+           unpack="false"/>
+
+   <plugin
+           id="org.jkiss.dbeaver.ext.databricks"
            download-size="0"
            install-size="0"
            version="0.0.0"

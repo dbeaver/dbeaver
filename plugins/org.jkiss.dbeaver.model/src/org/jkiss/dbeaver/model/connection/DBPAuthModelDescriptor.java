@@ -44,6 +44,9 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
     // Model works in desktop application only
     boolean isDesktopModel();
 
+    // Model needs a configuration on a local FS
+    boolean requiresLocalConfiguration();
+
     boolean isApplicableTo(DBPDriver driver);
 
     // Auth model which replaced this one. Usually null

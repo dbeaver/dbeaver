@@ -42,9 +42,9 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
     private File config;
 
     @Override
-    protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log, boolean showNotifications) throws DBException, InterruptedException {
+    protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log) throws DBException, InterruptedException {
         try {
-            return super.doExecute(monitor, task, settings, log, showNotifications);
+            return super.doExecute(monitor, task, settings, log);
         } finally {
             if (config != null && !config.delete()) {
                 log.debug("Failed to delete configuration file");

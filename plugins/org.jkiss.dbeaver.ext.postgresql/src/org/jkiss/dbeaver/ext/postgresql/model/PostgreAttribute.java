@@ -373,7 +373,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Override
     public boolean isHidden() {
-        return isPersisted() && getOrdinalPosition() < 0;
+        if (isPersisted()) {
+            return getOrdinalPosition() < 0 || getDataSource().getServerType().isHiddenRowidColumn(this);
+        }
+        return false;
     }
 
     @Override

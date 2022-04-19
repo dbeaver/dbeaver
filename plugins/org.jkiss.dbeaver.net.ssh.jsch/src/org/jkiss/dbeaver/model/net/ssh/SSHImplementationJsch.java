@@ -112,8 +112,8 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                     session.setConfig("StrictHostKeyChecking", "ask");
                 }
 
-                session.setConfig("ConnectTimeout", String.valueOf(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT)));
-                session.setConfig("ServerAliveInterval", String.valueOf(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL)));
+                session.setServerAliveInterval(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL));
+                session.setTimeout(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT));
 
                 if (auth.getType() == AuthType.PASSWORD) {
                     session.setConfig("PreferredAuthentications", "password,keyboard-interactive");

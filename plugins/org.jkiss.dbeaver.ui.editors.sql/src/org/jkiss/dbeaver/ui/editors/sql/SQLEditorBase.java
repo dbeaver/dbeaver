@@ -126,6 +126,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
 
+    private int lastQueryErrorPosition = -1;
+
     public SQLEditorBase() {
         super();
         syntaxManager = new SQLSyntaxManager();
@@ -781,13 +783,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         IDocument document = getDocument();
         String text = document == null ? "" : document.get();
         SQLQuery query = new SQLQuery(getDataSource(), text, 0, text.length());
-        return visualizeQueryErrors(monitor, query, error);
+        return visualizeQueryErrors(monitor, query, error, null);
     }
 
     /**
      * Error handling
      */
-    boolean visualizeQueryErrors(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error) {
+    boolean visualizeQueryErrors(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error, @Nullable SQLQuery originalQuery) {
         try {
             DBCExecutionContext context = getExecutionContext();
             if (context == null) {
@@ -804,14 +806,26 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
                     for (int index = 0; index < positions.length; index++) {
                         DBPErrorAssistant.ErrorPosition pos = positions[index];
+                        int errorOffset = 0;
                         if (pos.line < 0) {
                             if (pos.position >= 0) {
                                 // Only position
-                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(queryStartOffset + pos.position, queryLength - pos.position))) {
+                                errorOffset = queryStartOffset + pos.position;
+                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(errorOffset, queryLength - pos.position))) {
                                     scrolled = true;
                                 } else if (index == 0) {
-                                    getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 0));
+                                    getSelectionProvider().setSelection(new TextSelection(errorOffset, 0));
                                     scrolled = true;
+                                }
+                                if (originalQuery != null) {
+                                    IDocument document = getDocument();
+                                    if (document != null) {
+                                        int errorLine = document.getLineOfOffset(errorOffset);
+                                        if (errorLine >= 0) {
+                                            // Start position of the getLineOfOffset method is 0 but SQL Editor lines start from the 1
+                                            pos.line = errorLine + 1;
+                                        }
+                                    }
                                 }
                             }
                         } else {
@@ -819,7 +833,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             IDocument document = getDocument();
                             if (document != null) {
                                 int startLine = document.getLineOfOffset(queryStartOffset);
-                                int errorOffset = document.getLineOffset(startLine + pos.line);
+                                errorOffset = document.getLineOffset(startLine + pos.line);
                                 int errorLength;
                                 if (pos.position >= 0) {
                                     errorOffset += pos.position;
@@ -843,6 +857,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                                 }
                             }
                         }
+                        if (originalQuery != null) {
+                            originalQuery.addExtraErrorMessage("\n" + SQLEditorMessages.sql_editor_error_position + ":" + (pos.line > 0 ? " line: " + pos.line : "") +
+                                (pos.position > 0 ? " pos: " + pos.position : ""));
+                            if (index == 0) {
+                                lastQueryErrorPosition = errorOffset;
+                            }
+                        }
                     }
                 }
             }
@@ -858,6 +879,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     protected boolean addProblem(@Nullable String message, @NotNull Position position) {
+        if (!getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)) {
+            return false;
+        }
+
         final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
         final IAnnotationModel annotationModel = getAnnotationModel();
 
@@ -870,6 +895,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
             marker.setAttribute(IMarker.MESSAGE, message);
             marker.setAttribute(IMarker.TRANSIENT, true);
+            MarkerUtilities.setCharStart(marker, position.offset);
+            MarkerUtilities.setCharEnd(marker, position.offset + position.length);
             annotationModel.addAnnotation(new SQLProblemAnnotation(marker), position);
         } catch (CoreException e) {
             log.error("Error creating problem marker", e);
@@ -906,11 +933,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         final Position position = annotationModel.getPosition(annotation);
 
                         if (position.overlapsWith(query.getOffset(), query.getLength())) {
+                            // We need to delete markers though. Maybe only when there is no line position?
                             try {
                                 ((SQLProblemAnnotation) annotation).getMarker().delete();
                             } catch (CoreException e) {
                                 log.error("Error deleting problem marker", e);
                             }
+                            annotationModel.removeAnnotation(annotation);
                         }
                     }
                 }
@@ -973,10 +1002,21 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 }
                 return;
             }
+            case SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED:
+                clearProblems(null);
+                return;
             case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
                 occurrencesHighlighter.updateInput(getEditorInput());
         }
+    }
+
+    void setLastQueryErrorPosition(int lastQueryErrorPosition) {
+        this.lastQueryErrorPosition = lastQueryErrorPosition;
+    }
+
+    int getLastQueryErrorPosition() {
+        return lastQueryErrorPosition;
     }
 
     ////////////////////////////////////////////////////////

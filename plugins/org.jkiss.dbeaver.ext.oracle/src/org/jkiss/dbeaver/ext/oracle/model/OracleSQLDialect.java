@@ -527,6 +527,10 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
 
     @Override
     public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
+        String type = super.convertExternalDataType(sourceDialect, sourceTypedObject, targetTypeProvider);
+        if (type != null) {
+            return type;
+        }
         String externalTypeName = sourceTypedObject.getTypeName().toUpperCase(Locale.ENGLISH);
         String localDataType = null, dataTypeModifies = null;
 

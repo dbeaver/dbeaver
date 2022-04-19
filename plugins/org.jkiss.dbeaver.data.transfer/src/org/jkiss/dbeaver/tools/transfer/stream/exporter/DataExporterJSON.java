@@ -89,6 +89,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
             out.write("\"" + JSONUtils.escapeJsonString(tableName) + "\": ");
         }
         out.write("[\n");
+        rowNum = 0;
     }
 
     @Override
@@ -114,7 +115,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
                     columnName = column.getName();
                 }
                 out.write("\t\t\"" + JSONUtils.escapeJsonString(columnName) + "\" : ");
-                Object cellValue = row[column.getOrdinalPosition()];
+                Object cellValue = row[i];
                 if (DBUtils.isNullValue(cellValue)) {
                     writeTextCell(null);
                 } else if (cellValue instanceof DBDContent) {

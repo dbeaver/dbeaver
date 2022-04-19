@@ -41,6 +41,8 @@ public class QMEventCriteria {
     private boolean skipEmptyQueries = false;
     @Nullable
     private String searchString;
+    @Nullable
+    private Long lastEventId;
     @NotNull
     private Set<String> users = Collections.emptySet();
     @NotNull
@@ -189,5 +191,18 @@ public class QMEventCriteria {
 
     public void setStartDateRange(@Nullable QMDateRange startDateRange) {
         this.startDateRange = startDateRange;
+    }
+
+    @Nullable
+    public Long getLastEventId() {
+        return lastEventId;
+    }
+
+    public void setLastEventId(@Nullable Long lastEventId) {
+        this.lastEventId = lastEventId;
+    }
+
+    public boolean hasLastEventId() {
+        return lastEventId != null;
     }
 }

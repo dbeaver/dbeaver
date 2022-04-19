@@ -42,6 +42,7 @@ public class SQLEditorPropertyTester extends PropertyTester
     public static final String PROP_CAN_EXPORT = "canExport";
     public static final String PROP_HAS_ACTIVE_QUERY = "hasActiveQuery";
     public static final String PROP_HAS_SELECTION = "hasSelection";
+    public static final String PROP_IS_ACTIVE_QUERY_RUNNING = "isActiveQueryRunning";
     public static final String PROP_FOLDING_SUPPORTED = "foldingSupported";
     public static final String PROP_FOLDING_ENABLED = "foldingEnabled";
 
@@ -91,6 +92,8 @@ public class SQLEditorPropertyTester extends PropertyTester
                 ISelection selection = editor.getSelectionProvider().getSelection();
                 return selection instanceof ITextSelection && ((ITextSelection) selection).getLength() > 0;
             }
+            case PROP_IS_ACTIVE_QUERY_RUNNING:
+                return editor.isActiveQueryRunning();
             case PROP_FOLDING_ENABLED:
                 return editor.isFoldingEnabled();
             case PROP_FOLDING_SUPPORTED:

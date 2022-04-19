@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodRegistry;
 import org.jkiss.dbeaver.model.struct.*;
@@ -653,10 +652,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             throw new DBException("No target container selected");
         }
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
-            if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
-                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, true);
-            } else if (containerMapping.getMappingType() == DatabaseMappingType.create) {
-                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, false);
+            if (containerMapping.getMappingType() == DatabaseMappingType.recreate || containerMapping.getMappingType() == DatabaseMappingType.create) {
+                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, containerMapping.getTarget() != null);
             }
             return true;
         } else {
@@ -683,6 +680,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         if (!last && settings.isOpenTableOnFinish()) {
+            try {
+                // Mappings can be outdated so is the target object.
+                // This may happen when several database consumers point to the same container node
+                DatabaseTransferUtils.refreshDatabaseMappings(monitor, settings, containerMapping, true);
+            } catch (Exception e) {
+                log.error("Error refreshing database model", e);
+            }
             DBSDataManipulator targetObject = getTargetObject();
             if (targetObject != null) {
                 // Refresh node first (this will refresh table data as well)

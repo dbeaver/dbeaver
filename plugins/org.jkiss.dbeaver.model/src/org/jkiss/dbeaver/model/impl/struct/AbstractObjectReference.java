@@ -27,21 +27,21 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
 /**
  * Abstract object reference
  */
-public abstract class AbstractObjectReference implements DBSObjectReference {
+public abstract class AbstractObjectReference<CONTAINER extends DBSObject> implements DBSObjectReference {
 
     private final String name;
-    private final DBSObject container;
+    private final CONTAINER container;
     private final String description;
     private final Class<?> objectClass;
     private final DBSObjectType type;
     private final String extraInfo;
 
-    protected AbstractObjectReference(String name, DBSObject container, String description, Class<?> objectClass, DBSObjectType type) {
+    protected AbstractObjectReference(String name, CONTAINER container, String description, Class<?> objectClass, DBSObjectType type) {
         this(name, container, description, objectClass, type, null);
     }
 
-    protected AbstractObjectReference(String name, DBSObject container, String description, Class<?> objectClass, DBSObjectType type, String extraInfo)
-    {
+    protected AbstractObjectReference(String name, CONTAINER container, String description,
+                                      Class<?> objectClass, DBSObjectType type, String extraInfo) {
         this.name = name;
         this.container = container;
         this.description = description;
@@ -57,8 +57,7 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
         return name;
     }
 
-    public DBSObject getContainer()
-    {
+    public CONTAINER getContainer() {
         return container;
     }
 

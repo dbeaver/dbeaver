@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.model.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
-import org.jkiss.dbeaver.model.auth.SMAuthProviderDescriptor;
-import org.jkiss.dbeaver.model.auth.SMSession;
+import org.jkiss.dbeaver.model.auth.SMAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
@@ -31,7 +30,7 @@ import java.util.Set;
 /**
  * Admin interface
  */
-public interface SMController<USER extends SMUser, ROLE extends SMRole, SESSION extends SMSession> extends SMAuthCredentialsManager {
+public interface SMController<USER extends SMUser, ROLE extends SMRole> extends SMAuthCredentialsManager {
 
     ///////////////////////////////////////////
     // Users
@@ -50,7 +49,7 @@ public interface SMController<USER extends SMUser, ROLE extends SMRole, SESSION 
     /**
      * Sets user credentials for specified provider
      */
-    void setUserCredentials(String userId, SMAuthProviderDescriptor authProvider, Map<String, Object> credentials) throws DBCException;
+    void setUserCredentials(String userId, String authProviderId, Map<String, Object> credentials) throws DBCException;
 
     /**
      * Returns list of auth provider IDs associated with this user
@@ -59,8 +58,6 @@ public interface SMController<USER extends SMUser, ROLE extends SMRole, SESSION 
 
     ///////////////////////////////////////////
     // Permissions
-
-    void setSubjectPermissions(String subjectId, String[] permissionIds, String grantorId) throws DBCException;
 
     @NotNull
     Set<String> getSubjectPermissions(String subjectId) throws DBCException;
@@ -73,17 +70,17 @@ public interface SMController<USER extends SMUser, ROLE extends SMRole, SESSION 
 
     boolean isSessionPersisted(String id) throws DBCException;
 
-    void createSession(SESSION session) throws DBCException;
+    SMAuthInfo authenticateAnonymousUser(@NotNull String appSessionId, @NotNull Map<String, Object> sessionParameters, @NotNull SMSessionType sessionType) throws DBCException;
 
-    void updateSession(SESSION session) throws DBCException;
+    SMAuthInfo authenticate(@NotNull String appSessionId, @NotNull Map<String, Object> sessionParameters, @NotNull SMSessionType sessionType, @NotNull String authProviderId, @NotNull Map<String, Object> userCredentials) throws DBCException;
+
+    void updateSession(@NotNull String sessionId, @Nullable String userId, Map<String, Object> parameters) throws DBCException;
 
     ///////////////////////////////////////////
     // Permissions
 
     @NotNull
     SMDataSourceGrant[] getSubjectConnectionAccess(@NotNull String[] subjectId) throws DBCException;
-
-    void setSubjectConnectionAccess(@NotNull String subjectId, @NotNull String[] connectionIds, String grantor) throws DBCException;
 
     @NotNull
     SMDataSourceGrant[] getConnectionSubjectAccess(String connectionId) throws DBCException;

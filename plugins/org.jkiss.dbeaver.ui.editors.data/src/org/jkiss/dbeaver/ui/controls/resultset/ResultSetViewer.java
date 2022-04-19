@@ -64,10 +64,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
-import org.jkiss.dbeaver.model.sql.DBSQLException;
-import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
@@ -104,6 +101,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -224,8 +222,8 @@ public class ResultSetViewer extends Viewer
     // Theme listener
     private IPropertyChangeListener themeChangeListener;
     private long lastThemeUpdateTime;
-    private volatile boolean awaitsReadNextSegment;
-    private volatile boolean awaitsSavingData;
+
+    private volatile boolean nextSegmentReadingBlocked;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
@@ -705,12 +703,12 @@ public class ResultSetViewer extends Viewer
         updatePresentationInToolbar();
     }
 
-    void showErrorPresentation(String sqlText, String message, Throwable error) {
+    private void showErrorPresentation(String sqlText, String message, Throwable error) {
         activePresentationDescriptor = null;
         setActivePresentation(
             new ErrorPresentation(
                 sqlText,
-                GeneralUtils.makeErrorStatus(message, error)));
+                GeneralUtils.makeErrorStatus(message, error), container instanceof IResultSetContainerExt ? (IResultSetContainerExt) container : null));
         updatePresentationInToolbar();
     }
 
@@ -3563,7 +3561,6 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public boolean checkForChanges() {
-        // Check if we are dirty
         if (isDirty()) {
             int checkResult = new UITask<Integer>() {
                 @Override
@@ -3573,17 +3570,14 @@ public class ResultSetViewer extends Viewer
             }.execute();
             switch (checkResult) {
                 case ISaveablePart2.CANCEL:
-                    dataReceiver.setHasMoreData(false);
                     UIUtils.asyncExec(() -> updatePanelsContent(true));
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
-                    awaitsSavingData = true;
                     saveChanges(null, new ResultSetSaveSettings(), success -> {
                         if (success) {
                             UIUtils.asyncExec(() -> refreshData(null));
                         }
-                        awaitsSavingData = false;
                     });
                     return false;
                 default:
@@ -3727,19 +3721,22 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
+
     public void readNextSegment() {
         if (!verifyQuerySafety()) {
             return;
         }
-        if (awaitsSavingData || awaitsReadNextSegment || !dataReceiver.isHasMoreData()) {
+        if (!dataReceiver.isHasMoreData()) {
+            return;
+        }
+        if (nextSegmentReadingBlocked && isDirty()) {
+            return;
+        }
+        nextSegmentReadingBlocked = true;
+        if (!checkForChanges()) {
             return;
         }
         try {
-            awaitsReadNextSegment = true;
-            if (!checkForChanges()) {
-                return;
-            }
-
             DBSDataContainer dataContainer = getDataContainer();
             if (dataContainer != null && !model.isUpdateInProgress()) {
                 dataReceiver.setHasMoreData(false);
@@ -3757,7 +3754,7 @@ public class ResultSetViewer extends Viewer
                     null);
             }
         } finally {
-            awaitsReadNextSegment = false;
+            nextSegmentReadingBlocked = false;
         }
     }
 
@@ -3812,7 +3809,7 @@ public class ResultSetViewer extends Viewer
     }
 
     public void setSelectionStatistics(String stats) {
-        if (selectionStatLabel == null) {
+        if (selectionStatLabel == null || selectionStatLabel.isDisposed()) {
             return;
         }
         if (stats.equals(selectionStatLabel.getText())) {
@@ -4906,13 +4903,24 @@ public class ResultSetViewer extends Viewer
                         setStatus(errorMessage, DBPMessageType.ERROR);
 
                         String sqlText;
+                        SQLScriptElement query = null;
+                        if (dataContainer instanceof SQLQueryContainer) {
+                            query = ((SQLQueryContainer) dataContainer).getQuery();
+                        }
+
                         if (error instanceof DBSQLException) {
                             sqlText = ((DBSQLException) error).getSqlQuery();
-                        } else if (dataContainer instanceof SQLQueryContainer) {
-                            SQLScriptElement query = ((SQLQueryContainer) dataContainer).getQuery();
-                            sqlText = query == null ? getActiveQueryText() : query.getText();
+                        } else if (query != null) {
+                            sqlText = query.getText();
                         } else {
                             sqlText = getActiveQueryText();
+                        }
+
+                        if (CommonUtils.isNotEmpty(errorMessage) && query instanceof SQLQuery) {
+                            String extraErrorMessage = ((SQLQuery) query).getExtraErrorMessage();
+                            if (CommonUtils.isNotEmpty(extraErrorMessage)) {
+                                errorMessage = errorMessage + System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + extraErrorMessage;
+                            }
                         }
 
                         if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {

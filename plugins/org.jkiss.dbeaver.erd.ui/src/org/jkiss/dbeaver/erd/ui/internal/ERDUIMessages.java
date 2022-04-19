@@ -129,6 +129,7 @@ public class ERDUIMessages extends NLS {
 
 	public static String erd_navigator_entity_diagram_name;
 
+	public static String erd_entity_add_command_select_table_dialog;
 
 	private ERDUIMessages() {
 	}

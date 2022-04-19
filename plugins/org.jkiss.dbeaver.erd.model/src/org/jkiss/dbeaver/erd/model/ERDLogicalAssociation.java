@@ -31,11 +31,11 @@ import java.util.List;
 public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityReferrer {
 
     private ERDElement entity;
-    private String name;
-    private String description;
-    private ERDLogicalPrimaryKey pk;
+    private final String name;
+    private final String description;
+    private final ERDLogicalPrimaryKey pk;
 
-    public ERDLogicalAssociation(ERDElement entity, String name, String description, ERDLogicalPrimaryKey pk)
+    public ERDLogicalAssociation(ERDElement<?> entity, String name, String description, ERDLogicalPrimaryKey pk)
     {
         this.entity = entity;
         this.name = name;

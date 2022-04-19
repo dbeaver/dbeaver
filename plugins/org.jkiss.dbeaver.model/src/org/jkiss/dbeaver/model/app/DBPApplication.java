@@ -19,14 +19,13 @@ package org.jkiss.dbeaver.model.app;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DB application.
  * Application implementors may redefine core app behavior and/or settings.
  */
 public interface DBPApplication {
-
-    String PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION = "simpleDatabaseAdministration";
 
     @NotNull
     DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
@@ -65,8 +64,9 @@ public interface DBPApplication {
     /**
      * Application information details.
      * Like license info or some custom produce info
+     * @param monitor
      */
-    String getInfoDetails();
+    String getInfoDetails(DBRProgressMonitor monitor);
 
     /**
      * Returns last user activity time

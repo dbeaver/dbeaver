@@ -20,17 +20,24 @@ import org.eclipse.draw2dl.geometry.Dimension;
 import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.commands.Command;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,8 +48,9 @@ import java.util.List;
 /**
  * Add entity to diagram
  */
-public class EntityAddCommand extends Command
-{
+public class EntityAddCommand extends Command {
+
+    private static final Log log = Log.getLog(EntityAddCommand.class);
 
     protected DiagramPart diagramPart;
 	protected List<ERDEntity> entities;
@@ -66,20 +74,20 @@ public class EntityAddCommand extends Command
 
         Point curLocation = location == null ? null : new Point(location);
         for (ERDEntity entity : entities) {
-            boolean resolveRelations = false;
             if (entity.getObject() == null) {
                 // Entity is not initialized
                 if (entity.getDataSource() != null) {
-                    DBSObject selectedObject = DBUtils.getSelectedObject(DBUtils.getDefaultContext(entity.getDataSource(), false));
-                    DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(selectedObject != null ? selectedObject : entity.getDataSource().getContainer());
+                    DBCExecutionContext defaultContext = DBUtils.getDefaultContext(entity.getDataSource(), false);
+                    DBSObject selectedObject = defaultContext != null ? DBUtils.getSelectedObject(defaultContext) : null;
+                    DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(selectedObject != null ? selectedObject.getParentObject() : entity.getDataSource().getContainer());
                     if (dsNode != null) {
                         DBNNode tableNode = DBWorkbench.getPlatformUI().selectObject(
-                                UIUtils.getActiveWorkbenchShell(),
-                                "Select a table",
-                                dsNode,
-                                null,
-                                new Class[]{DBSTable.class},
-                                new Class[]{DBSTable.class},
+                            UIUtils.getActiveWorkbenchShell(),
+                            ERDUIMessages.erd_entity_add_command_select_table_dialog,
+                            dsNode,
+                            null,
+                            new Class[]{DBSObjectContainer.class, DBSTable.class},
+                            new Class[]{DBSTable.class},
                             null);
                         if (tableNode instanceof DBNDatabaseNode && ((DBNDatabaseNode) tableNode).getObject() instanceof DBSEntity) {
                             entity = ERDUtils.makeEntityFromObject(

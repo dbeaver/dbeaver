@@ -39,6 +39,10 @@ public class ContentAssistUtils {
         return installContentProposal(control, contentAdapter, provider, null, true);
     }
 
+    public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, boolean autoActivation) {
+        return installContentProposal(control, contentAdapter, provider, null, autoActivation);
+    }
+
     public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, ILabelProvider labelProvider, boolean autoActivation) {
         IKeyLookup keyLookup = KeyLookupFactory.getDefault();
         KeyStroke keyStroke = KeyStroke.getInstance(keyLookup.getCtrl(), SWT.SPACE); //$NON-NLS-1$

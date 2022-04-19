@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -466,6 +467,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsRoleReplication() {
+        return dataSource.isServerVersionAtLeast(9, 1);
+    }
+
+    @Override
+    public boolean supportsRoleBypassRLS() {
+        return dataSource.isServerVersionAtLeast(9, 5);
+    }
+
+    @Override
     public boolean supportSerialTypes() {
         return true;
     }
@@ -488,6 +499,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsGeneratedColumns() {
         return false;
+    }
+
+    @Override
+    public boolean isHiddenRowidColumn(@NotNull PostgreAttribute attribute) {
+        return false;
+    }
+
+    @Override
+    public boolean supportsShowingOfExtraComments() {
+        return true;
     }
 
     @Override

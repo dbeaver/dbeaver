@@ -197,7 +197,7 @@ public class SQLIndenter {
      *
      * @return one indentation
      */
-    private StringBuilder createIndent() {
+    public static StringBuilder createIndent() {
         IPreferenceStore preferenceStore = EditorsPlugin.getDefault().getPreferenceStore();
         boolean useSpaces = preferenceStore.getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS);
         StringBuilder oneIndent = new StringBuilder();

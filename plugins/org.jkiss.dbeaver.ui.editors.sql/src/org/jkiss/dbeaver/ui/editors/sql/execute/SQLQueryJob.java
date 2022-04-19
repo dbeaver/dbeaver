@@ -16,6 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.execute;
 
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.update.Update;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -43,6 +49,7 @@ import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -428,7 +435,7 @@ public class SQLQueryJob extends DataSourceJob
             startTime = System.currentTimeMillis();
 
             SQLQuery execStatement = sqlQuery;
-            DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
+            DBRRunnableParametrized<DBCSession> executor = param -> {
                 try {
                     // We can't reset statistics here (we can be in script mode)
                     //statistics.setStatementsCount(0);
@@ -445,7 +452,17 @@ public class SQLQueryJob extends DataSourceJob
                 } catch (Throwable e) {
                     throw new InvocationTargetException(e);
                 }
-            });
+            };
+
+            if (shouldRecoverQuery(execStatement)) {
+                DBExecUtils.tryExecuteRecover(session, session.getDataSource(), executor);
+            } else {
+                try {
+                    executor.run(session);
+                } catch (InvocationTargetException e) {
+                    throw e.getTargetException();
+                }
+            }
         }
         catch (Throwable ex) {
             if (!(ex instanceof DBException)) {
@@ -471,6 +488,20 @@ public class SQLQueryJob extends DataSourceJob
         }
         // Success
         lastGoodQuery = originalQuery;
+        return true;
+    }
+
+    private boolean shouldRecoverQuery(SQLQuery query) {
+        Statement statement = query.getStatement();
+        if (statement instanceof Insert ||
+            statement instanceof Delete ||
+            statement instanceof Update ||
+            (statement instanceof Select &&
+                ((Select) statement).getSelectBody() instanceof PlainSelect &&
+                !CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables())))
+        {
+            return false;
+        }
         return true;
     }
 

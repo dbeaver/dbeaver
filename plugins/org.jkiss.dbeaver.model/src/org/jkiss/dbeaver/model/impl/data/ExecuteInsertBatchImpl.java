@@ -118,6 +118,8 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         DBSTable table,
         boolean useMultiRowInsert,
         Map<String, Object> options) throws DBCException {
+
+        allColumnsDefault = false;
         
         Assert.isLegal(attributes.length == handlers.length);
         Assert.isLegal(useMultiRowInsert || attributes.length == attributeValues.length);

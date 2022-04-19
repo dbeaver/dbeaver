@@ -2433,6 +2433,16 @@ public class SQLEditor extends SQLEditorBase implements
             queryListener);
     }
 
+    public boolean isActiveQueryRunning() {
+        return curQueryProcessor != null && curQueryProcessor.curJobRunning.get() > 0;
+    }
+
+    public void cancelActiveQuery() {
+        if (isActiveQueryRunning()) {
+            curQueryProcessor.cancelJob();
+        }
+    }
+
     @NotNull
     private SQLScriptContext createScriptContext() {
         File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
@@ -3728,6 +3738,14 @@ public class SQLEditor extends SQLEditorBase implements
         public void handleExecuteResult(DBCExecutionResult result) {
             dumpQueryServerOutput(result);
         }
+
+        @Override
+        public void showCurrentError() {
+            if (getLastQueryErrorPosition() > -1) {
+                getSelectionProvider().setSelection(new TextSelection(getLastQueryErrorPosition(), 0));
+                setFocus();
+            }
+        }
     }
 
     private int getMaxResultsTabIndex() {
@@ -3879,7 +3897,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
             if (error != null) {
                 setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
-                if (!visualizeQueryErrors(monitor, query, error)) {
+                SQLQuery originalQuery = curResultsContainer.query instanceof SQLQuery ? (SQLQuery) curResultsContainer.query : null; // SQLQueryResult stores modified query
+                if (!visualizeQueryErrors(monitor, query, error, originalQuery)) {
                     int errorQueryOffset = query.getOffset();
                     int errorQueryLength = query.getLength();
                     if (errorQueryOffset >= 0 && errorQueryLength > 0) {
@@ -3890,6 +3909,7 @@ public class SQLEditor extends SQLEditorBase implements
                                 selectionProvider.setSelection(originalSelection);
                             }
                         }
+                        setLastQueryErrorPosition(errorQueryOffset);
                     }
                 }
             } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {

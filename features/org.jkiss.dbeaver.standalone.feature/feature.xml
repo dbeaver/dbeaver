@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.standalone.feature"
         label="%featureName"
-        version="22.0.1.qualifier"
+        version="22.0.3.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 
@@ -28,6 +28,10 @@
     <includes id="org.jkiss.dbeaver.ui.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
+
+    <!-- Logging -->
+
+    <plugin id="org.jkiss.dbeaver.slf4j" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- Additional plugins for standalone version -->
 

@@ -20,12 +20,14 @@
 package org.jkiss.dbeaver.erd.model;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Map;
 
 /**
  * Provides base class support for model objects to participate in event handling framework
@@ -95,4 +97,9 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject {
         }
         return null;
     }
+
+    public abstract void fromMap(@NotNull ERDContext context, Map<String, Object> map);
+
+    public abstract Map<String, Object> toMap(@NotNull ERDContext context);
+
 }

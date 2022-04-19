@@ -723,7 +723,11 @@ public final class DBUtils {
             addLeafBindings(result, binding);
         }
 
-        return injectAndFilterAttributeBindings(session.getDataSource(), dataContainer, result.toArray(new DBDAttributeBinding[0]), true);
+        return injectAndFilterAttributeBindings(
+            session.getDataSource(),
+            dataContainer,
+            result.toArray(new DBDAttributeBinding[0]),
+            true);
     }
 
     private static void addLeafBindings(List<DBDAttributeBinding> result, DBDAttributeBinding binding) {
@@ -862,6 +866,22 @@ public final class DBUtils {
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Optional association is the one which can be set to NULL
+     */
+    public static boolean isOptionalAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association) throws DBException {
+        if (!(association instanceof DBSEntityReferrer)) {
+            return false;
+        }
+
+        for (DBSEntityAttributeRef ref : CommonUtils.safeCollection(((DBSEntityReferrer) association).getAttributeReferences(monitor))) {
+            if (ref.getAttribute() != null && !ref.getAttribute().isRequired()) {
+                return true;
             }
         }
         return false;

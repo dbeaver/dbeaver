@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -243,6 +244,16 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsRoleBypassRLS() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsRoleReplication() {
+        return false;
+    }
+
+    @Override
     public boolean supportsKeyAndIndexRename() {
         return true;
     }
@@ -260,5 +271,24 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     @Override
     public int getTruncateToolModes() {
         return TRUNCATE_TOOL_MODE_SUPPORT_ONLY_ONE_TABLE | TRUNCATE_TOOL_MODE_SUPPORT_CASCADE;
+    }
+
+    @Override
+    public boolean isHiddenRowidColumn(@NotNull PostgreAttribute attribute) {
+        String defaultValue = attribute.getDefaultValue();
+        if (CommonUtils.isNotEmpty(defaultValue)) {
+            // Rowid column is a special case in Cockroach #14557
+            // Rowid column is hidden from DDL (we read it from Cocroach) and from the data viewer.
+            // It will added automatically after table creation without keys.
+            // But you can create rowid column by yourself with no restrictions, therefore, conditions below may accidentally hide the user column.
+            // Let's hope that users do not create such columns independently
+            return attribute.isRequired() && "unique_rowid()".equals(defaultValue) && "rowid".equals(attribute.getName());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean supportsShowingOfExtraComments() {
+        return false;
     }
 }

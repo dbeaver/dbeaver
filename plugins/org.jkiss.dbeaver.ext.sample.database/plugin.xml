@@ -20,7 +20,7 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ext.sample.database.WorkbenchInitializerCreateSampleDatabase"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ext.sample.database.WorkbenchInitializerCreateSampleDatabase" priority="1"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">

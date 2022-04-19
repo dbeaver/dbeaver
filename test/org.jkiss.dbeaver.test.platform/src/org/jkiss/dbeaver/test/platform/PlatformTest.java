@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.test.platform;
 
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.After;
 import org.junit.Before;
@@ -35,7 +36,7 @@ public class PlatformTest {
     @Test
     public void testPlatformPresence() {
         try {
-            String infoDetails = DBWorkbench.getPlatform().getApplication().getInfoDetails();
+            String infoDetails = DBWorkbench.getPlatform().getApplication().getInfoDetails(new VoidProgressMonitor());
             System.out.println("DBeaver application: " + infoDetails);
         } catch (Exception e) {
             e.printStackTrace();
