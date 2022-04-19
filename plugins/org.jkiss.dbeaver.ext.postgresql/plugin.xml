@@ -300,7 +300,7 @@
                     dialect="postgresql">
                     <replace provider="generic" driver="postgresql"/>
                     <replace provider="postgresql" driver="postgresql"/>
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" load-optional-dependencies="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
 
@@ -308,8 +308,7 @@
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <!-- Postgis -->
                     <file type="jar" path="drivers/postgis" optional="true" bundle="drivers.postgresql"/>
-                    <!-- Waffle JNA is an optional dependency of PostgreSQL JDBC. It's required for SSPI auth -->
-                    <file type="jar" path="drivers/waffle-jna" optional="true" bundle="drivers.postgresql"/>
+<!--                    <file type="jar" path="drivers/waffle" optional="true" bundle="drivers.postgresql"/>-->
 
                     <parameter name="serverType" value="postgresql"/>
                     <property name="loginTimeout" value="20"/>
