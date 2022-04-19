@@ -57,10 +57,10 @@ public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler
             if (forceComment) {
                 // Add comment
                 document.replace(lineOffset, 0, singleLineComments[0]);
-                if(lineNum == startLine) {
-                	selOffset += singleLineComments[0].length();
+                if (lineNum == startLine) {
+                    selOffset += singleLineComments[0].length();
                 } else {
-                	selLength += singleLineComments[0].length();
+                    selLength += singleLineComments[0].length();
                 }
             } else {
                 String lineComment = null;
@@ -84,13 +84,13 @@ public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler
                     document.replace(lineOffset + checkOffset, lineComment.length(), "");
                     
                     if (lineNum == startLine && originalOffset != lineOffset) {
-                    	selOffset = Math.max(lineOffset, originalOffset - lineComment.length());
-                    	if(lineComment.length() + lineOffset > originalOffset) {
-                    		selLength -= lineComment.length() - originalOffset + lineOffset;
-                    	}
+                        selOffset = Math.max(lineOffset, originalOffset - lineComment.length());
+                        if (lineComment.length() + lineOffset > originalOffset) {
+                            selLength -= lineComment.length() - originalOffset + lineOffset;
+                        }
                     } else {
-                    	selOffset = lineOffset;
-                    	selLength -= lineComment.length();
+                        selOffset = lineOffset;
+                        selLength -= lineComment.length();
                     }
                 }
             }
@@ -100,7 +100,6 @@ public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler
         }
         if (originalLength > 0) {
             selectionProvider.setSelection(new TextSelection(selOffset, selLength));
-         
         }
     }
 }
