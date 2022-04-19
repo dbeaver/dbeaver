@@ -17,14 +17,10 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DateTime;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.data.formatters.TimestampFormatSample;
@@ -46,6 +42,7 @@ public class CustomTimeEditor {
     private DateTime timeEditor;
     private final Composite basePart;
 
+    private Listener modifyListener;
     private static final String TIMESTAMP_DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private String format = "";
     private Label timeLabel;
@@ -57,6 +54,7 @@ public class CustomTimeEditor {
     private InputMode inputMode = InputMode.None;
     private final Calendar calendar = Calendar.getInstance();
     private Text textEditor;
+    private SelectionAdapter selectionListener;
 
     private enum InputMode {
         None,
@@ -70,6 +68,9 @@ public class CustomTimeEditor {
         switch (jdbcType) {
             case DATE:
                 inputMode = InputMode.Date;
+                if (selectionListener != null) {
+                    timeEditor.removeSelectionListener(selectionListener);
+                }
                 timeEditor.dispose();
                 if (timeLabel != null) {
                     timeLabel.dispose();
@@ -77,6 +78,9 @@ public class CustomTimeEditor {
                 break;
             case TIME:
                 inputMode = InputMode.Time;
+                if (selectionListener != null) {
+                    dateEditor.removeSelectionListener(selectionListener);
+                }
                 dateEditor.dispose();
                 if (dateLabel != null) {
                     dateLabel.dispose();
@@ -136,6 +140,9 @@ public class CustomTimeEditor {
         final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         textEditor.setLayoutData(gridData);
         textEditor.setVisible(true);
+        if (modifyListener != null) {
+            textEditor.addListener(SWT.Modify, modifyListener);
+        }
         GridLayout layout = new GridLayout(1, false);
         {
             layout.marginHeight = 0;
@@ -145,6 +152,9 @@ public class CustomTimeEditor {
         final GridData layoutData = new GridData(SWT.FILL, SWT.UP, true, false, 1, 1);
 
         if (!timeEditor.isDisposed()) {
+            if (selectionListener != null) {
+                timeEditor.removeSelectionListener(selectionListener);
+            }
             timeEditor.setLayoutData(layoutData);
             timeEditor.setVisible(layoutData.exclude);
             if (timeLabel != null) {
@@ -153,6 +163,9 @@ public class CustomTimeEditor {
             }
         }
         if (!dateEditor.isDisposed()) {
+            if (selectionListener != null) {
+                dateEditor.removeSelectionListener(selectionListener);
+            }
             dateEditor.setLayoutData(layoutData);
             dateEditor.setVisible(layoutData.exclude);
             if (dateLabel != null) {
@@ -171,9 +184,12 @@ public class CustomTimeEditor {
         final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         textEditor.setLayoutData(gridData);
         textEditor.setVisible(false);
+        if (modifyListener != null) {
+            textEditor.removeListener(SWT.Modify, modifyListener);
+        }
         gridData.exclude = true;
         GridLayout layout = new GridLayout(2, false);
-        if (isInline){
+        if (isInline) {
             layout.marginWidth = 0;
             layout.marginHeight = 0;
         }
@@ -187,12 +203,18 @@ public class CustomTimeEditor {
             dateEditor.setVisible(true);
             dateLabel.setLayoutData(layoutDataForLabels);
             dateLabel.setVisible(true);
+            if (selectionListener != null) {
+                dateEditor.addSelectionListener(selectionListener);
+            }
         }
         if (!timeEditor.isDisposed()) {
             timeEditor.setLayoutData(layoutData);
             timeEditor.setVisible(true);
             timeLabel.setLayoutData(layoutDataForLabels);
             timeLabel.setVisible(true);
+            if (selectionListener != null) {
+                timeEditor.addSelectionListener(selectionListener);
+            }
         }
         basePart.layout();
     }
@@ -201,25 +223,20 @@ public class CustomTimeEditor {
         this.format = format;
     }
 
-    /**
-     * Creates listeners for date editors.
-     *
-     * @param listener listener to add to all existing editors
-     */
-    public void addSelectionAdapter(@NotNull SelectionAdapter listener) {
-        if (dateEditor != null && !dateEditor.isDisposed()) {
+    public void addModifyListener(Listener listener) {
+        modifyListener = listener;
+    }
+
+    public void addSelectionListener(@NotNull SelectionAdapter listener) {
+        selectionListener = listener;
+        if (dateEditor != null && !dateEditor.isDisposed() && dateEditor.isVisible()) {
             dateEditor.addSelectionListener(listener);
         }
-        if (timeEditor != null && !timeEditor.isDisposed()) {
+        if (timeEditor != null && !timeEditor.isDisposed() && timeEditor.isVisible()) {
             timeEditor.addSelectionListener(listener);
         }
     }
 
-    public void addModifyListener(@NotNull ModifyListener listener) {
-        if (textEditor != null && !textEditor.isDisposed()) {
-            textEditor.addModifyListener(listener);
-        }
-    }
 
     private String getTimestampFormat() {
         TimestampFormatSample prefFormat = new TimestampFormatSample();
@@ -233,8 +250,22 @@ public class CustomTimeEditor {
     }
 
     public void setTextValue(@Nullable String value) {
-        if (textEditor != null && !textEditor.isDisposed()) {
-            textEditor.setText(value != null ? value : "");
+        setWithoutListener(textEditor, SWT.Modify, modifyListener, () -> {
+            if (textEditor != null && !textEditor.isDisposed()) {
+                textEditor.setText(value != null ? value : "");
+            }
+        });
+    }
+
+
+    //Sometimes we don't want to trigger listener
+    private void setWithoutListener(@NotNull Control control, int type, Listener listener, @NotNull Runnable blockToRun) {
+        if (listener != null) {
+            control.removeListener(type, listener);
+            blockToRun.run();
+            control.addListener(type, listener);
+        } else {
+            blockToRun.run();
         }
     }
 
@@ -258,7 +289,6 @@ public class CustomTimeEditor {
                 millis = -1;
             }
         }
-
     }
 
     @Nullable
@@ -266,6 +296,7 @@ public class CustomTimeEditor {
         if (textEditor != null && !textEditor.isDisposed() && textEditor.isVisible()) {
             return textEditor.getText();
         }
+
         return null;
     }
 
@@ -300,7 +331,7 @@ public class CustomTimeEditor {
         if (this.timeEditor != null && !this.timeEditor.isDisposed()) {
             this.timeEditor.setEnabled(editable);
         }
-        if (this.textEditor != null && !this.textEditor.isDisposed()){
+        if (this.textEditor != null && !this.textEditor.isDisposed()) {
             this.textEditor.setEditable(editable);
         }
     }

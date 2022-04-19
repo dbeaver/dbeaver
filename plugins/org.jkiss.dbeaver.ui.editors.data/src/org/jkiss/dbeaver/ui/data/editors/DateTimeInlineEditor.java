@@ -25,6 +25,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -143,6 +144,21 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     }
 
     @Override
+    protected void addInlineListeners(Control inlineControl, Listener listener) {
+        super.addInlineListeners(inlineControl, listener);
+        timeEditor.addModifyListener(listener);
+        timeEditor.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                dirty = true;
+                Event selectionEvent = new Event();
+                selectionEvent.widget = timeEditor.getControl();
+                timeEditor.getControl().notifyListeners(SWT.Selection, selectionEvent);
+            }
+        });
+    }
+
+    @Override
     protected Control createControl(Composite editPlaceholder) {
         Object value = valueController.getValue();
         valueController.getEditPlaceholder();
@@ -155,23 +171,9 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
         if (!isCalendarMode()) {
             textMode.run();
             textMode.setChecked(true);
-        } else dateEditorMode.setChecked(true);
-
-        timeEditor.addSelectionAdapter(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                dirty = true;
-                Event selectionEvent = new Event();
-                selectionEvent.widget = timeEditor.getControl();
-                timeEditor.getControl().notifyListeners(SWT.Selection, selectionEvent);
-            }
-        });
-        timeEditor.addModifyListener(e -> {
-            dirty = true;
-            Event modificationEvent = new Event();
-            modificationEvent.widget = timeEditor.getControl();
-            timeEditor.getControl().notifyListeners(SWT.Modify, modificationEvent);
-        });
+        } else {
+            dateEditorMode.setChecked(true);
+        }
         primeEditorValue(value);
         timeEditor.createDateFormat(valueController.getValueType());
         timeEditor.setEditable(!valueController.isReadOnly());

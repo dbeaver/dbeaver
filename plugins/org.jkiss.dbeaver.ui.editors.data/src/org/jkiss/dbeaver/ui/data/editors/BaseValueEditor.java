@@ -166,8 +166,12 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             }
         }
         final ControlModifyListener modifyListener = new ControlModifyListener();
-        inlineControl.addListener(SWT.Modify, modifyListener);
-        inlineControl.addListener(SWT.Selection, modifyListener);
+        addInlineListeners(inlineControl, modifyListener);
+    }
+
+    protected void addInlineListeners(Control inlineControl, Listener listener) {
+        inlineControl.addListener(SWT.Modify, listener);
+        inlineControl.addListener(SWT.Selection, listener);
     }
 
     private void addAutoSaveSupport(final Control inlineControl) {
