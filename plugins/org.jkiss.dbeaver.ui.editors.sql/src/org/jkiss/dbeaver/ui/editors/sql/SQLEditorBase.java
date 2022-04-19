@@ -858,8 +858,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             }
                         }
                         if (originalQuery != null) {
-                            originalQuery.addExtraErrorMessage("\n" + SQLEditorMessages.sql_editor_error_position + ":" + (pos.line > 0 ? " line: " + pos.line : "") +
-                                (pos.position > 0 ? " pos: " + pos.position : ""));
+                            if (pos.line > 0 || pos.position >= 0) {
+                                originalQuery.addExtraErrorMessage("\n" + SQLEditorMessages.sql_editor_error_position + ":" + (pos.line > 0 ? " line: " + pos.line : "") +
+                                    (pos.position >= 0 ? " pos: " + pos.position : ""));
+                            }
                             if (index == 0) {
                                 lastQueryErrorPosition = errorOffset;
                             }
