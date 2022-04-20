@@ -35,9 +35,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintStream;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Task utils
@@ -194,27 +193,17 @@ public class DBTaskUtils {
         if (messageOrNull != null) {
             Optional<String> inputFileKey = task.getProperties().keySet().stream().filter(k -> k.contains("inputFile")).findFirst();
             String inputFile = inputFileKey.isPresent() ? task.getProperties().get(inputFileKey.get()).toString() : "file";
-            String dbObjects = extractDbName(task.getProperties().getOrDefault("databaseObjects", "").toString());
-            messageBuilder.append(NLS.bind(messageOrNull, dbObjects, inputFile)).append("\n");
+            String dbObjectNames = "";
+            Object dbObjectIdsObj = task.getProperties().get("databaseObjects");
+            if (dbObjectIdsObj != null) {
+                List<String> dbObjectIds = (List<String>)dbObjectIdsObj;
+                dbObjectNames = dbObjectIds.stream().map(id -> DBUtils.getObjectNameFromId(id)).collect(Collectors.joining(", "));
+            }
+            messageBuilder.append(NLS.bind(messageOrNull, dbObjectNames, inputFile)).append("\n");
             confirmationRequired |= true;
         }
         confirmationRequired |= extraConfirmationsCollector.collect(messageBuilder, task); 
         return confirmationRequired;
-    }
-    
-    private static String extractDbName(String fullDbObjectName) {
-        String separator = "/";
-        String bracket = "]";
-        if (fullDbObjectName.contains(separator)) {
-            int ind = fullDbObjectName.indexOf(separator) + 1;
-            if (fullDbObjectName.contains(bracket)) {
-                return fullDbObjectName.substring(ind, fullDbObjectName.indexOf(bracket));
-            } else {
-                return fullDbObjectName.substring(ind);
-            }
-        } else {
-            return fullDbObjectName;
-        }
     }
     
     public static interface TaskConfirmationsCollector {
