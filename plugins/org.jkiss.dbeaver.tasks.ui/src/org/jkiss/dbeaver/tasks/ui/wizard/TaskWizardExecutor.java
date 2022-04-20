@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
+import org.jkiss.dbeaver.registry.task.TaskRunJob;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintStream;
@@ -45,8 +47,10 @@ public class TaskWizardExecutor extends TaskProcessorUI {
 
     @Override
     protected void runTask() throws DBException {
-        DBTTaskHandler handlerTransfer = getTask().getType().createHandler();
-        handlerTransfer.executeTask(this, getTask(), Locale.getDefault(), log, logWriter, this);
+        if (DBTaskUtils.confirmTask(getTask(), log, logWriter)) {
+            DBTTaskHandler handlerTransfer = getTask().getType().createHandler();
+            handlerTransfer.executeTask(this, getTask(), Locale.getDefault(), log, logWriter, this);
+        }
     }
 
 }
