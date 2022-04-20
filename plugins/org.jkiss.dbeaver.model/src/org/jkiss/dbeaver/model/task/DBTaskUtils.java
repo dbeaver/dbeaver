@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.task;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -26,13 +27,17 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Task utils
@@ -141,5 +146,78 @@ public class DBTaskUtils {
             return false;
         }
         return task.getProject().getTaskManager().getTaskById(task.getId()) != null;
+    }
+
+    public static void confirmTaskOrThrow(DBTTask task, Log taskLog, PrintStream logWriter) throws InterruptedException {
+        if (!confirmTask(task, taskLog, logWriter, (sb, t) -> false)) {
+            throw new InterruptedException(ModelMessages.tasks_restore_confirmation_cancelled_message);
+        }
+    }
+
+    public static void confirmTaskOrThrow(DBTTask task, Log taskLog, PrintStream logWriter, TaskConfirmationsCollector extraConfirmationsCollector) throws InterruptedException {
+        if (!confirmTask(task, taskLog, logWriter, extraConfirmationsCollector)) {
+            throw new InterruptedException(ModelMessages.tasks_restore_confirmation_cancelled_message);
+        }
+    }
+
+    public static boolean confirmTask(DBTTask task, Log taskLog, PrintStream logWriter) {
+        return confirmTask(task, taskLog, logWriter, (sb, t) -> false);
+    }
+
+    public static boolean confirmTask(DBTTask task, Log taskLog, PrintStream logWriter, TaskConfirmationsCollector extraConfirmationsCollector) {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return true;
+        }
+
+        StringBuilder messageBuilder = new StringBuilder();
+        if (!collectConfirmationMessages(messageBuilder, task, extraConfirmationsCollector)) {
+            return true;
+        }
+        if (DBWorkbench.getPlatformUI().confirmAction(NLS.bind(ModelMessages.tasks_restore_confirmation_title, task.getName()), messageBuilder.toString())) {
+            return true;
+        }
+        
+        if (taskLog != null) {
+            taskLog.warn(ModelMessages.tasks_restore_confirmation_cancelled_message);
+        }
+        if (logWriter != null) {
+            logWriter.println();
+            logWriter.println(ModelMessages.tasks_restore_confirmation_cancelled_message);
+            logWriter.println();
+        }
+        return false;
+    }
+
+    public static boolean collectConfirmationMessages(StringBuilder messageBuilder, DBTTask task, TaskConfirmationsCollector extraConfirmationsCollector) {
+        boolean confirmationRequired = false;
+        String messageOrNull = task.getType().confirmationMessageIfNeeded();
+        if (messageOrNull != null) {
+            Optional<String> inputFileKey = task.getProperties().keySet().stream().filter(k -> k.contains("inputFile")).findFirst();
+            String inputFile = inputFileKey.isPresent() ? task.getProperties().get(inputFileKey.get()).toString() : "file";
+            String dbObjects = extractDbName(task.getProperties().getOrDefault("databaseObjects", "").toString());
+            messageBuilder.append(NLS.bind(messageOrNull, dbObjects, inputFile)).append("\n");
+            confirmationRequired |= true;
+        }
+        confirmationRequired |= extraConfirmationsCollector.collect(messageBuilder, task); 
+        return confirmationRequired;
+    }
+    
+    private static String extractDbName(String fullDbObjectName) {
+        String separator = "/";
+        String bracket = "]";
+        if (fullDbObjectName.contains(separator)) {
+            int ind = fullDbObjectName.indexOf(separator) + 1;
+            if (fullDbObjectName.contains(bracket)) {
+                return fullDbObjectName.substring(ind, fullDbObjectName.indexOf(bracket));
+            } else {
+                return fullDbObjectName.substring(ind);
+            }
+        } else {
+            return fullDbObjectName;
+        }
+    }
+    
+    public static interface TaskConfirmationsCollector {
+        boolean collect(StringBuilder messageBuilder, DBTTask task);
     }
 }

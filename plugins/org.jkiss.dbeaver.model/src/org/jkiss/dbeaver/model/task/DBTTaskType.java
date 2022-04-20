@@ -59,4 +59,7 @@ public interface DBTTaskType {
     boolean isDriverApplicable(DBPDriver driver);
 
     boolean isObjectApplicable(Object object);
+
+    @Nullable
+    String confirmationMessageIfNeeded();
 }

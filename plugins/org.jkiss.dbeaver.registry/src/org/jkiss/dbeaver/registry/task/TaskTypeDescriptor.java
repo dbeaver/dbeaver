@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.task;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
@@ -128,6 +129,12 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
     @Override
     public boolean isObjectApplicable(Object object) {
         return object instanceof DBPObject && appliesTo((DBPObject) object);
+    }
+
+    @Nullable
+    @Override
+    public String confirmationMessageIfNeeded() {
+        return CommonUtils.nullIfEmpty(config.getAttribute(RegistryConstants.ATTR_CONFIRMATION_MESSAGE));
     }
 
     public synchronized boolean matchesEntityElements() {
