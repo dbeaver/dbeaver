@@ -49,4 +49,13 @@ public interface DBSAttributeEnumerable extends DBSEntityAttribute
         boolean caseInsensitiveSearch)
         throws DBException;
 
+    /**
+     * Retrieve count of distinct values of this attribute.
+     *
+     * @param session session
+     * @return count of distinct values or {@code null} if it can't be determined
+     * @throws DBException on any error
+     */
+    @Nullable
+    Long getDistinctValuesCount(@NotNull DBCSession session) throws DBException;
 }
