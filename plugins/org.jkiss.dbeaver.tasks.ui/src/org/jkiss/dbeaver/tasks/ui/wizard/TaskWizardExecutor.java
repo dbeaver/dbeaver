@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
-import org.jkiss.dbeaver.registry.task.TaskRunJob;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintStream;
