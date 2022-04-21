@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -84,7 +85,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     private static final String GROUP_PATH = "path"; //$NON-NLS-1$
     private static final String GROUP_LOGIN = "login"; //$NON-NLS-1$
     private boolean activated;
-    private Button createButton;
 
     @Override
     public void createControl(Composite composite)
@@ -201,7 +201,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             gd.horizontalSpan = 2;
             pathText.setLayoutData(gd);
             pathText.addModifyListener(textListener);
-            pathText.addModifyListener(e -> updateCreateButton(site.getDriver()));
 
             Composite buttonsPanel = new Composite(settingsGroup, SWT.NONE);
             gl = new GridLayout(2, true);
@@ -212,62 +211,28 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             //gd.widthHint = 150;
             buttonsPanel.setLayoutData(gd);
 
-            UIUtils.createDialogButton(
-                buttonsPanel,
-                GenericMessages.dialog_connection_browse_button,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        if (metaURL.getAvailableProperties().contains(JDBCConstants.PROP_FILE)) {
-                            FileDialog dialog = new FileDialog(getShell(), SWT.SAVE | SWT.SINGLE);
-                            String text = pathText.getText();
-                            dialog.setFileName(text);
-                            if (CommonUtils.isNotEmpty(text)) {
-                                try {
-                                    String directoryPath = CommonUtils.getDirectoryPath(text);
-                                    if (CommonUtils.isNotEmpty(directoryPath)) {
-                                        dialog.setFilterPath(directoryPath);
-                                    }
-                                } catch (InvalidPathException ex) {
-                                    // Can't find directory path. Ignore it then.
-                                    log.debug("Can't find directory path", ex);
-                                }
-                            }
-                            dialog.setText(GenericMessages.dialog_connection_db_file_chooser_text);
-                            String file = dialog.open();
-                            if (file != null) {
-                                pathText.setText(file);
-                            }
-                        } else {
-                            DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
-                            final String curPath = pathText.getText();
-                            File curFolder = new File(curPath);
-                            if (curFolder.exists()) {
-                                if (curFolder.isDirectory()) {
-                                    dialog.setFilterPath(curFolder.getAbsolutePath());
-                                } else {
-                                    dialog.setFilterPath(curFolder.getParentFile().getAbsolutePath());
-                                }
-                            }
-                            dialog.setText(GenericMessages.dialog_connection_db_folder_chooser_text);
-                            dialog.setMessage(GenericMessages.dialog_connection_db_folder_chooser_message);
-                            String folder = dialog.open();
-                            if (folder != null) {
-                                pathText.setText(folder);
-                            }
+            UIUtils.createDialogButton(buttonsPanel, GenericMessages.dialog_connection_browse_button, null, GenericMessages.dialog_connection_browse_button_tip, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    final String path = showDatabaseFileSelectorDialog(SWT.OPEN);
+                    if (path != null) {
+                        pathText.setText(path);
+                    }
+                }
+            });
+
+            UIUtils.createDialogButton(buttonsPanel, GenericMessages.dialog_connection_create_button, null, GenericMessages.dialog_connection_browse_button_tip, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    final String path = showDatabaseFileSelectorDialog(SWT.SAVE);
+                    if (path != null) {
+                        pathText.setText(path);
+                        if (canCreateEmbeddedDatabase()) {
+                            createEmbeddedDatabase();
                         }
                     }
-                });
-
-            createButton = UIUtils.createDialogButton(buttonsPanel, "Create",
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        createEmbeddedDatabase();
-                    }
-                });
-            createButton.setEnabled(false);
+                }
+            });
 
             addControlToGroup(GROUP_PATH, pathLabel);
             addControlToGroup(GROUP_PATH, pathText);
@@ -283,6 +248,42 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
         createDriverPanel(addrGroup);
         setControl(addrGroup);
+    }
+
+    @Nullable
+    private String showDatabaseFileSelectorDialog(int style) {
+        if (metaURL.getAvailableProperties().contains(JDBCConstants.PROP_FILE)) {
+            FileDialog dialog = new FileDialog(getShell(), SWT.SINGLE | style);
+            String text = pathText.getText();
+            dialog.setFileName(text);
+            if (CommonUtils.isNotEmpty(text)) {
+                try {
+                    String directoryPath = CommonUtils.getDirectoryPath(text);
+                    if (CommonUtils.isNotEmpty(directoryPath)) {
+                        dialog.setFilterPath(directoryPath);
+                    }
+                } catch (InvalidPathException ex) {
+                    // Can't find directory path. Ignore it then.
+                    log.debug("Can't find directory path", ex);
+                }
+            }
+            dialog.setText(GenericMessages.dialog_connection_db_file_chooser_text);
+            return dialog.open();
+        } else {
+            DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
+            final String curPath = pathText.getText();
+            File curFolder = new File(curPath);
+            if (curFolder.exists()) {
+                if (curFolder.isDirectory()) {
+                    dialog.setFilterPath(curFolder.getAbsolutePath());
+                } else {
+                    dialog.setFilterPath(curFolder.getParentFile().getAbsolutePath());
+                }
+            }
+            dialog.setText(GenericMessages.dialog_connection_db_folder_chooser_text);
+            dialog.setMessage(GenericMessages.dialog_connection_db_folder_chooser_message);
+            return dialog.open();
+        }
     }
 
     public void createAdvancedSettingsGroup(Composite composite) {
@@ -495,19 +496,13 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         }
         UIUtils.fixReadonlyTextBackground(urlText);
         showControlGroup(GROUP_LOGIN, !driver.isAnonymousAccess());
-        updateCreateButton(driver);
 
         settingsGroup.getParent().layout();
     }
 
-    private void updateCreateButton(DBPDriver driver) {
-        if (driver == null) {
-            createButton.setEnabled(false);
-            return;
-        }
-        // Enable ""Create" button
-        String paramCreate = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_CREATE_URL_PARAM));
-        createButton.setEnabled(!CommonUtils.isEmpty(paramCreate) && !CommonUtils.isEmpty(pathText.getText()));
+    private boolean canCreateEmbeddedDatabase() {
+        final String param = CommonUtils.toString(site.getDriver().getDriverParameter(GenericConstants.PARAM_CREATE_URL_PARAM));
+        return !CommonUtils.isEmpty(param) && !CommonUtils.isEmptyTrimmed(pathText.getText());
     }
 
     private void createEmbeddedDatabase() {
