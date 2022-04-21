@@ -16,15 +16,28 @@
  */
 package org.jkiss.dbeaver.model.auth;
 
+
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-/**
- * Security manager credentials provider.
- */
-public interface SMCredentialsProvider {
-    /**
-     * @return null if the user is not authorized
-     */
+public class SMCredentials {
+    @NotNull
+    private final String smToken;
     @Nullable
-    SMCredentials getActiveUserCredentials();
+    private final String userId;
+
+    public SMCredentials(@NotNull String smToken, @Nullable String userId) {
+        this.smToken = smToken;
+        this.userId = userId;
+    }
+
+    @NotNull
+    public String getSmToken() {
+        return smToken;
+    }
+
+    @Nullable
+    public String getUserId() {
+        return userId;
+    }
 }
