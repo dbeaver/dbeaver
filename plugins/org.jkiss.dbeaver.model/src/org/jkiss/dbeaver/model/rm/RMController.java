@@ -26,17 +26,14 @@ import org.jkiss.dbeaver.DBException;
 public interface RMController {
 
     @NotNull
-    RMProject[] listAccessibleProjects();
+    RMProject[] listAccessibleProjects() throws DBException;
 
     @NotNull
-    RMProject[] listSharedProjects();
+    RMProject[] listSharedProjects() throws DBException;
 
-    @NotNull
-    RMProject getPrivateProject();
+    void createProject(@NotNull RMProject project) throws DBException;
 
-    void createProject(@NotNull RMProject project);
-
-    void deleteProject(@NotNull String projectId);
+    void deleteProject(@NotNull String projectId) throws DBException;
 
     @NotNull
     RMResource[] listResources(
