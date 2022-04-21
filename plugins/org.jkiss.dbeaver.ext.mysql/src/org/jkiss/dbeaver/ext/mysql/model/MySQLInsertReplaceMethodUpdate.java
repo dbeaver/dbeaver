@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
+import java.util.StringJoiner;
+
 /**
  *   If you specify an ON DUPLICATE KEY UPDATE clause and a row to be inserted would cause a duplicate value in a UNIQUE index or PRIMARY KEY, an UPDATE of the old row occurs.
  *   It can be better then MySQLInsertReplaceMethod class with REPLACE INTO, because REPLACE INTO first deletes a row, and then insert a new one.
@@ -48,18 +50,15 @@ public class MySQLInsertReplaceMethodUpdate implements DBDInsertReplaceMethod {
     }
 
     private void appendUpdateCase(@NotNull StringBuilder query, @NotNull DBSTable table, DBSAttributeBase[] attributes) {
-        boolean first = true;
+        final StringJoiner names = new StringJoiner(",");
         for (DBSAttributeBase attribute : attributes) {
             if (DBUtils.isPseudoAttribute(attribute)) {
                 continue;
             }
-            if (!first) {
-                query.append(",");
-            }
             String attrName = getAttributeName(table, attribute);
-            query.append(attrName).append("=VALUES(").append(attrName).append(")");
-            first = false;
+            names.add(attrName + "=VALUES(" + attrName + ")");
         }
+        query.append(names);
     }
 
     private String getAttributeName(@NotNull DBSTable table, @NotNull DBSAttributeBase attribute) {
