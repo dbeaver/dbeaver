@@ -111,6 +111,19 @@ class MySQLDialect extends JDBCSQLDialect {
             "YEAR"
     };
 
+    private static final String[] MYSQL_GEOMETRY_FUNCTIONS = {
+        "ST_ASWKT",
+        "ST_GEOMCOLLFROMTEXT",
+        "ST_GEOMETRYCOLLECTIONFROMTEXT",
+        "ST_GEOMFROMTEXT",
+        "ST_LINEFROMTEXT",
+        "ST_MLINEFROMTEXT",
+        "ST_MPOINTFROMTEXT",
+        "ST_MPOLYFROMTEXT",
+        "ST_POINTFROMTEXT",
+        "ST_POLYFROMTEXT"
+    };
+
     private static String[] EXEC_KEYWORDS =  { "CALL" };
     private int lowerCaseTableNames;
 
@@ -137,6 +150,7 @@ class MySQLDialect extends JDBCSQLDialect {
 
         addDataTypes(Arrays.asList("GEOMETRY", "POINT", "CHAR"));
         addFunctions(Arrays.asList(MYSQL_EXTRA_FUNCTIONS));
+        addFunctions(Arrays.asList(MYSQL_GEOMETRY_FUNCTIONS));
     }
 
     @Nullable
