@@ -171,6 +171,8 @@ public class DBTaskUtils {
         StringBuilder messageBuilder = new StringBuilder();
         if (!collectConfirmationMessages(messageBuilder, task, extraConfirmationsCollector)) {
             return true;
+        } else {
+            messageBuilder.append("\n").append(ModelMessages.tasks_restore_confirmation_message);
         }
         if (DBWorkbench.getPlatformUI().confirmAction(NLS.bind(ModelMessages.tasks_restore_confirmation_title, task.getName()), messageBuilder.toString())) {
             return true;
