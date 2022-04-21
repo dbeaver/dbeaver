@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -76,6 +77,9 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
         preferences.setValue(GeometryViewerConstants.PREF_DEFAULT_SRID, CommonUtils.toInt(defaultSridText.getText()));
         preferences.setValue(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER, CommonUtils.toInt(maxObjectsText.getText()));
         preferences.setValue(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL, CommonUtils.toInt(minZoomLevelSpinner.getText()));
+
+        PrefUtils.savePreferenceStore(preferences);
+
         return true;
     }
 }
