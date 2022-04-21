@@ -225,6 +225,10 @@ public class ModelMessages extends NLS {
 	public static String controls_querylog_shell_text;
 	public static String controls_querylog_success;
 	public static String controls_querylog_transaction;
+	
+	public static String tasks_restore_confirmation_title;
+	public static String tasks_restore_confirmation_cancelled_message;
+    public static String tasks_restore_confirmation_message;
 
 	static {
 		// initialize resource bundle
