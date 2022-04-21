@@ -77,7 +77,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         // Modify query (filters + parameters)
         DBPDataSource dataSource = session.getDataSource();
         SQLQuery sqlQuery = query;
-        String queryText = sqlQuery.getOriginalText();//.trim();
+        String queryText = sqlQuery.getText();//.trim();
         if (dataFilter != null && dataFilter.hasFilters()) {
             String filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
                 session.getProgressMonitor(),
@@ -92,7 +92,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
             syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
             SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
             ruleManager.loadRules(dataSource, false);
-            SQLParserContext parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, new Document(query.getOriginalText()));
+            SQLParserContext parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, new Document(query.getText()));
             sqlQuery.setParameters(SQLScriptParser.parseParameters(parserContext, 0, sqlQuery.getLength()));
             if (!scriptContext.fillQueryParameters(sqlQuery, CommonUtils.isBitSet(flags, DBSDataContainer.FLAG_REFRESH))) {
                 // User canceled
