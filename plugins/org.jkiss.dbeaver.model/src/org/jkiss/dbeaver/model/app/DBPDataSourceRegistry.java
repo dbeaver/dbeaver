@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
-import org.jkiss.dbeaver.model.auth.SMAuthCredentialsProvider;
+import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
@@ -140,7 +140,7 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     // Registry auth provider. Null by default.
     @Nullable
-    SMAuthCredentialsProvider getAuthCredentialsProvider();
+    DBACredentialsProvider getAuthCredentialsProvider();
 
     void dispose();
 
