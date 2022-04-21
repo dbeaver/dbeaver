@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.DBException;
 /**
  * Resource manager API.
  */
-public interface RMService {
+public interface RMController {
 
     @NotNull
     RMProject[] listAccessibleProjects();

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -231,7 +232,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
                 // Sub folder
                 return handler.makeNavigatorNode(this, resource);
             }
-            DBPResourceHandler resourceHandler = getModel().getPlatform().getWorkspace().getResourceHandler(resource);
+            DBPResourceHandler resourceHandler = DBPPlatformEclipse.getInstance().getWorkspace().getResourceHandler(resource);
             if (resourceHandler == null) {
                 log.debug("Skip resource '" + resource.getName() + "'");
                 return null;
@@ -459,7 +460,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     }
 
     public void refreshResourceState(Object source) {
-        DBPResourceHandler newHandler = getModel().getPlatform().getWorkspace().getResourceHandler(resource);
+        DBPResourceHandler newHandler = DBPPlatformEclipse.getInstance().getWorkspace().getResourceHandler(resource);
         if (newHandler != handler) {
             handler = newHandler;
         }

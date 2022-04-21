@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
@@ -119,7 +120,10 @@ public class DBNModel implements IResourceChangeListener {
         this.root = new DBNRoot(this);
 
         if (isGlobal()) {
-            platform.getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
+            DBPPlatform platform = DBWorkbench.getPlatform();
+            if (platform instanceof DBPPlatformEclipse) {
+                ((DBPPlatformEclipse)platform).getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
+            }
             new EventProcessingJob().schedule();
         }
     }
@@ -127,7 +131,10 @@ public class DBNModel implements IResourceChangeListener {
     public void dispose()
     {
         if (isGlobal()) {
-            platform.getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
+            DBPPlatform platform = DBWorkbench.getPlatform();
+            if (platform instanceof DBPPlatformEclipse) {
+                ((DBPPlatformEclipse)platform).getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
+            }
         }
 
         if (root != null) {
@@ -613,7 +620,7 @@ public class DBNModel implements IResourceChangeListener {
                     if (projectNode == null) {
                         if (childDelta.getKind() == IResourceDelta.ADDED) {
                             // New projectNode
-                            DBPProject projectMeta = platform.getWorkspace().getProject(project);
+                            DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(project);
                             if (projectMeta == null) {
                                 log.error("Can't find project '" + project.getName() + "' metadata");
                             } else {
@@ -626,7 +633,7 @@ public class DBNModel implements IResourceChangeListener {
                     } else {
                         if (childDelta.getKind() == IResourceDelta.REMOVED) {
                             // Project deleted
-                            DBPProject projectMeta = platform.getWorkspace().getProject(project);
+                            DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(project);
                             if (projectMeta == null) {
                                 log.error("Can't find project '" + project.getName() + "' metadata");
                             } else {

@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -54,7 +55,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     private final NumberFormat sizeFormat = new DecimalFormat();
 
     public ProjectExplorerView() {
-        DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
+        DBPPlatformEclipse.getInstance().getWorkspace().addProjectListener(this);
     }
 
     @Override
@@ -222,7 +223,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                 UINavigatorMessages.navigator_project_explorer_columns_modified_description,
                 SWT.LEFT, false, false,
                 new ColumnLabelProvider() {
-                    private SimpleDateFormat sdf = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
+                    private final SimpleDateFormat sdf = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
                     @Override
                     public String getText(Object element) {
@@ -265,7 +266,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     @Override
     public void dispose() {
-        DBWorkbench.getPlatform().getWorkspace().removeProjectListener(this);
+        DBPPlatformEclipse.getInstance().getWorkspace().removeProjectListener(this);
         super.dispose();
     }
 

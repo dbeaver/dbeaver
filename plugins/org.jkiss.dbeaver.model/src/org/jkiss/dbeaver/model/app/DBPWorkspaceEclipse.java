@@ -24,20 +24,28 @@ import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.auth.SMAuthSpace;
-import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.nio.file.Path;
-import java.util.List;
 
 /**
  * Desktop eclipse based workspace
  */
-public interface DBPWorkspaceStandalone extends DBPWorkspace
+public interface DBPWorkspaceEclipse extends DBPWorkspace
 {
     @NotNull
     IWorkspace getEclipseWorkspace();
+
+    void setActiveProject(DBPProject project);
+
+    DBPProject getProject(@NotNull IProject project);
+
+    /**
+     * Reloads workspace contents. Creates missing projects, removes unexistent projects
+     */
+    void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException;
+
+    void addProjectListener(DBPProjectListener listener);
+
+    void removeProjectListener(DBPProjectListener listener);
 
     DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors();
     DBPResourceHandlerDescriptor[] getAllResourceHandlers();

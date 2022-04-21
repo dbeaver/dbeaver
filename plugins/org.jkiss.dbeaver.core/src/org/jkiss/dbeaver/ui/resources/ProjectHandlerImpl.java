@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.resources;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -53,13 +54,13 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
     public DBNProject makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) {
         return new DBNProject(
             parentNode,
-            DBWorkbench.getPlatform().getWorkspace().getProject((IProject) resource),
+            DBPPlatformEclipse.getInstance().getWorkspace().getProject((IProject) resource),
             this);
     }
 
     @Override
     public void openResource(@NotNull IResource resource) {
-        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProject((IProject) resource);
+        DBPProject project = DBPPlatformEclipse.getInstance().getWorkspace().getProject((IProject) resource);
         if (project == null) {
             DBWorkbench.getPlatformUI().showError("No project", "Can't get project metadata for resource " + resource.getName());
             return;

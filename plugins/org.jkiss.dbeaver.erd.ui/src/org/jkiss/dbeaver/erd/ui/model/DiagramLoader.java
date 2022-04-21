@@ -35,11 +35,11 @@ import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.part.*;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.SharedFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -118,7 +118,7 @@ public class DiagramLoader extends ERDPersistedState {
         monitor.beginTask("Parse diagram", 1);
         final EntityDiagram diagram = diagramPart.getDiagram();
 
-        DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(project);
+        DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(project);
         if (projectMeta == null) {
             throw new DBException("Cannot find datasource registry for project '" + project.getName() + "'");
         }

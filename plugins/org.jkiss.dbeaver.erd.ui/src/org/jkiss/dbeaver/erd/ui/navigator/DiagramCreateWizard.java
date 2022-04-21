@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.erd.ui.model.DiagramCollectSettingsDefault;
 import org.jkiss.dbeaver.erd.ui.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -125,7 +126,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
             DiagramCreator creator = new DiagramCreator(rootObjects);
             UIUtils.run(getContainer(), true, true, creator);
 
-            DBPResourceHandler handler = DBWorkbench.getPlatform().getWorkspace().getResourceHandler(creator.diagramFile);
+            DBPResourceHandler handler = DBPPlatformEclipse.getInstance().getWorkspace().getResourceHandler(creator.diagramFile);
             if (handler != null) {
                 handler.openResource(creator.diagramFile);
             }

@@ -22,13 +22,16 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -41,7 +44,7 @@ import java.io.File;
 
 class ProjectImportWizardPageFile extends WizardPage {
 
-    private ProjectImportData importData;
+    private final ProjectImportData importData;
     private String curFolder;
     private Table projectsTable;
 
@@ -67,20 +70,16 @@ class ProjectImportWizardPageFile extends WizardPage {
         Composite configGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_project_import_wizard_file_group_input, 3, GridData.FILL_HORIZONTAL, 0);
 
         final Text fileNameText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_import_wizard_file_label_file, null); //$NON-NLS-2$
-        fileNameText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                String fileName = fileNameText.getText();
-                if (CommonUtils.isEmpty(fileName)) {
-                    importData.setImportFile(null);
-                    clearArchive();
-                } else {
-                    importData.setImportFile(new File(fileName));
-                    loadArchive();
-                }
-                updateState();
+        fileNameText.addModifyListener(e -> {
+            String fileName = fileNameText.getText();
+            if (CommonUtils.isEmpty(fileName)) {
+                importData.setImportFile(null);
+                clearArchive();
+            } else {
+                importData.setImportFile(new File(fileName));
+                loadArchive();
             }
+            updateState();
         });
         Button openFolder = new Button(configGroup, SWT.PUSH);
         openFolder.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
@@ -157,14 +156,11 @@ class ProjectImportWizardPageFile extends WizardPage {
                 // Identify the selected row
                 Text text = new Text(projectsTable, SWT.BORDER);
                 text.setText(item.getText(1));
-                text.addModifyListener(new ModifyListener() {
-                    @Override
-                    public void modifyText(ModifyEvent e) {
-                        Text text = (Text) tableEditor.getEditor();
-                        item.setText(1, text.getText());
-                        updateProjectsSelection();
-                        updateState();
-                    }
+                text.addModifyListener(e -> {
+                    Text text1 = (Text) tableEditor.getEditor();
+                    item.setText(1, text1.getText());
+                    updateProjectsSelection();
+                    updateState();
                 });
                 text.selectAll();
                 text.setFocus();
@@ -208,7 +204,7 @@ class ProjectImportWizardPageFile extends WizardPage {
     private boolean checkProjectItem(TableItem item)
     {
         String projectName = item.getText(1);
-        IProject project = DBWorkbench.getPlatform().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
+        IProject project = DBPPlatformEclipse.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
         if (!project.isAccessible()) {
             item.setForeground(1, null);
             return true;

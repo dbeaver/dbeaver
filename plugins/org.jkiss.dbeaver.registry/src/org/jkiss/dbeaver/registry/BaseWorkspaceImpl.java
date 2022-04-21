@@ -48,7 +48,7 @@ import java.util.*;
 /**
  * BaseWorkspaceImpl.
  */
-public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFileManager {
+public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExternalFileManager {
 
     private static final Log log = Log.getLog(BaseWorkspaceImpl.class);
 

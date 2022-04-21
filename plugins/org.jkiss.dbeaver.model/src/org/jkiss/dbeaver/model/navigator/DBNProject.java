@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPResourceHandler;
-import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -167,11 +164,14 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     protected IResource[] addImplicitMembers(IResource[] members) {
-        for (DBPResourceHandlerDescriptor rh : project.getWorkspace().getAllResourceHandlers()) {
-            IFolder rhDefaultRoot = project.getWorkspace().getResourceDefaultRoot(getProject(), rh, false);
-            if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
-                // Add as explicit member
-                members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
+        DBPWorkspace workspace = project.getWorkspace();
+        if (workspace instanceof DBPWorkspaceEclipse) {
+            for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceEclipse)workspace).getAllResourceHandlers()) {
+                IFolder rhDefaultRoot = ((DBPWorkspaceEclipse)workspace).getResourceDefaultRoot(getProject(), rh, false);
+                if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
+                    // Add as explicit member
+                    members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
+                }
             }
         }
         return super.addImplicitMembers(members);
