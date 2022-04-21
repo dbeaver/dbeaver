@@ -298,7 +298,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     }
                     break;
                 case CURRENT:
-                    if (curRow != null) {
+                    if (curRow != null && !recordMode) {
                         GridPos curPos = spreadsheet.getCursorPosition();
                         GridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, curRow.getVisualNumber()));
                         if (newCell != null) {
