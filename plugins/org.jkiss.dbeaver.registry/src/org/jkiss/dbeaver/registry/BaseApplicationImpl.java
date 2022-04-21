@@ -53,7 +53,7 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     @NotNull
     @Override
     public DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace) {
-        return new BasicWorkspace(platform, eclipseWorkspace);
+        return new DesktopWorkspace(platform, eclipseWorkspace);
     }
 
     @Override

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceStandalone;
 
 /**
  * DBeaver workspace.
@@ -27,11 +28,11 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
  * Additionally holds information about remote workspace.
  * Identified by unique ID (random UUID).
  */
-public class BasicWorkspace extends BaseWorkspaceImpl {
+public class DesktopWorkspace extends BaseWorkspaceImpl implements DBPWorkspaceStandalone {
 
-    private String workspaceId;
+    private final String workspaceId;
 
-    public BasicWorkspace(DBPPlatform platform, IWorkspace eclipseWorkspace) {
+    public DesktopWorkspace(DBPPlatform platform, IWorkspace eclipseWorkspace) {
         super(platform, eclipseWorkspace);
 
         workspaceId = readWorkspaceId();
