@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -194,7 +194,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     UIUtils.createLabelText(infoPanel, TaskUIMessages.task_config_wizard_page_task_text_label_task_id, task.getId(), SWT.BORDER | SWT.READ_ONLY);
                 }
 
-                UIUtils.asyncExec(() -> (taskSaved ? taskDescriptionText : taskLabelText).setFocus());
+                UIUtils.asyncExec(() -> {
+                    Text widgetToFocus = taskSaved ? taskDescriptionText : taskLabelText;
+                    if (widgetToFocus != null && !widgetToFocus.isDisposed()) {
+                        widgetToFocus.setFocus();
+                    }
+                });
 
                 if (task != null) {
                     UIUtils.createControlLabel(infoPanel, TaskUIMessages.task_config_wizard_page_task_control_label_category);

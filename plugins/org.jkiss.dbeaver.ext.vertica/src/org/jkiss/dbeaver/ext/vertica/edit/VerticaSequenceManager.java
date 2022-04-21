@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.vertica.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.vertica.model.VerticaSchema;
 import org.jkiss.dbeaver.ext.vertica.model.VerticaSequence;
@@ -41,7 +42,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.Map;
 
-public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, VerticaSchema> implements DBEObjectRenamer<VerticaSequence> {
+public class VerticaSequenceManager extends SQLObjectEditor<GenericSequence, VerticaSchema> implements DBEObjectRenamer<GenericSequence> {
 
     @Override
     public boolean canCreateObject(Object container) {
@@ -49,7 +50,7 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
     }
 
     @Override
-    protected VerticaSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected GenericSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         VerticaSchema schema = (VerticaSchema) structContainer.getSchema();
         VerticaSequence sequence = new VerticaSequence(structContainer, "new_sequence");
@@ -64,7 +65,7 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
         final StringBuilder sequenceOptions = new StringBuilder();
-        VerticaSequence sequence = command.getObject();
+        GenericSequence sequence = command.getObject();
         sequenceOptions.append("CREATE SEQUENCE ").append(sequence.getFullyQualifiedName(DBPEvaluationContext.DDL));
         addSequenceOptions(sequence, sequenceOptions, command.getProperties());
         actions.add(new SQLDatabasePersistAction(
@@ -87,19 +88,23 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, VerticaSequence> getObjectsCache(VerticaSequence object) {
+    public DBSObjectCache<? extends DBSObject, GenericSequence> getObjectsCache(GenericSequence object) {
+        DBSObject parentObject = object.getParentObject();
+        if (parentObject instanceof GenericStructContainer) {
+            return ((GenericStructContainer) parentObject).getSequenceCache();
+        }
         return null;
     }
 
     @Override
-    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull VerticaSequence object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull GenericSequence object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
-        VerticaSequence sequence = command.getObject();
+        GenericSequence sequence = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename sequence",
@@ -110,7 +115,7 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
-        VerticaSequence sequence = command.getObject();
+        GenericSequence sequence = command.getObject();
         final StringBuilder sequenceOptions = new StringBuilder();
         addSequenceOptions(sequence, sequenceOptions, command.getProperties());
 
@@ -122,7 +127,7 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
         }
     }
 
-    private void addSequenceOptions(VerticaSequence sequence, StringBuilder ddl, Map<Object, Object> options) {
+    private void addSequenceOptions(GenericSequence sequence, StringBuilder ddl, Map<Object, Object> options) {
         if (options.containsKey("incrementBy")) {
             ddl.append("\n\tINCREMENT BY ").append(options.get("incrementBy"));
         }
@@ -152,8 +157,8 @@ public class VerticaSequenceManager extends SQLObjectEditor<VerticaSequence, Ver
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<VerticaSequence, PropertyHandler> command, Map<String, Object> options) {
-        VerticaSequence sequence = command.getObject();
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<GenericSequence, PropertyHandler> command, Map<String, Object> options) {
+        GenericSequence sequence = command.getObject();
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment sequence",

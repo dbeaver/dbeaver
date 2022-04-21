@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -256,6 +256,8 @@ public class UIServiceSQLImpl implements UIServiceSQL {
 
     @Override
     public boolean useIsolatedConnections(DBPContextProvider contextProvider) {
-        return contextProvider.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
+        DBPDataSourceContainer container = contextProvider.getExecutionContext().getDataSource().getContainer();
+        return container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
+            !container.isForceUseSingleConnection();
     }
 }

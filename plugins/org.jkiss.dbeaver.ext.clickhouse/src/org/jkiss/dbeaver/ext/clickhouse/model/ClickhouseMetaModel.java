@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,15 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -38,7 +42,7 @@ import java.util.Map;
 /**
  * ClickhouseMetaModel
  */
-public class ClickhouseMetaModel extends GenericMetaModel
+public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
     public ClickhouseMetaModel() {
         super();
@@ -74,7 +78,8 @@ public class ClickhouseMetaModel extends GenericMetaModel
 
     @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
-        if (sourceObject.getSchema().getName().equals("system")) {
+        GenericSchema schema =  sourceObject.getSchema();
+        if (schema != null && schema.getName().equals("system")) {
             return super.getTableDDL(monitor, sourceObject, options);
         }
         GenericDataSource dataSource = sourceObject.getDataSource();
@@ -127,4 +132,14 @@ public class ClickhouseMetaModel extends GenericMetaModel
     public boolean supportsNotNullColumnModifiers(DBSObject object) {
         return false;
     }
+
+    @Override
+    @Nullable
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
+        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
+            return new QueryTransformerLimit(true, true);
+        }
+        return null;
+    }
+
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -461,6 +461,17 @@ public final class SQLUtils {
         @NotNull StringBuilder query,
         boolean inlineCriteria)
     {
+        appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria, false);
+    }
+
+    public static void appendConditionString(
+        @NotNull DBDDataFilter filter,
+        @NotNull DBPDataSource dataSource,
+        @Nullable String conditionTable,
+        @NotNull StringBuilder query,
+        boolean inlineCriteria,
+        boolean subQuery)
+    {
         final String operator = filter.isAnyConstraint() ? " OR " : " AND ";  //$NON-NLS-1$ $NON-NLS-2$
         final DBDAttributeConstraint[] constraints = filter.getConstraints().stream()
             .filter(x -> x.getCriteria() != null || x.getOperator() != null)
@@ -488,13 +499,21 @@ public final class SQLUtils {
             if (cAttr instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) cAttr;
                 if (binding.getEntityAttribute() != null &&
+                    binding.getMetaAttribute() != null &&
                     binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
                     binding instanceof DBDAttributeBindingType)
                 {
                     attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
                 } else {
-                    // Most likely it is an expression so we don't want to quote it
-                    attrName = binding.getMetaAttribute().getName();
+                    if (binding.getMetaAttribute() == null || binding.getEntityAttribute() != null) {
+                        // Seems to a reference on a table column.
+                        // It is better to use real table column in expressions because aliases may not work
+                        attrName = DBUtils.getQuotedIdentifier(dataSource,
+                            subQuery ? constraint.getAttributeLabel() : constraint.getAttributeName());
+                    } else {
+                        // Most likely it is an expression so we don't want to quote it
+                        attrName = binding.getMetaAttribute().getName();
+                    }
                 }
             } else if (cAttr != null) {
                 attrName = DBUtils.getObjectFullName(dataSource, cAttr, DBPEvaluationContext.DML);
@@ -509,13 +528,19 @@ public final class SQLUtils {
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
             if (constraints.length > 0) {
-                query.append(operator);
+                query.append(operator).append('(').append(filter.getWhere()).append(')');
+            } else {
+                query.append(filter.getWhere());
             }
-            query.append(filter.getWhere());
         }
     }
 
-    public static void appendOrderString(@NotNull DBDDataFilter filter, @NotNull DBPDataSource dataSource, @Nullable String conditionTable, @NotNull StringBuilder query)
+    public static void appendOrderString(
+        @NotNull DBDDataFilter filter,
+        @NotNull DBPDataSource dataSource,
+        @Nullable String conditionTable,
+        boolean subQuery,
+        @NotNull StringBuilder query)
     {
         // Construct ORDER BY
         boolean hasOrder = false;
@@ -523,8 +548,8 @@ public final class SQLUtils {
             if (hasOrder) query.append(',');
             String orderString = null;
             if (co.isPlainNameReference() || co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta || co.getAttribute() instanceof DBDAttributeBindingType) {
-                String orderColumn = co.getAttributeName();
-                if (co.getAttribute() == null || PATTERN_SIMPLE_NAME.matcher(orderColumn).matches()) {
+                String orderColumn = subQuery ? co.getAttributeLabel() : co.getAttributeName();
+                if (canOrderByName(dataSource, co, orderColumn) && !filter.hasNameDuplicates(orderColumn)) {
                     // It is a simple column.
                     orderString = co.getFullAttributeName();
                     if (conditionTable != null) {
@@ -534,13 +559,12 @@ public final class SQLUtils {
             }
             if (orderString == null) {
                 // Use position number
-                int orderIndex = filter.getConstraints().indexOf(co);
-                if (orderIndex != -1) {
-                    orderString = String.valueOf(orderIndex + 1);
-                } else {
+                int orderIndex = getConstraintOrderIndex(filter, co);
+                if (orderIndex == -1) {
                     log.debug("Can't generate column order: no name and no position found");
                     continue;
                 }
+                orderString = String.valueOf(orderIndex);
             }
             query.append(orderString);
             if (co.isOrderDescending()) {
@@ -552,6 +576,18 @@ public final class SQLUtils {
             if (hasOrder) query.append(',');
             query.append(filter.getOrder());
         }
+    }
+
+    private static boolean canOrderByName(@NotNull DBPDataSource dataSource, @NotNull DBDAttributeConstraint constraint, @NotNull String constraintName) {
+        if (constraint.getAttribute() == null) {
+            return true;
+        }
+        if (!dataSource.getSQLDialect().supportsOrderByIndex()) {
+            return true;
+        }
+        return PATTERN_SIMPLE_NAME
+            .matcher(constraintName)
+            .matches();
     }
 
     @Nullable
@@ -621,14 +657,19 @@ public final class SQLUtils {
                 }
                 if (hasNull) {
                     conString.append("IS NULL OR ");
-                    if (conditionTable != null) {
-                        conString.append(conditionTable).append('.');
+                    
+                    if (constraint.getEntityAlias() != null) {
+                    	conString.append(constraint.getEntityAlias()).append('.');
+                    } else if (conditionTable != null) {
+                    	conString.append(conditionTable).append('.');
                     }
+                    
                     conString.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
                 }
 
+                Pair<String, String> brackets = dataSource.getSQLDialect().getInClauseParentheses();
                 conString.append(operator.getExpression());
-                conString.append(" (");
+                conString.append(' ').append(brackets.getFirst());
                 if (!value.getClass().isArray()) {
                     value = new Object[] {value};
                 }
@@ -648,12 +689,17 @@ public final class SQLUtils {
                         conString.append(dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true));
                     }
                 }
-                conString.append(")");
+                conString.append(brackets.getSecond());
             }
             return conString.toString();
         } else {
             return null;
         }
+    }
+
+    public static int getConstraintOrderIndex(@NotNull DBDDataFilter dataFilter, @NotNull DBDAttributeConstraint constraint) {
+        int index = dataFilter.getConstraints().indexOf(constraint);
+        return index == -1 ? index : index + 1;
     }
 
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject attribute, @Nullable Object value) {
@@ -944,15 +990,15 @@ public final class SQLUtils {
                 .append(DBEAVER_DDL_WARNING).append(lineSeparator);
         }
         if (persistActions != null) {
-            String redefiner = sqlDialect.getScriptDelimiterRedefiner();
             for (DBEPersistAction action : persistActions) {
                 String scriptLine = action.getScript();
                 if (CommonUtils.isEmpty(scriptLine)) {
                     continue;
                 }
 
+                String redefiner = sqlDialect.getScriptDelimiterRedefiner();
                 String delimiter = getScriptLineDelimiter(sqlDialect);
-                if (action.isComplex() && redefiner != null) {
+                if (action.isComplex() && redefiner != null && !redefiner.equals(delimiter)) {
                     script.append(lineSeparator).append(redefiner).append(" ").append(DBEAVER_SCRIPT_DELIMITER).append(lineSeparator);
                     delimiter = DBEAVER_SCRIPT_DELIMITER;
                     script.append(delimiter).append(lineSeparator);
@@ -982,7 +1028,7 @@ public final class SQLUtils {
                 }
                 script.append(lineSeparator);
 
-                if (action.isComplex() && redefiner != null) {
+                if (action.isComplex() && redefiner != null && !redefiner.equals(delimiter)) {
                     script.append(redefiner).append(" ").append(getScriptLineDelimiter(sqlDialect)).append(lineSeparator);
                 }
             }
@@ -1047,7 +1093,8 @@ public final class SQLUtils {
             return name.split(Pattern.quote(nameSeparator));
         }
         if (!name.contains(nameSeparator)) {
-            return new String[] { DBUtils.getUnQuotedIdentifier(name, quoteStrings) };
+            name = keepQuotes ? name : DBUtils.getUnQuotedIdentifier(name, quoteStrings);
+            return new String[]{name};
         }
         List<String> nameList = new ArrayList<>();
         while (!name.isEmpty()) {
@@ -1184,7 +1231,7 @@ public final class SQLUtils {
             // Construct ORDER BY
             if (dataFilter.hasOrdering()) {
                 query.append("\nORDER BY "); //$NON-NLS-1$
-                appendOrderString(dataFilter, dataSource, tableAlias, query);
+                appendOrderString(dataFilter, dataSource, tableAlias, false, query);
             }
         }
     }

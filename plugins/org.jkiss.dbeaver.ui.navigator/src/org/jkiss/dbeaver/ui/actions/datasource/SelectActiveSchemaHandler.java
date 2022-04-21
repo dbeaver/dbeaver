@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDatabaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -67,6 +68,8 @@ import java.util.List;
 import java.util.Map;
 
 public class SelectActiveSchemaHandler extends AbstractDataSourceHandler implements IElementUpdater {
+
+    public static final int DEFAULT_SCHEMA_LIST_LIMIT = 100;
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -245,6 +248,10 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             }
             if (defObjects == null) defObjects = new DBSObject[0];
             DBSObject[] finalDefObjects = defObjects;
+            int nodesLimit = Math.min(
+                DEFAULT_SCHEMA_LIST_LIMIT,
+                DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE));
+
             for (DBNDatabaseNode node : contextDefaultObjectsReader.getNodeList()) {
                 menuItems.add(
                     new ActionContributionItem(new Action(node.getName(), Action.AS_CHECK_BOX) {
@@ -267,6 +274,9 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         }
                     }
                 ));
+                if (menuItems.size() >= nodesLimit) {
+                    break;
+                }
             }
         }
     }

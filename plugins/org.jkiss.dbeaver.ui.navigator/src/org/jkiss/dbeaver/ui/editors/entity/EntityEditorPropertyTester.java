@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.jface.text.IUndoManager;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.editors.entity.handlers.ObjectPropertySwitchToSourceHandler;
 
 /**
  * EntityEditorPropertyTester
@@ -33,6 +34,7 @@ public class EntityEditorPropertyTester extends PropertyTester
     public static final String PROP_DIRTY = "dirty";
     public static final String PROP_CAN_UNDO = "canUndo";
     public static final String PROP_CAN_REDO = "canRedo";
+    public static final String PROP_HAS_SOURCE = "hasSource";
 
     public EntityEditorPropertyTester() {
         super();
@@ -46,6 +48,8 @@ public class EntityEditorPropertyTester extends PropertyTester
         EntityEditor editor = (EntityEditor)receiver;
         if (PROP_DIRTY.equals(property)) {
             return editor.isDirty();
+        } else if (PROP_HAS_SOURCE.equals(property)) {
+            return ObjectPropertySwitchToSourceHandler.findSourceTextEditorId(editor) != null;
         }
 
         IUndoManager undoManager = editor.getAdapter(IUndoManager.class);

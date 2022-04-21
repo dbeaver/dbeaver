@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor;
 import org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -44,6 +44,7 @@ import java.util.*;
 public class StreamConsumerSettings implements IDataTransferSettings {
 
     private static final Log log = Log.getLog(StreamConsumerSettings.class);
+
 
     public enum LobExtractType {
         SKIP,
@@ -75,7 +76,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private DBDDataFormatterProfile formatterProfile;
     @NotNull
     private DBDDisplayFormat valueFormat = DBDDisplayFormat.UI;
-
+    private boolean appendToFileEnd = false;
     private boolean outputClipboard = false;
     private boolean useSingleFile = false;
     private boolean compressResults = false;
@@ -83,6 +84,15 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private long maxOutFileSize = 10 * 1000 * 1000;
     private final Map<DBSDataContainer, StreamMappingContainer> dataMappings = new LinkedHashMap<>();
     private final Map<String, Map<String, Object>> eventProcessors = new HashMap<>();
+
+
+    public boolean isAppendToFileEnd() {
+        return appendToFileEnd;
+    }
+
+    public void setAppendToFileEnd(boolean appendToFileEnd) {
+        this.appendToFileEnd = appendToFileEnd;
+    }
 
     public LobExtractType getLobExtractType() {
         return lobExtractType;
@@ -235,6 +245,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         outputTimestampPattern = CommonUtils.toString(settings.get("outputTimestampPattern"), outputTimestampPattern);
         outputEncodingBOM = CommonUtils.getBoolean(settings.get("outputEncodingBOM"), outputEncodingBOM);
         outputClipboard = CommonUtils.getBoolean(settings.get("outputClipboard"), outputClipboard);
+        appendToFileEnd = CommonUtils.getBoolean(settings.get("appendToFile"), appendToFileEnd);
         if (dataTransferSettings.getDataPipes().size() > 1) {
             useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile);
         } else {
@@ -308,7 +319,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     public void saveSettings(Map<String, Object> settings) {
         settings.put("lobExtractType", lobExtractType.name());
         settings.put("lobEncoding", lobEncoding.name());
-
+        settings.put("appendToFile", appendToFileEnd);
         settings.put("outputFolder", outputFolder);
         settings.put("outputFilePattern", outputFilePattern);
         settings.put("outputEncoding", outputEncoding);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -36,6 +38,8 @@ import java.util.Collection;
 import java.util.Locale;
 
 public class VerticaDataSource extends GenericDataSource {
+
+    private Boolean childObjectColumnAvailable;
 
     private NodeCache nodeCache = new NodeCache();
 
@@ -124,13 +128,33 @@ public class VerticaDataSource extends GenericDataSource {
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        if (adapter == DBAUserChangePassword.class) {
-            return adapter.cast(new VerticaChangeUserPassword(this));
+        if (adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new VerticaChangeUserPasswordManager(this));
         } else if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new VerticaStructureAssistant(this));
         }
         return super.getAdapter(adapter);
     }
+
+    public boolean isChildCommentColumnAvailable(@NotNull DBRProgressMonitor monitor) {
+        // child_object is very helpful column in v_catalog.comments table, but it's not childObjectColumnAvailable in Vertica versions < 9.3 and in some other cases
+        if (childObjectColumnAvailable == null) {
+            try {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Check child comment column existence")) {
+                    try (final JDBCPreparedStatement dbStat = session.prepareStatement(
+                        "SELECT child_object FROM v_catalog.comments WHERE 1<>1")) {
+                        dbStat.setFetchSize(1);
+                        dbStat.execute();
+                        childObjectColumnAvailable = true;
+                    }
+                }
+            } catch (Exception e) {
+                childObjectColumnAvailable = false;
+            }
+        }
+        return childObjectColumnAvailable;
+    }
+
 
     class NodeCache extends JDBCObjectCache<VerticaDataSource, VerticaNode> {
         @NotNull

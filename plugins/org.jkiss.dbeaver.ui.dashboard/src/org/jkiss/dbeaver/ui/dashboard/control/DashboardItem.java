@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
     private DashboardChartComposite dashboardControl;
     private final Label titleLabel;
     private final Composite chartComposite;
+    private boolean autoUpdateEnabled;
 
     public DashboardItem(DashboardList parent, String dashboardId) {
         super(parent, SWT.DOUBLE_BUFFERED);
@@ -95,6 +96,8 @@ public class DashboardItem extends Composite implements DashboardContainer {
         addDisposeListener(e -> groupContainer.removeItem(this));
 
         this.addPaintListener(this::paintItem);
+
+        this.autoUpdateEnabled = true;
     }
 
     private void createChartRenderer() {
@@ -387,6 +390,16 @@ public class DashboardItem extends Composite implements DashboardContainer {
                 chartComposite.layout(true, true);
             }
         });
+    }
+
+    @Override
+    public boolean isAutoUpdateEnabled() {
+        return autoUpdateEnabled;
+    }
+
+    @Override
+    public void disableAutoUpdate() {
+        this.autoUpdateEnabled = false;
     }
 
     @Override

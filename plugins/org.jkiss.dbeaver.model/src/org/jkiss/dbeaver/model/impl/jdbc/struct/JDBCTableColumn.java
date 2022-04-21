@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * JDBC abstract table column
@@ -194,8 +191,6 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         query.append(identifier);
         if (calcCount) {
             query.append(", count(*)");
-        } else {
-            query.append(", NULL");
         }
         // Do not use description columns because they duplicate distinct value
 //        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), this);
@@ -215,8 +210,6 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
                 } else {
                     query.append(identifier).append(" LIKE ?");
                 }
-            } else if (getDataKind() == DBPDataKind.NUMERIC) {
-                query.append(identifier).append(" >= ?");
             } else {
                 query.append(identifier).append(" = ?");
             }
@@ -245,6 +238,26 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
                 return Collections.emptyList();
             }
         }
+    }
+
+    @Nullable
+    @Override
+    public Long getDistinctValuesCount(@NotNull DBCSession session) throws DBException {
+        final String query
+            = "SELECT COUNT(DISTINCT " + DBUtils.getQuotedIdentifier(this) + ")\n"
+            + "FROM " + DBUtils.getObjectFullName(getTable(), DBPEvaluationContext.DML);
+
+        try (DBCStatement stmt = session.prepareStatement(DBCStatementType.QUERY, query, false, false, false)) {
+            if (stmt.executeStatement()) {
+                try (DBCResultSet resultSet = Objects.requireNonNull(stmt.openResultSet())) {
+                    if (resultSet.nextRow()) {
+                        return CommonUtils.toLong(resultSet.getAttributeValue(0));
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     public static class ColumnTypeNameListProvider implements IPropertyValueListProvider<JDBCTableColumn<?>> {

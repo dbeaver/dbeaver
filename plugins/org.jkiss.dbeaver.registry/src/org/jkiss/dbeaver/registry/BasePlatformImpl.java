@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.internal.registry.IRegistryConstants;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -33,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
+import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
@@ -40,14 +43,14 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 
 /**
  * BaseWorkspaceImpl.
@@ -60,6 +63,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
 
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
+    private static final String CONFIG_FILE = "config.ini";
 
     private DBPPlatformLanguage language;
     private OSDescriptor localSystem;
@@ -140,6 +144,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
         return ObjectManagerRegistry.getInstance();
     }
 
+    @NotNull
+    @Override
+    public DBFRegistry getFileSystemRegistry() {
+        return FileSystemProviderRegistry.getInstance();
+    }
+
     @Override
     public DBPGlobalEventManager getGlobalEventManager() {
         return GlobalEventManagerImpl.getInstance();
@@ -180,45 +190,32 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
     }
 
     @Override
-    public boolean isLanguageChangeEnabled() {
-        File iniFile = getApplicationConfiguration();
-        if (iniFile.exists() && iniFile.canWrite()) {
-            // Try to create temp file in the same folder
-            File testFile = new File(iniFile.getParentFile(), ".test-dbeaver-" + System.currentTimeMillis() + ".ini");
-            try {
-                testFile.createNewFile();
-                testFile.delete();
-                return true;
-            } catch (IOException e) {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    @Override
     public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
         if (CommonUtils.equalObjects(language, this.language)) {
             return;
         }
 
-        File iniFile = getApplicationConfiguration();
-        if (!iniFile.exists()) {
-            throw new DBException("Application configuration file (" + iniFile.getAbsolutePath() + ") not found. Default language cannot be changed.");
-        }
         try {
-            List<String> configLines = Files.readAllLines(iniFile.toPath());
-            setConfigNLS(configLines, language.getCode());
-            Files.write(iniFile.toPath(), configLines, StandardOpenOption.WRITE);
+            final File config = new File(RuntimeUtils.getLocalFileFromURL(Platform.getConfigurationLocation().getURL()), CONFIG_FILE);
+            final Properties properties = new Properties();
+
+            if (config.exists()) {
+                try (FileInputStream is = new FileInputStream(config)) {
+                    properties.load(is);
+                }
+            }
+
+            properties.put(IRegistryConstants.PROP_NL, language.getCode());
+
+            try (FileOutputStream os = new FileOutputStream(config)) {
+                properties.store(os, null);
+            }
 
             this.language = language;
             // This property is fake. But we set it to trigger property change listener
             // which will ask to restart workbench.
             getPreferenceStore().setValue(ModelPreferences.PLATFORM_LANGUAGE, language.getCode());
-        } catch (AccessDeniedException e) {
-            throw new DBException("Can't save startup configuration - access denied.\n" +
-                "You could try to change national locale manually in '" + iniFile.getAbsolutePath() + "'. Refer to readme.txt file for details.", e);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new DBException("Unexpected error while saving startup configuration", e);
         }
     }
@@ -245,31 +242,4 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
     public boolean isReadOnly() {
         return Platform.getInstanceLocation().isReadOnly();
     }
-
-    // Patch config and add/update -nl parameter
-    private void setConfigNLS(List<String> lines, String nl) {
-        int vmArgsPos = -1, nlPos = -1;
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i).trim();
-            if (line.equalsIgnoreCase("-nl")) {
-                nlPos = i;
-            } else if (line.equalsIgnoreCase("-vmargs")) {
-                vmArgsPos = i;
-                // Do not check the rest - they are VM args anyway
-                break;
-            }
-        }
-        if (nlPos >= 0 && lines.size() > nlPos + 1) {
-            // Just change existing nl
-            lines.set(nlPos + 1, nl);
-        } else if (vmArgsPos >= 0) {
-            // There is no nl but there are vmargs. Insert before them
-            lines.add(vmArgsPos, nl);
-            lines.add(vmArgsPos, "-nl");
-        } else {
-            lines.add("-nl");
-            lines.add(nl);
-        }
-    }
-
 }

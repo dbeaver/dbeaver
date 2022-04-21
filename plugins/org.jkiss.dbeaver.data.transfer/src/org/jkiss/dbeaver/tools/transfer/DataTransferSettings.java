@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,8 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     private boolean consumerOptional;
     private boolean producerOptional;
     private int maxJobCount = DEFAULT_THREADS_NUM;
+
+    private transient boolean nodeSettingsLoaded = false;
 
     private transient int curPipeNum = 0;
 
@@ -352,7 +354,14 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         }
     }
 
+    public boolean isNodeSettingsLoaded() {
+        return nodeSettingsLoaded;
+    }
+
     public void loadNodeSettings(DBRProgressMonitor monitor) {
+        if (nodeSettingsLoaded) {
+            return;
+        }
         // Load nodes' settings (key is impl class simple name, value is descriptor)
         Map<String, DataTransferNodeDescriptor> nodeNames = new LinkedHashMap<>();
         if (producer != null) {
@@ -382,6 +391,8 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                 }
             }
         }
+
+        this.nodeSettingsLoaded = true;
     }
 
     public boolean isConsumerOptional() {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.auth.DBAAuthModel;
-import org.jkiss.dbeaver.model.auth.DBAUserCredentialsProvider;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.access.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -81,14 +81,26 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
         String userName = credentials.getUserName();
         String userPassword = credentials.getUserPassword();
 
-        if (!CommonUtils.isEmpty(userName)) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, userName);
+        if (isUserNameNeeded(dataSource)) {
+            if (!CommonUtils.isEmpty(userName)) {
+                connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, userName);
+            }
         }
-        if (!CommonUtils.isEmpty(userPassword) || (dataSource.getContainer().getDriver().isAllowsEmptyPassword() && !CommonUtils.isEmpty(userName))) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, userPassword);
+        if (isUserPasswordNeeded(dataSource)) {
+            if (!CommonUtils.isEmpty(userPassword) || (dataSource.getContainer().getDriver().isAllowsEmptyPassword() && !CommonUtils.isEmpty(userName))) {
+                connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, userPassword);
+            }
         }
 
         return credentials;
+    }
+
+    protected boolean isUserNameNeeded(@NotNull DBPDataSource dataSource) {
+        return true;
+    }
+
+    protected boolean isUserPasswordNeeded(@NotNull DBPDataSource dataSource) {
+        return true;
     }
 
     @Override

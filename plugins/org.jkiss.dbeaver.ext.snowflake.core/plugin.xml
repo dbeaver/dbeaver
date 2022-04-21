@@ -40,6 +40,8 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
                     <parameter name="query-set-active-db" value="USE DATABASE &quot;?&quot;"/>
                     <parameter name="active-entity-type" value="catalog"/>
+
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
 
                 <provider-properties drivers="*">
@@ -61,6 +63,28 @@
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ext.snowflake.internal.SnowflakePreferencesInitializer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+            id="snowflake_snowflake"
+            label="Database native"
+            description="Snowflake internal authentication (name/password)"
+            class="org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelSnowflake"
+            default="true">
+            <replace model="native"/>
+            <datasource id="snowflake"/>
+            <datasource id="snowflake_ee"/>
+        </authModel>
+        <authModel
+            id="snowflake_externalbrowser"
+            label="SSO (Browser)"
+            description="SSO authentication in web browser."
+            class="org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelExternalBrowser"
+            desktop="true">
+            <datasource id="snowflake"/>
+            <datasource id="snowflake_ee"/>
+        </authModel>
     </extension>
 
 </plugin>

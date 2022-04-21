@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,10 +69,12 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     private Combo defaultSchema;
     private Spinner keepAliveInterval;
 
+    private Spinner autoCloseIdleConnectionsText;
+
     private Font boldFont;
 
     private boolean activated = false;
-    private List<DBPTransactionIsolation> supportedLevels = new ArrayList<>();
+    private final List<DBPTransactionIsolation> supportedLevels = new ArrayList<>();
     private List<String> bootstrapQueries;
     private boolean ignoreBootstrapErrors;
 
@@ -117,6 +119,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 defaultCatalog.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultCatalogName()));
                 defaultSchema.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultSchemaName()));
                 keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
+                autoCloseIdleConnectionsText.setSelection(conConfig.getCloseIdleInterval());
                 activated = true;
             }
         } else {
@@ -265,6 +268,9 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
             keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_keepalive,
                 CoreMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
 
+            autoCloseIdleConnectionsText = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_close_idle_connections,
+                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, 0, 0, Short.MAX_VALUE);
+
             {
                 String bootstrapTooltip = CoreMessages.dialog_connection_wizard_final_label_bootstrap_tooltip;
                 UIUtils.createControlLabel(txnGroup, CoreMessages.dialog_connection_wizard_final_label_bootstrap_query).setToolTipText(bootstrapTooltip);
@@ -333,6 +339,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         bootstrap.setInitQueries(bootstrapQueries);
 
         confConfig.setKeepAliveInterval(keepAliveInterval.getSelection());
+        confConfig.setCloseIdleInterval(autoCloseIdleConnectionsText.getSelection());
     }
 
     @Override

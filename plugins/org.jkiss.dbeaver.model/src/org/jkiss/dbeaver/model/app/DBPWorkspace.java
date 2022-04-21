@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.auth.DBAAuthSpace;
-import org.jkiss.dbeaver.model.auth.DBASessionContext;
+import org.jkiss.dbeaver.model.auth.SMAuthSpace;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.nio.file.Path;
@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * DBPWorkspace
  */
-public interface DBPWorkspace extends DBAAuthSpace
+public interface DBPWorkspace extends SMAuthSpace
 {
     String METADATA_FOLDER = ".metadata";
 
@@ -67,7 +67,7 @@ public interface DBPWorkspace extends DBAAuthSpace
      * Workspace auth context
      */
     @NotNull
-    DBASessionContext getAuthContext();
+    SMSessionContext getAuthContext();
 
     /**
      * Reloads workspace contents. Creates missing projects, removes unexistent projects

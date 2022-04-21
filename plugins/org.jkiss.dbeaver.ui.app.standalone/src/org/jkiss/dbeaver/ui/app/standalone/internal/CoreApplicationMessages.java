@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,7 @@ public class CoreApplicationMessages extends NLS {
 	public static String actions_menu_reset_ui_settings_message;
 	public static String actions_menu_reset_workspace_state_title;
 	public static String actions_menu_reset_workspace_state_message;
+	public static String actions_menu_recent_editors;
 
     static {
 		// initialize resource bundle

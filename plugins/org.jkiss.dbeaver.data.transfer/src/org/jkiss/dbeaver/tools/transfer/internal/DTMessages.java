@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,6 +58,8 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_output_label_insert_bom_tooltip;
 	public static String data_transfer_wizard_output_label_max_threads;
 	public static String data_transfer_wizard_output_label_segment_size;
+	public static String data_transfer_wizard_output_label_add_to_end_of_file;
+	public static String data_transfer_wizard_output_label_add_to_end_of_file_tip;
 	public static String data_transfer_wizard_output_error_empty_output_directory;
 	public static String data_transfer_wizard_output_error_empty_output_filename;
 	public static String data_transfer_wizard_output_error_invalid_charset;
@@ -130,6 +132,7 @@ public class DTMessages extends NLS {
 	public static String database_consumer_settings_option_multi_insert_batch;
 	public static String database_consumer_settings_option_skip_bind_values;
 	public static String database_consumer_settings_option_disable_batches;
+	public static String database_consumer_settings_option_ignore_duplicate_rows;
 	public static String database_consumer_settings_option_on_duplicate_key_method_label;
 	public static String database_consumer_settings_option_transfer_auto_generated_columns;
 	public static String database_consumer_settings_option_disable_referential_integrity;
@@ -157,6 +160,8 @@ public class DTMessages extends NLS {
 	public static String data_transfer_task_handler_unexpected_error_message;
 	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_title;
 	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_message;
+
+	public static String data_transfer_summary_title;
 
 	static {
 		// initialize resource bundle

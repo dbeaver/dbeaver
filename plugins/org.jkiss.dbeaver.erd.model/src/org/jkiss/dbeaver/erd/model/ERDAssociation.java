@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
-import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Relates one table to another
@@ -41,8 +40,8 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 {
     private static final Log log = Log.getLog(ERDAssociation.class);
 
-	private ERDElement sourceEntity;
-    private ERDElement targetEntity;
+	private ERDElement<?> sourceEntity;
+    private ERDElement<?> targetEntity;
     private List<ERDEntityAttribute> sourceAttributes;
     private List<ERDEntityAttribute> targetAttributes;
 
@@ -54,7 +53,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
      * @param targetEntity pk table
      * @param reflect reflect flag
      */
-    public ERDAssociation(ERDElement sourceEntity, ERDElement targetEntity, boolean reflect)
+    public ERDAssociation(ERDElement<?> sourceEntity, ERDElement<?> targetEntity, boolean reflect)
     {
         super(new ERDLogicalAssociation(
             sourceEntity,
@@ -123,7 +122,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	/**
 	 * @return Returns the sourceEntity.
 	 */
-	public ERDElement getSourceEntity()
+	public ERDElement<?> getSourceEntity()
 	{
 		return sourceEntity;
 	}
@@ -131,12 +130,12 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	/**
 	 * @return Returns the targetEntity.
 	 */
-	public ERDElement getTargetEntity()
+	public ERDElement<?> getTargetEntity()
 	{
 		return targetEntity;
 	}
 
-	public void setTargetEntity(ERDElement targetPrimaryKey)
+	public void setTargetEntity(ERDElement<?> targetPrimaryKey)
 	{
 		this.targetEntity = targetPrimaryKey;
 	}
@@ -144,7 +143,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	/**
 	 * @param sourceForeignKey the foreign key table you are connecting from
 	 */
-	public void setSourceEntity(ERDElement sourceForeignKey)
+	public void setSourceEntity(ERDElement<?> sourceForeignKey)
 	{
 		this.sourceEntity = sourceForeignKey;
 	}
@@ -197,6 +196,52 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
     public String getName()
     {
         return getObject().getName();
+    }
+
+    @Override
+    public void fromMap(@NotNull ERDContext context, Map<String, Object> map) {
+
+    }
+
+    @Override
+    public Map<String, Object> toMap(@NotNull ERDContext context) {
+        Map<String, Object> assocMap = new LinkedHashMap<>();
+
+        DBSEntityAssociation association = this.getObject();
+
+        assocMap.put("name", association.getName());
+        if (association instanceof DBPQualifiedObject) {
+            assocMap.put("fqn", ((DBPQualifiedObject) association).getFullyQualifiedName(DBPEvaluationContext.UI));
+        }
+        assocMap.put("type", association.getConstraintType().getId());
+
+        int pkInfo = context.getElementInfo(this.getSourceEntity());
+        if (pkInfo == -1) {
+            log.error("Cannot find PK table '" + this.getSourceEntity().getName() + "' in info map");
+        } else {
+            assocMap.put("primary-entity", pkInfo);
+        }
+        int fkInfo = context.getElementInfo(this.getTargetEntity());
+        if (fkInfo == -1) {
+            log.error("Cannot find FK table '" + this.getSourceEntity().getName() + "' in info map");
+        } else {
+            assocMap.put("foreign-entity", fkInfo);
+        }
+
+        try {
+            saveRefAttributes(context.getMonitor(), association, assocMap, "primary-attributes", getSourceAttributes());
+            saveRefAttributes(context.getMonitor(), association.getReferencedConstraint(), assocMap, "foreign-attributes", getTargetAttributes());
+        } catch (DBException e) {
+            log.error("Error reading ref attributes", e);
+        }
+        return assocMap;
+    }
+
+    private static void saveRefAttributes(DBRProgressMonitor monitor, DBSEntityConstraint association, Map<String, Object> map, String refName, List<ERDEntityAttribute> attributes) throws DBException {
+        if (!CommonUtils.isEmpty(attributes)) {
+            List<String> refAttrList = attributes.stream().map(ERDEntityAttribute::getName).collect(Collectors.toList());
+            map.put(refName, refAttrList);
+        }
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * PostgreProcedure
@@ -75,20 +76,29 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     public enum ArgumentMode {
-        i(DBSProcedureParameterKind.IN),
-        o(DBSProcedureParameterKind.OUT),
-        b(DBSProcedureParameterKind.INOUT),
-        v(DBSProcedureParameterKind.RESULTSET),
-        t(DBSProcedureParameterKind.TABLE),
-        u(DBSProcedureParameterKind.UNKNOWN);
+        i(DBSProcedureParameterKind.IN, "in"),
+        o(DBSProcedureParameterKind.OUT, "out"),
+        b(DBSProcedureParameterKind.INOUT, "inout"),
+        v(DBSProcedureParameterKind.RESULTSET, "variadic"),
+        t(DBSProcedureParameterKind.TABLE, null),
+        u(DBSProcedureParameterKind.UNKNOWN, null);
 
         private final DBSProcedureParameterKind parameterKind;
-        ArgumentMode(DBSProcedureParameterKind parameterKind) {
+        private final String keyword;
+
+        ArgumentMode(@NotNull DBSProcedureParameterKind parameterKind, @Nullable String keyword) {
             this.parameterKind = parameterKind;
+            this.keyword = keyword;
         }
 
+        @NotNull
         public DBSProcedureParameterKind getParameterKind() {
             return parameterKind;
+        }
+
+        @Nullable
+        public String getKeyword() {
+            return keyword;
         }
     }
 
@@ -164,14 +174,13 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                         log.debug(e);
                     }
                 }
-                DBSProcedureParameterKind parameterKind = mode == null ? DBSProcedureParameterKind.IN : mode.getParameterKind();
-                PostgreProcedureParameter param = new PostgreProcedureParameter(
+                params.add(new PostgreProcedureParameter(
                     this,
                     paramName,
                     dataType,
-                    parameterKind,
-                    i + 1);
-                params.add(param);
+                    mode,
+                    i + 1
+                ));
             }
 
         } else {
@@ -189,7 +198,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     //String paramName = "$" + (i + 1);
                     String paramName = argNames == null || argNames.length < inArgTypes.length ? "$" + (i + 1) : argNames[i];
                     PostgreProcedureParameter param = new PostgreProcedureParameter(
-                        this, paramName, dataType, DBSProcedureParameterKind.IN, i + 1);
+                        this, paramName, dataType, ArgumentMode.i, i + 1);
                     params.add(param);
                 }
             }
@@ -603,39 +612,42 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     public static String makeOverloadedName(PostgreSchema schema, String name, List<PostgreProcedureParameter> params, boolean quote, boolean showParamNames) {
-        String selfName = (quote ? DBUtils.getQuotedIdentifier(schema.getDataSource(), name) : name);
-        if (!CommonUtils.isEmpty(params)) {
-            StringBuilder paramsSignature = new StringBuilder(64);
-            paramsSignature.append("(");
-            boolean hasParam = false;
-            for (PostgreProcedureParameter param : params) {
-                if (param.getParameterKind() != DBSProcedureParameterKind.IN &&
-                    param.getParameterKind() != DBSProcedureParameterKind.INOUT &&
-                    param.getParameterKind() != ArgumentMode.v.getParameterKind())
-                {
-                    continue;
-                }
-                if (hasParam) paramsSignature.append(',');
-                hasParam = true;
-                if (showParamNames) {
-                    paramsSignature.append(param.getName()).append(' ');
-                }
-                final PostgreDataType dataType = param.getParameterType();
-                final PostgreSchema typeContainer = dataType.getParentObject();
-                if (typeContainer == null ||
-                    typeContainer.isPublicSchema() ||
-                    typeContainer.isCatalogSchema())
-                {
-                    paramsSignature.append(dataType.getName());
-                } else {
-                    paramsSignature.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
-                }
+        final String selfName = (quote ? DBUtils.getQuotedIdentifier(schema.getDataSource(), name) : name);
+        final StringJoiner signature = new StringJoiner(", ", "(", ")");
+
+        // Function signature may only contain a limited set of arguments inside parenthesis.
+        // Examples of such arguments are: 'in', 'out', 'inout' and 'variadic'.
+        // In our case, they all have associated keywords, so we could abuse it.
+        final List<PostgreProcedureParameter> keywordParams = params.stream()
+            .filter(x -> x.getArgumentMode().getKeyword() != null)
+            .collect(Collectors.toList());
+
+        // In general, 'in' arguments may contain only the type without the keyword because it's implied.
+        // It's a shorthand for procedures that accept a set of arguments and return nothing, making its
+        // signature slightly shorter. On the other hand, if procedure has mixed set of argument types,
+        // we want to always include the keyword to avoid ambiguity.
+        final boolean allIn = keywordParams.stream()
+            .allMatch(x -> x.getArgumentMode() == ArgumentMode.i);
+
+        for (PostgreProcedureParameter param : keywordParams) {
+            final StringJoiner parameter = new StringJoiner(" ");
+            if (!allIn) {
+                parameter.add(param.getArgumentMode().getKeyword());
             }
-            paramsSignature.append(")");
-            return selfName + paramsSignature.toString();
-        } else {
-            return selfName + "()";
+            if (showParamNames) {
+                parameter.add(param.getName());
+            }
+            final PostgreDataType dataType = param.getParameterType();
+            final PostgreSchema typeContainer = dataType.getParentObject();
+            if (typeContainer.isPublicSchema() || typeContainer.isCatalogSchema()) {
+                parameter.add(dataType.getName());
+            } else {
+                parameter.add(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
+            }
+            signature.add(parameter.toString());
         }
+
+        return selfName + signature;
     }
 
     @Nullable

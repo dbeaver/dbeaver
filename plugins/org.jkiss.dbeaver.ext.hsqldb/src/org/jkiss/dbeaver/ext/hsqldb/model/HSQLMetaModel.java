@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,35 +141,27 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
-    public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read sequences")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_SCHEMA=?")) {
-                dbStat.setString(1, container.getName());
-                List<GenericSequence> result = new ArrayList<>();
+    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+        JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_SCHEMA=?");
+        dbStat.setString(1, container.getName());
+        return dbStat;
+    }
 
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        String name = JDBCUtils.safeGetString(dbResult, "SEQUENCE_NAME");
-                        if (name == null) {
-                            continue;
-                        }
-                        GenericSequence sequence = new GenericSequence(
-                            container,
-                            name,
-                            null,
-                            JDBCUtils.safeGetLong(dbResult, "NEXT_VALUE"),
-                            JDBCUtils.safeGetLong(dbResult, "MINIMUM_VALUE"),
-                            JDBCUtils.safeGetLong(dbResult, "MAXIMUM_VALUE"),
-                            JDBCUtils.safeGetLong(dbResult, "INCREMENT")
-                        );
-                        result.add(sequence);
-                    }
-                }
-                return result;
-            }
-        } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+    @Override
+    public GenericSequence createSequenceImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) {
+        String name = JDBCUtils.safeGetString(dbResult, "SEQUENCE_NAME");
+        if (CommonUtils.isEmpty(name)) {
+            return null;
         }
+        return new GenericSequence(
+            container,
+            name,
+            null,
+            JDBCUtils.safeGetLong(dbResult, "NEXT_VALUE"),
+            JDBCUtils.safeGetLong(dbResult, "MINIMUM_VALUE"),
+            JDBCUtils.safeGetLong(dbResult, "MAXIMUM_VALUE"),
+            JDBCUtils.safeGetLong(dbResult, "INCREMENT")
+        );
     }
 
     @Override
@@ -251,34 +243,22 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
-    public boolean supportsSynonyms(GenericDataSource dataSource) {
+    public boolean supportsSynonyms(@NotNull GenericDataSource dataSource) {
         return true;
     }
 
     @Override
-    public List<HSQLSynonym> loadSynonyms(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM INFORMATION_SCHEMA.SYSTEM_SYNONYMS\n" +
-                    "WHERE SYNONYM_SCHEMA=?\n" +
-                    "ORDER BY SYNONYM_NAME")) {
-                dbStat.setString(1, container.getName());
+    public JDBCStatement prepareSynonymsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+        JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT * FROM INFORMATION_SCHEMA.SYSTEM_SYNONYMS\n" +
+                "WHERE SYNONYM_SCHEMA=?\n" +
+                "ORDER BY SYNONYM_NAME");
+        dbStat.setString(1, container.getName());
+        return dbStat;
+    }
 
-                List<HSQLSynonym> result = new ArrayList<>();
-
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        HSQLSynonym trigger = new HSQLSynonym(
-                            container,
-                            dbResult);
-                        result.add(trigger);
-                    }
-                }
-                return result;
-
-            }
-        } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
-        }
+    @Override
+    public GenericSynonym createSynonymImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) {
+        return new HSQLSynonym(container, dbResult);
     }
 }

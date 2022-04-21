@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
+import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -249,6 +251,8 @@ public interface SQLDialect {
 
     boolean useCaseInsensitiveNameLookup();
 
+    boolean hasCaseSensitiveFiltration();
+
     boolean supportsUnquotedMixedCase();
 
     boolean supportsQuotedMixedCase();
@@ -271,6 +275,8 @@ public interface SQLDialect {
     boolean supportsCommentQuery();
 
     boolean supportsNullability();
+
+    boolean supportsColumnAutoIncrement();
 
     @Nullable
     SQLExpressionFormatter getCaseInsensitiveExpressionFormatter(@NotNull DBCLogicalOperator operator);
@@ -305,6 +311,13 @@ public interface SQLDialect {
     boolean isQuotedIdentifier(String identifier);
 
     String getQuotedIdentifier(String identifier, boolean forceCaseSensitive, boolean forceQuotes);
+
+    /**
+     * @param str - string that must be unquoted for this check - otherwise method will return true
+     * @param forceCaseSensitive the level of case sensitivity
+     * @return true if incoming string must be quoted
+     */
+    boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive);
 
     String getUnquotedIdentifier(String identifier);
 
@@ -385,6 +398,9 @@ public interface SQLDialect {
     @Nullable
     String getTestSQL();
 
+    @NotNull
+    Pair<String, String> getInClauseParentheses();
+
     /**
      * Dual table name.
      * Used to evaluate expressions, call procedures, etc.
@@ -426,4 +442,18 @@ public interface SQLDialect {
 
     boolean supportsInsertAllDefaultValuesStatement();
 
+    /**
+     * Generates a set of connection-specific dialect features which require special handling during SQL parsing
+     * (empty by default)
+     * @return a set of token predicates
+     */
+    @NotNull
+    default SQLTokenPredicateSet getSkipTokenPredicates() {
+        return EmptyTokenPredicateSet.INSTANCE;
+    }
+    
+    /**
+     * @return a set of SQLBlockCompletions with information about blocks for autoedit
+     */
+    SQLBlockCompletions getBlockCompletions();
 }

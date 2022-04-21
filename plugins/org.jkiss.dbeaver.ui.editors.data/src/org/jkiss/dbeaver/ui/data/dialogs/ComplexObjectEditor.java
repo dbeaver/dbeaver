@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.data.dialogs;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.MenuManager;
@@ -31,6 +32,7 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -39,16 +41,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.impl.SimpleTypedObject;
-import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.data.*;
@@ -67,13 +68,13 @@ import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
-import org.jkiss.utils.ArrayUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -83,93 +84,26 @@ public class ComplexObjectEditor extends TreeViewer {
 
     private static final Log log = Log.getLog(ComplexObjectEditor.class);
 
-    private static class ComplexElement {
-        boolean created, modified;
-        Object value;
-    }
-
-    private interface ComplexElementWrapper {
-        Object getValue();
-    }
-
-    private static class CompositeField extends ComplexElement {
-        final DBSAttributeBase attribute;
-        DBDValueHandler valueHandler;
-
-        private CompositeField(DBPDataSource dataSource, DBSAttributeBase attribute, @Nullable Object value)
-        {
-            this.attribute = attribute;
-            this.value = value;
-            this.valueHandler = DBUtils.findValueHandler(dataSource, attribute);
-        }
-    }
-
-    private static class ArrayInfo {
-        private DBDValueHandler valueHandler;
-        private DBSDataType componentType;
-    }
-
-    private static class ArrayItem extends ComplexElement {
-        final ArrayInfo array;
-        int index;
-
-        private ArrayItem(ArrayInfo array, int index, Object value)
-        {
-            this.array = array;
-            this.index = index;
-            this.value = value;
-        }
-    }
-
-    private static class MapEntry extends ComplexElement implements ComplexElementWrapper {
-        String name;
-        Object value;
-
-        MapEntry(String name, Object value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        @Override
-        public Object getValue() {
-            return value;
-        }
-    }
-
-    private static class CollItem extends ComplexElement implements ComplexElementWrapper {
-        int index;
-        Object value;
-
-        CollItem(int index, Object value) {
-            this.index = index;
-            this.value = value;
-        }
-
-        @Override
-        public Object getValue() {
-            return value;
-        }
-    }
-
     private final IValueController parentController;
     private final IValueEditor editor;
     private DBCExecutionContext executionContext;
     private final TreeEditor treeEditor;
     private IValueEditor curCellEditor;
 
-    private Color backgroundAdded;
-    private Color backgroundDeleted;
-    private Color backgroundModified;
+    private final Color backgroundAdded;
+    private final Color backgroundDeleted;
+    private final Color backgroundModified;
 
-    private CopyAction copyNameAction;
-    private CopyAction copyValueAction;
-    private SetToNullAction setToNullAction;
-    private Action addElementAction;
-    private Action removeElementAction;
-    private Action moveElementUpAction;
-    private Action moveElementDownAction;
+    private final CopyAction copyNameAction;
+    private final CopyAction copyValueAction;
+    private final SetToNullAction setToNullAction;
+    private final Action addElementAction;
+    private final Action removeElementAction;
+    private final Action moveElementUpAction;
+    private final Action moveElementDownAction;
 
-    private Map<Object, ComplexElement[]> childrenMap = new IdentityHashMap<>();
+    // Model object -> intermediate wrapper object
+    private final Map<Object, Object> cache = new IdentityHashMap<>();
 
     public ComplexObjectEditor(IValueController parentController, IValueEditor editor, int style)
     {
@@ -210,7 +144,7 @@ public class ComplexObjectEditor extends TreeViewer {
             column.getColumn().setWidth(200);
             column.getColumn().setMoveable(true);
             column.getColumn().setText(UIMessages.ui_properties_name);
-            column.setLabelProvider(new PropsLabelProvider(true));
+            column.setLabelProvider(new PropsLabelProvider());
         }
 
         {
@@ -218,7 +152,7 @@ public class ComplexObjectEditor extends TreeViewer {
             column.getColumn().setWidth(120);
             column.getColumn().setMoveable(true);
             column.getColumn().setText(UIMessages.ui_properties_value);
-            column.setLabelProvider(new PropsLabelProvider(false));
+            column.setLabelProvider(new PropsLabelProvider());
         }
 
         treeEditor = new TreeEditor(treeControl);
@@ -268,36 +202,9 @@ public class ComplexObjectEditor extends TreeViewer {
         this.moveElementUpAction = new MoveElementAction(SWT.UP);
         this.moveElementDownAction = new MoveElementAction(SWT.DOWN);
 
-        addElementAction.setEnabled(true);
-        removeElementAction.setEnabled(false);
-        moveElementUpAction.setEnabled(false);
-        moveElementDownAction.setEnabled(false);
-
-        addSelectionChangedListener(event -> {
-            final IStructuredSelection selection = (IStructuredSelection)event.getSelection();
-            if (selection == null || selection.isEmpty()) {
-                copyNameAction.setEnabled(false);
-                copyValueAction.setEnabled(false);
-                removeElementAction.setEnabled(false);
-                addElementAction.setEnabled(getInput() instanceof DBDComplexValue);
-                moveElementUpAction.setEnabled(false);
-                moveElementDownAction.setEnabled(false);
-            } else {
-                copyNameAction.setEnabled(true);
-                copyValueAction.setEnabled(true);
-                final Object element = selection.getFirstElement();
-                if (element instanceof ArrayItem) {
-                    int itemIndex = ((ArrayItem)element).index;
-                    int itemCount = childrenMap.get(getInput()).length;
-                    removeElementAction.setEnabled(getInput() instanceof DBDComplexValue);
-                    addElementAction.setEnabled(getInput() instanceof DBDComplexValue);
-                    moveElementUpAction.setEnabled(getInput() instanceof DBDComplexValue && itemCount > 0 && itemIndex > 0);
-                    moveElementDownAction.setEnabled(getInput() instanceof DBDComplexValue && itemCount > 0 && itemIndex < itemCount - 1);
-                }
-            }
-        });
-
+        addSelectionChangedListener(event -> updateActions());
         createContextMenu();
+        updateActions();
     }
 
     private void createContextMenu()
@@ -328,11 +235,10 @@ public class ComplexObjectEditor extends TreeViewer {
         getTree().setRedraw(false);
         try {
             this.executionContext = executionContext;
-            this.childrenMap.clear();
-            setInput(value);
+            this.cache.clear();
+            setInput(wrap(null, value));
             expandToLevel(2);
-
-            addElementAction.setEnabled(getInput() instanceof DBDComplexValue);
+            updateActions();
         } finally {
             getTree().setRedraw(true);
         }
@@ -345,9 +251,14 @@ public class ComplexObjectEditor extends TreeViewer {
             return;
         }
 
+        if (isComplexType(item.getData())) {
+            // No editor for complex types themselves (only leaves can be edited)
+            return;
+        }
+
         try {
             IValueController valueController = new ComplexValueController(
-                (ComplexElement)item.getData(),
+                (ComplexElementItem) item.getData(),
                 advanced ? IValueController.EditType.EDITOR : IValueController.EditType.INLINE);
 
             IValueEditor newCellEditor = valueController.getValueManager().createEditor(valueController);
@@ -383,71 +294,35 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     public Object extractValue() {
-        Object complexValue = getInput();
-        final ComplexElement[] items = childrenMap.get(complexValue);
-        if (complexValue instanceof DBDValueCloneable) {
-            try {
-                complexValue = ((DBDValueCloneable) complexValue).cloneValue(new VoidProgressMonitor());
-            } catch (DBCException e) {
-                log.error("Error cloning complex value", e);
-            }
-        }
-        if (complexValue instanceof DBDComposite) {
-            for (ComplexElement item : items) {
-                try {
-                    ((DBDComposite) complexValue).setAttributeValue(((CompositeField) item).attribute, item.value);
-                } catch (DBCException e) {
-                    log.error("Error setting attribute value", e);
-                }
-            }
-        } else if (complexValue instanceof DBDCollection) {
-            if (items != null) {
-                final Object[] newValues = new Object[items.length];
-                for (int i = 0; i < items.length; i++) {
-                    newValues[i] = items[i].value;
-                }
-                ((DBDCollection) complexValue).setContents(newValues);
-            }
-//        } else if (complexValue instanceof List) {
-//            ((List) complexValue).clear();
-//            if (items != null) {
-//                for (int i = 0; i < items.length; i++) {
-//                    ((List) complexValue).add(items[i].value);
-//                }
-//            }
-        }
-        return complexValue;
+        return unwrap(getInput());
     }
 
-    private String getColumnText(ComplexElement obj, int columnIndex, DBDDisplayFormat format) {
-        if (obj instanceof CompositeField) {
-            CompositeField field = (CompositeField) obj;
-            if (columnIndex == 0) {
-                return field.attribute.getName();
-            }
-            return getValueText(field.valueHandler, field.attribute, field.value, format);
-        } else if (obj instanceof ArrayItem) {
-            ArrayItem item = (ArrayItem) obj;
-            if (columnIndex == 0) {
-                return String.valueOf(item.index);
-            }
-            return getValueText(item.array.valueHandler, item.array.componentType, item.value, format);
-        } else if (obj instanceof MapEntry) {
-            return columnIndex == 0 ? ((MapEntry) obj).name : CommonUtils.toString(((MapEntry) obj).value);
-        } else if (obj instanceof CollItem) {
-            return columnIndex == 0 ? String.valueOf(((CollItem) obj).index) : CommonUtils.toString(((CollItem) obj).value);
+    @NotNull
+    private String getColumnText(ComplexElementItem item, int columnIndex, DBDDisplayFormat format) {
+        if (columnIndex == 0) {
+            return item.getName();
+        } else {
+            return getValueText(item.getValueHandler(), item.getDataType(), item.value, format);
         }
-        return String.valueOf(columnIndex);
+    }
+
+    @Nullable
+    private Image getColumnImage(@NotNull ComplexElementItem item, int columnIndex) {
+        if (columnIndex == 0) {
+            return DBeaverIcons.getImage(DBValueFormatting.getTypeImage(item.getDataType()));
+        } else {
+            return null;
+        }
     }
 
     private String getValueText(@NotNull DBDValueHandler valueHandler, @NotNull DBSTypedObject type, @Nullable Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value instanceof DBDCollection) {
-            return "[" + ((DBDCollection) value).getComponentType().getName() + " - " + ((DBDCollection) value).getItemCount() + "]";
-        } else if (value instanceof DBDComposite) {
-            return "[" + ((DBDComposite) value).getDataType().getName() + "]";
-        } else if (value instanceof DBDReference) {
-            return "--> [" + ((DBDReference) value).getReferencedType().getName() + "]";
+        if (value instanceof CollectionElement) {
+            return "[" + ((CollectionElement) value).source.getComponentType().getName() + " - " + ((CollectionElement) value).items.size() + "]";
+        } else if (value instanceof CompositeElement) {
+            return "[" + ((CompositeElement) value).type.getName() + "]";
+        } else if (value instanceof ReferenceElement) {
+            return "--> [" + ((ReferenceElement) value).reference.getReferencedType().getName() + "]";
         } else {
             return valueHandler.getValueDisplayString(type, value, format);
         }
@@ -460,41 +335,32 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     private class ComplexValueController implements IValueController, IMultiController {
-        private final ComplexElement item;
+        private final ComplexElementItem item;
         private final DBDValueHandler valueHandler;
         private final DBSTypedObject type;
         private final String name;
         private final Object value;
         private final EditType editType;
 
-        ComplexValueController(ComplexElement obj, EditType editType) throws DBCException {
+        ComplexValueController(ComplexElementItem obj, EditType editType) throws DBCException {
             this.item = obj;
-            if (this.item instanceof CompositeField) {
-                CompositeField field = (CompositeField) this.item;
-                valueHandler = field.valueHandler;
-                type = field.attribute;
-                name = field.attribute.getName();
-                value = field.value;
-            } else if (this.item instanceof ArrayItem) {
-                ArrayItem arrayItem = (ArrayItem) this.item;
-                valueHandler = arrayItem.array.valueHandler;
-                type = arrayItem.array.componentType;
-                name = (type == null ? "?" : type.getTypeName()) + "["  + arrayItem.index + "]";
-                value = arrayItem.value;
-            } else if (this.item instanceof MapEntry) {
-                valueHandler = DefaultValueHandler.INSTANCE;
-                type = SimpleTypedObject.DEFAULT_TYPE;
-                name = ((MapEntry) this.item).name;
-                value = ((MapEntry) this.item).value;
-            } else if (this.item instanceof CollItem) {
-                valueHandler = DefaultValueHandler.INSTANCE;
-                type = SimpleTypedObject.DEFAULT_TYPE;
-                name = String.valueOf(((CollItem) this.item).index);
-                value = ((CollItem) this.item).value;
+            this.editType = editType;
+
+            if (obj instanceof CollectionElement.Item) {
+                final CollectionElement.Item item = (CollectionElement.Item) obj;
+                this.valueHandler = item.getValueHandler();
+                this.type = item.getDataType();
+                this.name = type.getTypeName() + "[" + item.getName() + "]";
+                this.value = item.value;
+            } else if (obj instanceof CompositeElement.Item) {
+                final CompositeElement.Item item = (CompositeElement.Item) obj;
+                this.valueHandler = item.getValueHandler();
+                this.type = item.getDataType();
+                this.name = item.attribute.getName();
+                this.value = item.value;
             } else {
                 throw new DBCException("Unsupported complex object element: " + this.item);
             }
-            this.editType = editType;
         }
 
         @NotNull
@@ -573,7 +439,7 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public boolean isReadOnly()
         {
-            return parentController.isReadOnly();
+            return parentController.isReadOnly() || ComplexObjectEditor.isReadOnlyType(item.getParent());
         }
 
         @Override
@@ -610,179 +476,125 @@ public class ComplexObjectEditor extends TreeViewer {
         }
     }
 
-    class StructContentProvider implements IStructuredContentProvider, ITreeContentProvider
-    {
-        StructContentProvider()
-        {
-        }
-
+    private class StructContentProvider extends TreeContentProvider {
         @Override
-        public void inputChanged(Viewer v, Object oldInput, Object newInput)
-        {
-        }
-
-        @Override
-        public void dispose()
-        {
-        }
-
-        @Override
-        public Object[] getElements(Object parent)
-        {
+        public Object[] getElements(Object parent) {
             return getChildren(parent);
         }
 
-        @Nullable
         @Override
-        public Object getParent(Object child)
-        {
-            return null;
-        }
-
-        @Override
-        public ComplexElement[] getChildren(Object parent)
-        {
-            ComplexElement[] children = childrenMap.get(parent);
-            if (children != null) {
-                return children;
+        public ComplexElementItem[] getChildren(Object parent) {
+            if (parent instanceof ComplexElementReferrer) {
+                return getChildren(wrap(parent, ((ComplexElementReferrer) parent).getReferencedValue()));
             }
-
-            // Unwrap complex items
-            if (parent instanceof ComplexElementWrapper) {
-                parent = ((ComplexElementWrapper) parent).getValue();
+            if (parent instanceof ComplexElementItem) {
+                return getChildren(((ComplexElementItem) parent).value);
             }
-
-            if (parent instanceof DBDComposite) {
-                DBDComposite structure = (DBDComposite)parent;
-                try {
-                    DBSAttributeBase[] attributes = structure.getAttributes();
-                    children = new CompositeField[attributes.length];
-                    for (int i = 0; i < attributes.length; i++) {
-                        DBSAttributeBase attr = attributes[i];
-                        Object value = structure.getAttributeValue(attr);
-                        children[i] = new CompositeField(structure.getDataType().getDataSource(), attr, value);
-                    }
-                } catch (DBException e) {
-                    log.error("Error getting structure meta data", e);
-                }
-            } else if (parent instanceof DBDCollection) {
-                DBDCollection array = (DBDCollection)parent;
-                ArrayInfo arrayInfo = makeArrayInfo(array);
-
-                children = new ArrayItem[array.getItemCount()];
-                for (int i = 0; i < children.length; i++) {
-                    children[i] = new ArrayItem(arrayInfo, i, array.getItem(i));
-                }
-            } else if (parent instanceof DBDReference) {
-                final DBDReference reference = (DBDReference)parent;
-                DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
-                        monitor.beginTask("Read object reference", 1);
-                        try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Read reference value")) {
-                            result = reference.getReferencedObject(session);
-                        } catch (DBCException e) {
-                            throw new InvocationTargetException(e);
-                        } finally {
-                            monitor.done();
-                        }
-                    }
-                };
-                UIUtils.runInUI(runnable);
-                children = getChildren(runnable.getResult());
-            } else if (parent instanceof CompositeField) {
-                Object value = ((CompositeField) parent).value;
-                if (isComplexType(value)) {
-                    children = getChildren(value);
-                }
-            } else if (parent instanceof ArrayItem) {
-                Object value = ((ArrayItem) parent).value;
-                if (isComplexType(value)) {
-                    children = getChildren(value);
-                }
-            } else if (parent instanceof Map) {
-                Map<?, ?> map = (Map<?, ?>) parent;
-                children = new MapEntry[map.size()];
-                Iterator<? extends Map.Entry<?, ?>> entries = map.entrySet().iterator();
-
-                for (int i = 0; i < children.length; i++) {
-                    Map.Entry<?, ?> entry = entries.next();
-                    children[i] = new MapEntry(CommonUtils.toString(entry.getKey()), entry.getValue());
-                }
-            } else if (parent instanceof Collection) {
-                Collection coll = (Collection)parent;
-                children = new CollItem[coll.size()];
-                Iterator iterator = coll.iterator();
-                for (int i = 0; i < children.length; i++) {
-                    children[i] = new CollItem(i, iterator.next());
-                }
+            if (parent instanceof ComplexElement) {
+                return ((ComplexElement) parent).getChildren();
             }
-            if (children == null) {
-                children = new ComplexElement[0];
-            }
-            childrenMap.put(parent, children);
-
-            return children;
-        }
-
-        private boolean isComplexType(Object value) {
-            return value instanceof DBDComplexValue;
+            return new ComplexElementItem[0];
         }
 
         @Override
-        public boolean hasChildren(Object parent)
-        {
-            if (parent instanceof ComplexElementWrapper) {
-                parent = ((ComplexElementWrapper) parent).getValue();
+        public boolean hasChildren(Object parent) {
+            return isComplexType(parent);
+        }
+    }
+
+    @Nullable
+    private Object wrap(@Nullable Object parent, @Nullable Object object) {
+        if (cache.containsKey(object)) {
+            return cache.get(object);
+        }
+
+        if (object instanceof DBDCollection) {
+            final DBDCollection collection = (DBDCollection) object;
+            final CollectionElement element;
+
+            if (parent == null) {
+                element = new CollectionRootElement(collection);
+                element.items.add(new CollectionRootElement.Item(element, wrap(element, object)));
+            } else {
+                element = new CollectionElement(parent, collection);
+                for (Object item : collection) {
+                    element.items.add(new CollectionElement.Item(element, wrap(element, item)));
+                }
             }
 
-            return
-                parent instanceof DBDComposite ||
-                parent instanceof DBDCollection ||
-                parent instanceof DBDReference ||
-                (parent instanceof CompositeField && hasChildren(((CompositeField) parent).value)) ||
-                (parent instanceof ArrayItem && hasChildren(((ArrayItem) parent).value)) ||
-                (parent instanceof Map && !(((Map) parent).isEmpty())) ||
-                (parent instanceof Collection && !(((Collection) parent).isEmpty()));
+            cache.put(object, element);
+
+            return element;
         }
+
+        if (object instanceof DBDComposite) {
+            final DBDComposite composite = (DBDComposite) object;
+            final CompositeElement element = new CompositeElement(parent, composite);
+
+            try {
+                for (DBSAttributeBase attribute : composite.getAttributes()) {
+                    element.items.add(new CompositeElement.Item(element, attribute, wrap(element, composite.getAttributeValue(attribute))));
+                }
+            } catch (DBCException e) {
+                log.error("Error getting structure meta data", e);
+            }
+
+            cache.put(object, element);
+
+            return element;
+        }
+
+        if (object instanceof DBDReference) {
+            final DBDReference reference = (DBDReference) object;
+            final ReferenceElement element = new ReferenceElement(parent, reference);
+
+            cache.put(object, element);
+
+            return element;
+        }
+
+        return object;
     }
 
     @NotNull
-    private ArrayInfo makeArrayInfo(@Nullable DBDCollection array) {
-        ArrayInfo arrayInfo = new ArrayInfo();
-        arrayInfo.componentType = array == null ? null : array.getComponentType();
-        if (arrayInfo.componentType == null) {
-            arrayInfo.valueHandler = parentController.getExecutionContext().getDataSource().getContainer().getDefaultValueHandler();;
-        } else {
-            arrayInfo.valueHandler = DBUtils.findValueHandler(arrayInfo.componentType.getDataSource(), arrayInfo.componentType);
+    public static Object unwrap(@NotNull Object object) {
+        if (object instanceof ComplexElement) {
+            return ((ComplexElement) object).extract(new VoidProgressMonitor());
         }
-        return arrayInfo;
+
+        if (object instanceof ComplexElementItem) {
+            return unwrap(((ComplexElementItem) object).value);
+        }
+
+        return object;
     }
 
-    private void shiftArrayItems(ComplexElement[] arrayItems, int startIndex, int inc) {
-        for (int i = startIndex; i < arrayItems.length; i++) {
-            ((ArrayItem)arrayItems[i]).index += inc;
-        }
+    private static boolean isComplexType(@NotNull Object object) {
+        return object instanceof CollectionElement
+            || object instanceof CollectionElement.Item && isComplexType(((CollectionElement.Item) object).value)
+            || object instanceof CompositeElement
+            || object instanceof CompositeElement.Item && isComplexType(((CompositeElement.Item) object).value)
+            || object instanceof ReferenceElement;
     }
 
-    private class PropsLabelProvider extends CellLabelProvider
-    {
-        private final boolean isName;
-        PropsLabelProvider(boolean isName)
-        {
-            this.isName = isName;
+    private static boolean isReadOnlyType(@Nullable Object object) {
+        if (object instanceof ReferenceElement) {
+            return true;
         }
-
-        public String getText(ComplexElement obj, int columnIndex)
-        {
-            return getColumnText(obj, columnIndex, DBDDisplayFormat.UI);
+        if (object instanceof ComplexElementItem) {
+            return isReadOnlyType(((ComplexElementItem) object).getParent());
         }
+        if (object instanceof ComplexElement) {
+            return isReadOnlyType(((ComplexElement) object).getParent());
+        }
+        return false;
+    }
 
+    private class PropsLabelProvider extends CellLabelProvider {
         @Override
-        public String getToolTipText(Object obj)
-        {
-            if (obj instanceof CompositeField) {
-                return ((CompositeField) obj).attribute.getName() + " " + ((CompositeField) obj).attribute.getTypeName();
+        public String getToolTipText(Object obj) {
+            if (obj instanceof CompositeElement.Item) {
+                return ((CompositeElement.Item) obj).attribute.getName() + " " + ((CompositeElement.Item) obj).attribute.getTypeName();
             }
             return null;
         }
@@ -790,8 +602,9 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public void update(ViewerCell cell)
         {
-            ComplexElement element = (ComplexElement) cell.getElement();
-            cell.setText(getText(element, cell.getColumnIndex()));
+            ComplexElementItem element = (ComplexElementItem) cell.getElement();
+            cell.setText(getColumnText(element, cell.getColumnIndex(), DBDDisplayFormat.UI));
+            cell.setImage(getColumnImage(element, cell.getColumnIndex()));
             if (element.created) {
                 cell.setBackground(backgroundAdded);
             } else if (element.modified) {
@@ -816,7 +629,7 @@ public class ComplexObjectEditor extends TreeViewer {
             final IStructuredSelection selection = getStructuredSelection();
             if (!selection.isEmpty()) {
                 String text = getColumnText(
-                    (ComplexElement) selection.getFirstElement(),
+                    (ComplexElementItem) selection.getFirstElement(),
                     isName ? 0 : 1,
                     DBDDisplayFormat.NATIVE);
                 if (text != null) {
@@ -839,7 +652,7 @@ public class ComplexObjectEditor extends TreeViewer {
             }
             try {
                 final IValueController valueController = new ComplexValueController(
-                    (ComplexElement) selection.getFirstElement(),
+                    (ComplexElementItem) selection.getFirstElement(),
                     IValueController.EditType.NONE
                 );
                 valueController.updateValue(
@@ -860,43 +673,19 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public void run() {
             disposeOldEditor();
-            Object input = getInput();
-            if (input == null) {
-                try {
-                    input = DBUtils.createNewAttributeValue(
-                        parentController.getExecutionContext(),
-                        parentController.getValueHandler(),
-                        parentController.getValueType(),
-                        Object.class);
-                    setInput(input);
-                } catch (DBCException e) {
-                    DBWorkbench.getPlatformUI().showError("New object create", "Error creating new collection", e);
-                    return;
-                }
-            }
-            ComplexElement[] arrayItems = childrenMap.get(input);
-            if (arrayItems == null) {
-                arrayItems = new ComplexElement[0];
-                //log.error("Can't find children items for add");
-                //return;
-            }
-            final IStructuredSelection selection = getStructuredSelection();
-            ArrayItem newItem;
-            if (selection.isEmpty()) {
-                newItem = new ArrayItem(makeArrayInfo(input instanceof DBDCollection ? (DBDCollection) input : null), arrayItems.length, null);
-            } else {
-                ArrayItem curItem = (ArrayItem) selection.getFirstElement();
-                newItem = new ArrayItem(curItem.array, curItem.index + 1, null);
-            }
-            shiftArrayItems(arrayItems, newItem.index, 1);
-            arrayItems = ArrayUtils.insertArea(ComplexElement.class, arrayItems, newItem.index, new ComplexElement[] {newItem} );
-            childrenMap.put(input, arrayItems);
+
+            final ComplexElementItem element = (ComplexElementItem) getStructuredSelection().getFirstElement();
+            final CollectionElement collection = GeneralUtils.adapt(element, CollectionElement.class);
+            final CollectionElement.Item item = new CollectionElement.Item(collection, null);
+
+            collection.items.add(item);
+            item.created = true;
 
             refresh();
 
-            final Widget treeItem = findItem(newItem);
+            final TreeItem treeItem = (TreeItem) findItem(item);
             if (treeItem != null) {
-                showEditor((TreeItem) treeItem, false);
+                showEditor(treeItem, false);
             }
 
             autoUpdateComplexValue();
@@ -911,32 +700,19 @@ public class ComplexObjectEditor extends TreeViewer {
 
         @Override
         public void run() {
-            final IStructuredSelection selection = getStructuredSelection();
-            if (selection.isEmpty()) {
-                return;
-            }
-
             disposeOldEditor();
 
-            DBDCollection collection = (DBDCollection) getInput();
-            ComplexElement[] arrayItems = childrenMap.get(collection);
-            if (arrayItems == null) {
-                log.error("Can't find children items for delete");
-                return;
-            }
-            ArrayItem item = (ArrayItem)selection.getFirstElement();
-            int deleteIndex = item.index;
-            shiftArrayItems(arrayItems, deleteIndex, -1);
-            arrayItems = ArrayUtils.remove(ComplexElement.class, arrayItems, item);
-            childrenMap.put(collection, arrayItems);
-            if (deleteIndex >= arrayItems.length) {
-                deleteIndex--;
-            }
-            if (deleteIndex >= 0) {
-                setSelection(new StructuredSelection(arrayItems[deleteIndex]));
-            }
-            refresh();
+            final CollectionElement.Item item = (CollectionElement.Item) getStructuredSelection().getFirstElement();
+            final CollectionElement collection = item.collection;
+            final int index = collection.items.indexOf(item);
 
+            collection.items.remove(index);
+
+            if (!collection.items.isEmpty()) {
+                setSelection(new StructuredSelection(collection.items.get(CommonUtils.clamp(index, 0, collection.items.size() - 1))));
+            }
+
+            refresh();
             autoUpdateComplexValue();
         }
     }
@@ -956,45 +732,32 @@ public class ComplexObjectEditor extends TreeViewer {
         public void run() {
             disposeOldEditor();
 
-            IStructuredSelection selection = getStructuredSelection();
-            if (selection.isEmpty()) {
-                return;
-            }
-
-            DBDCollection collection = (DBDCollection) getInput();
-            ComplexElement[] arrayItems = childrenMap.get(collection);
-            if (arrayItems == null) {
-                log.error("Can't find children items to move");
-                return;
-            }
-
-            ArrayItem selectedItem = (ArrayItem) selection.getFirstElement();
-            int selectedItemIndex = selectedItem.index;
+            final CollectionElement.Item item = (CollectionElement.Item) getStructuredSelection().getFirstElement();
+            final CollectionElement collection = item.collection;
+            final int index = collection.items.indexOf(item);
 
             if (direction == SWT.UP) {
-                if (selectedItemIndex == 0) {
+                if (index == 0) {
                     return;
                 }
-                swapArrayItems(arrayItems, selectedItemIndex, selectedItemIndex - 1);
-                setSelection(new StructuredSelection(arrayItems[selectedItemIndex - 1]));
-                childrenMap.put(collection, arrayItems);
+                swap(collection, index, index - 1);
+                setSelection(new StructuredSelection(collection.items.get(index - 1)));
             } else if (direction == SWT.DOWN) {
-                if (selectedItemIndex == arrayItems.length - 1) {
+                if (index == collection.items.size() - 1) {
                     return;
                 }
-                swapArrayItems(arrayItems, selectedItemIndex, selectedItemIndex + 1);
-                setSelection(new StructuredSelection(arrayItems[selectedItemIndex + 1]));
-                childrenMap.put(collection, arrayItems);
+                swap(collection, index, index + 1);
+                setSelection(new StructuredSelection(collection.items.get(index + 1)));
             }
 
             refresh();
             autoUpdateComplexValue();
         }
 
-        private void swapArrayItems(ComplexElement[] arrayItems, int firstIndex, int secondIndex) {
-            ComplexElement temp = arrayItems[firstIndex];
-            ((ArrayItem)(arrayItems[firstIndex] = arrayItems[secondIndex])).index = firstIndex;
-            ((ArrayItem)(arrayItems[secondIndex] = temp)).index = secondIndex;
+        private void swap(@NotNull CollectionElement collection, int firstIndex, int secondIndex) {
+            final CollectionElement.Item temp = collection.items.get(firstIndex);
+            collection.items.set(firstIndex, collection.items.get(secondIndex));
+            collection.items.set(secondIndex, temp);
         }
     }
 
@@ -1006,4 +769,309 @@ public class ComplexObjectEditor extends TreeViewer {
         manager.add(moveElementDownAction);
     }
 
+    private void updateActions() {
+        final Object object = getStructuredSelection().getFirstElement();
+        final boolean editable = !parentController.isReadOnly() && !isReadOnlyType(object);
+        final boolean extendable = GeneralUtils.adapt(object, CollectionElement.class) != null;
+
+        copyNameAction.setEnabled(object != null);
+        copyValueAction.setEnabled(object != null);
+        setToNullAction.setEnabled(editable);
+
+        if (editable && object instanceof CollectionElement.Item) {
+            final CollectionElement.Item item = (CollectionElement.Item) object;
+            final CollectionElement collection = item.collection;
+            final boolean child = !(collection instanceof CollectionRootElement);
+            final int index = collection.items.indexOf(item);
+
+            addElementAction.setEnabled(extendable);
+            removeElementAction.setEnabled(child);
+            moveElementUpAction.setEnabled(child && index > 0);
+            moveElementDownAction.setEnabled(child && index < collection.items.size() - 1);
+        } else {
+            addElementAction.setEnabled(editable && extendable);
+            removeElementAction.setEnabled(false);
+            moveElementUpAction.setEnabled(false);
+            moveElementDownAction.setEnabled(false);
+        }
+    }
+
+    private abstract static class ComplexElementItem implements IAdaptable {
+        protected boolean created;
+        protected boolean modified;
+        protected Object value;
+
+        @NotNull
+        public abstract String getName();
+
+        @NotNull
+        public abstract DBSTypedObject getDataType();
+
+        @NotNull
+        public abstract DBDValueHandler getValueHandler();
+
+        @NotNull
+        public abstract ComplexElement getParent();
+
+        @Override
+        public <T> T getAdapter(Class<T> adapter) {
+            if (adapter.isInstance(value)) {
+                return adapter.cast(value);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    private interface ComplexElement {
+        @NotNull
+        Object extract(@NotNull DBRProgressMonitor monitor);
+
+        @NotNull
+        ComplexElementItem[] getChildren();
+
+        @Nullable
+        Object getParent();
+    }
+
+    private interface ComplexElementReferrer {
+        @Nullable
+        Object getReferencedValue();
+    }
+
+    private static class CollectionElement implements ComplexElement {
+        private final Object parent;
+        private final DBDCollection source;
+        protected final List<Item> items;
+
+        public CollectionElement(@Nullable Object parent, @NotNull DBDCollection source) {
+            this.parent = parent;
+            this.source = source;
+            this.items = new ArrayList<>();
+        }
+
+        @NotNull
+        @Override
+        public Object extract(@NotNull DBRProgressMonitor monitor) {
+            DBDCollection collection = source;
+
+            if (collection instanceof DBDValueCloneable) {
+                try {
+                    collection = (DBDCollection) ((DBDValueCloneable) collection).cloneValue(monitor);
+                } catch (DBException e) {
+                    log.error("Error cloning collection value", e);
+                }
+            }
+
+            collection.setContents(items.stream().map(ComplexObjectEditor::unwrap).toArray());
+
+            return collection;
+        }
+
+        @NotNull
+        @Override
+        public ComplexElementItem[] getChildren() {
+            return items.toArray(ComplexElementItem[]::new);
+        }
+
+        @Nullable
+        @Override
+        public Object getParent() {
+            return parent;
+        }
+
+        private static class Item extends ComplexElementItem {
+            private final CollectionElement collection;
+
+            public Item(@NotNull CollectionElement collection, @Nullable Object value) {
+                this.collection = collection;
+                this.value = value;
+            }
+
+            @NotNull
+            @Override
+            public String getName() {
+                return String.valueOf(collection.items.indexOf(this));
+            }
+
+            @NotNull
+            @Override
+            public DBSTypedObject getDataType() {
+                return collection.source.getComponentType();
+            }
+
+            @NotNull
+            @Override
+            public DBDValueHandler getValueHandler() {
+                return collection.source.getComponentValueHandler();
+            }
+
+            @NotNull
+            @Override
+            public ComplexElement getParent() {
+                return collection;
+            }
+        }
+    }
+
+    private static class CollectionRootElement extends CollectionElement {
+        public CollectionRootElement(@NotNull DBDCollection source) {
+            super(null, source);
+        }
+
+        @NotNull
+        @Override
+        public Object extract(@NotNull DBRProgressMonitor monitor) {
+            return ((ComplexElement) items.get(0).value).extract(monitor);
+        }
+
+        private static class Item extends CollectionElement.Item {
+            public Item(@NotNull CollectionElement collection, @Nullable Object value) {
+                super(collection, value);
+            }
+
+            @NotNull
+            @Override
+            public String getName() {
+                return "<root>";
+            }
+        }
+    }
+
+    private static class CompositeElement implements ComplexElement {
+        private final Object parent;
+        private final DBDComposite source;
+        private final List<Item> items;
+        private final DBSDataType type;
+
+        public CompositeElement(@Nullable Object parent, @NotNull DBDComposite source) {
+            this.parent = parent;
+            this.source = source;
+            this.items = new ArrayList<>();
+            this.type = source.getDataType();
+        }
+
+        @NotNull
+        @Override
+        public Object extract(@NotNull DBRProgressMonitor monitor) {
+            DBDComposite composite = source;
+
+            if (composite instanceof DBDValueCloneable) {
+                try {
+                    composite = (DBDComposite) ((DBDValueCloneable) composite).cloneValue(monitor);
+                } catch (DBException e) {
+                    log.error("Error cloning composite value", e);
+                }
+            }
+
+            for (Item item : items) {
+                try {
+                    composite.setAttributeValue(item.attribute, unwrap(item.value));
+                } catch (DBCException e) {
+                    log.error("Error setting composite attribute value", e);
+                }
+            }
+
+            return composite;
+        }
+
+        @NotNull
+        @Override
+        public ComplexElementItem[] getChildren() {
+            return items.toArray(ComplexElementItem[]::new);
+        }
+
+        @Nullable
+        @Override
+        public Object getParent() {
+            return parent;
+        }
+
+        private static class Item extends ComplexElementItem {
+            private final CompositeElement composite;
+            private final DBSAttributeBase attribute;
+
+            public Item(@NotNull CompositeElement composite, @NotNull DBSAttributeBase attribute, @Nullable Object value) {
+                this.composite = composite;
+                this.attribute = attribute;
+                this.value = value;
+            }
+
+            @NotNull
+            @Override
+            public String getName() {
+                return attribute.getName();
+            }
+
+            @NotNull
+            @Override
+            public DBSTypedObject getDataType() {
+                return attribute;
+            }
+
+            @NotNull
+            @Override
+            public DBDValueHandler getValueHandler() {
+                return DBUtils.findValueHandler(composite.type.getDataSource(), attribute);
+            }
+
+            @NotNull
+            @Override
+            public ComplexElement getParent() {
+                return composite;
+            }
+        }
+    }
+
+    private class ReferenceElement implements ComplexElement, ComplexElementReferrer {
+        private final Object parent;
+        private final DBDReference reference;
+        private final Object value;
+
+        public ReferenceElement(@Nullable Object parent, @NotNull DBDReference reference) {
+            final DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<>() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
+                    monitor.beginTask("Read object reference", 1);
+                    try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Read reference value")) {
+                        result = reference.getReferencedObject(session);
+                    } catch (DBCException e) {
+                        throw new InvocationTargetException(e);
+                    } finally {
+                        monitor.done();
+                    }
+                }
+            };
+
+            UIUtils.runInUI(runnable);
+
+            this.parent = parent;
+            this.reference = reference;
+            this.value = runnable.getResult();
+        }
+
+        @NotNull
+        @Override
+        public Object extract(@NotNull DBRProgressMonitor monitor) {
+            return reference;
+        }
+
+        @NotNull
+        @Override
+        public ComplexElementItem[] getChildren() {
+            return new ComplexElementItem[0];
+        }
+
+        @Nullable
+        @Override
+        public Object getParent() {
+            return parent;
+        }
+
+        @Nullable
+        @Override
+        public Object getReferencedValue() {
+            return value;
+        }
+    }
 }

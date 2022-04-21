@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,6 +44,8 @@ public class PostgreDialectFunctionsTest {
     DBPDataSourceContainer mockDataSourceContainer;
     @Mock
     DBDAttributeBinding mockAttributeBinding;
+    @Mock
+    DBSTypedObject mockTypedObject;
 
     private PostgreDialect postgreDialect;
     private PostgreDataSource testDataSource;
@@ -166,5 +169,77 @@ public class PostgreDialectFunctionsTest {
         String typeCastClause = postgreDialect.getTypeCastClause(mockAttributeBinding, "?", true);
         String expectedTypeCast = "?::text"; // We are forced to add text casting to the JSON type if this json column is used in the WHERE condition and there are no keys in the table. Otherwise PostgreSQL returns an error that json can be cast to json.
         Assert.assertEquals(expectedTypeCast, typeCastClause);
+    }
+
+    @Test
+    public void generateCorrectDataTypeNameFromXMLDataType() throws DBException {
+        PostgreTableColumn column1 = PostgreTestUtils.addColumn(testTableRegular, "column1", "xml", 1);
+        String actualDataType = postgreDialect.convertExternalDataType(postgreDialect, column1, testDataSource);
+        Assert.assertEquals("xml", actualDataType);
+    }
+
+    @Test
+    public void generateCorrectDataTypeNameFromXMLTypeDataType() {
+        Mockito.when(mockTypedObject.getTypeName()).thenReturn("xmltype");
+        String actualDataType = postgreDialect.convertExternalDataType(postgreDialect, mockTypedObject, testDataSource);
+        Assert.assertEquals("xml", actualDataType);
+    }
+
+    @Test
+    public void generateCorrectDataTypeNameFromSYSXMLTypeDataType() {
+        Mockito.when(mockTypedObject.getTypeName()).thenReturn("sys.xmltype");
+        String actualDataType = postgreDialect.convertExternalDataType(postgreDialect, mockTypedObject, testDataSource);
+        Assert.assertEquals("xml", actualDataType);
+    }
+
+    @Test
+    public void generateCorrectDataTypeNameFromNVACRHARDataType() {
+        Mockito.when(mockTypedObject.getTypeName()).thenReturn("nvarchar");
+        Mockito.when(mockTypedObject.getMaxLength()).thenReturn(42L);
+        String actualDataType = postgreDialect.convertExternalDataType(postgreDialect, mockTypedObject, testDataSource);
+        Assert.assertEquals("varchar(42)", actualDataType);
+    }
+
+    @Test
+    public void generateCorrectDataTypeNameFromVACRHAR2DataType() {
+        Mockito.when(mockTypedObject.getTypeName()).thenReturn("varchar2");
+        Mockito.when(mockTypedObject.getMaxLength()).thenReturn(33L);
+        String actualDataType = postgreDialect.convertExternalDataType(postgreDialect, mockTypedObject, testDataSource);
+        Assert.assertEquals("varchar(33)", actualDataType);
+    }
+
+    @Test
+    public void generateCorrectDataTypeNameFromNCRHARDataType() {
+        Mockito.when(mockTypedObject.getTypeName()).thenReturn("nchar");
+        Mockito.when(mockTypedObject.getMaxLength()).thenReturn(67L);
+        String actualDataType = postgreDialect.convertExternalDataType(postgreDialect, mockTypedObject, testDataSource);
+        Assert.assertEquals("varchar(67)", actualDataType);
+    }
+
+    @Test
+    public void generateCorrectDataTypeNameWithModifiersFromNUMBERWithoutModifiers() {
+        Mockito.when(mockTypedObject.getTypeName()).thenReturn("number");
+        Mockito.when(mockTypedObject.getPrecision()).thenReturn(null);
+        Mockito.when(mockTypedObject.getScale()).thenReturn(null);
+        String actualDataType = postgreDialect.convertExternalDataType(postgreDialect, mockTypedObject, testDataSource);
+        Assert.assertEquals("numeric", actualDataType);
+    }
+
+    @Test
+    public void generateCorrectDataTypeNameNUMBERWithPrecisionOnly() {
+        Mockito.when(mockTypedObject.getTypeName()).thenReturn("number");
+        Mockito.when(mockTypedObject.getPrecision()).thenReturn(28);
+        Mockito.when(mockTypedObject.getScale()).thenReturn(null);
+        String actualDataType = postgreDialect.convertExternalDataType(postgreDialect, mockTypedObject, testDataSource);
+        Assert.assertEquals("numeric(28)", actualDataType);
+    }
+
+    @Test
+    public void generateCorrectDataTypeNameFromNUMBERWithPrecisionAndScale() {
+        Mockito.when(mockTypedObject.getTypeName()).thenReturn("number");
+        Mockito.when(mockTypedObject.getPrecision()).thenReturn(15);
+        Mockito.when(mockTypedObject.getScale()).thenReturn(5);
+        String actualDataType = postgreDialect.convertExternalDataType(postgreDialect, mockTypedObject, testDataSource);
+        Assert.assertEquals("numeric(15,5)", actualDataType);
     }
 }

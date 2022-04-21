@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -233,11 +233,17 @@ public class SQLServerDatabase
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database) throws SQLException {
-            return session.prepareStatement(
-                    "SELECT ss.*, tt.type_table_object_id FROM " + SQLServerUtils.getSystemTableName(database, "types") +
-                            " ss\nLEFT JOIN " + SQLServerUtils.getSystemTableName(database, "table_types") + " tt ON\n" +
-                            "ss.name = tt.name" +
-                            " WHERE ss.is_user_defined = 1");
+            String statement;
+            if (database.getDataSource().isSynapseDatabase()) {
+                // sys.table_types is supported only for SQL Server and Azure SQL Database, not for Azure Synapse.
+                statement = "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "types") + " WHERE is_user_defined = 1";
+            } else {
+                statement = "SELECT ss.*, tt.type_table_object_id FROM " + SQLServerUtils.getSystemTableName(database, "types") +
+                    " ss\nLEFT JOIN " + SQLServerUtils.getSystemTableName(database, "table_types") + " tt ON\n" +
+                    "ss.name = tt.name" +
+                    "\nWHERE ss.is_user_defined = 1";
+            }
+            return session.prepareStatement(statement);
         }
 
         @Override

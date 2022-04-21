@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.auth.DBASessionContext;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -42,10 +42,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -71,6 +68,11 @@ public class DBNModel implements IResourceChangeListener {
 
         public String first() {
             return pathItems.isEmpty() ? null : pathItems.get(0);
+        }
+
+        @Override
+        public String toString() {
+            return type.getPrefix() + pathItems.toString();
         }
     }
 
@@ -101,7 +103,7 @@ public class DBNModel implements IResourceChangeListener {
         return modelProject;
     }
 
-    public DBASessionContext getModelAuthContext() {
+    public SMSessionContext getModelAuthContext() {
         return modelProject != null ? modelProject.getSessionContext() : platform.getWorkspace().getAuthContext();
     }
 
@@ -371,6 +373,8 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private DBNNode findNodeByPath(DBRProgressMonitor monitor, NodePath nodePath, DBNNode curNode, int firstItem) throws DBException {
+        //log.debug("findNodeByPath '" + nodePath + "' in '" + curNode.getNodeItemPath() + "'/" + firstItem);
+
         for (int i = firstItem, itemsSize = nodePath.pathItems.size(); i < itemsSize; i++) {
             String item = nodePath.pathItems.get(i);
             DBNNode[] children = curNode.getChildren(monitor);
@@ -410,6 +414,10 @@ public class DBNModel implements IResourceChangeListener {
                         break;
                     }
                 }
+            }
+            if (nextChild == null) {
+                log.debug("Node '" + item + "' not found in parent node '" + curNode.getNodeItemPath() + "'." +
+                    "\nAllowed children: " + Arrays.toString(children));
             }
             curNode = nextChild;
             if (curNode == null) {

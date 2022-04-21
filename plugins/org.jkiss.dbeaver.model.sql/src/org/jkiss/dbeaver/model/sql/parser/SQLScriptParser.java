@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenEntry;
+import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenPredicateEvaluator;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
@@ -35,6 +37,8 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -44,9 +48,16 @@ import java.util.regex.Matcher;
 /**
  * SQL parser
  */
-public class SQLScriptParser
-{
+public class SQLScriptParser {
+
     static protected final Log log = Log.getLog(SQLScriptParser.class);
+
+    private static final String CLI_ARG_DEBUG_DISABLE_SKIP_TOKEN_EVALUATION = "dbeaver.debug.sql.disable-skip-token-evaluation";
+
+    private static boolean isPredicateEvaluationEnabled() {
+        String property = System.getProperty(CLI_ARG_DEBUG_DISABLE_SKIP_TOKEN_EVALUATION); // Turn off processor settings save.
+        return CommonUtils.isEmpty(property);
+    }
 
     public static SQLScriptElement parseQuery(
         final SQLParserContext context,
@@ -62,6 +73,8 @@ public class SQLScriptParser
             return null;
         }
         SQLDialect dialect = context.getDialect();
+        SQLTokenPredicateEvaluator predicateEvaluator = new SQLTokenPredicateEvaluator(dialect.getSkipTokenPredicates());
+        boolean isPredicateEvaluationEnabled = isPredicateEvaluationEnabled();
 
         // Parse range
         TPRuleBasedScanner ruleScanner = context.getScanner();
@@ -89,6 +102,11 @@ public class SQLScriptParser
             boolean isControl = false;
             String delimiterText = null;
             try {
+                if (isPredicateEvaluationEnabled && tokenLength > 0 && !token.isWhitespace()) {
+                    String tokenText = document.get(tokenOffset, tokenLength);
+                    predicateEvaluator.captureToken(new SQLTokenEntry(tokenText, tokenType));
+                }
+
                 boolean isDelimiter = (tokenType == SQLTokenType.T_DELIMITER) ||
                     (lineFeedIsDelimiter && token.isWhitespace() && document.get(tokenOffset, tokenLength).contains("\n"));
                 if (isDelimiter) {
@@ -159,9 +177,11 @@ public class SQLScriptParser
                 } else if (isDelimiter && curBlock != null) {
                     // Delimiter in some brackets or inside block. Ignore it.
                     continue;
-                } else if (tokenType == SQLTokenType.T_SET_DELIMITER || tokenType == SQLTokenType.T_CONTROL) {
-                    isDelimiter = true;
-                    isControl = true;
+                } else if (tokenType == SQLTokenType.T_SET_DELIMITER) {
+                	isDelimiter = true;
+                	isControl = true;
+                } else if (tokenType == SQLTokenType.T_CONTROL) {
+                	isControl = true;
                 } else if (tokenType == SQLTokenType.T_COMMENT) {
                     lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
                 }
@@ -182,8 +202,33 @@ public class SQLScriptParser
                     }
                 }
 
+                if (isPredicateEvaluationEnabled) {
+                    SQLParserActionKind actionKind = predicateEvaluator.evaluatePredicates();
+                    if (actionKind == SQLParserActionKind.BEGIN_BLOCK) {
+                        // header blocks seems optional and we are in the block either way
+                        while (curBlock != null && curBlock.isHeader) {
+                            curBlock = curBlock.parent;
+                        }
+                        curBlock = new ScriptBlockInfo(curBlock, false);
+                        hasBlocks = true;
+                    }
+
+                    if (curBlock != null && !token.isEOF()) {
+                        // if we are still inside of the block, so statement definitely hasn't ended yet
+                        // and will not be ended until we leave the block at least
+                        continue;
+                    }
+
+                    if (actionKind == SQLParserActionKind.SKIP_SUFFIX_TERM) {
+                        continue;
+                    }
+                }
+
                 boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
-                if (isControl && (scriptMode || cursorInsideToken) && !hasValuableTokens) {
+                if (isControl && (
+                        ((scriptMode || cursorInsideToken) && !hasValuableTokens)
+                        || (token.isEOF() || (isDelimiter && tokenOffset + tokenLength >= currentPos))
+                )) {
                     // Control query
                     String controlText = document.get(tokenOffset, tokenLength);
                     String commandId = null;
@@ -268,6 +313,13 @@ public class SQLScriptParser
                 }
                 if (isDelimiter) {
                     statementStart = tokenOffset + tokenLength;
+                    if (isPredicateEvaluationEnabled) {
+                        firstKeyword = null;
+                        predicateEvaluator.reset();
+                        isControl = false;
+                        hasBlocks = false;
+                        hasValuableTokens = false;
+                    }
                 }
                 if (token.isEOF()) {
                     return null;
@@ -281,6 +333,9 @@ public class SQLScriptParser
                 }
             } catch (BadLocationException e) {
                 log.warn("Error parsing query", e);
+                StringWriter buf = new StringWriter();
+                e.printStackTrace(new PrintWriter(buf, true));
+                return new SQLQuery(context.getDataSource(), buf.toString());
             } finally {
                 if (!token.isWhitespace() && !token.isEOF()) {
                     prevNotEmptyTokenType = tokenType;
@@ -430,7 +485,7 @@ public class SQLScriptParser
                     for (String delim : statementDelimiters) {
                         int delimIndex = lineStr.lastIndexOf(delim);
                         if (delimIndex != -1) {
-                            // There is a dlimiter in current line
+                            // There is a delimiter in current line
                             // Move pos before it if there are no valuable chars between delimiter and cursor position
                             boolean hasValuableChars = false;
                             for (int i = region.getOffset() + delimIndex + delim.length(); i < currentPos; i++) {
@@ -578,9 +633,10 @@ public class SQLScriptParser
             queryLength = document.getLength() - queryOffset;
         }
         SQLSyntaxManager syntaxManager = context.getSyntaxManager();
-        boolean supportParamsInDDL = context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
+        boolean supportParamsInEmbeddedCode = context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED);
         boolean execQuery = false;
         boolean ddlQuery = false;
+        boolean insideDollarQuote = false;
         List<SQLQueryParameter> parameters = null;
         TPRuleBasedScanner ruleScanner = context.getScanner();
         ruleScanner.setRange(document, queryOffset, queryLength);
@@ -614,10 +670,15 @@ public class SQLScriptParser
                 firstKeyword = false;
             }
 
+
+            if (tokenType == SQLTokenType.T_BLOCK_TOGGLE) {
+                insideDollarQuote = !insideDollarQuote;
+            }
+
             if (tokenType == SQLTokenType.T_PARAMETER && tokenLength > 0) {
                 try {
                     String paramName = document.get(tokenOffset, tokenLength);
-                    if (!supportParamsInDDL && ddlQuery) {
+                    if (!supportParamsInEmbeddedCode && ddlQuery || insideDollarQuote) {
                         continue;
                     }
                     if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {
@@ -757,6 +818,19 @@ public class SQLScriptParser
         SQLParserContext parserContext = new SQLParserContext(null, syntaxManager, ruleManager, sqlDocument);
         parserContext.setPreferenceStore(preferenceStore);
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
+    }
+
+    public static SQLScriptElement parseQuery(SQLDialect dialect, DBPPreferenceStore preferenceStore, String sqlScriptContent, int cursorPosition) {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(dialect, preferenceStore);
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules();
+
+        Document sqlDocument = new Document(sqlScriptContent);
+
+        SQLParserContext parserContext = new SQLParserContext(null, syntaxManager, ruleManager, sqlDocument);
+        parserContext.setPreferenceStore(preferenceStore);
+        return SQLScriptParser.extractQueryAtPos(parserContext, cursorPosition);
     }
 
     private static class ScriptBlockInfo {

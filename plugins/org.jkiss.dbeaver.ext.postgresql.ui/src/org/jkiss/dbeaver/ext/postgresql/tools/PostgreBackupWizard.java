@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,8 +58,12 @@ class PostgreBackupWizard extends AbstractNativeExportWizard<PostgreDatabaseBack
 
     @Override
     public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state) {
-        objectsPage.saveState();
-        settingsPage.saveState();
+        if (objectsPage.getControl() != null) {
+            objectsPage.saveState();
+        }
+        if (settingsPage.getControl() != null) {
+            settingsPage.saveState();
+        }
 
         getSettings().saveSettings(runnableContext, new TaskPreferenceStore(state));
     }

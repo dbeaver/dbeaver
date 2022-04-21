@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,41 @@ public enum DBPDataKind
 
     public boolean isComplex() {
         return complex;
+    }
+
+    /**
+     * The commonality describes how common is a given data kind, mostly
+     * its ability for one type to consume another <b>without losing any data</b>.
+     * <p>
+     * For example, when comparing {@link #NUMERIC} and {@link #STRING},
+     * the latter one would be more common because it can represent
+     * {@link #NUMERIC} (but no other way around).
+     * <p>
+     * Using this concept it is possible to peek a best-suitable
+     * type for document-based attributes where the containing data
+     * could wary from one document to another.
+     *
+     * @return commonality of given data kind
+     */
+    public int getCommonality() {
+        switch (this) {
+            case BINARY:
+            case CONTENT:
+                return 3;
+            case STRING:
+                return 2;
+            case BOOLEAN:
+            case NUMERIC:
+            case DATETIME:
+            case STRUCT:
+            case ARRAY:
+            case OBJECT:
+            case REFERENCE:
+            case ROWID:
+                return 1;
+            default:
+                return 0;
+        }
     }
 
     public static boolean canConsume(DBPDataKind sourceKind, DBPDataKind targetKind) {

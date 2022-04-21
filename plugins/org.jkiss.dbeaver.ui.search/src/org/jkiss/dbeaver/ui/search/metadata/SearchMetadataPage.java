@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -460,6 +459,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         params.setMaxResults(maxResults);
         params.setSearchInDefinitions(searchInDefinitions);
         params.setGlobalSearch(true);
+        params.setLikeCondition(matchTypeIndex == SearchMetadataConstants.MATCH_INDEX_LIKE);
 
         return new SearchMetadataQuery(dataSource, assistant, params);
     }

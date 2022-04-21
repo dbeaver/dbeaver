@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLBlockCompletionInfo;
+import org.jkiss.dbeaver.model.sql.SQLBlockCompletions;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -31,19 +33,20 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
+
     private static final Log log = Log.getLog(SQLAutoIndentStrategy.class);
     private static final int MINIMUM_SOUCE_CODE_LENGTH = 10;
     private static final boolean KEYWORD_INDENT_ENABLED = false;
 
+    private final String oneIndent = SQLIndenter.createIndent().toString();
+    
     private String partitioning;
     private ISourceViewer sourceViewer;
     private SQLSyntaxManager syntaxManager;
 
-    private Map<Integer, String> autoCompletionMap = new HashMap<>();
     private String[] delimiters;
 
     private enum CommentType {
@@ -55,8 +58,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     /**
      * Creates a new SQL auto indent strategy for the given document partitioning.
      */
-    public SQLAutoIndentStrategy(String partitioning, ISourceViewer sourceViewer, SQLSyntaxManager syntaxManager)
-    {
+    public SQLAutoIndentStrategy(String partitioning, ISourceViewer sourceViewer, SQLSyntaxManager syntaxManager) {
         this.partitioning = partitioning;
         this.sourceViewer = sourceViewer;
         this.syntaxManager = syntaxManager;
@@ -304,10 +306,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         return false;
     }
 
-    private void smartIndentAfterNewLine(IDocument document, DocumentCommand command)
-    {
-        clearCachedValues();
-
+    private void smartIndentAfterNewLine(IDocument document, DocumentCommand command) {
         int docLength = document.getLength();
         if (docLength == 0) {
             return;
@@ -318,18 +317,25 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
         //get previous token
         int previousToken = scanner.previousToken(command.offset - 1, SQLHeuristicScanner.UNBOUND);
+        int previousTokenPos = scanner.getPosition();
         String lastTokenString = scanner.getLastToken();
         int nextToken = scanner.nextToken(command.offset, SQLHeuristicScanner.UNBOUND);
+
+        SQLBlockCompletionInfo completion = isBlocksCompletionEnabled() ? syntaxManager.getDialect().getBlockCompletions().findCompletionByHead(previousToken) : null;
+        int prevPreviousToken = completion == null || completion.getHeadCancelTokenId() == null ?
+            SQLHeuristicScanner.NOT_FOUND : scanner.previousToken(previousTokenPos, SQLHeuristicScanner.UNBOUND);
+        boolean autoCompletionSupported = completion != null && (
+            completion.getHeadCancelTokenId() == null || ((int)completion.getHeadCancelTokenId()) != prevPreviousToken
+        );
 
         String indent;
         String beginIndentaion = "";
 
-        if (isSupportedAutoCompletionToken(previousToken)) {
+        if (autoCompletionSupported) {
             indent = indenter.computeIndentation(command.offset);
-
             beginIndentaion = indenter.getReferenceIndentation(command.offset);
-        } else if (nextToken == SQLIndentSymbols.Tokenend || nextToken == SQLIndentSymbols.TokenEND) {
-            indent = indenter.getReferenceIndentation(command.offset + 1);
+//        } else if (nextToken == SQLIndentSymbols.TokenEND) {
+//            indent = indenter.getReferenceIndentation(command.offset + 1);
         } else if (KEYWORD_INDENT_ENABLED) {
             if (previousToken == SQLIndentSymbols.TokenKeyword) {
                 int nlIndent = syntaxManager.getDialect().getKeywordNextLineIndent(lastTokenString);
@@ -355,7 +361,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                             // Keep current indent
                         } else {
                             // Last token seems to be some identifier (table or column or function name)
-                            // Next line shoudl contain some keyword then - let's unindent
+                            // Next line should contain some keyword then - let's unindent
                             indent = indenter.unindent(indent, 1);
                             // Do not unindent (#5753)
                         }
@@ -389,23 +395,47 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             }
 
             command.caretOffset = command.offset + buf.length();
-            command.shiftsCaret = false;
 
-            if (isSupportedAutoCompletionToken(previousToken) && !isClosed(document, command.offset, previousToken) && getTokenCount(start, command.offset, scanner, previousToken) > 0) {
-                buf.append(getLineDelimiter(document));
-                buf.append(beginIndentaion);
-                buf.append(getAutoCompletionTrail(previousToken));
+            if (autoCompletionSupported && getBlockBalance(document, command.offset, completion) > 0 && getTokenCount(start, command.offset, scanner, previousToken) > 0) {
+                buf.setLength(0);
+                for (String part: completion.getCompletionParts()) {
+                    if (part == SQLBlockCompletions.NEW_LINE_COMPLETION_PART) {
+                        buf.append(getLineDelimiter(document));
+                        buf.append(beginIndentaion);
+                    } else if (part.equals(SQLBlockCompletions.ONE_INDENT_COMPLETION_PART)) {
+                        buf.append(oneIndent);
+                    } else {
+                        buf.append(adjustCase(lastTokenString, part));
+                    }
+                }
+                if (completion.getTailEndTokenId() != null) {
+                    command.caretOffset = command.offset;
+                }
+            } else {
+                command.caretOffset = command.offset + buf.length();
             }
+            command.shiftsCaret = false;
             command.text = buf.toString();
 
-        }
-        catch (BadLocationException e) {
+        } catch (BadLocationException e) {
             log.error(e);
         }
     }
+    
+    private static String adjustCase(String example, String value) {
+        return isLowerCase(example) ? value.toLowerCase() : value.toUpperCase();
+    }
+    
+    private static boolean isLowerCase(String value) {
+        for (int i = 0, l = value.length(); i < l; i++) {
+            if (Character.isUpperCase(value.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-    private static String getLineDelimiter(IDocument document)
-    {
+    private static String getLineDelimiter(IDocument document) {
         try {
             if (document.getNumberOfLines() > 1) {
                 return document.getLineDelimiter(0);
@@ -418,36 +448,16 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         return GeneralUtils.getDefaultLineSeparator();
     }
 
-    private boolean isLineDelimiter(IDocument document, String text)
-    {
+    private boolean isLineDelimiter(IDocument document, String text) {
         if (delimiters == null) {
             delimiters = document.getLegalLineDelimiters();
         }
         return delimiters != null && TextUtilities.equals(delimiters, text) > -1;
     }
-
-    private void clearCachedValues()
-    {
-        autoCompletionMap.clear();
-        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        boolean closeBeginEnd = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END);
-        if (closeBeginEnd) {
-            autoCompletionMap.put(SQLIndentSymbols.Tokenbegin, SQLIndentSymbols.end);
-            autoCompletionMap.put(SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.END);
-        }
-
+    
+    private boolean isBlocksCompletionEnabled() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BLOCKS);
     }
-
-    private boolean isSupportedAutoCompletionToken(int token)
-    {
-        return autoCompletionMap.containsKey(token);
-    }
-
-    private String getAutoCompletionTrail(int token)
-    {
-        return autoCompletionMap.get(token);
-    }
-
 
     /**
      * To count token numbers from start offset to end offset.
@@ -460,7 +470,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         while (startOffset < endOffset) {
             int nextToken = scanner.nextToken(startOffset, endOffset);
             int position = scanner.getPosition();
-            if (nextToken != SQLIndentSymbols.TokenEOF && scanner.isSameToken(nextToken, token)) {
+            if (nextToken != SQLIndentSymbols.TokenEOF && nextToken == token) {
                 tokenCount++;
             }
             startOffset = position;
@@ -468,21 +478,11 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         return tokenCount;
     }
 
-    private boolean isClosed(IDocument document, int offset, int token)
-    {
-        //currently only BEGIN/END is supported. Later more typing aids will be added here.
-        if (token == SQLIndentSymbols.TokenBEGIN || token == SQLIndentSymbols.Tokenbegin) {
-            return getBlockBalance(document, offset) <= 0;
-        }
-        return false;
-    }
-
     /**
      * Returns the block balance, i.e. zero if the blocks are balanced at <code>offset</code>, a negative number if
      * there are more closing than opening peers, and a positive number if there are more opening than closing peers.
      */
-    private int getBlockBalance(IDocument document, int offset)
-    {
+    private int getBlockBalance(IDocument document, int offset, SQLBlockCompletionInfo blockInfo) {
         if (offset < 1) {
             return -1;
         }
@@ -496,9 +496,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         SQLHeuristicScanner scanner = new SQLHeuristicScanner(document, syntaxManager);
 
         while (true) {
-
-            begin = scanner.findOpeningPeer(begin, SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.TokenEND);
-            end = scanner.findClosingPeer(end, SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.TokenEND);
+            begin = scanner.findOpeningPeer(begin, blockInfo);
+            end = scanner.findClosingPeer(end, blockInfo);
             if (begin == -1 && end == -1) {
                 return 0;
             }
@@ -510,7 +509,6 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             }
         }
     }
-
 
 }
 

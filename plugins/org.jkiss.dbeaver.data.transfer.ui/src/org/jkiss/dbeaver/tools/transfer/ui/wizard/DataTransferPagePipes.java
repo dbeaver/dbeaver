@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -214,8 +215,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                     cell.setImage(DBeaverIcons.getImage(icon));
                     final SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, element);
                     if (queryContainer != null) {
-                        // We don't need extra quotes for queries
-                        cell.setText(queryContainer.getQuery().getText());
+                        cell.setText(CommonUtils.getSingleLineString(queryContainer.getQuery().getText()));
                     } else {
                         cell.setText(DBUtils.getObjectFullName(element, DBPEvaluationContext.UI));
                     }
@@ -251,12 +251,12 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     private void loadNodeSettings() {
         if (getWizard().getSettings().isConsumerOptional()) {
-            setTitle("Export target");
+            setTitle(DTMessages.data_transfer_wizard_init_title);
             setDescription(DTMessages.data_transfer_wizard_init_description);
 
             loadConsumers();
         } else {
-            setTitle("Import source");
+            setTitle(DTMessages.data_transfer_wizard_producers_title);
             setDescription(DTMessages.data_transfer_wizard_producers_description);
 
             loadProducers();
@@ -295,13 +295,16 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         updatePageCompletion();
     }
 
-    private void loadConsumers()
-    {
+    private void loadConsumers() {
         DataTransferSettings settings = getWizard().getSettings();
         Collection<DBSObject> objects = settings.getSourceObjects();
 
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor consumer : DataTransferRegistry.getInstance().getAvailableConsumers(objects)) {
+            if (consumer.isAdvancedNode() &&
+                DBWorkbench.getPlatform().getApplication().hasProductFeature(DTConstants.PRODUCT_FEATURE_SIMPLE_DATA_TRANSFER)) {
+                continue;
+            }
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objects);
             if (CommonUtils.isEmpty(processors)) {
                 transferTargets.add(new TransferTarget(consumer, null));
@@ -314,13 +317,17 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         nodesTable.setInput(transferTargets);
     }
 
-    private void loadProducers()
-    {
+    private void loadProducers() {
         DataTransferSettings settings = getWizard().getSettings();
         Collection<DBSObject> objects = settings.getSourceObjects();
 
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor producer : DataTransferRegistry.getInstance().getAvailableProducers(objects)) {
+            if (producer.isAdvancedNode() &&
+                DBWorkbench.getPlatform().getApplication().hasProductFeature(DTConstants.PRODUCT_FEATURE_SIMPLE_DATA_TRANSFER)) {
+                continue;
+            }
+
             Collection<DataTransferProcessorDescriptor> processors = producer.getAvailableProcessors(objects);
             if (CommonUtils.isEmpty(processors)) {
                 transferTargets.add(new TransferTarget(producer, null));

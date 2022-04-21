@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ public interface ConnectionCommands
     String CMD_DISCONNECT_ALL = "org.jkiss.dbeaver.core.disconnectAll";
     String CMD_DISCONNECT_OTHER = "org.jkiss.dbeaver.core.disconnectOther";
     String CMD_INVALIDATE = "org.jkiss.dbeaver.core.invalidate";
+    String CMD_READONLY = "org.jkiss.dbeaver.core.connection.readonly";
     String CMD_COMMIT = "org.jkiss.dbeaver.core.commit";
     String CMD_ROLLBACK = "org.jkiss.dbeaver.core.rollback";
     String CMD_TOGGLE_AUTOCOMMIT = "org.jkiss.dbeaver.core.txn.autocommit"; //$NON-NLS-1$

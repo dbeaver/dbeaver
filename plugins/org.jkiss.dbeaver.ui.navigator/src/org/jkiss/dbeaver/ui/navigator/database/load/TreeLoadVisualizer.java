@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.navigator.database.load;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -72,16 +74,27 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
             viewerControl.setRedraw(false);
 
             {
-                if (children == null) {
-                    // Some error occurred. In good case children must be at least an empty array
-                    viewer.collapseToLevel(parent, -1);
-                } else if (children.length != 0) {
-                    viewer.refresh(parent);
-                }
                 TreeItem item = (TreeItem) viewer.testFindItem(placeHolder);
                 if (item != null && !item.isDisposed()) {
                     if ((item.getParentItem() == null || !item.getParentItem().isDisposed()) || this.parent instanceof IWorkspaceRoot) {
                         viewer.remove(placeHolder);
+                    }
+                }
+
+                if (children == null) {
+                    // Some error occurred. In good case children must be at least an empty array
+                    viewer.collapseToLevel(parent, -1);
+                } else if (children.length != 0) {
+                    boolean isEmpty = false;
+                    if (viewerControl instanceof Tree) {
+                        isEmpty = ((Tree) viewerControl).getItemCount() == 0;
+                    } else if (viewerControl instanceof Table) {
+                        isEmpty = ((Table) viewerControl).getItemCount() == 0;
+                    }
+                    if (isEmpty) {
+                        viewer.setInput(viewer.getInput());
+                    } else {
+                        viewer.refresh(parent);
                     }
                 }
             }

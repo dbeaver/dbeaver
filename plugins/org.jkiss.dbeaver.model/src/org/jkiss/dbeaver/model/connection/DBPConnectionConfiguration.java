@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.auth.DBAAuthModel;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
@@ -105,6 +105,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     private DBPConnectionType connectionType;
     private String connectionColor;
     private int keepAliveInterval;
+    private int closeIdleInterval;
 
     private String authModelId;
     private Map<String, String> authProperties;
@@ -118,6 +119,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
         this.keepAliveInterval = 0;
+        this.closeIdleInterval = 0;
     }
 
     public DBPConnectionConfiguration(@NotNull DBPConnectionConfiguration info) {
@@ -147,6 +149,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.bootstrap = new DBPConnectionBootstrap(info.bootstrap);
         this.connectionColor = info.connectionColor;
         this.keepAliveInterval = info.keepAliveInterval;
+        this.closeIdleInterval = info.closeIdleInterval;
     }
 
     public String getClientHomeId() {
@@ -377,6 +380,14 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.keepAliveInterval = keepAliveInterval;
     }
 
+    public int getCloseIdleInterval() {
+        return closeIdleInterval;
+    }
+
+    public void setCloseIdleInterval(int closeIdleInterval) {
+        this.closeIdleInterval = closeIdleInterval;
+    }
+
     public String getConfigProfileName() {
         return configProfileName;
     }
@@ -478,7 +489,8 @@ public class DBPConnectionConfiguration implements DBPObject {
                 CommonUtils.equalObjects(this.events, source.events) &&
                 CommonUtils.equalObjects(this.handlers, source.handlers) &&
                 CommonUtils.equalObjects(this.bootstrap, source.bootstrap) &&
-                this.keepAliveInterval == source.keepAliveInterval;
+                this.keepAliveInterval == source.keepAliveInterval &&
+                this.closeIdleInterval == source.closeIdleInterval;
     }
 
     public void resolveDynamicVariables(IVariableResolver variableResolver) {

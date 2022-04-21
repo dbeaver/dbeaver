@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,16 +122,12 @@ public class PostgreTableBaseTest {
         PostgreTestUtils.addColumn(tableRegular, "column1", "int4", 1);
 
         String expectedDDL =
-            "-- Drop table" + lineBreak +
-                lineBreak +
-                "-- DROP TABLE testSchema.testTable;" + lineBreak +
-                lineBreak +
                 "CREATE TABLE testSchema.testTable (" + lineBreak +
                 "\tcolumn1 int4 NULL" + lineBreak +
                 ");" + lineBreak;
 
         String tableDDL = tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap());
-        Assert.assertEquals(tableDDL, expectedDDL);
+        Assert.assertEquals(expectedDDL, tableDDL);
     }
 
     @Test
@@ -148,17 +144,13 @@ public class PostgreTableBaseTest {
         PostgreTestUtils.addColumn(tableRegular, "column2", "varchar", 2);
 
         String expectedDDL =
-            "-- Drop table" + lineBreak +
-                lineBreak +
-                "-- DROP TABLE testSchema.testTable;" + lineBreak +
-                lineBreak +
                 "CREATE TABLE testSchema.testTable (" + lineBreak +
                 "\tcolumn1 int4 NULL," + lineBreak +
                 "\tcolumn2 varchar NULL" + lineBreak +
                 ");" + lineBreak;
 
         String tableDDL = tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap());
-        Assert.assertEquals(tableDDL, expectedDDL);
+        Assert.assertEquals(expectedDDL, tableDDL);
     }
 
     // Generation table/view comment statement tests
@@ -176,7 +168,7 @@ public class PostgreTableBaseTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "COMMENT ON TABLE testSchema.testTableRegular IS 'Test comment';" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assert.assertEquals(expectedDDL, script);
     }
 
     @Test
@@ -195,7 +187,7 @@ public class PostgreTableBaseTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "COMMENT ON FOREIGN TABLE testSchema.testForeignTable IS 'Test comment';" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assert.assertEquals(expectedDDL, script);
     }
 
     @Test
@@ -211,7 +203,7 @@ public class PostgreTableBaseTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "COMMENT ON VIEW testSchema.testView IS 'Test comment';" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assert.assertEquals(expectedDDL, script);
     }
 
     @Test
@@ -230,7 +222,7 @@ public class PostgreTableBaseTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "COMMENT ON MATERIALIZED VIEW testSchema.testMView IS 'Test comment';" + lineBreak;
-        Assert.assertEquals(script, expectedDDL);
+        Assert.assertEquals(expectedDDL, script);
     }
 
     // Other tests

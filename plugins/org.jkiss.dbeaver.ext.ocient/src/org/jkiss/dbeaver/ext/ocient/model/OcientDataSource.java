@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,20 +27,20 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public class OcientDataSource extends GenericDataSource {
 
     public OcientDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
-	super(monitor, container, new GenericMetaModel(), new OcientSQLDialect());
+        super(monitor, container, new GenericMetaModel(), new OcientSQLDialect());
     }
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-	if (adapter == DBCQueryPlanner.class) {
-	    return adapter.cast(new OcientQueryPlaner(this));
-	}
-	return super.getAdapter(adapter);
+        if (adapter == DBCQueryPlanner.class) {
+            return adapter.cast(new OcientQueryPlaner(this));
+        }
+        return super.getAdapter(adapter);
     }
 
     @Override
     protected boolean isPopulateClientAppName() {
-	return false;
+        return false;
     }
 
 }

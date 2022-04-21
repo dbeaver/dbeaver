@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,29 @@
  */
 package org.jkiss.dbeaver.ext.mysql.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * MySQLGeometryValueHandler
  */
 public class MySQLGeometryValueHandler extends GISGeometryValueHandler {
-    public static final MySQLGeometryValueHandler INSTANCE = new MySQLGeometryValueHandler();
+
+    static final MySQLGeometryValueHandler INSTANCE = new MySQLGeometryValueHandler();
 
     public MySQLGeometryValueHandler() {
         setInvertCoordinates(true);
         setLeadingSRID(true);
+    }
+
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        if (format == DBDDisplayFormat.NATIVE) {
+            return "ST_GeomFromText('" + value.toString() + "')";
+        }
+        return super.getValueDisplayString(column, value, format);
     }
 }

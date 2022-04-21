@@ -1,7 +1,7 @@
 
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,7 +114,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
         fontData[0].setHeight(versionInfoSize);
         boldFont = new Font(normalFont.getDevice(), fontData[0]);
 
-        /*final Color versionColor = new Color(getContent().getDisplay(), versionInfoRGB); // NY splash screen has version name already
+        final Color versionColor = new Color(getContent().getDisplay(), versionInfoRGB);
 
         getContent().addPaintListener(e -> {
             String productVersion = "";
@@ -129,7 +129,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             e.gc.drawText(productVersion, versionCoord.x, versionCoord.y, true);
             //e.gc.drawText(osVersion, 115, 200, true);
             e.gc.setFont(normalFont);
-        });*/
+        });
     }
 
     @Override

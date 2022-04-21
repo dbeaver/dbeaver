@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.navigator.meta;
 
-import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -27,8 +26,8 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -76,7 +75,7 @@ public abstract class DBXTreeNode
             try {
                 this.visibleIf = AbstractDescriptor.parseExpression(visibleIf);
             } catch (DBException e) {
-                log.warn(e);
+                log.debug("Error parsing expression '" + visibleIf + "':" + GeneralUtils.getExpressionParseMessage(e));
             }
         }
         if (recursive != null) {
@@ -245,9 +244,9 @@ public abstract class DBXTreeNode
     protected boolean isVisible(DBNNode context)
     {
         try {
-            return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(makeContext(context)));
+            return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(DBNUtils.makeContext(context)));
         } catch (JexlException e) {
-            log.warn(e);
+            log.debug("Error evaluating expression '" + visibleIf.getSourceText() + "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
             return false;
         }
     }
@@ -300,7 +299,7 @@ public abstract class DBXTreeNode
                     continue;
                 }
                 try {
-                    Object result = icon.getExpression().evaluate(makeContext(context));
+                    Object result = icon.getExpression().evaluate(DBNUtils.makeContext(context));
                     if (Boolean.TRUE.equals(result)) {
                         return icon.getIcon();
                     }
@@ -339,34 +338,6 @@ public abstract class DBXTreeNode
             }
         }
         return null;
-    }
-
-    private static JexlContext makeContext(final DBNNode node)
-    {
-        return new JexlContext() {
-
-            @Override
-            public Object get(String name)
-            {
-                if (node instanceof DBNDatabaseNode && name.equals("object")) {
-                    return ((DBNDatabaseNode) node).getValueObject();
-                }
-                return null;
-            }
-
-            @Override
-            public void set(String name, Object value)
-            {
-                log.warn("Set is not implemented in DBX model");
-            }
-
-            @Override
-            public boolean has(String name)
-            {
-                return node instanceof DBNDatabaseNode && name.equals("object")
-                    && ((DBNDatabaseNode) node).getValueObject() != null;
-            }
-        };
     }
 
     public void moveChildAfter(DBXTreeNode child, DBXTreeNode afterItem) {

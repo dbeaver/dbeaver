@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -288,8 +288,8 @@ public class BeanUtils {
 
     public static final Short DEFAULT_SHORT = (short) 0;
     public static final Integer DEFAULT_INTEGER = 0;
-    public static final Long DEFAULT_LONG = 0l;
-    public static final Float DEFAULT_FLOAT = new Float(0.0);
+    public static final Long DEFAULT_LONG = 0L;
+    public static final Float DEFAULT_FLOAT = (float) 0.0;
     public static final Double DEFAULT_DOUBLE = 0.0;
     public static final Byte DEFAULT_BYTE = (byte) 0;
     public static final Character DEFAULT_CHAR = (char) 0;
@@ -334,9 +334,7 @@ public class BeanUtils {
     public static Object invokeObjectMethod(Object object, String name, Class<?> paramTypes[], Object args[])
         throws Throwable {
         Method method = object.getClass().getMethod(name, paramTypes);
-        if (!method.isAccessible()) {
-            method.setAccessible(true);
-        }
+        method.setAccessible(true);
         try {
             return method.invoke(object, args);
         } catch (InvocationTargetException e) {
@@ -347,9 +345,7 @@ public class BeanUtils {
     public static Object invokeObjectMethod(Object object, String name)
         throws Throwable {
         Method method = object.getClass().getMethod(name);
-        if (!method.isAccessible()) {
-            method.setAccessible(true);
-        }
+        method.setAccessible(true);
         try {
             return method.invoke(object);
         } catch (InvocationTargetException e) {
@@ -367,9 +363,7 @@ public class BeanUtils {
         for (Class<?> cls = object.getClass(); cls != null; cls = cls.getSuperclass()) {
             for (Method method : cls.getDeclaredMethods()) {
                 if (method.getName().equals(methodName) && Arrays.equals(method.getParameterTypes(), paramTypes)) {
-                    if (!method.isAccessible()) {
-                        method.setAccessible(true);
-                    }
+                    method.setAccessible(true);
                     try {
                         return method.invoke(object, args);
                     } catch (InvocationTargetException e) {
@@ -384,9 +378,7 @@ public class BeanUtils {
     public static Object invokeStaticMethod(Class<?> objectType, String name, Class<?> paramTypes[], Object args[])
         throws Throwable {
         Method method = objectType.getMethod(name, paramTypes);
-        if (!method.isAccessible()) {
-            method.setAccessible(true);
-        }
+        method.setAccessible(true);
         try {
             return method.invoke(null, args);
         } catch (InvocationTargetException e) {
@@ -429,4 +421,12 @@ public class BeanUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> T getFieldValue(@NotNull Object object, @NotNull String name) throws Throwable {
+        final Field field = object.getClass().getDeclaredField(name);
+        if (!field.canAccess(object)) {
+            field.setAccessible(true);
+        }
+        return (T) field.get(object);
+    }
 }

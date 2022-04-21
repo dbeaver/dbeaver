@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
-import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -60,15 +57,14 @@ public class ErrorPresentation extends AbstractPresentation {
 
     private final String sqlText;
     private final IStatus status;
-    private Composite errorComposite;
-    private ErrorDetailsPart statusPart;
-    private Composite sqlPanel;
     private StyledText textWidget;
     private Object editorPanel;
+    private IResultSetContainerExt resultSetContainer;
 
-    public ErrorPresentation(String sqlText, IStatus status) {
+    public ErrorPresentation(String sqlText, IStatus status, @Nullable IResultSetContainerExt resultSetContainer) {
         this.sqlText = sqlText;
         this.status = status;
+        this.resultSetContainer = resultSetContainer;
     }
 
     @Override
@@ -78,9 +74,9 @@ public class ErrorPresentation extends AbstractPresentation {
         CustomSashForm partDivider = UIUtils.createPartDivider(controller.getSite().getPart(), parent, SWT.HORIZONTAL);
         partDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        errorComposite = UIUtils.createComposite(partDivider, 1);
+        Composite errorComposite = UIUtils.createComposite(partDivider, 1);
         errorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        statusPart = new ErrorDetailsPart(errorComposite, status);
+        new ErrorDetailsPart(errorComposite, status, resultSetContainer);
 
         for (Control child : errorComposite.getChildren()) {
             if (child instanceof Text) {
@@ -88,17 +84,19 @@ public class ErrorPresentation extends AbstractPresentation {
             }
         }
 
-        sqlPanel = UIUtils.createComposite(partDivider, 1);
+        Composite sqlPanel = UIUtils.createComposite(partDivider, 1);
         sqlPanel.setLayout(new FillLayout());
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-        try {
-            editorPanel = serviceSQL.createSQLPanel(controller.getSite(), sqlPanel, controller, "SQL", true, sqlText);
-            if (editorPanel instanceof TextViewer) {
-                textWidget = ((TextViewer) editorPanel).getTextWidget();
+        if (serviceSQL != null) {
+            try {
+                editorPanel = serviceSQL.createSQLPanel(controller.getSite(), sqlPanel, controller, "SQL", true, sqlText);
+                if (editorPanel instanceof TextViewer) {
+                    textWidget = ((TextViewer) editorPanel).getTextWidget();
+                }
+            } catch (DBException e) {
+                textWidget = new StyledText(sqlPanel, SWT.BORDER | SWT.READ_ONLY);
+                textWidget.setText(sqlText);
             }
-        } catch (DBException e) {
-            textWidget = new StyledText(sqlPanel, SWT.BORDER | SWT.READ_ONLY);
-            textWidget.setText(sqlText);
         }
 
         try {
@@ -108,14 +106,13 @@ public class ErrorPresentation extends AbstractPresentation {
             if (errorWidth != null) {
                 String[] widthStrs = errorWidth.split(":");
                 if (widthStrs.length == 2) {
-                    partDivider.setWeights(new int[]{
-                        Integer.parseInt(widthStrs[0]),
-                        Integer.parseInt(widthStrs[1])});
+                    partDivider.setWeights(Integer.parseInt(widthStrs[0]),
+                        Integer.parseInt(widthStrs[1]));
                 }
                 widthSet = true;
             }
             if (!widthSet) {
-                partDivider.setWeights(new int[] { 700, 300 } );
+                partDivider.setWeights(700, 300);
             }
             partDivider.addCustomSashFormListener((firstControlWeight, secondControlWeight) -> {
                 int[] weights = partDivider.getWeights();

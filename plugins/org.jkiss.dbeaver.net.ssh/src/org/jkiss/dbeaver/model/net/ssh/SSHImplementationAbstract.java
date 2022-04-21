@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -208,13 +208,18 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             case PUBLIC_KEY: {
                 final String path = configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH);
                 if (CommonUtils.isEmpty(path)) {
-                    throw new DBException("Private key path is empty");
+                    String privKeyValue = configuration.getSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE);
+                    if (privKeyValue == null) {
+                        throw new DBException("Private key not specified");
+                    }
+                    authentication = SSHAuthConfiguration.usingKey(privKeyValue, password, savePassword);
+                } else {
+                    final File file = new File(path);
+                    if (!file.exists()) {
+                        throw new DBException("Private key file '" + path + "' does not exist");
+                    }
+                    authentication = SSHAuthConfiguration.usingKey(file, password, savePassword);
                 }
-                final File file = new File(path);
-                if (!file.exists()) {
-                    throw new DBException("Private key file '" + path + "' does not exist");
-                }
-                authentication = SSHAuthConfiguration.usingKey(file, password, savePassword);
                 break;
             }
             case PASSWORD: {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,13 +171,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         if (!initialized) {
             /*// For multi-streams export header only once
             if (!settings.isUseSingleFile() || parameters.orderNumber == 0) */{
-                try {
-                    processor.exportHeader(session);
-                } catch (DBException e) {
-                    log.warn("Error while exporting table header", e);
-                } catch (IOException e) {
-                    throw new DBCException("IO error", e);
-                }
+                exportHeaderInFile(session);
             }
         }
 
@@ -191,43 +185,42 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             if (settings.isSplitOutFiles() && !parameters.isBinary && !firstRow) {
                 writer.flush();
                 if (bytesWritten >= settings.getMaxOutFileSize()) {
-                    // Make new file
+                    // First add footer for the previous file
+                    exportFooterInFile(session.getProgressMonitor());
+                    // Make new file with the header
                     createNewOutFile();
+                    exportHeaderInFile(session);
                 }
             }
 
             // Get values
             Object[] srcRow = fetchRow(session, resultSet, columnMetas);
             Object[] targetRow;
-            if (processor instanceof IDocumentDataExporter) {
-                targetRow = srcRow;
-            } else {
-                targetRow = new Object[columnBindings.length];
-                for (int i = 0; i < columnBindings.length; i++) {
-                    DBDAttributeBinding column = columnBindings[i];
-                    Object value = DBUtils.getAttributeValue(column, columnMetas, srcRow);
-                    if (value instanceof DBDContent) {
-                        // Check for binary type export
-                        if (!ContentUtils.isTextContent((DBDContent) value)) {
-                            switch (settings.getLobExtractType()) {
-                                case SKIP:
-                                    // Set it it null
-                                    value = null;
-                                    break;
-                                case INLINE:
-                                    // Just pass content to exporter
-                                    break;
-                                case FILES:
-                                    if (!settings.isOutputClipboard()) {
-                                        // Save content to file and pass file reference to exporter
-                                        value = saveContentToFile(session.getProgressMonitor(), (DBDContent) value);
-                                    }
-                                    break;
-                            }
+            targetRow = new Object[columnBindings.length];
+            for (int i = 0; i < columnBindings.length; i++) {
+                DBDAttributeBinding column = columnBindings[i];
+                Object value = DBUtils.getAttributeValue(column, columnMetas, srcRow);
+                if (value instanceof DBDContent) {
+                    // Check for binary type export
+                    if (!ContentUtils.isTextContent((DBDContent) value)) {
+                        switch (settings.getLobExtractType()) {
+                            case SKIP:
+                                // Set it it null
+                                value = null;
+                                break;
+                            case INLINE:
+                                // Just pass content to exporter
+                                break;
+                            case FILES:
+                                if (!settings.isOutputClipboard()) {
+                                    // Save content to file and pass file reference to exporter
+                                    value = saveContentToFile(session.getProgressMonitor(), (DBDContent) value);
+                                }
+                                break;
                         }
                     }
-                    targetRow[i] = value;
                 }
+                targetRow[i] = value;
             }
             // Export row
             processor.exportRow(session, resultSet, targetRow);
@@ -236,6 +229,26 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             throw new DBCException("IO error", e);
         } catch (Throwable e) {
             throw new DBCException("Error while exporting table row", e);
+        }
+    }
+
+    private void exportHeaderInFile(@NotNull DBCSession session) throws DBCException {
+        try {
+            processor.exportHeader(session);
+        } catch (DBException e) {
+            log.warn("Error while exporting table header", e);
+        } catch (IOException e) {
+            throw new DBCException("IO error", e);
+        }
+    }
+
+    private void exportFooterInFile(@NotNull DBRProgressMonitor monitor) {
+        if (processor != null) {
+            try {
+                processor.exportFooter(monitor);
+            } catch (Exception e) {
+                log.warn("Error while exporting table footer", e);
+            }
         }
     }
 
@@ -287,6 +300,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         } else {
             outputFile = null;
         }
+
+        if (processor instanceof IAppendableDataExporter && (settings.isAppendToFileEnd() || (settings.isUseSingleFile() && parameters.orderNumber > 0))) {
+            try {
+                ((IAppendableDataExporter) processor).importData(exportSite);
+            } catch (DBException e) {
+                log.warn("Error importing existing data for appending, data loss might occur", e);
+            }
+        }
+
         try {
             if (outputClipboard) {
                 this.outputBuffer = new StringWriter(2048);
@@ -329,18 +351,25 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     private void openOutputStreams() throws IOException {
-        this.statStream = new StatOutputStream(
-            new FileOutputStream(outputFile, settings.isUseSingleFile()));
-        this.outputStream = new BufferedOutputStream(
-            statStream,
-            OUT_FILE_BUFFER_SIZE);
+        final boolean truncate;
+
+        if (!settings.isAppendToFileEnd() && settings.isUseSingleFile() && parameters.orderNumber == 0) {
+            truncate = true;
+        } else if (processor instanceof IAppendableDataExporter && (settings.isAppendToFileEnd() || settings.isUseSingleFile())) {
+            truncate = ((IAppendableDataExporter) processor).shouldTruncateOutputFileBeforeExport();
+        } else {
+            truncate = true;
+        }
+
+        this.statStream = new StatOutputStream(new FileOutputStream(outputFile, !truncate));
+        this.outputStream = new BufferedOutputStream(statStream, OUT_FILE_BUFFER_SIZE);
         if (settings.isCompressResults()) {
             this.zipStream = new ZipOutputStream(this.outputStream);
             this.zipStream.putNextEntry(new ZipEntry(getOutputFileName()));
             this.outputStream = zipStream;
         }
 
-        // If we need to split files - use stream wrapper to calculate fiel size
+        // If we need to split files - use stream wrapper to calculate file size
         if (settings.isSplitOutFiles()) {
             this.outputStream = new OutputStreamStatProxy(this.outputStream);
         }
@@ -420,13 +449,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
         if (!last) {
-            if (processor != null) {
-                try {
-                    processor.exportFooter(monitor);
-                } catch (Exception e) {
-                    log.warn("Error while exporting table footer", e);
-                }
-            }
+            exportFooterInFile(monitor);
 
             closeExporter();
             return;
@@ -664,7 +687,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     public static Object[] fetchRow(DBCSession session, DBCResultSet resultSet, DBDAttributeBinding[] attributes) throws DBCException {
-        int columnCount = resultSet.getMeta().getAttributes().size(); // Column count without virtual columns
+        int columnCount = attributes.length; // Column count without virtual columns
 
         Object[] row = new Object[columnCount];
         for (int i = 0 ; i < columnCount; i++) {
@@ -715,6 +738,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         @Override
         public OutputStream getOutputStream() {
             return outputStream;
+        }
+
+        @Nullable
+        @Override
+        public File getOutputFile() {
+            return outputFile;
         }
 
         @Override

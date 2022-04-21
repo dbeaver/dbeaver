@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,11 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceOrigin;
 import org.jkiss.dbeaver.model.DBPDataSourceOriginProvider;
+import org.jkiss.dbeaver.model.DBPExternalConfiguration;
 
 import java.util.Map;
 
@@ -28,8 +31,11 @@ public class DataSourceOriginProviderLocal implements DBPDataSourceOriginProvide
 {
     public static final String PROVIDER_ID = "local";
 
+    @NotNull
     @Override
-    public DBPDataSourceOrigin getOrigin(Map<String, Object> configuration) {
+    public DBPDataSourceOrigin getOrigin(
+        @NotNull Map<String, Object> dsConfiguration,
+        @Nullable DBPExternalConfiguration externalConfiguration) {
         // There is only one origin
         return DataSourceOriginLocal.INSTANCE;
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
@@ -64,6 +66,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
     private Text multiRowInsertBatch;
     private Button skipBindValues;
     private Button useBatchCheck;
+    private Button ignoreDuplicateRows;
     private Button useBulkLoadCheck;
     private List<SQLInsertReplaceMethodDescriptor> availableInsertMethodsDescriptors;
 
@@ -206,7 +209,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
                 (!useBatchCheck.isDisposed() && useBatchCheck.getSelection()) ||
                 (useBatchCheck.isDisposed() && settings.isDisableUsingBatches())))
             {
-                useMultiRowInsert.setEnabled(false);
+                disableButton(useMultiRowInsert);
             }
             useMultiRowInsert.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -228,19 +231,22 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
             gd.horizontalSpan = 3;
             multiRowInsertBatch.setLayoutData(gd);
             multiRowInsertBatch.setText(String.valueOf(settings.getMultiRowInsertBatch()));
-            if (!useMultiRowInsert.getSelection() || useBatchCheck != null && !useBatchCheck.isDisposed() && useBatchCheck.getSelection()) {
+            if (!useMultiRowInsert.getSelection() || buttonIsAvailable(useBatchCheck) && useBatchCheck.getSelection()) {
                 multiRowInsertBatch.setEnabled(false);
             }
             multiRowInsertBatch.addModifyListener(e -> settings.setMultiRowInsertBatch(CommonUtils.toInt(multiRowInsertBatch.getText())));
-
-            skipBindValues = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_description, settings.isSkipBindValues(), 4);
-            skipBindValues.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setSkipBindValues(skipBindValues.getSelection());
-                }
-            });
-
+            //This settings may break import for drivers that does not support this feature, so it is disabled for non-JDBC drivers
+            if (settings.getContainer() != null && settings.getContainer().getDataSource() instanceof JDBCDataSource) {
+                skipBindValues = UIUtils.createCheckbox(performanceSettings, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_label, DTUIMessages.database_consumer_wizard_checkbox_multi_insert_skip_bind_values_description, settings.isSkipBindValues(), 4);
+                skipBindValues.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        settings.setSkipBindValues(skipBindValues.getSelection());
+                    }
+                });
+            } else {
+                settings.setSkipBindValues(false);
+            }
             useBatchCheck = UIUtils.createCheckbox(
                 performanceSettings,
                 DTUIMessages.database_consumer_wizard_disable_import_batches_label,
@@ -252,13 +258,51 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
                 public void widgetSelected(SelectionEvent e) {
                     settings.setDisableUsingBatches(useBatchCheck.getSelection());
                     if (useBatchCheck.getSelection()) {
-                        useMultiRowInsert.setSelection(false);
-                        useMultiRowInsert.setEnabled(false);
+                        disableButton(useMultiRowInsert);
                         settings.setUseMultiRowInsert(false);
                         multiRowInsertBatch.setEnabled(false);
-                    } else if (!useBatchCheck.getSelection() && !useMultiRowInsert.getEnabled()) {
-                        useMultiRowInsert.setEnabled(true);
+                        if (buttonIsAvailable(ignoreDuplicateRows)) {
+                            // ignoreDuplicateRows can be enabled only if useBatchCheck is checked and bulk load - not
+                            if (buttonIsAvailable(useBulkLoadCheck)) {
+                                if (!useBulkLoadCheck.getSelection()) {
+                                    ignoreDuplicateRows.setEnabled(true);
+                                }
+                            } else {
+                                ignoreDuplicateRows.setEnabled(true);
+                            }
+                        }
+                    } else if (!useBatchCheck.getSelection()) {
+                        if (!useMultiRowInsert.getEnabled()) {
+                            useMultiRowInsert.setEnabled(true);
+                        }
+                        if (buttonIsAvailable(ignoreDuplicateRows) && ignoreDuplicateRows.getEnabled()) {
+                            // ignoreDuplicateRows doesn't work with batches
+                            disableButton(ignoreDuplicateRows);
+                            settings.setIgnoreDuplicateRows(false);
+                        }
                     }
+                }
+            });
+
+            ignoreDuplicateRows = UIUtils.createCheckbox(
+                performanceSettings,
+                DTUIMessages.database_consumer_wizard_ignore_duplicate_rows_label,
+                DTUIMessages.database_consumer_wizard_ignore_duplicate_rows_tip,
+                settings.isIgnoreDuplicateRows(),
+                4
+            );
+            if (buttonIsAvailable(useBatchCheck)) {
+                boolean canIgnoreDuplicateRows = useBatchCheck.getSelection() && !settings.isUseBulkLoad();
+                ignoreDuplicateRows.setEnabled(canIgnoreDuplicateRows);
+                if (!canIgnoreDuplicateRows) {
+                    ignoreDuplicateRows.setSelection(false);
+                    settings.setIgnoreDuplicateRows(false);
+                }
+            }
+            ignoreDuplicateRows.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setIgnoreDuplicateRows(ignoreDuplicateRows.getSelection());
                 }
             });
 
@@ -271,12 +315,31 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
             useBulkLoadCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    settings.setUseBulkLoad(useBulkLoadCheck.getSelection());
+                    boolean checkSelection = useBulkLoadCheck.getSelection();
+                    settings.setUseBulkLoad(checkSelection);
+                    if (buttonIsAvailable(ignoreDuplicateRows)) {
+                        if (checkSelection) {
+                            disableButton(ignoreDuplicateRows);
+                            settings.setIgnoreDuplicateRows(false);
+                        } else if (buttonIsAvailable(useBatchCheck) && useBatchCheck.getSelection()) {
+                            ignoreDuplicateRows.setEnabled(true);
+                        }
+                    }
+                    onDuplicateKeyInsertMethods.setEnabled(!checkSelection);
                 }
             });
         }
 
         setControl(composite);
+    }
+
+    private boolean buttonIsAvailable(Button button) {
+        return button != null && !button.isDisposed();
+    }
+
+    private void disableButton(Button button) {
+        button.setEnabled(false);
+        button.setSelection(false);
     }
 
     private void loadUISettingsForDisableReferentialIntegrityCheckbox() {
@@ -342,16 +405,17 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
             settings.setTruncateBeforeLoad(false);
         }
 
-        if (useBulkLoadCheck != null && !useBulkLoadCheck.isDisposed()) {
+        if (buttonIsAvailable(useBulkLoadCheck)) {
             final DBPDataSource dataSource = settings.getContainerNode() == null ? null : settings.getContainerNode().getDataSource();
             if (DBUtils.getAdapter(DBSDataBulkLoader.class, dataSource) == null) {
-                useBulkLoadCheck.setEnabled(false);
-                useBulkLoadCheck.setSelection(false);
+                disableButton(useBulkLoadCheck);
                 settings.setUseBulkLoad(false);
             }
         }
 
         loadInsertMethods();
+
+        onDuplicateKeyInsertMethods.setEnabled(!useBulkLoadCheck.getSelection());
     }
 
     private boolean confirmDataTruncate() {
@@ -362,10 +426,12 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         if (shell.isVisible() || getSettings().isTruncateBeforeLoad()) {
             String tableNames = getWizard().getSettings().getDataPipes().stream().map(pipe -> pipe.getConsumer() == null ? "" : pipe.getConsumer().getObjectName()).collect(Collectors.joining(","));
             String checkbox_question = NLS.bind(DTUIMessages.database_consumer_wizard_truncate_checkbox_question, tableNames);
-            if (!UIUtils.confirmAction(shell, DTUIMessages.database_consumer_wizard_truncate_checkbox_title, checkbox_question))
-            {
-                return false;
-            }
+            return UIUtils.confirmAction(
+                shell,
+                DTUIMessages.database_consumer_wizard_truncate_checkbox_title,
+                checkbox_question,
+                DBIcon.STATUS_WARNING
+            );
         }
         return true;
     }

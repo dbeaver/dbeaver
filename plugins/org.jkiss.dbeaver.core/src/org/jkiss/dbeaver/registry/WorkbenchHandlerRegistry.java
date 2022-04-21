@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class WorkbenchHandlerRegistry
 {
@@ -54,7 +54,7 @@ public class WorkbenchHandlerRegistry
         return instance;
     }
 
-    private final List<IWorkbenchWindowInitializer> wwInitializers = new ArrayList<>();
+    private final Map<Integer, List<IWorkbenchWindowInitializer>> wwInitializers = new TreeMap<>();
 
     private WorkbenchHandlerRegistry(IExtensionRegistry registry)
     {
@@ -63,8 +63,11 @@ public class WorkbenchHandlerRegistry
             if (ext.getName().equals(WORKBENCH_WINDOW_INITIALIZER)) {
                 HandlerDescriptor handlerDescriptor = new HandlerDescriptor(ext);
                 try {
+
                     IWorkbenchWindowInitializer wwInit = handlerDescriptor.type.createInstance(IWorkbenchWindowInitializer.class);
-                    wwInitializers.add(wwInit);
+                    int key = CommonUtils.toInt(ext.getAttribute("priority"), Integer.MAX_VALUE);
+                    wwInitializers.computeIfAbsent(key, k -> new ArrayList<>());
+                    wwInitializers.get(key).add(wwInit);
                 } catch (DBException e) {
                     log.error("Can't create workbench window initializer", e);
                 }
@@ -72,9 +75,13 @@ public class WorkbenchHandlerRegistry
         }
     }
 
-    public List<IWorkbenchWindowInitializer> getWorkbenchWindowInitializers()
+    public Collection<IWorkbenchWindowInitializer> getWorkbenchWindowInitializers()
     {
-        return wwInitializers;
+        List<IWorkbenchWindowInitializer> list = new ArrayList<>();
+        for (List<IWorkbenchWindowInitializer> iWorkbenchWindowInitializers : wwInitializers.values()) {
+            list.addAll(iWorkbenchWindowInitializers);
+        }
+        return list;
     }
     
 }

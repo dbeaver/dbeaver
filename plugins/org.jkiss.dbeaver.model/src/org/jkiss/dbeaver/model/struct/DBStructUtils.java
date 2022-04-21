@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,17 +143,24 @@ public final class DBStructUtils {
             }
             cycleTableList.removeAll(goodCycleTableList);
 
-            Map<String, Object> optionsNoFK = new HashMap<>(options);
-            optionsNoFK.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
-            for (T table : goodCycleTableList) {
-                sql.append(getObjectNameComment(table, "definition"));
-                addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsNoFK, addComments));
-            }
-            Map<String, Object> optionsOnlyFK = new HashMap<>(options);
-            optionsOnlyFK.put(DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS, true);
-            for (T table : goodCycleTableList) {
-                sql.append(getObjectNameComment(table, "foreign keys"));
-                addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsOnlyFK, addComments));
+            if (!CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true)) {
+                for (T table : goodCycleTableList) {
+                    sql.append(getObjectNameComment(table, "definition"));
+                    addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
+                }
+            } else {
+                Map<String, Object> optionsNoFK = new HashMap<>(options);
+                optionsNoFK.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
+                for (T table : goodCycleTableList) {
+                    sql.append(getObjectNameComment(table, "definition"));
+                    addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsNoFK, addComments));
+                }
+                Map<String, Object> optionsOnlyFK = new HashMap<>(options);
+                optionsOnlyFK.put(DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS, true);
+                for (T table : goodCycleTableList) {
+                    sql.append(getObjectNameComment(table, "foreign keys"));
+                    addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsOnlyFK, addComments));
+                }
             }
 
             // the rest - tables which can't split their DDL

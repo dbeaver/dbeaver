@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,24 +30,30 @@ import java.sql.ResultSet;
  * SQLServerTableTrigger
  */
 public class SQLServerTableTrigger extends SQLServerTriggerBase<SQLServerTableBase> {
+
+    private SQLServerTableBase table;
+
     public SQLServerTableTrigger(@NotNull SQLServerTableBase table, ResultSet dbResult) {
         super(table, dbResult);
+        this.table = table;
     }
 
     public SQLServerTableTrigger(@NotNull SQLServerTableBase table, String name) {
         super(table, name);
+        this.table = table;
     }
 
     @Override
     @Property(viewable = true, order = 4)
     public SQLServerTableBase getTable() {
-        return getParentObject();
+        return table;
     }
 
     public SQLServerSchema getSchema() {
-        return getParentObject().getSchema();
+        return table.getSchema();
     }
 
+    @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -66,5 +72,11 @@ public class SQLServerTableTrigger extends SQLServerTriggerBase<SQLServerTableBa
 
     public boolean canEnable() {
         return isDisabled() && !(getParentObject() instanceof SQLServerView);
+    }
+
+    @NotNull
+    @Override
+    public SQLServerDatabase getDatabase() {
+        return table.getDatabase();
     }
 }

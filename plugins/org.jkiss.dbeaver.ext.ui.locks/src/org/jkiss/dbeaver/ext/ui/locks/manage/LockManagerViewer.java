@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com) 
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -165,13 +165,9 @@ public class LockManagerViewer {
         return killAction;
     }
 
+    @Nullable
     private DBAServerLock getSelectedLock() {
-        ISelection selection = lockTable.getSelectionProvider().getSelection();
-        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            return (DBAServerLock) ((IStructuredSelection) selection).getFirstElement();
-        } else {
-            return null;
-        }
+        return lockTable.getSuitableSelectedElement(DBAServerLock.class);
     }
 
     private void refreshGraph(DBAServerLock selected) {

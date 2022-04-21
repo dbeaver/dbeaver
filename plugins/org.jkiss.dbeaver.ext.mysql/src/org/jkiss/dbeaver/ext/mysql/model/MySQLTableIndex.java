@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -99,7 +100,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
     }
 
     @Override
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, editable = true, updatable = true, order = 5)
     public boolean isUnique()
     {
         return !nonUnique;
@@ -165,7 +166,14 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
         return MySQLConstants.INDEX_PRIMARY.equals(getName());
     }
 
-/*
+    @NotNull
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 3, listProvider = IndexTypeModifyListProvider.class)
+    public DBSIndexType getIndexType() {
+        return super.getIndexType();
+    }
+
+    /*
     @NotNull
     @Override
     public String getOverloadedName() {
@@ -183,5 +191,23 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
     public boolean isUniqueKeyIndex(DBRProgressMonitor monitor) throws DBException {
         MySQLTableConstraint uniqueKey = getTable().getUniqueKey(monitor, getName());
         return uniqueKey != null;
+    }
+
+    public static class IndexTypeModifyListProvider implements IPropertyValueListProvider<MySQLTableIndex> {
+
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        @Override
+        public Object[] getPossibleValues(MySQLTableIndex object) {
+            return new DBSIndexType[] {
+                MySQLConstants.INDEX_TYPE_BTREE,
+                MySQLConstants.INDEX_TYPE_FULLTEXT,
+                MySQLConstants.INDEX_TYPE_HASH,
+                MySQLConstants.INDEX_TYPE_RTREE
+            };
+        }
     }
 }

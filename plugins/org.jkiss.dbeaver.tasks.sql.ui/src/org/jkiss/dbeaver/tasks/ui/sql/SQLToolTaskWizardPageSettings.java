@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,7 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         super(NLS.bind(TasksSQLUIMessages.sql_tool_task_wizard_page_settings_name, wizard.getTaskType().getName()));
         setTitle(NLS.bind(TasksSQLUIMessages.sql_tool_task_wizard_page_settings_title, wizard.getTaskType().getName()));
         setDescription(NLS.bind(TasksSQLUIMessages.sql_tool_task_wizard_page_settings_description, wizard.getTaskType().getName()));
+        this.setPageComplete(false);
         this.sqlWizard = wizard;
     }
 
@@ -305,8 +306,10 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         }
         SQLToolExecuteSettings<DBSObject> settings = sqlWizard.getSettings();
 
-        settings.setObjectList(selectedObjects);
-        taskOptionsViewer.saveEditorValues();
+        if (taskOptionsViewer != null) {
+            settings.setObjectList(selectedObjects);
+            taskOptionsViewer.saveEditorValues();
+        }
     }
 
     @Nullable

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -96,5 +97,14 @@ public class SQLiteDataSource extends GenericDataSource {
     @Override
     public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return SQLiteTable.class;
+    }
+
+    @Override
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
+        if (error instanceof SQLException && ((SQLException) error).getErrorCode() == 19) {
+            // SQLite doesn't have a specific Exception SQL state for the constraint violation, but it has a specific vendor code
+            return ErrorType.UNIQUE_KEY_VIOLATION;
+        }
+        return super.discoverErrorType(error);
     }
 }

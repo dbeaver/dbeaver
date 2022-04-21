@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 /**
@@ -24,10 +23,10 @@ import org.jkiss.code.Nullable;
  */
 public interface DBTTaskExecutionListener {
 
-    void taskStarted(@NotNull Object task);
+    void taskStarted(@Nullable DBTTask task);
 
-    void taskFinished(@NotNull Object task, @Nullable Object result, @Nullable Throwable error);
+    void taskFinished(@Nullable DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings);
 
-    void subTaskFinished(@Nullable Throwable error);
+    void subTaskFinished(@Nullable DBTTask task, @Nullable Throwable error, @Nullable Object settings);
 
 }

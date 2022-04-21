@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.net.ssh;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -23,8 +26,11 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -36,6 +42,8 @@ import org.jkiss.dbeaver.model.net.ssh.SSHImplementationAbstract;
 import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -46,6 +54,7 @@ import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
@@ -65,6 +74,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private Button jumpServerEnabledCheck;
 
     private Combo tunnelImplCombo;
+    private Button fingerprintVerificationCheck;
     private Text localHostText;
     private Text localPortSpinner;
     private Text remoteHostText;
@@ -89,15 +99,21 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
         {
             final ExpandableComposite group = new ExpandableComposite(composite, SWT.CHECK);
+            group.addExpansionListener(new ExpansionAdapter() {
+                @Override
+                public void expansionStateChanged(ExpansionEvent e) {
+                    UIUtils.resizeShell(parent.getShell());
+                }
+            });
             group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-            group.setText("Jump server settings");
+            group.setText(SSHUIMessages.model_ssh_configurator_group_jump_server_settings_text);
 
             final Composite client = new Composite(group, SWT.BORDER);
             client.setLayout(new GridLayout(2, false));
             client.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
             group.setClient(client);
 
-            jumpServerEnabledCheck = UIUtils.createCheckbox(client, "Use jump server", false);
+            jumpServerEnabledCheck = UIUtils.createCheckbox(client, SSHUIMessages.model_ssh_configurator_group_jump_server_checkbox_label, false);
             jumpServerEnabledCheck.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false, 2, 1));
             jumpServerEnabledCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -111,6 +127,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
         {
             final ExpandableComposite group = new ExpandableComposite(composite, SWT.NONE);
+            group.addExpansionListener(new ExpansionAdapter() {
+                @Override
+                public void expansionStateChanged(ExpansionEvent e) {
+                    UIUtils.resizeShell(parent.getShell());
+                }
+            });
             group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
             group.setText(SSHUIMessages.model_ssh_configurator_group_advanced);
 
@@ -121,7 +143,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
             tunnelImplCombo = UIUtils.createLabelCombo(client, SSHUIMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 3;
             tunnelImplCombo.setLayoutData(gd);
             tunnelImplCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -132,6 +153,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
                 tunnelImplCombo.add(it.getLabel());
             }
+
+            fingerprintVerificationCheck = UIUtils.createCheckbox(client, SSHUIMessages.model_ssh_configurator_label_bypass_verification, false);
+            GridData cgd = new GridData(GridData.FILL_HORIZONTAL);
+            cgd.horizontalSpan = 2;
+            fingerprintVerificationCheck.setLayoutData(cgd);
+            fingerprintVerificationCheck.setToolTipText(SSHUIMessages.model_ssh_configurator_label_bypass_verification_description);
 
             localHostText = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_local_host, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
@@ -172,10 +199,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                     testTunnelConnection();
                 }
             });
-            String hint = "You can use variables in SSH parameters.";
+            String hint = SSHUIMessages.model_ssh_configurator_variables_hint_label;
             variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DBPConnectionConfiguration.CONNECT_VARIABLES, false);
 
-            UIUtils.createLink(controlGroup, "<a>SSH Documentation</a>", new SelectionAdapter() {
+            UIUtils.createLink(controlGroup, SSHUIMessages.model_ssh_configurator_ssh_documentation_link, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SSH-Configuration"));
@@ -205,9 +232,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             configuration.resolveDynamicVariables(SystemVariablesResolver.INSTANCE);
         }
 
-        try {
-            final String[] tunnelVersions = new String[2];
-            UIUtils.runInProgressDialog(monitor -> {
+        final String[] tunnelVersions = new String[2];
+
+        final TunnelConnectionTestJob job = new TunnelConnectionTestJob() {
+            @Override
+            protected void execute(@NotNull DBRProgressMonitor monitor) throws Throwable {
                 monitor.beginTask("Instantiate SSH tunnel", 2);
                 SSHTunnelImpl tunnel = new SSHTunnelImpl();
                 DBPConnectionConfiguration connectionConfig = new DBPConnectionConfiguration();
@@ -225,19 +254,39 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                     monitor.subTask("Close tunnel");
                     tunnel.closeTunnel(monitor);
                     monitor.worked(1);
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                } finally {
+                    monitor.done();
                 }
-                monitor.done();
+            }
+        };
+
+        try {
+            UIUtils.runInProgressDialog(monitor -> {
+                job.setOwnerMonitor(monitor);
+                job.schedule();
+
+                while (job.getState() == Job.WAITING || job.getState() == Job.RUNNING) {
+                    if (monitor.isCanceled()) {
+                        job.cancel();
+                        throw new InvocationTargetException(null);
+                    }
+                    RuntimeUtils.pause(50);
+                }
+
+                if (job.getConnectError() != null) {
+                    throw new InvocationTargetException(job.getConnectError());
+                }
             });
 
             MessageDialog.openInformation(credentialsPanel.getShell(), ModelMessages.dialog_connection_wizard_start_connection_monitor_success,
                 "Connected!\n\nClient version: " + tunnelVersions[0] + "\nServer version: " + tunnelVersions[1]);
         } catch (InvocationTargetException ex) {
-            DBWorkbench.getPlatformUI().showError(
-                CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                null,
-                GeneralUtils.makeExceptionStatus(ex.getTargetException()));
+            if (ex.getTargetException() != null) {
+                DBWorkbench.getPlatformUI().showError(
+                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                    null,
+                    GeneralUtils.makeExceptionStatus(ex.getTargetException()));
+            }
         }
     }
 
@@ -262,7 +311,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 tunnelImplCombo.select(0);
             }
         }
-
+        
+        fingerprintVerificationCheck.setSelection(configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION));
+        
         localHostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_LOCAL_HOST)));
         int lpValue = configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT);
         if (lpValue != 0) {
@@ -314,6 +365,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 break;
             }
         }
+        
+        configuration.setProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION, fingerprintVerificationCheck.getSelection());
 
         configuration.setProperty(SSHConstants.PROP_LOCAL_HOST, localHostText.getText().trim());
         int localPort = CommonUtils.toInt(localPortSpinner.getText());
@@ -443,7 +496,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 hostPortText.setText(String.valueOf(SSHConstants.DEFAULT_SSH_PORT));
             }
             authMethodCombo.select(CommonUtils.valueOf(SSHConstants.AuthType.class, configuration.getStringProperty(prefix + SSHConstants.PROP_AUTH_TYPE), SSHConstants.AuthType.PASSWORD).ordinal());
-            privateKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_KEY_PATH)));
+            privateKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH)));
             if (prefix.isEmpty()) {
                 userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
                 passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
@@ -515,5 +568,42 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             UIUtils.setControlVisible(privateKeyLabel, show);
             UIUtils.setControlVisible(privateKeyText, show);
         }
+    }
+
+    private static abstract class TunnelConnectionTestJob extends AbstractJob {
+        private DBRProgressMonitor ownerMonitor;
+        protected Throwable connectError;
+
+        protected TunnelConnectionTestJob() {
+            super("Test tunnel connection");
+            setUser(false);
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            if (ownerMonitor != null) {
+                monitor = ownerMonitor;
+            }
+
+            try {
+                execute(monitor);
+            } catch (Throwable e) {
+                connectError = e;
+            }
+
+            return Status.OK_STATUS;
+        }
+
+        public void setOwnerMonitor(@Nullable DBRProgressMonitor ownerMonitor) {
+            this.ownerMonitor = ownerMonitor;
+        }
+
+        @Nullable
+        public Throwable getConnectError() {
+            return connectError;
+        }
+
+        protected abstract void execute(@NotNull DBRProgressMonitor monitor) throws Throwable;
     }
 }

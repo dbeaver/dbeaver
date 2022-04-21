@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,16 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     private static final String[][] DEFAULT_BEGIN_END_BLOCK = new String[0][];
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[0];
     public static final String[] DML_KEYWORDS = new String[0];
+    public static final Pair<String, String> IN_CLAUSE_PARENTHESES = new Pair<>("(", ")");
+
+    protected static final SQLBlockCompletions DEFAULT_SQL_BLOCK_COMPLETIONS = new SQLBlockCompletionsCollection() {{
+        registerCompletionPair("BEGIN", "END");
+        registerCompletionPair("CASE", "END");
+        registerCompletionPair("LOOP", "END", "LOOP");
+        registerCompletionInfo("IF", new String[] { " THEN", SQLBlockCompletions.NEW_LINE_COMPLETION_PART,
+            SQLBlockCompletions.ONE_INDENT_COMPLETION_PART, SQLBlockCompletions.NEW_LINE_COMPLETION_PART, "END IF", SQLBlockCompletions.NEW_LINE_COMPLETION_PART
+        }, "END", "IF");   
+    }};
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
@@ -116,6 +126,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         for (String kw : allKeywords) {
             addSQLKeyword(kw);
         }
+    }
+
+    @NotNull
+    @Override
+    public Pair<String, String> getInClauseParentheses() {
+        return IN_CLAUSE_PARENTHESES;
     }
 
     protected void setKeywordIndent(String ketyword, int indent) {
@@ -383,22 +399,30 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             // Already quoted
             return str;
         }
+
         String[][] quoteStrings = this.getIdentifierQuoteStrings();
         if (ArrayUtils.isEmpty(quoteStrings)) {
             return str;
         }
 
+        if (mustBeQuoted(str, forceCaseSensitive) || forceQuotes) {
+            return quoteIdentifier(str, quoteStrings);
+        } else {
+            return str;
+        }
+    }
+
+    public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
         // Check for keyword conflict
         final DBPKeywordType keywordType = this.getKeywordType(str);
-        boolean hasBadChars = forceQuotes ||
-            ((keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER) &&
-                this.isQuoteReservedWords());
+        boolean hasBadChars = (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER) &&
+                this.isQuoteReservedWords();
 
         if (!hasBadChars && !str.isEmpty()) {
             hasBadChars = !this.validIdentifierStart(str.charAt(0));
         }
         if (!hasBadChars && forceCaseSensitive) {
-            // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
+            // Check for case of quoted indents. Do not check for unquoted case - we don't need to quote em anyway
             // Disable supportsQuotedMixedCase checking. Let's quote identifiers always if storage case doesn't match actual case
             // unless database use case-insensitive search always (e.g. MySL with lower_case_table_names <> 0)
             if (!this.useCaseInsensitiveNameLookup()) {
@@ -424,11 +448,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
                 }
             }
         }
-        if (!hasBadChars) {
-            return str;
-        }
 
-        return quoteIdentifier(str, quoteStrings);
+        return hasBadChars;
     }
 
     @NotNull
@@ -541,6 +562,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean supportsNullability() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsColumnAutoIncrement() {
         return true;
     }
 
@@ -678,7 +704,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         if (dataKind == DBPDataKind.STRING) {
             if (typeName.indexOf('(') == -1) {
                 long maxLength = column.getMaxLength();
-                if (maxLength > 0 && maxLength != Integer.MAX_VALUE && maxLength != Long.MAX_VALUE) {
+                if (maxLength > 0) {
+                    boolean badValue = maxLength == Integer.MAX_VALUE || maxLength == Long.MAX_VALUE;
                     Object maxStringLength = dataSource.getDataSourceFeature(DBPDataSource.FEATURE_MAX_STRING_LENGTH);
                     if (maxStringLength instanceof Number) {
                         int lengthLimit = ((Number) maxStringLength).intValue();
@@ -687,6 +714,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
                         } else if (lengthLimit < maxLength) {
                             maxLength = lengthLimit;
                         }
+                    } else if (badValue) {
+                        return null;
                     }
                     return "(" + maxLength + ")";
                 }
@@ -748,7 +777,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return maxParamLength;
     }
 
-    protected boolean useBracketsForExec() {
+    protected boolean useBracketsForExec(DBSProcedure procedure) {
         return false;
     }
 
@@ -774,7 +803,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             inParameters.addAll(parameters);
         }
         //getMaxParameterLength(parameters, inParameters);
-        boolean useBrackets = useBracketsForExec();
+        boolean useBrackets = useBracketsForExec(proc);
         if (useBrackets) sql.append("{ ");
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
         if (!inParameters.isEmpty()) {
@@ -840,4 +869,16 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     public boolean supportsInsertAllDefaultValuesStatement() {
         return false;
     }
+
+    @Override
+    public boolean hasCaseSensitiveFiltration() {
+        return false;
+    }
+    
+    @Override
+    public SQLBlockCompletions getBlockCompletions() {
+        return DEFAULT_SQL_BLOCK_COMPLETIONS;
+    }
 }
+
+

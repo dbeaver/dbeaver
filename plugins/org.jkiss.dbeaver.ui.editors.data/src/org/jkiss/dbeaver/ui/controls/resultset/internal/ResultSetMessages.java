@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,9 @@ public class ResultSetMessages extends NLS {
     public static String confirm_keep_statement_open_title;
     public static String confirm_keep_statement_open_message;
     public static String confirm_keep_statement_open_toggleMessage;
+
+    public static String confirm_modifying_query_message;
+    public static String confirm_modifying_query_title;
 
     public static String controls_resultset_filter_button_reset;
     public static String controls_resultset_filter_column_name;
@@ -94,10 +97,11 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_status_empty;
     public static String controls_resultset_viewer_status_no_data;
     public static String controls_resultset_viewer_status_row;
-    public static String controls_resultset_viewer_status_rows;
     public static String controls_resultset_viewer_status_rows_fetched;
     public static String controls_resultset_viewer_status_rows_updated;
     public static String controls_resultset_viewer_status_rows_size;
+    public static String controls_resultset_viewer_status_rows_time;
+    public static String controls_resultset_viewer_status_rows_time_fetch;
     public static String controls_resultset_viewer_value;
     public static String controls_resultset_viewer_calculate_row_count;
     public static String controls_resultset_viewer_pin_column;
@@ -173,6 +177,11 @@ public class ResultSetMessages extends NLS {
     public static String dialog_value_view_context_name;
     public static String dialog_value_view_dialog_error_updating_message;
     public static String dialog_value_view_dialog_error_updating_title;
+
+    public static String dialog_value_view_error_parsing_date_title;
+    public static String dialog_value_view_error_parsing_date_message;
+
+
     public static String dialog_value_view_job_selector_name;
     public static String dialog_value_view_label_dictionary;
 
@@ -181,6 +190,8 @@ public class ResultSetMessages extends NLS {
     public static String dialog_filter_value_edit_label_define_description;
     public static String dialog_filter_value_edit_text_hint;
     public static String dialog_filter_value_edit_table_value_label;
+    public static String dialog_filter_value_edit_table_value_total_label;
+    public static String dialog_filter_value_edit_table_value_total_shown_label;
     public static String dialog_filter_value_edit_table_value_description;
     public static String dialog_filter_value_edit_table_description_label;
     public static String dialog_filter_value_edit_table_description_description;
@@ -193,6 +204,8 @@ public class ResultSetMessages extends NLS {
     public static String dialog_filter_value_edit_table_options_checkbox_read_from_server_description;
     public static String dialog_filter_value_edit_table_options_checkbox_show_row_count_label;
     public static String dialog_filter_value_edit_table_options_checkbox_show_row_count_description;
+    public static String dialog_filter_value_edit_table_options_checkbox_show_distinct_values_count_label;
+    public static String dialog_filter_value_edit_table_options_checkbox_show_distinct_values_count_description;
 
     public static String dialog_control_label_massage;
     public static String dialog_cursor_view_monitor_rows_fetched;
@@ -226,6 +239,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_content_editor_checkbox_commit_on_content_apply;
     public static String pref_page_content_editor_checkbox_commit_on_value_apply;
     public static String pref_page_content_editor_checkbox_edit_long_as_lobs;
+    public static String pref_page_content_editor_checkbox_string_editor_for_datetime;
+    public static String pref_page_content_editor_checkbox_string_editor_for_datetime_tip;
     public static String pref_page_content_editor_group_keys;
     public static String pref_page_content_editor_checkbox_keys_always_use_all_columns;
     public static String pref_page_content_editor_checkbox_new_rows_after;
@@ -236,6 +251,10 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_content_editor_label_max_text_length;
     public static String pref_page_content_editor_group_hex;
     public static String pref_page_content_editor_hex_encoding;
+    public static String pref_page_content_editor_ui_show_errors_in_dialog;
+    public static String pref_page_content_editor_ui_show_errors_in_dialog_tip;
+    public static String pref_page_content_editor_ui_mark_cell_value_occurrences;
+    public static String pref_page_content_editor_ui_mark_cell_value_occurrences_tip;
 
     public static String pref_page_data_format_button_manage_profiles;
     public static String pref_page_data_format_group_settings;
@@ -251,6 +270,13 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_data_format_label_settingt;
     public static String pref_page_data_format_label_type;
     public static String pref_page_data_format_link_patterns;
+
+    public static String pref_page_data_viewer_reference_panel_group;
+    public static String pref_page_data_viewer_reference_panel_desc_column_keywords_label;
+    public static String pref_page_data_viewer_reference_panel_desc_column_keywords_prompt_title;
+    public static String pref_page_data_viewer_reference_panel_desc_column_keywords_add_button;
+    public static String pref_page_data_viewer_reference_panel_desc_column_keywords_remove_button;
+    public static String pref_page_data_viewer_reference_panel_desc_column_keywords_edit_button;
 
     public static String dialog_data_format_profiles_button_delete_profile;
     public static String dialog_data_format_profiles_button_new_profile;
@@ -365,6 +391,8 @@ public class ResultSetMessages extends NLS {
     public static String panel_editor_text_auto_format_name;
     public static String panel_editor_text_encoding_name;
     public static String panel_editor_text_encoding_title;
+
+    public static String error_part_button_go_to_error;
 
     static {
         // initialize resource bundle

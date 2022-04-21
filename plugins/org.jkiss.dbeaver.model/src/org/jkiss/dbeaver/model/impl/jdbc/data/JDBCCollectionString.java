@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 /**
@@ -29,20 +29,20 @@ public class JDBCCollectionString extends JDBCCollection {
 
     private String value;
 
-    JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value) {
-        super(type, valueHandler, value == null ? null : new Object[] { value });
+    JDBCCollectionString(@NotNull DBRProgressMonitor monitor, DBSDataType type, DBDValueHandler valueHandler, String value) {
+        super(monitor, type, valueHandler, value == null ? null : new Object[] { value });
         this.value = value;
     }
 
-    JDBCCollectionString(DBSDataType type, DBDValueHandler valueHandler, String value, Object[] contents) {
-        super(type, valueHandler, contents);
+    JDBCCollectionString(@NotNull DBRProgressMonitor monitor, DBSDataType type, DBDValueHandler valueHandler, String value, Object[] contents) {
+        super(monitor, type, valueHandler, contents);
         this.value = value;
     }
 
     @NotNull
-    public String makeArrayString(DBDDisplayFormat format) {
+    public String makeArrayString() {
         if (isModified()) {
-            return super.makeArrayString(format);
+            return super.makeArrayString();
         }
         return value;
     }

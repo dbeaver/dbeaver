@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -102,17 +103,26 @@ public class MySQLViewManager extends MySQLTableManager {
     {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
-
-        if (!view.isPersisted()) {
+        String viewDDL = view.getAdditionalInfo().getDefinition();
+        if (viewDDL == null) {
+            viewDDL = "";
+        }
+        
+        if (!view.isPersisted() && SQLSemanticProcessor.isSelectQuery(view.getDataSource().getSQLDialect(), viewDDL)) {
             decl.append("CREATE OR REPLACE VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
-                    .append("AS "); //$NON-NLS-1$
+                .append("AS "); //$NON-NLS-1$
         }
 
-        decl.append(view.getAdditionalInfo().getDefinition()); //$NON-NLS-1$
         final MySQLView.CheckOption checkOption = view.getAdditionalInfo().getCheckOption();
         if (checkOption != null && checkOption != MySQLView.CheckOption.NONE) {
-            decl.append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION"); //$NON-NLS-1$ //$NON-NLS-2$
+            if (viewDDL.endsWith(";")) {
+                viewDDL = viewDDL.substring(0, viewDDL.length() - 1); //$NON-NLS-1$
+            }
+            decl.append(viewDDL).append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION"); //$NON-NLS-1$ //$NON-NLS-2$
+        } else {
+            decl.append(viewDDL);
         }
+        
         actions.add(new SQLDatabasePersistAction("Create view", decl.toString()) {
             @Override
             public void beforeExecute(DBCSession session) throws DBCException {

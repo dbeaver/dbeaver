@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -329,10 +329,15 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 break;
             case NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO:
             case NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME:
+            case NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION:
             case NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS:
                 tree.getViewer().getTree().redraw();
                 break;
         }
+    }
+
+    protected void redrawTree() {
+        tree.getViewer().refresh();
     }
 
 }

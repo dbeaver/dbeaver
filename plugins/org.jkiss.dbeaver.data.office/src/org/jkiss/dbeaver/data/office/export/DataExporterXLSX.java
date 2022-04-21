@@ -2,7 +2,7 @@
  * DBeaver - Universal Database Manager
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017 Adolfo Suarez  (agustavo@gmail.com)
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -36,13 +38,13 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +52,7 @@ import java.util.Map;
 /**
  * Export XLSX with Apache POI
  */
-public class DataExporterXLSX extends StreamExporterAbstract {
+public class DataExporterXLSX extends StreamExporterAbstract implements IAppendableDataExporter {
 
     private static final Log log = Log.getLog(DataExporterXLSX.class);
 
@@ -186,7 +188,9 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             dateFormat = "";
         }
 
-        wb = new SXSSFWorkbook(ROW_WINDOW);
+        if (wb == null) {
+            wb = new SXSSFWorkbook(ROW_WINDOW);
+        }
 
         worksheets = new HashMap<>(1);
 
@@ -303,6 +307,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             }
             if (wb != null) {
                 wb.write(getSite().getOutputStream());
+                wb.close();
                 wb.dispose();
             }
 
@@ -534,6 +539,24 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         if (rowCount == 0) {
             exportRow(null, null, new Object[columns.length]);
         }
+    }
+
+    @Override
+    public void importData(@NotNull IStreamDataExporterSite site) throws DBException {
+        final File file = site.getOutputFile();
+        if (file == null || !file.exists()) {
+            return;
+        }
+        try {
+            wb = new SXSSFWorkbook(new XSSFWorkbook(new FileInputStream(file)));
+        } catch (Exception e) {
+            throw new DBException("Error opening workbook", e);
+        }
+    }
+
+    @Override
+    public boolean shouldTruncateOutputFileBeforeExport() {
+        return true;
     }
 
     private String getPreparedString(String cellValue) {

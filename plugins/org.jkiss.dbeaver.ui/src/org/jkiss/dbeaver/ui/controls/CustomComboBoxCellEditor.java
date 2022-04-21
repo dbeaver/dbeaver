@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
             // Install proposal provider for editable combos
             // In fact it was a bad idea to use proposals in inline combo editors (#2409)
             proposalProvider = new StringContentProposalProvider(true, comboBox.getItems());
-            ContentAssistUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider);
+            ContentAssistUtils.installContentProposal(comboBox, new CComboContentAdapter(), proposalProvider, (getStyle() & SWT.DROP_DOWN) == 0);
         }
 
         return comboBox;

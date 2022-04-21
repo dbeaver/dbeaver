@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator.dialogs;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -38,7 +39,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,6 +59,7 @@ import java.util.List;
 public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
 {
     private static final Log log = Log.getLog(SelectDatabaseDialog.class);
+    private static final String CMD_ACTIVE_DATASOURCE = "org.jkiss.dbeaver.ui.tools.select.connection";
 
     private final DBPDataSourceContainer dataSourceContainer;
     private volatile String currentInstanceName;
@@ -87,6 +93,12 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         DBCExecutionContextDefaults contextDefaults = getContextDefaults();
         if (contextDefaults != null && contextDefaults.supportsCatalogChange()) {
             DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+            if (instanceContainer == null) {
+                UIUtils.showMessageBox(getShell(), "No database objects were found", "No database objects were found. Please set active datasource (" +
+                    ActionUtils.findCommandDescription(CMD_ACTIVE_DATASOURCE, UIUtils.getActiveWorkbenchWindow(), true) +
+                    ") for this editor.", SWT.ICON_ERROR);
+                return;
+            }
             createInstanceSelector(dialogArea, instanceContainer);
         }
     }
@@ -178,12 +190,17 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         if (CommonUtils.isEmpty(objectList)) {
             return Collections.emptyList();
         }
+        int nodesLimit = DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE);
+
         List<DBNDatabaseNode> nodeList = new ArrayList<>(objectList.size());
         for (DBSObject object : objectList) {
             if (object instanceof DBSObjectContainer) {
                 DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, object, false);
                 if (databaseNode != null) {
                     nodeList.add(databaseNode);
+                    if (nodeList.size() >= nodesLimit) {
+                        break;
+                    }
                 }
             }
         }

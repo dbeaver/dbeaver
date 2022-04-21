@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Locale;
+import java.util.Properties;
 
 /**
  * SystemVariablesResolver
  */
 public class SystemVariablesResolver implements IVariableResolver {
 
-    public static SystemVariablesResolver INSTANCE = new SystemVariablesResolver();
+    public static final SystemVariablesResolver INSTANCE = new SystemVariablesResolver();
 
     public static final String VAR_APP_NAME = "application.name";
     public static final String VAR_APP_VERSION = "application.version";
@@ -42,9 +42,15 @@ public class SystemVariablesResolver implements IVariableResolver {
     public static final String VAR_DBEAVER_HOME = "dbeaver_home";
     public static final String VAR_LOCAL_IP = "local.ip";
 
+    private static Properties configuration;
+
+    public static void setConfiguration(Properties configuration) {
+        SystemVariablesResolver.configuration = configuration;
+    }
+
     @Override
     public String get(String name) {
-        name = name.toLowerCase(Locale.ENGLISH);
+        //name = name.toLowerCase(Locale.ENGLISH);
         switch (name) {
             case VAR_APP_NAME:
                 return GeneralUtils.getProductName();
@@ -64,6 +70,12 @@ public class SystemVariablesResolver implements IVariableResolver {
                     return "127.0.0.1";
                 }
             default:
+                if (configuration != null) {
+                    final Object o = configuration.get(name);
+                    if (o != null) {
+                        return o.toString();
+                    }
+                }
                 String var = System.getProperty(name);
                 if (var != null) {
                     return var;
@@ -86,7 +98,7 @@ public class SystemVariablesResolver implements IVariableResolver {
 
     private static String getPlainPath(URL url) {
         try {
-            File file = new File(url.toURI());
+            File file = RuntimeUtils.getLocalFileFromURL(url);
             return file.getAbsolutePath();
         } catch (Exception e) {
             return url.toString();

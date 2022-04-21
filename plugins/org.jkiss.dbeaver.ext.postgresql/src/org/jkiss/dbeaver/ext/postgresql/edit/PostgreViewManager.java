@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,10 +76,10 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     }
 
     @Override
-    protected PostgreViewBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
-    {
+    protected PostgreViewBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         PostgreSchema schema = (PostgreSchema) container;
-        PostgreView newView = new PostgreView(schema);
+        PostgreView newView = (PostgreView) schema.getDataSource().getServerType().createNewRelation(
+            monitor, schema, PostgreClass.RelKind.v, null);
         setNewObjectName(monitor, schema, newView);
         return newView;
     }
@@ -112,12 +112,9 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     }
 
     protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view, Map<String, Object> options) throws DBException {
-        if (CommonUtils.isEmpty(view.getObjectDefinitionText(monitor, options))) {
-            throw new DBException("View '" + view.getName() + "' definition is empty");
-        }
         // Source may be empty if it wasn't yet read. Then it definitely wasn't changed
         String sql = view.getSource().trim();
-        if (!sql.toLowerCase(Locale.ENGLISH).startsWith("create")) {
+        if (!sql.toLowerCase(Locale.ENGLISH).contains("create")) {
             StringBuilder sqlBuf = new StringBuilder();
             sqlBuf.append("CREATE ");
             if (!(view instanceof PostgreMaterializedView)) {

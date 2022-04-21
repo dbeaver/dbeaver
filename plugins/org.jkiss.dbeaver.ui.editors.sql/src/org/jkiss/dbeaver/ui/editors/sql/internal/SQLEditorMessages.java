@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -94,17 +94,23 @@ public class SQLEditorMessages extends NLS {
 	public static String script_close_behavior_delete_only_new_scripts;
 	public static String script_close_behavior_do_not_delete;
 	public static String sql_editor_menu_format;
+    public static String sql_editor_error_position;
 
     public static String action_result_tabs_close_all_tabs;
     public static String action_result_tabs_close_query_tabs;
     public static String action_result_tabs_close_other_tabs;
-    public static String action_result_tabs_unpin_all_tabs;
+    public static String action_result_tabs_close_tabs_to_the_left;
+    public static String action_result_tabs_close_tabs_to_the_right;
     public static String action_result_tabs_pin_tab;
     public static String action_result_tabs_unpin_tab;
+    public static String action_result_tabs_unpin_all_tabs;
     public static String action_result_tabs_set_name;
     public static String action_result_tabs_set_name_title;
     public static String action_result_tabs_assign_variable;
     public static String action_result_tabs_assign_variable_sql;
+    public static String action_result_tabs_delete_variables;
+    public static String action_assign_variables_error_duplicated_title;
+    public static String action_assign_variables_error_duplicated_info;
 
     public static String action_popup_sqleditor_layout_horizontal;
     public static String action_popup_sqleditor_layout_vertical;
@@ -161,6 +167,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_format_group_search;
     public static String pref_page_sql_completion_label_match_contains;
     public static String pref_page_sql_completion_label_match_contains_tip;
+    public static String pref_page_sql_completion_label_activate_hippie;
+    public static String pref_page_sql_completion_label_activate_hippie_tip;
     public static String pref_page_sql_completion_label_use_global_search;
     public static String pref_page_sql_completion_label_use_global_search_tip;
     public static String pref_page_sql_completion_label_show_column_procedures;
@@ -220,6 +228,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_group_misc;
     public static String pref_page_sql_completion_label_folding_enabled;
     public static String pref_page_sql_completion_label_folding_enabled_tip;
+    public static String pref_page_sql_completion_label_problem_markers_enabled;
+    public static String pref_page_sql_completion_label_problem_markers_enabled_tip;
     public static String pref_page_sql_completion_label_mark_occurrences;
     public static String pref_page_sql_completion_label_mark_occurrences_tip;
     public static String pref_page_sql_completion_label_mark_occurrences_for_selections;
@@ -279,43 +289,6 @@ public class SQLEditorMessages extends NLS {
 	public static String pref_page_sql_insert_case_lower_case;
 	public static String pref_page_sql_insert_case_upper_case;
 
-    public static String controls_querylog__ms;
-    public static String controls_querylog_action_clear_log;
-    public static String controls_querylog_action_copy;
-    public static String controls_querylog_action_copy_all_fields;
-    public static String controls_querylog_action_select_all;
-    public static String controls_querylog_column_duration_name;
-    public static String controls_querylog_column_duration_tooltip;
-    public static String controls_querylog_column_result_name;
-    public static String controls_querylog_column_result_tooltip;
-    public static String controls_querylog_column_rows_name;
-    public static String controls_querylog_column_rows_tooltip;
-    public static String controls_querylog_column_text_name;
-    public static String controls_querylog_column_text_tooltip;
-    public static String controls_querylog_column_time_name;
-    public static String controls_querylog_column_time_tooltip;
-    public static String controls_querylog_column_type_name;
-    public static String controls_querylog_column_type_tooltip;
-    public static String controls_querylog_column_connection_name;
-    public static String controls_querylog_column_connection_tooltip;
-    public static String controls_querylog_column_context_name;
-    public static String controls_querylog_column_context_tooltip;
-    public static String controls_querylog_commit;
-    public static String controls_querylog_connected_to;
-    public static String controls_querylog_disconnected_from;
-    public static String controls_querylog_error;
-    public static String controls_querylog_format_minutes;
-    public static String controls_querylog_job_refresh;
-    public static String controls_querylog_label_result;
-    public static String controls_querylog_label_text;
-    public static String controls_querylog_label_time;
-    public static String controls_querylog_label_type;
-    public static String controls_querylog_rollback;
-    public static String controls_querylog_savepoint;
-    public static String controls_querylog_script;
-    public static String controls_querylog_shell_text;
-    public static String controls_querylog_success;
-    public static String controls_querylog_transaction;
     public static String sql_editor_menu_choose_format;
     public static String sql_editor_panel_format;
     public static String sql_editor_result_set_orientation_detached;
@@ -336,6 +309,18 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_dialog_button_show_comments;
     public static String sql_generator_dialog_button_show_permissions;
     public static String sql_generator_dialog_button_show_full_DDL;
+    public static String sql_generator_dialog_button_separate_fk_constraints_definition;
+    public static String action_result_tabs_delete_variables_question;
+    public static String script_selector_create_script;
+    public static String script_selector_project_scripts;
+    public static String script_selector_project_table_name_label;
+    public static String script_selector_project_table_name_description;
+    public static String script_selector_project_table_time_label;
+    public static String script_selector_project_table_time_description;
+    public static String script_selector_project_table_info_label;
+    public static String script_selector_project_table_info_description;
+    public static String script_selector_project_table_folder_description;
+    public static String script_selector_project_table_folder_label;
 
 
     static {

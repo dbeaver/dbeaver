@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,11 +31,11 @@ import java.util.List;
 public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityReferrer {
 
     private ERDElement entity;
-    private String name;
-    private String description;
-    private ERDLogicalPrimaryKey pk;
+    private final String name;
+    private final String description;
+    private final ERDLogicalPrimaryKey pk;
 
-    public ERDLogicalAssociation(ERDElement entity, String name, String description, ERDLogicalPrimaryKey pk)
+    public ERDLogicalAssociation(ERDElement<?> entity, String name, String description, ERDLogicalPrimaryKey pk)
     {
         this.entity = entity;
         this.name = name;

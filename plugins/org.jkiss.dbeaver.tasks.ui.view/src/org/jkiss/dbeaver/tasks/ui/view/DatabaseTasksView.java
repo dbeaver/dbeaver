@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,11 +145,16 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskRunColumnController.addColumn(TaskUIViewMessages.db_tasks_view_column_controller_add_name_result, TaskUIViewMessages.db_tasks_view_column_controller_add_descr_task_result, SWT.LEFT, true, false, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
-                if (taskRun.isRunSuccess()) {
-                    cell.setText(TaskUIViewMessages.db_tasks_view_cell_text_success);
-                } else {
-                    cell.setText(CommonUtils.notEmpty(taskRun.getErrorMessage()));
+                String resultMessage = taskRun.isRunSuccess()
+                                     ? TaskUIViewMessages.db_tasks_view_cell_text_success
+                                     : CommonUtils.notEmpty(taskRun.getErrorMessage());
+
+                String extraMessage = taskRun.getExtraMessage();
+                if (CommonUtils.isNotEmpty(extraMessage)) {
+                    resultMessage += " (" + extraMessage + ")";
                 }
+
+                cell.setText(resultMessage);
             }
         });
         taskRunColumnController.setForceAutoSize(true);

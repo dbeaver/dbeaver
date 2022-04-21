@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
         } else {
             out.write("[" + rowDelimiter);
         }
+        rowNum = 0;
     }
 
     @Override
@@ -126,7 +127,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
                 columnName = column.getName();
             }
             out.write("\t\t" + quoteChar + JSONUtils.escapeJsonString(columnName) + quoteChar + " => ");
-            Object cellValue = row[column.getOrdinalPosition()];
+            Object cellValue = row[i];
             if (DBUtils.isNullValue(cellValue)) {
                 writeTextCell(null);
             } else if (cellValue instanceof DBDContent) {

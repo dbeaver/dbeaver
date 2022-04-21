@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
+    private static final String PROP_TRIM_WHITESPACES = "trimWhitespaces";
     public static final int READ_BUFFER_SIZE = 255 * 1024;
 
     public enum HeaderPosition {
@@ -73,11 +74,12 @@ public class DataImporterCSV extends StreamImporterAbstract {
         Map<String, Object> processorProperties = getSite().getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(processorProperties);
 
-        final int columnSamplesCount = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_SAMPLES), 1000), 0);
+        final String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
+        final int columnSamplesCount = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_SAMPLES), 100), 0);
         final int columnMinimalLength = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_LENGTH), 1), 1);
         final boolean columnIsByteLength = CommonUtils.getBoolean(processorProperties.get(PROP_COLUMN_IS_BYTE_LENGTH), false);
 
-        try (Reader reader = openStreamReader(inputStream, processorProperties, false)) {
+        try (Reader reader = openStreamReader(inputStream, processorProperties, true)) {
             try (CSVReader csvReader = openCSVReader(reader, processorProperties)) {
                 String[] header = getNextLine(csvReader);
                 if (header == null) {
@@ -116,25 +118,13 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
                         switch (dataType.getFirst()) {
                             case STRING:
-                                columnInfo.setDataKind(dataType.getFirst());
-                                columnInfo.setTypeName(dataType.getSecond());
-                                int length = -1;
-                                if (!columnIsByteLength) {
-                                    length = line[i].length();
-                                } else {
-                                    final String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
-                                    length = line[i].getBytes(encoding).length;
-                                }
-                                if (length > columnInfo.getMaxLength()) {
-                                    columnInfo.setMaxLength(length);
-                                }
-                                break;
+                                columnInfo.updateMaxLength(columnIsByteLength ? line[i].getBytes(encoding).length : line[i].length());
+                                /* fall-through */
                             case NUMERIC:
                             case BOOLEAN:
-                                if (columnInfo.getDataKind() == DBPDataKind.UNKNOWN) {
-                                    columnInfo.setDataKind(dataType.getFirst());
-                                    columnInfo.setTypeName(dataType.getSecond());
-                                }
+                                columnInfo.updateType(dataType.getFirst(), dataType.getSecond());
+                                break;
+                            default:
                                 break;
                         }
                     }
@@ -143,8 +133,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                 for (StreamDataImporterColumnInfo columnInfo : columnsInfo) {
                     if (columnInfo.getDataKind() == DBPDataKind.UNKNOWN) {
                         log.warn("Cannot guess data type for column '" + columnInfo.getName() + "', defaulting to VARCHAR");
-                        columnInfo.setDataKind(DBPDataKind.STRING);
-                        columnInfo.setTypeName("VARCHAR");
+                        columnInfo.updateType(DBPDataKind.STRING, "VARCHAR");
                     }
                 }
             }
@@ -153,6 +142,13 @@ public class DataImporterCSV extends StreamImporterAbstract {
         }
 
         return columnsInfo;
+    }
+
+    private int roundToNextPowerOf2(int value) {
+        int power = 1;
+        while(power < value)
+            power*=2;
+        return power;
     }
 
     private HeaderPosition getHeaderPosition(Map<String, Object> processorProperties) {
@@ -206,6 +202,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         Map<String, Object> properties = site.getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(properties);
         boolean emptyStringNull = CommonUtils.getBoolean(properties.get(PROP_EMPTY_STRING_NULL), false);
+        boolean trimWhitespaces = CommonUtils.getBoolean(properties.get(PROP_TRIM_WHITESPACES), false);
         String nullValueMark = CommonUtils.toString(properties.get(PROP_NULL_STRING));
 
         DBCExecutionContext context = streamDataSource.getDefaultInstance().getDefaultContext(monitor, false);
@@ -251,6 +248,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
                                 newLine[i] = null;
                             }
                             line = newLine;
+                        }
+                        if (trimWhitespaces) {
+                            for (int i = 0; i < line.length; i++) {
+                                line[i] = line[i].trim();
+                            }
                         }
                         if (emptyStringNull) {
                             for (int i = 0; i < line.length; i++) {

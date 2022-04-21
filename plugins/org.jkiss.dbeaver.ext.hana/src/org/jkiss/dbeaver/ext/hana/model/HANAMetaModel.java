@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,6 @@ public class HANAMetaModel extends GenericMetaModel
 {
     private static final Log log = Log.getLog(HANAMetaModel.class);
     private static Pattern ERROR_POSITION_PATTERN = Pattern.compile(" \\(at pos ([0-9]+)\\)");
-    static String PUBLIC_SCHEMA_NAME = "PUBLIC";
     
     public HANAMetaModel() {
         super();
@@ -75,10 +74,10 @@ public class HANAMetaModel extends GenericMetaModel
         List<GenericSchema> schemas = super.loadSchemas(session, dataSource, catalog);
         // throws exception if password or license expired
 
-        GenericSchema publicSchema = new GenericSchema(dataSource, catalog, PUBLIC_SCHEMA_NAME);
+        HANASchema publicSchema = new HANASchema(dataSource, catalog, HANAConstants.SCHEMA_PUBLIC);
         int i;
         for (i = 0; i < schemas.size(); i++)
-            if (schemas.get(i).getName().compareTo(PUBLIC_SCHEMA_NAME) > 0)
+            if (schemas.get(i).getName().compareTo(HANAConstants.SCHEMA_PUBLIC) > 0)
                 break;
         schemas.add(i, publicSchema);
         return schemas;
@@ -285,65 +284,53 @@ public class HANAMetaModel extends GenericMetaModel
     }
 
     @Override
-    public boolean supportsSequences(GenericDataSource dataSource) {
+    public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return true;
     }
 
     @Override
-    public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read sequences")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT SEQUENCE_NAME, MIN_VALUE, MAX_VALUE, INCREMENT_BY FROM SYS.SEQUENCES WHERE SCHEMA_NAME = ? ORDER BY SEQUENCE_NAME")) {
-                dbStat.setString(1, container.getName());
-                List<GenericSequence> result = new ArrayList<>();
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        String name = dbResult.getString(1);
-                        Number minValue = dbResult.getBigDecimal(2);
-                        Number maxValue = dbResult.getBigDecimal(3);
-                        Number incrementBy = dbResult.getBigDecimal(4);
-                        Number lastValue = null;
-                        GenericSequence sequence = new GenericSequence(container, name, "", lastValue, minValue, maxValue, incrementBy);
-                        result.add(sequence);
-                    }
-                }
-                return result;
-
-            }
-        } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
-        }
+    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+        JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT SEQUENCE_NAME, MIN_VALUE, MAX_VALUE, INCREMENT_BY FROM SYS.SEQUENCES WHERE SCHEMA_NAME = ? ORDER BY SEQUENCE_NAME");
+        dbStat.setString(1, container.getName());
+        return dbStat;
     }
 
-    
     @Override
-    public boolean supportsSynonyms(GenericDataSource dataSource) {
+    public GenericSequence createSequenceImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) {
+        String name = JDBCUtils.safeGetString(dbResult, 1);
+        if (CommonUtils.isEmpty(name)) {
+            return null;
+        }
+        Number minValue = JDBCUtils.safeGetBigDecimal(dbResult, 2);
+        Number maxValue = JDBCUtils.safeGetBigDecimal(dbResult, 3);
+        Number incrementBy = JDBCUtils.safeGetBigDecimal(dbResult, 4);
+        return new GenericSequence(container, name, "", null, minValue, maxValue, incrementBy);
+    }
+
+    @Override
+    public boolean supportsSynonyms(@NotNull GenericDataSource dataSource) {
         return true;
     }
 
     @Override
-    public List<? extends GenericSynonym> loadSynonyms(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read synonyms")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT SYNONYM_NAME, OBJECT_TYPE, OBJECT_SCHEMA, OBJECT_NAME FROM SYS.SYNONYMS WHERE SCHEMA_NAME = ? ORDER BY SYNONYM_NAME")) {
-                dbStat.setString(1, container.getName());
-                List<GenericSynonym> result = new ArrayList<>();
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        String name = dbResult.getString(1);
-                        String targetObjectType   = dbResult.getString(2);
-                        String targetObjectSchema = dbResult.getString(3);
-                        String targetObjectName   = dbResult.getString(4);
-                        HANASynonym synonym = new HANASynonym(container, name, targetObjectType, targetObjectSchema, targetObjectName);
-                        result.add(synonym);
-                    }
-                }
-                return result;
+    public JDBCStatement prepareSynonymsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+        JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT SYNONYM_NAME, OBJECT_TYPE, OBJECT_SCHEMA, OBJECT_NAME FROM SYS.SYNONYMS WHERE SCHEMA_NAME = ? ORDER BY SYNONYM_NAME");
+        dbStat.setString(1, container.getName());
+        return dbStat;
+    }
 
-            }
-        } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+    @Override
+    public GenericSynonym createSynonymImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) {
+        String name = JDBCUtils.safeGetString(dbResult, 1);
+        if (CommonUtils.isEmpty(name)) {
+            return null;
         }
+        String targetObjectType = JDBCUtils.safeGetString(dbResult, 2);
+        String targetObjectSchema = JDBCUtils.safeGetString(dbResult, 3);
+        String targetObjectName = JDBCUtils.safeGetString(dbResult, 4);
+        return new HANASynonym(container, name, targetObjectType, targetObjectSchema, targetObjectName);
     }
 
     @Override
@@ -371,8 +358,8 @@ public class HANAMetaModel extends GenericMetaModel
 
     @Override
     public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
-        String isPrimaryKey = JDBCUtils.safeGetString(dbResult, "IS_PRIMARY_KEY");
-        return "TRUE".equals(isPrimaryKey) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
+        return JDBCUtils.safeGetBoolean(dbResult, "IS_PRIMARY_KEY", HANAConstants.SYS_BOOLEAN_TRUE)
+        		? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
     }
 
     @Override

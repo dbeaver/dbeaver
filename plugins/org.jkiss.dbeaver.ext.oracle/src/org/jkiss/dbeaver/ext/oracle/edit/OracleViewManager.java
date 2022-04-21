@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,12 +20,10 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey;
-import org.jkiss.dbeaver.ext.oracle.model.OracleView;
+import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
@@ -33,6 +31,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
@@ -94,12 +94,12 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(monitor, actions, command);
+        createOrReplaceViewQuery(monitor, actions, command, options);
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(monitor, actionList, command);
+        createOrReplaceViewQuery(monitor, actionList, command, options);
     }
 
     @Override
@@ -109,22 +109,39 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
         );
     }
 
-    private void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, DBECommandComposite<OracleView, PropertyHandler> command) throws DBException {
+    private void createOrReplaceViewQuery(DBRProgressMonitor monitor, @NotNull List<DBEPersistAction> actions, DBECommandComposite<OracleView, PropertyHandler> command, Map<String, Object> options) throws DBException {
         final OracleView view = command.getObject();
         boolean hasComment = command.hasProperty("comment");
         if (!hasComment || command.getProperties().size() > 1) {
             String viewText = view.getViewText().trim();
+            List<SQLScriptElement> sqlScriptElements = SQLScriptParser.parseScript(view.getDataSource(), viewText);
+            if (sqlScriptElements.size() > 1) {
+                // In this case we already have and view definition, and view/columns comments
+                for (SQLScriptElement scriptElement : sqlScriptElements) {
+                    actions.add(new SQLDatabasePersistAction("Create view part", scriptElement.getText()));
+                }
+                return;
+            }
             while (viewText.endsWith(";")) {
                 viewText = viewText.substring(0, viewText.length() - 1);
             }
             actions.add(new SQLDatabasePersistAction("Create view", viewText));
         }
         
-        if (hasComment) {
+        if (hasComment || (CommonUtils.getOption(options, DBPScriptObject.OPTION_OBJECT_SAVE) && CommonUtils.isNotEmpty(view.getComment()))) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON TABLE " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " IS '" + CommonUtils.notEmpty(view.getComment()) + "'"));
+        }
+
+        if (!(hasComment && command.getProperties().size() == 1) && CommonUtils.getOption(options, DBPScriptObject.OPTION_OBJECT_SAVE)) { // Add column comments only in save case
+            // Column comments for the newly created table
+            for (OracleTableColumn column : CommonUtils.safeCollection(view.getAttributes(monitor))) {
+                if (!CommonUtils.isEmpty(column.getComment(monitor))) {
+                    OracleTableColumnManager.addColumnCommentAction(actions, column, view);
+                }
+            }
         }
     }
 

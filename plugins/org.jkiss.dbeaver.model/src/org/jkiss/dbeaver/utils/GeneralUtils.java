@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -659,8 +658,8 @@ public class GeneralUtils {
 
     public static Path getMetadataFolder() {
         try {
-            final URL workspaceURL = Platform.getInstanceLocation().getURL();
-            Path metaDir = getMetadataFolder(Path.of(workspaceURL.toURI()));
+            final File workspacePath = RuntimeUtils.getLocalFileFromURL(Platform.getInstanceLocation().getURL());
+            Path metaDir = getMetadataFolder(workspacePath.toPath());
             if (!Files.exists(metaDir)) {
                 try {
                     Files.createDirectories(metaDir);
@@ -669,7 +668,7 @@ public class GeneralUtils {
                 }
             }
             return metaDir;
-        } catch (URISyntaxException e) {
+        } catch (IOException e) {
             throw new IllegalStateException("Can't parse workspace location URL", e);
         }
     }

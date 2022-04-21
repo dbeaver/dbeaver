@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -97,6 +97,7 @@ public class UINavigatorMessages extends NLS {
     // DatabaseNavigator
     public static String pref_page_database_general_label_expand_navigator_tree;
     public static String pref_page_database_general_label_restore_filter;
+    public static String pref_page_database_general_label_restore_filter_tip;
     public static String pref_page_database_general_label_restore_state_depth;
     public static String pref_page_database_general_label_restore_state_depth_tip;
     public static String pref_page_database_general_label_show_tips_in_tree;
@@ -110,6 +111,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_folders_first_tip;
     public static String pref_page_database_general_label_show_host_name;
     public static String pref_page_database_general_label_show_host_name_tip;
+    public static String pref_page_database_general_label_show_objects_description;
+    public static String pref_page_database_general_label_show_objects_description_tip;
     public static String pref_page_database_general_label_show_statistics;
     public static String pref_page_database_general_label_show_statistics_tip;
     public static String pref_page_database_general_label_show_node_actions;
@@ -134,6 +137,7 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_navigator_default_editor_page_tip;
     public static String pref_page_navigator_default_editor_page_last;
 
+
     // ProjectSettings
     public static String pref_page_projects_settings_label_resource_location;
     public static String pref_page_projects_settings_label_resource;
@@ -144,6 +148,7 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_projects_settings_label_not_use_hidden_folders;
     public static String pref_page_projects_settings_label_not_store_resources_in_another_project;
     public static String pref_page_projects_settings_label_restart_require_refresh_global_settings;
+    public static String pref_page_projects_settings_description;
 
     public static String ui_navigator_loading_text_loading;
     public static String ui_properties_category_information;
@@ -241,6 +246,22 @@ public class UINavigatorMessages extends NLS {
     public static String question_no_sql_available;
     public static String error_sql_generation_title;
     public static String error_sql_generation_message;
+
+    public static String navigator_expand_all_text;
+    public static String navigator_expand_all_tip;
+    public static String navigator_project_explorer_columns_name_text;
+    public static String navigator_project_explorer_columns_name_description;
+    public static String navigator_project_explorer_columns_datasource_text;
+    public static String navigator_project_explorer_columns_datasource_description;
+    public static String navigator_project_explorer_columns_preview_text;
+    public static String navigator_project_explorer_columns_preview_description;
+    public static String navigator_project_explorer_columns_size_text;
+    public static String navigator_project_explorer_columns_size_description;
+    public static String navigator_project_explorer_columns_modified_text;
+    public static String navigator_project_explorer_columns_modified_description;
+    public static String navigator_project_explorer_columns_type_text;
+    public static String navigator_project_explorer_columns_type_description;
+
 
     static {
         // initialize resource bundle

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -640,7 +640,7 @@ public class DBExecUtils {
                         Object sourceDescriptor = executionSource.getSourceDescriptor();
                         if (sourceDescriptor instanceof SQLQuery) {
                             sqlQuery = (SQLQuery) sourceDescriptor;
-                            entityMeta = sqlQuery.getSingleSource();
+                            entityMeta = sqlQuery.getEntityMetadata(false);
                         }
                         if (entityMeta != null) {
                             entity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), entityMeta);
@@ -721,18 +721,25 @@ public class DBExecUtils {
                     // Fix of #11194. If column name and alias are equals we could try to get real column name
                     // from parsed query because driver doesn't return it.
                     String columnName = attrMeta.getName();
-                    if (updateColumnMeta &&
-                        CommonUtils.equalObjects(columnName, attrMeta.getLabel()) &&
-                        sqlQuery != null &&
-                        attrMeta.getOrdinalPosition() < sqlQuery.getSelectItemCount())
+                    if (sqlQuery != null &&
+                        updateColumnMeta &&
+                        CommonUtils.equalObjects(columnName, attrMeta.getLabel()))
                     {
-                        SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
-                        if (selectItem.isPlainColumn()) {
-                            if (DBUtils.isQuotedIdentifier(dataSource, columnName)) {
-                                columnName = DBUtils.getUnQuotedIdentifier(dataSource, selectItem.getName());
-                            } else {
-                                // #12008
-                                columnName = DBObjectNameCaseTransformer.transformName(dataSource, columnName);
+                        int asteriskIndex = sqlQuery.getSelectItemAsteriskIndex();
+                        if ((asteriskIndex < 0 || asteriskIndex > attrMeta.getOrdinalPosition()) &&
+                            attrMeta.getOrdinalPosition() < sqlQuery.getSelectItemCount())
+                        {
+                            SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
+                            if (selectItem.isPlainColumn()) {
+                                String realColumnName = selectItem.getName();
+                                if (!CommonUtils.equalObjects(realColumnName, columnName)) {
+                                    if (DBUtils.isQuotedIdentifier(dataSource, realColumnName)) {
+                                        columnName = DBUtils.getUnQuotedIdentifier(dataSource, realColumnName);
+                                    } else {
+                                        // #12008
+                                        columnName = DBObjectNameCaseTransformer.transformName(dataSource, realColumnName);
+                                    }
+                                }
                             }
                         }
                     }
@@ -846,7 +853,7 @@ public class DBExecUtils {
             return true;
         }
         DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
-        return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
+        return !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE);
     }
 
     public static String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attribute) {
@@ -865,7 +872,7 @@ public class DBExecUtils {
         if (!(dataContainer instanceof DBSDataManipulator)) {
             return "Underlying entity doesn't support data modification";
         }
-        if ((((DBSDataManipulator) dataContainer).getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0) {
+        if (!((DBSDataManipulator) dataContainer).isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE)) {
             return "Underlying entity doesn't support data update";
         }
         return null;
@@ -884,4 +891,23 @@ public class DBExecUtils {
         return actions;
     }
 
+    @Nullable
+    public static DBSEntity detectSingleSourceTable(DBDAttributeBinding ... attributes) {
+        // Check single source flag
+        DBSEntity sourceTable = null;
+        for (DBDAttributeBinding attribute : attributes) {
+            if (attribute.isPseudoAttribute()) {
+                continue;
+            }
+            DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
+            if (rowIdentifier != null) {
+                if (sourceTable == null) {
+                    sourceTable = rowIdentifier.getEntity();
+                } else if (sourceTable != rowIdentifier.getEntity()) {
+                    return null;
+                }
+            }
+        }
+        return sourceTable;
+    }
 }

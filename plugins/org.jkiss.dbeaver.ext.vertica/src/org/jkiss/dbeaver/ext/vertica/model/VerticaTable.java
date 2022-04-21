@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,23 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.vertica.VerticaUtils;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
+import org.jkiss.dbeaver.model.DBPObjectWithLazyDescription;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.SQLException;
 import java.util.Date;
@@ -31,8 +40,8 @@ import java.util.Date;
 /**
  * VerticaTable
  */
-public class VerticaTable extends GenericTable implements DBPObjectStatistics, DBPSystemObject
-{
+public class VerticaTable extends GenericTable implements DBPObjectStatistics, DBPSystemObject, DBPObjectWithLazyDescription {
+
     private long tableSize = -1;
 
     private String partitionExpression;
@@ -40,6 +49,7 @@ public class VerticaTable extends GenericTable implements DBPObjectStatistics, D
     private boolean isTempTable;
     private boolean isSystemTable;
     private boolean hasAggregateProjection;
+    private String description;
 
     public VerticaTable(VerticaSchema container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
@@ -76,6 +86,31 @@ public class VerticaTable extends GenericTable implements DBPObjectStatistics, D
         return hasAggregateProjection;
     }
 
+    @Nullable
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Nullable
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
+    @LazyProperty(cacheValidator = CommentsValidator.class)
+    public String getDescription(DBRProgressMonitor monitor) throws DBException {
+        if (description == null) {
+            VerticaUtils.readTableAndColumnsDescriptions(monitor, getDataSource(), this, false);
+            if (description == null) {
+                description = "";
+            }
+        }
+        return description;
+    }
+
+    @Override
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public boolean isPhysicalTable() {
         return !isView();
@@ -95,9 +130,27 @@ public class VerticaTable extends GenericTable implements DBPObjectStatistics, D
         tableSize = dbResult.getLong("used_bytes");
     }
 
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (tableSize != -1) {
+            tableSize = -1;
+            ((VerticaSchema) getSchema()).resetStatistics();
+        }
+        return super.refreshObject(monitor);
+    }
+
     @Nullable
     @Override
     public DBPPropertySource getStatProperties() {
         return null;
+    }
+
+    public static class CommentsValidator implements IPropertyCacheValidator<VerticaTable> {
+
+        @Override
+        public boolean isPropertyCached(VerticaTable object, Object propertyId)
+        {
+            return object.description != null;
+        }
     }
 }

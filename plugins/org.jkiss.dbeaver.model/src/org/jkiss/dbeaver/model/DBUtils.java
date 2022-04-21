@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -723,7 +723,11 @@ public final class DBUtils {
             addLeafBindings(result, binding);
         }
 
-        return injectAndFilterAttributeBindings(session.getDataSource(), dataContainer, result.toArray(new DBDAttributeBinding[0]), true);
+        return injectAndFilterAttributeBindings(
+            session.getDataSource(),
+            dataContainer,
+            result.toArray(new DBDAttributeBinding[0]),
+            true);
     }
 
     private static void addLeafBindings(List<DBDAttributeBinding> result, DBDAttributeBinding binding) {
@@ -862,6 +866,22 @@ public final class DBUtils {
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Optional association is the one which can be set to NULL
+     */
+    public static boolean isOptionalAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association) throws DBException {
+        if (!(association instanceof DBSEntityReferrer)) {
+            return false;
+        }
+
+        for (DBSEntityAttributeRef ref : CommonUtils.safeCollection(((DBSEntityReferrer) association).getAttributeReferences(monitor))) {
+            if (ref.getAttribute() != null && !ref.getAttribute().isRequired()) {
+                return true;
             }
         }
         return false;
@@ -1416,6 +1436,14 @@ public final class DBUtils {
         return null;
     }
 
+    @NotNull
+    public static <T extends DBSTypedObject> T getMoreCommonType(@NotNull T t1, @NotNull T t2) {
+        if (!t1.equals(t2) && t1.getDataKind().getCommonality() < t2.getDataKind().getCommonality()) {
+            return t2;
+        }
+        return t1;
+    }
+
     @Nullable
     public static DBSDataType resolveDataType(
         @NotNull DBRProgressMonitor monitor,
@@ -1513,9 +1541,6 @@ public final class DBUtils {
     {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
-        } else if (object instanceof IDataSourceContainerProvider) {
-            // No need to wrap in quotes content providers names
-            return object.getName();
         } else if (object instanceof DBSObject) {
             return getObjectFullName(((DBSObject) object).getDataSource(), object, context);
         } else {
@@ -1814,6 +1839,10 @@ public final class DBUtils {
         return null;
     }
 
+    public static boolean isDynamicAttribute(DBSAttributeBase attr) {
+        return attr instanceof DBSAttributeDynamic && ((DBSAttributeDynamic) attr).isDynamicAttribute();
+    }
+
     public static boolean isRowIdAttribute(DBSEntityAttribute attr) {
         DBDPseudoAttribute rowIdAttribute = getRowIdAttribute(attr.getParentObject());
         return rowIdAttribute != null && rowIdAttribute.getName().equals(attr.getName());
@@ -1917,7 +1946,9 @@ public final class DBUtils {
             return null;
         }
         DBSInstance instance = getObjectOwnerInstance(object);
-        return instance == null || (instance instanceof DBSInstanceLazy && !((DBSInstanceLazy) instance).isInstanceConnected()) ?
+        return instance == null ||
+            (instance instanceof DBSInstanceLazy && !((DBSInstanceLazy) instance).isInstanceConnected())/* ||
+            !instance.getDataSource().getContainer().isConnected()*/ ?
             null :
             instance.getDefaultContext(new VoidProgressMonitor(), meta);
     }

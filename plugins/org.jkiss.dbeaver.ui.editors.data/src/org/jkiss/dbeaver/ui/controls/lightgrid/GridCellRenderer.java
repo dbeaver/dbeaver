@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,13 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UITextUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -43,6 +46,17 @@ class GridCellRenderer extends AbstractRenderer {
     // Clipping limits cell paint with cell bounds. But is an expensive GC call.
     // Generally we don't need it because we repaint whole grid left-to-right and all text tails will be overpainted by trailing cells
     private static final boolean USE_CLIPPING = false;
+
+    // Mapping table for special characters. The replacement string is painted with a tinted color.
+    private static final String[][] SPECIAL_CHARACTERS_MAP = {
+        {" ",      "\u00b7"},
+        {"\r\n",   "\u00b6"},
+        {"\r",     "\u00b6"},
+        {"\n",     "\u00b6"},
+        {"\t",     "\u00bb"},
+        {"\u3000", "\u00b0"}, // ideographic whitespace
+        {"\u200b", "\u2588"}, // zero-width whitespace
+    };
 
     protected Color colorLineFocused;
 
@@ -109,6 +123,8 @@ class GridCellRenderer extends AbstractRenderer {
 
         int width = bounds.width - x - RIGHT_MARGIN;
 
+        final String originalText = text;
+
         // Get cell text
         if (text != null && !text.isEmpty()) {
             // Get shortern version of string
@@ -165,12 +181,21 @@ class GridCellRenderer extends AbstractRenderer {
                     break;
                 }
                 default: {
-                    gc.drawString(
-                        text,
-                        bounds.x + x,
-                        bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
-                        isTransparent
-                    );
+                    if (CommonUtils.isBitSet(state, IGridContentProvider.STATE_DECORATED)) {
+                        drawCellTextDecorated(gc, originalText, col, row, selected, new Rectangle(
+                            bounds.x + x,
+                            bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
+                            bounds.width - LEFT_MARGIN - RIGHT_MARGIN,
+                            bounds.height
+                        ));
+                    } else {
+                        gc.drawString(
+                            text,
+                            bounds.x + x,
+                            bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
+                            isTransparent
+                        );
+                    }
                     break;
                 }
             }
@@ -255,5 +280,85 @@ class GridCellRenderer extends AbstractRenderer {
         return
             (state & IGridContentProvider.STATE_LINK) != 0 ||
             (state & IGridContentProvider.STATE_HYPER_LINK) != 0;
+    }
+
+    private void drawCellTextDecorated(@NotNull GC gc, @NotNull String text, @Nullable Object col, @Nullable Object row, boolean selected, @NotNull Rectangle bounds) {
+        final Color activeForeground = grid.getCellForeground(col, row, selected);
+        final Color activeBackground = grid.getCellBackground(col, row, selected);
+        final Color disabledForeground = UIUtils.getSharedColor(UIUtils.blend(activeForeground.getRGB(), activeBackground.getRGB(), 50));
+
+        for (int start = 0; start < text.length(); ) {
+            boolean matches = false;
+
+            for (String[] mapping : SPECIAL_CHARACTERS_MAP) {
+                final String expected = mapping[0];
+                final String replacement = mapping[1];
+                final int index = text.indexOf(expected, start);
+
+                if (index >= 0) {
+                    if (drawCellTextSegment(gc, text.substring(start, index), bounds, activeForeground, disabledForeground)) {
+                        return;
+                    }
+
+                    if (drawCellTextSegment(gc, replacement, bounds, disabledForeground, disabledForeground)) {
+                        return;
+                    }
+
+                    start = index + expected.length();
+                    matches = true;
+                }
+            }
+
+            if (!matches) {
+                drawCellTextSegment(gc, text.substring(start), bounds, activeForeground, disabledForeground);
+                return;
+            }
+        }
+    }
+
+    private boolean drawCellTextSegment(@NotNull GC gc, @NotNull String segment, @NotNull Rectangle bounds, @NotNull Color activeForeground, @NotNull Color disabledForeground) {
+        final Point extent = gc.textExtent(segment);
+
+        if (extent.x > bounds.width) {
+            // Since we are already performing quite expensive paint operations,
+            // let's make it a bit worse by precisely calculating the length
+            // of the cropped segment using binary search
+
+            int low = 0;
+            int high = segment.length();
+            String clipped = segment;
+
+            while (low <= high) {
+                final int mid = (low + high) >>> 1;
+                clipped = segment.substring(0, mid);
+                final int val = gc.textExtent(clipped + "...").x;
+
+                if (val < bounds.width) {
+                    low = mid + 1;
+                } else if (val > bounds.width) {
+                    high = mid - 1;
+                } else {
+                    break;
+                }
+            }
+
+            drawTextAndAdvance(gc, clipped, activeForeground, bounds);
+            drawTextAndAdvance(gc, "...", disabledForeground, bounds);
+
+            return true;
+        } else {
+            drawTextAndAdvance(gc, segment, activeForeground, bounds);
+
+            return false;
+        }
+    }
+
+    private void drawTextAndAdvance(@NotNull GC gc, @NotNull String text, @NotNull Color foreground, @NotNull Rectangle bounds) {
+        gc.setForeground(foreground);
+        gc.drawString(text, bounds.x, bounds.y);
+
+        final int extent = gc.textExtent(text).x + 1 /* HACK: antialiasing occupies one extra pixel */;
+        bounds.x += extent;
+        bounds.width -= extent;
     }
 }

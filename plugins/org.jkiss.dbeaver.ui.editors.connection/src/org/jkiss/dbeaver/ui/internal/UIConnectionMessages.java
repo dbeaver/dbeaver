@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -87,6 +87,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_network_socket_label_port;
     public static String dialog_connection_network_socket_label_username;
     public static String dialog_connection_network_socket_label_password;
+    public static String dialog_connection_open_global_network_preferences_link;
 
     public static String dialog_edit_driver_button_add_file;
     public static String dialog_edit_driver_button_add_folder;
@@ -177,7 +178,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driven_edit_maven_field_text_message;
     public static String dialog_edit_driver_edit_maven_group_id_label;
     public static String dialog_edit_driver_edit_maven_artifact_id_label;
-    public static String dialog_edit_driver_edit_maven_classfier_label;
+    public static String dialog_edit_driver_edit_maven_fallback_version_label;
     public static String dialog_edit_driver_edit_maven_version_label;
     public static String dialog_edit_driver_text_driver_library;
     public static String dialog_edit_driver_info;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,10 @@ import org.jkiss.utils.CommonUtils;
 public class GenericDataSourceInfo extends JDBCDataSourceInfo {
 
     private final boolean supportsLimits;
+    public boolean supportsCatalogSelection;
+    public boolean supportsSchemaSelection;
     private boolean supportsMultipleResults;
     private boolean supportsNullableUniqueConstraints;
-    private final boolean supportsSetArray;
     private final boolean supportsTransactionsForDDL;
     private final boolean supportsConstraints;
 
@@ -41,11 +42,11 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
         supportsLimits = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_LIMITS), true);
         setSupportsResultSetScroll(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCROLL), false));
         supportsMultipleResults = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_MULTIPLE_RESULTS), false);
-        supportsSetArray = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SET_ARRAY), false);
         supportsTransactionsForDDL = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_TRANSACTIONS_FOR_DDL), true);
         setReadOnlyData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_DATA), false));
         setReadOnlyMetaData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_META_DATA), false));
-
+        supportsCatalogSelection = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION), true);
+        supportsSchemaSelection = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION), true);
         supportsNullableUniqueConstraints = false;
         supportsConstraints = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CONSTRAINTS), true);
     }
@@ -64,14 +65,17 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
         this.supportsNullableUniqueConstraints = supportsNullableUniqueConstraints;
     }
 
-    @Override
-    public boolean supportsMultipleResults() {
-        return supportsMultipleResults;
+    public boolean supportsCatalogSelection() {
+        return supportsCatalogSelection;
+    }
+
+    public boolean supportsSchemaSelection() {
+        return supportsSchemaSelection;
     }
 
     @Override
-    public boolean supportsSetArray() {
-        return supportsSetArray;
+    public boolean supportsMultipleResults() {
+        return supportsMultipleResults;
     }
 
     @Override

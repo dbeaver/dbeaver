@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ public class DBeaverStackRenderer extends StackRenderer {
         }
         new MenuItem(menu, SWT.SEPARATOR);
 
+        addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_EDITOR_NEW);
         {
             MenuItem menuItemOpenFolder = new MenuItem(menu, SWT.NONE);
             menuItemOpenFolder.setText(CoreMessages.editor_file_open_in_explorer);
@@ -91,23 +92,10 @@ public class DBeaverStackRenderer extends StackRenderer {
             });
         }
 
-        {
-            {
-                String deleteText = ActionUtils.findCommandName(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
-                String shortcut = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT, workbenchPart.getSite(), true);//$NON-NLS-1$
-                if (shortcut != null) {
-                    deleteText += "\t" + shortcut;
-                }
+        new MenuItem(menu, SWT.SEPARATOR);
 
-                MenuItem menuItemDelete = new MenuItem(menu, SWT.NONE);
-                menuItemDelete.setText(deleteText);
-                menuItemDelete.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        ActionUtils.runCommand(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT, workbenchPart.getSite());
-                    }
-                });
-            }
+        {
+            addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
 
             if (inputFile != null) {
                 MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
@@ -125,6 +113,23 @@ public class DBeaverStackRenderer extends StackRenderer {
             }
         }
 
+    }
+
+    private static void addActionItem(@NotNull IWorkbenchPart workbenchPart, @NotNull Menu menu, @NotNull String actionId) {
+        String actionText = ActionUtils.findCommandName(actionId);
+        String shortcut = ActionUtils.findCommandDescription(actionId, workbenchPart.getSite(), true);//$NON-NLS-1$
+        if (shortcut != null) {
+            actionText += "\t" + shortcut;
+        }
+
+        MenuItem menuItemDelete = new MenuItem(menu, SWT.NONE);
+        menuItemDelete.setText(actionText);
+        menuItemDelete.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ActionUtils.runCommand(actionId, workbenchPart.getSite());
+            }
+        });
     }
 
     private IWorkbenchPart getWorkbenchPart(MPart part) {

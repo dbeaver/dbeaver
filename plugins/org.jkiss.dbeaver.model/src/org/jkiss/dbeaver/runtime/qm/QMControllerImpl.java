@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.*;
+import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -228,7 +229,7 @@ public class QMControllerImpl implements QMController {
         }
 
         private boolean matchesObjectType(QMMObject object, QMObjectType[] objectTypes) {
-            if (object instanceof QMMSessionInfo)
+            if (object instanceof QMMConnectionInfo)
                 return ArrayUtils.contains(objectTypes, QMObjectType.session);
             else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo)
                 return ArrayUtils.contains(objectTypes, QMObjectType.txn);

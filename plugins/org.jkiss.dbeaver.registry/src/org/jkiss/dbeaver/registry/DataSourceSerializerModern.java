@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
-import org.jkiss.dbeaver.model.DBPDataSourceOrigin;
-import org.jkiss.dbeaver.model.DBPDataSourcePermission;
-import org.jkiss.dbeaver.model.DBPDataSourcePermissionOwner;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -73,6 +70,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     public static final String TAG_ORIGIN = "origin"; //$NON-NLS-1$
     private static final String ATTR_ORIGIN_TYPE = "$type"; //$NON-NLS-1$
+    private static final String ATTR_ORIGIN_CONFIGURATION = "$configuration"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(DataSourceSerializerModern.class);
     private static final String NODE_CONNECTION = "#connection";
@@ -128,6 +126,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 Map<String, DBVModel> virtualModels = new LinkedHashMap<>();
                 Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
                 Map<String, Map<String, DBPDriver>> drivers = new LinkedHashMap<>();
+                Map<String, DBPExternalConfiguration> externalConfigurations = new LinkedHashMap<>();
                 {
                     // Save connections
                     jsonWriter.name("connections");
@@ -135,7 +134,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     for (DataSourceDescriptor dataSource : localDataSources) {
                         // Skip temporary
                         if (!dataSource.isDetached()) {
-                            saveDataSource(jsonWriter, dataSource);
+                            saveDataSource(jsonWriter, dataSource, externalConfigurations);
                             if (dataSource.getVirtualModel().hasValuableData()) {
                                 virtualModels.put(dataSource.getVirtualModel().getId(), dataSource.getVirtualModel());
                             }
@@ -252,6 +251,17 @@ class DataSourceSerializerModern implements DataSourceSerializer
                                 ((DriverDescriptor) driver).serialize(jsonWriter, true);
                             }
                             jsonWriter.endObject();
+                        }
+                        jsonWriter.endObject();
+                    }
+
+                    // External configurations
+                    if (!CommonUtils.isEmpty(externalConfigurations)) {
+                        jsonWriter.name("external-configurations");
+                        jsonWriter.beginObject();
+                        for (Map.Entry<String, DBPExternalConfiguration> ecfg : externalConfigurations.entrySet()) {
+                            jsonWriter.name(ecfg.getKey());
+                            JSONUtils.serializeMap(jsonWriter, ecfg.getValue().getProperties());
                         }
                         jsonWriter.endObject();
                     }
@@ -408,6 +418,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
             // Drivers
             // TODO: add drivers deserialization
 
+            // External configurations
+            Map<String, DBPExternalConfiguration> externalConfigurations = new LinkedHashMap<>();
+            for (Map.Entry<String, Map<String, Object>> ctMap : JSONUtils.getNestedObjects(jsonMap, "external-configurations")) {
+                String id = ctMap.getKey();
+                Map<String, Object> configMap = ctMap.getValue();
+                externalConfigurations.put(id, new DBPExternalConfiguration(id, configMap));
+            }
+
             // Virtual models
             Map<String, DBVModel> modelMap = new LinkedHashMap<>();
             for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "virtual-models")) {
@@ -491,7 +509,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         origin = DataSourceOriginLocal.INSTANCE;
                     } else {
                         String originID = CommonUtils.toString(originProperties.remove(ATTR_ORIGIN_TYPE));
-                        origin = new DataSourceOriginLazy(originID, originProperties);
+                        String extConfigID = CommonUtils.toString(originProperties.remove(ATTR_ORIGIN_CONFIGURATION));
+                        DBPExternalConfiguration extConfig = null;
+                        if (!CommonUtils.isEmpty(extConfigID)) {
+                            extConfig = externalConfigurations.get(extConfigID);
+                        }
+                        origin = new DataSourceOriginLazy(originID, originProperties, extConfig);
                     }
                     dataSource = new DataSourceDescriptor(
                         registry,
@@ -564,6 +587,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     if (keepAlive > 0) {
                         config.setKeepAliveInterval(keepAlive);
                     }
+                    int closeIdle = JSONUtils.getInteger(cfgObject, RegistryConstants.ATTR_CLOSE_IDLE);
+                    if (closeIdle > 0) {
+                        config.setCloseIdleInterval(closeIdle);
+                    }
+
                     config.setProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROPERTIES));
                     config.setProviderProperties(JSONUtils.deserializeStringMap(cfgObject, RegistryConstants.TAG_PROVIDER_PROPERTIES));
                     config.setAuthModelId(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_AUTH_MODEL));
@@ -754,7 +782,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
         json.endObject();
     }
 
-    private void saveDataSource(@NotNull JsonWriter json, @NotNull DataSourceDescriptor dataSource)
+    private void saveDataSource(
+        @NotNull JsonWriter json,
+        @NotNull DataSourceDescriptor dataSource,
+        @NotNull Map<String, DBPExternalConfiguration> externalConfigurations)
         throws IOException
     {
         json.name(dataSource.getId());
@@ -765,7 +796,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (origin != DataSourceOriginLocal.INSTANCE) {
             Map<String, Object> originProps = new LinkedHashMap<>();
             originProps.put(ATTR_ORIGIN_TYPE, origin.getType());
-            originProps.putAll(origin.getConfiguration());
+            if (origin instanceof DBPDataSourceOriginExternal) {
+                DBPExternalConfiguration externalConfiguration = ((DBPDataSourceOriginExternal) origin).getExternalConfiguration();
+                if (externalConfiguration != null) {
+                    originProps.put(ATTR_ORIGIN_CONFIGURATION, externalConfiguration.getId());
+                    externalConfigurations.put(externalConfiguration.getId(), externalConfiguration);
+                }
+            }
+            originProps.putAll(origin.getDataSourceConfiguration());
             JSONUtils.serializeProperties(json, TAG_ORIGIN, originProps);
         }
         JSONUtils.field(json, RegistryConstants.ATTR_NAME, dataSource.getName());
@@ -822,6 +860,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
             // Save other
             if (connectionInfo.getKeepAliveInterval() > 0) {
                 JSONUtils.field(json, RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
+            }
+            if (connectionInfo.getCloseIdleInterval() > 0) {
+                JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE, connectionInfo.getCloseIdleInterval());
             }
             JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties());

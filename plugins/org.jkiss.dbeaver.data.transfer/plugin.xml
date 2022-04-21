@@ -11,7 +11,8 @@
               icon="icons/formats/table.png"
               label="%dataTransfer.producer.database.name"
               description="%dataTransfer.producer.database.description"
-              settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
+              settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings"
+              advanced="true">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
 <!--            <sourceType type="org.jkiss.dbeaver.model.struct.DBSObjectContainer"/>-->
         </node>
@@ -22,7 +23,8 @@
             icon="icons/formats/table.png"
             label="%dataTransfer.consumer.database.name"
             description="%dataTransfer.consumer.database.description"
-            settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings">
+            settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings"
+            advanced="true">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </node>
 
@@ -51,9 +53,12 @@
                     <property id="nullString" label="%dataTransfer.producer.stream.processor.csv.property.nullString.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.nullString.description" defaultValue="" required="false"/>
                     <property id="emptyStringNull" label="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.description" defaultValue="" required="false"/>
                     <property id="timestampFormat" label="%dataTransfer.producer.stream.processor.csv.property.timestampFormat.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.timestampFormat.description" defaultValue="yyyy-MM-dd[ HH:mm:ss[.SSS]]" required="false"/>
+                    <property id="trimWhitespaces" label="%dataTransfer.producer.stream.processor.csv.property.trimWhitespaces.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.trimWhitespaces.description" defaultValue="false" required="false"/>
                     <property id="timestampZone" label="%dataTransfer.producer.stream.processor.csv.property.timestampZone.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.timestampZone.description" defaultValue="" required="false"/>
-                    <property id="columnTypeSamplesCount" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeSamplesCount.name" type="integer" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeSamplesCount.description" defaultValue="1000" required="false"/>
-                    <property id="columnTypeMinimalLength" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeMinimalLength.name" type="integer" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeMinimalLength.description" defaultValue="1" required="false"/>
+                </propertyGroup>
+                <propertyGroup label="%dataTransfer.producer.stream.processor.csv.propertyGroup.sampling.label">
+                    <property id="columnTypeSamplesCount" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeSamplesCount.name" type="integer" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeSamplesCount.description" defaultValue="100" required="false"/>
+                    <property id="columnTypeMinimalLength" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeMinimalLength.name" type="integer" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeMinimalLength.description" defaultValue="50" required="false"/>
                     <property id="columnTypeIsByteLength" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeUseByteLength.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeUseByteLength.description" defaultValue="" required="false"/>
                 </propertyGroup>
             </processor>
@@ -177,6 +182,7 @@
                 <propertyGroup label="%dataTransfer.processor.sql.propertyGroup.formatting.label">
                     <property id="lineBeforeRows" label="%dataTransfer.processor.sql.property.lineBeforeRows.name" type="boolean" description="%dataTransfer.processor.sql.property.lineBeforeRows.description" defaultValue="true" />
                     <property id="keywordCase" label="%dataTransfer.processor.sql.property.keywordCase.name" type="string" description="%dataTransfer.processor.sql.property.keywordCase.description" defaultValue="upper" required="true" validValues="upper,lower" allowCustomValues="false"/>
+                    <property id="identifierCase" label="%dataTransfer.processor.sql.property.identifierCase.name" type="string" description="%dataTransfer.processor.sql.property.identifierCase.description" defaultValue="as is" required="true" validValues="as is,upper,lower" allowCustomValues="false"/>
                     <property id="upsertKeyword" label="%dataTransfer.processor.sql.property.upsertKeyword.name" type="string" description="%dataTransfer.processor.sql.property.upsertKeyword.description" defaultValue="INSERT" required="true" validValues="INSERT,INSERT ALL,UPDATE OR,UPSERT INTO,REPLACE INTO,ON DUPLICATE KEY UPDATE,ON CONFLICT" allowCustomValues="false"/>
                     <property id="insertOnConflict" label="%dataTransfer.processor.sql.property.insertOnConflict.name" type="string" description="%dataTransfer.processor.sql.property.insertOnConflict.description" defaultValue="" required="true"/>
                 </propertyGroup>

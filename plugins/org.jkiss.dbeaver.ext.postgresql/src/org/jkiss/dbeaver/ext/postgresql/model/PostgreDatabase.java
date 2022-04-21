@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,17 +85,18 @@ public class PostgreDatabase extends JDBCRemoteInstance
     private long dbTotalSize = -1;
     private Boolean supportTypColumn;
 
-    public final PostgreDatabaseJDBCObjectCache<? extends PostgreRole> roleCache = createRoleCache();
-    public final AccessMethodCache accessMethodCache = new AccessMethodCache();
-    public final ForeignDataWrapperCache foreignDataWrapperCache = new ForeignDataWrapperCache();
+    private final PostgreDatabaseJDBCObjectCache<? extends PostgreRole> roleCache = createRoleCache();
+    final AccessMethodCache accessMethodCache = new AccessMethodCache();
+    final ForeignDataWrapperCache foreignDataWrapperCache = new ForeignDataWrapperCache();
     public final ForeignServerCache foreignServerCache = new ForeignServerCache();
-    public final LanguageCache languageCache = new LanguageCache();
-    public final EncodingCache encodingCache = new EncodingCache();
+    final LanguageCache languageCache = new LanguageCache();
+    private final EncodingCache encodingCache = new EncodingCache();
+    private final EventTriggersCache eventTriggersCache = new EventTriggersCache();
     public final ExtensionCache extensionCache = new ExtensionCache();
-    public final AvailableExtensionCache availableExtensionCache = new AvailableExtensionCache();
-    public final CollationCache collationCache = new CollationCache();
+    private final AvailableExtensionCache availableExtensionCache = new AvailableExtensionCache();
+    private final CollationCache collationCache = new CollationCache();
     public final TablespaceCache tablespaceCache = new TablespaceCache();
-    public final LongKeyMap<PostgreDataType> dataTypeCache = new LongKeyMap<>();
+    private final LongKeyMap<PostgreDataType> dataTypeCache = new LongKeyMap<>();
     public final JobCache jobCache = new JobCache();
     public final JobClassCache jobClassCache = new JobClassCache();
 
@@ -477,6 +478,21 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     @Association
+    public Collection<PostgreEventTrigger> getEventTriggers(DBRProgressMonitor monitor) throws DBException {
+        checkInstanceConnection(monitor);
+        return eventTriggersCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public PostgreEventTrigger getEventTrigger(DBRProgressMonitor monitor, String triggerName) throws DBException {
+        return eventTriggersCache.getObject(monitor, this, triggerName);
+    }
+
+    public EventTriggersCache getEventTriggersCache() {
+        return eventTriggersCache;
+    }
+
+    @Association
     public Collection<PostgreExtension> getExtensions(DBRProgressMonitor monitor)
         throws DBException {
         return extensionCache.getAllObjects(monitor, this);
@@ -749,7 +765,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        return getSchema(monitor, childName);
+        PostgreSchema schema = getSchema(monitor, childName);
+        if (schema == null && getDataSource().getServerType().supportsEventTriggers()) {
+            // If not schema - can be event trigger
+            return getEventTrigger(monitor, childName);
+        }
+        return schema;
     }
 
     @NotNull
@@ -793,6 +814,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         foreignServerCache.clearCache();
         languageCache.clearCache();
         encodingCache.clearCache();
+        eventTriggersCache.clearCache();
         extensionCache.clearCache();
         availableExtensionCache.clearCache();
         collationCache.clearCache();
@@ -1145,6 +1167,42 @@ public class PostgreDatabase extends JDBCRemoteInstance
         protected PostgreAvailableExtension fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
             return new PostgreAvailableExtension(owner, dbResult);
+        }
+    }
+
+    static class EventTriggersCache extends JDBCObjectLookupCache<PostgreDatabase, PostgreEventTrigger> {
+
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable PostgreEventTrigger object, @Nullable String objectName) throws SQLException {
+            String statement = "SELECT pet.*, d.description FROM pg_catalog.pg_event_trigger pet\n" +
+                "LEFT OUTER JOIN pg_catalog.pg_description d ON pet.\"oid\" = d.objoid" +
+                (object != null || CommonUtils.isNotEmpty(objectName) ? " WHERE pet.evtname = ?" : "");
+            JDBCPreparedStatement prepareStatement = session.prepareStatement(statement);
+            if (object != null || CommonUtils.isNotEmpty(objectName)) {
+                prepareStatement.setString(1, object != null ? object.getName() : objectName);
+            }
+            return prepareStatement;
+        }
+
+        @Nullable
+        @Override
+        protected PostgreEventTrigger fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            String eventTriggerName = JDBCUtils.safeGetString(resultSet, "evtname");
+            if (CommonUtils.isEmpty(eventTriggerName)) {
+                return null;
+            }
+            return new PostgreEventTrigger(database, eventTriggerName, resultSet);
+        }
+
+        @Override
+        protected boolean handleCacheReadError(Exception error) {
+            if (error instanceof DBException && PostgreConstants.EC_PERMISSION_DENIED.equals(((DBException) error).getDatabaseState())) {
+                log.warn(error);
+                setCache(Collections.emptyList());
+                return true;
+            }
+            return false;
         }
     }
     

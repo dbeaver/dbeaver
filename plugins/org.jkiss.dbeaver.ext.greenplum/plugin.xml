@@ -18,7 +18,8 @@
                 parent="postgresql"
                 label="Greenplum"
                 icon="icons/greenplum_icon.png"
-                dialect="greenplum">
+                dialect="greenplum"
+                inheritClients="true">
 
             <treeInjection path="postgresql/database/schema/table"
                            changeFolderType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable"/>
@@ -34,11 +35,6 @@
                             </items>
                         </folder>
                     </items>
-                </folder>
-            </treeInjection>
-            <treeInjection path="postgresql" after="users">
-                <folder label="%tree.administer.node.name" icon="#folder_admin" description="%tree.administer.node.tip">
-                    <treeContribution category="connectionEditor"/>
                 </folder>
             </treeInjection>
 
@@ -57,7 +53,7 @@
                         categories="sql,analytic">
                     <replace provider="postgresql" driver="postgres-greenplum-jdbc"/>
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.20]"
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]"
                           bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
                           optional="true" bundle="!drivers.postgresql"/>

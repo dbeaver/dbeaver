@@ -25,6 +25,10 @@
                 <property id="password" label="User password" type="string" description="SSH target user password"/>
                 <property id="keyPath" label="Private key path" type="file" description="SSH private key path"/>
             </propertyGroup>
+            <propertyGroup label="SSH Advanced Settings">
+                <property id="aliveInterval" label="Keep-Alive interval" type="string" description="SSH keep-alive interval"/>
+                <property id="sshConnectTimeout" label="Tunnel connect timeout" type="string" description="SSH Tunnel connect timeout"/>
+            </propertyGroup>
         </handler>
     </extension>
 

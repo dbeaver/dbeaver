@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,29 +22,27 @@ import org.eclipse.jface.dialogs.IPageChangeProvider;
 /**
  * ResultSetAdapterFactory
  */
-public class ResultSetAdapterFactory implements IAdapterFactory
-{
-    private static final Class<?>[] ADAPTER_LIST = { ResultSetViewer.class };
+public class ResultSetAdapterFactory implements IAdapterFactory {
+
+    private static final Class<?>[] ADAPTER_LIST = {IResultSetController.class, ResultSetViewer.class};
 
     @Override
-    public Object getAdapter(Object adaptableObject, Class adapterType)
-    {
-        if (adapterType == ResultSetViewer.class) {
-            if (adaptableObject instanceof ResultSetViewer) {
-                return adaptableObject;
-            } else if (adaptableObject instanceof IResultSetContainer) {
-                return ((IResultSetContainer) adaptableObject).getResultSetController();
+    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
+        if (adapterType == IResultSetController.class || adapterType == ResultSetViewer.class) {
+            if (adapterType.isInstance(adaptableObject)) {
+                return adapterType.cast(adaptableObject);
+            } else if (adaptableObject instanceof IResultSetProvider) {
+                return adapterType.cast(((IResultSetProvider) adaptableObject).getResultSetController());
             }
             if (adaptableObject instanceof IPageChangeProvider) {
-                return getAdapter(((IPageChangeProvider) adaptableObject).getSelectedPage(), ResultSetViewer.class);
+                return getAdapter(((IPageChangeProvider) adaptableObject).getSelectedPage(), adapterType);
             }
         }
         return null;
     }
 
     @Override
-    public Class[] getAdapterList()
-    {
+    public Class[] getAdapterList() {
         return ADAPTER_LIST;
     }
 }

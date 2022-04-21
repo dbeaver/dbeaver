@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * VerticaSchema
@@ -167,6 +169,16 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject, DBP
     }
 
     @Override
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        hasStatistics = false;
+        return super.refreshObject(monitor);
+    }
+
+    void resetStatistics() {
+        hasStatistics = false;
+    }
+
+    @Override
     public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read relation statistics")) {
             try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
@@ -206,7 +218,7 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject, DBP
         ProjectionCache()
         {
             super("projection_name");
-            setListOrderComparator(DBUtils.nameComparator());
+            setListOrderComparator(DBUtils.nameComparatorIgnoreCase());
         }
 
         @NotNull
@@ -258,7 +270,7 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject, DBP
         UDFCache()
         {
             super();
-            setListOrderComparator(DBUtils.nameComparator());
+            setListOrderComparator(DBUtils.nameComparatorIgnoreCase());
         }
 
         @NotNull

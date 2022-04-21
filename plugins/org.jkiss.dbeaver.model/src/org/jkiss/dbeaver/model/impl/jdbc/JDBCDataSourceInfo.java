@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -374,13 +374,4 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     {
         return supportsBatchUpdates;
     }
-
-    /**
-     * Checks whether this data source supports using {@link java.sql.PreparedStatement#setArray(int, java.sql.Array)}
-     * for binding array values or not. Some data sources may use {@link java.sql.PreparedStatement#setObject(int, Object)} instead.
-     */
-    public boolean supportsSetArray() {
-        return false;
-    }
-
 }

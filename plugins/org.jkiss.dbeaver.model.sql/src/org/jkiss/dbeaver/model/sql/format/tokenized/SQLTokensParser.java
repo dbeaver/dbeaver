@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,9 @@ class SQLTokensParser {
         }
 
         String delimiterRedefiner = configuration.getSyntaxManager().getDialect().getScriptDelimiterRedefiner();
+        if(ArrayUtils.contains(configuration.getSyntaxManager().getDialect().getScriptDelimiters(), delimiterRedefiner)) {
+            delimiterRedefiner = null;
+        }
         if (!CommonUtils.isEmpty(delimiterRedefiner)) {
             commands.add(delimiterRedefiner.toUpperCase(Locale.ENGLISH));
         }

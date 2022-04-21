@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,7 +199,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 selectedRowsOnlyCheckbox.addSelectionListener(listener);
             }
         }
-        {
+        if(getWizard().getCurrentTask() != null){
             Composite buttonsPanel = UIUtils.createComposite(composite, 1);
             getWizard().createVariablesEditButton(buttonsPanel);
         }
@@ -222,6 +222,8 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     @Override
     public void activatePage()
     {
+        getWizard().loadNodeSettings();
+
         final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
         threadsNumText.setText(String.valueOf(getWizard().getSettings().getMaxJobCount()));

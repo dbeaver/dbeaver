@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,20 +72,12 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
     @NotNull
     private SQLDialectMetadata scriptDialect;
+    private boolean inheritClients;
 
-    public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
-    {
+    public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config) {
         super(config);
         this.registry = registry;
         this.temporary = false;
-
-        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
-        if (!CommonUtils.isEmpty(parentId)) {
-            this.parentProvider = registry.getDataSourceProvider(parentId);
-            if (this.parentProvider == null) {
-                log.error("Provider '" + parentId + "' not found");
-            }
-        }
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
@@ -106,14 +98,29 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             this.scriptDialect = SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
         }
 
+        // Load tree structure
+        IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
+        if (!ArrayUtils.isEmpty(trees)) {
+            this.treeDescriptor = this.loadTreeInfo(trees[0]);
+        }
+    }
+
+    void linkParentProvider(IConfigurationElement config) {
+        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        if (!CommonUtils.isEmpty(parentId)) {
+            this.parentProvider = registry.getDataSourceProvider(parentId);
+            if (this.parentProvider == null) {
+                log.error("Provider '" + parentId + "' not found");
+            }
+        }
+    }
+
+    void loadExtraConfig(IConfigurationElement config) {
         {
             // Load tree structure
-            IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
-            if (!ArrayUtils.isEmpty(trees)) {
-                this.treeDescriptor = this.loadTreeInfo(trees[0]);
-            } else if (parentProvider != null) {
+            if (treeDescriptor == null && parentProvider != null) {
                 // Use parent's tree
-                this.treeDescriptor = new DBXTreeDescriptor(this, parentProvider.treeDescriptor);
+                this.treeDescriptor = new DBXTreeDescriptor(this, parentProvider.getTreeDescriptor());
             }
 
             // Load tree injections
@@ -174,6 +181,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
         // Load native clients
         {
+            inheritClients = CommonUtils.getBoolean(config.getAttribute("inheritClients"), false); // Will be "true" if we can use native clients list from the parent
+
             for (IConfigurationElement nativeClientsElement : config.getChildren("nativeClients")) {
                 for (IConfigurationElement clientElement : nativeClientsElement.getChildren("client")) {
                     this.nativeClients.add(new NativeClientDescriptor(clientElement));
@@ -264,9 +273,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     @Override
-    public DBXTreeDescriptor getTreeDescriptor()
-    {
-        return treeDescriptor;
+    public DBXTreeDescriptor getTreeDescriptor() {
+        return treeDescriptor == null ? (parentProvider == null ? null : parentProvider.getTreeDescriptor())
+            : treeDescriptor;
     }
 
     @NotNull
@@ -367,6 +376,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     // Native clients
 
     public List<NativeClientDescriptor> getNativeClients() {
+        if (inheritClients && parentProvider != null) {
+            List<NativeClientDescriptor> clients = new ArrayList<>(nativeClients);
+            clients.addAll(parentProvider.getNativeClients());
+            return clients;
+        }
         return nativeClients;
     }
 
@@ -619,6 +633,15 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             }
         }
         return null;
+    }
+
+    public static boolean matchesId(DBPDataSourceProviderDescriptor providerDescriptor, String id) {
+        for (DBPDataSourceProviderDescriptor dspd = providerDescriptor; dspd != null; dspd = dspd.getParentProvider()) {
+            if (id.equals(dspd.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

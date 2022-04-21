@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,10 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 /**
  * SQLVariablesPanel
@@ -277,7 +279,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                 }
             };
 
-            varsTable = new TableViewer(this, SWT.SINGLE | SWT.FULL_SELECTION);
+            varsTable = new TableViewer(this, SWT.MULTI | SWT.FULL_SELECTION);
             varsTable.getTable().setHeaderVisible(true);
             varsTable.getTable().setLinesVisible(true);
             varsTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -313,8 +315,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                         null : ((IStructuredSelection) varsTable.getSelection()).getFirstElement();
 
                     deleteAction.setEnabled(
-                        varElement instanceof DBCScriptContext.VariableInfo &&
-                        ((DBCScriptContext.VariableInfo) varElement).type != DBCScriptContext.VariableType.PARAMETER);
+                        varElement instanceof DBCScriptContext.VariableInfo);
                     updateActions();
                 }
                 editCurrentVariable();
@@ -362,11 +363,10 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
                 @Override
                 public void run() {
                     if (!varsTable.getSelection().isEmpty()) {
-                        Object varElement = ((IStructuredSelection) varsTable.getSelection()).getFirstElement();
-                        if (varElement instanceof DBCScriptContext.VariableInfo) {
-                            RemoveVariableAction action = new RemoveVariableAction(mainEditor, ((DBCScriptContext.VariableInfo) varElement).name);
-                            action.run();
-                        }
+                        final StructuredSelection selection = (StructuredSelection) varsTable.getSelection();
+                        List<String> varsList = Arrays.stream(selection.toArray()).map(el -> ((DBCScriptContext.VariableInfo) el).name).collect(Collectors.toList());
+                        new RemoveVariablesAction(mainEditor, varsList).run();
+
                     }
                 }
             };

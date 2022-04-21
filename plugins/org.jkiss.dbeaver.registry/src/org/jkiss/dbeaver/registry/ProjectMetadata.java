@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.auth.DBASessionContext;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -88,7 +88,7 @@ public class ProjectMetadata implements DBPProject {
 
     private final DBPWorkspace workspace;
     private final IProject project;
-    private final DBASessionContext sessionContext;
+    private final SMSessionContext sessionContext;
 
     private String projectName;
     private Path projectPath;
@@ -103,14 +103,14 @@ public class ProjectMetadata implements DBPProject {
     private final Object metadataSync = new Object();
     private boolean inMemory;
 
-    public ProjectMetadata(DBPWorkspace workspace, IProject project, DBASessionContext sessionContext) {
+    public ProjectMetadata(DBPWorkspace workspace, IProject project, SMSessionContext sessionContext) {
         this.workspace = workspace;
         this.project = project;
         this.metadataSyncJob = new ProjectSyncJob();
         this.sessionContext = sessionContext == null ? workspace.getAuthContext() : sessionContext;
     }
 
-    public ProjectMetadata(DBPWorkspace workspace, String name, Path path, DBASessionContext sessionContext) {
+    public ProjectMetadata(DBPWorkspace workspace, String name, Path path, SMSessionContext sessionContext) {
         this(workspace, workspace.getActiveProject() == null ? null : workspace.getActiveProject().getEclipseProject(), sessionContext);
         this.projectName = name;
         this.projectPath = path;
@@ -296,7 +296,7 @@ public class ProjectMetadata implements DBPProject {
 
     @NotNull
     @Override
-    public DBASessionContext getSessionContext() {
+    public SMSessionContext getSessionContext() {
         return sessionContext;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.auth.DBAAuthCredentialsProvider;
+import org.jkiss.dbeaver.model.auth.SMAuthCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
@@ -82,7 +82,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
     private volatile ConfigSaver configSaver;
-    private DBAAuthCredentialsProvider authCredentialsProvider;
+    private SMAuthCredentialsProvider authCredentialsProvider;
     private Throwable lastLoadError;
 
     public DataSourceRegistry(DBPPlatform platform, DBPProject project) {
@@ -579,11 +579,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     @Nullable
     @Override
-    public DBAAuthCredentialsProvider getAuthCredentialsProvider() {
+    public SMAuthCredentialsProvider getAuthCredentialsProvider() {
         return authCredentialsProvider;
     }
 
-    public void setAuthCredentialsProvider(DBAAuthCredentialsProvider authCredentialsProvider) {
+    public void setAuthCredentialsProvider(SMAuthCredentialsProvider authCredentialsProvider) {
         this.authCredentialsProvider = authCredentialsProvider;
     }
 

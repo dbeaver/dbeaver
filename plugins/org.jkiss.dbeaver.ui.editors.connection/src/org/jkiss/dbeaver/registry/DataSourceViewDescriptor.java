@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,17 +27,15 @@ import java.util.List;
 /**
  * DataSourceViewDescriptor
  */
-public class DataSourceViewDescriptor extends AbstractDescriptor
-{
-    private String id;
-    private String targetID;
-    private List<String> dataSourceIds;
-    private String label;
-    private ObjectType viewType;
-    private DBPImage icon;
+public class DataSourceViewDescriptor extends AbstractDescriptor {
+    private final String id;
+    private final String targetID;
+    private final List<String> dataSourceIds;
+    private final String label;
+    private final ObjectType viewType;
+    private final DBPImage icon;
 
-    public DataSourceViewDescriptor(IConfigurationElement config)
-    {
+    public DataSourceViewDescriptor(IConfigurationElement config) {
         super(config.getContributor().getName());
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.targetID = config.getAttribute(RegistryConstants.ATTR_TARGET_ID);
@@ -47,13 +45,11 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public String getTargetID()
-    {
+    public String getTargetID() {
         return targetID;
     }
 
@@ -61,22 +57,18 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
         return dataSourceIds;
     }
 
-    public String getLabel()
-    {
+    public String getLabel() {
         return label;
     }
 
-    public DBPImage getIcon()
-    {
+    public DBPImage getIcon() {
         return icon;
     }
 
-    public <T> T createView(Class<T> implementsClass)
-    {
+    public <T> T createView(Class<T> implementsClass) {
         try {
             return viewType.createInstance(implementsClass);
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
             throw new IllegalStateException("Can't create view '" + viewType.getImplName() + "'", ex);
         }
     }

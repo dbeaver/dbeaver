@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.auth.DBASessionContext;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
@@ -28,14 +28,20 @@ import java.util.Map;
 /**
  * DataSourceOriginProviderLocal
  */
-class DataSourceOriginLazy implements DBPDataSourceOrigin
+class DataSourceOriginLazy implements DBPDataSourceOriginExternal
 {
-    private String originId;
-    private Map<String, Object> originProperties;
+    private final String originId;
+    private final Map<String, Object> originProperties;
+    private final DBPExternalConfiguration externalConfiguration;
 
-    public DataSourceOriginLazy(String originId, Map<String, Object> originProperties) {
+    public DataSourceOriginLazy(
+        String originId,
+        Map<String, Object> originProperties,
+        DBPExternalConfiguration externalConfiguration)
+    {
         this.originId = originId;
         this.originProperties = originProperties;
+        this.externalConfiguration = externalConfiguration;
     }
 
     @NotNull
@@ -69,13 +75,13 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
 
     @NotNull
     @Override
-    public Map<String, Object> getConfiguration() {
+    public Map<String, Object> getDataSourceConfiguration() {
         return originProperties;
     }
 
     @Nullable
     @Override
-    public DBPObject getObjectDetails(@NotNull DBRProgressMonitor monitor, @NotNull DBASessionContext sessionContext, @NotNull DBPDataSourceContainer dataSource) throws DBException {
+    public DBPObject getObjectDetails(@NotNull DBRProgressMonitor monitor, @NotNull SMSessionContext sessionContext, @NotNull DBPDataSourceContainer dataSource) throws DBException {
         DBPDataSourceOrigin realOrigin = resolveRealOrigin();
         return realOrigin == null ? null : realOrigin.getObjectDetails(monitor, sessionContext, dataSource);
     }
@@ -86,14 +92,19 @@ class DataSourceOriginLazy implements DBPDataSourceOrigin
     }
 
     @Nullable
-    DBPDataSourceOrigin resolveRealOrigin() {
+    DBPDataSourceOrigin resolveRealOrigin() throws DBException {
         // Loaded from configuration
         // Instantiate in lazy mode
         DBPDataSourceOriginProvider originProvider = DataSourceProviderRegistry.getInstance().getDataSourceOriginProvider(originId);
         if (originProvider != null) {
-            return originProvider.getOrigin(originProperties);
+            return originProvider.getOrigin(originProperties, externalConfiguration);
         }
         return null;
     }
 
+    @Nullable
+    @Override
+    public DBPExternalConfiguration getExternalConfiguration() {
+        return externalConfiguration;
+    }
 }

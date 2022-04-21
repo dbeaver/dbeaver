@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,12 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     private boolean dirty = false;
 
     public BundlePreferenceStore(Bundle bundle) {
-        defaultProps = DefaultScope.INSTANCE.getNode(bundle.getSymbolicName());
-        props = InstanceScope.INSTANCE.getNode(bundle.getSymbolicName());
+        this(bundle.getSymbolicName());
+    }
+
+    public BundlePreferenceStore(String bundleId) {
+        defaultProps = DefaultScope.INSTANCE.getNode(bundleId);
+        props = InstanceScope.INSTANCE.getNode(bundleId);
     }
 
     @Override

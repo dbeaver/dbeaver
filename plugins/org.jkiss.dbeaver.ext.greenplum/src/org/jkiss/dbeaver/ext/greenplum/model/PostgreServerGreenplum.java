@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
  * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
  * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
@@ -144,6 +144,16 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsRoleReplication() {
+        return dataSource.isServerVersionAtLeast(9, 1);
+    }
+
+    @Override
+    public boolean supportsRoleBypassRLS() {
+        return false;
+    }
+
+    @Override
     public boolean supportsCopyFromStdIn() {
         return true;
     }
@@ -156,5 +166,10 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     @Override
     public boolean supportsDistinctForStatementsWithAcl() {
         return false;
+    }
+
+    @Override
+    public boolean supportsEventTriggers() {
+        return dataSource.isServerVersionAtLeast(9, 3);
     }
 }

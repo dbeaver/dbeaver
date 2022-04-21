@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,18 @@ public enum DBCLogicalOperator {
     EQUALS("=", 1) {
         @Override
         public boolean evaluate(Object srcValue, Object[] arguments) {
-            final Object cmpValue = arguments == null ? null : arguments[0];
-            return DBUtils.compareDataValues(srcValue, cmpValue) == 0;
+            if (arguments == null) {
+                return DBUtils.isNullValue(srcValue);
+            }
+            if (arguments.length == 1) {
+                return DBUtils.compareDataValues(srcValue, arguments[0]) == 0;
+            }
+            if (arguments.length == 2) {
+                final int min = DBUtils.compareDataValues(srcValue, arguments[0]);
+                final int max = DBUtils.compareDataValues(srcValue, arguments[1]);
+                return min >= 0 && max <= 0;
+            }
+            return false;
         }
     },
     NOT_EQUALS("<>", 1) {

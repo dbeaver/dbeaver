@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,8 +83,10 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read procedure definition")) {
-            return JDBCUtils.queryString(session, "SELECT pg_get_functiondef(p.oid) FROM PG_CATALOG.PG_PROC P, PG_CATALOG.PG_NAMESPACE NS\n" +
-                "WHERE ns.oid=p.pronamespace and ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
+            return JDBCUtils.queryString(session, "SELECT " +
+                (sourceObject.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_get_functiondef(p.oid)" : "prosrc") +
+                " FROM pg_catalog.pg_proc P, pg_catalog.pg_namespace NS\n" +
+                "WHERE ns.oid=p.pronamespace AND ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
             throw new DBException(e, sourceObject.getDataSource());
         }
@@ -97,40 +99,38 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
+    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+        JDBCPreparedStatement dbStat = session.prepareStatement("SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema=?");
+        dbStat.setString(1, container.getName());
+        return dbStat;
+    }
+
+    @Override
+    public GenericSequence createSequenceImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) throws DBException {
         Version databaseVersion = container.getDataSource().getInfo().getDatabaseVersion();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read procedure definition")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema=?")) {
-                dbStat.setString(1, container.getName());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    List<GenericSequence> result = new ArrayList<>();
-                    while (dbResult.next()) {
-                        String name = JDBCUtils.safeGetString(dbResult, 1);
-                        String sequenceSql = "SELECT last_value,min_value,max_value,increment_by from " + container.getName() + "." + name;
-                        if (databaseVersion.getMajor() >= 10) {
-                            sequenceSql = "SELECT last_value, min_value, max_value, increment_by from pg_catalog.pg_sequences where schemaname=? and sequencename=?";
-                        }
-                        try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(sequenceSql)) {
-                            if (databaseVersion.getMajor() >= 10) {
-                                dbSeqStat.setString(1, container.getName());
-                                dbSeqStat.setString(2, dbResult.getString(1));
-                            }
-                            try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
-                                seqResults.next();
-                                GenericSequence sequence = new GenericSequence(
-                                    container,
-                                    name,
-                                    PostgreUtils.getObjectComment(monitor, container, container.getName(), name),
-                                    JDBCUtils.safeGetLong(seqResults, 1),
-                                    JDBCUtils.safeGetLong(seqResults, 2),
-                                    JDBCUtils.safeGetLong(seqResults, 3),
-                                    JDBCUtils.safeGetLong(seqResults, 4));
-                                result.add(sequence);
-                            }
-                        }
-                    }
-                    return result;
-                }
+        String name = JDBCUtils.safeGetString(dbResult, 1);
+        if (CommonUtils.isEmpty(name)) {
+            return null;
+        }
+        String sequenceSql = "SELECT last_value,min_value,max_value,increment_by from " + container.getName() + "." + name;
+        if (databaseVersion.getMajor() >= 10) {
+            sequenceSql = "SELECT last_value, min_value, max_value, increment_by from pg_catalog.pg_sequences where schemaname=? and sequencename=?";
+        }
+        try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(sequenceSql)) {
+            if (databaseVersion.getMajor() >= 10) {
+                dbSeqStat.setString(1, container.getName());
+                dbSeqStat.setString(2, dbResult.getString(1));
+            }
+            try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
+                seqResults.next();
+                return new GenericSequence(
+                    container,
+                    name,
+                    PostgreUtils.getObjectComment(session.getProgressMonitor(), container, container.getName(), name),
+                    JDBCUtils.safeGetLong(seqResults, 1),
+                    JDBCUtils.safeGetLong(seqResults, 2),
+                    JDBCUtils.safeGetLong(seqResults, 3),
+                    JDBCUtils.safeGetLong(seqResults, 4));
             }
         } catch (SQLException e) {
             throw new DBException(e, container.getDataSource());
@@ -145,8 +145,13 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase table) throws SQLException {
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT trigger_name, event_object_table as OWNER, event_manipulation,action_order,action_condition,action_statement,action_orientation,action_timing\n" +
-            "FROM INFORMATION_SCHEMA.TRIGGERS\n" +
+        sql.append("SELECT trigger_name, event_object_table as OWNER, event_manipulation,action_order,action_condition,action_statement,action_orientation");
+        if (genericStructContainer.getDataSource().isServerVersionAtLeast(9, 1)) {
+            sql.append(",action_timing\n");
+        } else {
+            sql.append("\n");
+        }
+        sql.append("FROM INFORMATION_SCHEMA.TRIGGERS\n" +
             "WHERE ");
         if (table == null) {
             sql.append("trigger_schema=?");
@@ -174,13 +179,12 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         String manipulation = JDBCUtils.safeGetString(dbResult, "event_manipulation");
         String description = "";
         return new PostgreGenericTrigger(
-            genericStructContainer,
             genericTableBase,
             name,
             description,
             manipulation,
             JDBCUtils.safeGetString(dbResult, "action_orientation"),
-            JDBCUtils.safeGetString(dbResult, "action_timing"),
+            genericStructContainer.getDataSource().isServerVersionAtLeast(9, 1) ? JDBCUtils.safeGetString(dbResult, "action_timing") : null,
             JDBCUtils.safeGetString(dbResult, "action_statement"));
     }
 
@@ -188,8 +192,13 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     public List<PostgreGenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT trigger_name,event_manipulation,action_order,action_condition,action_statement,action_orientation,action_timing\n" +
-                "FROM INFORMATION_SCHEMA.TRIGGERS\n" +
+            sql.append("SELECT trigger_name,event_manipulation,action_order,action_condition,action_statement,action_orientation");
+            if (container.getDataSource().isServerVersionAtLeast(9, 1)) {
+                sql.append(",action_timing\n");
+            } else {
+                sql.append("\n");
+            }
+            sql.append("FROM INFORMATION_SCHEMA.TRIGGERS\n" +
                 "WHERE ");
             if (table == null) {
                 sql.append("trigger_schema=? AND event_object_table IS NULL");
@@ -219,7 +228,6 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                         }
                         String description = "";
                         trigger = new PostgreGenericTrigger(
-                            container,
                             table,
                             name,
                             description,

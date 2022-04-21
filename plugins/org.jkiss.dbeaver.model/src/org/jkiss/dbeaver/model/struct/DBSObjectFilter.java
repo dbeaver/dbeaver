@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ public class DBSObjectFilter
     private boolean enabled = true;
     private List<String> include;
     private List<String> exclude;
+    private boolean caseSensitive;
 
     private transient List<Object> includePatterns = null;
     private transient List<Object> excludePatterns = null;
@@ -72,6 +73,14 @@ public class DBSObjectFilter
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public boolean isCaseSensitive() {
+        return caseSensitive;
+    }
+
+    public void setCaseSensitive(boolean caseSensitive) {
+        this.caseSensitive = caseSensitive;
     }
 
     public String getDescription()
@@ -161,7 +170,7 @@ public class DBSObjectFilter
             includePatterns = new ArrayList<>(include.size());
             for (String inc : include) {
                 if (!inc.isEmpty()) {
-                    includePatterns.add(makePattern(inc));
+                    includePatterns.add(makePattern(inc, isCaseSensitive()));
                 }
             }
         }
@@ -183,7 +192,7 @@ public class DBSObjectFilter
             excludePatterns = new ArrayList<>(exclude.size());
             for (String exc : exclude) {
                 if (!exc.isEmpty()) {
-                    excludePatterns.add(makePattern(exc));
+                    excludePatterns.add(makePattern(exc, isCaseSensitive()));
                 }
             }
         }
@@ -208,10 +217,11 @@ public class DBSObjectFilter
     }
 
     @NotNull
-    private static Object makePattern(String str) {
+    private static Object makePattern(String str, boolean caseSensitive) {
+
         if (SQLUtils.isLikePattern(str)) {
-            return Pattern.compile(
-                SQLUtils.makeLikePattern(str), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+            return caseSensitive ? Pattern.compile(
+                SQLUtils.makeLikePattern(str), Pattern.MULTILINE) : Pattern.compile(SQLUtils.makeLikePattern(str), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
         } else {
             return str;
         }

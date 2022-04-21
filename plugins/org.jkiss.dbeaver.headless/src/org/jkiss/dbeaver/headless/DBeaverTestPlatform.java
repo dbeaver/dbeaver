@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl {
             if (definingBundle != null) {
                 log.debug("Host plugin: " + definingBundle.getSymbolicName() + " " + definingBundle.getVersion());
             } else {
-                log.debug("!!! No product bundle found");
+                log.debug("No product bundle found");
             }
         }
 
@@ -96,8 +96,8 @@ public class DBeaverTestPlatform extends BasePlatformImpl {
             instance.initialize();
             return instance;
         } catch (Throwable e) {
-            log.error("Error initializing DBeaverCore", e);
-            throw new IllegalStateException("Error initializing DBeaverCore", e);
+            log.error("Error initializing test platform", e);
+            throw new IllegalStateException("Error initializing test platform", e);
         }
     }
 

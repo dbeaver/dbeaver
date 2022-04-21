@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,9 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -37,6 +39,7 @@ import org.jkiss.utils.StandardConstants;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.sql.Driver;
 import java.util.*;
 
 public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
@@ -93,8 +96,10 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
-    {
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+        if (driver.isSampleURLApplicable()) {
+            return JDBCURL.generateUrlByTemplate(driver, connectionInfo);
+        }
 /*
         String trustStorePath = System.getProperty(StandardConstants.ENV_USER_HOME) + "/.keystore";
 
@@ -105,8 +110,24 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 */
 
         StringBuilder url = new StringBuilder();
-        url.append("jdbc:mysql://")
-            .append(connectionInfo.getHostName());
+        boolean needMariDBString = false;
+        if (MySQLUtils.isMariaDB(driver)) {
+            try {
+                Object driverInstance = driver.getDriverInstance(new VoidProgressMonitor());
+                if (driverInstance instanceof Driver && ((Driver) driverInstance).getMajorVersion() >= 3) {
+                    // Since 3.0 version Maria DB driver only accept `jdbc:mariadb:` classpath by default.
+                    needMariDBString = true;
+                }
+            } catch (DBException e) {
+                log.error("Can't recognize MariaDB driver version", e);
+            }
+        }
+        if (needMariDBString) {
+            url.append("jdbc:mariadb://");
+        } else {
+            url.append("jdbc:mysql://");
+        }
+        url.append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             url.append(":").append(connectionInfo.getHostPort());
         }

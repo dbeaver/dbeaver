@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -173,7 +174,7 @@ public class AboutBoxDialog extends InformationDialog
 
         if (splashImage == null) {
             try {
-                URL splashResource = ApplicationRegistry.getInstance().getApplication().getContributorBundle().getResource("splash.bmp");
+                URL splashResource = ApplicationRegistry.getInstance().getApplication().getContributorBundle().getResource("splash.png");
                 if (splashResource != null) {
                     try (InputStream is = splashResource.openStream()) {
                         Image img = new Image(getShell().getDisplay(), is);
@@ -232,7 +233,7 @@ public class AboutBoxDialog extends InformationDialog
         gd.horizontalAlignment = GridData.CENTER;
         siteLink.setLayoutData(gd);
 
-        String infoDetails = DBWorkbench.getPlatform().getApplication().getInfoDetails();
+        String infoDetails = DBWorkbench.getPlatform().getApplication().getInfoDetails(new VoidProgressMonitor());
         if (!CommonUtils.isEmpty(infoDetails)) {
             Text extraText = new Text(group, SWT.MULTI | SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
             extraText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

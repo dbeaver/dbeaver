@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.utils.ArrayUtils;
 
 /**
  * Data container.
@@ -34,10 +35,12 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
  */
 public interface DBSDataContainer extends DBSObject {
 
-    int DATA_SELECT         = 0;
-    int DATA_COUNT          = 1;
-    int DATA_FILTER         = 2 << 1;
-    int DATA_SEARCH         = 4 << 2;
+    String FEATURE_DATA_SELECT = "data.select";
+    String FEATURE_DATA_COUNT = "data.count";
+    String FEATURE_DATA_FILTER = "data.filter";
+    String FEATURE_DATA_SEARCH = "data.search";
+    String FEATURE_KEY_VALUE = "data.key.value";
+    String FEATURE_DATA_MODIFIED_ON_REFRESH = "data.modifying";
 
     long FLAG_NONE                  = 0;
     long FLAG_READ_PSEUDO           = 1 << 1;
@@ -51,9 +54,13 @@ public interface DBSDataContainer extends DBSObject {
 
     /**
      * Features supported by implementation
-     * @return features flags
+     * @return supported features
      */
-    int getSupportedFeatures();
+    String[] getSupportedFeatures();
+
+    default boolean isFeatureSupported(String feature) {
+        return ArrayUtils.contains(getSupportedFeatures(), feature);
+    }
 
     /**
      * Reads data from container and pushes it into receiver
@@ -65,7 +72,7 @@ public interface DBSDataContainer extends DBSObject {
      * @param firstRow first row number (<= 0 means do not use it)
      * @param maxRows total rows to fetch (<= 0 means fetch everything)
      * @param flags read flags. See FLAG_ constants
-     * @param fetchSize
+     * @param fetchSize fetch size
      * @return number of fetched rows
      * @throws DBCException on any error
      */

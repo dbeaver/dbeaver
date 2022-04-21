@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 
 import java.lang.reflect.InvocationTargetException;
@@ -87,7 +88,7 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock> {
         this.lockManager = lockManager;
     }
 
-    private static IStructuredContentProvider CONTENT_PROVIDER = new IStructuredContentProvider() {
+    private static IStructuredContentProvider CONTENT_PROVIDER = new TreeContentProvider() { // Use Tree provider for the grouping elements support in ObjectListControl
         @Override
         public Object[] getElements(Object inputElement)
         {
@@ -95,6 +96,16 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock> {
                 return ((Collection)inputElement).toArray();
             }
             return null;
+        }
+
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            return new Object[0];
+        }
+
+        @Override
+        public boolean hasChildren(Object element) {
+            return false;
         }
 
         @Override

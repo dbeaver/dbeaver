@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.internal.GenericMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -48,6 +49,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.InvalidPathException;
 import java.util.List;
 import java.util.*;
 
@@ -218,8 +220,20 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                     public void widgetSelected(SelectionEvent e)
                     {
                         if (metaURL.getAvailableProperties().contains(JDBCConstants.PROP_FILE)) {
-                            FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
-                            dialog.setFileName(pathText.getText());
+                            FileDialog dialog = new FileDialog(getShell(), SWT.SAVE | SWT.SINGLE);
+                            String text = pathText.getText();
+                            dialog.setFileName(text);
+                            if (CommonUtils.isNotEmpty(text)) {
+                                try {
+                                    String directoryPath = CommonUtils.getDirectoryPath(text);
+                                    if (CommonUtils.isNotEmpty(directoryPath)) {
+                                        dialog.setFilterPath(directoryPath);
+                                    }
+                                } catch (InvalidPathException ex) {
+                                    // Can't find directory path. Ignore it then.
+                                    log.debug("Can't find directory path", ex);
+                                }
+                            }
                             dialog.setText(GenericMessages.dialog_connection_db_file_chooser_text);
                             String file = dialog.open();
                             if (file != null) {
@@ -349,7 +363,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                     hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
                 } else {
-                    hostText.setText("localhost"); //$NON-NLS-1$
+                    hostText.setText(CommonUtils.toString(site.getDriver().getDefaultHost(), DBConstants.HOST_LOCALHOST)); //$NON-NLS-1$
                 }
             }
             if (portText != null) {

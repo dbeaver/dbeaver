@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
@@ -91,6 +93,7 @@ class MySQLDialect extends JDBCSQLDialect {
             "MONTH",
             "NULLIF",
             "RANDOM_BYTES",
+            "REPLACE",
             "REGEXP_LIKE",
             "REGEXP_INSTR",
             "REGEXP_REPLACE",
@@ -106,6 +109,19 @@ class MySQLDialect extends JDBCSQLDialect {
             "UUID_TO_BIN",
             "WEEKOFYEAR",
             "YEAR"
+    };
+
+    private static final String[] MYSQL_GEOMETRY_FUNCTIONS = {
+        "ST_ASWKT",
+        "ST_GEOMCOLLFROMTEXT",
+        "ST_GEOMETRYCOLLECTIONFROMTEXT",
+        "ST_GEOMFROMTEXT",
+        "ST_LINEFROMTEXT",
+        "ST_MLINEFROMTEXT",
+        "ST_MPOINTFROMTEXT",
+        "ST_MPOLYFROMTEXT",
+        "ST_POINTFROMTEXT",
+        "ST_POLYFROMTEXT"
     };
 
     private static String[] EXEC_KEYWORDS =  { "CALL" };
@@ -134,6 +150,7 @@ class MySQLDialect extends JDBCSQLDialect {
 
         addDataTypes(Arrays.asList("GEOMETRY", "POINT", "CHAR"));
         addFunctions(Arrays.asList(MYSQL_EXTRA_FUNCTIONS));
+        addFunctions(Arrays.asList(MYSQL_GEOMETRY_FUNCTIONS));
     }
 
     @Nullable
@@ -229,8 +246,9 @@ class MySQLDialect extends JDBCSQLDialect {
     }
 
     @Override
-    protected boolean useBracketsForExec() {
-        return true;
+    protected boolean useBracketsForExec(DBSProcedure procedure) {
+        // Use brackets for CallableStatement. Support for procedures only
+        return procedure.getProcedureType() == DBSProcedureType.PROCEDURE;
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.registry.DataSourceOriginLocal;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
@@ -56,13 +55,15 @@ public class AuthModelSelector extends Composite {
     private DBPAuthModelDescriptor selectedAuthModel;
     private Composite modelConfigPlaceholder;
     private IObjectPropertyConfigurator<DBPDataSourceContainer> authModelConfigurator;
+    private Runnable panelExtender;
     private Runnable changeListener;
     private Combo authModelCombo;
 
-    public AuthModelSelector(Composite parent, Runnable changeListener) {
+    public AuthModelSelector(Composite parent, Runnable panelExtender, Runnable changeListener) {
         super(parent, SWT.NONE);
         setLayout(new FillLayout());
 
+        this.panelExtender = panelExtender;
         this.changeListener = changeListener;
 
         modelConfigPlaceholder = UIUtils.createControlGroup(this, UIConnectionMessages.dialog_connection_auth_group, 2, GridData.FILL_HORIZONTAL, 0);
@@ -96,9 +97,9 @@ public class AuthModelSelector extends Composite {
             DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
         this.allAuthModels.removeIf(o -> modelFilter != null && !modelFilter.isValidElement(o));
         this.allAuthModels.sort((Comparator<DBPAuthModelDescriptor>) (o1, o2) ->
-            AuthModelDatabaseNative.ID.equals(o1.getId()) ? -1 :
-                (AuthModelDatabaseNative.ID.equals(o2.getId()) ? 1 :
-                    o1.getName().compareTo(o2.getName())));
+            o1.isDefaultModel() ? -1 :
+                o2.isDefaultModel() ? 1 :
+                    o1.getName().compareTo(o2.getName()));
         if (selectedAuthModel == null && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {
@@ -158,6 +159,7 @@ public class AuthModelSelector extends Composite {
                 } finally {
                     authModelCombo.setToolTipText(selectedAuthModel == null ? "" : CommonUtils.notEmpty(selectedAuthModel.getDescription()));
                 }
+                UIUtils.resizeShell(authModelCombo.getShell());
             }
         });
         Label authModelDescLabel = new Label(authModelComp, SWT.NONE);
@@ -206,6 +208,10 @@ public class AuthModelSelector extends Composite {
                 gd.horizontalSpan = 2;
                 descLabel.setLayoutData(gd);
             }
+        }
+
+        if (panelExtender != null) {
+            panelExtender.run();
         }
 
         modelConfigPlaceholder.setRedraw(true);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
     }
 
     private void shutdownUI() {
-        DBeaverUI.disposeUI();
+        DesktopUI.disposeUI();
     }
 
     /**
@@ -130,8 +130,8 @@ public class DBeaverActivator extends AbstractUIPlugin {
     private void shutdownCore() {
         try {
             // Dispose core
-            if (DBeaverCore.instance != null) {
-                DBeaverCore.instance.dispose();
+            if (DesktopPlatform.instance != null) {
+                DesktopPlatform.instance.dispose();
             }
         } catch (Throwable e) {
             e.printStackTrace();
@@ -140,7 +140,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
     }
 
     public static ImageDescriptor getImageDescriptor(String path) {
-        return imageDescriptorFromPlugin(DBeaverCore.PLUGIN_ID, path);
+        return imageDescriptorFromPlugin(DesktopPlatform.PLUGIN_ID, path);
     }
 
 }

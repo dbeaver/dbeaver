@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,10 @@ public class ArrayUtils {
     public static boolean isEmpty(@Nullable short[] array)
     {
         return array == null || array.length == 0;
+    }
+
+    public static boolean isArray(@Nullable Object value) {
+        return value != null && value.getClass().isArray();
     }
 
     public static boolean contains(@Nullable short[] array, short value)
@@ -144,11 +148,9 @@ public class ArrayUtils {
         if (isEmpty(array)) {
             return false;
         }
-        for (OBJECT_TYPE item : array) {
-            for (OBJECT_TYPE value : values) {
-                if (!CommonUtils.equalObjects(item, value))
-                    return false;
-            }
+        for (OBJECT_TYPE value : values) {
+            if (!ArrayUtils.contains(array, value))
+                return false;
         }
         return true;
     }
@@ -281,5 +283,16 @@ public class ArrayUtils {
             result[i] = source[i];
         }
         return result;
+    }
+
+    public static void reverse(@Nullable Object[] array) {
+        if (array == null || array.length <= 1) {
+            return;
+        }
+        for (int i = 0, j = array.length - 1; j > i; ++i, j--) {
+            final Object tmp = array[j];
+            array[j] = array[i];
+            array[i] = tmp;
+        }
     }
 }

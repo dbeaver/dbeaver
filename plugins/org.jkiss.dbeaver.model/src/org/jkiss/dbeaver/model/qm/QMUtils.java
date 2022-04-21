@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
+import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
+import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
@@ -86,7 +87,7 @@ public class QMUtils {
         if (executionContext == null || application == null) {
             return false;
         } else {
-            QMMSessionInfo sessionInfo = getCurrentSession(executionContext);
+            QMMConnectionInfo sessionInfo = getCurrentConnection(executionContext);
             if (sessionInfo != null && sessionInfo.isTransactional()) {
                 QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
                 if (txnInfo != null) {
@@ -94,7 +95,7 @@ public class QMUtils {
                     if (sp != null) {
                         if (checkQueries) {
                             // If transaction was enabled all statements are transactional
-                            for (QMMStatementExecuteInfo ei = sp.getLastExecute(); ei != null; ei = ei.getPrevious()) {
+                            for (QMMStatementExecuteInfo ei = sp.getLastExecute(); ei != null && ei.getSavepoint() == sp; ei = ei.getPrevious()) {
                                 if (ei.isTransactional()) {
                                     return true;
                                 }
@@ -114,12 +115,12 @@ public class QMUtils {
         return false;
     }
 
-    public static QMMSessionInfo getCurrentSession(DBCExecutionContext executionContext) {
-        return application.getQueryManager().getMetaCollector().getSessionInfo(executionContext);
+    public static QMMConnectionInfo getCurrentConnection(DBCExecutionContext executionContext) {
+        return application.getQueryManager().getMetaCollector().getConnectionInfo(executionContext);
     }
 
     public static QMMTransactionSavepointInfo getCurrentTransaction(DBCExecutionContext executionContext) {
-        QMMSessionInfo sessionInfo = getCurrentSession(executionContext);
+        QMMConnectionInfo sessionInfo = getCurrentConnection(executionContext);
         if (sessionInfo != null && !sessionInfo.isClosed() && sessionInfo.isTransactional()) {
             QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
             if (txnInfo != null) {
@@ -137,7 +138,7 @@ public class QMUtils {
         if (executionContext == null || application == null) {
             txnMode = false;
         } else {
-            QMMSessionInfo sessionInfo = getCurrentSession(executionContext);
+            QMMConnectionInfo sessionInfo = getCurrentConnection(executionContext);
             if (sessionInfo == null || sessionInfo.isClosed()) {
                 txnMode = false;
             } else if (sessionInfo.isTransactional()) {
@@ -213,10 +214,10 @@ public class QMUtils {
         }
 
         @Override
-        public QMMetaEvent nextEvent(DBRProgressMonitor monitor) throws DBException {
+        public QMMetaEventEntity nextEvent(DBRProgressMonitor monitor) throws DBException {
             QMMetaEvent event = events.get(position);
             position++;
-            return event;
+            return new QMMetaEventEntity(event.getObject(), event.getAction(), position, "", null);
         }
 
         @Override
@@ -244,7 +245,7 @@ public class QMUtils {
         }
 
         @Override
-        public QMMetaEvent nextEvent(DBRProgressMonitor monitor) throws DBException {
+        public QMMetaEventEntity nextEvent(DBRProgressMonitor monitor) throws DBException {
             throw new DBException("Empty cursor");
         }
 

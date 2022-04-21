@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.dbeaver.Log;
 
 import java.io.PrintStream;
 
@@ -25,17 +26,30 @@ import java.io.PrintStream;
  */
 public class LoggingProgressMonitor extends DefaultProgressMonitor {
 
+    public LoggingProgressMonitor(Log log) {
+        super(new LoggingMonitorProxy(log));
+    }
+
     public LoggingProgressMonitor() {
-        super(new LoggingMonitorProxy());
+        super(new LoggingMonitorProxy(null));
     }
 
     private static class LoggingMonitorProxy implements IProgressMonitor {
 
+        private final Log log;
         private PrintStream out = System.out;
+
+        public LoggingMonitorProxy(Log log) {
+            this.log = log;
+        }
 
         @Override
         public void beginTask(String name, int totalWork) {
-            out.println(name);
+            if (log != null) {
+                log.debug(name);
+            } else {
+                out.println(name);
+            }
         }
 
         @Override
@@ -65,7 +79,11 @@ public class LoggingProgressMonitor extends DefaultProgressMonitor {
 
         @Override
         public void subTask(String name) {
-            out.println("\t" + name);
+            if (log != null) {
+                log.debug("\t" + name);
+            } else {
+                out.println("\t" + name);
+            }
         }
 
         @Override

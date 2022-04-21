@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -369,7 +369,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
             TableItem item = new TableItem(objectsTable, SWT.NONE);
             item.setData(pipe);
             item.setImage(0, DBeaverIcons.getImage(node.getObjectIcon()));
-            item.setText(0, CommonUtils.toString(node.getObjectName(), "?"));
+            item.setText(0, CommonUtils.getSingleLineString(CommonUtils.toString(node.getObjectName(), "?")));
 
             DBSObject object = node.getDatabaseObject();
             if (object != null && object.getDataSource() != null) {

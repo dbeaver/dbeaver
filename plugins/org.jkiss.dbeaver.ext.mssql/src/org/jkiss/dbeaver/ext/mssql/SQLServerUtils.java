@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -240,7 +240,7 @@ public class SQLServerUtils {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
             String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
-            if (dataSource.isDataWarehouseServer(monitor) || isDriverBabelfish(dataSource.getContainer().getDriver())) {
+            if (dataSource.isDataWarehouseServer(monitor) || isDriverBabelfish(dataSource.getContainer().getDriver()) || dataSource.isSynapseDatabase()) {
                 sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
@@ -312,7 +312,7 @@ public class SQLServerUtils {
     }
 
     public static SQLServerTableBase getTableFromQuery(DBCSession session, SQLQuery sqlQuery, SQLServerDataSource dataSource) throws DBException, SQLException {
-        DBCEntityMetaData singleSource = sqlQuery.getSingleSource();
+        DBCEntityMetaData singleSource = sqlQuery.getEntityMetadata(false);
         String catalogName = null;
         if (singleSource != null) {
             catalogName = singleSource.getCatalogName();

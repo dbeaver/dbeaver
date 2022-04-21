@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -624,6 +624,7 @@ public class ResultSetModel {
 
     public void setData(@NotNull List<Object[]> rows) {
         // Clear previous data
+        this.releaseAllData();
         this.clearData();
 
         {
@@ -658,28 +659,8 @@ public class ResultSetModel {
         this.visibleAttributes.sort(POSITION_SORTER);
 
         if (singleSourceEntity == null) {
-            // Check single source flag
-            DBSEntity sourceTable = null;
-            for (DBDAttributeBinding attribute : visibleAttributes) {
-                if (attribute.isPseudoAttribute()) {
-                    continue;
-                }
-                DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-                if (rowIdentifier != null) {
-                    if (sourceTable == null) {
-                        sourceTable = rowIdentifier.getEntity();
-                    } else if (sourceTable != rowIdentifier.getEntity()) {
-                        sourceTable = null;
-                        break;
-                    }
-                } else {
-                    // Do not mark it a multi-source.
-                    // It is just some column without identifier, probably a constant or an expression
-                    //singleSourceCells = false;
-                    //break;
-                }
-            }
-            singleSourceEntity = sourceTable;
+            singleSourceEntity = DBExecUtils.detectSingleSourceTable(
+                visibleAttributes.toArray(new DBDAttributeBinding[0]));
         }
 
         hasData = true;
@@ -875,8 +856,13 @@ public class ResultSetModel {
 
     void cleanupRow(@NotNull ResultSetRow row) {
         row.release();
-        this.curRows.remove(row.getVisualNumber());
-        this.shiftRows(row, -1);
+        int index = row.getVisualNumber();
+        if (this.curRows.size() > index) {
+            this.curRows.remove(index);
+            this.shiftRows(row, -1);
+        } else {
+            log.debug("Error removing row from list: invalid row index: " + index);
+        }
     }
 
     boolean cleanupRows(Collection<ResultSetRow> rows) {

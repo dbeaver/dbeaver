@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,12 @@ public interface DBPDataSource extends DBSInstanceContainer
      * null means "unknown", -1 means any length (i.e. explicit length is not needed)
      */
     String FEATURE_MAX_STRING_LENGTH = "datasource.max-string-type-length";
+    /**
+     * Document data source result set representation.
+     */
+    String FEATURE_DOCUMENT_DATA_SOURCE = "datasource.document-data-source";
+
+
 
     /**
      * Datasource container

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
 
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
-        String sql = buildStatement(command.getObject(), false);
+        String sql = command.getObject().buildStatement(false);
         actions.add(new SQLDatabasePersistAction("Create Sequence", sql));
 
         String comment = buildComment(command.getObject());
@@ -79,7 +79,7 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
-        String sql = buildStatement(command.getObject(), true);
+        String sql = command.getObject().buildStatement(true);
         actionList.add(new SQLDatabasePersistAction("Alter Sequence", sql));
 
         String comment = buildComment(command.getObject());
@@ -93,44 +93,6 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
         String sql = "DROP SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL);
         DBEPersistAction action = new SQLDatabasePersistAction("Drop Sequence", sql);
         actions.add(action);
-    }
-
-    private String buildStatement(OracleSequence sequence, Boolean forUpdate) {
-        StringBuilder sb = new StringBuilder();
-        if (forUpdate) {
-            sb.append("ALTER SEQUENCE ");
-        } else {
-            sb.append("CREATE SEQUENCE ");
-        }
-        sb.append(sequence.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ");
-
-        if (sequence.getIncrementBy() != null) {
-            sb.append("INCREMENT BY ").append(sequence.getIncrementBy()).append(" ");
-        }
-        if (sequence.getMinValue() != null) {
-            sb.append("MINVALUE ").append(sequence.getMinValue()).append(" ");
-        }
-        if (sequence.getMaxValue() != null) {
-            sb.append("MAXVALUE ").append(sequence.getMaxValue()).append(" ");
-        }
-
-        if (sequence.isCycle()) {
-            sb.append("CYCLE ");
-        } else {
-            sb.append("NOCYCLE ");
-        }
-        if (sequence.getCacheSize() > 0) {
-            sb.append("CACHE ").append(sequence.getCacheSize()).append(" ");
-        } else {
-            sb.append("NOCACHE ");
-        }
-        if (sequence.isOrder()) {
-            sb.append("ORDER ");
-        } else {
-            sb.append("NOORDER ");
-        }
-
-        return sb.toString();
     }
 
     private String buildComment(OracleSequence sequence) {

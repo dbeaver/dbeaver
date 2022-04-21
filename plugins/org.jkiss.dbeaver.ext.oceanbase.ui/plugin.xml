@@ -2,8 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +17,6 @@
  * limitations under the License.
   -->
 <plugin>
-    <extension point="org.eclipse.ui.editors">
-        <editor
-                name="%editor.session_manager.name"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
-                class="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLSessionEditor"
-                id="org.jkiss.dbeaver.ext.mysql.ui.editors.MySQLSessionEditor"
-                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor"/>
-    </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <editorContribution

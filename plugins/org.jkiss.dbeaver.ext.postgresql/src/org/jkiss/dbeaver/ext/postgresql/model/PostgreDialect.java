@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -35,11 +34,7 @@ import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -880,6 +875,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     @Override
+    public boolean supportsColumnAutoIncrement() {
+        return false;
+    }
+
+    @Override
     public boolean supportsCommentQuery() {
         return true;
     }
@@ -959,7 +959,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             case "nchar":
             case "nvarchar":
                 localDataType = "varchar";
-                dataTypeModifies = String.valueOf(sourceTypedObject.getMaxLength());
+                if (sourceTypedObject.getMaxLength() > 0 &&
+                    sourceTypedObject.getMaxLength() != Integer.MAX_VALUE &&
+                    sourceTypedObject.getMaxLength() != Long.MAX_VALUE)
+                {
+                    dataTypeModifies = String.valueOf(sourceTypedObject.getMaxLength());
+                }
                 break;
             case "json":
             case "jsonb":

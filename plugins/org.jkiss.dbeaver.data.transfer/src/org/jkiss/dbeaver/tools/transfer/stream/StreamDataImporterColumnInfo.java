@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,19 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
         super(columnName, typeName, -1, columnIndex, maxLength, null, null, false, false);
         this.entityMapping = entity;
         this.dataKind = dataKind;
+    }
+
+    public void updateMaxLength(long maxLength) {
+        if (getMaxLength() < maxLength) {
+            setMaxLength(roundToNextPowerOf2(maxLength));
+        }
+    }
+
+    public void updateType(@NotNull DBPDataKind kind, @NotNull String name) {
+        if (getDataKind().getCommonality() < kind.getCommonality()) {
+            setDataKind(kind);
+            setTypeName(name);
+        }
     }
 
     @Override
@@ -77,5 +90,13 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
 
     public void setMappingMetadataPresent(boolean mappingMetadataPresent) {
         this.mappingMetadataPresent = mappingMetadataPresent;
+    }
+
+    private static long roundToNextPowerOf2(long value) {
+        int result = 1;
+        while (result < value) {
+            result <<= 1;
+        }
+        return result;
     }
 }

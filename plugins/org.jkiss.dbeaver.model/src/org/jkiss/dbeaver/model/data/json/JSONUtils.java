@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,18 @@ public class JSONUtils {
         .withZone(ZoneId.of("UTC"));
 
     public static String formatDate(Date date) {
-        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC")).format(DATE_TIME_FORMATTER);
+        try {
+            if (date instanceof java.sql.Time) {
+                return DateTimeFormatter.ISO_TIME.format(Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.of("UTC")));
+            } else if (date instanceof java.sql.Date) {
+                return DateTimeFormatter.ISO_DATE.format(((java.sql.Date) date).toLocalDate());
+            } else {
+                return LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC")).format(DATE_TIME_FORMATTER);
+            }
+        } catch (Exception ex) {
+            log.warn("Error formatting date to ISO-8601. Falling back to default string representation of " + date.getClass().getName(), ex);
+            return date.toString();
+        }
     }
 
     @Nullable
@@ -229,6 +240,8 @@ public class JSONUtils {
                 serializeObjectList(json, fieldName, (Collection<?>) propValue);
             } else if (propValue instanceof Map) {
                 serializeProperties(json, fieldName, (Map<String, ?>) propValue);
+            } else if (propValue instanceof Enum) {
+                field(json, fieldName, ((Enum) propValue).name());
             } else {
                 log.debug("Unsupported property type: " + propValue.getClass().getName());
                 field(json, fieldName, propValue.toString());
@@ -262,6 +275,12 @@ public class JSONUtils {
         }
         Map<String, Object> location = getObject(objectConfig, "location");
         return serializer.deserializeObject(runnableContext, objectContext, location);
+    }
+
+    public static <OBJECT_TYPE> OBJECT_TYPE deserializeObject(Map<String, Object> map, @NotNull Class<OBJECT_TYPE> type) throws DBCException {
+        Gson gson = new Gson();
+        String json = gson.toJson(map);
+        return gson.fromJson(json, type);
     }
 
     @NotNull
@@ -330,6 +349,10 @@ public class JSONUtils {
 
     public static long getLong(Map<String, Object> map, String name, long defaultValue) {
         return CommonUtils.toLong(map.get(name), defaultValue);
+    }
+
+    public static Double getDouble(@NotNull Map<String, Object> map, String name) {
+        return CommonUtils.toDouble(map.get(name));
     }
 
     @NotNull

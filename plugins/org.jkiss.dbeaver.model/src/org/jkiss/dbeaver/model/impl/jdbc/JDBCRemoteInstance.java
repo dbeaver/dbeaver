@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,8 +109,10 @@ public class JDBCRemoteInstance implements DBSInstance {
         if (this.metaContext != null) {
             return this.metaContext;
         }
-        if (!dataSource.getContainer().getDriver().isEmbedded() && dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION)) {
-        	// FIXME: do not sync expensive operations
+        if (!dataSource.getContainer().getDriver().isEmbedded() &&
+            !dataSource.getContainer().isForceUseSingleConnection() &&
+            dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION)) {
+            // FIXME: do not sync expensive operations
             //synchronized (allContexts) {
                 this.metaContext = dataSource.createExecutionContext(this, getMetadataContextName());
                 this.metaContext.connect(monitor, true, null, null, true);

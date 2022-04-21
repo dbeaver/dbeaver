@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,23 +29,23 @@ import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionManager;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolDataTypeCache;
-import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
+import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolQueryPlanner;
 import org.jkiss.dbeaver.ext.exasol.model.security.*;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.access.DBAUserChangePassword;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -66,7 +66,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner, IAdaptable {
+public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
     private static final Log LOG = Log.getLog(ExasolDataSource.class);
 
@@ -417,8 +417,10 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 			return adapter.cast(new ExasolStructureAssistant(this));
 		} else if (adapter == DBAServerSessionManager.class) {
 			return adapter.cast(new ExasolServerSessionManager(this));
-		} else if (adapter == DBAUserChangePassword.class) {
-			return adapter.cast(new ExasolChangeUserPassword(this));
+		} else if (adapter == DBAUserPasswordManager.class) {
+			return adapter.cast(new ExasolChangeUserPasswordManager(this));
+		} else if (adapter == DBCQueryPlanner.class) {
+			return adapter.cast(new ExasolQueryPlanner(this));
 		}
 		return super.getAdapter(adapter);
 	}
@@ -917,22 +919,6 @@ public class ExasolDataSource extends JDBCDataSource implements DBCQueryPlanner,
 			return null;
 		}
 	}
-
-	@NotNull
-	@Override
-	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration)
-			throws DBCException
-	{
-		ExasolPlanAnalyser plan = new ExasolPlanAnalyser(this, query);
-		plan.explain(session);
-		return plan;
-	}
-
-    @NotNull
-	@Override
-    public DBCPlanStyle getPlanStyle() {
-        return DBCPlanStyle.PLAN;
-    }
 
     DBSObjectCache<ExasolDataSource, ExasolDataType> getDataTypeCache()
 	{

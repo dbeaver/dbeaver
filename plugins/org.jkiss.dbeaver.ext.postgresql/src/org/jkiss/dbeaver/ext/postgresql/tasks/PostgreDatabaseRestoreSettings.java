@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,7 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
     private String inputFile;
     private boolean cleanFirst;
     private boolean noOwner;
+    private boolean createDatabase;
 
     private PostgreDatabaseRestoreInfo restoreInfo;
 
@@ -63,6 +64,14 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
         this.noOwner = noOwner;
     }
 
+    public boolean isCreateDatabase() {
+        return createDatabase;
+    }
+
+    public void setCreateDatabase(boolean createDatabase) {
+        this.createDatabase = createDatabase;
+    }
+
     public PostgreDatabaseRestoreInfo getRestoreInfo() {
         return restoreInfo;
     }
@@ -78,6 +87,7 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
         inputFile = store.getString("pg.restore.inputFile");
         cleanFirst = store.getBoolean("pg.restore.cleanFirst");
         noOwner = store.getBoolean("pg.restore.noOwner");
+        createDatabase = store.getBoolean("pg.restore.createDatabase");
 
         if (store instanceof DBPPreferenceMap) {
             String catalogId = store.getString("pg.restore.database");
@@ -122,6 +132,7 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
         store.setValue("pg.restore.inputFile", inputFile);
         store.setValue("pg.restore.cleanFirst", cleanFirst);
         store.setValue("pg.restore.noOwner", noOwner);
+        store.setValue("pg.restore.createDatabase", createDatabase);
         store.setValue("pg.restore.database", DBUtils.getObjectFullId(restoreInfo.getDatabase()));
     }
 

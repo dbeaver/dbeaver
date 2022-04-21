@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,9 +74,10 @@ public class SQLQuery implements SQLScriptElement {
     @NotNull
     private SQLQueryType type;
     private Statement statement;
-    private SingleTableMeta singleTableMeta;
+    private SingleTableMeta singleTableMeta, rawSingleTableMetadata;
     private List<SQLSelectItem> selectItems;
     private String queryTitle;
+    private String extraErrorMessage;
 
     public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text) {
         this(dataSource, text, 0, text.length());
@@ -214,18 +216,27 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     private void fillSingleSource(Table fromItem) {
-        singleTableMeta = createTableMetaData(fromItem);
+        rawSingleTableMetadata = createOriginalSourceTableMetaData(fromItem);
+        singleTableMeta = createUnquotedTableMetaData(rawSingleTableMetadata);
     }
 
     SingleTableMeta createTableMetaData(Table fromItem) {
+        return createUnquotedTableMetaData(createOriginalSourceTableMetaData(fromItem));
+    }
+
+    private SingleTableMeta createOriginalSourceTableMetaData(Table fromItem) {
         Database database = fromItem.getDatabase();
         String catalogName = database == null ? null : database.getDatabaseName();
         String schemaName = fromItem.getSchemaName();
         String tableName = fromItem.getName();
+        return new SingleTableMeta(catalogName, schemaName, tableName);
+    }
+
+    private SingleTableMeta createUnquotedTableMetaData(SingleTableMeta tableMeta) {
         return new SingleTableMeta(
-            unquoteIdentifier(catalogName),
-            unquoteIdentifier(schemaName),
-            unquoteIdentifier(tableName));
+            unquoteIdentifier(tableMeta.getCatalogName()),
+            unquoteIdentifier(tableMeta.getSchemaName()),
+            unquoteIdentifier(tableMeta.getEntityName()));
     }
 
     private String unquoteIdentifier(String name) {
@@ -272,6 +283,18 @@ public class SQLQuery implements SQLScriptElement {
 
     public SQLSelectItem getSelectItem(int index) {
         return selectItems == null || selectItems.size() <= index ? null : selectItems.get(index);
+    }
+
+    public int getSelectItemAsteriskIndex() {
+        if (selectItems != null) {
+            for (int i = 0; i < selectItems.size(); i++) {
+                SQLSelectItem item = selectItems.get(i);
+                if (item.getName().contains("*")) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
     @NotNull
@@ -345,9 +368,9 @@ public class SQLQuery implements SQLScriptElement {
         return type;
     }
 
-    public DBCEntityMetaData getSingleSource() {
+    public DBCEntityMetaData getEntityMetadata(boolean raw) {
         parseQuery();
-        return singleTableMeta;
+        return raw? rawSingleTableMetadata : singleTableMeta;
     }
 
     public void setParameters(List<SQLQueryParameter> parameters) {
@@ -364,6 +387,18 @@ public class SQLQuery implements SQLScriptElement {
     @Override
     public String toString() {
         return text;
+    }
+
+    public String getExtraErrorMessage() {
+        return extraErrorMessage;
+    }
+
+    public void addExtraErrorMessage(String extraErrorMessage) {
+        if (CommonUtils.isEmpty(this.extraErrorMessage)) {
+            this.extraErrorMessage = extraErrorMessage;
+        } else {
+            this.extraErrorMessage = this.extraErrorMessage + System.getProperty(StandardConstants.ENV_LINE_SEPARATOR) + extraErrorMessage;
+        }
     }
 
     /**
@@ -459,8 +494,28 @@ public class SQLQuery implements SQLScriptElement {
         }
     }
 
+    public boolean isModifiyng() {
+        if (getType() == SQLQueryType.UNKNOWN) {
+            return false;
+        }
+        if (statement instanceof Select) {
+            SelectBody selectBody = ((Select) statement).getSelectBody();
+            if (selectBody instanceof PlainSelect) {
+                if (((PlainSelect) selectBody).isForUpdate() ||
+                    ((PlainSelect) selectBody).getIntoTables() != null)
+                {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         return obj instanceof SQLQuery && text.equals(((SQLQuery) obj).text);
     }
+
 }

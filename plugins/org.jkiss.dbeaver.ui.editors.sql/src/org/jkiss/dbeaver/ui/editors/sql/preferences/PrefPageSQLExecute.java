@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,7 +70,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Text anonymousParameterMarkText;
     private Text namedParameterPrefixText;
     private Text controlCommandPrefixText;
-    private Button enableParametersInDDL;
+    private Button enableParametersInEmbeddedCode;
     private Button enableVariables;
 
     public PrefPageSQLExecute()
@@ -97,7 +97,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER) ||
 
             store.contains(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
-            store.contains(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED) ||
+            store.contains(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
             store.contains(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX) ||
@@ -190,7 +190,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             namedParameterPrefixText.setTextLimit(1);
             controlCommandPrefixText = UIUtils.createLabelText(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_control_command_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             controlCommandPrefixText.setTextLimit(1);
-            enableParametersInDDL = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl_tip, false, 2);
+            enableParametersInEmbeddedCode = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl_tip, false, 2);
             enableVariables = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_enable_variables, SQLEditorMessages.pref_page_sql_editor_enable_variables_tip, false, 2);
 
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -253,7 +253,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             anonymousParameterMarkText.setText(store.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK));
             namedParameterPrefixText.setText(store.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX));
             controlCommandPrefixText.setText(store.getString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX));
-            enableParametersInDDL.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED));
+            enableParametersInEmbeddedCode.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED));
             enableVariables.setSelection(store.getBoolean(ModelPreferences.SQL_VARIABLES_ENABLED));
         } catch (Exception e) {
             log.warn(e);
@@ -287,7 +287,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK, anonymousParameterMarkText.getText());
             store.setValue(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX, namedParameterPrefixText.getText());
             store.setValue(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX, controlCommandPrefixText.getText());
-            store.setValue(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED, enableParametersInDDL.getSelection());
+            store.setValue(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED, enableParametersInEmbeddedCode.getSelection());
             store.setValue(ModelPreferences.SQL_VARIABLES_ENABLED, enableVariables.getSelection());
         } catch (Exception e) {
             log.warn(e);
@@ -315,7 +315,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER);
 
         store.setToDefault(ModelPreferences.SQL_PARAMETERS_ENABLED);
-        store.setToDefault(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
+        store.setToDefault(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED);
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK);
         store.setToDefault(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX);

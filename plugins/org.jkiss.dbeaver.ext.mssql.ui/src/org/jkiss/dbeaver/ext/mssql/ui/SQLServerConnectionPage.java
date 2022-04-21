@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,8 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private Button showAllSchemas;
     private Button encryptPassword;
 
+    private boolean needsPort;
+
     private boolean activated;
 
     private final Image LOGO_AZURE;
@@ -94,6 +96,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         GridData gd = new GridData(GridData.FILL_BOTH);
         settingsGroup.setLayoutData(gd);
 
+        needsPort = CommonUtils.getBoolean(getSite().getDriver().getDriverParameter("needsPort"), true);
         {
             Label hostLabel = new Label(settingsGroup, SWT.NONE);
             hostLabel.setText(SQLServerUIMessages.dialog_connection_host_label);
@@ -104,7 +107,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
 
-            if (isDriverAzure) {
+            if (isDriverAzure || !needsPort) {
                 // no port number for Azure
                 gd.horizontalSpan = 3;
             } else {
@@ -264,7 +267,11 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
             } else {
-                hostText.setText(isDriverAzure ? SQLServerConstants.DEFAULT_HOST_AZURE : SQLServerConstants.DEFAULT_HOST);
+                hostText.setText(
+                    CommonUtils.toString(
+                        site.getDriver().getDefaultHost(),
+                        isDriverAzure ? SQLServerConstants.DEFAULT_HOST_AZURE : SQLServerConstants.DEFAULT_HOST)
+                    );
             }
         }
         if (portText != null) {

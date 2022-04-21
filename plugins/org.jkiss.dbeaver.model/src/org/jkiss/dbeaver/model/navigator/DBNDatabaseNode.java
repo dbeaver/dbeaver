@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -435,11 +435,17 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return;
         }
         monitor.beginTask(ModelMessages.model_navigator_load_items_, childMetas.size());
-        DBNBrowseSettings navSettings = getDataSourceContainer().getNavigatorSettings();
+        DBPDataSourceContainer container = getDataSourceContainer();
+        DBNBrowseSettings navSettings = container.getNavigatorSettings();
         final boolean showSystem = navSettings.isShowSystemObjects();
         final boolean showOnlyEntities = navSettings.isShowOnlyEntities();
         final boolean hideFolders = navSettings.isHideFolders();
         boolean mergeEntities = navSettings.isMergeEntities();
+        boolean supportsOptionalFolders = false;
+        DBPDataSource dataSource = container.getDataSource();
+        if (dataSource instanceof DBPDataSourceWithOptionalElements) {
+            supportsOptionalFolders = ((DBPDataSourceWithOptionalElements) dataSource).hasOptionalFolders();
+        }
 
         for (DBXTreeNode child : childMetas) {
             if (monitor.isCanceled()) {
@@ -463,7 +469,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     }
                 }
             } else if (child instanceof DBXTreeFolder) {
-                if (hideFolders || (mergeEntities && ((DBXTreeFolder)child).isOptional())) {
+                if (hideFolders || ((mergeEntities || supportsOptionalFolders) && ((DBXTreeFolder)child).isOptional())) {
                     if (child.isVirtual()) {
                         continue;
                     }
@@ -564,7 +570,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     private boolean loadTreeItems(
         DBRProgressMonitor monitor,
         DBXTreeItem meta,
-        final DBNDatabaseNode[] oldList,
+        final DBNDatabaseNode[] oldListCmp,
         final List<DBNDatabaseNode> toList,
         Object source,
         boolean showSystem,
@@ -607,7 +613,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
         final DBSObjectFilter filter = getNodeFilter(meta, false);
         this.filtered = filter != null && !filter.isNotApplicable();
-
+        if (filter != null && dataSource != null) {
+            filter.setCaseSensitive(dataSource.getSQLDialect().hasCaseSensitiveFiltration());
+        }
         final Collection<?> itemList = (Collection<?>) propertyValue;
         if (itemList.isEmpty()) {
             return false;
@@ -617,7 +625,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             // check it
             return false;
         }
-
+        List<DBNDatabaseNode> oldList = new LinkedList<>();
+        if (oldListCmp != null) {
+            Collections.addAll(oldList, oldListCmp);
+        }
         for (Object childItem : itemList) {
             if (childItem == null) {
                 continue;
@@ -649,9 +660,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
             DBSObject object = (DBSObject) childItem;
             boolean added = false;
-            if (oldList != null) {
+            if (!oldList.isEmpty()) {
                 // Check that new object is a replacement of old one
-                for (DBNDatabaseNode oldChild : oldList) {
+                for (Iterator<DBNDatabaseNode> iterator = oldList.iterator(); iterator.hasNext(); ) {
+                    DBNDatabaseNode oldChild = iterator.next();
                     if (oldChild.getMeta() == meta && equalObjects(oldChild.getObject(), object)) {
                         boolean updated = oldChild.reloadObject(monitor, object);
 
@@ -666,6 +678,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
                         toList.add(oldChild);
                         added = true;
+                        iterator.remove();
                         break;
                     }
                 }
@@ -677,7 +690,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
         }
 
-        if (oldList != null) {
+        {
             // Now remove all non-existing items
             for (DBNDatabaseNode oldChild : oldList) {
                 if (oldChild.getMeta() != meta) {
@@ -703,6 +716,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
+        if (!getDataSourceContainer().isConnected()) {
+            return null;
+        }
         return DBUtils.getDefaultContext(getObject(), true);
     }
 

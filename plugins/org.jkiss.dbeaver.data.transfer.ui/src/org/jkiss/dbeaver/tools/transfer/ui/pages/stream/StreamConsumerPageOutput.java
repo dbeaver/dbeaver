@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
+import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
@@ -71,6 +73,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     private Button singleFileCheck;
     private Button showFinalMessageCheckbox;
     private Button splitFilesCheckbox;
+    private Button appendToEndOfFileCheck;
     private Label maximumFileSizeLabel;
     private Text maximumFileSizeText;
     private final Map<String, EventProcessorComposite> processors = new HashMap<>();
@@ -141,15 +144,23 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 });
             }
 
+            appendToEndOfFileCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_add_to_end_of_file, DTMessages.data_transfer_wizard_output_label_add_to_end_of_file_tip, false, 1);
+            appendToEndOfFileCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setAppendToFileEnd(appendToEndOfFileCheck.getSelection());
+                    updateControlsEnablement();
+                }
+            });
+
             singleFileCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_use_single_file, DTMessages.data_transfer_wizard_output_label_use_single_file_tip, false, 5);
             singleFileCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setUseSingleFile(singleFileCheck.getSelection());
-                    updatePageCompletion();
+                    updateControlsEnablement();
                 }
             });
-
             compressCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_compress, null, false, 1);
             compressCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -235,16 +246,16 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     }
 
     private void updateControlsEnablement() {
-        boolean isBinary = getWizard().getSettings().getProcessor().isBinaryFormat();
+        final DataTransferSettings settings = getWizard().getSettings();
+        boolean isBinary = settings.getProcessor().isBinaryFormat();
+        boolean isAppendable = settings.getProcessor().isAppendable() && !compressCheckbox.getSelection();
         boolean clipboard = !isBinary && clipboardCheck.getSelection();
-        boolean isMulti = getWizard().getSettings().getDataPipes().size() > 1;
-        boolean singleFile = singleFileCheck.getSelection();
-
         clipboardCheck.setEnabled(!isBinary);
-        singleFileCheck.setEnabled(isMulti && !clipboard && getWizard().getSettings().getMaxJobCount() <= 1);
+        singleFileCheck.setEnabled(!clipboard && isAppendable && settings.getDataPipes().size() > 1 && settings.getMaxJobCount() <= 1);
+        appendToEndOfFileCheck.setEnabled(!clipboard && isAppendable);
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
-        compressCheckbox.setEnabled(!clipboard);
+        compressCheckbox.setEnabled(!clipboard && !appendToEndOfFileCheck.getSelection() && !singleFileCheck.getSelection());
         splitFilesCheckbox.setEnabled(!clipboard);
         maximumFileSizeLabel.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         maximumFileSizeText.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
@@ -259,12 +270,14 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
     @Override
     public void activatePage() {
-        boolean isBinary = getWizard().getSettings().getProcessor().isBinaryFormat();
+        getWizard().loadNodeSettings();
 
+        final DataTransferProcessorDescriptor descriptor = getWizard().getSettings().getProcessor();
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
 
-        clipboardCheck.setSelection(settings.isOutputClipboard());
-        singleFileCheck.setSelection(settings.isUseSingleFile());
+        clipboardCheck.setSelection(settings.isOutputClipboard() && !descriptor.isBinaryFormat());
+        singleFileCheck.setSelection(settings.isUseSingleFile() && descriptor.isAppendable());
+        appendToEndOfFileCheck.setSelection(settings.isAppendToFileEnd() && descriptor.isAppendable());
         directoryText.setText(CommonUtils.toString(settings.getOutputFolder()));
         fileNameText.setText(CommonUtils.toString(settings.getOutputFilePattern()));
         compressCheckbox.setSelection(settings.isCompressResults());
@@ -272,14 +285,12 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         maximumFileSizeText.setText(String.valueOf(settings.getMaxOutFileSize()));
         encodingCombo.setText(CommonUtils.toString(settings.getOutputEncoding()));
         timestampPattern.setText(settings.getOutputTimestampPattern());
-        encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM());
+        encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM() && !descriptor.isBinaryFormat());
+        showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
 
-        if (isBinary) {
-            clipboardCheck.setSelection(false);
-            encodingBOMCheckbox.setSelection(false);
+        if (descriptor.isBinaryFormat()) {
             settings.setOutputClipboard(false);
         }
-        showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
 
         for (Map.Entry<String, EventProcessorComposite> processor : processors.entrySet()) {
             processor.getValue().setProcessorEnabled(settings.hasEventProcessor(processor.getKey()));

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,9 @@ public class SnowflakeDataSourceProvider extends JDBCDataSourceProvider {
         boolean hasParam = addParameter(url, "db", connectionInfo.getDatabaseName(), false);
         hasParam = addParameter(url, "warehouse", warehouse, hasParam);
         hasParam = addParameter(url, "schema", schemaName, hasParam);
-        addParameter(url, "role", connectionInfo.getProviderProperty(SnowflakeConstants.PROP_ROLE), hasParam);
+
+        // Backward compatibility
+        addParameter(url, "role", connectionInfo.getProviderProperty(SnowflakeConstants.PROP_ROLE_LEGACY), hasParam);
 
         return url.toString();
     }

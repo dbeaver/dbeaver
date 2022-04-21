@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,11 @@ import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.InstanceClient;
@@ -407,7 +407,12 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
         String defaultHomePath = WORKSPACE_DIR_CURRENT;
         Location instanceLoc = Platform.getInstanceLocation();
         if (instanceLoc.isSet()) {
-            defaultHomePath = instanceLoc.getURL().getFile();
+            try {
+                defaultHomePath = RuntimeUtils.getLocalFileFromURL(instanceLoc.getURL()).getAbsolutePath();
+            } catch (IOException e) {
+                System.err.println("Unable to resolve workspace location " + instanceLoc);
+                e.printStackTrace();
+            }
         }
         return defaultHomePath;
     }
@@ -718,7 +723,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
     }
 
     @Override
-    public String getInfoDetails() {
+    public String getInfoDetails(DBRProgressMonitor monitor) {
         return null;
     }
 
@@ -741,7 +746,7 @@ public class DBeaverApplication extends BaseApplicationImpl implements DBPApplic
 
     public void notifyVersionUpgrade(@NotNull Version currentVersion, @NotNull VersionDescriptor newVersion, boolean showSkip) {
         VersionUpdateDialog dialog = new VersionUpdateDialog(
-            UIUtils.getActiveWorkbenchShell(),
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
             currentVersion,
             newVersion,
             showSkip);

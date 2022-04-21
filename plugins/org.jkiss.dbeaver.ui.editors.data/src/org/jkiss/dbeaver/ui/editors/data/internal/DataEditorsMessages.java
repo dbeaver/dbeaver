@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,8 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_use_smooth_scrolling_tip;
     public static String pref_page_database_resultsets_label_show_boolean_as_checkbox;
     public static String pref_page_database_resultsets_label_show_boolean_as_checkbox_tip;
+    public static String pref_page_database_resultsets_label_show_whitespace_characters;
+    public static String pref_page_database_resultsets_label_show_whitespace_characters_tip;
     public static String pref_page_database_resultsets_label_toggle_boolean_on_click;
     public static String pref_page_database_resultsets_label_toggle_boolean_on_click_tip;
     public static String pref_page_database_resultsets_label_show_boolean_config_link;
@@ -80,7 +82,9 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_text_delimiter_top;
     public static String pref_page_database_resultsets_label_text_delimiter_bottom;
     public static String pref_page_database_resultsets_label_text_extra_spaces;
-    
+    public static String pref_page_database_resultsets_label_text_show_line_numbers;
+    public static String pref_page_database_resultsets_label_text_show_line_numbers_tip;
+
 	public static String virtual_structure_editor_abstract_job_load_entity;
 	public static String virtual_structure_editor_info_label_entity_structure;
 	public static String virtual_structure_editor_dictionary_page_text;

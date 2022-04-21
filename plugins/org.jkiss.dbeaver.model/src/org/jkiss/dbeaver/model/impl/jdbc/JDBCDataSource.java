@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.auth.DBAAuthCredentials;
-import org.jkiss.dbeaver.model.auth.DBAAuthModel;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.utils.SecurityManagerUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.SocketException;
@@ -80,8 +81,8 @@ public abstract class JDBCDataSource
     protected final JDBCFactory jdbcFactory;
     private JDBCRemoteInstance defaultRemoteInstance;
 
-    private int databaseMajorVersion;
-    private int databaseMinorVersion;
+    private int databaseMajorVersion = 0;
+    private int databaseMinorVersion = 0;
 
     private final transient List<Connection> closingConnections = new ArrayList<>();
 
@@ -198,12 +199,14 @@ public abstract class JDBCDataSource
 
             boolean openTaskFinished;
             try {
-                if (openTimeout <= 0) {
-                    openTaskFinished = true;
-                    connectTask.run(monitor);
-                } else {
-                    openTaskFinished = RuntimeUtils.runTask(connectTask, "Opening database connection", openTimeout + 2000);
-                }
+                openTaskFinished = SecurityManagerUtils.wrapDriverActions(getContainer(), () -> {
+                    if (openTimeout <= 0) {
+                        connectTask.run(monitor);
+                        return true;
+                    } else {
+                        return RuntimeUtils.runTask(connectTask, "Opening database connection", openTimeout + 2000);
+                    }
+                });
             } finally {
                 authModel.endAuthentication(container, connectionInfo, connectProps);
             }
@@ -296,30 +299,29 @@ public abstract class JDBCDataSource
             }
             // Close datasource (in async task)
             return RuntimeUtils.runTask(monitor -> {
-                if (doRollback) {
-                    try {
-                        // If we in transaction - rollback it.
-                        // Any valuable transaction changes should be committed by UI
-                        // so here we do it just in case to avoid error messages on close with open transaction
-                        if (!connection.isClosed() && !connection.getAutoCommit()) {
+                    if (doRollback) {
+                        try {
+                            // If we in transaction - rollback it.
+                            // Any valuable transaction changes should be committed by UI
+                            // so here we do it just in case to avoid error messages on close with open transaction
                             connection.rollback();
+                        } catch (Throwable e) {
+                            // Do not write warning because connection maybe broken before the moment of close
+                            log.debug("Error closing active transaction", e);
                         }
-                    } catch (Throwable e) {
-                        // Do not write warning because connection maybe broken before the moment of close
-                        log.debug("Error closing active transaction", e);
                     }
-                }
-                try {
-                    connection.close();
-                }
-                catch (Throwable ex) {
-                    log.debug("Error closing connection", ex);
-                }
-                synchronized (closingConnections) {
-                    closingConnections.remove(connection);
-                }
-
-            }, "Close JDBC connection (" + purpose + ")",
+                    try {
+                        SecurityManagerUtils.wrapDriverActions(getContainer(), () -> {
+                            connection.close();
+                            return null;
+                        });
+                    } catch (Throwable ex) {
+                        log.debug("Error closing connection", ex);
+                    }
+                    synchronized (closingConnections) {
+                        closingConnections.remove(connection);
+                    }
+                }, "Close JDBC connection (" + purpose + ")",
                 getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
         } else {
             log.debug("Null connection parameter");
@@ -447,11 +449,13 @@ public abstract class JDBCDataSource
     }
 
     protected void readDatabaseServerVersion(DatabaseMetaData metaData) {
-        try {
-            databaseMajorVersion = metaData.getDatabaseMajorVersion();
-            databaseMinorVersion = metaData.getDatabaseMinorVersion();
-        } catch (Throwable e) {
-            log.error("Error determining server version", e);
+        if (databaseMajorVersion <= 0 && databaseMinorVersion <= 0) {
+            try {
+                databaseMajorVersion = metaData.getDatabaseMajorVersion();
+                databaseMinorVersion = metaData.getDatabaseMinorVersion();
+            } catch (Throwable e) {
+                log.error("Error determining server version", e);
+            }
         }
     }
 
@@ -717,6 +721,10 @@ public abstract class JDBCDataSource
                     SQLState.SQL_08007.getCode().equals(sqlState) ||
                     SQLState.SQL_08S01.getCode().equals(sqlState)) {
                 return ErrorType.CONNECTION_LOST;
+            }
+            if (SQLState.SQL_23000.getCode().equals(sqlState) ||
+                SQLState.SQL_23505.getCode().equals(sqlState)) {
+                return ErrorType.UNIQUE_KEY_VIOLATION;
             }
         }
         if (GeneralUtils.getRootCause(error) instanceof SocketException) {

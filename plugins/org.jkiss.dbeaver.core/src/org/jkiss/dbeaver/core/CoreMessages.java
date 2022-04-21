@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,10 @@ import org.eclipse.osgi.util.NLS;
 
 public class CoreMessages extends NLS {
 	public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
+
+
+	public static String core_eula_dialog_accept;
+	public static String core_eula_dialog_title;
 
 	public static String actions_menu_about;
 	public static String actions_menu_check_update;
@@ -381,8 +385,10 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_label_default_schema;
 	public static String dialog_connection_wizard_final_label_default_schema_tooltip;
 	public static String dialog_connection_wizard_final_label_keepalive;
-	public static String dialog_connection_wizard_final_label_isolation_level_tooltip;
 	public static String dialog_connection_wizard_final_label_keepalive_tooltip;
+	public static String dialog_connection_wizard_final_label_isolation_level_tooltip;
+	public static String dialog_connection_wizard_final_label_close_idle_connections;
+	public static String dialog_connection_wizard_final_label_close_idle_connections_tooltip;
 	public static String dialog_connection_wizard_final_label_bootstrap_query;
 	public static String dialog_connection_wizard_configure;
 	public static String dialog_connection_wizard_final_label_shell_command;
@@ -472,9 +478,26 @@ public class CoreMessages extends NLS {
 	public static String pref_page_connection_types_label_confirm_data_change_tip;
 
 	public static String pref_page_connection_label_general;
-
 	public static String pref_page_connection_label_use_environment;
     public static String pref_page_connections_application_name_text;
+
+	public static String pref_page_connection_label_default_settings;
+
+	public static String pref_page_network_profiles_tool_create_title;
+	public static String pref_page_network_profiles_tool_create_text;
+	public static String pref_page_network_profiles_tool_create_dialog_profile_name;
+	public static String pref_page_network_profiles_tool_create_dialog_error_title;
+	public static String pref_page_network_profiles_tool_create_dialog_error_info;
+	public static String pref_page_network_profiles_tool_delete_title;
+	public static String pref_page_network_profiles_tool_delete_text;
+	public static String pref_page_network_profiles_tool_delete_dialog_error_title;
+	public static String pref_page_network_profiles_tool_delete_dialog_error_info;
+	public static String pref_page_network_profiles_tool_delete_confirmation_title;
+	public static String pref_page_network_profiles_tool_delete_confirmation_question;
+	public static String pref_page_network_profiles_tool_no_profile_error_title;
+	public static String pref_page_network_profiles_tool_no_profile_error_info;
+	public static String pref_page_network_profiles_tool_no_profile_error_information;
+
 
 	public static String transaction_info_dialog_checkbox_show_all_queries;
 
@@ -562,6 +585,9 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_boolean_color;
 	public static String pref_page_ui_general_boolean_color_use_theme_color;
 	public static String pref_page_ui_general_boolean_invalid_values;
+
+	public static String toolbar_checkbox_connection_readonly_tooltip;
+	public static String toolbar_checkbox_connection_not_readonly_tooltip;
 
 	static {
 		// initialize resource bundle

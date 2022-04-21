@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.app.standalone.actions.EmergentExitAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.ResetUISettingsAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.ResetWorkspaceStateAction;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
@@ -262,7 +263,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
             fileMenu.add(new Separator());*/
 
-            MenuManager recentEditors = new MenuManager("Recent editors");
+            MenuManager recentEditors = new MenuManager(CoreApplicationMessages.actions_menu_recent_editors);
             recentEditors.add(ContributionItemFactory.REOPEN_EDITORS.create(workbenchWindow));
             recentEditors.add(new GroupMarker(IWorkbenchActionConstants.MRU));
             fileMenu.add(recentEditors);

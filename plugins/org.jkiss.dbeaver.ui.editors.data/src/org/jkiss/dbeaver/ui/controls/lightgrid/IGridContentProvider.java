@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,10 @@ public interface IGridContentProvider extends IContentProvider {
 
     int STATE_NONE          = 0;
     int STATE_LINK          = 1;
-    int STATE_HYPER_LINK    = 2;
-    int STATE_TRANSFORMED   = 4;
-    int STATE_TOGGLE        = 8;
+    int STATE_HYPER_LINK    = 1 << 1;
+    int STATE_TRANSFORMED   = 1 << 2;
+    int STATE_TOGGLE        = 1 << 3;
+    int STATE_DECORATED     = 1 << 4;
 
     int ALIGN_LEFT          = 0;
     int ALIGN_CENTER        = 1;

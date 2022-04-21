@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
-import org.jkiss.dbeaver.model.qm.QMConstants;
-import org.jkiss.dbeaver.model.qm.QMEventFilter;
-import org.jkiss.dbeaver.model.qm.QMMetaEvent;
-import org.jkiss.dbeaver.model.qm.QMMetaListener;
+import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -127,10 +124,10 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
     private void writeEvent(StringBuilder buffer, QMMetaEvent event)
     {
         QMMObject object = event.getObject();
-        QMMetaEvent.Action action = event.getAction();
+        QMEventAction action = event.getAction();
         // Filter
         if (object instanceof QMMStatementInfo || object instanceof QMMTransactionSavepointInfo ||
-            (object instanceof QMMStatementExecuteInfo && action != QMMetaEvent.Action.END)) {
+            (object instanceof QMMStatementExecuteInfo && action != QMEventAction.END)) {
             return;
         }
 
@@ -156,14 +153,14 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
             }
 
         } else if (object instanceof QMMTransactionInfo) {
-            QMMTransactionInfo transactionInfo = (QMMTransactionInfo)object;
+            QMMTransactionInfo transactionInfo = (QMMTransactionInfo) object;
             if (transactionInfo.isCommitted()) {
                 buffer.append("COMMIT");
             } else {
                 buffer.append("ROLLBACK");
             }
-        } else if (object instanceof QMMSessionInfo) {
-            QMMSessionInfo sessionInfo = (QMMSessionInfo)object;
+        } else if (object instanceof QMMConnectionInfo) {
+            QMMConnectionInfo sessionInfo = (QMMConnectionInfo) object;
             buffer.append(action).append(" SESSION [").append(sessionInfo.getContainerName()).append("]");
         }
         buffer.append(lineSeparator);

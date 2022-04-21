@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@ import java.util.List;
  */
 public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferrer {
 
-    private Object entity;
-    private String name;
-    private String description;
-    private List<? extends DBSTableConstraintColumn> columns = new ArrayList<>();
+    private final Object entity;
+    private final String name;
+    private final String description;
+    private final List<? extends DBSTableConstraintColumn> columns = new ArrayList<>();
 
-    public ERDLogicalPrimaryKey(ERDElement entity, String name, String description)
+    public ERDLogicalPrimaryKey(ERDElement<?> entity, String name, String description)
     {
         this.entity = entity.getObject();
         this.name = name;

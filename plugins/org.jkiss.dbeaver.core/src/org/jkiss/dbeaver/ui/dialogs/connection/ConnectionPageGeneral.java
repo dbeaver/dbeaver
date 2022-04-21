@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -233,15 +233,20 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private String generateConnectionName(ConnectionPageSettings settings) {
         String newName;
         if (settings != null) {
-            DBPConnectionConfiguration connectionInfo = settings.getActiveDataSource().getConnectionConfiguration();
-            newName = dataSourceDescriptor == null ? "" : settings.getActiveDataSource().getName(); //$NON-NLS-1$
+            DataSourceDescriptor dataSource = settings.getActiveDataSource();
+            DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
+            newName = dataSourceDescriptor == null ? "" : dataSource.getName(); //$NON-NLS-1$
             if (CommonUtils.isEmpty(newName)) {
                 newName = connectionInfo.getDatabaseName();
-                if (CommonUtils.isEmpty(newName)) {
+                if (CommonUtils.isEmpty(newName) || newName.length() < 3 || CommonUtils.isInt(newName)) {
+                    // Database name is too short or not a string
                     newName = connectionInfo.getHostName();
                 }
                 if (CommonUtils.isEmpty(newName)) {
                     newName = connectionInfo.getServerName();
+                }
+                if (CommonUtils.isEmpty(newName)) {
+                    newName = dataSource.getDriver().getName();
                 }
                 if (CommonUtils.isEmpty(newName)) {
                     newName = CoreMessages.dialog_connection_wizard_final_default_new_connection_name;

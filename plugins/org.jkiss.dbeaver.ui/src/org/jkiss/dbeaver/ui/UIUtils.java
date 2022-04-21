@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -399,6 +399,16 @@ public class UIUtils {
         for (int i = 0; i < items.length - 1; i++) {
             if (items[i] == item) {
                 return items[i + 1];
+            }
+        }
+        return null;
+    }
+
+    public static TableItem getPreviousTableItem(Table table, TableItem item) {
+        TableItem[] items = table.getItems();
+        for (int i = 1; i < items.length; i++) {
+            if (items[i] == item) {
+                return items[i - 1];
             }
         }
         return null;

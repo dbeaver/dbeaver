@@ -16,6 +16,8 @@
  */
 package org.jkiss.utils.time;
 
+import org.jkiss.code.NotNull;
+
 import java.sql.Timestamp;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
@@ -29,11 +31,11 @@ import java.util.Locale;
 public class ExtendedDateFormat extends SimpleDateFormat {
 
     private static final String NINE_ZEROES = "000000000";
-    public static final int MAX_NANO_LENGTH = 8;
+    private static final int MAX_NANO_LENGTH = 8;
 
-    int nanoStart = -1, nanoLength;
-    boolean nanoOptional;
-    String nanoPrefix, nanoPostfix;
+    private int nanoStart = -1, nanoLength;
+    private boolean nanoOptional;
+    private String nanoPrefix, nanoPostfix;
 
     public ExtendedDateFormat(String pattern)
     {
@@ -62,23 +64,26 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                 nanoStart = i;
                 nanoOptional = true;
                 for (int k = i + 1; k < pattern.length(); k++) {
-                    if (pattern.charAt(k) == 'f') {
+                    if (pattern.charAt(k) == 'f' || pattern.charAt(k) == 'S') {
                         nanoLength++;
                         if (nanoPrefix == null) {
                             nanoPrefix = pattern.substring(i + 1, k);
                         }
                     }
                     if (pattern.charAt(k) == ']') {
+                        if (nanoPrefix == null){
+                            break;
+                        }
                         nanoPostfix = pattern.substring(i + 1 + nanoPrefix.length() + nanoLength, k);
                         i = k + 1;
                         break;
                     }
                 }
-            } else if (c == 'f') {
+            } else if (c == 'f' || c == 'S') {
                 nanoStart = i - quoteCount;
                 nanoOptional = false;
                 for (int k = i + 1; k < pattern.length(); k++) {
-                    if (pattern.charAt(k) != 'f') {
+                    if (pattern.charAt(k) != 'f' && pattern.charAt(k) != 'S') {
                         break;
                     }
                     nanoLength++;
@@ -90,7 +95,7 @@ public class ExtendedDateFormat extends SimpleDateFormat {
     }
 
     @Override
-    public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos)
+    public StringBuffer format(@NotNull Date date, @NotNull StringBuffer toAppendTo, @NotNull FieldPosition pos)
     {
         StringBuffer result = super.format(date, toAppendTo, pos);
         if (nanoStart >= 0) {
@@ -132,7 +137,7 @@ public class ExtendedDateFormat extends SimpleDateFormat {
     }
 
     @Override
-    public Date parse(String text, ParsePosition pos)
+    public Date parse(@NotNull String text, @NotNull ParsePosition pos)
     {
         Date date = super.parse(text, pos);
         if (date == null) {
@@ -185,9 +190,9 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                         return pattern.substring(0, i) + pattern.substring(k + 1);
                     }
                 }
-            } else if (c == 'f') {
+            } else if (c == 'f' || c == 'S') {
                 for (int k = i + 1; k < pattern.length(); k++) {
-                    if (pattern.charAt(k) != 'f') {
+                    if (pattern.charAt(k) != 'f' && pattern.charAt(k) != 'S') {
                         return pattern.substring(0, i) + pattern.substring(k);
                     }
                 }

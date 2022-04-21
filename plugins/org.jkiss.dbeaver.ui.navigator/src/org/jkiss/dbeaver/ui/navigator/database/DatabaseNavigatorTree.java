@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     static final String TREE_DATA_STAT_MAX_SIZE = "nav.stat.maxSize";
     private static final String FILTER_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar"; //$NON-NLS-1$
+    private static final String DATA_TREE_CONTROL = DatabaseNavigatorTree.class.getSimpleName();
 
     private TreeViewer treeViewer;
     private DBNModel model;
@@ -92,6 +93,21 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private boolean filterShowConnected = false;
     private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
     private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
+
+    public static DatabaseNavigatorTree getFromShell(Display display) {
+        if (display == null) {
+            return null;
+        }
+        Control focusControl = display.getFocusControl();
+        if (focusControl == null) {
+            return null;
+        }
+        return getFromShell(focusControl.getShell());
+    }
+
+    public static DatabaseNavigatorTree getFromShell(Shell shell) {
+        return (DatabaseNavigatorTree)shell.getData(DATA_TREE_CONTROL);
+    }
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style) {
         this(parent, rootNode, style, false);
@@ -107,6 +123,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, INavigatorFilter navigatorFilter, String filterPlaceholderText) {
         super(parent, SWT.NONE);
+
+        if (UIUtils.isInDialog(parent)) {
+            parent.getShell().setData(DATA_TREE_CONTROL, DatabaseNavigatorTree.this);
+        }
+
         this.setLayout(new FillLayout());
         this.navigatorFilter = navigatorFilter;
         if (filterPlaceholderText != null) {
@@ -478,22 +499,28 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
-    private DBNNode findActiveNode(DBRProgressMonitor monitor, DBNNode node) throws DBException
-    {
+    @NotNull
+    private DBNNode findActiveNode(@NotNull DBRProgressMonitor monitor, @NotNull DBNNode node) throws DBException {
+        return findActiveNode(monitor, node, node);
+    }
+
+    @NotNull
+    private DBNNode findActiveNode(@NotNull DBRProgressMonitor monitor, @NotNull DBNNode parent, @NotNull DBNNode node) throws DBException {
         DBNNode[] children = node.getChildren(monitor);
         if (!ArrayUtils.isEmpty(children)) {
             if (children[0] instanceof DBNContainer) {
                 // Use only first folder to search
-                return findActiveNode(monitor, children[0]);
+                return findActiveNode(monitor, node, children[0]);
             }
             for (DBNNode child : children) {
                 if (DBNUtils.isDefaultElement(child)) {
-                    return child;
+                    // Find the deepest default element (either catalog or schema)
+                    return findActiveNode(monitor, node, child);
                 }
             }
         }
 
-        return node;
+        return parent;
     }
 
     private Object getViewerObject(DBNNode node)
@@ -827,7 +854,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         protected Composite createFilterControls(Composite parent) {
             super.createFilterControls(parent);
 
-            if (!UIUtils.isInDialog(parent) && navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
+            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
                 ((GridLayout)parent.getLayout()).numColumns++;
 
                 IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();

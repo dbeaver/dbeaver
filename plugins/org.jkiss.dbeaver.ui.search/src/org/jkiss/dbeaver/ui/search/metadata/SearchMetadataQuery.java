@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ public class SearchMetadataQuery implements ISearchQuery {
     public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
         try {
             String objectNameMask = params.getMask();
-            if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
+            if (!params.isLikeCondition() && !objectNameMask.endsWith("%")) { //$NON-NLS-1$
                 objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
                 params.setMask(objectNameMask);
             }

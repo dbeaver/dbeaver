@@ -4,13 +4,12 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="denodo" class="org.jkiss.dbeaver.ext.denodo.model.DenodoMetaModel" driverClass="com.denodo.dv.jdbc.Driver"/>
+        <meta id="denodo" class="org.jkiss.dbeaver.ext.denodo.model.DenodoMetaModel" driverClass="com.denodo.vdp.jdbc.Driver"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
-        <!-- Data Virtuality -->
-
+        <!-- Denodo Platform -->
         <datasource
                 class="org.jkiss.dbeaver.ext.denodo.DenodoDataSourceProvider"
                 description="%datasource.denodo.description"
@@ -20,22 +19,21 @@
                 icon="icons/denodo_icon.png"
                 dialect="basic">
             <drivers managable="true">
-
                 <driver
-                        id="denodo_jdbc"
-                        label="Denodo"
-                        class="com.denodo.dv.jdbc.Driver"
+                        id="denodo8_jdbc"
+                        label="Denodo 8"
+                        class="com.denodo.vdp.jdbc.Driver"
                         icon="icons/denodo_icon.png"
                         iconBig="icons/denodo_icon_big.png"
-                        sampleURL="jdbc:vdb://{host}:{port}/:{database}"
+                        sampleURL="jdbc:denodo://{host}:{port}/{database}"
                         defaultPort="9999"
                         defaultDatabase="admin"
                         defaultUser="admin"
                         defaultPassword="admin"
-                        description="JDBC driver of the Denodo Platform"
-                        webURL="https://https://denodo.com/docs/"
+                        description="Denodo Virtual DataPort JDBC driver"
+                        webURL="https://community.denodo.com/docs/html/browse/latest/vdp/developer/access_through_jdbc/access_through_jdbc"
                         categories="sql,analytic">
-                    <file type="jar" path="https://community.denodo.com/drivers/download/2721"/>
+                    <file type="jar" path="https://community.denodo.com/drivers/jdbc/8.0/denodo-vdp-jdbcdriver"/>
                 </driver>
             </drivers>
         </datasource>

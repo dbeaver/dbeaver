@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@
 package org.jkiss.dbeaver.erd.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -33,6 +35,7 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Model object representing a relational database Table
@@ -266,6 +269,57 @@ public class ERDEntity extends ERDElement<DBSEntity> {
     @Override
     public String getName() {
         return getObject().getName();
+    }
+
+    @Override
+    public void fromMap(@NotNull ERDContext context, Map<String, Object> map) {
+        alias = JSONUtils.getString(map, "alias");
+
+        try {
+            for (Map<String, Object> attrMap : JSONUtils.getObjectList(map, "attributes")) {
+                String name = JSONUtils.getString(attrMap, "name");
+                if (CommonUtils.isEmpty(name)) {
+                    continue;
+                }
+                DBSEntityAttribute attribute = getObject().getAttribute(context.getMonitor(), name);
+                if (attribute == null) {
+                    log.error("Attribute '" + name + "' not found in entity " + getName());
+                    continue;
+                }
+                ERDEntityAttribute attr = new ERDEntityAttribute(attribute, false);
+                attr.fromMap(context, attrMap);
+                addAttribute(attr, false);
+            }
+        } catch (DBException e) {
+            log.error("Error reading entity attributes", e);
+        }
+    }
+
+    @Override
+    public Map<String, Object> toMap(@NotNull ERDContext context) {
+        DBSEntity dbsEntity = getObject();
+
+        Map<String, Object> entityMap = new LinkedHashMap<>();
+        entityMap.put("id", context.addElementInfo(this));
+        DBNDatabaseNode node = context.getNavigatorModel().getNodeByObject(context.getMonitor(), dbsEntity, true);
+        if (node != null) {
+            entityMap.put("nodeId", node.getNodeItemPath());
+        }
+        entityMap.put("name", this.getName());
+        if (!CommonUtils.isEmpty(this.getAlias())) {
+            entityMap.put("alias", this.getAlias());
+        }
+        if (dbsEntity != null) {
+            if (dbsEntity instanceof DBPQualifiedObject) {
+                entityMap.put("fqn", ((DBPQualifiedObject) dbsEntity).getFullyQualifiedName(DBPEvaluationContext.UI));
+            }
+        }
+
+        entityMap.put("iconIndex", context.getIconIndex(DBValueFormatting.getObjectImage(dbsEntity)));
+
+        entityMap.put("attributes", this.getAttributes().stream().map(a -> a.toMap(context)).collect(Collectors.toList()));
+
+        return entityMap;
     }
 
     @Override

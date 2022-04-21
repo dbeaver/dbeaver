@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 import org.jkiss.utils.ArrayUtils;
@@ -392,13 +393,14 @@ public class PostgreUtils {
         } else if (type instanceof PostgreAttribute) {
             return ((PostgreAttribute) type).getDataType();
         } else {
+            DBRProgressMonitor monitor = session.getProgressMonitor();
             if (type instanceof JDBCColumnMetaData) {
                 try {
                     DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) type).getEntityMetaData();
                     if (entityMetaData != null) {
-                        DBSEntity docEntity = DBUtils.getEntityFromMetaData(session.getProgressMonitor(), session.getExecutionContext(), entityMetaData);
+                        DBSEntity docEntity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), entityMetaData);
                         if (docEntity != null) {
-                            DBSEntityAttribute attribute = docEntity.getAttribute(session.getProgressMonitor(), ((DBCAttributeMetaData) type).getName());
+                            DBSEntityAttribute attribute = docEntity.getAttribute(monitor, ((DBCAttributeMetaData) type).getName());
                             if (attribute instanceof DBSTypedObjectEx) {
                                 DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
                                 if (dataType instanceof PostgreDataType) {
@@ -410,7 +412,28 @@ public class PostgreUtils {
                         String databaseName = ((JDBCColumnMetaData) type).getCatalogName();
                         PostgreDatabase database = dataSource.getDatabase(databaseName);
                         if (database != null) {
-                            PostgreDataType dataType = database.getDataType(session.getProgressMonitor(), type.getTypeName());
+                            String typeName = type.getTypeName();
+                            if (typeName.startsWith("\"") || typeName.contains(".")) {
+                                // Type name in JDBCColumnMetaData can be fully qualified and quoted. Let's fix it for the better search in the getDataType() method
+                                String[] identifiers = SQLUtils.splitFullIdentifier(typeName, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
+                                if (!ArrayUtils.isEmpty(identifiers)) {
+                                    typeName = identifiers[identifiers.length - 1];
+                                    if (identifiers.length == 2) {
+                                        // Most likely, in the identifiers array we have the name of the scheme and the name of the data type in this case
+                                        // Try to find data type in the schema data type cache
+                                        // Do not forget to turn on the PG connection setting "Read all data types" to have arrays, tables, etc. types in the data type cache
+                                        String schemaName = identifiers[0];
+                                        PostgreSchema schema = database.getSchema(monitor, schemaName);
+                                        if (schema != null) {
+                                            PostgreDataType dataType = schema.getDataTypeCache().getObject(monitor, schema, typeName);
+                                            if (dataType != null) {
+                                                return dataType;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            PostgreDataType dataType = database.getDataType(monitor, typeName);
                             if (dataType != null) {
                                 return dataType;
                             }
@@ -424,7 +447,7 @@ public class PostgreUtils {
             String typeName = type.getTypeName();
             DBSInstance ownerInstance = session.getExecutionContext().getOwnerInstance();
             if (ownerInstance instanceof PostgreDatabase) {
-                PostgreDataType localDataType = ((PostgreDatabase) ownerInstance).getDataType(session.getProgressMonitor(), typeName);
+                PostgreDataType localDataType = ((PostgreDatabase) ownerInstance).getDataType(monitor, typeName);
                 if (localDataType != null) {
                     return localDataType;
                 }

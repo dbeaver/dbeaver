@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,7 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
         private boolean searchInComments;
         private boolean searchInDefinitions;
         private boolean globalSearch;
+        private boolean isLikeCondition;
 
         public ObjectsSearchParams(@NotNull DBSObjectType[] objectTypes, @NotNull String mask) {
             this.objectTypes = objectTypes;
@@ -143,6 +144,14 @@ public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
 
         public void setGlobalSearch(boolean globalSearch) {
             this.globalSearch = globalSearch;
+        }
+
+        public boolean isLikeCondition() {
+            return isLikeCondition;
+        }
+
+        public void setLikeCondition(boolean likeCondition) {
+            isLikeCondition = likeCondition;
         }
     }
 }

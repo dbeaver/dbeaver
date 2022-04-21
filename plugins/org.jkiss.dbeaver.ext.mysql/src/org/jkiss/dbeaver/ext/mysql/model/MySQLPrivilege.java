@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,14 @@ public class MySQLPrivilege implements DBAPrivilege
         } else {
             kind = Kind.MISC;
         }
+    }
+
+    public MySQLPrivilege(MySQLDataSource dataSource, String name, String context, String comment, Kind kind) {
+        this.dataSource = dataSource;
+        this.name = name;
+        this.context = context;
+        this.comment = comment;
+        this.kind = kind;
     }
 
     public Kind getKind()

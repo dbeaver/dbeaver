@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,19 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DB application.
  * Application implementors may redefine core app behavior and/or settings.
  */
-public interface DBPApplication
-{
+public interface DBPApplication {
+
+    @NotNull
+    DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace);
+
     boolean isStandalone();
 
     /**
@@ -45,6 +50,11 @@ public interface DBPApplication
      */
     boolean isExclusiveMode();
 
+    /**
+     * Multiple users can login into the app at the same time
+     */
+    boolean isMultiuser();
+
     @NotNull
     DBASecureStorage getSecureStorage();
 
@@ -54,8 +64,9 @@ public interface DBPApplication
     /**
      * Application information details.
      * Like license info or some custom produce info
+     * @param monitor
      */
-    String getInfoDetails();
+    String getInfoDetails(DBRProgressMonitor monitor);
 
     /**
      * Returns last user activity time
@@ -67,5 +78,9 @@ public interface DBPApplication
      * Default project name, e.g. 'General'.
      */
     String getDefaultProjectName();
+
+    String getProductProperty(String propName);
+
+    boolean hasProductFeature(String featureName);
 
 }

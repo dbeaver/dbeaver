@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -54,6 +54,15 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
+    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
+        if (useGetArray(session, type)) {
+            return getValueFromObject(session, type, resultSet.getArray(index), false, false);
+        } else {
+            return super.fetchColumnValue(session, resultSet, type, index);
+        }
+    }
+
+    @Override
     public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
@@ -65,7 +74,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
         } else if (object instanceof String) {
             return JDBCCollection.makeCollectionFromString((JDBCSession) session, (String)object);
         } else if (object.getClass().isArray()) {
-            return JDBCCollection.makeCollectionFromJavaArray((JDBCSession) session, type, object);
+            return JDBCCollection.makeCollectionFromJavaArray((JDBCSession) session, object);
         } else if (object instanceof Collection) {
             return JDBCCollection.makeCollectionFromJavaCollection((JDBCSession) session, type, (Collection) object);
         } else {
@@ -100,7 +109,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         if (value instanceof JDBCCollection) {
-            return ((JDBCCollection) value).makeArrayString(format);
+            return ((JDBCCollection) value).makeArrayString();
         }
         return super.getValueDisplayString(column, value, format);
     }
@@ -122,14 +131,14 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
                 statement.setNull(paramIndex, Types.ARRAY);
             } else if (collection instanceof JDBCCollection) {
                 final Array arrayValue = ((JDBCCollection) collection).getArrayValue();
-                if (useSetArray(session)) {
+                if (useSetArray(session, paramType)) {
                     statement.setArray(paramIndex, arrayValue);
                 } else {
                     statement.setObject(paramIndex, arrayValue, Types.ARRAY);
                 }
             } else {
                 final Object arrayValue = collection.getRawValue();
-                if (useSetArray(session) && arrayValue instanceof Array) {
+                if (useSetArray(session, paramType) && arrayValue instanceof Array) {
                     statement.setArray(paramIndex, (Array) arrayValue);
                 } else {
                     statement.setObject(paramIndex, arrayValue);
@@ -140,8 +149,11 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
         }
     }
 
-    protected boolean useSetArray(@NotNull JDBCSession session) {
-        final DBPDataSourceInfo info = session.getDataSource().getInfo();
-        return info instanceof JDBCDataSourceInfo && ((JDBCDataSourceInfo) info).supportsSetArray();
+    protected boolean useGetArray(@NotNull DBCSession session, @NotNull DBSTypedObject type) {
+        return false;
+    }
+
+    protected boolean useSetArray(@NotNull DBCSession session, @NotNull DBSTypedObject type) {
+        return false;
     }
 }

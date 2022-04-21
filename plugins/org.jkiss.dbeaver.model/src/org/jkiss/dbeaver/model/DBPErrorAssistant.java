@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,8 @@ public interface DBPErrorAssistant
         PERMISSION_DENIED,
         FEATURE_UNSUPPORTED,
         TRANSACTION_ABORTED,    // Txn aborted, PG-specific
-        RESULT_SET_MISSING      // No resultset, Oracle-specific (#8026)
+        RESULT_SET_MISSING,      // No resultset, Oracle-specific (#8026)
+        UNIQUE_KEY_VIOLATION     // During insert operation
     }
 
     class ErrorPosition

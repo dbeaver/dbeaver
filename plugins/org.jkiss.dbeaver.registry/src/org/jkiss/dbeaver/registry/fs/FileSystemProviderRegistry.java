@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.registry.fs;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
+import org.jkiss.dbeaver.model.fs.DBFRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileSystemProviderRegistry {
+public class FileSystemProviderRegistry implements DBFRegistry {
     private static FileSystemProviderRegistry instance = null;
 
     public synchronized static FileSystemProviderRegistry getInstance() {
@@ -58,4 +60,8 @@ public class FileSystemProviderRegistry {
         return null;
     }
 
+    @Override
+    public DBFFileSystemDescriptor[] getFileSystemProviders() {
+        return descriptors.toArray(new DBFFileSystemDescriptor[0]);
+    }
 }

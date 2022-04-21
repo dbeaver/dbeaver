@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -61,6 +62,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         IDataTransferNodePrimary, DBPReferentialIntegrityController {
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
 
+    private final DBCStatistics statistics = new DBCStatistics();
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
@@ -158,9 +160,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         AbstractExecutionSource executionSource = new AbstractExecutionSource(containerMapping.getSource(), targetContext, this);
 
         DBSDataManipulator targetObject = getTargetObject();
-        if (!isPreview && offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
+        if (targetObject != null && !isPreview && offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
             // Truncate target tables
-            if ((targetObject.getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
+            if (targetObject.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_TRUNCATE)) {
                 targetObject.truncateData(
                     targetSession,
                     executionSource);
@@ -257,10 +259,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         options.put(DBSDataManipulator.OPTION_USE_MULTI_INSERT, settings.isUseMultiRowInsert());
         options.put(DBSDataManipulator.OPTION_SKIP_BIND_VALUES, settings.isSkipBindValues());
 
-        if (!isPreview) {
+        if (!isPreview && targetObject != null) {
             if (settings.isUseBulkLoad()) {
                 DBSDataBulkLoader bulkLoader = DBUtils.getAdapter(DBSDataBulkLoader.class, targetContext.getDataSource());
-                if (targetObject != null && bulkLoader != null) {
+                if (bulkLoader != null) {
                     try {
                         bulkLoadManager = bulkLoader.createBulkLoad(
                             targetSession, targetObject, attributes, executionSource, settings.getCommitAfterRows(), options);
@@ -364,7 +366,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (isPreview) {
             return;
         }
-        boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
+        boolean ignoreDuplicateRowsErrors = settings.isIgnoreDuplicateRows();
+        boolean needCommit = force || ignoreDuplicateRowsErrors || ((rowsExported % settings.getCommitAfterRows()) == 0);
+        // Do commit action in these cases:
+        // 1. This is the end of the insert operation (fetchEnd)
+        // 2. ignoreDuplicateRowsErrors option is enabled - that means, what we do not have batches, only single rows, and we can loose inserted rows without commit in some databases like PG
+        // 3. We approached the amount of rows selected for commenting
+
         if (bulkLoadManager != null) {
             if (needCommit) {
                 bulkLoadManager.flushRows(targetSession);
@@ -405,12 +413,18 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     try {
                         DBExecUtils.tryExecuteRecover(targetSession, targetSession.getDataSource(), param -> {
                             try {
-                                executeBatch.execute(targetSession, options);
+                                statistics.accumulate(executeBatch.execute(targetSession, options));
                             } catch (Throwable e) {
                                 throw new InvocationTargetException(e);
                             }
                         });
                     } catch (Throwable e) {
+                        if (ignoreDuplicateRowsErrors && (e.getCause() instanceof SQLException)) {
+                            DBPErrorAssistant.ErrorType errorType = DBExecUtils.discoverErrorType(targetSession.getDataSource(), e.getCause());
+                            if (errorType == DBPErrorAssistant.ErrorType.UNIQUE_KEY_VIOLATION) {
+                                break;
+                            }
+                        }
                         log.error("Error inserting row", e);
                         if (ignoreErrors) {
                             break;
@@ -609,6 +623,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             try {
                 switch (containerMapping.getMappingType()) {
                     case create:
+                    case recreate:
                     case existing:
                         return createTargetTable(session, containerMapping);
                     default:
@@ -637,7 +652,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             throw new DBException("No target container selected");
         }
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
-            DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
+            if (containerMapping.getMappingType() == DatabaseMappingType.recreate || containerMapping.getMappingType() == DatabaseMappingType.create) {
+                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, containerMapping.getTarget() != null);
+            }
             return true;
         } else {
             DBEPersistAction[] actions = DatabaseTransferUtils.generateTargetTableDDL(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
@@ -663,6 +680,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         if (!last && settings.isOpenTableOnFinish()) {
+            try {
+                // Mappings can be outdated so is the target object.
+                // This may happen when several database consumers point to the same container node
+                DatabaseTransferUtils.refreshDatabaseMappings(monitor, settings, containerMapping, true);
+            } catch (Exception e) {
+                log.error("Error refreshing database model", e);
+            }
             DBSDataManipulator targetObject = getTargetObject();
             if (targetObject != null) {
                 // Refresh node first (this will refresh table data as well)
@@ -718,6 +742,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         switch (containerMapping.getMappingType()) {
             case create:
                 return targetName + " [Create]";
+            case recreate:
+                return targetName + " [Recreate]";
             case existing:
                 for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(new VoidProgressMonitor())) {
                     if (attr.getMappingType() == DatabaseMappingType.create) {
@@ -819,6 +845,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     public DatabaseConsumerSettings getSettings() {
         return settings;
+    }
+
+    @Override
+    @NotNull
+    public DBCStatistics getStatistics() {
+        return statistics;
     }
 
     private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {

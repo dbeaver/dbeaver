@@ -19,7 +19,7 @@
             <tree path="hana" label="HANA data source">
                 <folder type="org.jkiss.dbeaver.ext.hana.model.HANASchema" label="%tree.schemas.node.name" icon="#folder_schema">
                     <items label="#schema" path="schema" property="schemas" icon="#schema">
-                        <folder type="org.jkiss.dbeaver.ext.hana.model.HANATable" label="%tree.tables.node.name" icon="#folder_table">
+                        <folder type="org.jkiss.dbeaver.ext.hana.model.HANATable" label="%tree.tables.node.name" icon="#folder_table" visibleIf="!object.hasOnlySynonyms()">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
                                 <folder type="org.jkiss.dbeaver.ext.hana.model.HANATableColumn" label="%tree.columns.node.name" icon="#columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column"/>
@@ -49,7 +49,7 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.hana.model.HANAView" label="%tree.tviews.node.name" icon="#folder_view">
+                        <folder type="org.jkiss.dbeaver.ext.hana.model.HANAView" label="%tree.tviews.node.name" icon="#folder_view" visibleIf="!object.hasOnlySynonyms()">
                             <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
                                 <folder type="org.jkiss.dbeaver.ext.hana.model.HANATableColumn" label="%tree.columns.node.name" icon="#columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column"/>
@@ -62,12 +62,12 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes">
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" visibleIf="!object.hasOnlySynonyms()">
                             <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
                                 <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true"/>
                             </items>
                         </folder>
-                        <folder id="procedures" type="org.jkiss.dbeaver.ext.hana.model.HANAProcedure" label="%tree.procedures.node.name" icon="#procedures">
+                        <folder id="procedures" type="org.jkiss.dbeaver.ext.hana.model.HANAProcedure" label="%tree.procedures.node.name" icon="#procedures" visibleIf="!object.hasOnlySynonyms()">
                             <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
                                 <folder label="%tree.procedure_columns.node.name" icon="#columns" description="%tree.procedure_columns.node.name">
                                     <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false">
@@ -79,7 +79,7 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder id="functions" type="org.jkiss.dbeaver.ext.hana.model.HANAProcedure" label="%tree.functions.node.name" icon="#functions">
+                        <folder id="functions" type="org.jkiss.dbeaver.ext.hana.model.HANAProcedure" label="%tree.functions.node.name" icon="#functions" visibleIf="!object.hasOnlySynonyms()">
                             <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
                                 <folder label="%tree.function_columns.node.name" icon="#columns" description="%tree.procedure_columns.node.name">
                                     <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false">
@@ -91,13 +91,13 @@
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequences">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequences" visibleIf="!object.hasOnlySynonyms()">
                             <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSynonym" label="%tree.synonyms.node.name" icon="#synonyms">
                             <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" visibleIf="!object.hasOnlySynonyms()">
                             <items label="%tree.trigger.node.name" path="trigger" property="tableTriggers" icon="#trigger"/>
                         </folder>
                     </items>
@@ -129,6 +129,11 @@
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="ddl-drop-column-brackets" value="true"/>
                     <parameter name="driver-properties" value="databaseName,encrypt,validateCertificate"/>
+                    <!-- Kerberos config -->
+                    <parameter name="krb5.enabled" value="true"/>
+                    <parameter name="krb5.loginModule" value="com.sun.security.jgss.krb5.initiate"/>
+                    <parameter name="krb5.sendUserNameToDatabase" value="false"/>
+                    <parameter name="krb5.sendPasswordToDatabase" value="false"/>
                 </driver>
             </drivers>
 

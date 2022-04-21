@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,6 +38,11 @@ import java.sql.SQLException;
 public class RedshiftTable extends PostgreTableRegular
 {
     private static final Log log = Log.getLog(RedshiftTable.class);
+
+    @Override
+    public boolean isRefreshSchemaStatisticsOnTableRefresh() {
+        return false;
+    }
 
     public RedshiftTable(PostgreSchema catalog) {
         super(catalog);
@@ -53,6 +64,19 @@ public class RedshiftTable extends PostgreTableRegular
                 }
             }
         }
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (hasStatistics()) {
+            diskSpace = null;
+            try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
+                readTableStatistics((JDBCSession) session);
+            } catch (Exception e) {
+                log.debug("Can't fetch disk space", e);
+            }
+        }
+        return super.refreshObject(monitor);
     }
 
     protected void fetchStatistics(JDBCResultSet dbResult) throws SQLException {

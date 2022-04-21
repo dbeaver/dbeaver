@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -64,6 +63,10 @@ public class DatabaseBrowserView extends NavigatorViewBase {
                 DBWorkbench.getPlatformUI().showError("Open database browser", "Can't find database navigator node", e);
             }
         }
+        return getDefaultRootNode();
+    }
+
+    protected DBNNode getDefaultRootNode() {
         DBNProject projectNode = getModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
@@ -72,7 +75,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
     public void createPartControl(Composite parent)
     {
         super.createPartControl(parent);
-        UIUtils.setHelp(parent, IHelpContextIds.CTX_DATABASE_NAVIGATOR);
+        UIUtils.setHelp(parent, getHelpContextId());
 
         String secondaryId = getViewSite().getSecondaryId();
         if (!CommonUtils.isEmpty(secondaryId)) {
@@ -86,6 +89,11 @@ public class DatabaseBrowserView extends NavigatorViewBase {
                 }
             });
         }
+    }
+
+    @NotNull
+    protected String getHelpContextId() {
+        return IHelpContextIds.CTX_DATABASE_NAVIGATOR;
     }
 
     @Override
@@ -121,13 +129,9 @@ public class DatabaseBrowserView extends NavigatorViewBase {
         }
         String projectName = id.substring(0, divPos);
         String nodePath = id.substring(divPos + 1).replace("~", ":");
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-        if (project == null) {
-            throw new DBException("Project '" + projectName + "' not found");
-        }
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
         DBNNode node = null;
-        DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(project);
+        DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
         if (projectMeta != null) {
             navigatorModel.ensureProjectLoaded(projectMeta);
             node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), projectMeta, nodePath);

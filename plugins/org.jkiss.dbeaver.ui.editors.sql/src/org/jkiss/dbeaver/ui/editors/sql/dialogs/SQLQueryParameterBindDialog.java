@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,10 +39,13 @@ import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -60,13 +63,13 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
     private static final Log log = Log.getLog(SQLQueryParameterBindDialog.class);
 
-    private IWorkbenchPartSite site;
-    private SQLScriptContext queryContext;
-    private SQLQuery query;
-    private List<SQLQueryParameter> parameters;
+    private final IWorkbenchPartSite site;
+    private final SQLScriptContext queryContext;
+    private final SQLQuery query;
+    private final List<SQLQueryParameter> parameters;
     private final Map<String, List<SQLQueryParameter>> dupParameters = new HashMap<>();
 
-    private static Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<>();
+    private final Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<>();
     private Button hideIfSetCheck;
     private Table paramTable;
     private Object queryPreviewPanel;
@@ -152,30 +155,60 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     editOnEnter = false;
                 }
 
+                /*
+                    We don't use Control in saveEditorValue due to complications of getting Text from it, due to it being a composite without getText() method
+                 */
+                private Text editor;
+
                 @Override
                 protected Control createEditor(Table table, int index, TableItem item) {
                     if (index != 2) {
                         return null;
                     }
+                    final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 0, 0);
+                    gridData.horizontalSpan = 0;
+                    gridData.verticalSpan = 0;
                     SQLQueryParameter param = (SQLQueryParameter) item.getData();
-                    Text editor = new Text(table, SWT.NONE);
+                    Composite composite = UIUtils.createPlaceholder(table, 2, 0);
+                    composite.setLayoutData(gridData);
+                    editor = new Text(composite, SWT.NONE);
+                    editor.setLayoutData(gridData);
+                    Button button = UIUtils.createPushButton(composite, null, DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
                     editor.setText(CommonUtils.notEmpty(param.getValue()));
+                    button.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            final String result = EditTextDialog.editText(parent.getShell(), UIMessages.edit_text_dialog_title_edit_value, editor.getText() == null ? "" : editor.getText());
+                            if (result != null) {
+                                editor.setText(result);
+                            }
+                        }
+                    });
+                    GridData buttonLayoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 0, 0);
+                    buttonLayoutData.heightHint = editor.getSize().y;
+                    button.setLayoutData(buttonLayoutData);
                     editor.selectAll();
-
+                    editor.addModifyListener(e -> saveEditorValue(editor, index, item));
                     editor.addTraverseListener(e -> {
+                        if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                            this.keyTraversed(e);
+                        }
                         if (e.detail == SWT.TRAVERSE_RETURN && (e.stateMask & SWT.CTRL) == SWT.CTRL) {
                             UIUtils.asyncExec(SQLQueryParameterBindDialog.this::okPressed);
                         }
                     });
-                    editor.addModifyListener(e -> saveEditorValue(editor, index, item));
-
-                    return editor;
+                    button.addTraverseListener(e -> {
+                        if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                            this.keyTraversed(e);
+                        }
+                    });
+                    return composite;
                 }
 
                 @Override
                 protected void saveEditorValue(Control control, int index, TableItem item) {
                     SQLQueryParameter param = (SQLQueryParameter) item.getData();
-                    String newValue = ((Text) control).getText();
+                    String newValue = editor.getText();
                     item.setText(2, newValue);
 
                     param.setValue(newValue);
@@ -188,7 +221,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                                 dup.setVariableSet(!CommonUtils.isEmpty(newValue));
                             }
                         }
-                        queryContext.setVariable(param.getVarName(), param.getValue());
+                        queryContext.setVariable(param.getName(), param.getValue());
                     }
 
                     savedParamValues.put(
@@ -225,7 +258,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             }
         }
 
-        sash.setWeights(new int[] { 600, 400 });
+        sash.setWeights(600, 400);
 
         hideIfSetCheck = UIUtils.createCheckbox(composite,
             SQLEditorMessages.dialog_sql_param_hide_checkbox, SQLEditorMessages.dialog_sql_param_hide_checkbox_tip,

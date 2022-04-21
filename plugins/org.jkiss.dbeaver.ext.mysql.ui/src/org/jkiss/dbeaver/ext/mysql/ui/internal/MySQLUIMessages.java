@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,7 @@ public final class MySQLUIMessages extends NLS {
     public static String dialog_connection_general_tab;
     public static String dialog_connection_general_tab_tooltip;
     public static String dialog_connection_host;
+    public static String dialog_connection_instance;
     public static String dialog_connection_database;
     public static String dialog_connection_password;
     public static String dialog_connection_port;
@@ -148,6 +149,15 @@ public final class MySQLUIMessages extends NLS {
     public static String dialog_create_database_database_name;
     public static String dialog_create_database_charset;
     public static String dialog_create_database_collation;
+
+    public static String controls_privilege_table_column_privilege_name;
+    public static String controls_privilege_table_column_privilege_name_tip;
+    public static String controls_privilege_table_column_privilege_status;
+    public static String controls_privilege_table_column_privilege_status_tip;
+    public static String controls_privilege_table_column_privilege_description;
+    public static String controls_privilege_table_column_privilege_description_tip;
+    public static String controls_privilege_table_push_button_check_all;
+    public static String controls_privilege_table_push_button_clear_all;
 
     private MySQLUIMessages() {
     }

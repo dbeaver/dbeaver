@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ public class NavigatorCommands {
     public static final String CMD_OBJECT_OPEN = "org.jkiss.dbeaver.core.object.open"; //$NON-NLS-1$
     public static final String CMD_OBJECT_CREATE = "org.jkiss.dbeaver.core.object.create"; //$NON-NLS-1$
     public static final String CMD_OBJECT_DELETE = "org.jkiss.dbeaver.core.object.delete"; //$NON-NLS-1$
+    public static final String CMD_OBJECT_MOVE_TOP = "org.jkiss.dbeaver.core.object.move.top"; //$NON-NLS-1$
+    public static final String CMD_OBJECT_MOVE_BOTTOM = "org.jkiss.dbeaver.core.object.move.bottom"; //$NON-NLS-1$
     public static final String CMD_OBJECT_MOVE_UP = "org.jkiss.dbeaver.core.object.move.up"; //$NON-NLS-1$
     public static final String CMD_OBJECT_MOVE_DOWN = "org.jkiss.dbeaver.core.object.move.down"; //$NON-NLS-1$
     public static final String CMD_OBJECT_SET_DEFAULT = "org.jkiss.dbeaver.core.navigator.set.default";

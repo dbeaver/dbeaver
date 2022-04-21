@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,14 +93,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
         File dumpBinary = RuntimeUtils.getNativeClientBinary(settings.getClientHome(), MySQLConstants.BIN_FOLDER, "mysqldump"); //$NON-NLS-1$
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
-        switch (settings.getMethod()) {
-            case LOCK_ALL_TABLES:
-                cmd.add("--lock-all-tables"); //$NON-NLS-1$
-                break;
-            case ONLINE:
-                cmd.add("--single-transaction"); //$NON-NLS-1$
-                break;
-        }
+        cmd.add(settings.getMethod().getCliOption());
         if (supportsColumnStatistics(dumpPath) && !arg.getDatabase().getDataSource().supportsColumnStatistics()) {
             cmd.add("--column-statistics=0");
         }

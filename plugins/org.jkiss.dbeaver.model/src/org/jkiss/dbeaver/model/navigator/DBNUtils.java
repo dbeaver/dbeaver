@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.apache.commons.jexl3.JexlContext;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -26,11 +28,11 @@ import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -119,8 +121,11 @@ public class DBNUtils {
         // and if children are not folders
         if (children.length > 0) {
             DBNNode firstChild = children[0];
-            if (!(firstChild instanceof DBNResource)) {
-                if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY) || isMergedEntity(firstChild)) {
+            boolean isResources = firstChild instanceof DBNResource || firstChild instanceof DBNPath;
+            {
+                if (isResources) {
+                    Arrays.sort(children, NodeFolderComparator.INSTANCE);
+                } else if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY) || isMergedEntity(firstChild)) {
                     if (!(firstChild instanceof DBNContainer)) {
                         Arrays.sort(children, NodeNameComparator.INSTANCE);
                     }
@@ -195,9 +200,57 @@ public class DBNUtils {
         static NodeFolderComparator INSTANCE = new NodeFolderComparator();
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            int first = node1 instanceof DBNLocalFolder || node1 instanceof DBSFolder ? -1 : 1;
-            int second = node2 instanceof DBNLocalFolder || node2 instanceof DBSFolder ? -1 : 1;
+            int first = node1.allowsChildren() ? -1 : 1;
+            int second = node2.allowsChildren() ? -1 : 1;
             return first - second;
         }
     }
+
+    @Nullable
+    public static <T> T getParentOfType(@NotNull Class<T> type, DBNNode node)
+    {
+        if (node == null) {
+            return null;
+        }
+        for (DBNNode parent = node.getParentNode(); parent != null; parent = parent.getParentNode()) {
+            if (type.isInstance(parent)) {
+                return type.cast(parent);
+            } else if (parent instanceof DBNRoot) {
+                break;
+            }
+        }
+        return null;
+    }
+
+    public static JexlContext makeContext(final DBNNode node) {
+        return new JexlContext() {
+
+            @Override
+            public Object get(String name) {
+                if (node instanceof DBNDatabaseNode) {
+                    switch (name) {
+                        case "object":
+                            return ((DBNDatabaseNode) node).getValueObject();
+                        case "dataSource":
+                            return ((DBNDatabaseNode) node).getDataSource();
+                        case "connected":
+                            return ((DBNDatabaseNode) node).getDataSource() != null;
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public void set(String name, Object value) {
+                log.warn("Set is not implemented in DBX model");
+            }
+
+            @Override
+            public boolean has(String name) {
+                return node instanceof DBNDatabaseNode && name.equals("object")
+                    && ((DBNDatabaseNode) node).getValueObject() != null;
+            }
+        };
+    }
+
 }

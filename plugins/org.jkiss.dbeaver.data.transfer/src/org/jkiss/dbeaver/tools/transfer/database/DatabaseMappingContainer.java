@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,8 +105,16 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh);
     }
 
-    public void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
+    public void refreshOnlyAttributesMappingTypes(DBRRunnableContext context, boolean forceRefresh) throws DBException {
+        refreshAttributesMappingTypes(new VoidProgressMonitor(), forceRefresh);
+    }
+
+    private void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
         this.mappingType = mappingType;
+        refreshAttributesMappingTypes(monitor, forceRefresh);
+    }
+
+    private void refreshAttributesMappingTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(monitor);
         if (!CommonUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {
@@ -178,11 +186,14 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         }
         switch (mappingType) {
             case existing:
-                return target.getName();
-            case create:
+            case recreate:
+                if (target != null) {
+                    return target.getName();
+                }
                 return targetTableName;
             case skip:
                 return DatabaseMappingAttribute.TARGET_NAME_SKIP;
+            case create:
             default:
                 return targetTableName;
         }

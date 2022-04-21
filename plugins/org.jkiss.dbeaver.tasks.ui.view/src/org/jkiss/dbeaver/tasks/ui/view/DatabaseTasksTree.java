@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.text.Collator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -61,7 +62,7 @@ public class DatabaseTasksTree {
     private static final Log log = Log.getLog(DatabaseTasksTree.class);
 
     private TreeViewer taskViewer;
-    private ViewerColumnController taskColumnController;
+    private ViewerColumnController<?, ?> taskColumnController;
 
     private final List<DBTTask> allTasks = new ArrayList<>();
     private final List<DBTTaskFolder> allTasksFolders = new ArrayList<>();
@@ -85,7 +86,13 @@ public class DatabaseTasksTree {
         taskTree.setHeaderVisible(true);
         taskTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        taskColumnController = new ViewerColumnController(TaskUIViewMessages.db_tasks_tree_column_controller_tasks, taskViewer);
+        taskColumnController = new ViewerColumnController<>(TaskUIViewMessages.db_tasks_tree_column_controller_tasks, taskViewer);
+        taskColumnController.setComparator(new ViewerColumnController.DefaultComparator(Collator.getInstance()) {
+            @Override
+            public int category(Object element) {
+                return element instanceof DBTTaskFolder ? 0 : 1;
+            }
+        });
         taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_name, SWT.LEFT, true, true, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {

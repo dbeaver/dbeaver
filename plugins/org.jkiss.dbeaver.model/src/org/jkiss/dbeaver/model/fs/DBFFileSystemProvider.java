@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,18 @@
 
 package org.jkiss.dbeaver.model.fs;
 
-import org.jkiss.dbeaver.model.DBPObjectWithDescription;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Virtual file system provider
  */
-public interface DBFFileSystemProvider extends DBPObjectWithDescription {
+public interface DBFFileSystemProvider extends DBPObject {
 
-    DBFVirtualFileSystem[] getAvailableFileSystems();
+    DBFVirtualFileSystem[] getAvailableFileSystems(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SMSessionContext sessionContext);
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,30 @@
 
 package org.jkiss.dbeaver.model.fs;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
-
-import java.nio.file.FileSystem;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Virtual file system
  */
 public interface DBFVirtualFileSystem {
 
+    @NotNull
     String getFileSystemDisplayName();
+
+    @NotNull
+    String getType();
 
     String getDescription();
 
     DBPImage getIcon();
 
-    FileSystem getFileSystem();
+    @NotNull
+    String getId();
+
+    @NotNull
+    DBFVirtualFileSystemRoot[] getRootFolders(DBRProgressMonitor monitor) throws DBException;
 
 }

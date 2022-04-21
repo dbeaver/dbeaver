@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthMethod;
+import net.schmizz.sshj.userauth.password.PasswordUtils;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -32,9 +33,11 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
@@ -61,14 +64,21 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
             Config clientConfig = new DefaultConfig();
             clientConfig.setLoggerFactory(LoggerFactory.DEFAULT);
             sshClient = new SSHClient(clientConfig);
-            // TODO: make real host verifier
-            sshClient.addHostKeyVerifier(new PromiscuousVerifier());
 
             try {
+                if (DBWorkbench.getPlatform().getApplication().isHeadlessMode() || configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)) {
+                    sshClient.addHostKeyVerifier(new PromiscuousVerifier());
+                } else {
+                    File knownHostsFile = SSHUtils.getKnownSshHostsFileOrDefault();
+                    sshClient.addHostKeyVerifier(new KnownHostsVerifier(knownHostsFile, DBWorkbench.getPlatformUI()));
+                }
                 sshClient.loadKnownHosts();
             } catch (IOException e) {
                 log.debug("Error loading known hosts: " + e.getMessage());
             }
+
+            sshClient.setConnectTimeout(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT));
+            sshClient.getConnection().getKeepAlive().setKeepAliveInterval(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL));
 
             sshClient.connect(host.getHostname(), host.getPort());
 
@@ -77,11 +87,17 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                     sshClient.authPassword(host.getUsername(), auth.getPassword());
                     break;
                 case PUBLIC_KEY:
-                    if (!CommonUtils.isEmpty(auth.getPassword())) {
-                        KeyProvider keyProvider = sshClient.loadKeys(auth.getKey().getAbsolutePath(), auth.getPassword().toCharArray());
-                        sshClient.authPublickey(host.getUsername(), keyProvider);
+                    if (auth.getKeyFile() != null) {
+                        if (!CommonUtils.isEmpty(auth.getPassword())) {
+                            KeyProvider keyProvider = sshClient.loadKeys(auth.getKeyFile().getAbsolutePath(), auth.getPassword().toCharArray());
+                            sshClient.authPublickey(host.getUsername(), keyProvider);
+                        } else {
+                            sshClient.authPublickey(host.getUsername(), auth.getKeyFile().getAbsolutePath());
+                        }
                     } else {
-                        sshClient.authPublickey(host.getUsername(), auth.getKey().getAbsolutePath());
+                        KeyProvider keyProvider = sshClient.loadKeys(auth.getKeyValue(), null,
+                            CommonUtils.isEmpty(auth.getPassword()) ? null : PasswordUtils.createOneOff(auth.getPassword().toCharArray()));
+                        sshClient.authPublickey(host.getUsername(), keyProvider);
                     }
                     break;
                 case AGENT: {

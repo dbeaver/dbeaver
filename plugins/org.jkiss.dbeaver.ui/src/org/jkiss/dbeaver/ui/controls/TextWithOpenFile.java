@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * TextWithOpen
@@ -79,19 +76,15 @@ public class TextWithOpenFile extends TextWithOpen
         }
     }
 
-    protected String getDialogDirectory() {
+    private String getDialogDirectory() {
         final String text = getText();
         if (CommonUtils.isEmptyTrimmed(text)) {
             return null;
         }
         try {
-            final Path path = Paths.get(text);
-            if (Files.isDirectory(path)) {
-                return path.toString();
-            }
-            final Path parent = path.getParent();
-            if (parent != null) {
-                return parent.toString();
+            String dirPath = CommonUtils.getDirectoryPath(text);
+            if (CommonUtils.isNotEmpty(dirPath)) {
+                return dirPath;
             }
         } catch (InvalidPathException ignored) {
         }

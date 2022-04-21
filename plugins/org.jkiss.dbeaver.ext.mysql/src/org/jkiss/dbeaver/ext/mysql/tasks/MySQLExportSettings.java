@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,9 +45,20 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     private static final Log log = Log.getLog(MySQLExportSettings.class);
 
     public enum DumpMethod {
-        ONLINE,
-        LOCK_ALL_TABLES,
-        NORMAL
+        ONLINE("--single-transaction"),
+        LOCK_ALL_TABLES("--lock-all-tables"),
+        NORMAL("--skip-lock-tables");
+
+        private final String cliOption;
+
+        DumpMethod(@NotNull String cliOption) {
+            this.cliOption = cliOption;
+        }
+
+        @NotNull
+        public String getCliOption() {
+            return cliOption;
+        }
     }
 
     private DumpMethod method = DumpMethod.NORMAL;
@@ -65,6 +76,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
 
     public List<MySQLDatabaseExportInfo> exportObjects = new ArrayList<>();
 
+    @NotNull
     public DumpMethod getMethod() {
         return method;
     }

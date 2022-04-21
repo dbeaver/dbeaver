@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
@@ -34,10 +35,7 @@ import org.jkiss.dbeaver.model.sql.exec.SQLScriptProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
-import org.jkiss.dbeaver.model.task.DBTTaskHandler;
-import org.jkiss.dbeaver.model.task.DBTaskUtils;
+import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.utils.IOUtils;
 
@@ -51,8 +49,11 @@ import java.util.Locale;
  */
 public class SQLScriptExecuteHandler implements DBTTaskHandler {
 
+    private final DBCStatistics totalStatistics = new DBCStatistics();
+
     @Override
-    public void executeTask(
+    @NotNull
+    public DBTTaskRunStatus executeTask(
         @NotNull DBRRunnableContext runnableContext,
         @NotNull DBTTask task,
         @NotNull Locale locale,
@@ -63,14 +64,14 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
         settings.loadConfiguration(runnableContext, task.getProperties());
         executeWithSettings(runnableContext, task, locale, log, logStream, listener, settings);
+        return DBTTaskRunStatus.makeStatisticsStatus(totalStatistics);
     }
 
     private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, PrintStream logStream, @NotNull DBTTaskExecutionListener listener, SQLScriptExecuteSettings settings) throws DBException {
         log.debug("SQL Scripts Execute");
 
         // Start consumers
-        listener.taskStarted(settings);
-
+        listener.taskStarted(task);
         Throwable error = null;
         try {
             runnableContext.run(true, true, monitor -> {
@@ -88,7 +89,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         if (error != null) {
             log.error(error);
         }
-        listener.taskFinished(settings, null, error);
+        listener.taskFinished(task, null, error, settings);
 
         log.debug("SQL script execute completed");
     }
@@ -153,6 +154,8 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         }
 
         scriptProcessor.runScript(monitor);
+
+        totalStatistics.accumulate(scriptProcessor.getTotalStatistics());
     }
 
 }

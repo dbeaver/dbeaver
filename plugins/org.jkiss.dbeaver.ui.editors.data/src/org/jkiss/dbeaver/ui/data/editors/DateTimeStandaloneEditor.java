@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -28,12 +26,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.dialogs.ValueViewDialog;
 
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -43,39 +47,34 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
 
     private CustomTimeEditor timeEditor;
     private boolean dirty;
+    private IValueController valueController;
 
     public DateTimeStandaloneEditor(IValueController valueController) {
         super(valueController);
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
-    {
-        IValueController valueController = getValueController();
+    protected Control createDialogArea(Composite parent) {
+        valueController = getValueController();
         Object value = valueController.getValue();
-
-        Composite dialogGroup = (Composite)super.createDialogArea(parent);
+        Composite dialogGroup = (Composite) super.createDialogArea(parent);
         Composite panel = UIUtils.createComposite(dialogGroup, 3);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        int style = SWT.BORDER;
+        int style = SWT.NONE;
         if (valueController.isReadOnly()) {
             style |= SWT.READ_ONLY;
         }
 
-        UIUtils.createControlLabel(panel, "Time");
-        timeEditor = new CustomTimeEditor(panel, style);
-        timeEditor.getControl().addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                dirty = true;
-            }
-        });
+        timeEditor = new CustomTimeEditor(panel, style, false, false);
+        timeEditor.getControl().addListener(SWT.Modify, event -> dirty = true);
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         timeEditor.getControl().setLayoutData(gd);
-
+        timeEditor.createDateFormat(valueController.getValueType());
+        if (!ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)){
+            timeEditor.setToTextComposite();
+        }
         primeEditorValue(value);
 
         Button button = UIUtils.createPushButton(panel, "Set Current", null);
@@ -83,8 +82,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         button.setEnabled(!valueController.isReadOnly());
         button.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 primeEditorValue(new Date());
             }
         });
@@ -92,19 +90,33 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         return dialogGroup;
     }
 
-    @Override
-    public Object extractEditorValue() throws DBException {
-        final String strValue = timeEditor.getValue();
-        return getValueController().getValueHandler().getValueFromObject(null, getValueController().getValueType(), strValue, false, false);
+    private boolean isCalendarMode() {
+        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
     }
 
     @Override
-    public void primeEditorValue(@Nullable Object value)
-    {
-        final String strValue = value == null ?
-            "" :
-            getValueController().getValueHandler().getValueDisplayString(getValueController().getValueType(), value, DBDDisplayFormat.EDIT);
-        timeEditor.setValue(strValue);
+    public Object extractEditorValue() throws DBException {
+        try (DBCSession session = getValueController().getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
+            if (!isCalendarMode()) {
+                final String strValue = timeEditor.getValueAsString();
+                return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), strValue, false, true);
+            } else {
+                final Date dateValue = timeEditor.getValueAsDate();
+                return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), dateValue, false, true);
+            }
+        }
+    }
+
+    @Override
+    public void primeEditorValue(@Nullable Object value) {
+        timeEditor.setTextValue(valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT));
+        if (value instanceof Time) {
+            timeEditor.setValue((Time) value);
+        } else if (value instanceof Timestamp) {
+            timeEditor.setValue((Timestamp) value);
+        } else if (value instanceof Date) {
+            timeEditor.setValue((Date) value);
+        }
     }
 
     @Override

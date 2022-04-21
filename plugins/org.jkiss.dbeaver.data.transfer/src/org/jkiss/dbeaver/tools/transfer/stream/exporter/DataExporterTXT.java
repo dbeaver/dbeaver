@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,18 +17,20 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -38,7 +40,7 @@ import java.util.Map;
 /**
  * TXT Exporter
  */
-public class DataExporterTXT extends StreamExporterAbstract {
+public class DataExporterTXT extends StreamExporterAbstract implements IAppendableDataExporter {
 
     private static final String PROP_BATCH_SIZE = "batchSize";
     private static final String PROP_MIN_COLUMN_LENGTH = "minColumnLength";
@@ -51,7 +53,8 @@ public class DataExporterTXT extends StreamExporterAbstract {
 
     private int batchSize = 200;
     private int maxColumnSize = 0;
-    private int minColumnSize = 3;
+    private int minColumnSize = 1;
+    private boolean showHeader = true;
     private boolean showNulls;
     private boolean delimLeading, delimHeader, delimTrailing, delimBetween;
     private Deque<String[]> batchQueue;
@@ -64,7 +67,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
         super.init(site);
         Map<String, Object> properties = site.getProperties();
         this.batchSize = Math.max(CommonUtils.toInt(properties.get(PROP_BATCH_SIZE), 200), 200);
-        this.minColumnSize = Math.max(CommonUtils.toInt(properties.get(PROP_MIN_COLUMN_LENGTH), 3), 3);
+        this.minColumnSize = Math.max(CommonUtils.toInt(properties.get(PROP_MIN_COLUMN_LENGTH), 1), 1);
         this.maxColumnSize = Math.max(CommonUtils.toInt(properties.get(PROP_MAX_COLUMN_LENGTH), 0), 0);
         this.showNulls = CommonUtils.getBoolean(properties.get(PROP_SHOW_NULLS), false);
         this.delimLeading = CommonUtils.getBoolean(properties.get(PROP_DELIM_LEADING), true);
@@ -83,13 +86,15 @@ public class DataExporterTXT extends StreamExporterAbstract {
         colWidths = new int[columns.length];
         Arrays.fill(colWidths, minColumnSize);
 
-        final String[] header = new String[columns.length];
+        if (showHeader) {
+            final String[] header = new String[columns.length];
 
-        for (int index = 0; index < columns.length; index++) {
-            header[index] = getAttributeName(columns[index]);
+            for (int index = 0; index < columns.length; index++) {
+                header[index] = getAttributeName(columns[index]);
+            }
+
+            appendRow(header);
         }
-
-        appendRow(header);
     }
 
     @Override
@@ -106,6 +111,21 @@ public class DataExporterTXT extends StreamExporterAbstract {
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException {
         writeQueue();
+    }
+
+    @Override
+    public void importData(@NotNull IStreamDataExporterSite site) {
+        final File file = site.getOutputFile();
+        if (file == null || !file.exists()) {
+            return;
+        }
+        // FIXME: Sources may be different and thus may have a different set of attributes
+        showHeader = false;
+    }
+
+    @Override
+    public boolean shouldTruncateOutputFileBeforeExport() {
+        return false;
     }
 
     private void appendRow(String[] row) {
@@ -182,12 +202,11 @@ public class DataExporterTXT extends StreamExporterAbstract {
     }
 
     private String getCellString(DBDAttributeBinding attr, Object value) {
-        final String displayString = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.EDIT);
+        final String displayString = attr.getValueHandler().getValueDisplayString(attr, value, getValueExportFormat(attr));
 
-        if (showNulls && displayString.isEmpty() && DBUtils.isNullValue(value)) {
-            return DBConstants.NULL_VALUE_LABEL;
+        if (DBUtils.isNullValue(value)) {
+            return showNulls ? DBConstants.NULL_VALUE_LABEL : "";
         }
-
         return CommonUtils.getSingleLineString(displayString);
     }
 

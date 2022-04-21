@@ -48,7 +48,7 @@
                                       icon="#folder_table"
                                       label="%tree.partition_columns.node.name"
                                       type="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn"
-                                      visibleIf="object.dataSource.hasPartitionColumns"
+                                      visibleIf="connected &amp;&amp; dataSource.hasPartitionColumns"
                                       >
                                     <items
                                          icon="#partition"
@@ -146,7 +146,7 @@
                       icon="#folder_schema"
                       label="%tree.virtualschemas.node.name"
                       type="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema"
-                      visibleIf="object.dataSource.atLeastV6">
+                      visibleIf="connected &amp;&amp; dataSource.atLeastV6">
                    <items
                          icon="#schema"
                          label="%tree.virtualschema.node.name"
@@ -254,7 +254,7 @@
                             navigable="false"
                             path="role"
                             property="roles"
-                            visibleIf="object.dataSource.authorizedForRolePrivs">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForRolePrivs">
                       </items>
                       <items
                             icon="#schema"
@@ -262,7 +262,7 @@
                             navigable="false"
                             path="schema"
                             property="schemas"
-                            visibleIf="object.dataSource.authorizedForObjectPrivs">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
                       </items>
                       <items
                             icon="#table"
@@ -270,7 +270,7 @@
                             navigable="false"
                             path="table"
                             property="tables"
-                            visibleIf="object.dataSource.authorizedForObjectPrivs">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
                       </items>
                       <items
                             icon="#view"
@@ -278,7 +278,7 @@
                             navigable="false"
                             path="view"
                             property="views"
-                            visibleIf="object.dataSource.authorizedForObjectPrivs">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
                       </items>
                       <items
                             icon="icons/remoteServer.gif"
@@ -286,7 +286,7 @@
                             navigable="false"
                             path="connection"
                             property="connections"
-                            visibleIf="object.dataSource.authorizedForConnections">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForConnections">
                       </items>
                       <items
                             icon="#procedure"
@@ -294,7 +294,7 @@
                             navigable="false"
                             path="script"
                             property="procedures"
-                            visibleIf="object.dataSource.authorizedForObjectPrivs">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
                       </items>
                       <items
                             icon="#dbauth"
@@ -310,7 +310,7 @@
                       icon="#folder_user"
                       label="%tree.roles.node.name"
                       type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole"
-                      visibleIf="object.dataSource.authorizedForRolePrivs">
+                      visibleIf="connected &amp;&amp; dataSource.authorizedForRolePrivs">
                    <items
                          icon="icons/role.gif"
                          label="%tree.role.node.name"
@@ -321,7 +321,7 @@
                             navigable="false"
                             path="role"
                             property="roles"
-                            visibleIf="object.dataSource.authorizedForRolePrivs">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForRolePrivs">
                       </items>
                       <items
                             icon="#schema"
@@ -329,7 +329,7 @@
                             navigable="false"
                             path="schema"
                             property="schemas"
-                            visibleIf="object.dataSource.authorizedForObjectPrivs">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
                       </items>
                       <items
                             icon="#table"
@@ -337,7 +337,7 @@
                             navigable="false"
                             path="table"
                             property="tables"
-                            visibleIf="object.dataSource.authorizedForObjectPrivs">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
                       </items>
                       <items
                             icon="#view"
@@ -345,7 +345,7 @@
                             navigable="false"
                             path="view"
                             property="views"
-                            visibleIf="object.dataSource.authorizedForObjectPrivs">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
                       </items>
                       <items
                             icon="icons/remoteServer.gif"
@@ -353,7 +353,7 @@
                             navigable="false"
                             path="connection"
                             property="connections"
-                            visibleIf="object.dataSource.authorizedForConnections">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForConnections">
                       </items>
                       <items
                             icon="#procedure"
@@ -361,7 +361,7 @@
                             navigable="false"
                             path="script"
                             property="procedures"
-                            visibleIf="object.dataSource.authorizedForObjectPrivs">
+                            visibleIf="connected &amp;&amp; dataSource.authorizedForObjectPrivs">
                       </items>
                       <items
                             icon="#dbauth"
@@ -377,7 +377,7 @@
                       icon="#folder_database"
                       label="%tree.prioritygroups.node.name"
                       type="org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup"
-                      visibleIf="object.dataSource.hasPriorityGroups">
+                      visibleIf="connected &amp;&amp; dataSource.hasPriorityGroups">
                    <items
                          icon="#database"
                          label="%tree.prioritygroup.node.name"
@@ -389,7 +389,7 @@
                       icon="#folder_database"
                       label="%tree.consumergroups.node.name"
                       type="org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup"
-                      visibleIf="object.dataSource.hasConsumerGroups">
+                      visibleIf="connected &amp;&amp; dataSource.hasConsumerGroups">
                    <items
                          icon="#database"
                          label="%tree.consumergroup.node.name"
@@ -401,7 +401,7 @@
                       description="%tree.security.node.description"
                       icon="#folder_info"
                       label="%tree.security.node.name"
-                      visibleIf="object.dataSource.hasPasswordPolicy">
+                      visibleIf="connected &amp;&amp; dataSource.hasPasswordPolicy">
                    <folder
                          description="%tree.security_policy.node.description"
                          icon="#folder_info"

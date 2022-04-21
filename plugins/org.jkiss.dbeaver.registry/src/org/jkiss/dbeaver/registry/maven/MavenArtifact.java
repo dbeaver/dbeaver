@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class MavenArtifact implements IMavenIdentifier
     @NotNull
     private final String artifactId;
     @Nullable
-    private final String classifier;
+    private final String fallbackVersion;
 
     private final List<String> versions = new ArrayList<>();
     private String latestVersion;
@@ -68,12 +68,12 @@ public class MavenArtifact implements IMavenIdentifier
 
     private transient boolean metadataLoaded = false;
 
-    public MavenArtifact(@NotNull MavenRepository repository, @NotNull String groupId, @NotNull String artifactId, @Nullable String classifier)
+    public MavenArtifact(@NotNull MavenRepository repository, @NotNull String groupId, @NotNull String artifactId, @Nullable String fallbackVersion)
     {
         this.repository = repository;
         this.groupId = CommonUtils.trim(groupId);
         this.artifactId = CommonUtils.trim(artifactId);
-        this.classifier = CommonUtils.trim(classifier);
+        this.fallbackVersion = CommonUtils.trim(fallbackVersion);
     }
 
     public void loadMetadata(DBRProgressMonitor monitor) throws IOException {
@@ -184,8 +184,8 @@ public class MavenArtifact implements IMavenIdentifier
     }
 
     @Nullable
-    public String getClassifier() {
-        return classifier;
+    public String getFallbackVersion() {
+        return fallbackVersion;
     }
 
     @NotNull
@@ -260,8 +260,8 @@ public class MavenArtifact implements IMavenIdentifier
     String getVersionFileName(@NotNull String version, @NotNull String fileType) {
         StringBuilder sb = new StringBuilder();
         sb.append(artifactId).append("-").append(version);
-        if (FILE_JAR.equals(fileType) && !CommonUtils.isEmpty(classifier)) {
-            sb.append('-').append(classifier);
+        if (FILE_JAR.equals(fileType) && !CommonUtils.isEmpty(fallbackVersion)) {
+            sb.append('-').append(fallbackVersion);
         }
         sb.append(".").append(fileType);
         return sb.toString();

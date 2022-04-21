@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,15 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                 HANAObjectType.VIEW,
                 HANAObjectType.PROCEDURE,
                 HANAObjectType.SYNONYM
+        };
+    }
+
+    @Override
+    public DBSObjectType[] getHyperlinkObjectTypes() {
+        return new DBSObjectType[]{
+            HANAObjectType.TABLE,
+            HANAObjectType.VIEW,
+            HANAObjectType.SYNONYM
         };
     }
 
@@ -166,7 +175,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                                 @NotNull
                                 @Override
                                 public String getFullyQualifiedName(DBPEvaluationContext context) {
-                                    if (objectType == HANAObjectType.SYNONYM && "PUBLIC".equals(schemaName)) {
+                                    if (objectType == HANAObjectType.SYNONYM && HANAConstants.SCHEMA_PUBLIC.equals(schemaName)) {
                                         return DBUtils.getQuotedIdentifier(dataSource, objectName);
                                     }
                                     return super.getFullyQualifiedName(context);

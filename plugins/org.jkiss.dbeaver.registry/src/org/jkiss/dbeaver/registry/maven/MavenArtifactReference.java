@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,14 +40,14 @@ public class MavenArtifactReference implements IMavenIdentifier
     @NotNull
     private final String id;
     @Nullable
-    private final String classifier;
+    private final String fallbackVersion;
     private boolean resolveOptionalDependencies;
 
-    public MavenArtifactReference(@NotNull String groupId, @NotNull String artifactId, @Nullable String classifier, @NotNull String version) {
+    public MavenArtifactReference(@NotNull String groupId, @NotNull String artifactId, @Nullable String fallbackVersion, @NotNull String version) {
         this.groupId = CommonUtils.trim(groupId);
         this.artifactId = CommonUtils.trim(artifactId);
         this.version = CommonUtils.trim(version);
-        this.classifier = CommonUtils.trim(classifier);
+        this.fallbackVersion = CommonUtils.trim(fallbackVersion);
         this.id = makeId(this);
     }
 
@@ -62,7 +62,7 @@ public class MavenArtifactReference implements IMavenIdentifier
             // No artifact ID
             groupId = mavenUri;
             artifactId = mavenUri;
-            classifier = null;
+            fallbackVersion = null;
             version = DEFAULT_MAVEN_VERSION;
         } else {
             groupId = mavenUri.substring(0, divPos);
@@ -70,18 +70,18 @@ public class MavenArtifactReference implements IMavenIdentifier
             if (divPos2 < 0) {
                 // No version
                 artifactId = mavenUri.substring(divPos + 1);
-                classifier = null;
+                fallbackVersion = null;
                 version = DEFAULT_MAVEN_VERSION;
             } else {
                 int divPos3 = mavenUri.indexOf(':', divPos2 + 1);
                 if (divPos3 < 0) {
                     // No classifier
                     artifactId = mavenUri.substring(divPos + 1, divPos2);
-                    classifier = null;
+                    fallbackVersion = null;
                     version = mavenUri.substring(divPos2 + 1);
                 } else {
                     artifactId = mavenUri.substring(divPos + 1, divPos2);
-                    classifier = mavenUri.substring(divPos2 + 1, divPos3);
+                    fallbackVersion = mavenUri.substring(divPos2 + 1, divPos3);
                     version = mavenUri.substring(divPos3 + 1);
                 }
             }
@@ -103,8 +103,8 @@ public class MavenArtifactReference implements IMavenIdentifier
 
     @Override
     @Nullable
-    public String getClassifier() {
-        return classifier;
+    public String getFallbackVersion() {
+        return fallbackVersion;
     }
 
     @Override
@@ -142,8 +142,8 @@ public class MavenArtifactReference implements IMavenIdentifier
     }
 
     static String makeId(IMavenIdentifier identifier) {
-        if (identifier.getClassifier() != null) {
-            return identifier.getGroupId() + ":" + identifier.getArtifactId() + ":" + identifier.getClassifier();
+        if (identifier.getFallbackVersion() != null) {
+            return identifier.getGroupId() + ":" + identifier.getArtifactId() + ":" + identifier.getFallbackVersion();
         } else {
             return identifier.getGroupId() + ":" + identifier.getArtifactId();
         }

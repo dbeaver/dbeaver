@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
@@ -65,7 +66,11 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             if (auth.getType() == AuthType.PUBLIC_KEY) {
                 log.debug("Adding identity key");
                 try {
-                    addIdentityKey(monitor, configuration.getDataSource(), auth.getKey(), auth.getPassword());
+                    if (auth.getKeyFile() != null) {
+                        addIdentityKeyFile(monitor, configuration.getDataSource(), auth.getKeyFile(), auth.getPassword());
+                    } else {
+                        addIdentityKeyValue(auth.getKeyValue(), auth.getPassword());
+                    }
                 } catch (JSchException e) {
                     throw new DBException("Cannot add identity key", e);
                 }
@@ -96,9 +101,9 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                 }
 
                 session.setUserInfo(userInfo);
-                session.setConfig("StrictHostKeyChecking", "no");
-                session.setConfig("ConnectTimeout", String.valueOf(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT)));
-                session.setConfig("ServerAliveInterval", String.valueOf(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL)));
+                setupHostKeyVerification(session, configuration);
+                session.setServerAliveInterval(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL));
+                session.setTimeout(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT));
 
                 if (auth.getType() == AuthType.PASSWORD) {
                     session.setConfig("PreferredAuthentications", "password,keyboard-interactive");
@@ -120,6 +125,32 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             }
 
             sessions[index] = session;
+        }
+    }
+
+    private void setupHostKeyVerification(Session session, DBWHandlerConfiguration configuration) throws JSchException {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode() ||
+            configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)) {
+            session.setConfig("StrictHostKeyChecking", "no");
+        } else {
+            File knownHosts = SSHUtils.getKnownSshHostsFileOrNull();
+            if (knownHosts != null) {
+                try {
+                    jsch.setKnownHosts(knownHosts.getAbsolutePath());
+                    session.setConfig("StrictHostKeyChecking", "ask");
+                } catch (JSchException e) {
+                    if (e.getCause() instanceof ArrayIndexOutOfBoundsException) {
+                        if (DBWorkbench.getPlatformUI().confirmAction(JSCHUIMessages.ssh_file_corrupted_dialog_title, 
+                            JSCHUIMessages.ssh_file_corrupted_dialog_message, true)) {
+                            session.setConfig("StrictHostKeyChecking", "no");
+                        } else {
+                            throw e;
+                        }
+                    }
+                }
+            } else {
+                session.setConfig("StrictHostKeyChecking", "ask");
+            }
         }
     }
 
@@ -167,7 +198,16 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
     }
 
-    private void addIdentityKey(DBRProgressMonitor monitor, DBPDataSourceContainer dataSource, File key, String password) throws IOException, JSchException {
+    private void addIdentityKeyValue(String keyValue, String password) throws JSchException {
+        byte[] keyBinary = keyValue.getBytes(StandardCharsets.UTF_8);
+        if (!CommonUtils.isEmpty(password)) {
+            jsch.addIdentity("key", keyBinary, null, password.getBytes());
+        } else {
+            jsch.addIdentity("key", keyBinary, null, null);
+        }
+    }
+
+    private void addIdentityKeyFile(DBRProgressMonitor monitor, DBPDataSourceContainer dataSource, File key, String password) throws IOException, JSchException {
         String header;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(key))) {

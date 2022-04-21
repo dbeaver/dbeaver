@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetEditor;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.utils.CommonUtils;
@@ -48,7 +49,8 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_SUPPORTS_COUNT = "supportsCount";
     public static final String PROP_CAN_NAVIGATE_HISTORY = "canNavigateHistory";
     public static final String PROP_EDITABLE = "editable";
-    public static final String PROP_CHANGED = "changed";
+    private static final String PROP_CHANGED = "changed";
+    private static final String PROP_CAN_PERSIST_DATA = "canPersistData";
 
     private static final Log log = Log.getLog(ResultSetPropertyTester.class);
 
@@ -105,7 +107,7 @@ public class ResultSetPropertyTester extends PropertyTester
                 }
                 if ("edit".equals(expectedValue) || "inline".equals(expectedValue)) {
                     DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
-                    if (attr == null) {
+                    if (attr == null || !(rsv.getActivePresentation() instanceof IResultSetEditor)) {
                         return false;
                     }
                     if ("inline".equals(expectedValue)) {
@@ -133,7 +135,8 @@ public class ResultSetPropertyTester extends PropertyTester
                     !rsv.getAvailablePresentations().isEmpty();
             case PROP_SUPPORTS_COUNT:
                 return rsv.hasData() && rsv.isHasMoreData() &&
-                    (rsv.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0;
+                    rsv.getDataContainer() != null &&
+                    rsv.getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_COUNT);
             case PROP_CAN_NAVIGATE_LINK:
                 if (!actionsDisabled && rsv.getModel().hasData()) {
                     final ResultSetRow row = rsv.getCurrentRow();
@@ -154,6 +157,9 @@ public class ResultSetPropertyTester extends PropertyTester
                         return rsv.getHistoryPosition() > 0;
                     }
                 }
+                return false;
+            case PROP_CAN_PERSIST_DATA:
+                return !rsv.getModel().isUpdateInProgress();
         }
         return false;
     }

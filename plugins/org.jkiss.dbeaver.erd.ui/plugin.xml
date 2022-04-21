@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 
 <plugin>
 
-    <extension-point id="org.jkiss.dbeaver.erd.ui.export.format" name="%extension-point.org.jkiss.dbeaver.erd.ui.export.format.name" schema="schema/org.jkiss.dbeaver.erd.ui.export.format.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.erd.ui.export.format" name="%extension-point.org.jkiss.dbeaver.erd.ui.export.format.name" schema="schema/org.jkiss.dbeaver.ext.erd.export.format.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -44,7 +44,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler id="er-diagrams" class="org.jkiss.dbeaver.erd.ui.navigator.ERDResourceHandler" name="ER diagrams" managable="true" icon="icons/erd_folder.png">
+        <handler id="er-diagrams" class="org.jkiss.dbeaver.erd.ui.navigator.ERDResourceHandler" name="%resourceHandler.erd.ui.navigator.name"
+                 managable="true" icon="icons/erd_folder.png">
             <root folder="Diagrams"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd"/>
         </handler>

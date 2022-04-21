@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         DBWorkbench.getPlatform().getNavigatorModel().addListener(this);
 
         final ISelectionListener selectionListener = (part, selection) -> {
+            DataSourceToolbarUtils.triggerRefreshReadonlyElement();
             if (part == activePart && part instanceof IEditorPart && selection instanceof IStructuredSelection) {
                 final Object element = ((IStructuredSelection) selection).getFirstElement();
                 if (element != null) {
@@ -106,6 +107,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         // We'll miss a lot of DBP events because  we'll be activated only after UI will be instantiated
         // So we need to update toolbar explicitly right after UI will initialize
         UIUtils.asyncExec(this::updateToolbar);
+        UIUtils.asyncExec(DataSourceToolbarUtils::triggerRefreshReadonlyElement);
     }
 
     public void dispose() {
@@ -129,6 +131,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         if (activePart instanceof IEditorPart) {
             updateToolbar();
         }
+        DataSourceToolbarUtils.triggerRefreshReadonlyElement();
     }
 
     @Override
@@ -161,6 +164,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
             );
         }
 
+        UIUtils.asyncExec(DataSourceToolbarUtils::triggerRefreshReadonlyElement);
     }
 
     private void updateToolbar() {
@@ -203,6 +207,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
             //DBPDataSourceContainer newContainer = EditorUtils.getFileDataSource(activeFile);
             updateToolbar();
         }
+        DataSourceToolbarUtils.triggerRefreshReadonlyElement();
     }
 
 }

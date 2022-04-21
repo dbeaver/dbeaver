@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
+import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -48,8 +49,11 @@ import java.util.stream.Collectors;
  */
 public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTINGS extends SQLToolExecuteSettings<OBJECT_TYPE>> implements DBTTaskHandler {
 
+    private final DBCStatistics statistics = new DBCStatistics();
+
     @Override
-    public final void executeTask(
+    @NotNull
+    public final DBTTaskRunStatus executeTask(
         @NotNull DBRRunnableContext runnableContext,
         @NotNull DBTTask task,
         @NotNull Locale locale,
@@ -60,6 +64,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         SETTINGS settings = createToolSettings();
         settings.loadConfiguration(runnableContext, task.getProperties());
         executeWithSettings(runnableContext, task, locale, log, logStream, listener, settings);
+        return DBTTaskRunStatus.makeStatisticsStatus(statistics);
     }
 
     private void executeWithSettings(@NotNull DBRRunnableContext runnableContext, DBTTask task, @NotNull Locale locale, @NotNull Log log, PrintStream logStream, @NotNull DBTTaskExecutionListener listener, SETTINGS settings) throws DBException {
@@ -86,7 +91,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         List<OBJECT_TYPE> objectList = settings.getObjectList();
         Exception lastError = null;
 
-        listener.taskStarted(settings);
+        listener.taskStarted(task);
         try {
             monitor.beginTask("Execute tool '" + task.getType().getName() + "'", objectList.size());
             List<Throwable> warnings = settings.getWarnings();
@@ -157,6 +162,20 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
                                                 }
                                             }
                                         }
+
+                                        statistics.addStatementsCount();
+                                        statistics.addExecuteTime(execTime);
+                                        try {
+                                            long updateCount = statement.getUpdateRowCount();
+                                            if (updateCount >= 0) {
+                                                statistics.addRowsUpdated(updateCount);
+                                            }
+                                        } catch (DBCException e) {
+                                            // In some cases we can't read update count
+                                            // This is bad but we can live with it
+                                            // Just print a warning
+                                            log.warn("Can't obtain update count", e);
+                                        }
                                     }
                                 }
                             } catch (Exception e) {
@@ -190,7 +209,7 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
         } finally {
             monitor.done();
         }
-        listener.taskFinished(settings, null, lastError);
+        listener.taskFinished(task, null, lastError, settings);
 
         outLog.println("Tool execution finished");
         outLog.flush();

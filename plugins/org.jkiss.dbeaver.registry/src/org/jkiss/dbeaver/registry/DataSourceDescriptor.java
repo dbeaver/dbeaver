@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.auth.DBAAuthCredentialsProvider;
+import org.jkiss.dbeaver.model.auth.SMAuthCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -100,6 +100,9 @@ public class DataSourceDescriptor
     private DBPDataSourceOrigin origin;
 
     private final boolean manageable;
+
+    private boolean accessCheckRequired = true;
+
     @NotNull
     private DBPDriver driver;
     @NotNull
@@ -113,6 +116,7 @@ public class DataSourceDescriptor
     private String description;
     private boolean savePassword;
     private boolean connectionReadOnly;
+    private boolean forceUseSingleConnection = false;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
     private final Map<String, FilterMapping> filterMap = new HashMap<>();
     private DBDDataFormatterProfile formatterProfile;
@@ -181,20 +185,23 @@ public class DataSourceDescriptor
 
     /**
      * Copies datasource configuration
+     *
      * @param setDefaultStorage sets storage to default (in order to allow connection copy-paste with following save in default configuration)
      */
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultStorage)
-    {
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry,
+                                boolean setDefaultStorage) {
         this.registry = registry;
-        this.storage = setDefaultStorage ? ((DataSourceRegistry)registry).getDefaultStorage() : source.storage;
+        this.storage = setDefaultStorage ? ((DataSourceRegistry) registry).getDefaultStorage() : source.storage;
         this.origin = source.origin;
-        this.manageable = setDefaultStorage && ((DataSourceRegistry)registry).getDefaultStorage().isDefault();
+        this.manageable = setDefaultStorage && ((DataSourceRegistry) registry).getDefaultStorage().isDefault();
+        this.accessCheckRequired = manageable;
         this.id = source.id;
         this.name = source.name;
         this.description = source.description;
         this.savePassword = source.savePassword;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
         this.connectionReadOnly = source.connectionReadOnly;
+        this.forceUseSingleConnection = source.forceUseSingleConnection;
         this.driver = source.driver;
         this.connectionInfo = source.connectionInfo;
         this.clientHome = source.clientHome;
@@ -273,7 +280,13 @@ public class DataSourceDescriptor
     @Override
     public DBPDataSourceOrigin getOrigin() {
         if (origin instanceof DataSourceOriginLazy) {
-            DBPDataSourceOrigin realOrigin = ((DataSourceOriginLazy) this.origin).resolveRealOrigin();
+            DBPDataSourceOrigin realOrigin;
+            try {
+                realOrigin = ((DataSourceOriginLazy) this.origin).resolveRealOrigin();
+            } catch (DBException e) {
+                log.debug("Error reading datasource origin", e);
+                realOrigin = null;
+            }
             if (realOrigin != null) {
                 this.origin = realOrigin;
             } else {
@@ -620,6 +633,15 @@ public class DataSourceDescriptor
     }
 
     @Override
+    public boolean isAccessCheckRequired() {
+        return isManageable() && accessCheckRequired;
+    }
+
+    public void setAccessCheckRequired(boolean accessCheckRequired) {
+        this.accessCheckRequired = accessCheckRequired;
+    }
+
+    @Override
     public boolean isProvided() {
         return !storage.isDefault();
     }
@@ -754,7 +776,7 @@ public class DataSourceDescriptor
     @Override
     public boolean isConnected()
     {
-        return dataSource != null;
+        return dataSource != null && !connecting;
     }
 
     public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect)
@@ -774,16 +796,16 @@ public class DataSourceDescriptor
 
         // Update auth properties if possible
 
-        processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
-
         connecting = true;
         try {
+            processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
+
             // 1. Get credentials from origin
             DBPDataSourceOrigin dsOrigin = getOrigin();
-            if (dsOrigin instanceof DBAAuthCredentialsProvider) {
+            if (dsOrigin instanceof SMAuthCredentialsProvider) {
                 monitor.beginTask("Read auth parameters from " + dsOrigin.getDisplayName(), 1);
                 try {
-                    ((DBAAuthCredentialsProvider) dsOrigin).provideAuthParameters(monitor, this, resolvedConnectionInfo);
+                    ((SMAuthCredentialsProvider) dsOrigin).provideAuthParameters(monitor, this, resolvedConnectionInfo);
                 } finally {
                     monitor.done();
                 }
@@ -791,7 +813,7 @@ public class DataSourceDescriptor
 
             // 2. Get credentials from global provider
             boolean authProvided = true;
-            DBAAuthCredentialsProvider authProvider = registry.getAuthCredentialsProvider();
+            SMAuthCredentialsProvider authProvider = registry.getAuthCredentialsProvider();
             if (authProvider != null) {
                 authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
             } else {
@@ -895,19 +917,7 @@ public class DataSourceDescriptor
 
                 monitor.subTask("Connect to data source");
 
-                this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
-                this.connectTime = new Date();
-                monitor.worked(1);
-
-                if (initialize) {
-                    monitor.subTask("Initialize data source");
-                    try {
-                        dataSource.initialize(monitor);
-                    } catch (Throwable e) {
-                        log.error("Error initializing datasource", e);
-                        throw e;
-                    }
-                }
+                openDataSource(monitor, initialize);
 
                 this.connectFailed = false;
             } finally {
@@ -928,7 +938,7 @@ public class DataSourceDescriptor
                 log.debug("Connected (" + getId() + ", driver unknown)");
             }
             return true;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
                 try {
@@ -969,8 +979,23 @@ public class DataSourceDescriptor
         }
     }
 
-    private void processEvents(DBRProgressMonitor monitor, DBPConnectionEventType eventType)
-    {
+    public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
+        this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
+        this.connectTime = new Date();
+        monitor.worked(1);
+
+        if (initialize) {
+            monitor.subTask("Initialize data source");
+            try {
+                dataSource.initialize(monitor);
+            } catch (Throwable e) {
+                log.error("Error initializing datasource", e);
+                throw e;
+            }
+        }
+    }
+
+    private void processEvents(DBRProgressMonitor monitor, DBPConnectionEventType eventType) throws DBException {
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
@@ -1005,6 +1030,17 @@ public class DataSourceDescriptor
                 log.debug(processDescriptor.getName() + " result code: " + resultCode);
             }
             addChildProcess(processDescriptor);
+        }
+
+        for (DataSourceHandlerDescriptor handlerDesc : DataSourceProviderRegistry.getInstance().getDataSourceHandlers()) {
+            switch (eventType) {
+                case BEFORE_CONNECT:
+                    handlerDesc.getInstance().beforeConnect(monitor, this);
+                    break;
+                case AFTER_DISCONNECT:
+                    handlerDesc.getInstance().beforeDisconnect(monitor, this);
+                    break;
+            }
         }
     }
 
@@ -1061,6 +1097,11 @@ public class DataSourceDescriptor
 
             monitor.done();
 
+            return true;
+        } catch (Exception e) {
+            log.error("Error during datasource disconnect", e);
+            return false;
+        } finally {
             // Terminate child processes
             synchronized (childProcesses) {
                 for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
@@ -1084,8 +1125,6 @@ public class DataSourceDescriptor
                     false));
             }
 
-            return true;
-        } finally {
             connecting = false;
             log.debug("Disconnected (" + getId() + ")");
         }
@@ -1103,8 +1142,8 @@ public class DataSourceDescriptor
             if (user instanceof Job) {
                 jobCount++;
             }
-            if (user instanceof DBPDataSourceHandler) {
-                ((DBPDataSourceHandler) user).beforeDisconnect();
+            if (user instanceof DBPDataSourceAcquirer) {
+                ((DBPDataSourceAcquirer) user).beforeDisconnect();
             }
         }
         if (jobCount > 0) {
@@ -1149,10 +1188,8 @@ public class DataSourceDescriptor
             log.debug("Can't reconnect - connect/disconnect is in progress");
             return false;
         }
-        if (isConnected()) {
-            if (!disconnect(monitor, reflect)) {
-                return false;
-            }
+        if (isConnected() && !disconnect(monitor, reflect)) {
+            return false;
         }
         return connect(monitor, true, reflect);
     }
@@ -1410,6 +1447,7 @@ public class DataSourceDescriptor
         this.description = descriptor.description;
         this.savePassword = descriptor.savePassword;
         this.connectionReadOnly = descriptor.connectionReadOnly;
+        this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
         this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getNavigatorSettings());
     }
@@ -1435,6 +1473,7 @@ public class DataSourceDescriptor
             CommonUtils.equalOrEmptyStrings(this.description, source.description) &&
             CommonUtils.equalObjects(this.savePassword, source.savePassword) &&
             CommonUtils.equalObjects(this.connectionReadOnly, source.connectionReadOnly) &&
+            CommonUtils.equalObjects(this.forceUseSingleConnection, source.forceUseSingleConnection) &&
             CommonUtils.equalObjects(this.navigatorSettings, source.navigatorSettings) &&
             CommonUtils.equalObjects(this.driver, source.driver) &&
             CommonUtils.equalObjects(this.connectionInfo, source.connectionInfo) &&
@@ -1500,6 +1539,16 @@ public class DataSourceDescriptor
     @Override
     public DBPExclusiveResource getExclusiveLock() {
         return exclusiveLock;
+    }
+
+    @Override
+    public boolean isForceUseSingleConnection() {
+        return this.forceUseSingleConnection;
+    }
+
+    @Override
+    public void setForceUseSingleConnection(boolean value) {
+        this.forceUseSingleConnection = value;
     }
 
     public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler, final boolean passwordOnly)

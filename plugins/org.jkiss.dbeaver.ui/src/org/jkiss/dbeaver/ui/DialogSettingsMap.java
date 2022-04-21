@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,18 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.AbstractMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * DialogSettingsMap
  */
 public class DialogSettingsMap extends AbstractMap<String, Object> {
+    private static final Log log = Log.getLog(DialogSettingsMap.class);
 
     private final IDialogSettings settings;
 
@@ -40,14 +41,17 @@ public class DialogSettingsMap extends AbstractMap<String, Object> {
     @NotNull
     @Override
     public Set<Entry<String, Object>> entrySet() {
-        Set<Entry<String, Object>> sectionSet = new LinkedHashSet<>();
-        IDialogSettings[] sections = settings.getSections();
-        if (sections != null) {
-            for (IDialogSettings section : sections) {
-                sectionSet.add(new SimpleEntry<>(section.getName(), new DialogSettingsMap(section)));
-            }
+        final Set<Entry<String, Object>> entries = new LinkedHashSet<>();
+        for (IDialogSettings section : ArrayUtils.safeArray(settings.getSections())) {
+            entries.add(new SimpleEntry<>(section.getName(), new DialogSettingsMap(section)));
         }
-        return sectionSet;
+        for (Entry<String, String> entry : getItemsInternal().entrySet()) {
+            entries.add(new SimpleEntry<>(entry.getKey(), entry.getValue()));
+        }
+        for (Entry<String, String[]> entry : getArrayItemsInternal().entrySet()) {
+            entries.add(new SimpleEntry<>(entry.getKey(), entry.getValue()));
+        }
+        return entries;
     }
 
     @Override
@@ -74,10 +78,19 @@ public class DialogSettingsMap extends AbstractMap<String, Object> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object putIfAbsent(String key, Object value) {
         if (value instanceof Map) {
-            IDialogSettings section = settings.addNewSection(key);
-            return fillSection(section, (Map)value);
+            final DialogSettingsMap map = new DialogSettingsMap(settings.addNewSection(key));
+            map.putAll((Map<String, String>) value);
+            return map;
+        } else if (ArrayUtils.isArray(value)) {
+            final Object[] src = (Object[]) value;
+            final String[] dst = new String[src.length];
+            for (int i = 0; i < src.length; i++) {
+                dst[i] = CommonUtils.toString(src[i]);
+            }
+            settings.put(key, dst);
         } else {
             settings.put(key, CommonUtils.toString(value));
         }
@@ -89,14 +102,6 @@ public class DialogSettingsMap extends AbstractMap<String, Object> {
         return false;
     }
 
-    private DialogSettingsMap fillSection(IDialogSettings section, Map<String, Object> value) {
-        DialogSettingsMap settingsMap = new DialogSettingsMap(section);
-        for (Map.Entry<String, Object> entry : value.entrySet()) {
-            settingsMap.put(entry.getKey(), entry.getValue());
-        }
-        return settingsMap;
-    }
-
     @Override
     public int hashCode() {
         return settings.hashCode();
@@ -105,5 +110,25 @@ public class DialogSettingsMap extends AbstractMap<String, Object> {
     @Override
     public boolean equals(Object o) {
         return o instanceof DialogSettingsMap && settings.equals(((DialogSettingsMap) o).settings);
+    }
+
+    @NotNull
+    private Map<String, String> getItemsInternal() {
+        try {
+            return BeanUtils.getFieldValue(settings, "items");
+        } catch (Throwable e) {
+            log.error("Can't read items from settings", e);
+            return Collections.emptyMap();
+        }
+    }
+
+    @NotNull
+    private Map<String, String[]> getArrayItemsInternal() {
+        try {
+            return BeanUtils.getFieldValue(settings, "arrayItems");
+        } catch (Throwable e) {
+            log.error("Can't read array items from settings", e);
+            return Collections.emptyMap();
+        }
     }
 }

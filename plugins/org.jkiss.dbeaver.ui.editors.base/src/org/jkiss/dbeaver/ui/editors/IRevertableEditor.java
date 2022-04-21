@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2020 DBeaver Corp
+ * Copyright (C) 2010-2022 DBeaver Corp
  *
  * All Rights Reserved.
  *

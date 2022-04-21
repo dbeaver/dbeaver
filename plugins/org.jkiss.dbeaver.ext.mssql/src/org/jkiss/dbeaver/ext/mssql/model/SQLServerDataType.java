@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
@@ -156,6 +157,14 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     }
 
     @Override
+    public SQLServerDatabase getDatabase() {
+        if (owner instanceof SQLServerDatabase) {
+            return (SQLServerDatabase) owner;
+        }
+        return ((SQLServerDataSource) owner).getDefaultDatabase(new VoidProgressMonitor()); // Monitor is not significant here, so we can use Void monitor
+    }
+
+    @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBCException {
         StringBuilder sql = new StringBuilder();
@@ -173,7 +182,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             if (!nullable) {
                 sql.append(" NOT NULL;");
             }
-        } else {
+        } else if (tableTypeId != 0) {
             try {
                 SQLServerTableType tableType = getSysSchema(monitor).getTableType(monitor, tableTypeId);
                 if (tableType != null) {

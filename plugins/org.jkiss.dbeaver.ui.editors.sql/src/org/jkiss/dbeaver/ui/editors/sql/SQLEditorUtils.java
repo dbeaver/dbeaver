@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -54,8 +55,14 @@ public class SQLEditorUtils {
 
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
 
+    /**
+     * A {@link IResource}'s session property to distinguish between persisted and newly created resources.
+     */
+    private static final QualifiedName NEW_SCRIPT_FILE = new QualifiedName(SQLEditorActivator.PLUGIN_ID, "newScriptFile");
+
     public static boolean isOpenSeparateConnection(DBPDataSourceContainer container) {
         return container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
+            !container.isForceUseSingleConnection() &&
             !container.getDriver().isEmbedded();
     }
 
@@ -89,18 +96,16 @@ public class SQLEditorUtils {
         return recentFile;
     }
 
-    private static void findScriptList(@NotNull DBPProject project, IFolder folder, @Nullable DBPDataSourceContainer container, List<ResourceInfo> result)
-    {
+    private static void findScriptList(@NotNull DBPProject project, IFolder folder, @Nullable DBPDataSourceContainer container, @NotNull List<ResourceInfo> result) {
         if (folder == null || container == null) {
             return;
         }
         try {
             for (Map.Entry<String, Map<String, Object>> rp : project.getResourceProperties().entrySet()) {
-                String resName = rp.getKey();
                 Map<String, Object> props = rp.getValue();
                 Object dsId = props.get(EditorUtils.PROP_SQL_DATA_SOURCE_ID);
                 if (CommonUtils.equalObjects(container.getId(), dsId)) {
-                    IResource resource = project.getEclipseProject().findMember(resName);
+                    IResource resource = project.getEclipseProject().findMember(rp.getKey());
                     if (resource instanceof IFile) {
                         result.add(new ResourceInfo((IFile) resource, container));
                     }
@@ -126,6 +131,33 @@ public class SQLEditorUtils {
         List<ResourceInfo> result = new ArrayList<>();
         findScriptList(project, folder, container, result);
         return result;
+    }
+
+    @NotNull
+    public static List<ResourceInfo> getScriptsFromProject(@NotNull DBPProject dbpProject) throws CoreException {
+        IFolder resourceDefaultRoot = DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(dbpProject, ScriptsHandlerImpl.class, false);
+        if (resourceDefaultRoot != null) {
+            return getScriptsFromFolder(resourceDefaultRoot);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    @NotNull
+    private static List<ResourceInfo> getScriptsFromFolder(@NotNull IFolder folder) throws CoreException {
+        List<ResourceInfo> scripts = new ArrayList<>();
+        for (IResource member : folder.members()) {
+            if (member instanceof IFile) {
+                IFile iFile = (IFile) member;
+                ResourceInfo resourceInfo = new ResourceInfo(iFile, EditorUtils.getFileDataSource(iFile));
+                scripts.add(resourceInfo);
+            }
+            if (member instanceof IFolder){
+                IFolder iFolder = (IFolder) member;
+                scripts.addAll(getScriptsFromFolder(iFolder));
+            }
+        }
+        return scripts;
     }
 
     public static IFile createNewScript(DBPProject project, @Nullable IFolder folder, @NotNull SQLNavigatorContext navigatorContext) throws CoreException
@@ -194,6 +226,7 @@ public class SQLEditorUtils {
                 CommonUtils.isEmpty(filename) ? "Script" : CommonUtils.escapeFileName(filename),
                 SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(getResolvedNewScriptTemplate(dataSourceContainer).getBytes(StandardCharsets.UTF_8)), true, progressMonitor);
+        tempFile.setSessionProperty(NEW_SCRIPT_FILE, true);
 
         // Save ds container reference
         if (navigatorContext.getDataSourceContainer() != null) {
@@ -214,6 +247,14 @@ public class SQLEditorUtils {
             return description;
         }
         return "";
+    }
+
+    public static boolean isNewScriptFile(@NotNull IResource resource) {
+        try {
+            return Boolean.TRUE.equals(resource.getSessionProperty(NEW_SCRIPT_FILE));
+        } catch (CoreException ignored) {
+            return false;
+        }
     }
 
     @NotNull

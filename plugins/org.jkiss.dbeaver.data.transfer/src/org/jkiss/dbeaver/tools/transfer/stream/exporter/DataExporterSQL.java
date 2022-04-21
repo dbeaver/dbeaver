@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -29,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
@@ -40,7 +38,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * SQL Exporter
@@ -56,6 +56,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private static final char STRING_QUOTE = '\'';
     private static final String PROP_LINE_BEFORE_ROWS = "lineBeforeRows";
     private static final String PROP_KEYWORD_CASE = "keywordCase";
+    private static final String PROP_IDENTIFIER_CASE = "identifierCase";
     private static final String PROP_UPSERT = "upsertKeyword";
     private static final String PROP_ON_CONFLICT = "insertOnConflict";
 
@@ -81,6 +82,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private final static String KEYWORD_ON_CONFLICT = "ON CONFLICT";
 
     private DBPIdentifierCase identifierCase;
+    private DBPIdentifierCase columnsAndTableNamesCase;
     private static String onConflictExpression;
 
     private transient StringBuilder sqlBuffer = new StringBuilder(100);
@@ -149,10 +151,19 @@ public class DataExporterSQL extends StreamExporterAbstract {
         }
 
         String keywordCase = CommonUtils.toString(properties.get(PROP_KEYWORD_CASE));
-        if (keywordCase.equalsIgnoreCase("lower")) {
+        if (keywordCase.equals("lower")) {
             identifierCase = DBPIdentifierCase.LOWER;
         } else {
             identifierCase = DBPIdentifierCase.UPPER;
+        }
+
+        String identifierCaseProp = CommonUtils.toString(properties.get(PROP_IDENTIFIER_CASE));
+        if (identifierCaseProp.equals("as is")) {
+            columnsAndTableNamesCase = DBPIdentifierCase.MIXED;
+        } else if (identifierCaseProp.equals("lower")) {
+            columnsAndTableNamesCase = DBPIdentifierCase.LOWER;
+        } else {
+            columnsAndTableNamesCase = DBPIdentifierCase.UPPER;
         }
 
         insertKeyword = InsertKeyword.fromValue(CommonUtils.toString(properties.get(PROP_UPSERT)));
@@ -176,6 +187,22 @@ public class DataExporterSQL extends StreamExporterAbstract {
         tableName = DTUtils.getTableName(session.getDataSource(), source, omitSchema);
 
         rowCount = 0;
+    }
+
+    private String transformTableNameCase(DBPDataSource dataSource, String tableIdentifier) {
+        if (!columnsAndTableNamesCase.equals(DBPIdentifierCase.MIXED)) {
+            SQLIdentifierDetector identifierDetector = new SQLIdentifierDetector(SQLUtils.getDialectFromDataSource(dataSource));
+            String[] mayBeQualifiedNameParts = Arrays.stream(identifierDetector.splitIdentifier(tableIdentifier))
+                    .map(name -> transformIdentifierCase(dataSource, name))
+                    .toArray(String[]::new);
+            return DBUtils.getFullyQualifiedName(dataSource, mayBeQualifiedNameParts);
+        } else {
+            return tableIdentifier;
+        }
+    }
+
+    private String transformIdentifierCase(DBPDataSource dataSource, String identifier) {
+        return DBUtils.isQuotedIdentifier(dataSource, identifier) ? identifier : columnsAndTableNamesCase.transform(identifier);
     }
 
     @Override
@@ -224,7 +251,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                         sqlBuffer.append(identifierCase.transform(KEYWORD_INSERT_INTO));
                     }
             }
-            sqlBuffer.append(" ").append(tableName).append(" (");
+            sqlBuffer.append(" ").append(transformTableNameCase(session.getDataSource(), tableName)).append(" (");
             boolean hasColumn = false;
             for (DBDAttributeBinding column : columns) {
                 if (isSkipColumn(column)) {
@@ -234,7 +261,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                     sqlBuffer.append(',');
                 }
                 hasColumn = true;
-                sqlBuffer.append(DBUtils.getQuotedIdentifier(column));
+                sqlBuffer.append(transformIdentifierCase(session.getDataSource(), DBUtils.getQuotedIdentifier(column)));
             }
             sqlBuffer.append(") ");
             sqlBuffer.append(identifierCase.transform(KEYWORD_VALUES));

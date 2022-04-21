@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
@@ -35,8 +38,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
 import org.eclipse.ui.texteditor.*;
@@ -63,18 +65,17 @@ import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -112,7 +113,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private SQLParserContext parserContext;
     private ProjectionSupport projectionSupport;
 
-    private ProjectionAnnotationModel annotationModel;
     //private Map<Annotation, Position> curAnnotations;
 
     //private IAnnotationAccess annotationAccess;
@@ -122,9 +122,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private SQLEditorControl editorControl;
 
     private ICharacterPairMatcher characterPairMatcher;
-    private SQLEditorCompletionContext completionContext;
+    private final SQLEditorCompletionContext completionContext;
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
+
+    private int lastQueryErrorPosition = -1;
 
     public SQLEditorBase() {
         super();
@@ -265,8 +267,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @Nullable
-    public ProjectionAnnotationModel getAnnotationModel() {
-        return annotationModel;
+    public IAnnotationModel getAnnotationModel() {
+        return getSourceViewer().getAnnotationModel();
+    }
+
+    @Nullable
+    public ProjectionAnnotationModel getProjectionAnnotationModel() {
+        return ((ProjectionViewer) getSourceViewer()).getProjectionAnnotationModel();
     }
 
     public SQLEditorSourceViewerConfiguration getViewerConfiguration() {
@@ -284,18 +291,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             occurrencesHighlighter.installOccurrencesFinder();
         }
 
-        ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
+        ProjectionViewer projectionViewer = (ProjectionViewer) getSourceViewer();
         projectionSupport = new ProjectionSupport(
-            viewer,
+            projectionViewer,
             getAnnotationAccess(),
             getSharedColors());
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.error"); //$NON-NLS-1$
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning"); //$NON-NLS-1$
         projectionSupport.install();
 
-        viewer.doOperation(ProjectionViewer.TOGGLE);
+        projectionViewer.doOperation(ProjectionViewer.TOGGLE);
 
-        annotationModel = viewer.getProjectionAnnotationModel();
+        ISourceViewer sourceViewer = getSourceViewer();
 
         // Symbol inserter
         {
@@ -303,15 +310,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
             loadActivePreferenceSettings();
 
-            ISourceViewer sourceViewer = getSourceViewer();
             if (sourceViewer instanceof ITextViewerExtension) {
                 ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(sqlSymbolInserter);
             }
         }
 
-        {
+        if (sourceViewer != null) {
             // Context listener
-            EditorUtils.trackControlContext(getSite(), getViewer().getTextWidget(), SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
+            EditorUtils.trackControlContext(getSite(), sourceViewer.getTextWidget(), SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
         }
     }
 
@@ -359,7 +365,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     protected boolean isAnnotationRulerVisible() {
-        return false;
+        return true;
     }
 
     @Override
@@ -378,6 +384,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException {
         handleInputChange(input);
+
+        final IFile file = GeneralUtils.adapt(input, IFile.class);
+        if (file != null && SQLEditorUtils.isNewScriptFile(file)) {
+            // Move cursor to the end of the file past script template
+            UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));
+        }
+
         super.doSetInput(input);
     }
 
@@ -498,6 +511,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
 */
 
+        clearProblems(null);
+
         if (themeListener != null) {
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeListener);
             themeListener = null;
@@ -577,7 +592,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION);
         menu.insertBefore(ITextEditorActionConstants.GROUP_COPY, ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_NAVIGATE_OBJECT));
 
-        if (!isReadOnly() && getTextViewer().isEditable()) {
+        TextViewer textViewer = getTextViewer();
+        if (!isReadOnly() && textViewer != null && textViewer.isEditable()) {
             MenuManager formatMenu = new MenuManager(SQLEditorMessages.sql_editor_menu_format, "format");
             IAction formatAction = getAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
             if (formatAction != null) {
@@ -767,13 +783,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         IDocument document = getDocument();
         String text = document == null ? "" : document.get();
         SQLQuery query = new SQLQuery(getDataSource(), text, 0, text.length());
-        return scrollCursorToError(monitor, query, error);
+        return visualizeQueryErrors(monitor, query, error, null);
     }
 
     /**
      * Error handling
      */
-    boolean scrollCursorToError(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error) {
+    boolean visualizeQueryErrors(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error, @Nullable SQLQuery originalQuery) {
         try {
             DBCExecutionContext context = getExecutionContext();
             if (context == null) {
@@ -788,35 +804,65 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     int queryStartOffset = query.getOffset();
                     int queryLength = query.getLength();
 
-                    DBPErrorAssistant.ErrorPosition pos = positions[0];
-                    if (pos.line < 0) {
-                        if (pos.position >= 0) {
-                            // Only position
-                            getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 0));
-                            scrolled = true;
-                        }
-                    } else {
-                        // Line + position
-                        IDocument document = getDocument();
-                        if (document != null) {
-                            int startLine = document.getLineOfOffset(queryStartOffset);
-                            int errorOffset = document.getLineOffset(startLine + pos.line);
-                            int errorLength;
+                    for (int index = 0; index < positions.length; index++) {
+                        DBPErrorAssistant.ErrorPosition pos = positions[index];
+                        int errorOffset = 0;
+                        if (pos.line < 0) {
                             if (pos.position >= 0) {
-                                errorOffset += pos.position;
-                                errorLength = 1;
-                            } else {
-                                errorLength = document.getLineLength(startLine + pos.line);
+                                // Only position
+                                errorOffset = queryStartOffset + pos.position;
+                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(errorOffset, queryLength - pos.position))) {
+                                    scrolled = true;
+                                } else if (index == 0) {
+                                    getSelectionProvider().setSelection(new TextSelection(errorOffset, 0));
+                                    scrolled = true;
+                                }
+                                if (originalQuery != null) {
+                                    IDocument document = getDocument();
+                                    if (document != null) {
+                                        int errorLine = document.getLineOfOffset(errorOffset);
+                                        if (errorLine >= 0) {
+                                            // Start position of the getLineOfOffset method is 0 but SQL Editor lines start from the 1
+                                            pos.line = errorLine + 1;
+                                        }
+                                    }
+                                }
                             }
-                            if (errorOffset < queryStartOffset) errorOffset = queryStartOffset;
-                            if (errorLength > queryLength) errorLength = queryLength;
-                            if (errorOffset >= queryStartOffset + queryLength) {
-                                // This may happen if error position was incorrectly detected.
-                                // E.g. in SQL Server when actual error happened in some stored procedure.
-                                errorOffset  = queryStartOffset + queryLength - 1;
+                        } else {
+                            // Line + position
+                            IDocument document = getDocument();
+                            if (document != null) {
+                                int startLine = document.getLineOfOffset(queryStartOffset);
+                                errorOffset = document.getLineOffset(startLine + pos.line);
+                                int errorLength;
+                                if (pos.position >= 0) {
+                                    errorOffset += pos.position;
+                                    errorLength = 1;
+                                } else {
+                                    errorLength = document.getLineLength(startLine + pos.line);
+                                }
+                                if (errorOffset < queryStartOffset) errorOffset = queryStartOffset;
+                                if (errorLength > queryLength) errorLength = queryLength;
+                                if (errorOffset >= queryStartOffset + queryLength) {
+                                    // This may happen if error position was incorrectly detected.
+                                    // E.g. in SQL Server when actual error happened in some stored procedure.
+                                    errorOffset = queryStartOffset + queryLength - 1;
+                                }
+                                // Try to add a problem marker, otherwise select text containing error if it's the first error
+                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(errorOffset, errorLength))) {
+                                    scrolled = true;
+                                } else if (index == 0) {
+                                    getSelectionProvider().setSelection(new TextSelection(errorOffset, errorLength));
+                                    scrolled = true;
+                                }
                             }
-                            getSelectionProvider().setSelection(new TextSelection(errorOffset, errorLength));
-                            scrolled = true;
+                        }
+                        if (originalQuery != null) {
+                            originalQuery.addExtraErrorMessage("\n" + SQLEditorMessages.sql_editor_error_position + ":" + (pos.line > 0 ? " line: " + pos.line : "") +
+                                (pos.position > 0 ? " pos: " + pos.position : ""));
+                            if (index == 0) {
+                                lastQueryErrorPosition = errorOffset;
+                            }
                         }
                     }
                 }
@@ -829,6 +875,75 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         } catch (Exception e) {
             log.warn("Error positioning on query error", e);
             return false;
+        }
+    }
+
+    protected boolean addProblem(@Nullable String message, @NotNull Position position) {
+        if (!getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)) {
+            return false;
+        }
+
+        final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
+        final IAnnotationModel annotationModel = getAnnotationModel();
+
+        if (resource == null || annotationModel == null) {
+            return false;
+        }
+
+        try {
+            final IMarker marker = resource.createMarker(SQLProblemAnnotation.MARKER_TYPE);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.MESSAGE, message);
+            marker.setAttribute(IMarker.TRANSIENT, true);
+            MarkerUtilities.setCharStart(marker, position.offset);
+            MarkerUtilities.setCharEnd(marker, position.offset + position.length);
+            annotationModel.addAnnotation(new SQLProblemAnnotation(marker), position);
+        } catch (CoreException e) {
+            log.error("Error creating problem marker", e);
+        }
+
+        try {
+            UIUtils.getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROBLEM_VIEW, null, IWorkbenchPage.VIEW_VISIBLE);
+        } catch (PartInitException e) {
+            log.debug("Error opening problem view", e);
+        }
+
+        return true;
+    }
+
+    protected void clearProblems(@Nullable SQLQuery query) {
+        if (query == null) {
+            final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
+
+            if (resource != null) {
+                try {
+                    resource.deleteMarkers(SQLProblemAnnotation.MARKER_TYPE, false, IResource.DEPTH_ONE);
+                } catch (CoreException e) {
+                    log.error("Error deleting problem markers", e);
+                }
+            }
+        } else {
+            final IAnnotationModel annotationModel = getAnnotationModel();
+
+            if (annotationModel != null) {
+                for (Iterator<Annotation> it = annotationModel.getAnnotationIterator(); it.hasNext(); ) {
+                    final Annotation annotation = it.next();
+
+                    if (annotation instanceof SQLProblemAnnotation) {
+                        final Position position = annotationModel.getPosition(annotation);
+
+                        if (position.overlapsWith(query.getOffset(), query.getLength())) {
+                            // We need to delete markers though. Maybe only when there is no line position?
+                            try {
+                                ((SQLProblemAnnotation) annotation).getMarker().delete();
+                            } catch (CoreException e) {
+                                log.error("Error deleting problem marker", e);
+                            }
+                            annotationModel.removeAnnotation(annotation);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -876,7 +991,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS:
                 sqlSymbolInserter.setCloseBracketsEnabled(CommonUtils.toBoolean(event.getNewValue()));
                 return;
-            case SQLPreferenceConstants.FOLDING_ENABLED:
+            case SQLPreferenceConstants.FOLDING_ENABLED: {
+                final ProjectionAnnotationModel annotationModel = getProjectionAnnotationModel();
                 if (annotationModel != null) {
                     SourceViewerConfiguration configuration = getSourceViewerConfiguration();
                     SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) getSourceViewer();
@@ -885,10 +1001,22 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     sourceViewer.configure(configuration);
                 }
                 return;
+            }
+            case SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED:
+                clearProblems(null);
+                return;
             case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
                 occurrencesHighlighter.updateInput(getEditorInput());
         }
+    }
+
+    void setLastQueryErrorPosition(int lastQueryErrorPosition) {
+        this.lastQueryErrorPosition = lastQueryErrorPosition;
+    }
+
+    int getLastQueryErrorPosition() {
+        return lastQueryErrorPosition;
     }
 
     ////////////////////////////////////////////////////////

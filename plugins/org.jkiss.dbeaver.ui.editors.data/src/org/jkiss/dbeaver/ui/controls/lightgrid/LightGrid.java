@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -420,7 +420,7 @@ public abstract class LightGrid extends Canvas {
         recalculateSizes();
 
         addDragAndDropSupport();
-        setDragDetect(true);
+        setDragDetect(false);
     }
 
     @NotNull
@@ -2175,6 +2175,19 @@ public abstract class LightGrid extends Canvas {
         } else {
             return null;
         }
+    }
+
+    public int getMaxVisibleRows(){
+        int y = 0;
+
+        if (columnHeadersVisible) {
+            y += headerHeight;
+        }
+
+        final Rectangle clientArea = getClientArea();
+        int availableHeight = clientArea.height - y;
+        int itemHeight = getItemHeight();
+        return availableHeight / itemHeight + 1;
     }
 
     private int getPinnedColumnsWidth() {

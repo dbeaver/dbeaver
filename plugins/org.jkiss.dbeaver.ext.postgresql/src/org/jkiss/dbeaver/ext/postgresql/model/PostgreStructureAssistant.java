@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -233,8 +233,9 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         PostgreServerExtension serverType = database.getDataSource().getServerType();
+        String proceduresOidColumn = serverType.getProceduresOidColumn();
         QueryParams queryParams = new QueryParams(
-            "pp." + serverType.getProceduresOidColumn() + " as poid, pp.*",
+            "pp." + proceduresOidColumn + " as poid, pp.*",
             "pg_catalog." + serverType.getProceduresSystemTable() + " pp",
             "pp.proname",
             schemas,
@@ -247,7 +248,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             queryParams.setDescriptionClause("obj_description(pp.oid, 'pg_proc')");
         }
         if (params.isSearchInDefinitions()) {
-            queryParams.setDefinitionClause("pp.prokind <> 'm' AND pp.prokind <> 'a' AND pg_get_functiondef(pp.\"oid\")");
+            queryParams.setDefinitionClause("pp.prokind <> 'm' AND pp.prokind <> 'a' AND pg_get_functiondef(pp.\"" + proceduresOidColumn + "\")");
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
         String sql = buildFindQuery(queryParams);

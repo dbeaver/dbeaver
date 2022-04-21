@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,6 +136,10 @@ public class DriverUtils {
         if (localFile.exists()) {
             // Already extracted
             return;
+        }
+        File localDir = localFile.getParentFile();
+        if (!localDir.exists() && !localDir.mkdirs()) { // in case of localFile located in subdirectory inside zip archive
+            throw new IOException("Can't create local file directory in the cache '" + localDir.getAbsolutePath() + "'");
         }
         try (FileOutputStream os = new FileOutputStream(localFile)) {
             copyZipStream(zipStream, os);

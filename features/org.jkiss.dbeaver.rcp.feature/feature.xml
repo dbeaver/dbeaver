@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.rcp.feature"
       label="%featureName"
-      version="2.1.146.qualifier"
+      version="2.1.155.qualifier"
       provider-name="%providerName">
 
     <description>
@@ -51,6 +51,7 @@
     <plugin id="org.eclipse.core.filesystem" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.core.jobs" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.core.resources" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.eclipse.core.variables" download-size="0" install-size="0" version="0.0.0"/>
     <plugin id="org.eclipse.e4.core.commands" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.e4.core.contexts" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.e4.core.di" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -114,6 +115,11 @@
 
     <plugin id="org.eclipse.update.configurator" download-size="0" install-size="0" version="0.0.0"/>
 
+    <!-- Network -->
+    <plugin id="org.eclipse.ui.net" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="org.eclipse.jsch.core" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="org.eclipse.jsch.ui" download-size="0" install-size="0" version="0.0.0"/>
+
     <!-- Quick search. Includes minimized ant bundle. -->
 
 <!--    <plugin id="org.apache.ant" download-size="0" install-size="0" version="0.0.0"/>-->
@@ -131,12 +137,6 @@
     <plugin id="org.eclipse.e4.core.di.annotations" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.e4.emf.xpath" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.apache.commons.jxpath" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
-    <!-- 3rd party -->
-
-    <plugin id="com.jcraft.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.apache.commons.logging" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.objectweb.asm" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- OS dependent -->
 
@@ -156,7 +156,9 @@
     <plugin id="org.eclipse.ui.cocoa" os="macosx" ws="cocoa" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
 
     <!-- JNA explicit version deps -->
+<!--
     <plugin id="com.sun.jna" download-size="0" install-size="0" version="5.8.0.v20210503-0343" unpack="false"/>
     <plugin id="com.sun.jna.platform" download-size="0" install-size="0" version="5.8.0.v20210406-1004" unpack="false"/>
+-->
 
 </feature>

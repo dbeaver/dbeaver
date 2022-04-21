@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,17 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * SQLServerStructureAssistant
@@ -157,7 +162,17 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             SQLServerDatabase database = schema.getDatabase();
             databases = Collections.singletonList(database);
         } else {
-            return Collections.emptyList();
+            if (parentObject instanceof SQLServerObject) {
+                databases = Collections.singletonList(((SQLServerObject) parentObject).getDatabase());
+            } else if (parentObject instanceof DBPDataSourceContainer) {
+                SQLServerDatabase database = executionContext.getContextDefaults().getDefaultCatalog();
+                if (database == null) {
+                    database = executionContext.getDataSource().getDefaultDatabase(monitor);
+                }
+                databases = Collections.singletonList(database);
+            } else {
+                return Collections.emptyList();
+            }
         }
 
         if (CommonUtils.isEmpty(databases)) {
@@ -190,28 +205,32 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         if (objectTypeClause.length() == 0) {
             return Collections.emptyList();
         }
+        boolean hasMask = !CommonUtils.isEmpty(params.getMask()) && !params.getMask().equals("%");
 
         StringBuilder sqlBuilder = new StringBuilder("SELECT TOP %d * FROM %s o");
         if (params.isSearchInComments()) {
             sqlBuilder.append(" LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
         }
-        sqlBuilder.append(" WHERE o.type IN (").append(objectTypeClause).append(") AND ");
-        boolean addParentheses = params.isSearchInComments() || params.isSearchInDefinitions();
-        if (addParentheses) {
-            sqlBuilder.append("(");
-        }
-        sqlBuilder.append("o.name LIKE ? ");
-        if (params.isSearchInComments()) {
-            sqlBuilder.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)");
-        }
-        if (params.isSearchInDefinitions()) {
-            if (params.isSearchInComments()) {
-                sqlBuilder.append(" ");
+        sqlBuilder.append(" WHERE o.type IN (").append(objectTypeClause).append(") ");
+        if (hasMask) {
+            sqlBuilder.append("AND ");
+            boolean addParentheses = params.isSearchInComments() || params.isSearchInDefinitions();
+            if (addParentheses) {
+                sqlBuilder.append("(");
             }
-            sqlBuilder.append("OR OBJECT_DEFINITION(o.object_id) LIKE ?");
-        }
-        if (addParentheses) {
-            sqlBuilder.append(") ");
+            sqlBuilder.append("o.name LIKE ? ");
+            if (params.isSearchInComments()) {
+                sqlBuilder.append("OR (ep.name = 'MS_Description' AND CAST(ep.value AS nvarchar) LIKE ?)");
+            }
+            if (params.isSearchInDefinitions()) {
+                if (params.isSearchInComments()) {
+                    sqlBuilder.append(" ");
+                }
+                sqlBuilder.append("OR OBJECT_DEFINITION(o.object_id) LIKE ?");
+            }
+            if (addParentheses) {
+                sqlBuilder.append(") ");
+            }
         }
         if (schema != null) {
             sqlBuilder.append("AND o.schema_id = ? ");
@@ -228,15 +247,18 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 }
                 String sql = String.format(template, rowsToFetch, SQLServerUtils.getSystemTableName(database, "all_objects"));
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-                    dbStat.setString(1, params.getMask());
-                    int idx = 2;
-                    if (params.isSearchInComments()) {
-                        dbStat.setString(idx, params.getMask());
+                    int idx = 1;
+                    if (hasMask) {
+                        dbStat.setString(1, params.getMask());
                         idx++;
-                    }
-                    if (params.isSearchInDefinitions()) {
-                        dbStat.setString(idx, params.getMask());
-                        idx++;
+                        if (params.isSearchInComments()) {
+                            dbStat.setString(idx, params.getMask());
+                            idx++;
+                        }
+                        if (params.isSearchInDefinitions()) {
+                            dbStat.setString(idx, params.getMask());
+                            idx++;
+                        }
                     }
                     if (schema != null) {
                         dbStat.setLong(idx, schema.getObjectId());

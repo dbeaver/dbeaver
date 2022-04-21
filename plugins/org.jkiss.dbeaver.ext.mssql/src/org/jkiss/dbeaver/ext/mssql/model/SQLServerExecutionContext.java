@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,7 +82,15 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         }
         try {
             SQLServerDatabase defaultCatalog = getDefaultCatalog();
-            return defaultCatalog == null ? null : defaultCatalog.getSchema(new VoidProgressMonitor(), activeSchemaName);
+            if (defaultCatalog == null) {
+                return null;
+            }
+            SQLServerSchema schema = defaultCatalog.getSchema(new VoidProgressMonitor(), activeSchemaName);
+            if (schema == null) {
+                // If DBO is not the default schema and default schema doesn't exist (or was filtered out) let's try DBO though
+                schema = defaultCatalog.getSchema(new VoidProgressMonitor(), SQLServerConstants.DEFAULT_SCHEMA_NAME);
+            }
+            return schema;
         } catch (DBException e) {
             log.error(e);
             return null;

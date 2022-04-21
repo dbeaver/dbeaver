@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ public class SQLScriptProcessor {
     private Throwable lastError = null;
 
     private DBCStatistics statistics;
+    private final DBCStatistics totalStatistics = new DBCStatistics();
 
     private int fetchSize;
     private long fetchFlags;
@@ -299,6 +300,8 @@ public class SQLScriptProcessor {
             log.debug(STAT_LOG_PREFIX + "Time: " + RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()) +
                 (statistics.getRowsFetched() >= 0 ? ", fetched " + statistics.getRowsFetched() + " row(s)" : "") +
                 (statistics.getRowsUpdated() >= 0 ? ", updated " + statistics.getRowsUpdated() + " row(s)" : ""));
+
+            totalStatistics.accumulate(statistics);
         }
     }
 
@@ -346,8 +349,8 @@ public class SQLScriptProcessor {
         return true;
     }
 
-    public DBCStatistics getStatistics() {
-        return statistics;
+    public DBCStatistics getTotalStatistics() {
+        return totalStatistics;
     }
 
 }

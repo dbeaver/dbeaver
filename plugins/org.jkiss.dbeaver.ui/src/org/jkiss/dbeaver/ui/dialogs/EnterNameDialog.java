@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,6 +71,8 @@ public class EnterNameDialog extends Dialog {
         gd.widthHint = 300;
         propGroup.setLayoutData(gd);
 
+        createControlsBeforeName(propGroup);
+
         propNameText = UIUtils.createLabelText(propGroup, propertyName, null);
         if (propertyValue != null) {
             propNameText.setText(propertyValue);
@@ -79,6 +81,10 @@ public class EnterNameDialog extends Dialog {
         propNameText.addModifyListener(e -> updateButtonsState());
 
         return propGroup;
+    }
+
+    protected void createControlsBeforeName(Composite composite) {
+
     }
 
     @Override

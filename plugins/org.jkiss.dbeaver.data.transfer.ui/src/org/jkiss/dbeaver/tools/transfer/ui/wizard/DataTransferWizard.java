@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -91,8 +92,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 if (producer instanceof DatabaseTransferProducer) {
                     DBSObject databaseObject = producer.getDatabaseObject();
 
+                    SQLQueryContainer queryContainer = null;
                     if (databaseObject instanceof SQLQueryContainer) {
-                        Map<String, Object> queryParameters = ((SQLQueryContainer) databaseObject).getQueryParameters();
+                        queryContainer = (SQLQueryContainer) databaseObject;
+                    } else {
+                        queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, databaseObject);
+                    }
+                    if (queryContainer != null) {
+                        Map<String, Object> queryParameters = queryContainer.getQueryParameters();
                         if (!CommonUtils.isEmpty(queryParameters)) {
                             getTaskVariables().putAll(queryParameters);
                         }
@@ -422,19 +429,24 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         return false;
     }
 
+    public void loadNodeSettings() {
+        if (getSettings().isNodeSettingsLoaded()) {
+            return;
+        }
+        try {
+            getRunnableContext().run(true, true, monitor -> {
+                getSettings().loadNodeSettings(monitor);
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Error loading settings", "Error loading data transfer settings", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
+        }
+    }
+
     @Override
     public void onWizardActivation() {
-        UIUtils.asyncExec(() -> {
-            try {
-                getRunnableContext().run(true, true, monitor -> {
-                    getSettings().loadNodeSettings(monitor);
-                });
-            } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Error loading settings", "Error loading data transfer settings", e.getTargetException());
-            } catch (InterruptedException e) {
-                // ignore
-            }
-        });
+        //UIUtils.asyncExec(this::loadNodeSettings);
     }
 
     NodePageSettings getNodeInfo(IDataTransferNode<?> node) {
@@ -627,7 +639,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     public static DataTransferWizard openWizard(@NotNull DBTTask task)
     {
         try {
-            DataTransferSettings settings = DataTransferSettings.loadSettings(new DBRRunnableWithResult<DataTransferSettings>() {
+            DataTransferSettings settings = DataTransferSettings.loadSettings(new DBRRunnableWithResult<>() {
                 @Override
                 public void run(DBRProgressMonitor monitor) {
                     result = new DataTransferSettings(

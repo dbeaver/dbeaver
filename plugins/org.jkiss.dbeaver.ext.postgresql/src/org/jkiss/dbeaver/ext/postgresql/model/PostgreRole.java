@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class PostgreRole implements
     protected boolean bypassRls;
     protected int connLimit;
     protected String password;
-    protected Date validUntil;
+    protected String validUntil;
     protected boolean persisted;
     private MembersCache membersCache = new MembersCache(true);
     private MembersCache belongsCache = new MembersCache(false);
@@ -139,7 +139,7 @@ public class PostgreRole implements
         this.bypassRls = JDBCUtils.safeGetBoolean(dbResult, "rolbypassrls");
         this.connLimit = JDBCUtils.safeGetInt(dbResult, "rolconnlimit");
         this.password = JDBCUtils.safeGetString(dbResult, "rolpassword");
-        this.validUntil = JDBCUtils.safeGetTimestamp(dbResult, "rolvaliduntil");
+        this.validUntil = JDBCUtils.safeGetString(dbResult, "rolvaliduntil");
     }
 
     @Nullable
@@ -192,7 +192,7 @@ public class PostgreRole implements
         return database;
     }
 
-    @Property(viewable = true, order = 2)
+    @Property(viewable = true, order = 3)
     @Override
     public long getObjectId() {
         return oid;
@@ -243,7 +243,7 @@ public class PostgreRole implements
         this.canLogin = canLogin;
     }
 
-    @Property(editable = true, updatable = true, order = 15)
+    @Property(editable = true, updatable = true, order = 15, visibleIf = RoleCanBeReplicationValidator.class)
     public boolean isReplication() {
         return replication;
     }
@@ -252,7 +252,7 @@ public class PostgreRole implements
         this.replication = replication;
     }
 
-    @Property(editable = true, updatable = true, order = 16)
+    @Property(editable = true, updatable = true, order = 16, visibleIf = RoleCanBypassRLSValidator.class)
     public boolean isBypassRls() {
         return bypassRls;
     }
@@ -270,7 +270,7 @@ public class PostgreRole implements
         this.connLimit = connLimit;
     }
 
-    @Property(hidden = true, category = CAT_SETTINGS, editable = true, updatable = true, order = 21)
+    @Property(viewable = true, password = true, editable = true, order = 2, visibleIf = PersistenceUserValidator.class)
     public String getPassword() {
         return password;
     }
@@ -280,11 +280,11 @@ public class PostgreRole implements
     }
 
     @Property(category = CAT_SETTINGS, editable = true, updatable = true, order = 22)
-    public Date getValidUntil() {
+    public String getValidUntil() {
         return validUntil;
     }
 
-    public void setValidUntil(Date validUntil) {
+    public void setValidUntil(String validUntil) {
         this.validUntil = validUntil;
     }
 
@@ -322,26 +322,38 @@ public class PostgreRole implements
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
+        PostgreDataSource dataSource = getDataSource();
+        final PostgreServerExtension extension = dataSource.getServerType();
         StringBuilder ddl = new StringBuilder();
         ddl.append("-- DROP ROLE ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n"); //$NON-NLS-1$ //$NON-NLS-2$
         ddl.append("CREATE ROLE ").append(DBUtils.getQuotedIdentifier(this)).append(" WITH ");
-        addOptionToDDL(ddl, isSuperUser(), "SUPERUSER");
-        addOptionToDDL(ddl, isCreateDatabase(), "CREATEDB");
+        if (extension.supportsSuperusers()) {
+            addOptionToDDL(ddl, isSuperUser(), "SUPERUSER");
+        }
+        if (extension.supportsRolesWithCreateDBAbility()) {
+            addOptionToDDL(ddl, isCreateDatabase(), "CREATEDB");
+        }
         addOptionToDDL(ddl, isCreateRole(), "CREATEROLE");
-        addOptionToDDL(ddl, isInherit(), "INHERIT");
+        if (extension.supportsInheritance()) {
+            addOptionToDDL(ddl, isInherit(), "INHERIT");
+        }
         addOptionToDDL(ddl, isCanLogin(), "LOGIN");
-        addOptionToDDL(ddl, isReplication(), "REPLICATION");
-        addOptionToDDL(ddl, isBypassRls(), "BYPASSRLS");
+        if (extension.supportsRoleReplication()) {
+            addOptionToDDL(ddl, isReplication(), "REPLICATION");
+        }
+        if (extension.supportsRoleBypassRLS()) {
+            addOptionToDDL(ddl, isBypassRls(), "BYPASSRLS");
+        }
         if (getConnLimit() > 0) {
             ddl.append(lineBreak);
             ddl.append("\tCONNECTION LIMIT ").append(getConnLimit());
         } else {
             ddl.append(lineBreak);
-            ddl.append("\tCONNECTION LIMIT UNLIMITED");
+            ddl.append("\tCONNECTION LIMIT -1");
         }
         if (getValidUntil() != null) {
             ddl.append(lineBreak);
-            ddl.append("\tVALID UNTIL '").append(getValidUntil().toString()).append("'");
+            ddl.append("\tVALID UNTIL '").append(getValidUntil()).append("'");
         }
         ddl.append(";");
 
@@ -349,7 +361,7 @@ public class PostgreRole implements
             ddl.append("\n");
             List<DBEPersistAction> actions = new ArrayList<>();
             PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
-            ddl.append("\n").append(SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
+            ddl.append("\n").append(SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false));
         }
 
         return ddl.toString();
@@ -535,6 +547,27 @@ public class PostgreRole implements
         @Override
         public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsRolesWithCreateDBAbility();
+        }
+    }
+
+    public static class RoleCanBeReplicationValidator implements IPropertyValueValidator<PostgreRole, Object> {
+        @Override
+        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsRoleReplication();
+        }
+    }
+
+    public static class RoleCanBypassRLSValidator implements IPropertyValueValidator<PostgreRole, Object> {
+        @Override
+        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsRoleBypassRLS();
+        }
+    }
+
+    public static class PersistenceUserValidator implements IPropertyValueValidator<PostgreRole, Object> {
+        @Override
+        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+            return !object.isPersisted();
         }
     }
 }

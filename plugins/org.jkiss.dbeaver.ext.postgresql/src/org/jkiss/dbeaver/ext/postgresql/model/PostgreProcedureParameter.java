@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,20 +34,20 @@ public class PostgreProcedureParameter implements DBSProcedureParameter, DBSAttr
     private String paramName;
     private int ordinalPosition;
     private PostgreDataType dataType;
-    private DBSProcedureParameterKind parameterKind;
+    private PostgreProcedure.ArgumentMode argumentMode;
     private String defaultValue;
 
     public PostgreProcedureParameter(
         PostgreProcedure procedure,
         String paramName,
         PostgreDataType dataType,
-        DBSProcedureParameterKind parameterKind,
+        @NotNull PostgreProcedure.ArgumentMode argumentMode,
         int ordinalPosition)
     {
         this.procedure = procedure;
         this.paramName = paramName;
         this.dataType = dataType;
-        this.parameterKind = parameterKind;
+        this.argumentMode = argumentMode;
         this.ordinalPosition = ordinalPosition;
     }
 
@@ -94,7 +94,7 @@ public class PostgreProcedureParameter implements DBSProcedureParameter, DBSAttr
     @Property(viewable = true, order = 3)
     public DBSProcedureParameterKind getParameterKind()
     {
-        return parameterKind;
+        return argumentMode.getParameterKind();
     }
 
     @Override
@@ -151,6 +151,11 @@ public class PostgreProcedureParameter implements DBSProcedureParameter, DBSAttr
     @Override
     public long getTypeModifiers() {
         return 0;
+    }
+
+    @NotNull
+    public PostgreProcedure.ArgumentMode getArgumentMode() {
+        return argumentMode;
     }
 
     @Property(viewable = true, order = 5)

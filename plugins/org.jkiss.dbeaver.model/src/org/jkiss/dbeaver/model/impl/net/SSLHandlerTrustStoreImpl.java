@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Default Java SSL Handler. Saves certificate in local trust store
@@ -86,19 +88,37 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         }
     }
 
-    public static void setGlobalTrustStore(DBPDataSource dataSource) {
+    public static Map<String, String> setGlobalTrustStore(DBPDataSource dataSource) {
         final DBACertificateStorage securityManager = dataSource.getContainer().getPlatform().getCertificateStorage();
 
         String keyStorePath = securityManager.getKeyStorePath(dataSource.getContainer(), CERT_TYPE).getAbsolutePath();
         String keyStoreType = securityManager.getKeyStoreType(dataSource.getContainer());
         char[] keyStorePass = securityManager.getKeyStorePassword(dataSource.getContainer(), CERT_TYPE);
 
-        System.setProperty("javax.net.ssl.trustStore", keyStorePath);
-        System.setProperty("javax.net.ssl.trustStoreType", keyStoreType);
-        System.setProperty("javax.net.ssl.trustStorePassword", String.valueOf(keyStorePass));
-        System.setProperty("javax.net.ssl.keyStore", keyStorePath);
-        System.setProperty("javax.net.ssl.keyStoreType", keyStoreType);
-        System.setProperty("javax.net.ssl.keyStorePassword", String.valueOf(keyStorePass));
+        Map<String, String> oldProps = new LinkedHashMap<>();
+        setSystemProperty("javax.net.ssl.trustStore", keyStorePath, oldProps);
+        setSystemProperty("javax.net.ssl.trustStoreType", keyStoreType, oldProps);
+        setSystemProperty("javax.net.ssl.trustStorePassword", String.valueOf(keyStorePass), oldProps);
+        setSystemProperty("javax.net.ssl.keyStore", keyStorePath, oldProps);
+        setSystemProperty("javax.net.ssl.keyStoreType", keyStoreType, oldProps);
+        setSystemProperty("javax.net.ssl.keyStorePassword", String.valueOf(keyStorePass), oldProps);
+
+        return oldProps;
+    }
+
+    public static void resetGlobalTrustStore(Map<String, String> oldProps) {
+        for (Map.Entry<String, String> pe : oldProps.entrySet()) {
+            if (pe.getValue() == null) {
+                System.clearProperty(pe.getKey());
+            } else {
+                System.setProperty(pe.getKey(), pe.getValue());
+            }
+        }
+    }
+
+    private static void setSystemProperty(String propName, String propValue, Map<String, String> oldProps) {
+        String oldValue = System.setProperty(propName, propValue);
+        oldProps.put(propName, oldValue);
     }
 
     public static SSLContext createTrustStoreSslContext(DBPDataSource dataSource, DBWHandlerConfiguration sslConfig) throws Exception {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 
 import java.util.Collections;
@@ -73,12 +74,12 @@ public class TestResourceHandler  implements DBPResourceHandler {
     @Override
     public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException {
         DBNResource node = new DBNResource(parentNode, resource, this);
-        updateNavigatorNode(node, resource);
+        updateNavigatorNodeFromResource(node, resource);
         return node;
     }
 
     @Override
-    public void updateNavigatorNode(@NotNull DBNResource node, @NotNull IResource resource) {
+    public void updateNavigatorNodeFromResource(@NotNull DBNNodeWithResource node, @NotNull IResource resource) {
     }
 
     @Override

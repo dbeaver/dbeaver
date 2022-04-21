@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2021 DBeaver Corp and others
+ * Copyright (C) 2010-2022 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,13 +49,16 @@ class IndentFormatter {
     private final String[] blockHeaderStrings;
     private boolean isFirstConditionInBrackets;
 
-    private static final String[] JOIN_BEGIN = {"LEFT", "RIGHT", "INNER", "OUTER", "FULL", "CROSS", "JOIN"};
+    private static final String[] JOIN_BEGIN = {"LEFT", "RIGHT", "INNER", "OUTER", "FULL", "CROSS", "NATURAL", "JOIN"};
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
     private static final String[] CONDITION_KEYWORDS = {"WHERE", "ON", "HAVING"};
 
     IndentFormatter(SQLFormatterConfiguration formatterCfg, boolean isCompact) {
         this.formatterCfg = formatterCfg;
         delimiterRedefiner = formatterCfg.getSyntaxManager().getDialect().getScriptDelimiterRedefiner();
+        if (statementDelimiters.contains(delimiterRedefiner)) {
+            delimiterRedefiner = null;
+        }
         if (delimiterRedefiner != null) {
             delimiterRedefiner = delimiterRedefiner.toUpperCase(Locale.ENGLISH);
         }
@@ -177,11 +180,8 @@ class IndentFormatter {
                     break;
                 case "CASE":  //$NON-NLS-1$
                     if (!isCompact) {
-                        result += insertReturnAndIndent(argList, index - 1, indent);
-                        if ("WHEN".equalsIgnoreCase(getNextKeyword(argList, index))) {
-                            indent++;
-                            result += insertReturnAndIndent(argList, index + 1, indent);
-                        }
+                        indent++;
+                        result += insertReturnAndIndent(argList, index + 1, indent);
                     }
                     break;
                 case "END": // CASE ... END
@@ -209,6 +209,7 @@ class IndentFormatter {
                 case "OUTER":
                 case "FULL":
                 case "CROSS":
+                case "NATURAL":
                 case "JOIN":
                     if (isJoinStart(argList, index)) {
                         result += insertReturnAndIndent(argList, index, indent - 1);
@@ -405,6 +406,9 @@ class IndentFormatter {
                     SQLUtils.isCommentLine(formatterCfg.getSyntaxManager().getDialect(), prevToken.getString())) {
                     s = ""; //$NON-NLS-1$
                 }
+            } else if (argList.get(argIndex).getType() == TokenType.COMMENT) {
+                // Do not add line separator before comment
+                s = "";
             }
             for (int index = 0; index < argIndent; index++) {
                 s += formatterCfg.getIndentString();
