@@ -895,8 +895,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
             marker.setAttribute(IMarker.MESSAGE, message);
             marker.setAttribute(IMarker.TRANSIENT, true);
-            MarkerUtilities.setCharStart(marker, position.offset);
-            MarkerUtilities.setCharEnd(marker, position.offset + position.length);
+            // For some reason, these two cause the annotation to de-sync from this marker:
+            // MarkerUtilities.setCharStart(marker, position.offset);
+            // MarkerUtilities.setCharEnd(marker, position.offset + position.length);
             annotationModel.addAnnotation(new SQLProblemAnnotation(marker), position);
         } catch (CoreException e) {
             log.error("Error creating problem marker", e);

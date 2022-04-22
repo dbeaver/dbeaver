@@ -58,11 +58,13 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     @Override
     protected boolean validateTaskParameters(DBTTask task, MySQLExportSettings settings, Log log) {
         if (task.getType().getId().equals(MySQLTasks.TASK_DATABASE_BACKUP)) {
-            final File dir = settings.getOutputFolder();
-            if (!dir.exists()) {
-                if (!dir.mkdirs()) {
-                    log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
-                    return false;
+            for (MySQLDatabaseExportInfo exportObject : settings.getExportObjects()) {
+                final File dir = settings.getOutputFolder(exportObject);
+                if (!dir.exists()) {
+                    if (!dir.mkdirs()) {
+                        log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
+                        return false;
+                    }
                 }
             }
         }

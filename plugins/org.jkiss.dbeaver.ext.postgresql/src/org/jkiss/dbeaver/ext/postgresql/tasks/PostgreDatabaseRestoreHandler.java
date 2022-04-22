@@ -51,7 +51,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     @Override
     protected boolean validateTaskParameters(DBTTask task, PostgreDatabaseRestoreSettings settings, Log log) {
         if (task.getType().getId().equals(PostgreSQLTasks.TASK_DATABASE_BACKUP)) {
-            final File dir = settings.getOutputFolder();
+            final File dir = new File(settings.getOutputFilePattern());
             if (!dir.exists()) {
                 if (!dir.mkdirs()) {
                     log.error("Can't create directory '" + dir.getAbsolutePath() + "'");

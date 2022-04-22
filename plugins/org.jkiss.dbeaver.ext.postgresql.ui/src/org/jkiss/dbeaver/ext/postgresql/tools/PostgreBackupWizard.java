@@ -34,8 +34,11 @@ import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 class PostgreBackupWizard extends AbstractNativeExportWizard<PostgreDatabaseBackupSettings, PostgreDatabaseBackupInfo> {
 
@@ -106,8 +109,9 @@ class PostgreBackupWizard extends AbstractNativeExportWizard<PostgreDatabaseBack
             PostgreMessages.wizard_backup_msgbox_success_title,
             NLS.bind(PostgreMessages.wizard_backup_msgbox_success_description, CommonUtils.truncateString(getObjectsName(), 255)),
             SWT.ICON_INFORMATION);
-        ShellUtils.launchProgram(getSettings().getOutputFolder().getAbsolutePath());
-	}
+        Set<File> set = getSettings().getExportObjects().stream().map(it -> getSettings().getOutputFolder(it)).collect(Collectors.toSet());
+        set.forEach(it -> ShellUtils.launchProgram(it.getAbsolutePath()));
+    }
 
     @Override
     protected PostgreDatabaseBackupSettings createSettings() {
