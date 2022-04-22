@@ -762,8 +762,7 @@ public final class SQLUtils {
         try {
             DBRProgressMonitor monitor = new VoidProgressMonitor();
             if (!content.isNull() && ContentUtils.isTextContent(content)) {
-                String strValue = ContentUtils.getContentStringValue(monitor, content);
-                return dataSource.getSQLDialect().escapeString(strValue);
+                return ContentUtils.getContentStringValue(monitor, content);
             } else {
                 byte[] binValue = ContentUtils.getContentBinaryValue(monitor, content);
                 if (binValue == null) {
