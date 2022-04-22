@@ -45,13 +45,8 @@ public interface RMController {
 
     String createResource(
         @NotNull String projectId,
-        @NotNull String folder,
-        @NotNull RMResource resource) throws DBException;
-
-    String updateResource(
-        @NotNull String projectId,
-        @NotNull String folder,
-        @NotNull RMResource resource) throws DBException;
+        @NotNull String resourcePath,
+        boolean isFolder) throws DBException;
 
     String moveResource(
         @NotNull String projectId,
@@ -72,7 +67,6 @@ public interface RMController {
     String setResourceContents(
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull String contentType,
         @NotNull byte[] data) throws DBException;
 
 }

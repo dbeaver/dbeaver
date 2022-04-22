@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -26,8 +25,6 @@ import java.util.Map;
 public class RMResource {
     private String name;
     private boolean folder;
-    private String contentType;
-    private Charset contentCharset;
     private long length;
 
     private List<RMResourceChange> changes;
@@ -47,22 +44,6 @@ public class RMResource {
 
     public void setFolder(boolean folder) {
         this.folder = folder;
-    }
-
-    public String getContentType() {
-        return contentType;
-    }
-
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    public Charset getContentCharset() {
-        return contentCharset;
-    }
-
-    public void setContentCharset(Charset contentCharset) {
-        this.contentCharset = contentCharset;
     }
 
     public long getLength() {
