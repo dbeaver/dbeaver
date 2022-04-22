@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.erd.ui.command;
 
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.commands.Command;
-import org.jkiss.dbeaver.erd.ui.part.NodePart;
+import org.jkiss.dbeaver.erd.ui.part.CustomisablePart;
 
 /**
  * Command to move the bounds of an existing table. Only used with
@@ -29,14 +29,14 @@ import org.jkiss.dbeaver.erd.ui.part.NodePart;
 public class NodeMoveCommand extends Command
 {
 
-	private NodePart nodePart;
+	private CustomisablePart customisablePart;
 	private Rectangle oldBounds;
 	private Rectangle newBounds;
 
-	public NodeMoveCommand(NodePart nodePart, Rectangle oldBounds, Rectangle newBounds)
+	public NodeMoveCommand(CustomisablePart customisablePart, Rectangle oldBounds, Rectangle newBounds)
 	{
 		super();
-		this.nodePart = nodePart;
+		this.customisablePart = customisablePart;
 		this.oldBounds = oldBounds;
 		this.newBounds = newBounds;
 	}
@@ -52,13 +52,13 @@ public class NodeMoveCommand extends Command
             pc.getConnectionRouter().route(pc);
         }
 */
-        nodePart.modifyBounds(newBounds);
+        customisablePart.modifyBounds(newBounds);
 	}
 
 	@Override
     public void undo()
 	{
-		nodePart.modifyBounds(oldBounds);
+		customisablePart.modifyBounds(oldBounds);
 	}
 
 }

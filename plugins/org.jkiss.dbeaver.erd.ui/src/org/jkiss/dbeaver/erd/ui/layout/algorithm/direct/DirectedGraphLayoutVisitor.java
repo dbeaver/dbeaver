@@ -87,14 +87,14 @@ public class DirectedGraphLayoutVisitor {
         GraphAnimation.recordInitialState(diagram.getFigure());
         //IFigure fig = diagram.getFigure();
         for (Object child : diagram.getChildren()) {
-            addEntityNode((NodeEditPart) child);
+            addEntityNode((GraphicalEditPart) child);
         }
     }
 
     /**
      * Adds nodes to the graph object for use by the GraphLayoutAuto
      */
-    protected void addEntityNode(NodeEditPart nodeEditPart)
+    protected void addEntityNode(GraphicalEditPart nodeEditPart)
     {
         Node entityNode;
         if (nodeEditPart instanceof EntityPart && ((EntityPart)nodeEditPart).getEntity().hasSelfLinks()) {

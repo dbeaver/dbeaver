@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
+import org.eclipse.draw2dl.ChopboxAnchor;
+import org.eclipse.draw2dl.ConnectionAnchor;
 import org.eclipse.draw2dl.IFigure;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.tools.DragEditPartsTracker;
+import org.jkiss.dbeaver.erd.model.ERDElement;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
@@ -37,7 +40,7 @@ import java.util.Map;
  *
  * @author Serge Rider
  */
-public class AttributePart extends PropertyAwarePart {
+public class AttributePart extends NodePart {
 
     public static final String PROP_CHECKED = "CHECKED";
 
@@ -188,4 +191,30 @@ public class AttributePart extends PropertyAwarePart {
         return ERDUIMessages.column_.trim() + " " + getAttribute().getLabelText();
     }
 
+    @Override
+    public ERDElement getElement() {
+        return getEntity();
+    }
+
+    @Override
+    public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection) {
+        return new ChopboxAnchor(getFigure());
+    }
+
+    @Override
+    public ConnectionAnchor getSourceConnectionAnchor(Request request) {
+        return new ChopboxAnchor(getFigure());
+        //return new TopAnchor(getFigure());
+    }
+
+    @Override
+    public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection) {
+        return new ChopboxAnchor(getFigure());
+        //return new BottomAnchor(getFigure());
+    }
+
+    @Override
+    public ConnectionAnchor getTargetConnectionAnchor(Request request) {
+        return new ChopboxAnchor(getFigure());
+    }
 }

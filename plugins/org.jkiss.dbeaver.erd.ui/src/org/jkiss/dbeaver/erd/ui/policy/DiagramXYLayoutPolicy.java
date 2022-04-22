@@ -27,7 +27,7 @@ import org.eclipse.gef3.editpolicies.XYLayoutEditPolicy;
 import org.eclipse.gef3.requests.CreateRequest;
 import org.jkiss.dbeaver.erd.ui.command.NodeMoveCommand;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
-import org.jkiss.dbeaver.erd.ui.part.NodePart;
+import org.jkiss.dbeaver.erd.ui.part.CustomisablePart;
 
 /**
  * Handles manual layout editing for schema diagram. Only available for
@@ -53,18 +53,18 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
     protected Command createChangeConstraintCommand(EditPart child, Object constraint)
 	{
 
-		if (!(child instanceof NodePart))
+		if (!(child instanceof CustomisablePart))
 			return null;
 		if (!(constraint instanceof Rectangle))
 			return null;
 
-		NodePart nodePart = (NodePart) child;
-		Figure figure = (Figure) nodePart.getFigure();
+		CustomisablePart customisablePart = (CustomisablePart) child;
+		Figure figure = (Figure) customisablePart.getFigure();
 		Rectangle oldBounds = figure.getBounds();
 		Rectangle newBounds = (Rectangle) constraint;
 
         // Restrict resize for entities
-        if (!ALLOW_ENTITY_RESIZE && nodePart instanceof EntityPart) {
+        if (!ALLOW_ENTITY_RESIZE && customisablePart instanceof EntityPart) {
             if (oldBounds.width != newBounds.width && newBounds.width != -1)
                 return null;
             if (oldBounds.height != newBounds.height && newBounds.height != -1)
@@ -73,7 +73,7 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 
 		//DiagramPart diagramPart = (DiagramPart) nodePart.getParent();
 
-		return new NodeMoveCommand(nodePart, oldBounds.getCopy(), newBounds.getCopy());
+		return new NodeMoveCommand(customisablePart, oldBounds.getCopy(), newBounds.getCopy());
 	}
 
 	/**

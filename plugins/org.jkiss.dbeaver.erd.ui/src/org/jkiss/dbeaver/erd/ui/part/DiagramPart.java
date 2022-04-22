@@ -146,9 +146,9 @@ public class DiagramPart extends PropertyAwarePart {
         router.setSeparation(15);
         //router.setNextRouter(new BendpointConnectionRouter());
         router.setNextRouter(new MikamiTabuchiConnectionRouter(figure));
-        //router.setNextRouter(new ManhattanConnectionRouter());
+        router.setNextRouter(new ManhattanConnectionRouter());
         //router.setNextRouter(new BendpointConnectionRouter());
-        cLayer.setConnectionRouter(router);
+        cLayer.setConnectionRouter(new ShortestPathConnectionRouter(figure));
 
         return figure;
     }
@@ -194,8 +194,8 @@ public class DiagramPart extends PropertyAwarePart {
     public void rearrangeDiagram()
     {
         for (Object part : getChildren()) {
-            if (part instanceof NodePart) {
-                resetConnectionConstraints(((NodePart) part).getSourceConnections());
+            if (part instanceof CustomisablePart) {
+                resetConnectionConstraints(((CustomisablePart) part).getSourceConnections());
             }
         }
         //delegatingLayoutManager.set
@@ -260,8 +260,8 @@ public class DiagramPart extends PropertyAwarePart {
         List<?> entityParts = getChildren();
 
         for (Object child : entityParts) {
-            if (child instanceof NodePart) {
-                NodePart entityPart = (NodePart) child;
+            if (child instanceof CustomisablePart) {
+                CustomisablePart entityPart = (CustomisablePart) child;
                 IFigure entityFigure = entityPart.getFigure();
 
                 //if we don't find a node for one of the children then we should
@@ -290,8 +290,8 @@ public class DiagramPart extends PropertyAwarePart {
         List<?> nodeParts = getChildren();
 
         for (Object child : nodeParts) {
-            if (child instanceof NodePart) {
-                NodePart entityPart = (NodePart) child;
+            if (child instanceof CustomisablePart) {
+                CustomisablePart entityPart = (CustomisablePart) child;
                 //now check whether we can find an entry in the tableToNodesMap
                 Rectangle bounds = entityPart.getBounds();
                 if (bounds == null) {
@@ -358,10 +358,10 @@ public class DiagramPart extends PropertyAwarePart {
     }
 
     @Nullable
-    public NodePart getChildByObject(Object object) {
+    public ICustomizablePart getChildByObject(Object object) {
         for (Object child : getChildren()) {
-            if (child instanceof NodePart && ((NodePart) child).getElement().getObject() == object) {
-                return (NodePart) child;
+            if (child instanceof ICustomizablePart && ((CustomisablePart) child).getElement().getObject() == object) {
+                return (ICustomizablePart) child;
             }
         }
         return null;

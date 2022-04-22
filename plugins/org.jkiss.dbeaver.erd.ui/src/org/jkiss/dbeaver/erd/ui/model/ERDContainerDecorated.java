@@ -24,8 +24,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
 import org.jkiss.dbeaver.erd.model.ERDContainer;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
+import org.jkiss.dbeaver.erd.ui.part.CustomisablePart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
-import org.jkiss.dbeaver.erd.ui.part.NodePart;
+import org.jkiss.dbeaver.erd.ui.part.ICustomizablePart;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
@@ -47,7 +48,7 @@ public interface ERDContainerDecorated extends ERDContainer {
         public NodeVisualInfo() {
         }
 
-        private void init(NodePart part) {
+        private void init(CustomisablePart part) {
             this.initBounds = part.getBounds();
             IFigure figure = part.getFigure();
             if (figure != null) {
