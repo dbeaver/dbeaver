@@ -21,22 +21,22 @@ import org.eclipse.draw2dl.*;
 import org.eclipse.draw2dl.LayoutListener.Stub;
 import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.PointList;
+import org.eclipse.draw2dl.geometry.PrecisionPoint;
 import org.eclipse.draw2dl.geometry.Rectangle;
+
 import java.util.*;
 
 
 public class MikamiTabuchiConnectionRouter extends AbstractRouter {
     private boolean isDirty = false;
-    private final int maxWidth;
-    private final int maxHeight;
+    private final Map<Connection, Object> constraintMap = new HashMap<>();
     private Map<IFigure, Rectangle> figuresToBounds;
-    private Map<Connection, List<Point>> connectionToPathPoints;
+    private Map<Connection, OrthogonalPath> connectionToPath;
     private final IFigure container;
     private final MikamiTabuchiRouter algorithm = new MikamiTabuchiRouter();
-    private Set<Connection> staleConnections = new HashSet<>();
+    private final Set<Connection> staleConnections = new HashSet<>();
     private boolean ignoreInvalidate;
-    private Map constraintMap = new HashMap();
-    private Map connectionToPaths = new HashMap<Connection, OrthogonalPath>();
+    private Map<Connection, OrthogonalPath> connectionToPaths = new HashMap<>();
     private final LayoutListener listener = new MikamiTabuchiConnectionRouter.LayoutTracker();
     private final FigureListener figureListener = source -> {
         Rectangle newBounds = source.getBounds().getCopy();
@@ -49,6 +49,9 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
     };
 
 
+    public Object getConstraint(Connection connection) {
+        return this.constraintMap.get(connection);
+    }
 
 
     public void invalidate(Connection connection) {
@@ -62,9 +65,10 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
     }
 
     void addChild(IFigure child) {
-        if (this.connectionToPathPoints != null) {
+        if (this.connectionToPath != null) {
             if (!this.figuresToBounds.containsKey(child)) {
                 Rectangle bounds = child.getBounds().getCopy();
+                child.translateToRelative(container.getBounds());
                 this.algorithm.addObstacle(bounds);
                 this.figuresToBounds.put(child, bounds);
                 child.addFigureListener(this.figureListener);
@@ -75,54 +79,52 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
 
     public MikamiTabuchiConnectionRouter(IFigure container) {
         this.container = container;
-        maxWidth = container.getClientArea().width;
-        maxHeight = container.getClientArea().height;
     }
 
-//    private void processStaleConnections() {
-//        Iterator iter = this.staleConnections.iterator();
-//        if (iter.hasNext() && this.connectionToPathPoints == null) {
-//            this.connectionToPathPoints = new HashMap();
-//            this.hookAll();
-//        }
-//
-//        Path path;
-//        for(; iter.hasNext(); this.isDirty |= path.isDirty) {
-//            Connection conn = (Connection)iter.next();
-//            path = this.connectionToPathPoints.get(conn);
-//            if (path == null) {
-//                path = new Path(conn);
-//                this.connectionToPathPoints.put(conn, path);
-////                this.algorithm.addPath(path);
-//            }
-//
-//            List constraint = (List)this.getConstraint(conn);
-//            if (constraint == null) {
-//                constraint = Collections.EMPTY_LIST;
-//            }
-//
-//            Point start = conn.getSourceAnchor().getReferencePoint().getCopy();
-//            Point end = conn.getTargetAnchor().getReferencePoint().getCopy();
-//            this.container.translateToRelative(start);
-//            this.container.translateToRelative(end);
-//            path.setStartPoint(start);
-//            path.setEndPoint(end);
-//            if (constraint.isEmpty()) {
-//                path.setBendPoints(null);
-//            } else {
-//                PointList bends = new PointList(constraint.size());
-//
-//                for (Object o : constraint) {
-//                    Bendpoint bp = (Bendpoint) o;
-//                    bends.addPoint(bp.getLocation());
-//                }
-//
-//                path.setBendPoints(bends);
-//            }
-//        }
-//
-//        this.staleConnections.clear();
-//    }
+    private void processStaleConnections() {
+        Iterator<Connection> iter = this.staleConnections.iterator();
+        if (iter.hasNext() && this.connectionToPath == null) {
+            this.connectionToPath = new HashMap<>();
+            this.hookAll();
+        }
+
+        OrthogonalPath path;
+        for(; iter.hasNext(); this.isDirty |= path.isDirty()) {
+            Connection conn = iter.next();
+            path = this.connectionToPath.get(conn);
+            if (path == null) {
+                path = new OrthogonalPath(conn);
+                this.connectionToPath.put(conn, path);
+                this.algorithm.addPath(path);
+            }
+
+            List constraint = (List) this.getConstraint(conn);
+            if (constraint == null) {
+                constraint = Collections.EMPTY_LIST;
+            }
+
+            Point start = conn.getSourceAnchor().getReferencePoint().getCopy();
+            Point end = conn.getTargetAnchor().getReferencePoint().getCopy();
+            this.container.translateToRelative(start);
+            this.container.translateToRelative(end);
+            path.setStartPoint(start);
+            path.setEndPoint(end);
+            if (constraint.isEmpty()) {
+                path.setBendPoints(null);
+            } else {
+                PointList bends = new PointList(constraint.size());
+
+                for (Object o : constraint) {
+                    Bendpoint bp = (Bendpoint) o;
+                    bends.addPoint(bp.getLocation());
+                }
+
+                path.setBendPoints(bends);
+            }
+        }
+
+        this.staleConnections.clear();
+    }
 
     private void hookAll() {
         this.figuresToBounds = new HashMap<>();
@@ -138,24 +140,42 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
     public void route(Connection connection) {
         if (this.isDirty) {
             this.ignoreInvalidate = true;
-            this.hookAll();
+            this.processStaleConnections();
             this.isDirty = false;
-            this.algorithm.setClientArea(new Rectangle(0, 0, 10000, 10000));
-//        this.algorithm.setObstacles(new ArrayList<>(figuresToBounds.values()));
-            PointList updated = this.algorithm.solve(connection.getSourceAnchor().getReferencePoint(), connection.getTargetAnchor().getReferencePoint());
-            if (updated != null) {
-                connection.setPoints(updated);
+            this.algorithm.setClientArea(container.getClientArea());
+            List<OrthogonalPath> updated = this.algorithm.solve();
+            for (OrthogonalPath path : updated) {
+                if (path == null || path.getBendPoints() == null) {
+                    continue;
+                }
+                Connection current = path.getConnection();
+                current.revalidate();
+                PointList points = path.getBendPoints().getCopy();
+                Point ref1 = new PrecisionPoint(points.getPoint(1));
+                Point ref2 = new PrecisionPoint(points.getPoint(points.size() - 2));
+                current.translateToAbsolute(ref1);
+                current.translateToAbsolute(ref2);
+                Point start = current.getSourceAnchor().getLocation(ref1).getCopy();
+                Point end = current.getTargetAnchor().getLocation(ref2).getCopy();
+                current.translateToRelative(start);
+                current.translateToRelative(end);
+                points.setPoint(start, 0);
+                points.setPoint(end, points.size() - 1);
+                current.setPoints(points);
             }
+            this.ignoreInvalidate = false;
         }
     }
+
+
 
     private void unhookAll() {
         this.container.removeLayoutListener(this.listener);
         if (this.figuresToBounds != null) {
-            Iterator figureItr = this.figuresToBounds.keySet().iterator();
+            Iterator<IFigure> figureItr = this.figuresToBounds.keySet().iterator();
 
             while(figureItr.hasNext()) {
-                IFigure child = (IFigure)figureItr.next();
+                IFigure child = figureItr.next();
                 figureItr.remove();
                 this.removeChild(child);
             }
@@ -169,7 +189,7 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
         this.staleConnections.remove(connection);
         this.constraintMap.remove(connection);
         if (this.connectionToPaths != null) {
-            OrthogonalPath path = (OrthogonalPath)this.connectionToPaths.remove(connection);
+            OrthogonalPath path = this.connectionToPaths.remove(connection);
             this.algorithm.removePath(path);
             this.isDirty = true;
             if (this.connectionToPaths.isEmpty()) {
@@ -183,8 +203,9 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
     }
 
     void removeChild(IFigure child) {
-        if (this.connectionToPathPoints != null) {
+        if (this.connectionToPath != null) {
             Rectangle bounds = child.getBounds().getCopy();
+            child.translateToRelative(container.getBounds());
             boolean change = this.algorithm.removeObstacle(bounds);
             this.figuresToBounds.remove(child);
             child.removeFigureListener(this.figureListener);
@@ -201,7 +222,7 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
     }
 
     public boolean hasMoreConnections() {
-        return this.connectionToPathPoints != null && !this.connectionToPathPoints.isEmpty();
+        return this.connectionToPath != null && !this.connectionToPath.isEmpty();
     }
 
     public IFigure getContainer() {
@@ -221,7 +242,7 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
     }
 
     public boolean containsConnection(Connection conn) {
-        return this.connectionToPathPoints != null && this.connectionToPathPoints.containsKey(conn);
+        return this.connectionToPath != null && this.connectionToPath.containsKey(conn);
     }
 
 

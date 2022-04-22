@@ -21,12 +21,16 @@ import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.PointList;
 import org.eclipse.draw2dl.geometry.PrecisionPoint;
 import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.draw2dl.graph.Path;
 import org.eclipse.jgit.annotations.Nullable;
 import org.jkiss.code.NotNull;
 import org.jkiss.utils.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * Mikami-Tabuchi’s Algorithm
  * 1. Expand horizontal and vertical line from source to target
@@ -39,12 +43,13 @@ import java.util.*;
 //multi-dimensional arrays for trial lines?
 public class MikamiTabuchiRouter {
 
-    private int spacing = 4;
+    private int spacing = 0;
     private List<Rectangle> obstacles = new ArrayList<>();
     private PrecisionPoint start, finish;
-    private List userPointLists = new ArrayList();
+    private final List<OrthogonalPath> userPaths = new ArrayList<>();
+
     //Increase for performance, increasing this parameter lowers accuracy.
-    private static final int STEP_SIZE = 1;
+    private static final int STEP_SIZE = 4;
 
 
     private static final int SOURCE_VERTICAL_LINES = 0;
@@ -56,7 +61,7 @@ public class MikamiTabuchiRouter {
 
     //In worst case scenarios line search may become laggy,
     //if after this amount iterations nothing was found -> stop
-    private static final int MAX_ITER = 6;
+    private static final int MAX_ITER = 2;
 
     Rectangle clientArea;
 
@@ -75,7 +80,6 @@ public class MikamiTabuchiRouter {
     private void createLinesFromTrial(TrialLine pos, int iter) {
         //possible optimisation
         //We don't want to create line if line of the same orientation already crosses this point.
-
         float start = pos.start;
         float end = pos.finish;
         for (float i = start; i < end; i += STEP_SIZE) {
@@ -132,7 +136,9 @@ public class MikamiTabuchiRouter {
     }
 
     public boolean updateObstacle(Rectangle rectangle, Rectangle newBounds) {
-        return true;
+        boolean result = obstacles.remove(rectangle);
+        result |= obstacles.add(newBounds);
+        return result;
     }
 
     public void addObstacle(Rectangle bounds) {
@@ -140,16 +146,7 @@ public class MikamiTabuchiRouter {
     }
 
     public boolean removeObstacle(Rectangle bounds) {
-        return true;
-    }
-
-    private List<Point> tracePath(TrialLine line) {
-        List<Point> points = new LinkedList<>();
-        do {
-            points.add(line.from);
-            line = line.getParent();
-        } while (line != null);
-        return points;
+        return obstacles.remove(bounds);
     }
 
     private PointList traceback() {
@@ -170,14 +167,24 @@ public class MikamiTabuchiRouter {
     }
 
 
-    public PointList solve(Point start, Point finish) {
-        PointList traceback = solveConnection(start, finish);
-        if (traceback != null) return traceback;
-        return null;
+    public List<OrthogonalPath> solve() {
+        List<OrthogonalPath> updated = new ArrayList<>();
+        for (OrthogonalPath userPath : userPaths.stream().filter(OrthogonalPath::isDirty).collect(Collectors.toList())) {
+            final PointList pointList = solveConnection(userPath.getStart(), userPath.getEnd());
+            userPath.setBendPoints(pointList);
+            updated.add(userPath);
+        }
+        return updated;
     }
 
     @org.jkiss.code.Nullable
     private PointList solveConnection(Point start, Point finish) {
+        if (start.equals(finish)) {
+            return null;
+        }
+        if (!clientArea.contains(start) || !clientArea.contains(finish)) {
+            return null;
+        }
         linesMap = new HashMap<>();
         this.start = new PrecisionPoint(start);
         result = null;
@@ -203,6 +210,8 @@ public class MikamiTabuchiRouter {
         return null;
     }
 
+
+
     private void initStartingTrialLines() {
         final TrialLine horizontalStartTrial = new TrialLine(start, true, false);
         final TrialLine verticalStartTrial = new TrialLine(start, true, true);
@@ -213,29 +222,21 @@ public class MikamiTabuchiRouter {
         initNewLayer(0);
         //TODO this is bad and awful
         linesMap.get(0).get(SOURCE_HORIZONTAL_LINES).add(horizontalStartTrial);
-        linesMap.get(0).get(SOURCE_VERTICAL_LINES).add(verticalStartTrial);
         linesMap.get(0).get(TARGET_HORIZONTAL_LINES).add(horizontalFinishTrial);
-        linesMap.get(0).get(TARGET_VERTICAL_LINES).add(verticalFinishTrial);
-        TrialLine interception = horizontalStartTrial.findInterception();
-
-        if (interception != null) {
-            result = new Pair<>(horizontalStartTrial, interception);
-        }
-        interception = verticalStartTrial.findInterception();
-        if (interception != null) {
-            result = new Pair<>(horizontalStartTrial, interception);
-        }
-
     }
 
     private void initNewLayer(int iter) {
-        linesMap.get(iter).put(0, new ArrayList<>());
-        linesMap.get(iter).put(1, new ArrayList<>());
-        linesMap.get(iter).put(2, new ArrayList<>());
-        linesMap.get(iter).put(3, new ArrayList<>());
+        for (int i = 0; i < 4; i++) {
+            linesMap.get(iter).put(i, new ArrayList<>());
+        }
     }
 
     public void removePath(OrthogonalPath path) {
+        this.userPaths.remove(path);
+    }
+
+    public void addPath(OrthogonalPath path) {
+        this.userPaths.add(path);
     }
 
     private class TrialLine {
@@ -275,9 +276,6 @@ public class MikamiTabuchiRouter {
 
         private void cutByObstacles() {
             //Check if object is on axis with line, if it is, reduce line size
-            if (obstacles == null) {
-                obstacles = new ArrayList<>();
-            }
             for (Rectangle it : obstacles) {
                 if (vertical && it.x - spacing <= from.x && it.x + it.width + spacing > from.x) {
                     //object is below need to cut start
