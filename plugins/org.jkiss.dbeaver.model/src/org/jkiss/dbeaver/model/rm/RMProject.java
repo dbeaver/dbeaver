@@ -30,6 +30,9 @@ public class RMProject {
     private Date createTime;
     private String creator;
 
+    public RMProject() {
+    }
+
     public String getId() {
         return id;
     }
