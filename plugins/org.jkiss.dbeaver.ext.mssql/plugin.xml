@@ -525,7 +525,7 @@
                 id="org.jkiss.dbeaver.ext.mssql.model.data.SQLServerStandardValueHandlerProvider"
                 label="SQL Server data types provider">
 
-            <datasource class="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource"/>
+            <datasource id="sqlserver"/>
             <type name="MONEY"/>
             <type name="SMALLMONEY"/>
             <type name="SQL_VARIANT"/>
