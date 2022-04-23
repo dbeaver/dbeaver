@@ -16,11 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.controls;
 
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.EditingSupport;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -30,7 +26,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.model.*;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
@@ -231,17 +229,26 @@ public class PrivilegeTableControl extends Composite {
             return;
         }
 
+        boolean privilegeEnabled;
         for (MySQLPrivilege privilege : privileges) {
+            privilegeEnabled = false;
             for (MySQLGrant grant : grants) {
                 if (isStatic && !grant.isStatic()) {
                     continue;
                 }
-                if (((privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME) && grant.isGrantOption()) || grant.isAllPrivileges()) ||
-                    (ArrayUtils.contains(grant.getPrivileges(), privilege))) {
-                    currentPrivileges.add(new MySQLObjectPrivilege(privilege, true));
-                } else {
-                    currentPrivileges.add(new MySQLObjectPrivilege(privilege, false));
+                if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME) && grant.isGrantOption()) {
+                    // WITH GRANT OPTION is enabled only in this case
+                    privilegeEnabled = true;
+                    break;
+                } else if (grant.isAllPrivileges() || ArrayUtils.contains(grant.getPrivileges(), privilege)) {
+                    privilegeEnabled = true;
+                    break;
                 }
+            }
+            if (privilegeEnabled) {
+                currentPrivileges.add(new MySQLObjectPrivilege(privilege, true));
+            } else {
+                currentPrivileges.add(new MySQLObjectPrivilege(privilege, false));
             }
         }
 
