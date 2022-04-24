@@ -45,6 +45,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
 
     private final DBDFormatSettings formatSettings;
     private int useScientificNotation = -1;
+    private int useAlignWithDecimal=-1;
+    
     private DBDDataFormatter formatter;
 
     public JDBCNumberValueHandler(DBSTypedObject type, DBDFormatSettings formatSettings) {
@@ -55,6 +57,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
     public void refreshValueHandlerConfiguration(DBSTypedObject type) {
         this.formatter = null;
         this.useScientificNotation = -1;
+        this.useAlignWithDecimal=-1;
     }
 
     /**
@@ -82,16 +85,28 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                 return f.toString();
             }
         }
+        
+        
         if (value instanceof Number && (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT)) {
             if (useScientificNotation < 0) {
                 this.useScientificNotation =
                     formatSettings.isUseScientificNumericFormat() ? 1 : 0;
             }
+            if (useAlignWithDecimal < 0) {
+                this.useAlignWithDecimal =
+                    formatSettings.isUseAlignWithDecimal() ? 1 : 0;
+            }
 
-            return DBValueFormatting.convertNumberToNativeString((Number) value, useScientificNotation > 0);
+            return DBValueFormatting.convertNumberToNativeString((Number) value, useScientificNotation > 0,useAlignWithDecimal>0);
         }
+ 
+        
         return getFormatter(column).formatValue(value);
     }
+    
+    
+    
+    
 
     private DBDDataFormatter getFormatter(@NotNull DBSTypedObject column) {
         if (formatter == null) {

@@ -3,6 +3,20 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
+    <dependencies>
+        <dependency>
+            <groupId>org.jkiss.dbeaver</groupId>
+            <artifactId>org.jkiss.dbeaver.ext.oracle</artifactId>
+            <version>2.1.165-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jkiss.dbeaver</groupId>
+            <artifactId>org.jkiss.dbeaver.model</artifactId>
+            <version>1.0.169-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
     <parent>
         <groupId>org.jkiss.dbeaver</groupId>
         <artifactId>tests</artifactId>

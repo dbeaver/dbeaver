@@ -264,6 +264,14 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_data_format_numeric_use_native_formatting_tip;
     public static String pref_page_data_format_numeric_use_scientific_notation;
     public static String pref_page_data_format_numeric_use_scientific_notation_tip;
+    
+    public static String pref_page_data_format_numeric_use_align_with_decimal;
+    public static String pref_page_data_format_numeric_use_align_with_decimal_tip;
+    
+    
+    
+    
+    
     public static String pref_page_data_format_group_format;
     public static String pref_page_data_format_label_profile;
     public static String pref_page_data_format_label_sample;

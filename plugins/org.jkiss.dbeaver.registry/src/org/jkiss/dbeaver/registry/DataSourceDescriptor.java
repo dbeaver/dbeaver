@@ -1254,6 +1254,12 @@ public class DataSourceDescriptor
     public boolean isUseScientificNumericFormat() {
         return getPreferenceStore().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
     }
+    
+    
+    @Override
+    public boolean isUseAlignWithDecimal() {
+        return getPreferenceStore().getBoolean(ModelPreferences.RESULT_ALIGN_WITH_DECIMAL);
+    }
 
     @NotNull
     @Override

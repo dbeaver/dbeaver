@@ -730,5 +730,14 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         return context.getDataSource().getJdbcFactory().createCallableStatement(this, original, sql, !isLoggingEnabled());
     }
 
+//	@Override
+//	public boolean isUseAlignWithDecimal() {
+
+//		
+//		
+//		return false;
+//	}
+
+
 
 }

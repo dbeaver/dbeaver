@@ -82,6 +82,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     private Button datetimeNativeFormatCheck;
     private Button numericNativeFormatCheck;
     private Button numericScientificFormatCheck;
+    private Button alignWithDecimalCheck;
 
     public PrefPageDataFormat()
     {
@@ -97,6 +98,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT) ||
             store.contains(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT) ||
             store.contains(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT) ||
+            store.contains(ModelPreferences.RESULT_ALIGN_WITH_DECIMAL) ||
             dataSourceDescriptor.getDataFormatterProfile().isOverridesParent();
     }
 
@@ -161,12 +163,30 @@ public class PrefPageDataFormat extends TargetPrefPage
             datetimeNativeFormatCheck = UIUtils.createCheckbox(settingsGroup, ResultSetMessages.pref_page_data_format_datetime_use_native_formatting, ResultSetMessages.pref_page_data_format_datetime_use_native_formatting_tip, false, 2);
             numericNativeFormatCheck = UIUtils.createCheckbox(settingsGroup, ResultSetMessages.pref_page_data_format_numeric_use_native_formatting, ResultSetMessages.pref_page_data_format_numeric_use_native_formatting_tip, false, 2);
             numericScientificFormatCheck = UIUtils.createCheckbox(settingsGroup, ResultSetMessages.pref_page_data_format_numeric_use_scientific_notation, ResultSetMessages.pref_page_data_format_numeric_use_scientific_notation_tip, false, 2);
+            
+            
+            alignWithDecimalCheck=UIUtils.createCheckbox(settingsGroup, ResultSetMessages.pref_page_data_format_numeric_use_align_with_decimal, ResultSetMessages.pref_page_data_format_numeric_use_align_with_decimal_tip, false, 2);
+            
             numericNativeFormatCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     numericScientificFormatCheck.setEnabled(numericNativeFormatCheck.getSelection());
                 }
             });
+            
+            
+            numericNativeFormatCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    alignWithDecimalCheck.setEnabled(numericNativeFormatCheck.getSelection());
+                }
+            });
+            
+            
+           
+            
+            
+            
         }
 
         // formats
@@ -405,8 +425,15 @@ public class PrefPageDataFormat extends TargetPrefPage
 
         datetimeNativeFormatCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT));
         numericNativeFormatCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT));
+        
+        
         numericScientificFormatCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT));
         numericScientificFormatCheck.setEnabled(numericNativeFormatCheck.getSelection());
+        
+        alignWithDecimalCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_ALIGN_WITH_DECIMAL));
+        alignWithDecimalCheck.setEnabled(numericNativeFormatCheck.getSelection());
+        
+        
     }
 
     @Override
@@ -423,6 +450,13 @@ public class PrefPageDataFormat extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT, datetimeNativeFormatCheck.getSelection());
             store.setValue(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT, numericNativeFormatCheck.getSelection());
             store.setValue(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT, numericScientificFormatCheck.getSelection());
+            
+            
+            store.setValue(ModelPreferences.RESULT_ALIGN_WITH_DECIMAL, alignWithDecimalCheck.getSelection());
+            
+            
+            
+            
         } catch (Exception e) {
             log.warn(e);
         }
@@ -437,6 +471,8 @@ public class PrefPageDataFormat extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
         store.setToDefault(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
         store.setToDefault(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
+        
+        store.setToDefault(ModelPreferences.RESULT_ALIGN_WITH_DECIMAL);
     }
 
     @Override

@@ -397,6 +397,13 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     public boolean isUseScientificNumericFormat() {
         return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
     }
+    
+    @Override
+    public boolean isUseAlignWithDecimal() {
+        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_ALIGN_WITH_DECIMAL);
+    }
+    
+    
 
     @NotNull
     @Override

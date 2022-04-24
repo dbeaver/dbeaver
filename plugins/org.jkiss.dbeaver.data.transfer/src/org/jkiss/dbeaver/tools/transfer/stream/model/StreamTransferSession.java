@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
@@ -58,4 +59,5 @@ public class StreamTransferSession extends AbstractSession {
     public void cancelBlock(@NotNull DBRProgressMonitor monitor, Thread blockThread) throws DBException {
         // do nothing
     }
+
 }

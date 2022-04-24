@@ -153,7 +153,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         if (value instanceof CharSequence) {
             return SQLUtils.quoteString(connection.getDataSource(), value.toString());
         } else if (value instanceof Number) {
-            return DBValueFormatting.convertNumberToNativeString((Number) value, false);
+            return DBValueFormatting.convertNumberToNativeString((Number) value, false,false);
         } else if (value instanceof java.util.Date) {
             try {
                 DBDDataFormatterProfile formatterProfile = getSession().getDataFormatterProfile();

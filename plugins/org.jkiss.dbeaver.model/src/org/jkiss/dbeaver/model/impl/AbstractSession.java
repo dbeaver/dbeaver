@@ -122,7 +122,13 @@ public abstract class AbstractSession implements DBCSession, DBDFormatSettingsEx
     public boolean isUseScientificNumericFormat() {
         return getExecutionContext().getDataSource().getContainer().isUseScientificNumericFormat();
     }
-
+    
+    @Override
+    public boolean isUseAlignWithDecimal() {
+        return getExecutionContext().getDataSource().getContainer().isUseAlignWithDecimal();
+    }
+    
+    
     @NotNull
     @Override
     public DBDValueHandler getDefaultValueHandler() {

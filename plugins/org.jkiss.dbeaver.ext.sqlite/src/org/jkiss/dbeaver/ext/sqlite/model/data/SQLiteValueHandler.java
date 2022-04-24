@@ -84,9 +84,13 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDV
     {
         if (value instanceof Number) {
             if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
+//            	
+            	
                 return DBValueFormatting.convertNumberToNativeString(
                     (Number) value,
-                    formatSettings.isUseScientificNumericFormat());
+                    formatSettings.isUseScientificNumericFormat(),formatSettings.isUseAlignWithDecimal());
+          
+                
             } else {
                 if (numberFormatter == null) {
                     try {

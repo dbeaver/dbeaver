@@ -35,6 +35,7 @@ public interface DBDFormatSettings {
     boolean isUseNativeNumericFormat();
 
     boolean isUseScientificNumericFormat();
+    boolean isUseAlignWithDecimal();
 
     /**
      * Default value handler

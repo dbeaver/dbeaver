@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDComposite;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
@@ -41,6 +42,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -48,368 +50,437 @@ import java.util.Locale;
  */
 public final class DBValueFormatting {
 
-    public static final DecimalFormat NATIVE_FLOAT_FORMATTER = new DecimalFormat("#.########", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-    public static final DecimalFormat NATIVE_DOUBLE_FORMATTER = new DecimalFormat("#.################", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+	public static final DecimalFormat NATIVE_FLOAT_FORMATTER = new DecimalFormat("#.########",
+			DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+	public static final DecimalFormat NATIVE_DOUBLE_FORMATTER = new DecimalFormat("#.################",
+			DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
-    private static final Log log = Log.getLog(DBValueFormatting.class);
+	private static final Log log = Log.getLog(DBValueFormatting.class);
 
-    static {
-        //NATIVE_FLOAT_FORMATTER.setMaximumFractionDigits(NumberDataFormatter.MAX_FLOAT_FRACTION_DIGITS);
-        NATIVE_FLOAT_FORMATTER.setDecimalSeparatorAlwaysShown(false);
-        //NATIVE_FLOAT_FORMATTER.setRoundingMode(RoundingMode.UNNECESSARY);
+	static {
+		// NATIVE_FLOAT_FORMATTER.setMaximumFractionDigits(NumberDataFormatter.MAX_FLOAT_FRACTION_DIGITS);
+		NATIVE_FLOAT_FORMATTER.setDecimalSeparatorAlwaysShown(false);
+		// NATIVE_FLOAT_FORMATTER.setRoundingMode(RoundingMode.UNNECESSARY);
 
-        //NATIVE_DOUBLE_FORMATTER.setMaximumFractionDigits(340);
-        NATIVE_DOUBLE_FORMATTER.setDecimalSeparatorAlwaysShown(false);
-        //NATIVE_DOUBLE_FORMATTER.setRoundingMode(RoundingMode.UNNECESSARY);
-    }
+		// NATIVE_DOUBLE_FORMATTER.setMaximumFractionDigits(340);
+		NATIVE_DOUBLE_FORMATTER.setDecimalSeparatorAlwaysShown(false);
+		// NATIVE_DOUBLE_FORMATTER.setRoundingMode(RoundingMode.UNNECESSARY);
+	}
 
-    @NotNull
-    public static DBPImage getTypeImage(@NotNull DBSTypedObject typedObject)
-    {
-        if (typedObject instanceof DBSTypedObjectEx) {
-            DBSDataType dataType = ((DBSTypedObjectEx) typedObject).getDataType();
-            if (dataType instanceof DBPImageProvider) {
-                DBPImage image = ((DBPImageProvider) dataType).getObjectImage();
-                if (image != null) {
-                    return image;
-                }
-            }
-        }
-        return getDefaultTypeImage(typedObject);
-    }
+	@NotNull
+	public static DBPImage getTypeImage(@NotNull DBSTypedObject typedObject) {
+		if (typedObject instanceof DBSTypedObjectEx) {
+			DBSDataType dataType = ((DBSTypedObjectEx) typedObject).getDataType();
+			if (dataType instanceof DBPImageProvider) {
+				DBPImage image = ((DBPImageProvider) dataType).getObjectImage();
+				if (image != null) {
+					return image;
+				}
+			}
+		}
+		return getDefaultTypeImage(typedObject);
+	}
 
-    @NotNull
-    public static DBPImage getDefaultTypeImage(DBSTypedObject typedObject) {
-        String typeName = typedObject.getTypeName();
-        switch (typedObject.getDataKind()) {
-            case BOOLEAN:
-                return DBIcon.TYPE_BOOLEAN;
-            case STRING:
-                return DBIcon.TYPE_STRING;
-            case NUMERIC:
-                return DBIcon.TYPE_NUMBER;
-            case DATETIME:
-                return DBIcon.TYPE_DATETIME;
-            case BINARY:
-                return DBIcon.TYPE_BINARY;
-            case CONTENT:
-                if (typeNameContains(typeName, DBConstants.TYPE_NAME_XML, DBConstants.TYPE_NAME_XML2)) {
-                    return DBIcon.TYPE_XML;
-                } else if (typeNameContains(typeName, DBConstants.TYPE_NAME_CHAR, DBConstants.TYPE_NAME_CHAR2)) {
-                    return DBIcon.TYPE_TEXT;
-                }
-                return DBIcon.TYPE_LOB;
-            case ARRAY:
-                return DBIcon.TYPE_ARRAY;
-            case STRUCT:
-                return DBIcon.TYPE_STRUCT;
-            case DOCUMENT:
-                return DBIcon.TYPE_DOCUMENT;
-            case REFERENCE:
-                return DBIcon.TYPE_REFERENCE;
-            case ROWID:
-                return DBIcon.TYPE_ROWID;
-            case OBJECT:
-                if (typeNameContains(typeName, DBConstants.TYPE_NAME_UUID, DBConstants.TYPE_NAME_UUID2)) {
-                    return DBIcon.TYPE_UUID;
-                } else if (typeNameContains(typeName, DBConstants.TYPE_NAME_JSON, DBConstants.TYPE_NAME_JSON2)) {
-                    return DBIcon.TYPE_JSON;
-                }
-                return DBIcon.TYPE_OBJECT;
-            case ANY:
-                return DBIcon.TYPE_ANY;
-            default:
-                return DBIcon.TYPE_UNKNOWN;
-        }
-    }
+	@NotNull
+	public static DBPImage getDefaultTypeImage(DBSTypedObject typedObject) {
+		String typeName = typedObject.getTypeName();
+		switch (typedObject.getDataKind()) {
+		case BOOLEAN:
+			return DBIcon.TYPE_BOOLEAN;
+		case STRING:
+			return DBIcon.TYPE_STRING;
+		case NUMERIC:
+			return DBIcon.TYPE_NUMBER;
+		case DATETIME:
+			return DBIcon.TYPE_DATETIME;
+		case BINARY:
+			return DBIcon.TYPE_BINARY;
+		case CONTENT:
+			if (typeNameContains(typeName, DBConstants.TYPE_NAME_XML, DBConstants.TYPE_NAME_XML2)) {
+				return DBIcon.TYPE_XML;
+			} else if (typeNameContains(typeName, DBConstants.TYPE_NAME_CHAR, DBConstants.TYPE_NAME_CHAR2)) {
+				return DBIcon.TYPE_TEXT;
+			}
+			return DBIcon.TYPE_LOB;
+		case ARRAY:
+			return DBIcon.TYPE_ARRAY;
+		case STRUCT:
+			return DBIcon.TYPE_STRUCT;
+		case DOCUMENT:
+			return DBIcon.TYPE_DOCUMENT;
+		case REFERENCE:
+			return DBIcon.TYPE_REFERENCE;
+		case ROWID:
+			return DBIcon.TYPE_ROWID;
+		case OBJECT:
+			if (typeNameContains(typeName, DBConstants.TYPE_NAME_UUID, DBConstants.TYPE_NAME_UUID2)) {
+				return DBIcon.TYPE_UUID;
+			} else if (typeNameContains(typeName, DBConstants.TYPE_NAME_JSON, DBConstants.TYPE_NAME_JSON2)) {
+				return DBIcon.TYPE_JSON;
+			}
+			return DBIcon.TYPE_OBJECT;
+		case ANY:
+			return DBIcon.TYPE_ANY;
+		default:
+			return DBIcon.TYPE_UNKNOWN;
+		}
+	}
 
-    private static boolean typeNameContains(String typeName, String patternLC, String patternUC) {
-        return typeName != null &&
-                (typeName.contains(patternLC) || typeName.contains(patternUC));
-    }
+	private static boolean typeNameContains(String typeName, String patternLC, String patternUC) {
+		return typeName != null && (typeName.contains(patternLC) || typeName.contains(patternUC));
+	}
 
-    @NotNull
-    public static DBPImage getObjectImage(DBPObject object)
-    {
-        return getObjectImage(object, true);
-    }
+	@NotNull
+	public static DBPImage getObjectImage(DBPObject object) {
+		return getObjectImage(object, true);
+	}
 
-    @Nullable
-    public static DBPImage getObjectImage(DBPObject object, boolean useDefault)
-    {
-        DBPImage image = null;
-        if (object instanceof DBPImageProvider) {
-            image = ((DBPImageProvider)object).getObjectImage();
-        }
-        if (image == null) {
-            if (object instanceof DBSTypedObject) {
-                image = getTypeImage((DBSTypedObject) object);
-            }
-            if (image == null && useDefault) {
-                if (object instanceof DBSEntity) {
-                    if (DBUtils.isView((DBSEntity) object)) {
-                        image = DBIcon.TREE_VIEW;
-                    } else {
-                        image = DBIcon.TREE_TABLE;
-                    }
-                } else if (object instanceof DBSEntityAssociation) {
-                    image = DBIcon.TREE_ASSOCIATION;
-                } else if (object instanceof DBSProcedure) {
-                    image = DBIcon.TREE_PROCEDURE;
-                } else if (object instanceof DBSPackage) {
-                    image = DBIcon.TREE_PACKAGE;
-                } else if (object instanceof DBSTrigger) {
-                    image = DBIcon.TREE_TRIGGER;
-                } else {
-                    image = DBIcon.TYPE_OBJECT;
-                }
-            }
-        }
-        return image;
-    }
+	@Nullable
+	public static DBPImage getObjectImage(DBPObject object, boolean useDefault) {
+		DBPImage image = null;
+		if (object instanceof DBPImageProvider) {
+			image = ((DBPImageProvider) object).getObjectImage();
+		}
+		if (image == null) {
+			if (object instanceof DBSTypedObject) {
+				image = getTypeImage((DBSTypedObject) object);
+			}
+			if (image == null && useDefault) {
+				if (object instanceof DBSEntity) {
+					if (DBUtils.isView((DBSEntity) object)) {
+						image = DBIcon.TREE_VIEW;
+					} else {
+						image = DBIcon.TREE_TABLE;
+					}
+				} else if (object instanceof DBSEntityAssociation) {
+					image = DBIcon.TREE_ASSOCIATION;
+				} else if (object instanceof DBSProcedure) {
+					image = DBIcon.TREE_PROCEDURE;
+				} else if (object instanceof DBSPackage) {
+					image = DBIcon.TREE_PACKAGE;
+				} else if (object instanceof DBSTrigger) {
+					image = DBIcon.TREE_TRIGGER;
+				} else {
+					image = DBIcon.TYPE_OBJECT;
+				}
+			}
+		}
+		return image;
+	}
 
-    @NotNull
-    public static DBDBinaryFormatter getBinaryPresentation(@NotNull DBPDataSource dataSource)
-    {
-        String id = dataSource.getContainer().getPreferenceStore().getString(ModelPreferences.RESULT_SET_BINARY_PRESENTATION);
-        if (id != null) {
-            DBDBinaryFormatter formatter = getBinaryPresentation(id);
-            if (formatter != null) {
-                return formatter;
-            }
-        }
-        return DBConstants.BINARY_FORMATS[0];
-    }
+	@NotNull
+	public static DBDBinaryFormatter getBinaryPresentation(@NotNull DBPDataSource dataSource) {
+		String id = dataSource.getContainer().getPreferenceStore()
+				.getString(ModelPreferences.RESULT_SET_BINARY_PRESENTATION);
+		if (id != null) {
+			DBDBinaryFormatter formatter = getBinaryPresentation(id);
+			if (formatter != null) {
+				return formatter;
+			}
+		}
+		return DBConstants.BINARY_FORMATS[0];
+	}
 
-    @Nullable
-    public static DBDBinaryFormatter getBinaryPresentation(String id)
-    {
-        for (DBDBinaryFormatter formatter : DBConstants.BINARY_FORMATS) {
-            if (formatter.getId().equals(id)) {
-                return formatter;
-            }
-        }
-        return null;
-    }
+	@Nullable
+	public static DBDBinaryFormatter getBinaryPresentation(String id) {
+		for (DBDBinaryFormatter formatter : DBConstants.BINARY_FORMATS) {
+			if (formatter.getId().equals(id)) {
+				return formatter;
+			}
+		}
+		return null;
+	}
 
-    public static String getDefaultBinaryFileEncoding(@NotNull DBPDataSource dataSource)
-    {
-        DBPPreferenceStore preferenceStore = dataSource.getContainer().getPreferenceStore();
-        String fileEncoding = preferenceStore.getString(ModelPreferences.CONTENT_HEX_ENCODING);
-        if (CommonUtils.isEmpty(fileEncoding)) {
-            fileEncoding = GeneralUtils.getDefaultFileEncoding();
-        }
-        return fileEncoding;
-    }
+	public static String getDefaultBinaryFileEncoding(@NotNull DBPDataSource dataSource) {
+		DBPPreferenceStore preferenceStore = dataSource.getContainer().getPreferenceStore();
+		String fileEncoding = preferenceStore.getString(ModelPreferences.CONTENT_HEX_ENCODING);
+		if (CommonUtils.isEmpty(fileEncoding)) {
+			fileEncoding = GeneralUtils.getDefaultFileEncoding();
+		}
+		return fileEncoding;
+	}
 
-    @Nullable
-    public static Object convertStringToNumber(String text, Class<?> hintType, @NotNull DBDDataFormatter formatter, boolean validateValue) throws DBCException
-    {
-        if (text == null || text.length() == 0) {
-            return null;
-        }
-        try {
-            if (hintType == Long.class) {
-                try {
-                    return Long.valueOf(text);
-                } catch (NumberFormatException e) {
-                    return new BigInteger(text);
-                }
-            } else if (hintType == Integer.class) {
-                return Integer.valueOf(text);
-            } else if (hintType == Short.class) {
-                return Short.valueOf(text);
-            } else if (hintType == Byte.class) {
-                return Byte.valueOf(text);
-            } else if (hintType == Float.class) {
-                return Float.valueOf(text);
-            } else if (hintType == Double.class) {
-                return Double.valueOf(text);
-            } else if (hintType == BigInteger.class) {
-                return new BigInteger(text);
-            } else {
-                return new BigDecimal(text);
-            }
-        } catch (NumberFormatException e) {
-            try {
-                return formatter.parseValue(text, hintType);
-            } catch (ParseException e1) {
-                if (validateValue) {
-                    throw new DBCException("Can't parse numeric value [" + text + "] using formatter", e);
-                }
-                log.debug("Can't parse numeric value [" + text + "] using formatter: " + e.getMessage());
-                return text;
-            }
-        }
-    }
+	@Nullable
+	public static Object convertStringToNumber(String text, Class<?> hintType, @NotNull DBDDataFormatter formatter,
+			boolean validateValue) throws DBCException {
+		if (text == null || text.length() == 0) {
+			return null;
+		}
+		try {
+			if (hintType == Long.class) {
+				try {
+					return Long.valueOf(text);
+				} catch (NumberFormatException e) {
+					return new BigInteger(text);
+				}
+			} else if (hintType == Integer.class) {
+				return Integer.valueOf(text);
+			} else if (hintType == Short.class) {
+				return Short.valueOf(text);
+			} else if (hintType == Byte.class) {
+				return Byte.valueOf(text);
+			} else if (hintType == Float.class) {
+				return Float.valueOf(text);
+			} else if (hintType == Double.class) {
+				return Double.valueOf(text);
+			} else if (hintType == BigInteger.class) {
+				return new BigInteger(text);
+			} else {
+				return new BigDecimal(text);
+			}
+		} catch (NumberFormatException e) {
+			try {
+				return formatter.parseValue(text, hintType);
+			} catch (ParseException e1) {
+				if (validateValue) {
+					throw new DBCException("Can't parse numeric value [" + text + "] using formatter", e);
+				}
+				log.debug("Can't parse numeric value [" + text + "] using formatter: " + e.getMessage());
+				return text;
+			}
+		}
+	}
 
-    public static String convertNumberToNativeString(Number value, boolean scientificNotation) {
-        try {
-            if (value instanceof BigDecimal) {
-                return scientificNotation ?
-                    value.toString() :
-                    ((BigDecimal) value).toPlainString();
-            } else {
-                String strValue = value.toString();
-                if (scientificNotation || strValue.indexOf('E') == -1) {
-                    return strValue;
-                }
-                // We don't want exponential view
-                if (value instanceof Float) {
-                    return NATIVE_FLOAT_FORMATTER.format(value);
-                } else if (value instanceof Double) {
-                    return NATIVE_DOUBLE_FORMATTER.format(value);
-                }
-            }
-        } catch (Exception e) {
-            log.debug("Error converting number to string: " + e.getMessage());
-        }
-        return value.toString();
-    }
+	public static String convertAlignWithDecimal(String answerString) {
 
-    @Nullable
-    public static Object convertDateToNumber(Date date, Class<?> hintType, @NotNull DBDDataFormatter formatter, boolean validateValue) throws DBCException
-    {
-        if (date == null) {
-            return null;
-        }
-        try {
-            if (hintType == Long.class) {
-                try {
-                    return date.getTime();
-                } catch (NumberFormatException e) {
-                    return (int) (date.getTime()/1000);
-                }
-            } else if (hintType == Integer.class) {
-                return (int) (date.getTime()/1000);
-            } else if (hintType == Float.class) {
-                return Long.valueOf(date.getTime()).floatValue();
-            } else if (hintType == Double.class) {
-                return Long.valueOf(date.getTime()).doubleValue();
-            } else {
-                return new BigDecimal(date.getTime());
-            }
-        } catch (NumberFormatException e) {
-            try {
-                return formatter.parseValue(date.toString(), hintType);
-            } catch (ParseException e1) {
-                if (validateValue) {
-                    throw new DBCException("Can't parse numeric value [" + date.toString() + "] using formatter", e);
-                }
-                log.debug("Can't parse numeric value [" + date.toString() + "] using formatter: " + e.getMessage());
-                return date;
-            }
-        }
-    }
+		 int prePadding = 15;
+	        int postPadding = 15;
+	        if(!answerString.contains(".")){
+	            answerString+=".0";
+	        }
+	        String[] strs=answerString.split("\\.");
 
-    public static String getBooleanString(boolean propertyValue) {
-        return propertyValue ? DBConstants.BOOLEAN_PROP_YES : DBConstants.BOOLEAN_PROP_NO;
-    }
+	        int preEmpty = prePadding - strs[0].length();
+	        int postEmpty = postPadding - strs[1].length();
+	        String preEmptyString = new String(new char[preEmpty]).replace('\0', '\u2007');
+	        String postsEmptyString = new String(new char[postEmpty]).replace('\0', '\u2007');
+        
 
-    public static String formatBinaryString(@NotNull DBPDataSource dataSource, @NotNull byte[] data, @NotNull DBDDisplayFormat format) {
-        return formatBinaryString(dataSource, data, format, false);
-    }
+	        return (preEmptyString + answerString + postsEmptyString);
+		
 
-    public static String formatBinaryString(@NotNull DBPDataSource dataSource, @NotNull byte[] data, @NotNull DBDDisplayFormat format, boolean forceLimit) {
-        DBDBinaryFormatter formatter;
-        if (format == DBDDisplayFormat.NATIVE) {
-            formatter = dataSource.getSQLDialect().getNativeBinaryFormatter();
-        } else {
-            formatter = getBinaryPresentation(dataSource);
-        }
-        // Convert bytes to string
-        int length = data.length;
-        if (format == DBDDisplayFormat.UI || forceLimit) {
-            int maxLength = dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
-            if (length > maxLength) {
-                length = maxLength;
-            }
-        }
-        String string = formatter.toString(data, 0, length);
-        if (format == DBDDisplayFormat.NATIVE || length == data.length) {
-            // Do not append ... for native formatter - it may contain expressions
-            return string;
-        }
-        return string + "..." + " [" + data.length + "]";
-    }
 
-    @NotNull
-    public static String getDefaultValueDisplayString(@Nullable Object value, @NotNull DBDDisplayFormat format)
-    {
-        if (DBUtils.isNullValue(value)) {
-            if (format == DBDDisplayFormat.UI) {
-                return DBConstants.NULL_VALUE_LABEL;
-            } else {
-                return "";
-            }
-        } else if (value instanceof CharSequence) {
-            return value.toString();
-        } else if (value.getClass().isArray()) {
-            if (value.getClass().getComponentType() == Byte.TYPE) {
-                byte[] bytes = (byte[]) value;
-                int length = bytes.length;
-                if (length > 2000) length = 2000;
-                String string = CommonUtils.toHexString(bytes, 0, length);
-                return bytes.length > 2000 ? string + "..." : string;
-            } else {
-                StringBuilder str = new StringBuilder("[");
-                int length = Array.getLength(value);
-                for (int i = 0; i < length; i++) {
-                    if (i > 0) str.append(", ");
-                    str.append(getDefaultValueDisplayString(Array.get(value, i), format));
-                }
-                str.append("]");
-                return str.toString();
-            }
-        } else if (value instanceof DBDComposite) {
-            DBDComposite composite = (DBDComposite) value;
-            DBSAttributeBase[] attributes = composite.getAttributes();
-            StringBuilder str = new StringBuilder("{");
-            try {
-                boolean first = true;
-                for (DBSAttributeBase item : attributes) {
-                    if (!first) str.append(", ");
-                    first = false;
-                    str.append(item.getName()).append(":");
-                    Object attributeValue = composite.getAttributeValue(item);
-                    str.append(getDefaultValueDisplayString(attributeValue, format));
-                }
-            } catch (DBCException e) {
-                str.append(e.getMessage());
-            }
-            str.append("}");
-            return str.toString();
-        } else if (value instanceof Collection) {
-            StringBuilder str = new StringBuilder("[");
-            boolean first = true;
-            for (Object item : (Collection)value) {
-                if (!first) str.append(", ");
-                first = false;
-                str.append(getDefaultValueDisplayString(item, format));
-            }
-            str.append("]");
-            return str.toString();
-        } else if (value instanceof DBPNamedObject) {
-            return ((DBPNamedObject) value).getName();
-        }
+	}
 
-        String className = value.getClass().getName();
-        if (className.startsWith("java.lang") || className.startsWith("java.util")) {
-            // Standard types just use toString
-            return value.toString();
-        }
-        // Unknown types print their class name
-        boolean hasToString;
-        try {
-            hasToString = value.getClass().getMethod("toString").getDeclaringClass() != Object.class;
-        } catch (Throwable e) {
-            log.debug(e);
-            hasToString = false;
-        }
-        if (hasToString) {
-            return value.toString();
-        } else {
-            return "[" + value.getClass().getSimpleName() + "]";
-        }
-    }
+	public static String convertNumberToNativeString(Number value, boolean scientificNotation,boolean alignWithDecimal) {
+
+		
+		String answerStr = "";
+
+		try {
+			if (value instanceof BigDecimal) {
+				answerStr = scientificNotation ? value.toString() : ((BigDecimal) value).toPlainString().trim();
+				if (alignWithDecimal) {
+
+					return convertAlignWithDecimal(answerStr);
+				} else {
+					return answerStr;
+				}
+
+//                return scientificNotation ?
+//                    value.toString() :
+//                    ((BigDecimal) value).toPlainString();
+
+			} else {
+
+				String strValue = value.toString();
+				if (scientificNotation || strValue.indexOf('E') == -1) {
+					answerStr = strValue.trim();
+					if (alignWithDecimal) {
+
+						return convertAlignWithDecimal(answerStr);
+					} else {
+						return answerStr;
+					}
+
+//                    return strValue;
+				}
+
+				// We don't want exponential view
+				if (value instanceof Float) {
+					answerStr = NATIVE_FLOAT_FORMATTER.format(value).trim();
+					if (alignWithDecimal) {
+						return convertAlignWithDecimal(answerStr);
+					} else {
+						return answerStr;
+					}
+//                    return NATIVE_FLOAT_FORMATTER.format(value);
+				} else if (value instanceof Double) {
+					answerStr = NATIVE_DOUBLE_FORMATTER.format(value).trim();
+					if (alignWithDecimal) {
+
+						return convertAlignWithDecimal(answerStr);
+					} else {
+						return answerStr;
+					}
+
+//                    return NATIVE_DOUBLE_FORMATTER.format(value);
+				}
+			}
+		} catch (Exception e) {
+			log.debug("Error converting number to string: " + e.getMessage());
+		}
+		answerStr=value.toString().trim();
+		if (alignWithDecimal) {
+
+			return convertAlignWithDecimal(answerStr);
+		} else {
+			return answerStr;
+		}
+		
+//		return value.toString();
+
+	}
+
+	@Nullable
+	public static Object convertDateToNumber(Date date, Class<?> hintType, @NotNull DBDDataFormatter formatter,
+			boolean validateValue) throws DBCException {
+		if (date == null) {
+			return null;
+		}
+		try {
+			if (hintType == Long.class) {
+				try {
+					return date.getTime();
+				} catch (NumberFormatException e) {
+					return (int) (date.getTime() / 1000);
+				}
+			} else if (hintType == Integer.class) {
+				return (int) (date.getTime() / 1000);
+			} else if (hintType == Float.class) {
+				return Long.valueOf(date.getTime()).floatValue();
+			} else if (hintType == Double.class) {
+				return Long.valueOf(date.getTime()).doubleValue();
+			} else {
+				return new BigDecimal(date.getTime());
+			}
+		} catch (NumberFormatException e) {
+			try {
+				return formatter.parseValue(date.toString(), hintType);
+			} catch (ParseException e1) {
+				if (validateValue) {
+					throw new DBCException("Can't parse numeric value [" + date.toString() + "] using formatter", e);
+				}
+				log.debug("Can't parse numeric value [" + date.toString() + "] using formatter: " + e.getMessage());
+				return date;
+			}
+		}
+	}
+
+	public static String getBooleanString(boolean propertyValue) {
+		return propertyValue ? DBConstants.BOOLEAN_PROP_YES : DBConstants.BOOLEAN_PROP_NO;
+	}
+
+	public static String formatBinaryString(@NotNull DBPDataSource dataSource, @NotNull byte[] data,
+			@NotNull DBDDisplayFormat format) {
+		return formatBinaryString(dataSource, data, format, false);
+	}
+
+	public static String formatBinaryString(@NotNull DBPDataSource dataSource, @NotNull byte[] data,
+			@NotNull DBDDisplayFormat format, boolean forceLimit) {
+		DBDBinaryFormatter formatter;
+		if (format == DBDDisplayFormat.NATIVE) {
+			formatter = dataSource.getSQLDialect().getNativeBinaryFormatter();
+		} else {
+			formatter = getBinaryPresentation(dataSource);
+		}
+		// Convert bytes to string
+		int length = data.length;
+		if (format == DBDDisplayFormat.UI || forceLimit) {
+			int maxLength = dataSource.getContainer().getPreferenceStore()
+					.getInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
+			if (length > maxLength) {
+				length = maxLength;
+			}
+		}
+		String string = formatter.toString(data, 0, length);
+		if (format == DBDDisplayFormat.NATIVE || length == data.length) {
+			// Do not append ... for native formatter - it may contain expressions
+			return string;
+		}
+		return string + "..." + " [" + data.length + "]";
+	}
+
+	@NotNull
+	public static String getDefaultValueDisplayString(@Nullable Object value, @NotNull DBDDisplayFormat format) {
+		if (DBUtils.isNullValue(value)) {
+			if (format == DBDDisplayFormat.UI) {
+				return DBConstants.NULL_VALUE_LABEL;
+			} else {
+				return "";
+			}
+		} else if (value instanceof CharSequence) {
+			return value.toString();
+		} else if (value.getClass().isArray()) {
+			if (value.getClass().getComponentType() == Byte.TYPE) {
+				byte[] bytes = (byte[]) value;
+				int length = bytes.length;
+				if (length > 2000)
+					length = 2000;
+				String string = CommonUtils.toHexString(bytes, 0, length);
+				return bytes.length > 2000 ? string + "..." : string;
+			} else {
+				StringBuilder str = new StringBuilder("[");
+				int length = Array.getLength(value);
+				for (int i = 0; i < length; i++) {
+					if (i > 0)
+						str.append(", ");
+					str.append(getDefaultValueDisplayString(Array.get(value, i), format));
+				}
+				str.append("]");
+				return str.toString();
+			}
+		} else if (value instanceof DBDComposite) {
+			DBDComposite composite = (DBDComposite) value;
+			DBSAttributeBase[] attributes = composite.getAttributes();
+			StringBuilder str = new StringBuilder("{");
+			try {
+				boolean first = true;
+				for (DBSAttributeBase item : attributes) {
+					if (!first)
+						str.append(", ");
+					first = false;
+					str.append(item.getName()).append(":");
+					Object attributeValue = composite.getAttributeValue(item);
+					str.append(getDefaultValueDisplayString(attributeValue, format));
+				}
+			} catch (DBCException e) {
+				str.append(e.getMessage());
+			}
+			str.append("}");
+			return str.toString();
+		} else if (value instanceof Collection) {
+			StringBuilder str = new StringBuilder("[");
+			boolean first = true;
+			for (Object item : (Collection) value) {
+				if (!first)
+					str.append(", ");
+				first = false;
+				str.append(getDefaultValueDisplayString(item, format));
+			}
+			str.append("]");
+			return str.toString();
+		} else if (value instanceof DBPNamedObject) {
+			return ((DBPNamedObject) value).getName();
+		}
+
+		String className = value.getClass().getName();
+		if (className.startsWith("java.lang") || className.startsWith("java.util")) {
+			// Standard types just use toString
+			return value.toString();
+		}
+		// Unknown types print their class name
+		boolean hasToString;
+		try {
+			hasToString = value.getClass().getMethod("toString").getDeclaringClass() != Object.class;
+		} catch (Throwable e) {
+			log.debug(e);
+			hasToString = false;
+		}
+		if (hasToString) {
+			return value.toString();
+		} else {
+			return "[" + value.getClass().getSimpleName() + "]";
+		}
+	}
 }
