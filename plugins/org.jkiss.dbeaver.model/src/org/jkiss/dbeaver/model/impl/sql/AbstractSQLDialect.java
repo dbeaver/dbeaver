@@ -316,7 +316,15 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean isWordStart(int ch) {
-        return Character.isUnicodeIdentifierStart(ch);
+    	if (Character.isUnicodeIdentifierStart(ch)) {
+    		return true;
+    	}
+    	else if (ch == 95) {
+    		return true;
+    	}
+    	else {
+    		return false;
+    	}
     }
 
     @Override
