@@ -48,13 +48,6 @@ public class ClickhouseStructValueHandler extends JDBCStructValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (value instanceof JDBCComposite) {
             Object[] values = ((JDBCComposite) value).getValues();
-       //TODO: VALUE!!!!!!!!
-            int max=0;
-            for(int i=0;i<values.length;i++){
-                if(values[i].length()>max){
-                    max=values[i].length();
-                }
-            }
            
             if (!ArrayUtils.isEmpty(values)) {
                 return DBValueFormatting.getDefaultValueDisplayString(values, format);
