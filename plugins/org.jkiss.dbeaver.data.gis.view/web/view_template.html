@@ -153,6 +153,68 @@
             document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility=elementsVisibility;
         }
 
+        if (typeof setPresentationSelection !== undefined) {
+            let selection = [];
+
+            function addSelection(target, layer) {
+                let index = -1;
+
+                for (let i = 0; i < selection.length; i++) {
+                    if (selection[i].target === target && selection[i].layer === layer) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                if (index < 0) {
+                    layer.setStyle({color: '#ff4620', dashArray: '4'});
+                    selection.push({target: target, layer: layer});
+                } else {
+                    target.resetStyle(layer);
+                    selection.splice(index, 1);
+                }
+            }
+
+            function clearSelection() {
+                while (selection.length > 0) {
+                    let object = selection.pop();
+                    object.target.resetStyle(object.layer);
+                }
+            }
+
+            function fireSelectionChanged() {
+                setPresentationSelection(selection.map(function (value) {
+                    return value.layer.feature.geometry.tip.location;
+                }));
+            }
+
+            vectorLayer.on('click', function(e) {
+                if (e.originalEvent.ctrlKey !== true) {
+                    clearSelection();
+                }
+                if (selection.length > 0) {
+                    geoMap.closePopup();
+                }
+                addSelection(e.target, e.layer);
+                fireSelectionChanged();
+            });
+
+            geoMap.on('click', function (e) {
+                if (e.originalEvent.ctrlKey !== true) {
+                    clearSelection();
+                    fireSelectionChanged();
+                }
+            });
+
+            geoMap.on('keydown', function (e) {
+                if (e.originalEvent.keyCode === 27) {
+                    clearSelection();
+                    fireSelectionChanged();
+                    geoMap.closePopup();
+                }
+            });
+        }
+
         showTools(${showTools});
     </script>
 </body>
