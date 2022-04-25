@@ -46,6 +46,7 @@ public class AuthProviderDescriptor extends AbstractDescriptor implements SMAuth
     private final Map<String, PropertyDescriptor> configurationParameters = new LinkedHashMap<>();
     private final List<SMAuthCredentialsProfile> credentialProfiles = new ArrayList<>();
     private final boolean configurable;
+    private final boolean hidden;
     private final String[] requiredFeatures;
 
     public AuthProviderDescriptor(IConfigurationElement cfg) {
@@ -54,6 +55,7 @@ public class AuthProviderDescriptor extends AbstractDescriptor implements SMAuth
         this.implType = new ObjectType(cfg, "class");
         this.icon = iconToImage(cfg.getAttribute("icon"));
         this.configurable = CommonUtils.toBoolean(cfg.getAttribute("configurable"));
+        this.hidden = CommonUtils.toBoolean(cfg.getAttribute("hidden"));
 
         for (IConfigurationElement cfgElement : cfg.getChildren("configuration")) {
             for (IConfigurationElement propGroup : ArrayUtils.safeArray(cfgElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
@@ -96,6 +98,10 @@ public class AuthProviderDescriptor extends AbstractDescriptor implements SMAuth
 
     public boolean isConfigurable() {
         return configurable;
+    }
+
+    public boolean isHidden() {
+        return hidden;
     }
 
     public List<PropertyDescriptor> getConfigurationParameters() {
