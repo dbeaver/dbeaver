@@ -18,7 +18,33 @@ package org.jkiss.dbeaver.model.security.user;
 
 import org.jkiss.code.NotNull;
 
-public interface SMUser {
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public class SMUser {
+    private final String userId;
+    private final Map<String, String> metaParameters = new LinkedHashMap<>();
+
+    public SMUser(@NotNull String userId) {
+        this.userId = userId;
+    }
+
+    public SMUser(@NotNull String userId, @NotNull Map<String, String> metaParameters) {
+        this.userId = userId;
+        this.metaParameters.putAll(metaParameters);
+    }
+
     @NotNull
-    String getUserId();
+    public String getUserId() {
+        return userId;
+    }
+
+    @NotNull
+    public Map<String, String> getMetaParameters() {
+        return metaParameters;
+    }
+
+    public void setMetaParameter(String name, String value) {
+        metaParameters.put(name, value);
+    }
 }
