@@ -221,7 +221,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 }
             });
 
-            UIUtils.createDialogButton(buttonsPanel, GenericMessages.dialog_connection_create_button, null, GenericMessages.dialog_connection_browse_button_tip, new SelectionAdapter() {
+            UIUtils.createDialogButton(buttonsPanel, GenericMessages.dialog_connection_create_button, null, GenericMessages.dialog_connection_create_button_tip, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     final String path = showDatabaseFileSelectorDialog(SWT.SAVE);
