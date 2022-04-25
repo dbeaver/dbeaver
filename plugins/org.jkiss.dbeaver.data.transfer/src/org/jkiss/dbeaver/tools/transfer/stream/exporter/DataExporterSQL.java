@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
+import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -45,7 +47,7 @@ import java.util.stream.Stream;
 /**
  * SQL Exporter
  */
-public class DataExporterSQL extends StreamExporterAbstract {
+public class DataExporterSQL extends StreamExporterAbstract implements IAppendableDataExporter{
 
     private static final Log log = Log.getLog(DataExporterSQL.class);
 
@@ -225,7 +227,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                     }
                     sqlBuffer.append(";");
                 } else if (insertKeyword == InsertKeyword.INSERT_ALL && rowCount % rowsInStatement == 0) {
-                    sqlBuffer.append("\n").append(identifierCase.transform(KEYWORD_SELECT_FROM_DUAL)).append(";");
+                    sqlBuffer.append(rowDelimiter).append(identifierCase.transform(KEYWORD_SELECT_FROM_DUAL)).append(";");
                 }
                 if (lineBeforeRows) {
                     sqlBuffer.append(rowDelimiter);
@@ -374,12 +376,17 @@ public class DataExporterSQL extends StreamExporterAbstract {
         PrintWriter out = getWriter();
         if (insertKeyword == InsertKeyword.INSERT_ALL) {
             if (rowCount > 0) {
-                out.write("\n" + identifierCase.transform(KEYWORD_SELECT_FROM_DUAL) + ";");
+                out.write(rowDelimiter + identifierCase.transform(KEYWORD_SELECT_FROM_DUAL) + ";");
             }
-        } else if (!oneLineEntry){
+        } else if (!oneLineEntry) {
             if (rowCount > 0) {
                 addOnConflictExpression(out);
                 out.write(";");
+                out.write(rowDelimiter);
+            }
+        } else {
+        	if (rowCount > 0) {
+                out.write(rowDelimiter);
             }
         }
     }
@@ -417,7 +424,17 @@ public class DataExporterSQL extends StreamExporterAbstract {
             ContentUtils.close(reader);
         }
     }
-
+    
+    @Override
+    public void importData(@NotNull IStreamDataExporterSite site) {
+        return;
+    }
+    
+    @Override
+    public boolean shouldTruncateOutputFileBeforeExport() {
+        return false;
+    }
+    
     private SQLDialect.MultiValueInsertMode getDefaultMultiValueInsertMode() {
         SQLDialect.MultiValueInsertMode insertMode = SQLDialect.MultiValueInsertMode.NOT_SUPPORTED;
         if (dialect != null && rowsInStatement != 1) {
