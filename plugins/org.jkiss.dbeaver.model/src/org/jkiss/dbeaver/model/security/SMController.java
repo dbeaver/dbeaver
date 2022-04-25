@@ -30,14 +30,14 @@ import java.util.Set;
 /**
  * Admin interface
  */
-public interface SMController<USER extends SMUser, ROLE extends SMRole> extends SMAuthCredentialsManager {
+public interface SMController extends SMAuthCredentialsManager {
 
     ///////////////////////////////////////////
     // Users
     @NotNull
-    ROLE[] getUserRoles(String userId) throws DBCException;
+    SMRole[] getUserRoles(String userId) throws DBCException;
 
-    USER getUserById(String userId) throws DBCException;
+    SMUser getUserById(String userId) throws DBCException;
 
     Map<String, Object> getUserParameters(String userId) throws DBCException;
 
