@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.sql.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +30,7 @@ import java.util.Map;
 public class SQLCommandsRegistry
 {
     static final String TAG_COMMAND = "command"; //$NON-NLS-1$
+    static final String TAG_PRAGMA = "pragma"; //$NON-NLS-1$
 
     private static SQLCommandsRegistry instance = null;
 
@@ -41,6 +44,7 @@ public class SQLCommandsRegistry
     }
 
     private final Map<String, SQLCommandHandlerDescriptor> commandHandlers = new HashMap<>();
+    private final Map<String, SQLPragmaHandlerDescriptor> pragmaHandlers = new HashMap<>();
 
     private SQLCommandsRegistry()
     {
@@ -54,6 +58,10 @@ public class SQLCommandsRegistry
             if (TAG_COMMAND.equals(ext.getName())) {
                 SQLCommandHandlerDescriptor commandDescriptor = new SQLCommandHandlerDescriptor(ext);
                 this.commandHandlers.put(commandDescriptor.getId(), commandDescriptor);
+            }
+            if (TAG_PRAGMA.equals(ext.getName())) {
+                final SQLPragmaHandlerDescriptor descriptor = new SQLPragmaHandlerDescriptor(ext);
+                pragmaHandlers.put(descriptor.getId(), descriptor);
             }
         }
     }
@@ -71,4 +79,8 @@ public class SQLCommandsRegistry
         return commandHandlers.get(id);
     }
 
+    @Nullable
+    public SQLPragmaHandlerDescriptor getPragmaHandler(@NotNull String id) {
+        return pragmaHandlers.get(id);
+    }
 }
