@@ -39,6 +39,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -428,11 +429,11 @@ public class CustomSashForm extends SashForm {
                                 switch (locs[ARROW_TYPE_INDEX]) {
                                     case UP_RESTORE_ARROW:
                                     case DOWN_RESTORE_ARROW:
-                                        currentSashInfo.sash.setToolTipText("Restore");
+                                        currentSashInfo.sash.setToolTipText(UIMessages.tooltip_restore);
                                         break;
                                     case UP_HIDE_ARROW:
                                     case DOWN_HIDE_ARROW:
-                                        currentSashInfo.sash.setToolTipText("Hide");
+                                        currentSashInfo.sash.setToolTipText(UIMessages.tooltip_hide);
                                         break;
                                 }
                             }

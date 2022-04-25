@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -133,7 +134,7 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
         menuMgr.addMenuListener(manager -> {
             StyledTextUtils.fillDefaultStyledTextContextMenu(manager, getTextWidget());
             manager.add(new Separator());
-            manager.add(new Action("Clear") {
+            manager.add(new Action(SQLEditorMessages.sql_editor_action_clear) {
                 @Override
                 public void run() {
                     clearOutput();

@@ -322,6 +322,24 @@ public class SQLEditorMessages extends NLS {
     public static String script_selector_project_table_folder_description;
     public static String script_selector_project_table_folder_label;
 
+    public static String source_viewer_open_in_sql_console;
+    public static String source_viewer_show_ddl_text;
+    public static String source_viewer_show_ddl_tip;
+    public static String source_viewer_show_permissions_text;
+    public static String source_viewer_show_permissions_tip;
+    public static String source_viewer_separate_fk_text;
+    public static String source_viewer_separate_fk_tip;
+    public static String source_viewer_show_comments_text;
+    public static String source_viewer_show_comments_tip;
+
+    public static String sql_editor_action_clear;
+    public static String sql_editor_title_tooltip_path;
+    public static String sql_editor_title_tooltip_connecton;
+    public static String sql_editor_title_tooltip_type;
+    public static String sql_editor_title_tooltip_url;
+    public static String sql_editor_title_tooltip_database;
+    public static String sql_editor_title_tooltip_schema;
+
 
     static {
         // initialize resource bundle

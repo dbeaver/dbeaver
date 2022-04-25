@@ -124,7 +124,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         orderGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         orderGroup.setLayout(new RowLayout());
         //new Label(orderGroup, SWT.NONE).setImage(DBeaverIcons.getImage(UIIcon.SORT));
-        new Label(orderGroup, SWT.NONE).setText("Sort by: ");
+        new Label(orderGroup, SWT.NONE).setText(CoreMessages.driver_connection_sort_by + " ");
         DriverSelectViewer.OrderBy defaultOrderBy = DriverSelectViewer.getDefaultOrderBy();
 
         for (DriverSelectViewer.OrderBy ob : DriverSelectViewer.OrderBy.values()) {

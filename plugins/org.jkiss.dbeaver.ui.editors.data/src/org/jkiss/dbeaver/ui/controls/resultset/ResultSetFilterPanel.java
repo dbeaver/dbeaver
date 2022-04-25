@@ -832,7 +832,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         HistoryPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
-            setToolTipText("Filters history");
+            setToolTipText(ResultSetMessages.filter_panel_filters_history_text);
             dropImageE = DBeaverIcons.getImage(UIIcon.DROP_DOWN);
             dropImageD = new Image(dropImageE.getDevice(), dropImageE, SWT.IMAGE_GRAY);
 
@@ -999,7 +999,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         FilterExpandPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
-            setToolTipText("Expand filter panel");
+            setToolTipText(ResultSetMessages.filter_panel_expand_panel_text);
             enabledImageExpand = DBeaverIcons.getImage(UIIcon.FIT_WINDOW);
             disabledImageExpand = new Image(enabledImageExpand.getDevice(), enabledImageExpand, SWT.IMAGE_GRAY);
             enabledImageCollapse = DBeaverIcons.getImage(UIIcon.ORIGINAL_SIZE);

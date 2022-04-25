@@ -37,6 +37,7 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
@@ -129,7 +130,7 @@ public class TransactionMonitorToolbar {
             addPaintListener(this::paint);
 
             setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-            setToolTipText("Transactions monitor");
+            setToolTipText(CoreMessages.monitor_panel_transaction_monitor_tip);
 
             refreshJob = new RefreshJob(this);
 
@@ -260,7 +261,7 @@ public class TransactionMonitorToolbar {
                 }
                 setToolTipText(toolTip);
             } else {
-                setToolTipText("Auto-commit mode");
+                setToolTipText(CoreMessages.action_menu_transactionMonitor_autocommitMode);
             }
         }
     }
