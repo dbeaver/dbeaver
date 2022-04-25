@@ -18,10 +18,13 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.equinox.app.IApplicationContext;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.nio.file.Path;
 
 /**
  * EclipseApplicationImpl
@@ -67,6 +70,12 @@ class EclipsePluginApplicationImpl extends EclipseApplicationImpl {
 
     @Override
     public Object start(IApplicationContext context) throws Exception {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Path getDefaultWorkingFolder() {
         return null;
     }
 
