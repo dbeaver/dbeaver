@@ -81,7 +81,6 @@
                     tipText += "<h3 style='color:" + color + "'>" + tip.id + "</h3>";
                 }
                 var objInfo = tip.info;
-                if (objInfo == null) objInfo = tip;
                 if (objInfo != null && Object.keys(objInfo).length > 0) {
                     tipText += "<table>";
                     for (var propName in objInfo) {
