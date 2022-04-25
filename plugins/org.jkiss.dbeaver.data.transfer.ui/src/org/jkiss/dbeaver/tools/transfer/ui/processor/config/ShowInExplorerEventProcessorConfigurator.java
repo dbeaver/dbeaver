@@ -36,7 +36,11 @@ public class ShowInExplorerEventProcessorConfigurator implements IDataTransferEv
 
     @Override
     public void saveSettings(@NotNull Map<String, Object> settings) {
-        // not implemented
+        // Empty objects are not serialized, see JSONUtils#serializeProperties.
+        // We don't want to change this behavior just for this exceptional case,
+        // so we have to put some dummy value in it. It doesn't get serialized
+        // somehow, so we end up with an empty object :^)
+        settings.put("_", "");
     }
 
     @Override
