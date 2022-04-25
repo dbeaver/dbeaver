@@ -18,6 +18,6 @@ package org.jkiss.dbeaver.erd.ui.part;
 
 import org.eclipse.gef3.NodeEditPart;
 
-abstract class NodePart extends CustomisablePart implements NodeEditPart {
+public abstract class NodePart extends CustomisablePart implements NodeEditPart {
 
 }

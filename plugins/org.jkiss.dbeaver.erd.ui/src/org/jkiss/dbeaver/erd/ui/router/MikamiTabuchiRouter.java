@@ -21,8 +21,8 @@ import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.PointList;
 import org.eclipse.draw2dl.geometry.PrecisionPoint;
 import org.eclipse.draw2dl.geometry.Rectangle;
-import org.eclipse.jgit.annotations.Nullable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
@@ -43,14 +43,13 @@ import java.util.stream.Collectors;
 //multi-dimensional arrays for trial lines?
 public class MikamiTabuchiRouter {
 
-    private int spacing = 0;
+    private int spacing = 15;
     private List<Rectangle> obstacles = new ArrayList<>();
     private PrecisionPoint start, finish;
     private final List<OrthogonalPath> userPaths = new ArrayList<>();
 
     //Increase for performance, increasing this parameter lowers accuracy.
-    private static final int STEP_SIZE = 4;
-
+    private static final int STEP_SIZE = 1;
 
     private static final int SOURCE_VERTICAL_LINES = 0;
     private static final int SOURCE_HORIZONTAL_LINES = 1;
@@ -61,7 +60,7 @@ public class MikamiTabuchiRouter {
 
     //In worst case scenarios line search may become laggy,
     //if after this amount iterations nothing was found -> stop
-    private static final int MAX_ITER = 2;
+    private static final int MAX_ITER = 3;
 
     Rectangle clientArea;
 
@@ -73,25 +72,36 @@ public class MikamiTabuchiRouter {
         this.clientArea = clientArea;
     }
 
-
-
     private Pair<TrialLine, TrialLine> result;
 
     private void createLinesFromTrial(TrialLine pos, int iter) {
         //possible optimisation
         //We don't want to create line if line of the same orientation already crosses this point.
+        float from = pos.vertical ? pos.from.y : pos.from.x;
         float start = pos.start;
         float end = pos.finish;
-        for (float i = start; i < end; i += STEP_SIZE) {
-            TrialLine trialLine = createTrialLine(i, !pos.vertical, pos);
-            getLinesMap(trialLine, iter).add(trialLine);
-            final TrialLine interception = trialLine.findInterception();
-            // We found needed line, finish execution
-            if (interception != null) {
-                result = new Pair<>(trialLine, interception);
-                break;
+        for (float i = (pos.hasForbiddenRange() ? pos.creationForbiddenStart - 1 : from); i >= start; i -= STEP_SIZE) {
+            if (createTrial(pos, iter, i)) {
+                return;
             }
         }
+        for (float i = (pos.hasForbiddenRange() ? pos.creationForbiddenFinish + 1 : from); i < end; i += STEP_SIZE) {
+            if (createTrial(pos, iter, i)) {
+                return;
+            }
+        }
+    }
+
+    private boolean createTrial(TrialLine pos, int iter, float i) {
+        TrialLine trialLine = createTrialLine(i, !pos.vertical, pos);
+        getLinesMap(trialLine, iter).add(trialLine);
+        final TrialLine interception = trialLine.findIntersection();
+        // We found needed line, finish execution
+        if (interception != null) {
+            result = new Pair<>(trialLine, interception);
+            return true;
+        }
+        return false;
     }
 
     @NotNull
@@ -112,7 +122,7 @@ public class MikamiTabuchiRouter {
         }
     }
 
-    private Point getInterceptionPoint(TrialLine source, TrialLine target) {
+    private PrecisionPoint getInterceptionPoint(TrialLine source, TrialLine target) {
         if (source.vertical) {
             return new PrecisionPoint(source.from.x, target.from.y);
         } else {
@@ -120,14 +130,13 @@ public class MikamiTabuchiRouter {
         }
     }
 
-    private TrialLine createTrialLine(float pos, boolean vertical, @Nullable TrialLine parentLine) {
+    private TrialLine createTrialLine(float pos, boolean vertical, @NotNull TrialLine parentLine) {
         final TrialLine trialLine;
         if (vertical) {
-            trialLine = new TrialLine(new PrecisionPoint(pos, 0), parentLine);
+            trialLine = new TrialLine(new PrecisionPoint(pos, parentLine.from.y), parentLine);
         } else {
-            trialLine = new TrialLine(new PrecisionPoint(0, pos), parentLine);
+            trialLine = new TrialLine(new PrecisionPoint(parentLine.from.x, pos), parentLine);
         }
-        trialLine.cutByObstacles();
         return trialLine;
     }
 
@@ -152,20 +161,26 @@ public class MikamiTabuchiRouter {
     private PointList traceback() {
         PointList points = new PointList();
         TrialLine line = result.getFirst();
-        do {
-            points.addPoint(line.from);
+        PrecisionPoint point = null;
+        while (line != null) {
+            if (point == null || !point.equals(line.from)) {
+                points.addPoint(line.from);
+            }
+            point = line.from;
             line = line.getParent();
-        } while (line != null);
+        }
         points.reverse();
-        points.addPoint(getInterceptionPoint(result.getFirst(), result.getSecond()));
+        point = getInterceptionPoint(result.getFirst(), result.getSecond());
+        points.addPoint(point);
         line = result.getSecond();
-        do {
-            points.addPoint(line.from);
+        while (line != null) {
+            if (!line.from.equals(point)) {
+                points.addPoint(line.from);
+            }
             line = line.getParent();
-        } while (line != null);
+        }
         return points;
     }
-
 
     public List<OrthogonalPath> solve() {
         List<OrthogonalPath> updated = new ArrayList<>();
@@ -182,6 +197,7 @@ public class MikamiTabuchiRouter {
         if (start.equals(finish)) {
             return null;
         }
+        //Client are
         if (!clientArea.contains(start) || !clientArea.contains(finish)) {
             return null;
         }
@@ -191,9 +207,6 @@ public class MikamiTabuchiRouter {
         this.finish = new PrecisionPoint(finish);
         int iter = 0;
         initStartingTrialLines();
-        if (result != null) {
-            return traceback();
-        }
         while (iter != MAX_ITER && result == null) {
             linesMap.put(iter + 1, new HashMap<>());
             initNewLayer(iter + 1);
@@ -210,21 +223,21 @@ public class MikamiTabuchiRouter {
         return null;
     }
 
-
-
     private void initStartingTrialLines() {
+        //Deviation from an original algorithm, we want only lines what connect with point horizontally
         final TrialLine horizontalStartTrial = new TrialLine(start, true, false);
-        final TrialLine verticalStartTrial = new TrialLine(start, true, true);
         final TrialLine horizontalFinishTrial = new TrialLine(finish, false, false);
-        final TrialLine verticalFinishTrial = new TrialLine(finish, false, true);
 
         linesMap.put(0, new HashMap<>());
         initNewLayer(0);
-        //TODO this is bad and awful
         linesMap.get(0).get(SOURCE_HORIZONTAL_LINES).add(horizontalStartTrial);
         linesMap.get(0).get(TARGET_HORIZONTAL_LINES).add(horizontalFinishTrial);
     }
 
+    /**
+     * inits list for each type of
+     * @param iter number of algorithm iteration
+     */
     private void initNewLayer(int iter) {
         for (int i = 0; i < 4; i++) {
             linesMap.get(iter).put(i, new ArrayList<>());
@@ -241,108 +254,128 @@ public class MikamiTabuchiRouter {
 
     private class TrialLine {
 
-        float start = -1;
-        float finish = -1;
+        float start = Integer.MIN_VALUE;
+        float finish = Integer.MIN_VALUE;
         boolean fromSource;
 
+        int creationForbiddenStart = Integer.MIN_VALUE;
+        int creationForbiddenFinish = Integer.MIN_VALUE;
         final PrecisionPoint from;
+
 
         boolean vertical;
 
+        //Starting line is always inside figure, we don't want to create trial line inside it
+        private void calculateForbiddenRange() {
+            for (Rectangle it : obstacles) {
+                if (isInsideFigure(it, true)) {
+                    if (vertical) {
+                        creationForbiddenStart = it.getTop().y - spacing;
+                        creationForbiddenFinish = it.getBottom().y + spacing;
+                    } else {
+                        creationForbiddenStart = it.getLeft().x - spacing;
+                        creationForbiddenFinish = it.getRight().x + spacing;
+                    }
+                }
+            }
+        }
+
+        public boolean hasForbiddenRange() {
+            return creationForbiddenFinish != Integer.MIN_VALUE;
+        }
 
         @Nullable
         TrialLine parent;
 
-        TrialLine(PrecisionPoint start, TrialLine parent) {
+        TrialLine(PrecisionPoint start, @NotNull TrialLine parent) {
             this.from = start;
             this.parent = parent;
             this.fromSource = parent.fromSource;
             this.vertical = !parent.vertical;
-            cutByObstacles();
+            cutByObstacles(false);
         }
 
         TrialLine(PrecisionPoint start, boolean fromSource, boolean vertical) {
             this.from = start;
             this.vertical = vertical;
             this.fromSource = fromSource;
-            cutByObstacles();
-
+            this.cutByObstacles(true);
+            this.calculateForbiddenRange();
         }
 
-        //Resize line if obstacle encountered, if none were encountered make line length equal to client area
-        //TODO refactor and optimization &
-        //possible optimisations
-        //change data structure for bounds
+        private boolean isInsideFigure(Rectangle it, boolean ignoreOffset) {
+            int offset = spacing;
+            if (ignoreOffset) {
+                offset = 0;
+            }
+            return (it.getLeft().x - offset <= from.x && it.getRight().x + offset  > from.x
+                && it.getTop().y - offset <= from.y && it.getBottom().y + offset  > from.y);
+        }
 
-        private void cutByObstacles() {
+        private void cutByObstacles(boolean startingLine) {
             //Check if object is on axis with line, if it is, reduce line size
             for (Rectangle it : obstacles) {
-                if (vertical && it.x - spacing <= from.x && it.x + it.width + spacing > from.x) {
+                if (isInsideFigure(it, false)) {
+                    if (startingLine) {
+                        continue;
+                    } else {
+                        cut(it);
+                    }
+                }
+                if (vertical && it.getLeft().x - spacing <= from.x && it.getRight().x + spacing > from.x
+                    || !vertical && it.getTop().y - spacing <= from.y && it.getBottom().y + spacing > from.y) {
                     //object is below need to cut start
-                    if (from.y > it.y + it.height + spacing) {
-                        if (start == -1 || start < it.y + spacing) {
-                            start = it.y + it.height + spacing;
-                        }
-                    }
-                    //object is above, need to cut finish
-                    if (from.y <= it.y - spacing) {
-                        if (finish == -1 || finish > it.y - spacing) {
-                            finish = it.y - spacing;
-                        }
-                    }
-                }
-                if (!vertical && it.y - spacing <= from.y && it.y + it.height + spacing > from.y) {
-                    //object is behind need to cut start
-                    if (from.x > it.x + it.width + spacing) {
-                        if (start == -1 || start < it.x + spacing) {
-                            start = it.x + it.width + spacing;
-                        }
-                    }
-                    //object is ahead, need to cut finish
-                    if (from.x <= it.x - spacing) {
-                        if (finish == -1 || finish > it.x - spacing) {
-                            finish = it.x - spacing;
-                        }
-                    }
-                    if (finish == -1) {
-                        finish = clientArea.width - spacing;
-                    }
+                    cut(it);
                 }
             }
-            if (finish == -1) {
+            if (finish == Integer.MIN_VALUE) {
                 if (vertical) {
-                    finish = clientArea.height - spacing;
+                    finish = clientArea.getBottom().y;
                 } else {
-                    finish = clientArea.width - spacing;
+                    finish = clientArea.getRight().x;
                 }
             }
-            if (start == -1) {
-                start = spacing;
+            if (start == Integer.MIN_VALUE) {
+                start = vertical ? clientArea.getTop().y : clientArea.getLeft().x;
+            }
+        }
+
+        private void cut(Rectangle bound) {
+            int fromPosition = vertical ? from.y : from.x;
+            int startPoint = vertical ? bound.getTop().y : bound.getLeft().x;
+            int endPoint = vertical ? bound.getBottom().y : bound.getRight().x;
+            if (fromPosition > endPoint) {
+                if (start == Integer.MIN_VALUE || start < endPoint + spacing) {
+                    start = endPoint + spacing;
+                }
+            }
+            if (fromPosition <= startPoint) {
+                if (finish == Integer.MIN_VALUE || finish > startPoint - spacing) {
+                    finish = startPoint - spacing;
+                }
             }
         }
 
         @Nullable
-        public TrialLine findInterception() {
+        public TrialLine findIntersection() {
             for (int i = linesMap.values().size() - 1; i >= 0; i--) {
                 for (TrialLine trialLine : getOpposingLinesMap(this, i)) {
-                    if (vertical) {
-                        if (this.from.x >= this.start && this.from.x < this.finish) {
-                            if (this.start < this.from.y && this.finish >= this.from.y) {
-                                return trialLine;
-                            }
-                        }
-                    } else {
-                        if (this.from.y >= this.start && this.from.y < this.finish) {
-                            if (this.start < this.from.x && this.finish >= this.from.x) {
-                                return trialLine;
-                            }
-                        }
+                    if (intersect(trialLine)) {
+                        return trialLine;
                     }
                 }
             }
             return null;
         }
 
+        private boolean intersect(TrialLine line) {
+            int firstLinePos = vertical ? from.x : from.y;
+            int secondLinePos = vertical ? line.from.y : line.from.x;
+
+            return firstLinePos >= line.start && firstLinePos < line.finish && secondLinePos >= start && secondLinePos < finish;
+        }
+
+        @Nullable
         public TrialLine getParent() {
             return parent;
         }

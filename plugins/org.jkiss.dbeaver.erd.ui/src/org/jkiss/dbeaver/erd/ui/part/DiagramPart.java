@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.draw2dl.*;
+import org.eclipse.draw2dl.ConnectionLayer;
+import org.eclipse.draw2dl.FanRouter;
+import org.eclipse.draw2dl.IFigure;
+import org.eclipse.draw2dl.PolylineConnection;
 import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.*;
@@ -146,9 +149,9 @@ public class DiagramPart extends PropertyAwarePart {
         router.setSeparation(15);
         //router.setNextRouter(new BendpointConnectionRouter());
         router.setNextRouter(new MikamiTabuchiConnectionRouter(figure));
-        router.setNextRouter(new ManhattanConnectionRouter());
+//        router.setNextRouter(new ManhattanConnectionRouter());
         //router.setNextRouter(new BendpointConnectionRouter());
-        cLayer.setConnectionRouter(new ShortestPathConnectionRouter(figure));
+        cLayer.setConnectionRouter(router);
 
         return figure;
     }
