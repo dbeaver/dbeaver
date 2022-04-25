@@ -141,6 +141,7 @@
         } else {
             let geomBounds = ${geomBounds};
             geoMap.fitBounds(geomBounds === undefined ? bounds : geomBounds);
+            geoMap.setZoom(Math.min(geoMap.getZoom(), ${minZoomLevel}), {animate: false});
         }
 
         function showTools(toolsVisible) {
