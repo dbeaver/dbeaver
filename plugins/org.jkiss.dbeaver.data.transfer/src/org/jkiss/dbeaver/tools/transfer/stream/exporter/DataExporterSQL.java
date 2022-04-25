@@ -427,7 +427,6 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
     
     @Override
     public void importData(@NotNull IStreamDataExporterSite site) {
-        return;
     }
     
     @Override
