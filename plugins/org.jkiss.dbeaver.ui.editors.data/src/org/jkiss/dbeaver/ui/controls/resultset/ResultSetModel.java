@@ -247,6 +247,27 @@ public class ResultSetModel {
         return visibleAttributes.get(index);
     }
 
+    @NotNull
+    public List<DBDAttributeBinding> getVisibleLeafAttributes() {
+        final List<DBDAttributeBinding> children = new ArrayList<>();
+        final Deque<DBDAttributeBinding> parents = new ArrayDeque<>(getVisibleAttributes());
+
+        while (!parents.isEmpty()) {
+            final DBDAttributeBinding attribute = parents.removeFirst();
+            final List<DBDAttributeBinding> nested = getVisibleAttributes(attribute);
+
+            if (CommonUtils.isEmpty(nested)) {
+                children.add(attribute);
+            } else {
+                for (int i = nested.size() - 1; i >= 0; i--) {
+                    parents.offerFirst(nested.get(i));
+                }
+            }
+        }
+
+        return children;
+    }
+
     public void setAttributeVisibility(@NotNull DBDAttributeBinding attribute, boolean visible) {
         DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
         if (constraint != null && constraint.isVisible() != visible) {

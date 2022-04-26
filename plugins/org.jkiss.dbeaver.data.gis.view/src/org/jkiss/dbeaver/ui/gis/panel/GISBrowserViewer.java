@@ -27,9 +27,7 @@ import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IDataController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -38,9 +36,7 @@ import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeometryViewer {
 
@@ -55,10 +51,21 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
     @Override
     protected Browser createControl(Composite editPlaceholder)
     {
+        final IResultSetPresentation presentation;
+
+        if (valueController.getDataController() instanceof IResultSetController) {
+            presentation = ((IResultSetController) valueController.getDataController()).getActivePresentation();
+        } else {
+            presentation = null;
+        }
+
         leafletViewer = new GISLeafletViewer(
             editPlaceholder,
             new DBDAttributeBinding[]{((IAttributeController) valueController).getBinding()},
-            GisTransformUtils.getSpatialDataProvider(valueController.getExecutionContext().getDataSource()));
+            GisTransformUtils.getSpatialDataProvider(valueController.getExecutionContext().getDataSource()),
+            presentation
+        );
+
         return leafletViewer.getBrowser();
     }
 
@@ -81,6 +88,10 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
             if (ArrayUtils.isEmpty(selectedValues)) {
                 selectedValues = new Object[] { value };
             }
+
+            final ResultSetModel model = resultSetController.getModel();
+            final List<DBDAttributeBinding> leaves = model.getVisibleLeafAttributes();
+
             for (Object cell : selectedValues) {
                 DBGeometry geometry;
                 DBDAttributeBinding attr;
@@ -92,7 +103,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                 } else {
                     attr = selection.getElementAttribute(cell);
                     row = selection.getElementRow(cell);
-                    Object cellValue = resultSetController.getModel().getCellValue(attr, row);
+                    Object cellValue = model.getCellValue(attr, row);
                     geometry = GisTransformUtils.getGeometryValueFromObject(
                         valueController.getDataController().getDataContainer(),
                         valueController.getValueHandler(),
@@ -111,6 +122,13 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                                 GeometryDataUtils.setGeometryProperties(resultSetController, ga, geometry, GeometryDataUtils.makeGeometryColor(i), row);
                                 break;
                             }
+                        }
+                    }
+
+                    if (row != null && attr != null) {
+                        final int leaf = leaves.indexOf(attr);
+                        if (leaf >= 0) {
+                            geometry.putProperties(Map.of("location", leaf + ":" + row.getRowNumber()));
                         }
                     }
                 }
