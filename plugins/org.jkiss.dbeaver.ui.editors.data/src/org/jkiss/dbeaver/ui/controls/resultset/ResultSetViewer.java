@@ -1911,6 +1911,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         toolbarList.clear();
+        autoRefreshControl.enableAutoRefresh(false);
     }
 
     @Override
