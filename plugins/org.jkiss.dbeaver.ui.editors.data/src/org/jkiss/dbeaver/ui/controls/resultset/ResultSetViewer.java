@@ -3733,29 +3733,31 @@ public class ResultSetViewer extends Viewer
             return;
         }
         nextSegmentReadingBlocked = true;
-        if (!checkForChanges()) {
-            return;
-        }
-        try {
-            DBSDataContainer dataContainer = getDataContainer();
-            if (dataContainer != null && !model.isUpdateInProgress()) {
-                dataReceiver.setHasMoreData(false);
-                dataReceiver.setNextSegmentRead(true);
-
-                runDataPump(
-                    dataContainer,
-                    model.getDataFilter(),
-                    model.getRowCount(),
-                    getSegmentMaxRows(),
-                    -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
-                    false,
-                    true,
-                    true,
-                    null);
+        UIUtils.asyncExec(() -> {
+            if (!checkForChanges()) {
+                return;
             }
-        } finally {
-            nextSegmentReadingBlocked = false;
-        }
+            try {
+                DBSDataContainer dataContainer = getDataContainer();
+                if (dataContainer != null && !model.isUpdateInProgress()) {
+                    dataReceiver.setHasMoreData(false);
+                    dataReceiver.setNextSegmentRead(true);
+
+                    runDataPump(
+                        dataContainer,
+                        model.getDataFilter(),
+                        model.getRowCount(),
+                        getSegmentMaxRows(),
+                        -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
+                        false,
+                        true,
+                        true,
+                        null);
+                }
+            } finally {
+                nextSegmentReadingBlocked = false;
+            }
+        });
     }
 
     private boolean verifyQuerySafety() {
