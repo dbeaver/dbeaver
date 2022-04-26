@@ -81,8 +81,7 @@ public class ContentValueManager extends BaseValueManager {
                     }
                 });
             }
-            // Logo can be changed
-            manager.add(new Action("Open in external editor", DBeaverIcons.getImageDescriptor(UIIcon.DOTS_BUTTON)) {
+            manager.add(new Action("Open in external editor", DBeaverIcons.getImageDescriptor(UIIcon.FILE)) {
                 @Override
                 public void run() {
                     try {
