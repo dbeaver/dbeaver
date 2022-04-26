@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
@@ -38,7 +39,7 @@ public interface SMAdminController extends SMController {
 
     void setUserRoles(String userId, String[] roleIds, String grantorId) throws DBCException;
 
-    SMUser getUserById(String userId) throws DBCException;
+    SMUser getUserById(String userId) throws DBException;
 
     @NotNull
     SMUser[] findUsers(String userNameMask) throws DBCException;
