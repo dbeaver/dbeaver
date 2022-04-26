@@ -21,6 +21,7 @@ import com.google.gson.GsonBuilder;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
@@ -50,6 +51,9 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
@@ -97,7 +101,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     private boolean flipCoordinates = false;
     private final Composite composite;
 
-    public GISLeafletViewer(Composite parent, @NotNull DBDAttributeBinding[] bindings, SpatialDataProvider spatialDataProvider) {
+    public GISLeafletViewer(Composite parent, @NotNull DBDAttributeBinding[] bindings, @Nullable SpatialDataProvider spatialDataProvider, @Nullable IResultSetPresentation presentation) {
         this.bindings = bindings;
 
         this.flipCoordinates = spatialDataProvider != null && spatialDataProvider.isFlipCoordinates();
@@ -108,7 +112,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         browser = new Browser(composite, SWT.NONE);
         browser.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        final BrowserFunction setClipboardContents = new BrowserFunction(browser, "setClipboardContents") {
+        new BrowserFunction(browser, "setClipboardContents") {
             @Override
             public Object function(Object[] arguments) {
                 UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), arguments[0]);
@@ -116,10 +120,24 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             }
         };
 
+        if (presentation instanceof AbstractPresentation) {
+            new BrowserFunction(browser, "setPresentationSelection") {
+                @Override
+                public Object function(Object[] arguments) {
+                    final List<GridPos> selection = new ArrayList<>();
+                    for (Object pos : ((Object[]) arguments[0])) {
+                        final String[] split = ((String) pos).split(":");
+                        selection.add(new GridPos(CommonUtils.toInt(split[0]), CommonUtils.toInt(split[1])));
+                    }
+                    ((AbstractPresentation) presentation).setSelection(new StructuredSelection(selection), false);
+                    return null;
+                }
+            };
+        }
+
         browser.addDisposeListener(e -> {
             cleanupFiles();
             GISViewerActivator.getDefault().getPreferences().removePropertyChangeListener(this);
-            setClipboardContents.dispose();
         });
 
         {

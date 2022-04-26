@@ -1467,6 +1467,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Override
     public void setSelection(ISelection selection) {
+        setSelection(selection, true);
+    }
+
+    @Override
+    public void setSelection(@NotNull ISelection selection, boolean reflect) {
         if (selection instanceof IResultSetSelection && ((IResultSetSelection) selection).getController() == getController()) {
             // It may occur on simple focus change so we won't do anything
             return;
@@ -1485,7 +1490,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             spreadsheet.selectCells(cellSelection);
             spreadsheet.showSelection();
         }
-        fireSelectionChanged(selection);
+        if (reflect) {
+            fireSelectionChanged(selection);
+        }
     }
 
     @Override

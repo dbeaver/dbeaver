@@ -259,4 +259,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
 
     }
 
+    public void setSelection(@NotNull ISelection selection, boolean reflect) {
+        setSelection(selection);
+    }
 }
