@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -129,9 +130,14 @@ public class DesktopUI implements DBPPlatformUI {
             //Policy.setErrorSupportProvider(new ApplicationErrorSupportProvider());
         }
 
+
         // Register context listener
-        UIUtils.asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
-        
+        UIUtils.asyncExec(() -> {
+            if (PlatformUI.isWorkbenchRunning()) {
+                contextListener = WorkbenchContextListener.registerInWorkbench();
+            }
+        });
+
 /*      // Global focus lister for debug
         Display.getCurrent().addFilter(SWT.FocusIn, new Listener() {
             @Override
@@ -214,7 +220,7 @@ public class DesktopUI implements DBPPlatformUI {
         // log.debug(message);
         Runnable runnable = () -> {
             // Display the dialog
-            StandardErrorDialog dialog = new StandardErrorDialog(Display.getCurrent().getActiveShell(),
+            StandardErrorDialog dialog = new StandardErrorDialog(UIUtils.getActiveWorkbenchShell(),
                     title, message, status, IStatus.ERROR);
             dialog.open();
         };
@@ -242,7 +248,7 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     private static void showMessageBox(@NotNull String title, @NotNull String message, @NotNull DBPImage image) {
-        UIUtils.syncExec(() -> MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+        UIUtils.syncExec(() -> MessageBoxBuilder.builder(Display.getCurrent().getActiveShell())
                 .setTitle(title)
                 .setMessage(message)
                 .setPrimaryImage(image)
