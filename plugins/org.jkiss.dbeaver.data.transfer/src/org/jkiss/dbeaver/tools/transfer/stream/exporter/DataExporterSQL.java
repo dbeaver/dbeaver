@@ -424,7 +424,7 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
     @Override
     public void importData(@NotNull IStreamDataExporterSite site) {
     	// This method is called before this.init().
-    	// No pre-initialization process.
+    	// No pre-initialization process is needed.
     }
     
     @Override
