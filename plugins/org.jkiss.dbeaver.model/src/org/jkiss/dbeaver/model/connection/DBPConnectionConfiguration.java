@@ -420,7 +420,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     @NotNull
     public DBAAuthModel getAuthModel() {
         if (!CommonUtils.isEmpty(authModelId)) {
-            DBPAuthModelDescriptor authModelDesc = getAuthModelDescriptor();
+            DBPAuthModelDescriptor authModelDesc = getAuthModelDescriptor(authModelId);
             if (authModelDesc != null) {
                 return authModelDesc.getInstance();
             } else {
@@ -430,8 +430,21 @@ public class DBPConnectionConfiguration implements DBPObject {
         return AuthModelDatabaseNative.INSTANCE;
     }
 
+    @NotNull
     public DBPAuthModelDescriptor getAuthModelDescriptor() {
-        return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(authModelId);
+        if (!CommonUtils.isEmpty(authModelId)) {
+            DBPAuthModelDescriptor authModelDesc = getAuthModelDescriptor(authModelId);
+            if (authModelDesc != null) {
+                return authModelDesc;
+            } else {
+                log.error("Authentication model '" + authModelId + "' not found. Use default.");
+            }
+        }
+        return getAuthModelDescriptor(AuthModelDatabaseNative.ID);
+    }
+
+    private DBPAuthModelDescriptor getAuthModelDescriptor(String id) {
+        return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(id);
     }
 
     public void setAuthModelId(String authModelId) {

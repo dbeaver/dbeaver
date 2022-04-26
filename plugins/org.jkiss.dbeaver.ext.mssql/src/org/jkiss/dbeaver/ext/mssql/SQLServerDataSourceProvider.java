@@ -18,14 +18,18 @@ package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerAuthentication;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAUserCredentialsProvider;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
@@ -127,6 +131,24 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
             throws DBException
     {
         return new SQLServerDataSource(monitor, container);
+    }
+
+    @Override
+    public DBPAuthModelDescriptor detectConnectionAuthModel(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+        if (driver.getProviderDescriptor().matchesId(SQLServerConstants.PROVIDER_SQL_SERVER) &&
+            (CommonUtils.isEmpty(connectionInfo.getAuthModelId()) ||
+            connectionInfo.getAuthModelId().equals(AuthModelDatabaseNative.ID)))
+        {
+            // Convert legacy config to auth model
+            SQLServerAuthentication authSchema = SQLServerUtils.detectAuthSchema(connectionInfo);
+            String amId = authSchema.getReplacedByAuthModelId();
+            DBPAuthModelDescriptor authModel = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(amId);
+            if (authModel != null) {
+                return authModel;
+            }
+            log.error("Replacement auth model " + amId + " not found");
+        }
+        return super.detectConnectionAuthModel(driver, connectionInfo);
     }
 
     //////////////////////////////////////////////////////////

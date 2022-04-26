@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -58,17 +57,15 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
 
         DBPDataSourceContainer activeDataSource = getSite().getActiveDataSource();
 
-        DBPAuthModelDescriptor selectedAuthModel = null;
         DBPConnectionConfiguration configuration = activeDataSource.getConnectionConfiguration();
 
         if (site.isNew() && CommonUtils.isEmpty(configuration.getUserName())) {
             configuration.setUserName(activeDataSource.getDriver().getDefaultUser());
         }
 
-        String dsModelId = configuration.getAuthModelId();
-        if (dsModelId != null) {
-            selectedAuthModel = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(dsModelId);
-        }
+        DBPAuthModelDescriptor selectedAuthModel = activeDataSource.getDriver().getDataSourceProvider().detectConnectionAuthModel(
+            activeDataSource.getDriver(), configuration);
+
         if (selectedAuthModel != null) {
             DBPAuthModelDescriptor amReplace = selectedAuthModel.getReplacedBy(activeDataSource.getDriver());
             if (amReplace != null) {

@@ -37,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * SOCKS proxy configuration
  */
-public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBWHandlerConfiguration> {
+public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
 
     public static final String NETWORK_PREF_PAGE_ID = "org.eclipse.ui.net.NetPreferences";
 
@@ -48,7 +48,7 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
     private Button savePasswordCheckbox;
 
     @Override
-    public void createControl(Composite parent, Runnable propertyChangeListener)
+    public void createControl(Composite parent, Object object, Runnable propertyChangeListener)
     {
         final Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, true));
