@@ -264,6 +264,7 @@ class DataFilterRegistry {
                 case "filter": {
                     curSavedDataFilter = new SavedDataFilter();
                     curSavedDataFilter.anyConstraint = CommonUtils.toBoolean(atts.getValue("anyConstraint"));
+                    curSavedDataFilter.where = atts.getValue("where");
                     String objectId = atts.getValue("objectId");
                     savedFilters.put(objectId, curSavedDataFilter);
                     break;
