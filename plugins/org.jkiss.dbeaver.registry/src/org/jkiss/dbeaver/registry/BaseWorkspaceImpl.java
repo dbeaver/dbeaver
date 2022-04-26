@@ -80,7 +80,9 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
         try {
             this.workspaceAuthContext.addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Can't obtain workspace session", "Error obtaining workspace session", e);
+            DBWorkbench.getPlatformUI().showError(
+                "Authentication error",
+                "Error authenticating application user", e);
             System.exit(101);
         }
 
