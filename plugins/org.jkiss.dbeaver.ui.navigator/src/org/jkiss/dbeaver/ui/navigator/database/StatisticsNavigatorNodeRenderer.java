@@ -219,7 +219,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 boolean isSelected = (event.stateMask & SWT.SELECTED) != 0;
                 boolean isHover = false;
                 if (!isSelected && !isHover) {
-                    continue;
+                    return null;
                 }
             }
             widthOccupied += 2; // Margin
@@ -313,7 +313,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 boolean isSelected = (event.stateMask & SWT.SELECTED) != 0;
                 boolean isHover = false;
                 if (!isSelected && !isHover) {
-                    continue;
+                    return widthOccupied;
                 }
             }
             widthOccupied += 2; // Margin
