@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -41,7 +42,7 @@ public class OracleAuthDatabaseNativeConfigurator extends DatabaseNativeAuthMode
     private Combo userRoleCombo;
 
     @Override
-    public void createControl(Composite parent, Runnable propertyChangeListener) {
+    public void createControl(Composite parent, DBAAuthModel object, Runnable propertyChangeListener) {
         Label usernameLabel = UIUtils.createLabel(parent, UIConnectionMessages.dialog_connection_auth_label_username);
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 

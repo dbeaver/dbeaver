@@ -23,10 +23,10 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 /**
  * Oracle OS auth model config
  */
-public class OracleAuthOSConfigurator implements IObjectPropertyConfigurator<DBPDataSourceContainer> {
+public class OracleAuthOSConfigurator implements IObjectPropertyConfigurator<Object, DBPDataSourceContainer> {
 
     @Override
-    public void createControl(Composite authPanel, Runnable propertyChangeListener) {
+    public void createControl(Composite authPanel, Object object, Runnable propertyChangeListener) {
         //OracleAuthDatabaseNativeConfigurator.createRoleCombo(authPanel);
     }
 

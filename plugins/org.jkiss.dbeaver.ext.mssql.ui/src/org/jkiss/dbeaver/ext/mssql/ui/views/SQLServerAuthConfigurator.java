@@ -14,25 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.snowflake.ui.config;
+package org.jkiss.dbeaver.ext.mssql.ui.views;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 
 /**
- * Snowflake external browser auth model config
+ * SQL Server auth model config
  */
-public class SnowflakeAuthExternalBrowserConfigurator extends SnowflakeAuthSnowflakeConfigurator {
+public class SQLServerAuthConfigurator extends DatabaseNativeAuthModelConfigurator {
+
 
     @Override
     public void createControl(Composite parent, DBAAuthModel object, Runnable propertyChangeListener) {
         super.createControl(parent, object, propertyChangeListener);
-    }
-
-    @Override
-    protected boolean needsAuthTypeSelector() {
-        return false;
     }
 
     @Override
@@ -46,9 +43,8 @@ public class SnowflakeAuthExternalBrowserConfigurator extends SnowflakeAuthSnowf
     }
 
     @Override
-    protected boolean supportsPassword() {
-        return false;
+    public void resetSettings(DBPDataSourceContainer dataSource) {
+        super.resetSettings(dataSource);
     }
-
 
 }

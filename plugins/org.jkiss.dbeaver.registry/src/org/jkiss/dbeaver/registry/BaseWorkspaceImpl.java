@@ -77,6 +77,14 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
         this.eclipseWorkspace = eclipseWorkspace;
         this.workspaceAuthContext = new SessionContextImpl(null);
 
+        this.projectListener = new ProjectListener();
+        this.eclipseWorkspace.addResourceChangeListener(projectListener);
+
+        loadExtensions(Platform.getExtensionRegistry());
+        loadExternalFileProperties();
+    }
+
+    private void loadWorkspaceProjects() {
         try {
             this.workspaceAuthContext.addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
         } catch (DBException e) {
@@ -119,12 +127,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
                 log.error("Error opening active project", e);
             }
         }
-
-        projectListener = new ProjectListener();
-        eclipseWorkspace.addResourceChangeListener(projectListener);
-
-        loadExtensions(Platform.getExtensionRegistry());
-        loadExternalFileProperties();
     }
 
     @NotNull
@@ -133,6 +135,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
     }
 
     public void initializeProjects() {
+        loadWorkspaceProjects();
+
         if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects)) {
             try {
                 createDefaultProject(new NullProgressMonitor());

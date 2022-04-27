@@ -139,7 +139,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
                 usernameText = new Text(credGroup, SWT.BORDER);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.grabExcessHorizontalSpace = true;
-                gd.widthHint = 120;
+                gd.widthHint = 200;
                 //gd.horizontalSpan = 3;
                 usernameText.setLayoutData(gd);
                 if (authInfo.getUserName() != null) {
@@ -160,7 +160,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
             }
         }
 
-        {
+        if (showSavePassword) {
             savePasswordCheck = new Button(addrGroup, SWT.CHECK);
             savePasswordCheck.setEnabled(showSavePassword);
             savePasswordCheck.setText(CommonUtils.toString(savePasswordText, UIConnectionMessages.dialog_connection_auth_checkbox_save_password));

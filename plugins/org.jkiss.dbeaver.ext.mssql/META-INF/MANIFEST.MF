@@ -11,6 +11,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ext.generic,
  com.github.jsqlparser
 Export-Package: org.jkiss.dbeaver.ext.mssql,
+ org.jkiss.dbeaver.ext.mssql.auth,
  org.jkiss.dbeaver.ext.mssql.model,
  org.jkiss.dbeaver.ext.mssql.model.generic,
  org.jkiss.dbeaver.ext.mssql.model.session

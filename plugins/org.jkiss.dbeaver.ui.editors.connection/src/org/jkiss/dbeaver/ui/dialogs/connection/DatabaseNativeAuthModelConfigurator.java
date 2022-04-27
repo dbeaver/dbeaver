@@ -23,6 +23,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -35,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Database native auth model config
  */
-public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfigurator<DBPDataSourceContainer> {
+public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfigurator<DBAAuthModel, DBPDataSourceContainer> {
 
     protected Label usernameLabel;
     protected Text usernameText;
@@ -49,14 +51,24 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     protected DBPDataSourceContainer dataSource;
 
-    @Override
-    public void createControl(Composite authPanel, Runnable propertyChangeListener) {
+    public void createControl(Composite authPanel, DBAAuthModel object, Runnable propertyChangeListener) {
+        boolean userNameApplicable = true;
+        boolean userPasswordApplicable = true;
+        if (object instanceof AuthModelDatabaseNative) {
+            userNameApplicable = ((AuthModelDatabaseNative<?>) object).isUserNameApplicable();
+            userPasswordApplicable = ((AuthModelDatabaseNative<?>) object).isUserPasswordApplicable();
+        }
+        if (!userNameApplicable) {
+            return;
+        }
+
         usernameLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_auth_label_username);
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         createUserNameControls(authPanel, propertyChangeListener);
-
-        createPasswordControls(authPanel, propertyChangeListener);
+        if (userPasswordApplicable) {
+            createPasswordControls(authPanel, propertyChangeListener);
+        }
     }
 
     protected void createUserNameControls(Composite authPanel, Runnable propertyChangeListener) {
