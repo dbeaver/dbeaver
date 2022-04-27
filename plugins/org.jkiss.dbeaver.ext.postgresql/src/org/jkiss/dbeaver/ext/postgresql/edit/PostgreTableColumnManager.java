@@ -119,6 +119,11 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         }
     };
 
+    @Override
+    public boolean canEditObject(PostgreTableColumn object) {
+        return true;
+    }
+
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, PostgreTableColumn> getObjectsCache(PostgreTableColumn object)
