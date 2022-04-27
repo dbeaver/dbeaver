@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
 import java.util.function.Consumer;
@@ -437,6 +438,14 @@ class GenericFilterValueEdit {
                     continue;
                 }
                 DBDLabelValuePair dictValue = findValue(rowData, cellValue);
+                if (dictValue == null && cellValue instanceof Date) {
+                    // Date/time/timestamp types can have other string representation.
+                    // And we can change it with the help of valueHandler
+                    // We use here same format as date types have in values list
+                    DBDValueHandler valueHandler = DBUtils.findValueHandler(attribute.getDataSource(), attribute);
+                    String displayString = valueHandler.getValueDisplayString(attribute, cellValue, DBDDisplayFormat.NATIVE);
+                    dictValue = findValue(rowData, displayString);
+                }
                 if (dictValue == null) {
                     //String itemString = attribute.getValueHandler().getValueDisplayString(attribute, cellValue, DBDDisplayFormat.UI);
                     rowData.put(cellValue, new DBDLabelValuePairExt(null, cellValue, 1));
@@ -567,7 +576,23 @@ class GenericFilterValueEdit {
                 }
             }
         }
-        return null;
+        if (cellValue instanceof Timestamp) {
+            for (Map.Entry<Object, DBDLabelValuePair> pair : rowData.entrySet()) {
+                if (!DBUtils.isNullValue(pair.getKey())) {
+                    Object key = pair.getKey();
+                    try {
+                        Timestamp timestamp = Timestamp.valueOf(key.toString());
+                        if (timestamp.compareTo((Timestamp) cellValue) == 0) {
+                            return pair.getValue();
+                        }
+                    } catch (Exception e) {
+                        // Format exception maybe
+                        // Continue
+                    }
+                }
+            }
+        }
+        return rowData.get(cellValue.toString());
     }
 
     @Nullable
