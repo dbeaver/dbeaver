@@ -286,7 +286,6 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
             ignoreErrorsCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_ignore_errors, "", dtSettings.isIgnoreErrors(), 1);
             dumpQueryCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_dump_results, "", dtSettings.isDumpQueryResultsToLog(), 1);
-            dumpQueryCheck.setEnabled(false);
             autoCommitCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_auto_commit, "", dtSettings.isAutoCommit(), 1);
 
             getWizard().createVariablesEditButton(settingsGroup);
