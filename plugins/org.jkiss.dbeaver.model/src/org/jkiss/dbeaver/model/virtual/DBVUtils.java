@@ -240,6 +240,10 @@ public abstract class DBVUtils {
                 }
                 hasNulls = true;
             }
+            if (formatValues && keyValue instanceof Date) {
+                // Convert dates into string to avoid collisions
+                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
+            }
             String keyLabel;
             long keyCount = 0;
             if (metaColumns.size() > 1) {
