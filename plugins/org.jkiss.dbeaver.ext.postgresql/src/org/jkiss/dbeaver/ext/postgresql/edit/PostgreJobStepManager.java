@@ -122,7 +122,7 @@ public class PostgreJobStepManager extends SQLObjectEditor<PostgreJobStep, Postg
         }
 
         if (command.getProperty("enabled") != null) {
-            values.add("jsttenabled=" + step.isEnabled());
+            values.add("jstenabled=" + step.isEnabled());
         }
 
         if (command.getProperty(DBConstants.PARAM_OBJECT_DEFINITION_TEXT) != null) {
