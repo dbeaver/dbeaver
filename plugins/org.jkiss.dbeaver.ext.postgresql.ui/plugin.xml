@@ -100,7 +100,7 @@
                 objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule"
                 label="Scheduler"
                 description="Schedule editor"
-                icon="#scheduler"
+                icon="#job_schedule"
                 position="additions_middle"
                 type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule"/>
