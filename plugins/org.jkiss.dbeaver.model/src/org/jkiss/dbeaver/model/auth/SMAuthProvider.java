@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.model.auth;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.security.SMController;
 
 import java.util.Map;
 
@@ -26,6 +28,20 @@ import java.util.Map;
  * Auth provider
  */
 public interface SMAuthProvider<AUTH_SESSION extends SMSession> {
+    /**
+     * Validates that user may be associated with local user
+     *
+     * @param userCredentials credentials from authExternalUser
+     * @param activeUserId
+     * @return new user ID. If activeUserId is not null then it must be the same.
+     */
+    @NotNull
+    String validateLocalAuth(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SMController securityController,
+        @NotNull Map<String, Object> providerConfig,
+        @NotNull Map<String, Object> userCredentials,
+        @Nullable String activeUserId) throws DBException;
 
     AUTH_SESSION openSession(
         @NotNull DBRProgressMonitor monitor,
