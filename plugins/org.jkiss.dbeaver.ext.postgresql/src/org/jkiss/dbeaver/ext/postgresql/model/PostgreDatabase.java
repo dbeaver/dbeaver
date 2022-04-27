@@ -606,6 +606,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
+    @Nullable
+    public PostgreJob getJob(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+        checkInstanceConnection(monitor);
+        return jobCache.getObject(monitor, this, name);
+    }
+
     @Association
     public Collection<PostgreJobClass> getJobClasses(@NotNull DBRProgressMonitor monitor) throws DBException {
         checkInstanceConnection(monitor);

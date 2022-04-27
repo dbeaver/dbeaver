@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreJob;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -54,7 +55,9 @@ public class PostgreJobStepManager extends SQLObjectEditor<PostgreJobStep, Postg
 
     @Override
     protected PostgreJobStep createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        return new PostgreJobStep(((PostgreJob) container), "New Step");
+        final PostgreJob job = (PostgreJob) container;
+        final String name = DBUtils.makeNewObjectName(monitor, "Step{0}", job, PostgreJobStep.class, PostgreJob::getStep, context);
+        return new PostgreJobStep(job, name);
     }
 
     @Override

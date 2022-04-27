@@ -140,6 +140,11 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
         return stepCache.getAllObjects(monitor, this);
     }
 
+    @Nullable
+    public PostgreJobStep getStep(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+        return stepCache.getObject(monitor, this, name);
+    }
+
     @NotNull
     public StepCache getStepCache() {
         return stepCache;
@@ -149,6 +154,11 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
     @NotNull
     public List<PostgreJobSchedule> getSchedules(@NotNull DBRProgressMonitor monitor) throws DBException {
         return scheduleCache.getAllObjects(monitor, this);
+    }
+
+    @Nullable
+    public PostgreJobSchedule getSchedule(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+        return scheduleCache.getObject(monitor, this, name);
     }
 
     @NotNull

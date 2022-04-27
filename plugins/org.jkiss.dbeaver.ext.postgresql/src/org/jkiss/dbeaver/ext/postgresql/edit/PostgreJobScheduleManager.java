@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreJob;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -53,7 +54,9 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
 
     @Override
     protected PostgreJobSchedule createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        return new PostgreJobSchedule(((PostgreJob) container), "New Schedule");
+        final PostgreJob job = (PostgreJob) container;
+        final String name = DBUtils.makeNewObjectName(monitor, "Schedule{0}", job, PostgreJobSchedule.class, PostgreJob::getSchedule, context);
+        return new PostgreJobSchedule(job, name);
     }
 
     @Override

@@ -19,11 +19,9 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreJob;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -66,7 +64,9 @@ public class PostgreJobManager extends SQLStructEditor<PostgreJob, PostgreDataSo
 
     @Override
     protected PostgreJob createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        return new PostgreJob(monitor, ((PostgreDataSource) container).getDefaultInstance(), "New Job");
+        final PostgreDatabase database = ((PostgreDataSource) container).getDefaultInstance();
+        final String name = DBUtils.makeNewObjectName(monitor, "Job{0}", database, PostgreJob.class, PostgreDatabase::getJob, context);
+        return new PostgreJob(monitor, database, name);
     }
 
     @SuppressWarnings("rawtypes")
