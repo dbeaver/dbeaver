@@ -58,14 +58,14 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
     private DataSourceDescriptor prevDataSource;
 
     private static class HandlerBlock {
-        private final IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
+        private final IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator;
         private final Composite blockControl;
         private final Button useHandlerCheck;
         private final TabItem tabItem;
         ControlEnableState blockEnableState;
         private final Map<String, DBWHandlerConfiguration> loadedConfigs = new HashMap<>();
 
-        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck, TabItem tabItem)
+        private HandlerBlock(IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck, TabItem tabItem)
         {
             this.configurator = configurator;
             this.blockControl = blockControl;
@@ -96,7 +96,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
 
     private void createHandlerTab(final NetworkHandlerDescriptor descriptor) throws DBException
     {
-        IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
+        IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator;
         try {
             String implName = descriptor.getHandlerType().getImplName();
             UIPropertyConfiguratorDescriptor configDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(implName);
@@ -134,7 +134,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
 
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        configurator.createControl(handlerComposite, this::updatePageCompletion);
+        configurator.createControl(handlerComposite, descriptor, this::updatePageCompletion);
     }
 
     @Override

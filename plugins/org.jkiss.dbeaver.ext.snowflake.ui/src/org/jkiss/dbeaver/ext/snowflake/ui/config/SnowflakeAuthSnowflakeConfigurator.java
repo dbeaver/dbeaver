@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
@@ -40,7 +41,7 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
     private Combo authTypeCombo;
 
     @Override
-    public void createControl(Composite parent, Runnable propertyChangeListener) {
+    public void createControl(Composite parent, DBAAuthModel object, Runnable propertyChangeListener) {
         ModifyListener textListener = e -> propertyChangeListener.run();
 
         usernameLabel = UIUtils.createLabel(parent, UIConnectionMessages.dialog_connection_auth_label_username);

@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceOriginLocal;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -54,7 +55,7 @@ public class AuthModelSelector extends Composite {
     private DBPDataSourceContainer activeDataSource;
     private DBPAuthModelDescriptor selectedAuthModel;
     private Composite modelConfigPlaceholder;
-    private IObjectPropertyConfigurator<DBPDataSourceContainer> authModelConfigurator;
+    private IObjectPropertyConfigurator<Object, DBPDataSourceContainer> authModelConfigurator;
     private Runnable panelExtender;
     private Runnable changeListener;
     private Combo authModelCombo;
@@ -179,9 +180,10 @@ public class AuthModelSelector extends Composite {
         UIUtils.setControlVisible(authModelComp, authSelectorVisible);
         ((Group)modelConfigPlaceholder).setText(authSelectorVisible ? UIConnectionMessages.dialog_connection_auth_group : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
+        DBAAuthModel<?> authModel = selectedAuthModel.getInstance();
         {
             authModelConfigurator = null;
-            UIPropertyConfiguratorDescriptor uiConfiguratorDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(selectedAuthModel.getImplClassName());
+            UIPropertyConfiguratorDescriptor uiConfiguratorDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(authModel);
             if (uiConfiguratorDescriptor != null) {
                 try {
                     authModelConfigurator = uiConfiguratorDescriptor.createConfigurator();
@@ -194,7 +196,7 @@ public class AuthModelSelector extends Composite {
         }
 
         if (authModelConfigurator != null) {
-            authModelConfigurator.createControl(modelConfigPlaceholder, () -> changeListener.run());
+            authModelConfigurator.createControl(modelConfigPlaceholder, authModel, () -> changeListener.run());
             if (activeDataSource != null && selectedAuthModel != null) {
                 // Set selected auth model to datasource config
                 activeDataSource.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());

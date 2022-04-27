@@ -53,7 +53,7 @@ public class DataSourceBindingDescriptor extends AbstractContextDescriptor {
         }
 
         public boolean appliesTo(DBPDriver driver, Object context) {
-            if (!CommonUtils.isEmpty(id) && !id.equals(driver.getProviderId())) {
+            if (!CommonUtils.isEmpty(id) && !driver.getProviderDescriptor().matchesId(id)) {
                 return false;
             }
             if (!CommonUtils.isEmpty(this.driver) && !this.driver.equals(driver.getId())) {

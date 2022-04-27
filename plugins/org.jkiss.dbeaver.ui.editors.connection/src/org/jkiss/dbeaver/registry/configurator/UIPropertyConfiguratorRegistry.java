@@ -23,12 +23,10 @@ import org.eclipse.core.runtime.Platform;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UIPropertyConfiguratorRegistry
-{
+public class UIPropertyConfiguratorRegistry {
     private static UIPropertyConfiguratorRegistry instance = null;
 
-    public synchronized static UIPropertyConfiguratorRegistry getInstance()
-    {
+    public synchronized static UIPropertyConfiguratorRegistry getInstance() {
         if (instance == null) {
             instance = new UIPropertyConfiguratorRegistry(Platform.getExtensionRegistry());
         }
@@ -37,8 +35,7 @@ public class UIPropertyConfiguratorRegistry
 
     private final Map<String, UIPropertyConfiguratorDescriptor> descriptors = new HashMap<>();
 
-    private UIPropertyConfiguratorRegistry(IExtensionRegistry registry)
-    {
+    private UIPropertyConfiguratorRegistry(IExtensionRegistry registry) {
         // Load data descriptors from external plugins
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(UIPropertyConfiguratorDescriptor.EXTENSION_ID);
@@ -49,13 +46,17 @@ public class UIPropertyConfiguratorRegistry
         }
     }
 
-    public UIPropertyConfiguratorDescriptor getDescriptor(Object object)
-    {
-        return descriptors.get(object.getClass().getName());
+    public UIPropertyConfiguratorDescriptor getDescriptor(Object object) {
+        for (Class<?> theClass = object.getClass(); theClass != Object.class; theClass = theClass.getSuperclass()) {
+            UIPropertyConfiguratorDescriptor descriptor = descriptors.get(theClass.getName());
+            if (descriptor != null) {
+                return descriptor;
+            }
+        }
+        return null;
     }
 
-    public UIPropertyConfiguratorDescriptor getDescriptor(String className)
-    {
+    public UIPropertyConfiguratorDescriptor getDescriptor(String className) {
         return descriptors.get(className);
     }
 

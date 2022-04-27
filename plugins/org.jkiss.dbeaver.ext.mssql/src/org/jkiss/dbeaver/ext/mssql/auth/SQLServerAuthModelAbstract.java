@@ -14,18 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.ui;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+package org.jkiss.dbeaver.ext.mssql.auth;
 
-import java.util.Map;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 
-public interface IDataTransferEventProcessorConfigurator extends IObjectPropertyConfigurator<Object, Map<String, Object>> {
-    boolean isApplicable(@NotNull StreamConsumerSettings configuration);
+/**
+ * SQL Server abstract auth model.
+ */
+public abstract class SQLServerAuthModelAbstract extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
 
-    default boolean hasControl() {
-        return true;
-    }
+
 }
