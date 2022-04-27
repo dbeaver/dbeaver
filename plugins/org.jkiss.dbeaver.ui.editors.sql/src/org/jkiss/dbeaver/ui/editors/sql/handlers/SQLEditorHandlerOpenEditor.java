@@ -266,7 +266,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
                 activeEditor != null &&
                 CommonUtils.equalObjects(res.getResource(), EditorUtils.getFileFromInput(activeEditor.getEditorInput())))
             {
-                // It is already open and active. LEt's open script selector panel
+                // It is already open and active. Let's open script selector panel
                 openEditor(workbenchWindow, editorContext);
             } else {
                 openResourceEditor(workbenchWindow, res, editorContext);
