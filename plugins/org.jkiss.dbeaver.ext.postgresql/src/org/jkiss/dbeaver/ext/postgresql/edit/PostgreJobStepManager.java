@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -74,25 +75,15 @@ public class PostgreJobStepManager extends SQLObjectEditor<PostgreJobStep, Postg
     }
 
     @Override
+    protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreJob owner, DBECommandAbstract<PostgreJobStep> command, Map<String, Object> options) {
+        return new StringBuilder(getCreateDDL(monitor, command.getObject(), options, true));
+    }
+
+    @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
-        final PostgreJobStep step = command.getObject();
-        final StringBuilder sb = new StringBuilder();
-
-        sb.append("INSERT INTO pgagent.pga_jobstep (jstjobid, jstname, jstdesc, jstenabled, jstkind, jstonerror, jstcode, jstconnstr, jstdbname)\nVALUES (");
-        sb.append(step.getParentObject().getObjectId()).append(", ");
-        sb.append(SQLUtils.quoteString(step.getDataSource(), step.getName())).append(", ");
-        sb.append(SQLUtils.quoteString(step.getDataSource(), step.getDescription())).append(", ");
-        sb.append(step.isEnabled()).append(", ");
-        sb.append(SQLUtils.quoteString(step.getDataSource(), step.getKind().name())).append(", ");
-        sb.append(SQLUtils.quoteString(step.getDataSource(), step.getOnError().name())).append(", ");
-        sb.append(SQLUtils.quoteString(step.getDataSource(), step.getObjectDefinitionText(monitor, options))).append(", ");
-        sb.append(SQLUtils.quoteString(step.getDataSource(), step.getRemoteConnectionString())).append(", ");
-        sb.append(SQLUtils.quoteString(step.getDataSource(), step.getTargetDatabase() == null ? "" : step.getTargetDatabase().getName()));
-        sb.append(")");
-
         actions.add(new SQLDatabasePersistAction(
             "Create step",
-            sb.toString()
+            getCreateDDL(monitor, command.getObject(), options, false)
         ));
     }
 
@@ -158,5 +149,22 @@ public class PostgreJobStepManager extends SQLObjectEditor<PostgreJobStep, Postg
     @Override
     public void renameObject(@NotNull DBECommandContext commandContext, @NotNull PostgreJobStep object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
+    }
+
+    @NotNull
+    private String getCreateDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreJobStep step, @NotNull Map<String, Object> options, boolean nested) {
+        final StringJoiner values = new StringJoiner(", ", "(", ")");
+
+        values.add(nested ? "jid" : String.valueOf(step.getParentObject().getObjectId()));
+        values.add(SQLUtils.quoteString(step.getDataSource(), step.getName()));
+        values.add(SQLUtils.quoteString(step.getDataSource(), step.getDescription()));
+        values.add(String.valueOf(step.isEnabled()));
+        values.add(SQLUtils.quoteString(step.getDataSource(), step.getKind().name()));
+        values.add(SQLUtils.quoteString(step.getDataSource(), step.getOnError().name()));
+        values.add(SQLUtils.quoteString(step.getDataSource(), step.getObjectDefinitionText(monitor, options)));
+        values.add(SQLUtils.quoteString(step.getDataSource(), step.getRemoteConnectionString()));
+        values.add(SQLUtils.quoteString(step.getDataSource(), step.getTargetDatabase() == null ? "" : step.getTargetDatabase().getName()));
+
+        return "INSERT INTO pgagent.pga_jobstep (jstjobid, jstname, jstdesc, jstenabled, jstkind, jstonerror, jstcode, jstconnstr, jstdbname)\nVALUES " + values;
     }
 }

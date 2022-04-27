@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -56,29 +57,15 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
     }
 
     @Override
+    protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreJob owner, DBECommandAbstract<PostgreJobSchedule> command, Map<String, Object> options) {
+        return new StringBuilder(getCreateDDL(command.getObject(), true));
+    }
+
+    @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException {
-        final PostgreJobSchedule schedule = command.getObject();
-
-        final StringJoiner values = new StringJoiner(", ", "(", ")");
-        values.add(String.valueOf(schedule.getParentObject().getObjectId()));
-        values.add(SQLUtils.quoteString(schedule, schedule.getName()));
-        values.add(SQLUtils.quoteString(schedule, schedule.getDescription()));
-        values.add(String.valueOf(schedule.isEnabled()));
-        values.add(SQLUtils.quoteString(schedule, schedule.getStart().toString()));
-        if (schedule.getEnd() != null) {
-            values.add(SQLUtils.quoteString(schedule, schedule.getEnd().toString()));
-        } else {
-            values.add(SQLConstants.NULL_VALUE);
-        }
-        values.add(toCompactArray(schedule.getMinutes()));
-        values.add(toCompactArray(schedule.getHours()));
-        values.add(toCompactArray(schedule.getWeekDays()));
-        values.add(toCompactArray(schedule.getMonthDays()));
-        values.add(toCompactArray(schedule.getMonths()));
-
         actions.add(new SQLDatabasePersistAction(
             "Create schedule",
-            "INSERT INTO pgagent.pga_schedule (jscjobid, jscname, jscdesc, jscenabled, jscstart, jscend, jscminutes, jschours, jscweekdays, jscmonthdays, jscmonths)\nVALUES " + values
+            getCreateDDL(command.getObject(), false)
         ));
     }
 
@@ -124,6 +111,25 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
     @Override
     public void renameObject(@NotNull DBECommandContext commandContext, @NotNull PostgreJobSchedule object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
+    }
+
+    @NotNull
+    private String getCreateDDL(@NotNull PostgreJobSchedule schedule, boolean nested) {
+        final StringJoiner values = new StringJoiner(", ", "(", ")");
+
+        values.add(nested ? "jid" : String.valueOf(schedule.getParentObject().getObjectId()));
+        values.add(SQLUtils.quoteString(schedule, schedule.getName()));
+        values.add(SQLUtils.quoteString(schedule, schedule.getDescription()));
+        values.add(String.valueOf(schedule.isEnabled()));
+        values.add(SQLUtils.quoteString(schedule, schedule.getStart().toString()));
+        values.add(schedule.getEnd() != null ? SQLUtils.quoteString(schedule, schedule.getEnd().toString()) : SQLConstants.NULL_VALUE);
+        values.add(toCompactArray(schedule.getMinutes()));
+        values.add(toCompactArray(schedule.getHours()));
+        values.add(toCompactArray(schedule.getWeekDays()));
+        values.add(toCompactArray(schedule.getMonthDays()));
+        values.add(toCompactArray(schedule.getMonths()));
+
+        return "INSERT INTO pgagent.pga_schedule (jscjobid, jscname, jscdesc, jscenabled, jscstart, jscend, jscminutes, jschours, jscweekdays, jscmonthdays, jscmonths)\nVALUES " + values;
     }
 
     @NotNull

@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -28,8 +30,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
@@ -37,13 +41,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefreshableObject {
+public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefreshableObject, DBPSaveableObject {
+    private static final Log log = Log.getLog(PostgreJob.class);
+
     private final PostgreDatabase database;
     private final long id;
-    private final String name;
-    private final String description;
-    private final PostgreJobClass jobClass;
-    private final boolean enabled;
+    private String name;
+    private String description;
+    private String hostAgent;
+    private PostgreJobClass jobClass;
+    private boolean enabled;
+    private boolean persisted;
 
     private final StepCache stepCache = new StepCache();
     private final ScheduleCache scheduleCache = new ScheduleCache();
@@ -53,8 +61,21 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
         this.id = JDBCUtils.safeGetLong(dbResult, "jobid");
         this.name = JDBCUtils.safeGetString(dbResult, "jobname");
         this.description = JDBCUtils.safeGetString(dbResult, "jobdesc");
+        this.hostAgent = JDBCUtils.safeGetString(dbResult, "jobhostagent");
         this.jobClass = database.getJobClass(monitor, JDBCUtils.safeGetLong(dbResult, "jobjclid"));
         this.enabled = JDBCUtils.safeGetBoolean(dbResult, "jobenabled");
+        this.persisted = true;
+    }
+
+    public PostgreJob(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, @NotNull String name) throws DBException {
+        this.database = database;
+        this.id = 0;
+        this.name = name;
+        this.description = "";
+        this.hostAgent = "";
+        this.jobClass = database.getJobClass(monitor, 1);
+        this.enabled = true;
+        this.persisted = false;
     }
 
     @Override
@@ -64,27 +85,53 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, editable = true, updatable = true, order = 1)
     public String getName() {
         return name;
     }
 
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
+
     @Nullable
     @Override
-    @Property(viewable = true, order = 2)
+    @Property(viewable = true, editable = true, updatable = true, order = 2)
     public String getDescription() {
         return description;
     }
 
+    public void setDescription(@NotNull String description) {
+        this.description = description;
+    }
+
     @NotNull
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, editable = true, updatable = true, order = 3)
+    public String getHostAgent() {
+        return hostAgent;
+    }
+
+    public void setHostAgent(@NotNull String hostAgent) {
+        this.hostAgent = hostAgent;
+    }
+
+    @NotNull
+    @Property(viewable = true, editable = true, updatable = true, listProvider = JobClassListProvider.class, order = 4)
     public PostgreJobClass getJobClass() {
         return jobClass;
     }
 
-    @Property(viewable = true, order = 4)
+    public void setJobClass(@NotNull PostgreJobClass jobClass) {
+        this.jobClass = jobClass;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 5)
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Association
@@ -111,7 +158,12 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
 
     @Override
     public boolean isPersisted() {
-        return true;
+        return persisted;
+    }
+
+    @Override
+    public void setPersisted(boolean persisted) {
+        this.persisted = persisted;
     }
 
     @Nullable
@@ -194,6 +246,24 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
         @Override
         protected PostgreJobSchedule fetchObject(@NotNull JDBCSession session, @NotNull PostgreJob job, @NotNull JDBCResultSet dbResult) {
             return new PostgreJobSchedule(job, dbResult);
+        }
+    }
+
+    public static class JobClassListProvider implements IPropertyValueListProvider<PostgreJob> {
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        @Override
+        public Object[] getPossibleValues(@NotNull PostgreJob object) {
+            try {
+                // Classes are already loaded at this moment, so we are free to use void monitor here
+                return object.getDatabase().getJobClasses(new VoidProgressMonitor()).toArray();
+            } catch (DBException e) {
+                log.error("Error loading job classes", e);
+                return null;
+            }
         }
     }
 }

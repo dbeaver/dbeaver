@@ -590,6 +590,7 @@
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreExtensionManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTablespaceManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDataTypeManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreJobManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreJob"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreJobScheduleManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreJobStepManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep"/>
     </extension>

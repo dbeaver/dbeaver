@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
@@ -597,7 +598,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Association
     public Collection<PostgreJob> getJobs(@NotNull DBRProgressMonitor monitor) throws DBException {
         checkInstanceConnection(monitor);
-        return jobCache.getAllObjects(monitor, this);
+        try {
+            return jobCache.getAllObjects(monitor, this);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Error accessing pgAdmin jobs", "Can't access pgAdmin jobs.\n\nThis database may not have the extension installed or you don't have sufficient permissions to access them.\n\nIf you believe that this is DBeaver's fault, please report it.", e);
+            return Collections.emptyList();
+        }
     }
 
     @Association
