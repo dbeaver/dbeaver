@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -71,5 +72,9 @@ public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObje
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container)
         throws DBException;
+
+    default DBPAuthModelDescriptor detectConnectionAuthModel(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+        return connectionInfo.getAuthModelDescriptor();
+    }
 
 }

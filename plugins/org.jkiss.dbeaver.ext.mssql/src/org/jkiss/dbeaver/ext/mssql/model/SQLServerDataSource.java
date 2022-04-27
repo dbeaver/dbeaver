@@ -169,10 +169,6 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
         fillConnectionProperties(connectionInfo, properties);
 
-        SQLServerAuthentication authSchema = SQLServerUtils.detectAuthSchema(connectionInfo);
-
-        authSchema.getInitializer().initializeAuthentication(connectionInfo, properties);
-
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(SQLServerConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
             initSSL(monitor, properties, sslConfig);

@@ -25,10 +25,10 @@ import java.util.LinkedHashMap;
 /**
  * HTTP tunnel configuration
  */
-public class HTTPTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWHandlerConfiguration> {
+public class HTTPTunnelConfiguratorUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
 
     @Override
-    public void createControl(Composite parent, Runnable propertyChangeListener)
+    public void createControl(Composite parent, Object object, Runnable propertyChangeListener)
     {
     }
 

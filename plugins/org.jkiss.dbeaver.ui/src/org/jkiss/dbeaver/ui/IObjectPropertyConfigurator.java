@@ -22,12 +22,13 @@ import org.jkiss.code.NotNull;
 /**
  * IObjectPropertyConfigurator
  */
-public interface IObjectPropertyConfigurator<SETTINGS> {
+public interface IObjectPropertyConfigurator<OBJECT, SETTINGS> {
     /**
      * @param parent                 Parent composite
+     * @param object
      * @param propertyChangeListener Can be called upon UI control change to update page completeness and other things.
      */
-    void createControl(@NotNull Composite parent, @NotNull Runnable propertyChangeListener);
+    void createControl(@NotNull Composite parent, OBJECT object, @NotNull Runnable propertyChangeListener);
 
     void loadSettings(@NotNull SETTINGS settings);
 

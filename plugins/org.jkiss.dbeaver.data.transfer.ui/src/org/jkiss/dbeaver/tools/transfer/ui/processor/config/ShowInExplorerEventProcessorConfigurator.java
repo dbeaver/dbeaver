@@ -25,7 +25,7 @@ import java.util.Map;
 
 public class ShowInExplorerEventProcessorConfigurator implements IDataTransferEventProcessorConfigurator {
     @Override
-    public void createControl(@NotNull Composite parent, @NotNull Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
         // not implemented
     }
 

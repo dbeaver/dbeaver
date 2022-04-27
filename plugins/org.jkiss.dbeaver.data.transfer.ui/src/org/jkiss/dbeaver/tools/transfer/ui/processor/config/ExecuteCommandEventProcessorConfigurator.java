@@ -38,7 +38,7 @@ public class ExecuteCommandEventProcessorConfigurator implements IDataTransferEv
     private String workingDirectory;
 
     @Override
-    public void createControl(@NotNull Composite parent, @NotNull Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
         final Composite group = new Composite(parent, SWT.NONE);
         group.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
         group.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(300, SWT.DEFAULT).create());

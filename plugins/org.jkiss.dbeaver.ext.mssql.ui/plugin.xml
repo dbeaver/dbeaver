@@ -150,6 +150,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelAbstract" uiClass="org.jkiss.dbeaver.ext.mssql.ui.views.SQLServerAuthConfigurator"/>
         <propertyConfigurator class="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.mssql.ui.views.SQLServerSSLConfigurator"/>
     </extension>
 
