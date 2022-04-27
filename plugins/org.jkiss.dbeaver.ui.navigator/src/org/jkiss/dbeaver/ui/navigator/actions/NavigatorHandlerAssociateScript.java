@@ -24,8 +24,14 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -43,7 +49,7 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
-        List<IFile> scripts = new ArrayList<>();
+        List<IFile> selectedScripts = new ArrayList<>();
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
             for (Object o : (IStructuredSelection) selection) {
@@ -51,26 +57,37 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
                 if (node instanceof DBNResource) {
                     IResource resource = ((DBNResource) node).getResource();
                     if (resource instanceof IFile) {
-                        scripts.add((IFile) resource);
+                        selectedScripts.add((IFile) resource);
                     }
                 }
             }
         }
-        if (!scripts.isEmpty()) {
+        if (!selectedScripts.isEmpty()) {
             SelectDataSourceDialog dialog = new SelectDataSourceDialog(
                 activeShell,
-                DBPPlatformEclipse.getInstance().getWorkspace().getProject(scripts.get(0).getProject()),
+                DBPPlatformEclipse.getInstance().getWorkspace().getProject(selectedScripts.get(0).getProject()),
                 null);
             if (dialog.open() == IDialogConstants.CANCEL_ID) {
                 return null;
             }
             DBPDataSourceContainer dataSource = dialog.getDataSource();
-            for (IFile script : scripts) {
+            for (IFile script : selectedScripts) {
                 EditorUtils.setFileDataSource(script, new SimpleDatabaseEditorContext(dataSource));
+                setEditorDataSource(script, dataSource);
                 DBNUtils.refreshNavigatorResource(script, dataSource);
             }
         }
         return null;
     }
 
+    private static void setEditorDataSource(IFile script, DBPDataSourceContainer dataSource) {
+        for (IWorkbenchWindow window: PlatformUI.getWorkbench().getWorkbenchWindows()) {
+            for (IWorkbenchPage page: window.getPages()) {
+                IEditorPart editor = ResourceUtil.findEditor(page, script);
+                if (editor instanceof IDataSourceContainerProviderEx) {
+                    ((IDataSourceContainerProviderEx)editor).setDataSourceContainer(dataSource);
+                }
+            }
+        }
+    }
 }
