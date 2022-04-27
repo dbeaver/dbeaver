@@ -130,7 +130,9 @@ public class SecurityUtils {
             }
             MessageDigest md5 =
                 MessageDigest.getInstance(ECRYPTION_ALGORYTHM);
-            md5.update(userAlias.getBytes());
+            if (userAlias != null) {
+                md5.update(userAlias.getBytes());
+            }
 
             return CommonUtils.toHexString(md5.digest(userPassword.getBytes()));
         } catch (NoSuchAlgorithmException toCatch) {
