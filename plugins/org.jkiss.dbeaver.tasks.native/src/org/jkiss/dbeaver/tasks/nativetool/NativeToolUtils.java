@@ -50,6 +50,18 @@ public abstract class NativeToolUtils {
         VARIABLE_MINUTE,
         VARIABLE_CONN_TYPE
     };
+    public static final String[] LIMITED_VARIABLES = {
+        VARIABLE_HOST,
+        VARIABLE_DATABASE,
+        VARIABLE_DATE,
+        VARIABLE_TIMESTAMP,
+        VARIABLE_YEAR,
+        VARIABLE_MONTH,
+        VARIABLE_DAY,
+        VARIABLE_HOUR,
+        VARIABLE_MINUTE,
+        VARIABLE_CONN_TYPE
+    };
 
     public static boolean isSecureString(AbstractNativeToolSettings settings, String string) {
         String userPassword = settings.getDataSourceContainer().getActualConnectionConfiguration().getUserPassword();

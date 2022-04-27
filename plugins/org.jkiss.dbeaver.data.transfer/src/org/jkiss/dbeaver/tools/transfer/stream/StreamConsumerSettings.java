@@ -366,7 +366,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, outputTimestampPattern);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_insert_bom, outputEncodingBOM);
         } else {
-            DTUtils.addSummary(summary, "Copy to clipboard", outputClipboard);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_copy_to_clipboard, outputClipboard);
         }
 
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_compress, compressResults);

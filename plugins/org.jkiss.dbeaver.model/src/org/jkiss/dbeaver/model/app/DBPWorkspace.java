@@ -17,16 +17,10 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -53,14 +47,8 @@ public interface DBPWorkspace extends SMAuthSpace
     Path getMetadataFolder();
 
     @NotNull
-    IWorkspace getEclipseWorkspace();
-
-    @NotNull
     List<DBPProject> getProjects();
     DBPProject getActiveProject();
-    void setActiveProject(DBPProject project);
-
-    DBPProject getProject(@NotNull IProject project);
     DBPProject getProject(@NotNull String projectName);
 
     /**
@@ -68,24 +56,6 @@ public interface DBPWorkspace extends SMAuthSpace
      */
     @NotNull
     SMSessionContext getAuthContext();
-
-    /**
-     * Reloads workspace contents. Creates missing projects, removes unexistent projects
-     */
-    void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException;
-
-    void addProjectListener(DBPProjectListener listener);
-
-    void removeProjectListener(DBPProjectListener listener);
-
-    DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors();
-    DBPResourceHandlerDescriptor[] getAllResourceHandlers();
-    @Nullable
-    DBPResourceHandler getResourceHandler(IResource resource);
-    @Nullable
-    IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor handler, boolean forceCreate);
-    @Nullable
-    IFolder getResourceDefaultRoot(DBPProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate);
 
     @Nullable
     DBPDataSourceRegistry getDefaultDataSourceRegistry();

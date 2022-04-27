@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.tools.project;
 
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.utils.xml.XMLBuilder;
 
@@ -31,12 +31,12 @@ import java.util.zip.ZipOutputStream;
 
 class ProjectExportData {
 
-    private List<DBPProject> projects;
-    private File outputFolder;
-    private boolean exportDrivers;
-    private String archiveFileName;
+    private final List<DBPProject> projects;
+    private final File outputFolder;
+    private final boolean exportDrivers;
+    private final String archiveFileName;
 
-    DBPWorkspace workspace;
+    DBPWorkspaceEclipse workspace;
     XMLBuilder meta;
     ZipOutputStream archiveStream;
     Set<DBPDriver> usedDrivers = new HashSet<>();
@@ -49,7 +49,7 @@ class ProjectExportData {
         this.archiveFileName = archiveFileName;
     }
 
-    void initExport(DBPWorkspace workspace, XMLBuilder meta, ZipOutputStream archiveStream)
+    void initExport(DBPWorkspaceEclipse workspace, XMLBuilder meta, ZipOutputStream archiveStream)
     {
         this.workspace = workspace;
         this.meta = meta;

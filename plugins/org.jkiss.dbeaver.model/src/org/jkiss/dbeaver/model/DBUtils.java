@@ -521,6 +521,11 @@ public final class DBUtils {
         return pathStr.toString();
     }
 
+    public static String getObjectNameFromId(String objectId) {
+        String[] parts = objectId.split("/");
+        return parts[parts.length - 1];
+    }
+
     /**
      * Find object by unique ID.
      * Note: this function searches only inside DBSObjectContainer objects.

@@ -26,4 +26,7 @@ public interface ExportSettingsExtension<INFO> {
 
     @NotNull
     File getOutputFile(@NotNull INFO info);
+
+    @NotNull
+    File getOutputFolder(@NotNull INFO info);
 }

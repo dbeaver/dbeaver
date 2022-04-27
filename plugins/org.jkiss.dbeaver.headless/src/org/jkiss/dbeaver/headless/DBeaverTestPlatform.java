@@ -46,7 +46,7 @@ import java.nio.file.Files;
 /**
  * DBeaverTestPlatform
  */
-public class DBeaverTestPlatform extends BasePlatformImpl {
+public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatformEclipse {
 
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.headless"; //$NON-NLS-1$
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
@@ -55,7 +55,6 @@ public class DBeaverTestPlatform extends BasePlatformImpl {
 
     static DBeaverTestPlatform instance;
 
-    @NotNull
     private static volatile boolean isClosing = false;
 
     private File tempFolder;
@@ -168,7 +167,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl {
 
     @NotNull
     @Override
-    public DBPWorkspace getWorkspace() {
+    public DBPWorkspaceEclipse getWorkspace() {
         return workspace;
     }
 
@@ -257,7 +256,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl {
 
     private static class TestPreferenceStore extends SimplePreferenceStore {
         @Override
-        public void save() throws IOException {
+        public void save() {
 
         }
     }

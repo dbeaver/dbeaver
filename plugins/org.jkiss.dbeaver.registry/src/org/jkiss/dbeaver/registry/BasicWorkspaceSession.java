@@ -23,13 +23,20 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.auth.*;
+import org.jkiss.dbeaver.model.auth.SMAuthSpace;
+import org.jkiss.dbeaver.model.auth.SMSession;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.auth.SMSessionPrincipal;
 import org.jkiss.dbeaver.model.auth.impl.AbstractSessionPersistent;
+import org.jkiss.dbeaver.model.security.SMSessionType;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
 public class BasicWorkspaceSession extends AbstractSessionPersistent implements SMSession, SMSessionPrincipal {
+
+    public static final SMSessionType DB_SESSION_TYPE = new SMSessionType("DBeaver");
+
     private final DBPWorkspace workspace;
     private String userName;
     private String domainName;

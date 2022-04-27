@@ -22,9 +22,13 @@ package org.jkiss.dbeaver.ui.gis;
 public class GeometryViewerConstants {
 
     public static final String PREF_MAX_OBJECTS_RENDER = "gis.view.maxObjectsRender";
+    public static final String PREF_MIN_ZOOM_LEVEL = "gis.view.minZoomLevel";
     public static final String PREF_DEFAULT_SRID = "gis.view.defaultSRID";
     public static final String PREF_DEFAULT_LEAFLET_TILES = "gis.view.defaultLeafletTiles";
 
     public static final int DEFAULT_MAX_OBJECTS_RENDER = 10000;
 
+    // https://leafletjs.com/reference.html#tilelayer-minzoom
+    public static final int DEFAULT_MIN_ZOOM_LEVEL = 0;
+    public static final int DEFAULT_MAX_ZOOM_LEVEL = 18;
 }

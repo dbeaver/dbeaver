@@ -86,6 +86,16 @@ public class EditorsMessages extends NLS {
 	public static String file_dialog_save_as_file;
 	public static String file_dialog_cannot_load_file;
 
+	public static String edit_constraints_error_title;
+	public static String edit_constraints_error_message;
+	public static String edit_constraints_enable_constraint_text;
+	public static String edit_constraints_enable_constraint_tip;
+	public static String edit_constraints_use_all_columns_text;
+	public static String edit_constraints_use_all_columns_tip;
+	public static String edit_constraints_expression_text;
+	public static String selector_select_all_text;
+	public static String selector_clear_all_text;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, EditorsMessages.class);

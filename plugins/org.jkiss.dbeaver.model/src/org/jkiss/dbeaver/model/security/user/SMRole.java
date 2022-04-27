@@ -16,9 +16,61 @@
  */
 package org.jkiss.dbeaver.model.security.user;
 
-import org.jkiss.code.NotNull;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-public interface SMRole {
-    @NotNull
-    String getRoleId();
+public class SMRole {
+    private final String roleId;
+    private String name;
+    private String description;
+
+    private Set<String> permissions = new LinkedHashSet<>();
+
+    public SMRole(String roleId) {
+        this.roleId = roleId;
+    }
+
+    public SMRole(String roleId, String name, String description) {
+        this.roleId = roleId;
+        this.name = name;
+        this.description = description;
+    }
+
+    public String getRoleId() {
+        return roleId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Set<String> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(Set<String> permissions) {
+        this.permissions = permissions;
+    }
+
+    public void addPermission(String permission) {
+        this.permissions.add(permission);
+    }
+
+    @Override
+    public String toString() {
+        return roleId;
+    }
 }
+

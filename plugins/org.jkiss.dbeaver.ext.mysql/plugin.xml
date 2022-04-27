@@ -333,11 +333,12 @@
     <extension point="org.jkiss.dbeaver.sqlInsertMethod">
         <method id="mysqlInsertIgnore" class="org.jkiss.dbeaver.ext.mysql.model.MySQLInsertReplaceMethodIgnore" label="INSERT IGNORE" description="Insert ignore duplicate key value"/>
         <method id="mysqlReplaceIgnore" class="org.jkiss.dbeaver.ext.mysql.model.MySQLInsertReplaceMethod" label="REPLACE INTO" description="Insert replace duplicate key value"/>
+        <method id="mysqlReplaceIgnoreUpdate" class="org.jkiss.dbeaver.ext.mysql.model.MySQLInsertReplaceMethodUpdate" label="ON DUPLICATE KEY UPDATE" description="Insert update duplicate key value"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="mysql" parent="basic" class="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" label="MySQL" description="MySQL dialect." icon="icons/mysql_icon.png">
-            <property name="insertMethods" value="mysqlInsertIgnore,mysqlReplaceIgnore"/>
+            <property name="insertMethods" value="mysqlInsertIgnore,mysqlReplaceIgnore,mysqlReplaceIgnoreUpdate"/>
             <keywords value=""/>
             <execKeywords value=""/>
             <ddlKeywords value=""/>
@@ -406,7 +407,7 @@
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
         </task>
-        <task id="mysqlDatabaseRestore" name="MySQL restore" description="MySQL database import task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
+        <task id="mysqlDatabaseRestore" name="MySQL restore" description="MySQL database import task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler" confirmationMessage="%mysqlDatabaseRestore.confirmationMessage">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
         </task>

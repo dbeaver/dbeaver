@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
@@ -27,7 +28,7 @@ import java.util.Map;
 /**
  * Admin interface
  */
-public interface SMAdminController<USER extends SMUser, ROLE extends SMRole> extends SMController<USER, ROLE> {
+public interface SMAdminController extends SMController {
 
     ///////////////////////////////////////////
     // Users
@@ -38,10 +39,10 @@ public interface SMAdminController<USER extends SMUser, ROLE extends SMRole> ext
 
     void setUserRoles(String userId, String[] roleIds, String grantorId) throws DBCException;
 
-    USER getUserById(String userId) throws DBCException;
+    SMUser getUserById(String userId) throws DBException;
 
     @NotNull
-    USER[] findUsers(String userNameMask) throws DBCException;
+    SMUser[] findUsers(String userNameMask) throws DBCException;
 
     void setUserMeta(String userId, Map<String, Object> metaParameters) throws DBCException;
 
@@ -49,9 +50,9 @@ public interface SMAdminController<USER extends SMUser, ROLE extends SMRole> ext
     // Roles
 
     @NotNull
-    ROLE[] readAllRoles() throws DBCException;
+    SMRole[] readAllRoles() throws DBCException;
 
-    ROLE findRole(String roleId) throws DBCException;
+    SMRole findRole(String roleId) throws DBCException;
 
     @NotNull
     String[] getRoleSubjects(String roleId) throws DBCException;

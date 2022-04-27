@@ -110,7 +110,7 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
         @Override
         protected void configureShell(Shell newShell) {
             super.configureShell(newShell);
-            newShell.setText("Options");
+            newShell.setText(ResultSetMessages.copy_special_options);
         }
 
         @Override
@@ -120,9 +120,9 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
             ((GridLayout)group.getLayout()).numColumns = 2;
 
             createControlsBefore(group);
-            colDelimCombo = UIUtils.createDelimiterCombo(group, "Column Delimiter", new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter(), false);
-            rowDelimCombo = UIUtils.createDelimiterCombo(group, "Row Delimiter", new String[] {"\n", "|", "^"}, copySettings.getRowDelimiter(), false);
-            quoteStringCombo = UIUtils.createDelimiterCombo(group, "Quote Character", new String[] {"\"", "'"}, copySettings.getQuoteString(), false);
+            colDelimCombo = UIUtils.createDelimiterCombo(group, ResultSetMessages.copy_special_column_delimiter, new String[] {"\t", ";", ","}, copySettings.getColumnDelimiter(), false);
+            rowDelimCombo = UIUtils.createDelimiterCombo(group, ResultSetMessages.copy_special_row_delimiter, new String[] {"\n", "|", "^"}, copySettings.getRowDelimiter(), false);
+            quoteStringCombo = UIUtils.createDelimiterCombo(group, ResultSetMessages.copy_special_quote_character, new String[] {"\"", "'"}, copySettings.getQuoteString(), false);
             createControlsAfter(group);
             return group;
         }
@@ -193,11 +193,11 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
 
         @Override
         protected void createControlsBefore(Composite group) {
-            copyHeaderCheck = UIUtils.createCheckbox(group, "Copy header", null, copySettings.isCopyHeader(), 2);
-            copyRowsCheck = UIUtils.createCheckbox(group, "Copy row numbers", null, copySettings.isCopyRowNumbers(), 2);
-            quoteCellsCheck = UIUtils.createCheckbox(group, "Quote cell values", "Place cell value in quotes if it contains column or row delimiter", copySettings.isQuoteCells(), 2);
-            forceQuoteCheck = UIUtils.createCheckbox(group, "Always quote values", "Place all cell values in quotes", copySettings.isForceQuotes(), 2);
-            copyHtmlCheck = UIUtils.createCheckbox(group, "Copy as HTML", "Copy as HTML (in addition to plaintext format)", copySettings.isCopyHTML(), 2);
+            copyHeaderCheck = UIUtils.createCheckbox(group, ResultSetMessages.copy_special_copy_header_text, null, copySettings.isCopyHeader(), 2);
+            copyRowsCheck = UIUtils.createCheckbox(group, ResultSetMessages.copy_special_copy_row_numbers_text, null, copySettings.isCopyRowNumbers(), 2);
+            quoteCellsCheck = UIUtils.createCheckbox(group, ResultSetMessages.copy_special_quote_cell_values_text, ResultSetMessages.copy_special_quote_cell_values_tip, copySettings.isQuoteCells(), 2);
+            forceQuoteCheck = UIUtils.createCheckbox(group, ResultSetMessages.copy_special_force_quote_cell_values_text, ResultSetMessages.copy_special_force_quote_cell_values_tip, copySettings.isForceQuotes(), 2);
+            copyHtmlCheck = UIUtils.createCheckbox(group, ResultSetMessages.copy_special_copy_as_html_text, ResultSetMessages.copy_special_copy_as_html_tip, copySettings.isCopyHTML(), 2);
 
             formatSelector = new ValueFormatSelector(group);
             formatSelector.select(copySettings.getFormat());

@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.model.rm;
 
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Resource change
@@ -27,6 +25,15 @@ public class RMResourceChange {
     private String changeId;
     private Date changeTime;
     private Date changeUser;
+
+    public RMResourceChange() {
+    }
+
+    public RMResourceChange(String changeId, Date changeTime, Date changeUser) {
+        this.changeId = changeId;
+        this.changeTime = changeTime;
+        this.changeUser = changeUser;
+    }
 
     public String getChangeId() {
         return changeId;

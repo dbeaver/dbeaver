@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.auth;
 
 import java.util.Map;
 
-public interface SMSessionPersistent {
+public interface SMSessionPersistent extends SMSession {
     Map<String, Object> getAttributes();
 
     <T> T getAttribute(String name);

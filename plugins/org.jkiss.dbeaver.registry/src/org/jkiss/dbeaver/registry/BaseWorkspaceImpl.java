@@ -48,7 +48,7 @@ import java.util.*;
 /**
  * BaseWorkspaceImpl.
  */
-public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFileManager {
+public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExternalFileManager {
 
     private static final Log log = Log.getLog(BaseWorkspaceImpl.class);
 
@@ -80,7 +80,12 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         try {
             this.workspaceAuthContext.addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Can't obtain workspace session", "Error obtaining workspace session", e);
+            log.error(e);
+            DBWorkbench.getPlatformUI().showMessageBox(
+                "Authentication error",
+                "Error authenticating application user: " +
+                    "\n" + e.getMessage(),
+                true);
             System.exit(101);
         }
 

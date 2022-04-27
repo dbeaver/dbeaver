@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.erd.ui.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -48,6 +49,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -61,7 +63,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
 
     public static IFolder getDiagramsFolder(DBPProject project, boolean forceCreate) throws CoreException
     {
-        return DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(project, ERDResourceHandler.class, forceCreate);
+        return DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(project, ERDResourceHandler.class, forceCreate);
     }
 
     @Override
@@ -180,7 +182,13 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
         if (resource.getResource() instanceof IFile) {
             try {
-                return ERDPersistedState.extractContainers((IFile)resource.getResource());
+                DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(
+                    resource.getResource().getProject());
+                if (projectMeta == null) {
+                    return Collections.emptyList();
+                }
+                return ERDPersistedState.extractContainers(projectMeta,
+                    resource.getResource().getRawLocation().toFile().toPath());
             } catch (Exception e) {
                 log.error(e);
                 return null;

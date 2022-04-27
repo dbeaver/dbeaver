@@ -26,17 +26,16 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.SimpleDatabaseEditorContext;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase {
@@ -47,8 +46,8 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
         List<IFile> scripts = new ArrayList<>();
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-            for (Iterator iter = ((IStructuredSelection)selection).iterator(); iter.hasNext(); ) {
-                final DBNNode node = RuntimeUtils.getObjectAdapter(iter.next(), DBNNode.class);
+            for (Object o : (IStructuredSelection) selection) {
+                final DBNNode node = RuntimeUtils.getObjectAdapter(o, DBNNode.class);
                 if (node instanceof DBNResource) {
                     IResource resource = ((DBNResource) node).getResource();
                     if (resource instanceof IFile) {
@@ -60,7 +59,7 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
         if (!scripts.isEmpty()) {
             SelectDataSourceDialog dialog = new SelectDataSourceDialog(
                 activeShell,
-                DBWorkbench.getPlatform().getWorkspace().getProject(scripts.get(0).getProject()),
+                DBPPlatformEclipse.getInstance().getWorkspace().getProject(scripts.get(0).getProject()),
                 null);
             if (dialog.open() == IDialogConstants.CANCEL_ID) {
                 return null;

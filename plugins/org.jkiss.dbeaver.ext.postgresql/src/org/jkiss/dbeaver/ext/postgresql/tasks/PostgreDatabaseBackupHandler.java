@@ -53,11 +53,13 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     @Override
     protected boolean validateTaskParameters(DBTTask task, PostgreDatabaseBackupSettings settings, Log log) {
         if (task.getType().getId().equals(PostgreSQLTasks.TASK_DATABASE_BACKUP)) {
-            final File dir = settings.getOutputFolder();
-            if (!dir.exists()) {
-                if (!dir.mkdirs()) {
-                    log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
-                    return false;
+            for (PostgreDatabaseBackupInfo exportObject : settings.getExportObjects()) {
+                final File dir = settings.getOutputFolder(exportObject);
+                if (!dir.exists()) {
+                    if (!dir.mkdirs()) {
+                        log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
+                        return false;
+                    }
                 }
             }
         }

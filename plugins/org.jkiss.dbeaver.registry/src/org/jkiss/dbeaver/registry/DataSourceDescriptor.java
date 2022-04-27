@@ -28,10 +28,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.auth.SMAuthCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -802,10 +802,10 @@ public class DataSourceDescriptor
 
             // 1. Get credentials from origin
             DBPDataSourceOrigin dsOrigin = getOrigin();
-            if (dsOrigin instanceof SMAuthCredentialsProvider) {
+            if (dsOrigin instanceof DBACredentialsProvider) {
                 monitor.beginTask("Read auth parameters from " + dsOrigin.getDisplayName(), 1);
                 try {
-                    ((SMAuthCredentialsProvider) dsOrigin).provideAuthParameters(monitor, this, resolvedConnectionInfo);
+                    ((DBACredentialsProvider) dsOrigin).provideAuthParameters(monitor, this, resolvedConnectionInfo);
                 } finally {
                     monitor.done();
                 }
@@ -813,7 +813,7 @@ public class DataSourceDescriptor
 
             // 2. Get credentials from global provider
             boolean authProvided = true;
-            SMAuthCredentialsProvider authProvider = registry.getAuthCredentialsProvider();
+            DBACredentialsProvider authProvider = registry.getAuthCredentialsProvider();
             if (authProvider != null) {
                 authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
             } else {

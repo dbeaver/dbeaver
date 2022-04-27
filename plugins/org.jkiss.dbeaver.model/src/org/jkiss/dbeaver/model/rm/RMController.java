@@ -23,20 +23,17 @@ import org.jkiss.dbeaver.DBException;
 /**
  * Resource manager API.
  */
-public interface RMService {
+public interface RMController {
 
     @NotNull
-    RMProject[] listAccessibleProjects();
+    RMProject[] listAccessibleProjects() throws DBException;
 
     @NotNull
-    RMProject[] listSharedProjects();
+    RMProject[] listSharedProjects() throws DBException;
 
-    @NotNull
-    RMProject getPrivateProject();
+    void createProject(@NotNull RMProject project) throws DBException;
 
-    void createProject(@NotNull RMProject project);
-
-    void deleteProject(@NotNull String projectId);
+    void deleteProject(@NotNull String projectId) throws DBException;
 
     @NotNull
     RMResource[] listResources(
@@ -48,13 +45,8 @@ public interface RMService {
 
     String createResource(
         @NotNull String projectId,
-        @NotNull String folder,
-        @NotNull RMResource resource) throws DBException;
-
-    String updateResource(
-        @NotNull String projectId,
-        @NotNull String folder,
-        @NotNull RMResource resource) throws DBException;
+        @NotNull String resourcePath,
+        boolean isFolder) throws DBException;
 
     String moveResource(
         @NotNull String projectId,
@@ -75,7 +67,6 @@ public interface RMService {
     String setResourceContents(
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull String contentType,
         @NotNull byte[] data) throws DBException;
 
 }

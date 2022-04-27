@@ -43,6 +43,7 @@ import java.util.*;
 public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         implements MySQLNativeCredentialsSettings, ExportSettingsExtension<MySQLDatabaseExportInfo> {
     private static final Log log = Log.getLog(MySQLExportSettings.class);
+    private File outputFolder;
 
     public enum DumpMethod {
         ONLINE("--single-transaction"),
@@ -320,9 +321,23 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         }
     }
 
+
+    @NotNull
+    public File getOutputFolder(@NotNull MySQLDatabaseExportInfo info) {
+        if (outputFolder == null) {
+            outputFolder = new File(resolveVars(info, getOutputFolderPattern()));
+        }
+        return outputFolder;
+    }
+
     @NotNull
     public File getOutputFile(@NotNull MySQLDatabaseExportInfo info) {
-        String outFileName = GeneralUtils.replaceVariables(getOutputFilePattern(), name -> {
+        String outFileName = resolveVars(info, getOutputFolderPattern());
+        return new File(getOutputFolder(info), outFileName);
+    }
+
+    private String resolveVars(@NotNull MySQLDatabaseExportInfo info, String pattern) {
+        return GeneralUtils.replaceVariables(pattern, name -> {
             switch (name) {
                 case NativeToolUtils.VARIABLE_DATABASE:
                     return info.getDatabase().getName();
@@ -345,6 +360,5 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
                     return NativeToolUtils.replaceVariables(name);
             }
         });
-        return new File(getOutputFolder(), outFileName);
     }
 }

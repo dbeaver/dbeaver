@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
@@ -42,7 +43,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     public DatabaseNavigatorView()
     {
         super();
-        DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
+        DBPPlatformEclipse.getInstance().getWorkspace().addProjectListener(this);
     }
 
     @Override
@@ -89,7 +90,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     @Override
     public void dispose()
     {
-        DBWorkbench.getPlatform().getWorkspace().removeProjectListener(this);
+        DBPPlatformEclipse.getInstance().getWorkspace().removeProjectListener(this);
         super.dispose();
     }
 

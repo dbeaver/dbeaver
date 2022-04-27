@@ -168,6 +168,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE, autoSaveOnChange.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, autoSaveOnClose.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, saveOnQueryExecution.getSelection());
+            store.setValue(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA, autoSaveActiveSchema.getSelection());
 
             store.setValue(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR, closeTabOnErrorCheck.getSelection());
             String orientationLabel = resultsOrientationCombo.getText();
@@ -194,6 +195,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);
+        store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA);
 
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR);
         DBWorkbench.getPlatform().getPreferenceStore().setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);

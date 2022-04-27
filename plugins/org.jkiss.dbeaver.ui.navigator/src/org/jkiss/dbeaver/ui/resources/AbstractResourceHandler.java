@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -108,12 +109,12 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     }
 
     protected IFolder getDefaultRoot(DBPProject project) {
-        return DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(project, getClass(), false);
+        return DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(project, getClass(), false);
     }
 
     protected IFolder getDefaultRoot(IProject project) {
         return getDefaultRoot(
-            DBWorkbench.getPlatform().getWorkspace().getProject(project));
+            DBPPlatformEclipse.getInstance().getWorkspace().getProject(project));
     }
 
 }

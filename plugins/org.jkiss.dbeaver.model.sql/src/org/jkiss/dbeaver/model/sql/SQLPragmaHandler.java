@@ -14,25 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
-/**
- * Auth credentials provider.
- */
-public interface SMAuthCredentialsProvider {
+import java.util.Map;
+
+public interface SQLPragmaHandler {
+    String PRAGMA_EXPORT = "export";
 
     /**
-     * Fill credential parameters in the specified container and configuration.
-     * Returns false on auth cancel. True otherwise.
+     * Whether the processed pragma should not be processed by following queries
      */
-    boolean provideAuthParameters(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSourceContainer, @NotNull DBPConnectionConfiguration configuration)
-        throws DBException;
+    int RESULT_CONSUME_PRAGMA = 1;
 
+    /**
+     * Whether the processed query should not be run
+     */
+    int RESULT_CONSUME_QUERY = 1 << 1;
+
+    /**
+     * @return a set of {@code RESULT_} constants.
+     * @throws DBException on any error
+     */
+    int processPragma(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer container, @NotNull Map<String, Object> parameters) throws DBException;
 }

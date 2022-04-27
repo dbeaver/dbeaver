@@ -14,13 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql;
+package org.jkiss.dbeaver.model.auth;
 
-/**
- * SQL statement pragmaas (execution flow controllers)
- */
-public interface SQLScriptProcessConstants {
 
-    String PRAGMA_EXPORT = "export";
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
+public class SMCredentials {
+    @NotNull
+    private final String smToken;
+    @Nullable
+    private final String userId;
+
+    public SMCredentials(@NotNull String smToken, @Nullable String userId) {
+        this.smToken = smToken;
+        this.userId = userId;
+    }
+
+    @NotNull
+    public String getSmToken() {
+        return smToken;
+    }
+
+    @Nullable
+    public String getUserId() {
+        return userId;
+    }
 }

@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -94,7 +95,7 @@ class ProjectExportWizardPage extends WizardPage {
                 Object element = iter.next();
                 IResource resource = RuntimeUtils.getObjectAdapter(element, IResource.class);
                 if (resource != null) {
-                    projectList.add(DBWorkbench.getPlatform().getWorkspace().getProject(resource.getProject()));
+                    projectList.add(DBPPlatformEclipse.getInstance().getWorkspace().getProject(resource.getProject()));
                 }
             }
         }

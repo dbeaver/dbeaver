@@ -668,7 +668,7 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
         </task>
-        <task id="pgDatabaseRestore" name="PostgreSQL restore" description="PostgreSQL database restore task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreHandler">
+        <task id="pgDatabaseRestore" name="PostgreSQL restore" description="PostgreSQL database restore task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreHandler" confirmationMessage="%pgDatabaseRestore.confirmationMessage">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>

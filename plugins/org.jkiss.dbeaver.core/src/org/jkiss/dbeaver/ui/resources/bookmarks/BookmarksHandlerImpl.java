@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -57,7 +58,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
     public static IFolder getBookmarksFolder(DBPProject project, boolean forceCreate)
     {
-        return DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(project, BookmarksHandlerImpl.class, forceCreate);
+        return DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(project, BookmarksHandlerImpl.class, forceCreate);
     }
 
     @Override

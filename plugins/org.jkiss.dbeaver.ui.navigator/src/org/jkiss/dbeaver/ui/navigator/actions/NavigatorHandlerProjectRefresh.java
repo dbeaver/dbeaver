@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
@@ -35,7 +36,7 @@ public class NavigatorHandlerProjectRefresh extends NavigatorHandlerObjectBase {
         try {
             workbenchWindow.run(true, true, monitor -> {
                 try {
-                    DBWorkbench.getPlatform().getWorkspace().refreshWorkspaceContents(new DefaultProgressMonitor(monitor));
+                    DBPPlatformEclipse.getInstance().getWorkspace().refreshWorkspaceContents(new DefaultProgressMonitor(monitor));
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }

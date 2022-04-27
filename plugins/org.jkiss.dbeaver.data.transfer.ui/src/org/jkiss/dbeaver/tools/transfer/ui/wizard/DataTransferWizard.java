@@ -209,11 +209,15 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     @Override
     public void addPages() {
         super.addPages();
-        if ((!isTaskEditor() || isNewTaskEditor()) && (settings.isConsumerOptional() || settings.isProducerOptional())) {
+        if (includePipesConfigurationPage()) {
             addPage(new DataTransferPagePipes());
         }
         addWizardPages(this);
         addPage(new DataTransferPageFinal());
+    }
+
+    protected boolean includePipesConfigurationPage() {
+        return (!isTaskEditor() || isNewTaskEditor()) && (settings.isConsumerOptional() || settings.isProducerOptional());
     }
 
     @Override

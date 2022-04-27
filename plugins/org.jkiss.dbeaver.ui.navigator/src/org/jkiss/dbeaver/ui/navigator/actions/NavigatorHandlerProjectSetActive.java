@@ -21,10 +21,10 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 
 public class NavigatorHandlerProjectSetActive extends NavigatorHandlerObjectBase {
@@ -46,7 +46,7 @@ public class NavigatorHandlerProjectSetActive extends NavigatorHandlerObjectBase
     }
 
     static void setActiveProject(DBPProject project) {
-        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        DBPWorkspaceEclipse workspace = DBPPlatformEclipse.getInstance().getWorkspace();
         if (workspace.getActiveProject() != project) {
             workspace.setActiveProject(project);
 

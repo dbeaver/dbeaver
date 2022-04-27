@@ -193,7 +193,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         };
 
         toggleButton = new Button(columnsGroup, SWT.PUSH);
-        toggleButton.setText("Select All");
+        toggleButton.setText(EditorsMessages.selector_select_all_text);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = 120;
         toggleButton.setLayoutData(gd);
@@ -428,9 +428,9 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     private void updateToggleButton()
     {
         if (hasCheckedColumns()) {
-            toggleButton.setText("Clear All");
+            toggleButton.setText(EditorsMessages.selector_clear_all_text);
         } else {
-            toggleButton.setText("Select All");
+            toggleButton.setText(EditorsMessages.selector_select_all_text);
         }
     }
 
