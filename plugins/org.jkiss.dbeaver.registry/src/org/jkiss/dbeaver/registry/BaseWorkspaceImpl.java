@@ -82,8 +82,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
 
         loadExtensions(Platform.getExtensionRegistry());
         loadExternalFileProperties();
-
-        loadWorkspaceProjects();
     }
 
     private void loadWorkspaceProjects() {
@@ -137,6 +135,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
     }
 
     public void initializeProjects() {
+        loadWorkspaceProjects();
+
         if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects)) {
             try {
                 createDefaultProject(new NullProgressMonitor());

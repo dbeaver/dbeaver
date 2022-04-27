@@ -154,8 +154,9 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
         this.certificateStorage = new DefaultCertificateStorage(
             new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "security"));
 
-        // Register properties adapter
+        // Create workspace
         this.workspace = (BaseWorkspaceImpl) getApplication().createWorkspace(this, ResourcesPlugin.getWorkspace());
+        // Init workspace in UI because it may need some UI interactions to initialize
         this.workspace.initializeProjects();
 
         QMUtils.initApplication(this);
