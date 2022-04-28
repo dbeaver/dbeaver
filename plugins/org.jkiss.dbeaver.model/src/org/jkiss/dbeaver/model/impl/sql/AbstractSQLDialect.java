@@ -316,7 +316,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean isWordStart(int ch) {
-    	return Character.isUnicodeIdentifierStart(ch) || ch == '_';
+        return Character.isUnicodeIdentifierStart(ch) || ch == '_';
     }
 
     @Override
