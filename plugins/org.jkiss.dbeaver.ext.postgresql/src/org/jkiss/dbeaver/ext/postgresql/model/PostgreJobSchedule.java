@@ -37,13 +37,13 @@ public class PostgreJobSchedule implements PostgreObject, DBPNamedObject2, DBPRe
     private String name;
     private String description;
     private boolean enabled;
-    private final Timestamp start;
-    private final Timestamp end;
-    private final boolean[] minutes;
-    private final boolean[] hours;
-    private final boolean[] weekDays;
-    private final boolean[] monthDays;
-    private final boolean[] months;
+    private /* final */ Timestamp start;
+    private /* final */ Timestamp end;
+    private /* final */ boolean[] minutes;
+    private /* final */ boolean[] hours;
+    private /* final */ boolean[] weekDays;
+    private /* final */ boolean[] monthDays;
+    private /* final */ boolean[] months;
     private boolean persisted;
 
     public PostgreJobSchedule(@NotNull PostgreJob job, ResultSet dbResult) {

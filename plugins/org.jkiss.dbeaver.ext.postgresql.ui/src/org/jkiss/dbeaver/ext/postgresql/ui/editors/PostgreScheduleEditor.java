@@ -28,8 +28,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
@@ -38,15 +36,13 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.DayOfWeek;
 import java.time.Month;
 import java.time.format.TextStyle;
@@ -96,7 +92,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
                     @Override
                     public void setChecked(@NotNull DayOfWeek value, boolean checked) {
                         weekDays[value.ordinal()] = checked;
-                        updateSchedule();
+                        addScheduleChange();
                     }
                 }
             ));
@@ -119,7 +115,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
                     @Override
                     public void setChecked(@NotNull Integer value, boolean checked) {
                         monthDays[value - 1] = checked;
-                        updateSchedule();
+                        addScheduleChange();
                     }
                 }
             ));
@@ -142,7 +138,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
                     @Override
                     public void setChecked(@NotNull Month value, boolean checked) {
                         months[value.ordinal()] = checked;
-                        updateSchedule();
+                        addScheduleChange();
                     }
                 }
             ));
@@ -171,7 +167,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
                     @Override
                     public void setChecked(@NotNull Integer value, boolean checked) {
                         hours[value] = checked;
-                        updateSchedule();
+                        addScheduleChange();
                     }
                 }
             ));
@@ -194,7 +190,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
                     @Override
                     public void setChecked(@NotNull Integer value, boolean checked) {
                         minutes[value] = checked;
-                        updateSchedule();
+                        addScheduleChange();
                     }
                 }
             ));
@@ -209,29 +205,21 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             return;
         }
 
-        LoadingJob.createService(
-            new DatabaseLoadService<>("Load job schedule", getExecutionContext()) {
-                @Override
-                public PostgreJobSchedule evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
-                    monitor.beginTask("Load job schedule information", 1);
-                    try {
-                        return getDatabaseObject().refreshObject(monitor);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    } finally {
-                        monitor.done();
-                    }
-                }
-            },
-            pageControl.createLoadVisualizer()
-        ).schedule();
+        final PostgreJobSchedule schedule = getDatabaseObject();
+        System.arraycopy(schedule.getMinutes(), 0, minutes, 0, minutes.length);
+        System.arraycopy(schedule.getHours(), 0, hours, 0, hours.length);
+        System.arraycopy(schedule.getWeekDays(), 0, weekDays, 0, weekDays.length);
+        System.arraycopy(schedule.getMonthDays(), 0, monthDays, 0, monthDays.length);
+        System.arraycopy(schedule.getMonths(), 0, months, 0, months.length);
+
+        refreshSchedulePresentation();
 
         loaded = true;
     }
 
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
-        if (force || !loaded) {
+        if (force || !loaded || (source instanceof DBNEvent && ((DBNEvent) source).getSource() == DBNEvent.UPDATE_ON_SAVE)) {
             loaded = false;
             activatePart();
             return RefreshResult.REFRESHED;
@@ -247,11 +235,11 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
         }
     }
 
-    private void refreshSchedule() {
+    private void refreshSchedulePresentation() {
         listeners.forEach(Runnable::run);
     }
 
-    private void updateSchedule() {
+    private void addScheduleChange() {
         addChangeCommand(new UpdateCommand(getDatabaseObject()), new DBECommandReflector<>() {
             @Override
             public void redoCommand(DBECommand<PostgreJobSchedule> command) {
@@ -337,28 +325,6 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             super(parent, SWT.SHEET);
         }
 
-        @NotNull
-        public ProgressVisualizer<PostgreJobSchedule> createLoadVisualizer() {
-            return new ProgressVisualizer<>() {
-                @Override
-                public void completeLoading(@Nullable PostgreJobSchedule schedule) {
-                    super.completeLoading(schedule);
-
-                    if (schedule == null) {
-                        return;
-                    }
-
-                    System.arraycopy(schedule.getMinutes(), 0, minutes, 0, minutes.length);
-                    System.arraycopy(schedule.getHours(), 0, hours, 0, hours.length);
-                    System.arraycopy(schedule.getWeekDays(), 0, weekDays, 0, weekDays.length);
-                    System.arraycopy(schedule.getMonthDays(), 0, monthDays, 0, monthDays.length);
-                    System.arraycopy(schedule.getMonths(), 0, months, 0, months.length);
-
-                    refreshSchedule();
-                }
-            };
-        }
-
         @Override
         public void fillCustomActions(@NotNull IContributionManager manager) {
             super.fillCustomActions(manager);
@@ -382,23 +348,23 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             final StringJoiner changes = new StringJoiner(",\n\t");
 
             if (!Arrays.equals(minutes, schedule.getMinutes())) {
-                changes.add("jscminutes = " + toCompactArray(minutes));
+                changes.add("jscminutes=" + toCompactArray(minutes));
             }
 
             if (!Arrays.equals(hours, schedule.getHours())) {
-                changes.add("jschours = " + toCompactArray(hours));
+                changes.add("jschours=" + toCompactArray(hours));
             }
 
             if (!Arrays.equals(weekDays, schedule.getWeekDays())) {
-                changes.add("jscweekdays = " + toCompactArray(weekDays));
+                changes.add("jscweekdays=" + toCompactArray(weekDays));
             }
 
             if (!Arrays.equals(monthDays, schedule.getMonthDays())) {
-                changes.add("jscmonthdays = " + toCompactArray(monthDays));
+                changes.add("jscmonthdays=" + toCompactArray(monthDays));
             }
 
             if (!Arrays.equals(months, schedule.getMonths())) {
-                changes.add("jscmonths = " + toCompactArray(months));
+                changes.add("jscmonths=" + toCompactArray(months));
             }
 
             if (changes.length() == 0) {
