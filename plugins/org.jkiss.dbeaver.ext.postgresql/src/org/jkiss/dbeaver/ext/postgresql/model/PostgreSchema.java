@@ -384,6 +384,10 @@ public class PostgreSchema implements
     }
 
     private void cacheTableInheritance(DBRProgressMonitor monitor) throws DBException {
+        for (PostgreTable table : this.getTables(monitor)) {
+            table.dropSuperInheritance();
+        }
+
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT i.inhrelid relid, pc.relnamespace parent_ns, pc.oid parent_oid, i.inhseqno\n" +

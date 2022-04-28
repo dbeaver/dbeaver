@@ -324,6 +324,9 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         }
     }
 
+    void dropSuperInheritance() {
+        superTables = null;
+    }
 
     private List<PostgreTableInheritance> initSuperTables(DBRProgressMonitor monitor) throws DBException {
         List<PostgreTableInheritance> inheritanceList = new ArrayList<>();
