@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
 import org.jkiss.dbeaver.model.auth.SMAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
 
@@ -87,4 +88,6 @@ public interface SMController extends SMAuthCredentialsManager {
     SMDataSourceGrant[] getConnectionSubjectAccess(String connectionId) throws DBException;
 
     void setConnectionSubjectAccess(@NotNull String connectionId, @Nullable String[] subjects, @Nullable String grantorId) throws DBException;
+
+    SMAuthPermissions getTokenPermissions(String token) throws DBException;
 }
