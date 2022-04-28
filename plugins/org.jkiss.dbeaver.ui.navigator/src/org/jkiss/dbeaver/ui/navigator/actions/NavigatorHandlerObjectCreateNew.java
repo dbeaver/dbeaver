@@ -203,7 +203,8 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     public static DBPImage getObjectTypeIcon(ISelectionProvider selectionProvider) {
         DBNNode node = getNodeFromSelection(selectionProvider.getSelection());
         if (node != null) {
-            if (node instanceof DBNDatabaseNode && node.getParentNode() instanceof DBNDatabaseFolder) {
+            // In case of nested folder, we don't want to unwrap it because the parent's icon will be used instead
+            if (!(node instanceof DBNDatabaseFolder) && node.getParentNode() instanceof DBNDatabaseFolder) {
                 node = node.getParentNode();
             }
             if (node instanceof DBNDataSource) {
