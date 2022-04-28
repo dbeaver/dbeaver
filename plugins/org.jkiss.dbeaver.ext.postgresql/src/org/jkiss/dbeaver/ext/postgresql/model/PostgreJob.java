@@ -45,7 +45,7 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
     private static final Log log = Log.getLog(PostgreJob.class);
 
     private final PostgreDatabase database;
-    private final long id;
+    private long id;
     private String name;
     private String description;
     private String hostAgent;
@@ -81,6 +81,10 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
     @Override
     public long getObjectId() {
         return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     @NotNull
@@ -208,9 +212,12 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
     @Nullable
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        final PostgreDatabase database = getDatabase();
+
         stepCache.clearCache();
         scheduleCache.clearCache();
-        return this;
+
+        return database.jobCache.refreshObject(monitor, database, this);
     }
 
     public static class StepCache extends JDBCObjectLookupCache<PostgreJob, PostgreJobStep> {

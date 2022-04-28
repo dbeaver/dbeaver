@@ -120,7 +120,7 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
     private String getCreateDDL(@NotNull PostgreJobSchedule schedule, boolean nested) {
         final StringJoiner values = new StringJoiner(", ", "(", ")");
 
-        values.add(nested ? "jid" : String.valueOf(schedule.getParentObject().getObjectId()));
+        values.add(nested ? "(SELECT jobid FROM job)" : String.valueOf(schedule.getParentObject().getObjectId()));
         values.add(SQLUtils.quoteString(schedule, schedule.getName()));
         values.add(SQLUtils.quoteString(schedule, schedule.getDescription()));
         values.add(String.valueOf(schedule.isEnabled()));

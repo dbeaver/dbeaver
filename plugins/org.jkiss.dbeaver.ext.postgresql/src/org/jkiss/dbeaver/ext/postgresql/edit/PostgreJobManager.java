@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -81,10 +81,12 @@ public class PostgreJobManager extends SQLStructEditor<PostgreJob, PostgreDataSo
         values.add(SQLUtils.quoteString(job.getDataSource(), job.getHostAgent()));
         values.add(String.valueOf(job.isEnabled()));
 
-        final StringBuilder nestedDeclarations = new StringBuilder();
-        final Collection<NestedObjectCommand> nestedCommands = getNestedOrderedCommands(command);
+        final List<String> queries = new ArrayList<>();
+        final StringBuilder buffer = new StringBuilder();
 
-        for (NestedObjectCommand<?, ?> nestedCommand : nestedCommands) {
+        queries.add("INSERT INTO pgagent.pga_job(jobjclid, jobname, jobdesc, jobhostagent, jobenabled)\nVALUES " + values + "\nRETURNING jobid");
+
+        for (NestedObjectCommand<?, ?> nestedCommand : getNestedOrderedCommands(command)) {
             if (nestedCommand.getObject() == job) {
                 continue;
             }
@@ -92,30 +94,43 @@ public class PostgreJobManager extends SQLStructEditor<PostgreJob, PostgreDataSo
             final String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, job, options);
 
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
-                nestedDeclarations.append("\n\n").append(nestedDeclaration).append(';');
+                queries.add(nestedDeclaration);
             }
         }
 
-        final StringBuilder buffer = new StringBuilder();
+        if (queries.size() > 1) {
+            buffer.append("WITH\n\n");
 
-        buffer.append("INSERT INTO pgagent.pga_job(jobjclid, jobname, jobdesc, jobhostagent, jobenabled)\nVALUES ");
-        buffer.append(values);
+            for (int i = 0; i < queries.size(); i++) {
+                buffer.append("job");
+                if (i > 0) {
+                    buffer.append("_").append(i);
+                }
+                buffer.append(" AS (\n").append(queries.get(i)).append(")");
+                if (i < queries.size() - 1) {
+                    buffer.append(",");
+                }
+                buffer.append("\n\n");
+            }
 
-        if (!nestedCommands.isEmpty()) {
-            buffer.insert(0, "DO $$\nDECLARE\n\tjid INTEGER;\nBEGIN\n\n");
-            buffer.append("\nRETURNING jobid INTO jid;");
+            buffer.append("SELECT jobid FROM job");
+        } else {
+            buffer.append(queries.get(0));
         }
 
-        buffer.append(nestedDeclarations);
-
-        if (!nestedCommands.isEmpty()) {
-            buffer.append("\n\nEND\n$$");
-        }
-
-        actions.add(new SQLDatabasePersistAction(
-            "Create job",
-            buffer.toString()
-        ));
+        actions.add(new SQLDatabasePersistAction("Create job", buffer.toString()) {
+            @Override
+            public void afterExecute(@NotNull DBCSession session, @Nullable DBCStatement stmt, @Nullable Throwable error) throws DBCException {
+                if (stmt == null || error != null) {
+                    return;
+                }
+                try (DBCResultSet resultSet = stmt.openResultSet()) {
+                    if (resultSet != null && resultSet.nextRow()) {
+                        command.getObject().setId(CommonUtils.toLong(resultSet.getAttributeValue(0)));
+                    }
+                }
+            }
+        });
     }
 
     @Override

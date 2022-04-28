@@ -158,7 +158,7 @@ public class PostgreJobStepManager extends SQLObjectEditor<PostgreJobStep, Postg
     private String getCreateDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreJobStep step, @NotNull Map<String, Object> options, boolean nested) {
         final StringJoiner values = new StringJoiner(", ", "(", ")");
 
-        values.add(nested ? "jid" : String.valueOf(step.getParentObject().getObjectId()));
+        values.add(nested ? "(SELECT jobid FROM job)" : String.valueOf(step.getParentObject().getObjectId()));
         values.add(SQLUtils.quoteString(step.getDataSource(), step.getName()));
         values.add(SQLUtils.quoteString(step.getDataSource(), step.getDescription()));
         values.add(String.valueOf(step.isEnabled()));

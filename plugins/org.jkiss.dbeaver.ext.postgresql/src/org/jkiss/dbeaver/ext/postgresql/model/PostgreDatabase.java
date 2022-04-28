@@ -1295,17 +1295,21 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    public static class JobCache extends PostgreDatabaseJDBCObjectCache<PostgreJob> {
+    public static class JobCache extends JDBCObjectLookupCache<PostgreDatabase, PostgreJob> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database) throws SQLException {
-            return session.prepareStatement("SELECT * FROM pgagent.pga_job");
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable PostgreJob object, @Nullable String objectName) throws SQLException {
+            final StringBuilder sql = new StringBuilder("SELECT * FROM pgagent.pga_jo1b");
+            if (object != null) {
+                sql.append(" WHERE jobid=").append(object.getObjectId());
+            }
+            return session.prepareStatement(sql.toString());
         }
 
         @Nullable
         @Override
-        protected PostgreJob fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet dbResult) throws DBException {
-            return new PostgreJob(session.getProgressMonitor(), database, dbResult);
+        protected PostgreJob fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new PostgreJob(session.getProgressMonitor(), database, resultSet);
         }
 
         @Override
