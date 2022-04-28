@@ -16,13 +16,16 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.meta.Property;
+
 import java.util.List;
 import java.util.Map;
 
 /**
  * Resource manager API
  */
-public class RMResource {
+public class RMResource implements DBPObject {
     private String name;
     private boolean folder;
     private long length;
@@ -38,6 +41,7 @@ public class RMResource {
         this.name = name;
     }
 
+    @Property
     public boolean isFolder() {
         return folder;
     }
@@ -46,6 +50,7 @@ public class RMResource {
         this.folder = folder;
     }
 
+    @Property
     public long getLength() {
         return length;
     }

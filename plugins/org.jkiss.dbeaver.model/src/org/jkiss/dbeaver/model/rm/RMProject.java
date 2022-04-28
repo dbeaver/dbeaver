@@ -16,12 +16,15 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.meta.Property;
+
 import java.time.OffsetDateTime;
 
 /**
  * Resource manager API
  */
-public class RMProject {
+public class RMProject implements DBPObject {
     private String id;
     private String name;
     private String description;
@@ -33,6 +36,7 @@ public class RMProject {
     public RMProject() {
     }
 
+    @Property
     public String getId() {
         return id;
     }
@@ -57,6 +61,7 @@ public class RMProject {
         this.description = description;
     }
 
+    @Property
     public boolean isShared() {
         return shared;
     }
