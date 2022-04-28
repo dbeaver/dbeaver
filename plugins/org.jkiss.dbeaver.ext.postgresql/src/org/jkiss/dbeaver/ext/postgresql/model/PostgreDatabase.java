@@ -1299,7 +1299,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable PostgreJob object, @Nullable String objectName) throws SQLException {
-            final StringBuilder sql = new StringBuilder("SELECT * FROM pgagent.pga_jo1b");
+            final StringBuilder sql = new StringBuilder("SELECT * FROM pgagent.pga_job");
             if (object != null) {
                 sql.append(" WHERE jobid=").append(object.getObjectId());
             }
