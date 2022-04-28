@@ -116,6 +116,22 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
                     public void setChecked(@NotNull Integer value, boolean checked) {
                         monthDays[value - 1] = checked;
                         addScheduleChange();
+                        refreshSchedulePresentation();
+                    }
+
+                    @Override
+                    public boolean getEnabled(@NotNull Integer value) {
+                        if (value > 31) {
+                            return true;
+                        }
+
+                        for (int i = 0; i < months.length; i++) {
+                            if (months[i] && Month.of(i + 1).minLength() < value) {
+                                return false;
+                            }
+                        }
+
+                        return true;
                     }
                 }
             ));
@@ -139,6 +155,18 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
                     public void setChecked(@NotNull Month value, boolean checked) {
                         months[value.ordinal()] = checked;
                         addScheduleChange();
+                        refreshSchedulePresentation();
+                    }
+
+                    @Override
+                    public boolean getEnabled(@NotNull Month month) {
+                        for (int i = month.minLength(); i < 31; i++) {
+                            if (monthDays[i]) {
+                                return false;
+                            }
+                        }
+
+                        return true;
                     }
                 }
             ));
@@ -290,6 +318,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
                 final T data = (T) button.getData();
                 button.setText(decorator.getText(data));
                 button.setSelection(decorator.getChecked(data));
+                button.setEnabled(decorator.getEnabled(data));
             }
         };
     }
@@ -318,6 +347,10 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
         boolean getChecked(@NotNull T t);
 
         void setChecked(@NotNull T t, boolean checked);
+
+        default boolean getEnabled(@NotNull T t) {
+            return true;
+        }
     }
 
     private class PageControl extends ProgressPageControl {
