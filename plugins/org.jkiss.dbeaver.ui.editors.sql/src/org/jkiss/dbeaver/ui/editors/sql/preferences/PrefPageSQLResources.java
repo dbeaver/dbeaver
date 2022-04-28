@@ -120,7 +120,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                     GeneralUtils.variablePattern(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA)));
             UIUtils.setContentProposalToolTip(scriptTitlePattern, "Output file name patterns",
                 SQLPreferenceConstants.VAR_CONNECTION_NAME, SQLPreferenceConstants.VAR_DRIVER_NAME, SQLPreferenceConstants.VAR_FILE_NAME, SQLPreferenceConstants.VAR_FILE_EXT,
-                SQLPreferenceConstants.VAR_ACTIVE_DATABASE, SQLPreferenceConstants.VAR_ACTIVE_SCHEMA);
+                SQLPreferenceConstants.VAR_ACTIVE_DATABASE, SQLPreferenceConstants.VAR_ACTIVE_SCHEMA, SQLPreferenceConstants.VAR_ACTIVE_PROJECT);
         }
 
         // New Script template
