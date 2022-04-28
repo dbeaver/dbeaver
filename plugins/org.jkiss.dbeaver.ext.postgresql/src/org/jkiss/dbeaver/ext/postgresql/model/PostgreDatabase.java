@@ -598,12 +598,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Association
     public Collection<PostgreJob> getJobs(@NotNull DBRProgressMonitor monitor) throws DBException {
         checkInstanceConnection(monitor);
-        try {
-            return jobCache.getAllObjects(monitor, this);
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Error accessing pgAdmin jobs", "Can't access pgAdmin jobs.\n\nThis database may not have the extension installed or you don't have sufficient permissions to access them.\n\nIf you believe that this is DBeaver's fault, please report it.", e);
-            return Collections.emptyList();
-        }
+        return jobCache.getAllObjects(monitor, this);
     }
 
     @Nullable
@@ -1311,6 +1306,13 @@ public class PostgreDatabase extends JDBCRemoteInstance
         @Override
         protected PostgreJob fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet dbResult) throws DBException {
             return new PostgreJob(session.getProgressMonitor(), database, dbResult);
+        }
+
+        @Override
+        protected boolean handleCacheReadError(Exception error) {
+            DBWorkbench.getPlatformUI().showError("Error accessing pgAdmin jobs", "Can't access pgAdmin jobs.\n\nThis database may not have the extension installed or you don't have sufficient permissions to access them.\n\nIf you believe that this is DBeaver's fault, please report it.", error);
+            setCache(Collections.emptyList());
+            return true;
         }
     }
 
