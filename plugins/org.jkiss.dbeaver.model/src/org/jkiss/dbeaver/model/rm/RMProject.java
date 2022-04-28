@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 /**
  * Resource manager API
@@ -27,7 +27,7 @@ public class RMProject {
     private String description;
     private boolean shared;
 
-    private Date createTime;
+    private OffsetDateTime createTime;
     private String creator;
 
     public RMProject() {
@@ -65,11 +65,11 @@ public class RMProject {
         this.shared = shared;
     }
 
-    public Date getCreateTime() {
+    public OffsetDateTime getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(OffsetDateTime createTime) {
         this.createTime = createTime;
     }
 
