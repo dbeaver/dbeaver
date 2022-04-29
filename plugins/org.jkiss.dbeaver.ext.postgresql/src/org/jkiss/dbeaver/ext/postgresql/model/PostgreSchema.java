@@ -385,7 +385,7 @@ public class PostgreSchema implements
 
     private void cacheTableInheritance(DBRProgressMonitor monitor) throws DBException {
         for (PostgreTable table : this.getTables(monitor)) {
-            table.dropSuperInheritance();
+            table.resetSuperInheritance();
         }
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {

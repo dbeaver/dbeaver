@@ -324,7 +324,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         }
     }
 
-    void dropSuperInheritance() {
+    void resetSuperInheritance() {
         superTables = null;
     }
 
