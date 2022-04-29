@@ -16,8 +16,7 @@
  */
 package org.jkiss.dbeaver.model.auth;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.DBException;
 
 import java.util.Map;
 
@@ -37,6 +36,6 @@ public interface SMAuthCredentialsManager {
     /**
      * Get user credentials for specified provider
      */
-    Map<String, Object> getUserCredentials(String userId, String authProviderId) throws DBCException;
+    Map<String, Object> getUserCredentials(String userId, String authProviderId) throws DBException;
 
 }
