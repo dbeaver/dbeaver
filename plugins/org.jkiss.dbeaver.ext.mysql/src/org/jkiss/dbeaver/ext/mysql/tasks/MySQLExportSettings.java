@@ -332,7 +332,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
 
     @NotNull
     public File getOutputFile(@NotNull MySQLDatabaseExportInfo info) {
-        String outFileName = resolveVars(info, getOutputFolderPattern());
+        String outFileName = resolveVars(info, getOutputFilePattern());
         return new File(getOutputFolder(info), outFileName);
     }
 
