@@ -73,6 +73,8 @@ public class ERDUIConstants {
     public static final String COLOR_ERD_HEADER_COLOR_6 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.6"; //$NON-NLS-1$
     public static final String COLOR_ERD_HEADER_COLOR_7 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.7"; //$NON-NLS-1$
 
+    public static final String CMD_SAVE_AS = "org.jkiss.dbeaver.erd.diagram.saveAs";
+
     public static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + ERDUIActivator.PLUGIN_ID + "/icons/";
 
     public static final int DEFAULT_NOTE_BORDER_WIDTH = 1;

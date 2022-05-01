@@ -956,11 +956,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 ERDUIMessages.erd_editor_control_action_print_diagram,
                 UIIcon.PRINT));
 
-            toolBarManager.add(ActionUtils.makeCommandContribution(
-                getSite(),
-                IWorkbenchCommandConstants.FILE_SAVE_AS,
-                ERDUIMessages.erd_editor_control_action_save_external_format,
-                UIIcon.PICTURE_SAVE));
+            toolBarManager.add(ActionUtils.makeCommandContribution(getSite(), ERDUIConstants.CMD_SAVE_AS));
         }
         toolBarManager.add(new Separator("configuration"));
         {

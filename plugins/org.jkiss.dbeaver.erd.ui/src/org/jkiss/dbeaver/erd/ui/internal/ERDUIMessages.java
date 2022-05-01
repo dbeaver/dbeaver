@@ -59,7 +59,6 @@ public class ERDUIMessages extends NLS {
 	//ERD editor action item control
 	public static String erd_editor_control_action_toggle_grid;
 	public static String erd_editor_control_action_refresh_diagram;
-	public static String erd_editor_control_action_save_external_format;
 	public static String erd_editor_control_action_print_diagram;
 	public static String erd_editor_control_action_configuration;
 	//ERD editor action item control
