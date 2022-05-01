@@ -54,11 +54,10 @@ public class ERDExportSVG implements ERDExportFormatHandler {
     }
 
     @Override
-    public void exportDiagram(EntityDiagram diagram, IFigure diagramFigure, DiagramPart diagramPart, File targetFile) throws DBException {
+    public void exportDiagram(EntityDiagram diagram, IFigure figure, DiagramPart diagramPart, File targetFile) throws DBException {
         checkWriterRegister();
 
         try {
-            IFigure figure = diagramPart.getFigure();
             Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
 
             String svgNS = "http://www.w3.org/2000/svg";
