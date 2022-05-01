@@ -530,4 +530,13 @@
         <image commandId="org.jkiss.dbeaver.erd.toggleHand" icon="platform:/plugin/org.jkiss.dbeaver.erd.ui/icons/move.png"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+            id="erd_open_exported_file"
+            title="%confirm.erd_open_exported_file.title"
+            message="%confirm.erd_open_exported_file.message"
+            toggleMessage="%confirm.erd_open_exported_file.toggleMessage"
+            group="%editor.erd.name"/>
+    </extension>
+
 </plugin>
