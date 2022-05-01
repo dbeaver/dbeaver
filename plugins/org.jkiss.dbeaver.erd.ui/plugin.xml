@@ -515,6 +515,7 @@
         <exportFormat ext="png" label="PNG format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
         <exportFormat ext="gif" label="GIF format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
         <exportFormat ext="bmp" label="BMP format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
+        <exportFormat ext="erd" label="ERD format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportERD"/>
         <exportFormat ext="graphml" label="GraphML format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportGraphML"/>
     </extension>
 

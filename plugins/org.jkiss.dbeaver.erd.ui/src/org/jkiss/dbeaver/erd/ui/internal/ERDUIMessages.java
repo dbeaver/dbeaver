@@ -123,9 +123,6 @@ public class ERDUIMessages extends NLS {
 	public static String erd_action_diagram_toggle_persist_confirmation_title;
 	public static String erd_action_diagram_toggle_persist_confirmation_description;
 	public static String erd_action_diagram_toggle_hand_checkbox_text;
-	public static String erd_action_diagram_export_text;
-	public static String erd_action_diagram_export_description;
-	public static String erd_action_diagram_export_dialog_save_as_title;
 
 	public static String erd_navigator_entity_diagram_name;
 

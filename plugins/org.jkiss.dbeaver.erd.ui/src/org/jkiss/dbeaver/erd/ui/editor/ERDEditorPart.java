@@ -961,9 +961,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 IWorkbenchCommandConstants.FILE_SAVE_AS,
                 ERDUIMessages.erd_editor_control_action_save_external_format,
                 UIIcon.PICTURE_SAVE));
-
-            DiagramExportAction saveDiagram = new DiagramExportAction(this, getSite().getShell());
-            toolBarManager.add(saveDiagram);
         }
         toolBarManager.add(new Separator("configuration"));
         {
