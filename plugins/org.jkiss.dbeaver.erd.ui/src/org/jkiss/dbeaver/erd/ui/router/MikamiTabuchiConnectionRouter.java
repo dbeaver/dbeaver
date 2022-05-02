@@ -36,7 +36,6 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
     private final MikamiTabuchiRouter algorithm = new MikamiTabuchiRouter();
     private final Set<Connection> staleConnections = new HashSet<>();
     private boolean ignoreInvalidate;
-    private Map<Connection, OrthogonalPath> connectionToPaths = new HashMap<>();
     private final LayoutListener listener = new MikamiTabuchiConnectionRouter.LayoutTracker();
     private final FigureListener figureListener = source -> {
         Rectangle newBounds = source.getBounds().getCopy();
@@ -62,14 +61,13 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
     }
 
     private void queueRerouting() {
-        if (this.connectionToPaths != null && !this.connectionToPaths.isEmpty()) {
+        if (this.connectionToPath != null && !this.connectionToPath.isEmpty()) {
             try {
                 this.ignoreInvalidate = true;
-                ((Connection)this.connectionToPaths.keySet().iterator().next()).revalidate();
+                ((Connection)this.connectionToPath.keySet().iterator().next()).revalidate();
             } finally {
                 this.ignoreInvalidate = false;
             }
-
         }
     }
 
@@ -191,13 +189,13 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
     public void remove(Connection connection) {
         this.staleConnections.remove(connection);
         this.constraintMap.remove(connection);
-        if (this.connectionToPaths != null) {
-            OrthogonalPath path = this.connectionToPaths.remove(connection);
+        if (this.connectionToPath != null) {
+            OrthogonalPath path = this.connectionToPath.remove(connection);
             this.algorithm.removePath(path);
             this.isDirty = true;
-            if (this.connectionToPaths.isEmpty()) {
+            if (this.connectionToPath.isEmpty()) {
                 this.unhookAll();
-                this.connectionToPaths = null;
+                this.connectionToPath = null;
             } else {
                 this.queueRerouting();
             }

@@ -82,12 +82,12 @@ public class MikamiTabuchiRouter {
         float end = pos.finish;
         for (float i = (pos.hasForbiddenRange() ? pos.creationForbiddenStart - 1 : from); i >= start; i -= STEP_SIZE) {
             if (createTrial(pos, iter, i)) {
-                return;
+                break;
             }
         }
         for (float i = (pos.hasForbiddenRange() ? pos.creationForbiddenFinish + 1 : from); i < end; i += STEP_SIZE) {
             if (createTrial(pos, iter, i)) {
-                return;
+                break;
             }
         }
     }
@@ -98,8 +98,13 @@ public class MikamiTabuchiRouter {
         final TrialLine interception = trialLine.findIntersection();
         // We found needed line, finish execution
         if (interception != null) {
-            result = new Pair<>(trialLine, interception);
-            return true;
+            if (result == null) {
+                result = new Pair<>(trialLine, interception);
+                return true;
+            } else {
+                Pair<TrialLine, TrialLine> trialLinePair = new Pair<>(trialLine, interception);
+                result = calculateDistance(result) >= calculateDistance(trialLinePair) ? trialLinePair : result;
+            }
         }
         return false;
     }
@@ -158,9 +163,9 @@ public class MikamiTabuchiRouter {
         return obstacles.remove(bounds);
     }
 
-    private PointList traceback() {
+    private PointList traceback(Pair<TrialLine, TrialLine> res) {
         PointList points = new PointList();
-        TrialLine line = result.getFirst();
+        TrialLine line = res.getFirst();
         PrecisionPoint point = null;
         while (line != null) {
             if (point == null || !point.equals(line.from)) {
@@ -170,9 +175,9 @@ public class MikamiTabuchiRouter {
             line = line.getParent();
         }
         points.reverse();
-        point = getInterceptionPoint(result.getFirst(), result.getSecond());
+        point = getInterceptionPoint(res.getFirst(), res.getSecond());
         points.addPoint(point);
-        line = result.getSecond();
+        line = res.getSecond();
         while (line != null) {
             if (!line.from.equals(point)) {
                 points.addPoint(line.from);
@@ -192,7 +197,18 @@ public class MikamiTabuchiRouter {
         return updated;
     }
 
-    @org.jkiss.code.Nullable
+    private double calculateDistance(Pair<TrialLine, TrialLine> res) {
+        double distance = 0;
+        PointList traceback = traceback(res);
+        for (int i = 0; i < traceback.size() - 1; i++) {
+            Point first = traceback.getPoint(i);
+            Point second = traceback.getPoint(i + 1);
+            distance += first.getDistance(second);
+        }
+        return distance;
+    }
+
+    @Nullable
     private PointList solveConnection(Point start, Point finish) {
         if (start.equals(finish)) {
             return null;
@@ -214,7 +230,7 @@ public class MikamiTabuchiRouter {
                 for (TrialLine trialLine : linesMap.get(iter).get(i)) {
                     createLinesFromTrial(trialLine, iter + 1);
                     if (result != null) {
-                        return traceback();
+                        return traceback(result);
                     }
                 }
             }
