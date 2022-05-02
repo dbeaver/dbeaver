@@ -304,7 +304,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         }
 
         if (openFolderOnFinish && !eventProcessors.containsKey(ShowInExplorerEventProcessor.ID)) {
-            eventProcessors.put(ShowInExplorerEventProcessor.ID, Collections.emptyMap());
+            eventProcessors.put(ShowInExplorerEventProcessor.ID, new HashMap<>());
         }
 
         if (executeProcessOnFinish && !eventProcessors.containsKey(ExecuteCommandEventProcessor.ID)) {
