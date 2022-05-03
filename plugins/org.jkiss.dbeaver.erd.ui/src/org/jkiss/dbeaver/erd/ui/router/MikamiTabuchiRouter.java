@@ -60,7 +60,9 @@ public class MikamiTabuchiRouter {
 
     //In worst case scenarios line search may become laggy,
     //if after this amount iterations nothing was found -> stop
-    private static final int MAX_ITER = 3;
+    private static final int MAX_LINE_COUNT = 600000;
+    private int currentLineCount;
+
 
     Rectangle clientArea;
 
@@ -81,13 +83,21 @@ public class MikamiTabuchiRouter {
         float start = pos.start;
         float end = pos.finish;
         for (float i = (pos.hasForbiddenRange() ? pos.creationForbiddenStart - 1 : from); i >= start; i -= STEP_SIZE) {
+            currentLineCount++;
             if (createTrial(pos, iter, i)) {
                 break;
             }
+            if (currentLineCount > MAX_LINE_COUNT) {
+                return;
+            }
         }
         for (float i = (pos.hasForbiddenRange() ? pos.creationForbiddenFinish + 1 : from); i < end; i += STEP_SIZE) {
+            currentLineCount++;
             if (createTrial(pos, iter, i)) {
                 break;
+            }
+            if (currentLineCount > MAX_LINE_COUNT) {
+                return;
             }
         }
     }
@@ -189,7 +199,9 @@ public class MikamiTabuchiRouter {
 
     public List<OrthogonalPath> solve() {
         List<OrthogonalPath> updated = new ArrayList<>();
+        spacing = 15;
         for (OrthogonalPath userPath : userPaths.stream().filter(OrthogonalPath::isDirty).collect(Collectors.toList())) {
+
             final PointList pointList = solveConnection(userPath.getStart(), userPath.getEnd());
             userPath.setBendPoints(pointList);
             updated.add(userPath);
@@ -222,13 +234,17 @@ public class MikamiTabuchiRouter {
         result = null;
         this.finish = new PrecisionPoint(finish);
         int iter = 0;
+        currentLineCount = 0;
         initStartingTrialLines();
-        while (iter != MAX_ITER && result == null) {
+        while (result == null && currentLineCount < MAX_LINE_COUNT) {
             linesMap.put(iter + 1, new HashMap<>());
             initNewLayer(iter + 1);
             for (int i = 0; i < 4; i++) {
                 for (TrialLine trialLine : linesMap.get(iter).get(i)) {
                     createLinesFromTrial(trialLine, iter + 1);
+                    if (currentLineCount > MAX_LINE_COUNT) {
+                        return null;
+                    }
                     if (result != null) {
                         return traceback(result);
                     }

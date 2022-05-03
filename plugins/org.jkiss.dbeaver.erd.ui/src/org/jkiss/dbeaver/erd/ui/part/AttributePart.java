@@ -21,6 +21,7 @@ import org.eclipse.draw2dl.ConnectionAnchor;
 import org.eclipse.draw2dl.IFigure;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.tools.DragEditPartsTracker;
+import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDElement;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
@@ -33,7 +34,9 @@ import org.jkiss.dbeaver.erd.ui.policy.AttributeConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeDragAndDropEditPolicy;
 
 import java.beans.PropertyChangeEvent;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Represents an editable Column object in the model
@@ -74,6 +77,16 @@ public class AttributePart extends NodePart {
         } else {
             ((EntityPart) getParent()).redirectSourceConnection(connection, index);
         }
+    }
+
+    @Override
+    protected List<ERDAssociation> getModelSourceConnections() {
+        return super.getModelSourceConnections().stream().filter(erdAssociation -> erdAssociation.getSourceAttributes().contains(getAttribute())).collect(Collectors.toList());
+    }
+
+    @Override
+    protected List<ERDAssociation> getModelTargetConnections() {
+        return super.getModelTargetConnections().stream().filter(erdAssociation -> erdAssociation.getTargetAttributes().contains(getAttribute())).collect(Collectors.toList());
     }
 
     @Override
