@@ -65,6 +65,28 @@ public class AttributePart extends NodePart {
         return ERDUIUtils.getFullAttributeLabel(getDiagram(), getAttribute(), false);
     }
 
+    @Override
+    protected void addSourceConnection(ConnectionEditPart connection, int index) {
+        if (this.getFigure().isShowing()) {
+            if (((AssociationPart) connection).getAssociation().getSourceAttributes().contains(getAttribute())) {
+                super.addSourceConnection(connection, index);
+            }
+        } else {
+            ((EntityPart) getParent()).redirectSourceConnection(connection, index);
+        }
+    }
+
+    @Override
+    protected void addTargetConnection(ConnectionEditPart connection, int index) {
+        if (this.getFigure().isShowing()) {
+            if (((AssociationPart) connection).getAssociation().getTargetAttributes().contains(getAttribute())) {
+                super.addTargetConnection(connection, index);
+            }
+        } else {
+            ((EntityPart) getParent()).redirectTargetConnection(connection, index);
+        }
+    }
+
     /**
      * @return the ColumnLabel representing the Column
      */

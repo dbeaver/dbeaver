@@ -238,11 +238,19 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 //attrPart.getFigure().setForegroundColor(columnColor);
                 attrPart.setSelected(value);
             }
+        } else {
+            if (getSource() instanceof AttributePart) {
+                getSource().setSelected(value);
+            }
         }
         if (getTarget() instanceof EntityPart) {
             for (AttributePart attrPart : getEntityAttributes((EntityPart) getTarget(), getAssociation().getTargetAttributes())) {
                 //attrPart.getFigure().setForegroundColor(columnColor);
                 attrPart.setSelected(value);
+            }
+        } else {
+            if (getTarget() instanceof AttributePart) {
+                getTarget().setSelected(value);
             }
         }
     }

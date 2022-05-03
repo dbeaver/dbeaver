@@ -108,9 +108,13 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
             if (constraint == null) {
                 constraint = Collections.EMPTY_LIST;
             }
-
-            path.setStartPoint(conn.getSourceAnchor().getOwner().getBounds().getCenter());
-            path.setEndPoint(conn.getTargetAnchor().getOwner().getBounds().getCenter());
+            //may brake idk why
+            Point start = conn.getSourceAnchor().getReferencePoint().getCopy();
+            Point end = conn.getTargetAnchor().getReferencePoint().getCopy();
+            this.container.translateToRelative(start);
+            this.container.translateToRelative(end);
+            path.setStartPoint(start);
+            path.setEndPoint(end);
             if (constraint.isEmpty()) {
                 path.setBendPoints(null);
             } else {
@@ -121,8 +125,7 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
                 }
 
                 path.setBendPoints(bends);
-            }
-        }
+            }}
 
         this.staleConnections.clear();
     }

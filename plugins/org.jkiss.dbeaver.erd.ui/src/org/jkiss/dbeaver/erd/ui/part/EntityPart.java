@@ -264,4 +264,22 @@ public class EntityPart extends CustomisablePart {
     public ERDElement getElement() {
         return getEntity();
     }
+
+    @Override
+    protected void addSourceConnection(ConnectionEditPart connection, int index) {
+
+    }
+
+    public void redirectSourceConnection(ConnectionEditPart connectionEditPart, int index) {
+        super.addSourceConnection(connectionEditPart, index);
+    }
+
+    public void redirectTargetConnection(ConnectionEditPart connectionEditPart, int index) {
+        super.addSourceConnection(connectionEditPart, index);
+    }
+
+    @Override
+    protected void addTargetConnection(ConnectionEditPart connection, int index) {
+
+    }
 }
