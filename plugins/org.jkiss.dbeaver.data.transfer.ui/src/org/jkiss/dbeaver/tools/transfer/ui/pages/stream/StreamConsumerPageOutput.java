@@ -459,10 +459,13 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     }
 
     private static class ConfigureDialog extends BaseDialog {
+        @NotNull
+        private final DataTransferEventProcessorDescriptor descriptor;
         private final IDataTransferEventProcessorConfigurator configurator;
 
         public ConfigureDialog(@NotNull Shell shell, @NotNull DataTransferEventProcessorDescriptor descriptor, @NotNull IDataTransferEventProcessorConfigurator configurator) {
             super(shell, NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_configure_title, descriptor.getLabel()), null);
+            this.descriptor = descriptor;
             this.configurator = configurator;
             setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
         }
@@ -470,7 +473,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         @Override
         protected Composite createDialogArea(Composite parent) {
             final Composite composite = super.createDialogArea(parent);
-            configurator.createControl(composite, this::updateCompletion);
+            configurator.createControl(composite, descriptor, this::updateCompletion);
             return composite;
         }
 

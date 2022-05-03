@@ -16,16 +16,29 @@
  */
 package org.jkiss.dbeaver.ext.mysql.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * MySQLGeometryValueHandler
  */
 public class MySQLGeometryValueHandler extends GISGeometryValueHandler {
-    public static final MySQLGeometryValueHandler INSTANCE = new MySQLGeometryValueHandler();
+
+    static final MySQLGeometryValueHandler INSTANCE = new MySQLGeometryValueHandler();
 
     public MySQLGeometryValueHandler() {
         setInvertCoordinates(true);
         setLeadingSRID(true);
+    }
+
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        if (format == DBDDisplayFormat.NATIVE) {
+            return "ST_GeomFromText('" + value.toString() + "')";
+        }
+        return super.getValueDisplayString(column, value, format);
     }
 }

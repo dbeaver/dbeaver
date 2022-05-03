@@ -206,6 +206,7 @@ public class UIConnectionMessages extends NLS {
 
     // Driver manager
     public static String dialog_driver_manager_button_delete;
+    public static String dialog_driver_manager_button_undelete;
     public static String dialog_driver_manager_button_edit;
     public static String dialog_driver_manager_button_new;
     public static String dialog_driver_manager_button_copy;
@@ -276,6 +277,14 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_edit_maven_ignore_transient_dependencies;
     public static String dialog_edit_driver_edit_maven_load_optional_dependencies_tip;
     public static String dialog_edit_driver_edit_maven_ignore_transient_dependencies_tip;
+
+    public static String dialog_driver_category_all_label;
+    public static String dialog_driver_category_all_tip;
+    public static String dialog_driver_category_popular_label;
+    public static String dialog_driver_category_popular_tip;
+
+    public static String driver_labal_provider_tip_saved_connections;
+    public static String driver_labal_provider_tip_no_saved_connections;
 
     static {
         // initialize resource bundle

@@ -356,6 +356,8 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
 
         @Override
         public void loadSettings() {
+            dtWizard.loadNodeSettings();
+
             DataTransferSettings settings = dtWizard.getSettings();
 
             for (DataTransferPipe pipe : settings.getDataPipes()) {

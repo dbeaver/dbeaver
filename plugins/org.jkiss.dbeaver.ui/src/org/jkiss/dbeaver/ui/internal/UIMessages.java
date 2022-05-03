@@ -98,6 +98,9 @@ public class UIMessages extends NLS {
     public static String control_font_italic;
     public static String control_font_bold;
 
+    public static String tooltip_restore;
+    public static String tooltip_hide;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);

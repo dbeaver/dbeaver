@@ -589,6 +589,9 @@ public class CoreMessages extends NLS {
 	public static String toolbar_checkbox_connection_readonly_tooltip;
 	public static String toolbar_checkbox_connection_not_readonly_tooltip;
 
+	public static String driver_connection_sort_by;
+	public static String monitor_panel_transaction_monitor_tip;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);

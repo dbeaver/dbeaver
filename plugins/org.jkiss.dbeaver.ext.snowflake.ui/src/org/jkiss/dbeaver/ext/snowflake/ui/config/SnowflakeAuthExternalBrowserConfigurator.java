@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.snowflake.ui.config;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
 
 /**
  * Snowflake external browser auth model config
@@ -25,8 +26,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 public class SnowflakeAuthExternalBrowserConfigurator extends SnowflakeAuthSnowflakeConfigurator {
 
     @Override
-    public void createControl(Composite parent, Runnable propertyChangeListener) {
-        super.createControl(parent, propertyChangeListener);
+    public void createControl(Composite parent, DBAAuthModel object, Runnable propertyChangeListener) {
+        super.createControl(parent, object, propertyChangeListener);
     }
 
     @Override

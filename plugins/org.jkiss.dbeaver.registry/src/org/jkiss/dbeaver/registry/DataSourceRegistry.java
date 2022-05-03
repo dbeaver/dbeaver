@@ -26,11 +26,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
+import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.auth.SMAuthCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
@@ -82,7 +82,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
     private volatile ConfigSaver configSaver;
-    private SMAuthCredentialsProvider authCredentialsProvider;
+    private DBACredentialsProvider authCredentialsProvider;
     private Throwable lastLoadError;
 
     public DataSourceRegistry(DBPPlatform platform, DBPProject project) {
@@ -579,11 +579,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     @Nullable
     @Override
-    public SMAuthCredentialsProvider getAuthCredentialsProvider() {
+    public DBACredentialsProvider getAuthCredentialsProvider() {
         return authCredentialsProvider;
     }
 
-    public void setAuthCredentialsProvider(SMAuthCredentialsProvider authCredentialsProvider) {
+    public void setAuthCredentialsProvider(DBACredentialsProvider authCredentialsProvider) {
         this.authCredentialsProvider = authCredentialsProvider;
     }
 

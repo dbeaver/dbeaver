@@ -85,7 +85,7 @@ public class GeneralUtils {
         }
     }
 
-    private static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
+    private static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)(\\:[^\\}]+)?\\})", Pattern.CASE_INSENSITIVE);
 
     /**
      * Default encoding (UTF-8)
@@ -488,12 +488,18 @@ public class GeneralUtils {
                     continue;
                 }
                 String varValue = resolver.get(varName);
+                if (varValue == null) {
+                    varValue = matcher.group(3);
+                    if (varValue != null && varValue.startsWith(":")) {
+                        varValue = varValue.substring(1);
+                    }
+                }
                 if (varValue != null) {
                     if (resolvedVars == null) {
                         resolvedVars = new ArrayList<>();
                         resolvedVars.add(varName);
                     }
-                    if (matcher.start() == 0 && matcher.end() == string.length() - 1) {
+                    if (matcher.start() == 0 && matcher.end() >= string.length() - 1) {
                         string = varValue;
                     } else {
                         string = string.substring(0, matcher.start()) + varValue + string.substring(matcher.end());

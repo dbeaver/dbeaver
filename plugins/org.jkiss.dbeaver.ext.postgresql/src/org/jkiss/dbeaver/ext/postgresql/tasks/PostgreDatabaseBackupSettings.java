@@ -51,7 +51,9 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     private boolean noPrivileges;
     private boolean noOwner;
     private boolean dropObjects;
+    private boolean outputFolderNeedsToBeRecreated;
     private boolean createDatabase;
+    private File outputFolder;
 
     @NotNull
     public List<PostgreDatabaseBackupInfo> getExportObjects() {
@@ -171,7 +173,6 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
         super.loadSettings(runnableContext, store);
-
         compression = store.getString("pg.export.compression");
         encoding = store.getString("pg.export.encoding");
         showViews = store.getBoolean("pg.export.showViews");
@@ -250,7 +251,6 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     @Override
     public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
         super.saveSettings(runnableContext, store);
-
         store.setValue("pg.export.compression", compression);
         store.setValue("pg.export.encoding", encoding);
         store.setValue("pg.export.showViews", showViews);
@@ -289,7 +289,12 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
 
     @NotNull
     public File getOutputFile(@NotNull PostgreDatabaseBackupInfo info) {
-        String outputFileName = GeneralUtils.replaceVariables(getOutputFilePattern(), name -> {
+        String outputFileName = replaceVars(info, getOutputFilePattern());
+        return new File(getOutputFolder(info), outputFileName);
+    }
+
+    private String replaceVars(@NotNull PostgreDatabaseBackupInfo info, String pattern) {
+        return GeneralUtils.replaceVariables(pattern, name -> {
             switch (name) {
                 case NativeToolUtils.VARIABLE_DATABASE:
                     return info.getDatabase().getName();
@@ -312,6 +317,14 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
                     return NativeToolUtils.replaceVariables(name);
             }
         });
-        return new File(getOutputFolder(), outputFileName);
+    }
+
+    @NotNull
+    @Override
+    public File getOutputFolder(@NotNull PostgreDatabaseBackupInfo info) {
+        if (outputFolder == null || outputFolderNeedsToBeRecreated ) {
+            outputFolder = new File(replaceVars(info, getOutputFolderPattern()));
+        }
+        return outputFolder;
     }
 }

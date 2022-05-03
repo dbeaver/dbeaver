@@ -101,17 +101,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                 }
 
                 session.setUserInfo(userInfo);
-
-                if (DBWorkbench.getPlatform().getApplication().isHeadlessMode() || configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)) {
-                    session.setConfig("StrictHostKeyChecking", "no");
-                } else {
-                    File knownHosts = SSHUtils.getKnownSshHostsFileOrNull();
-                    if (knownHosts != null) {
-                        jsch.setKnownHosts(knownHosts.getAbsolutePath());
-                    }
-                    session.setConfig("StrictHostKeyChecking", "ask");
-                }
-
+                setupHostKeyVerification(session, configuration);
                 session.setServerAliveInterval(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL));
                 session.setTimeout(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT));
 
@@ -135,6 +125,32 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             }
 
             sessions[index] = session;
+        }
+    }
+
+    private void setupHostKeyVerification(Session session, DBWHandlerConfiguration configuration) throws JSchException {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode() ||
+            configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)) {
+            session.setConfig("StrictHostKeyChecking", "no");
+        } else {
+            File knownHosts = SSHUtils.getKnownSshHostsFileOrNull();
+            if (knownHosts != null) {
+                try {
+                    jsch.setKnownHosts(knownHosts.getAbsolutePath());
+                    session.setConfig("StrictHostKeyChecking", "ask");
+                } catch (JSchException e) {
+                    if (e.getCause() instanceof ArrayIndexOutOfBoundsException) {
+                        if (DBWorkbench.getPlatformUI().confirmAction(JSCHUIMessages.ssh_file_corrupted_dialog_title, 
+                            JSCHUIMessages.ssh_file_corrupted_dialog_message, true)) {
+                            session.setConfig("StrictHostKeyChecking", "no");
+                        } else {
+                            throw e;
+                        }
+                    }
+                }
+            } else {
+                session.setConfig("StrictHostKeyChecking", "ask");
+            }
         }
     }
 

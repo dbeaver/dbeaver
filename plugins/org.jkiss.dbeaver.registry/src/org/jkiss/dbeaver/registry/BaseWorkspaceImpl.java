@@ -48,7 +48,7 @@ import java.util.*;
 /**
  * BaseWorkspaceImpl.
  */
-public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFileManager {
+public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExternalFileManager {
 
     private static final Log log = Log.getLog(BaseWorkspaceImpl.class);
 
@@ -77,10 +77,23 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
         this.eclipseWorkspace = eclipseWorkspace;
         this.workspaceAuthContext = new SessionContextImpl(null);
 
+        this.projectListener = new ProjectListener();
+        this.eclipseWorkspace.addResourceChangeListener(projectListener);
+
+        loadExtensions(Platform.getExtensionRegistry());
+        loadExternalFileProperties();
+    }
+
+    private void loadWorkspaceProjects() {
         try {
             this.workspaceAuthContext.addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Can't obtain workspace session", "Error obtaining workspace session", e);
+            log.error(e);
+            DBWorkbench.getPlatformUI().showMessageBox(
+                "Authentication error",
+                "Error authenticating application user: " +
+                    "\n" + e.getMessage(),
+                true);
             System.exit(101);
         }
 
@@ -114,12 +127,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
                 log.error("Error opening active project", e);
             }
         }
-
-        projectListener = new ProjectListener();
-        eclipseWorkspace.addResourceChangeListener(projectListener);
-
-        loadExtensions(Platform.getExtensionRegistry());
-        loadExternalFileProperties();
     }
 
     @NotNull
@@ -128,6 +135,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace, DBPExternalFile
     }
 
     public void initializeProjects() {
+        loadWorkspaceProjects();
+
         if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects)) {
             try {
                 createDefaultProject(new NullProgressMonitor());

@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.model.app;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.nio.file.Path;
 /**
  * DB application.
  * Application implementors may redefine core app behavior and/or settings.
@@ -83,4 +85,9 @@ public interface DBPApplication {
 
     boolean hasProductFeature(String featureName);
 
+    /**
+     * @return null if not found, otherwise returns default workspace path
+     */
+    @Nullable
+    Path getDefaultWorkingFolder();
 }

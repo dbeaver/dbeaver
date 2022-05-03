@@ -53,8 +53,10 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 
@@ -87,6 +89,7 @@ class GenericFilterValueEdit {
     private transient final Set<Object> savedValues = new HashSet<>();
     private boolean queryDatabase = true;
     private boolean showRowCount;
+    private boolean showDistinctValuesCount;
     private boolean caseInsensitiveSearch;
 
     private transient volatile KeyLoadJob loadJob;
@@ -263,7 +266,7 @@ class GenericFilterValueEdit {
         return valueFilterText;
     }
 
-    void loadValues(Runnable onFinish) {
+    void loadValues(@Nullable Consumer<Result> onFinish) {
         KeyLoadJob curLoadJob = this.loadJob;
         if (curLoadJob != null) {
             if (!curLoadJob.isCanceled()) {
@@ -273,7 +276,7 @@ class GenericFilterValueEdit {
             return;
         }
         if (!queryDatabase) {
-            loadMultiValueList(Collections.emptyList(), true);
+            loadMultiValueList(Collections.emptyList(), true, onFinish);
         } else {
             // Load values
             final DBSEntityReferrer enumerableConstraint = ResultSetUtils.getEnumerableConstraint(attribute);
@@ -284,12 +287,12 @@ class GenericFilterValueEdit {
             } else if (attribute.getDataContainer() instanceof DBSDocumentAttributeEnumerable) {
                 loadDictionaryEnum((DBSDocumentAttributeEnumerable) attribute.getDataContainer(), onFinish);
             } else {
-                loadMultiValueList(Collections.emptyList(), true);
+                loadMultiValueList(Collections.emptyList(), true, onFinish);
             }
         }
     }
 
-    private void loadConstraintEnum(final DBSEntityReferrer refConstraint, Runnable onFinish) {
+    private void loadConstraintEnum(final DBSEntityReferrer refConstraint, @Nullable Consumer<Result> onFinish) {
         loadJob = new KeyLoadJob("Load constraint '" + refConstraint.getName() + "' values", onFinish) {
             @Override
             List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException {
@@ -332,7 +335,7 @@ class GenericFilterValueEdit {
         loadJob.schedule();
     }
 
-    private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable, Runnable onFinish) {
+    private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable, @Nullable Consumer<Result> onFinish) {
         loadJob = new KeyLoadJob("Load '" + attribute.getName() + "' values", onFinish) {
 
             private List<DBDLabelValuePair> result;
@@ -354,11 +357,27 @@ class GenericFilterValueEdit {
                 });
                 return result;
             }
+
+            @Nullable
+            @Override
+            protected Long readDistinctValuesCount(@NotNull DBRProgressMonitor monitor) throws DBException {
+                final Long[] result = new Long[1];
+
+                DBExecUtils.tryExecuteRecover(monitor, attributeEnumerable.getDataSource(), param -> {
+                    try (DBCSession session = DBUtils.openUtilSession(monitor, attributeEnumerable, "Read count of distinct values")) {
+                        result[0] = attributeEnumerable.getDistinctValuesCount(session);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+
+                return result[0];
+            }
         };
         loadJob.schedule();
     }
 
-    private void loadDictionaryEnum(@NotNull DBSDocumentAttributeEnumerable dictionaryEnumerable, @Nullable Runnable onFinish) {
+    private void loadDictionaryEnum(@NotNull DBSDocumentAttributeEnumerable dictionaryEnumerable, @Nullable Consumer<Result> onFinish) {
         loadJob = new KeyLoadJob("Load '" + attribute.getName() + "' values", onFinish) {
             @NotNull
             @Override
@@ -384,7 +403,7 @@ class GenericFilterValueEdit {
         loadJob.schedule();
     }
 
-    private void loadMultiValueList(@NotNull Collection<DBDLabelValuePair> values, boolean mergeResultsWithData) {
+    private void loadMultiValueList(@NotNull Collection<DBDLabelValuePair> values, boolean mergeResultsWithData, @Nullable Consumer<Result> onFinish) {
         if (tableViewer == null || tableViewer.getControl() == null || tableViewer.getControl().isDisposed()) {
             return;
         }
@@ -419,6 +438,14 @@ class GenericFilterValueEdit {
                     continue;
                 }
                 DBDLabelValuePair dictValue = findValue(rowData, cellValue);
+                if (dictValue == null && cellValue instanceof Date) {
+                    // Date/time/timestamp types can have other string representation.
+                    // And we can change it with the help of valueHandler
+                    // We use here same format as date types have in values list
+                    DBDValueHandler valueHandler = DBUtils.findValueHandler(attribute.getDataSource(), attribute);
+                    String displayString = valueHandler.getValueDisplayString(attribute, cellValue, DBDDisplayFormat.UI);
+                    dictValue = findValue(rowData, displayString);
+                }
                 if (dictValue == null) {
                     //String itemString = attribute.getValueHandler().getValueDisplayString(attribute, cellValue, DBDDisplayFormat.UI);
                     rowData.put(cellValue, new DBDLabelValuePairExt(null, cellValue, 1));
@@ -518,6 +545,14 @@ class GenericFilterValueEdit {
             }
         }
         updateToggleButton(toggleButton);
+
+        if (onFinish != null) {
+            final Result result = new Result();
+            if (showDistinctValuesCount) {
+                result.setTotalDistinctCount((long) sortedList.size());
+            }
+            onFinish.accept(result);
+        }
     }
 
     private DBDLabelValuePair findValue(Map<Object, DBDLabelValuePair> rowData, Object cellValue) {
@@ -541,7 +576,23 @@ class GenericFilterValueEdit {
                 }
             }
         }
-        return null;
+        if (cellValue instanceof Timestamp) {
+            for (Map.Entry<Object, DBDLabelValuePair> pair : rowData.entrySet()) {
+                if (!DBUtils.isNullValue(pair.getKey())) {
+                    Object key = pair.getKey();
+                    try {
+                        Timestamp timestamp = Timestamp.valueOf(key.toString());
+                        if (timestamp.compareTo((Timestamp) cellValue) == 0) {
+                            return pair.getValue();
+                        }
+                    } catch (Exception e) {
+                        // Format exception maybe
+                        // Continue
+                    }
+                }
+            }
+        }
+        return rowData.get(cellValue.toString());
     }
 
     @Nullable
@@ -609,13 +660,17 @@ class GenericFilterValueEdit {
         this.showRowCount = showRowCount;
     }
 
+    public void setShowDistinctValuesCount(boolean showDistinctValuesCount) {
+        this.showDistinctValuesCount = showDistinctValuesCount;
+    }
+
     public void setCaseInsensitiveSearch(boolean caseInsensitiveSearch) {
         this.caseInsensitiveSearch = caseInsensitiveSearch;
     }
 
     private abstract class KeyLoadJob extends AbstractJob {
-        private final Runnable onFinish;
-        KeyLoadJob(String name, Runnable onFinish) {
+        private final Consumer<Result> onFinish;
+        KeyLoadJob(String name, @Nullable Consumer<Result> onFinish) {
             super(name);
             this.onFinish = onFinish;
         }
@@ -627,7 +682,21 @@ class GenericFilterValueEdit {
             if (executionContext == null) {
                 return Status.OK_STATUS;
             }
-            UIUtils.syncExec(() -> tableViewer.getTable().setEnabled(false));
+            UIUtils.syncExec(() -> {
+                final Table table = tableViewer.getTable();
+                if (table != null && !table.isDisposed()) {
+                    table.setEnabled(false);
+                }
+            });
+            final Result result = new Result();
+            if (showDistinctValuesCount) {
+                try {
+                    monitor.subTask("Read distinct values count");
+                    result.setTotalDistinctCount(readDistinctValuesCount(monitor));
+                } catch (Throwable e) {
+                    log.error("Can't read count of distinct values", e);
+                }
+            }
             try {
                 monitor.subTask("Read enumeration");
                 final List<DBDLabelValuePair> valueEnumeration = readEnumeration(monitor);
@@ -638,7 +707,7 @@ class GenericFilterValueEdit {
                     populateValues(valueEnumeration);
                 }
                 if (onFinish != null) {
-                    onFinish.run();
+                    onFinish.accept(result);
                 }
             } catch (Throwable e) {
                 populateValues(Collections.emptyList());
@@ -653,15 +722,36 @@ class GenericFilterValueEdit {
         @Nullable
         abstract List<DBDLabelValuePair> readEnumeration(DBRProgressMonitor monitor) throws DBException;
 
+        @Nullable
+        protected Long readDistinctValuesCount(@NotNull DBRProgressMonitor monitor) throws DBException {
+            return null;
+        }
+
         boolean mergeResultsWithData() {
             return CommonUtils.isEmpty(filterPattern);
         }
 
         void populateValues(@NotNull final Collection<DBDLabelValuePair> values) {
             UIUtils.asyncExec(() -> {
-                loadMultiValueList(values, mergeResultsWithData());
-                tableViewer.getTable().setEnabled(true);
+                final Table table = tableViewer.getTable();
+                if (table != null && !table.isDisposed()) {
+                    loadMultiValueList(values, mergeResultsWithData(), null);
+                    table.setEnabled(true);
+                }
             });
+        }
+    }
+
+    static class Result {
+        private Long totalDistinctCount;
+
+        public void setTotalDistinctCount(@Nullable Long totalDistinctCount) {
+            this.totalDistinctCount = totalDistinctCount;
+        }
+
+        @Nullable
+        public Long getTotalDistinctCount() {
+            return totalDistinctCount;
         }
     }
 }

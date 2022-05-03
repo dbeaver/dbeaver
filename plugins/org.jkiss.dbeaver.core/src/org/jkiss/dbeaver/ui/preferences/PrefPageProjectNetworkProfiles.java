@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -44,7 +45,6 @@ import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -67,13 +67,13 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
     private static final Log log = Log.getLog(PrefPageProjectNetworkProfiles.class);
 
     private static class HandlerBlock {
-        private final IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
+        private final IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator;
         private final Composite blockControl;
         private final Button useHandlerCheck;
         private ControlEnableState blockEnableState;
         private final Map<DBWNetworkProfile, DBWHandlerConfiguration> loadedConfigs = new HashMap<>();
 
-        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck)
+        private HandlerBlock(IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck)
         {
             this.configurator = configurator;
             this.blockControl = blockControl;
@@ -264,7 +264,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
     private void createHandlerTab(final NetworkHandlerDescriptor descriptor)
     {
-        IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
+        IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator;
         try {
             String implName = descriptor.getHandlerType().getImplName();
             UIPropertyConfiguratorDescriptor configDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(implName);
@@ -314,7 +314,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        configurator.createControl(handlerComposite, this::updateApplyButton);
+        configurator.createControl(handlerComposite, descriptor, this::updateApplyButton);
 
         enableHandlerContent(descriptor);
     }
@@ -399,7 +399,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         } else {
             this.project = GeneralUtils.adapt(element, IProject.class);
         }
-        this.projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(this.project);
+        this.projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(this.project);
     }
 
 }

@@ -1411,7 +1411,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void addDefaultPanelActions() {
-        panelToolBar.add(new Action("View Menu", DBeaverIcons.getViewMenuImageDescriptor()) {
+        panelToolBar.add(new Action(ResultSetMessages.result_set_view_menu_text, DBeaverIcons.getViewMenuImageDescriptor()) {
             @Override
             public void run() {
                 ToolBar tb = panelToolBar.getControl();
@@ -1622,9 +1622,9 @@ public class ResultSetViewer extends Viewer
 
             // handle own commands
             editToolBarManager.add(new Separator());
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES, "Save", null, null, true));
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_REJECT_CHANGES, "Cancel", null, null, true));
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT, "Script", null, null, true));
+            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES, ResultSetMessages.controls_resultset_edit_save, null, null, true));
+            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_REJECT_CHANGES, ResultSetMessages.controls_resultset_edit_cancel, null, null, true));
+            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT, ResultSetMessages.controls_resultset_edit_script, null, null, true));
             editToolBarManager.add(new Separator());
             editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
             editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
@@ -1911,6 +1911,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         toolbarList.clear();
+        autoRefreshControl.enableAutoRefresh(false);
     }
 
     @Override
@@ -3733,29 +3734,31 @@ public class ResultSetViewer extends Viewer
             return;
         }
         nextSegmentReadingBlocked = true;
-        if (!checkForChanges()) {
-            return;
-        }
-        try {
-            DBSDataContainer dataContainer = getDataContainer();
-            if (dataContainer != null && !model.isUpdateInProgress()) {
-                dataReceiver.setHasMoreData(false);
-                dataReceiver.setNextSegmentRead(true);
-
-                runDataPump(
-                    dataContainer,
-                    model.getDataFilter(),
-                    model.getRowCount(),
-                    getSegmentMaxRows(),
-                    -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
-                    false,
-                    true,
-                    true,
-                    null);
+        UIUtils.asyncExec(() -> {
+            if (!checkForChanges()) {
+                return;
             }
-        } finally {
-            nextSegmentReadingBlocked = false;
-        }
+            try {
+                DBSDataContainer dataContainer = getDataContainer();
+                if (dataContainer != null && !model.isUpdateInProgress()) {
+                    dataReceiver.setHasMoreData(false);
+                    dataReceiver.setNextSegmentRead(true);
+
+                    runDataPump(
+                        dataContainer,
+                        model.getDataFilter(),
+                        model.getRowCount(),
+                        getSegmentMaxRows(),
+                        -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
+                        false,
+                        true,
+                        true,
+                        null);
+                }
+            } finally {
+                nextSegmentReadingBlocked = false;
+            }
+        });
     }
 
     private boolean verifyQuerySafety() {

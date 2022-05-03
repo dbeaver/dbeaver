@@ -29,6 +29,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -138,7 +139,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                     if (fileDataSource != null) {
                         return fileDataSource.getRegistry().getDataSources();
                     }
-                    DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(curFile.getProject());
+                    DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(curFile.getProject());
                     if (projectMeta != null) {
                         return projectMeta.getDataSourceRegistry().getDataSources();
                     }

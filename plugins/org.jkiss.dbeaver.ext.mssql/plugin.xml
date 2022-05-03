@@ -225,6 +225,7 @@
                         webURL="https://babelfishpg.org/"
                         description="%driver.sqlserver.description"
                         categories="sql,server,aws">
+                    <parameter name="jtds" value="true"/>
 
                     <replace provider="mssql" driver="mssql_jdbc_babelfish"/>
 
@@ -247,6 +248,7 @@
                         webURL="http://jtds.sourceforge.net/"
                         description="%driver.jTDS.description"
                         categories="sql">
+                    <parameter name="jtds" value="true"/>
                 </driver>
 
             </drivers>
@@ -525,7 +527,7 @@
                 id="org.jkiss.dbeaver.ext.mssql.model.data.SQLServerStandardValueHandlerProvider"
                 label="SQL Server data types provider">
 
-            <datasource class="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource"/>
+            <datasource id="sqlserver"/>
             <type name="MONEY"/>
             <type name="SMALLMONEY"/>
             <type name="SQL_VARIANT"/>
@@ -572,6 +574,74 @@
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ext.mssql.internal.SQLServerPreferencesInitializer"/>
+    </extension>
+
+
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+                id="sqlserver_database"
+                label="SQL Server Authentication"
+                description="SQL Server password based authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelDatabase">
+            <datasource id="sqlserver"/>
+            <replace model="native"/>
+        </authModel>
+        <authModel
+                id="sqlserver_windows"
+                label="Windows Authentication"
+                description="Windows integrated authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelWindows">
+            <datasource id="sqlserver"/>
+        </authModel>
+        <authModel
+                id="sqlserver_ntlm"
+                label="NTLM"
+                description="NTLM authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelNTLM">
+            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
+        </authModel>
+        <authModel
+                id="sqlserver_ad_password"
+                label="Active Directory - Password"
+                description="Active Directory password based authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelADPassword">
+            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
+        </authModel>
+        <authModel
+                id="sqlserver_msi"
+                label="Active Directory - MSI"
+                description="Active Directory MSI based authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelMSI">
+            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
+        </authModel>
+        <authModel
+                id="sqlserver_mfa"
+                label="Active Directory - MFA"
+                description="Interactive authentication flow (multi-factor authentication)"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelMFA">
+            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
+        </authModel>
+        <authModel
+                id="sqlserver_ad_integrated"
+                label="Active Directory - Integrated"
+                description="Active Directory integrated authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelADIntegrated">
+            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
+        </authModel>
+        <authModel
+                id="sqlserver_kerberos"
+                label="Kerberos"
+                description="Kerberos authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelKerberos">
+            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
+        </authModel>
+        <authModel
+                id="sqlserver_custom"
+                label="Custom"
+                description="Custom authentication schema"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelNTLM">
+            <datasource id="sqlserver"/>
+        </authModel>
     </extension>
 
 </plugin>

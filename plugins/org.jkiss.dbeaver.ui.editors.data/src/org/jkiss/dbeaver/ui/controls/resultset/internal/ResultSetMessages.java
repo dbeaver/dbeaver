@@ -190,6 +190,8 @@ public class ResultSetMessages extends NLS {
     public static String dialog_filter_value_edit_label_define_description;
     public static String dialog_filter_value_edit_text_hint;
     public static String dialog_filter_value_edit_table_value_label;
+    public static String dialog_filter_value_edit_table_value_total_label;
+    public static String dialog_filter_value_edit_table_value_total_shown_label;
     public static String dialog_filter_value_edit_table_value_description;
     public static String dialog_filter_value_edit_table_description_label;
     public static String dialog_filter_value_edit_table_description_description;
@@ -202,6 +204,8 @@ public class ResultSetMessages extends NLS {
     public static String dialog_filter_value_edit_table_options_checkbox_read_from_server_description;
     public static String dialog_filter_value_edit_table_options_checkbox_show_row_count_label;
     public static String dialog_filter_value_edit_table_options_checkbox_show_row_count_description;
+    public static String dialog_filter_value_edit_table_options_checkbox_show_distinct_values_count_label;
+    public static String dialog_filter_value_edit_table_options_checkbox_show_distinct_values_count_description;
 
     public static String dialog_control_label_massage;
     public static String dialog_cursor_view_monitor_rows_fetched;
@@ -389,6 +393,54 @@ public class ResultSetMessages extends NLS {
     public static String panel_editor_text_encoding_title;
 
     public static String error_part_button_go_to_error;
+
+    public static String grouping_panel_sorting_action_unsorted;
+    public static String grouping_panel_sorting_action_decending;
+    public static String grouping_panel_sorting_action_ascending;
+    public static String grouping_panel_error_title;
+    public static String grouping_panel_error_change_sort_message;
+    public static String grouping_panel_error_change_duplicate_presentation_message;
+
+    public static String refs_label;
+    public static String refs_no_refs_text;
+
+    public static String value_viewer_select_view_message;
+    public static String value_viewer_hide_panel_message;
+    public static String value_viewer_preview_error_title;
+    public static String value_viewer_preview_error_message;
+    public static String value_viewer_apply_error_title;
+    public static String value_viewer_apply_error_message;
+    public static String value_viewer_auto_apply_action_text;
+
+    public static String aggregate_columns_function_text;
+    public static String aggregate_columns_value_text;
+    public static String aggreagate_columns_group_by_column_text;
+    public static String aggreagate_columns_toggle_aggregation_text;
+    public static String aggregate_columns_add_function_text;
+    public static String aggregate_columns_remove_function_text;
+    public static String aggregate_columns_reset_text;
+    public static String aggregate_columns_copy_value_text;
+    public static String aggregate_columns_copy_all_text;
+    public static String result_set_view_menu_text;
+    public static String result_set_stat_columns;
+    public static String result_set_stat_rows;
+    public static String result_set_stat_cells;
+
+    public static String copy_special_options;
+    public static String copy_special_column_delimiter;
+    public static String copy_special_row_delimiter;
+    public static String copy_special_quote_character;
+    public static String copy_special_copy_header_text;
+    public static String copy_special_copy_row_numbers_text;
+    public static String copy_special_quote_cell_values_text;
+    public static String copy_special_quote_cell_values_tip;
+    public static String copy_special_force_quote_cell_values_text;
+    public static String copy_special_force_quote_cell_values_tip;
+    public static String copy_special_copy_as_html_text;
+    public static String copy_special_copy_as_html_tip;
+
+    public static String filter_panel_filters_history_text;
+    public static String filter_panel_expand_panel_text;
 
     static {
         // initialize resource bundle

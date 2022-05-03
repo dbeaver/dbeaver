@@ -16,13 +16,14 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.app.DBASecureStorage;
+import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +38,7 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     private static DBPApplication INSTANCE;
 
     protected BaseApplicationImpl() {
-        if (INSTANCE != null && !(INSTANCE instanceof EclipseApplicationImpl)) {
+        if (INSTANCE != null && !(INSTANCE instanceof EclipsePluginApplicationImpl)) {
             log.error("Multiple application instances created: " + INSTANCE.getClass().getName() + ", " + this.getClass().getName());
         }
         INSTANCE = this;
@@ -45,18 +46,11 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
 
     public static DBPApplication getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new EclipseApplicationImpl();
+            INSTANCE = new EclipsePluginApplicationImpl();
         }
         return INSTANCE;
     }
 
-    @NotNull
-    @Override
-    public DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace) {
-        return new BasicWorkspace(platform, eclipseWorkspace);
-    }
-
-    @Override
     public boolean isStandalone() {
         return true;
     }

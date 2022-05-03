@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
 import java.util.*;
 
@@ -49,7 +50,7 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     protected Boolean showColumnComments;
     protected Boolean showFullDDL;
 
-    private final IAction OPEN_CONSOLE_ACTION = new Action("Open in SQL console", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
+    private final IAction OPEN_CONSOLE_ACTION = new Action(SQLEditorMessages.source_viewer_open_in_sql_console, DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
         @Override
         public void run() 
         {
@@ -162,10 +163,10 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             DBPScriptObjectExt2 sourceObject = (DBPScriptObjectExt2) genObject;
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
-                        new Action("Show full DDL", Action.AS_CHECK_BOX) {
+                        new Action(SQLEditorMessages.source_viewer_show_ddl_text, Action.AS_CHECK_BOX) {
                             {
                                 setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_TABLE_EXTERNAL));
-                                setToolTipText("Show DDL for all schema objects");
+                                setToolTipText(SQLEditorMessages.source_viewer_show_ddl_tip);
                                 setChecked(getShowFullDDL());
                             }
 
@@ -179,10 +180,10 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
-                        new Action("Show permissions", Action.AS_CHECK_BOX) {
+                        new Action(SQLEditorMessages.source_viewer_show_permissions_text, Action.AS_CHECK_BOX) {
                             {
                                 setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_PERMISSIONS));
-                                setToolTipText("Shows object permission grants");
+                                setToolTipText(SQLEditorMessages.source_viewer_show_permissions_tip);
                                 setChecked(getShowPermissions());
                             }
 
@@ -197,10 +198,10 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS) &&
                 sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
-                    new Action("Separate FK", Action.AS_CHECK_BOX) {
+                    new Action(SQLEditorMessages.source_viewer_separate_fk_text, Action.AS_CHECK_BOX) {
                         {
                             setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_FOREIGN_KEY));
-                            setToolTipText("Generate foreign keys as separate statements");
+                            setToolTipText(SQLEditorMessages.source_viewer_separate_fk_tip);
                             setChecked(getSeparateFKStmts());
                         }
 
@@ -214,10 +215,10 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
-                        new Action("Show comments", Action.AS_CHECK_BOX) {
+                        new Action(SQLEditorMessages.source_viewer_show_comments_text, Action.AS_CHECK_BOX) {
                             {
                                 setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TYPE_TEXT));
-                                setToolTipText("Show column comments in table definition");
+                                setToolTipText(SQLEditorMessages.source_viewer_show_comments_tip);
                                 setChecked(getShowColumnComments());
                             }
 

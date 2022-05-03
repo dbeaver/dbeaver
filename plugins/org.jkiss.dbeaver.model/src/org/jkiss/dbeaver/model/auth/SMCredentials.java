@@ -14,33 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.auth;
 
-import org.eclipse.core.resources.IWorkspace;
+
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.code.Nullable;
 
-/**
- * DBeaver workspace.
- *
- * Basically just a wrapper around Eclipse workspace.
- * Additionally holds information about remote workspace.
- * Identified by unique ID (random UUID).
- */
-public class BasicWorkspace extends BaseWorkspaceImpl {
+public class SMCredentials {
+    @NotNull
+    private final String smToken;
+    @Nullable
+    private final String userId;
 
-    private String workspaceId;
-
-    public BasicWorkspace(DBPPlatform platform, IWorkspace eclipseWorkspace) {
-        super(platform, eclipseWorkspace);
-
-        workspaceId = readWorkspaceId();
+    public SMCredentials(@NotNull String smToken, @Nullable String userId) {
+        this.smToken = smToken;
+        this.userId = userId;
     }
 
     @NotNull
-    @Override
-    public String getWorkspaceId() {
-        return workspaceId;
+    public String getSmToken() {
+        return smToken;
     }
 
+    @Nullable
+    public String getUserId() {
+        return userId;
+    }
 }

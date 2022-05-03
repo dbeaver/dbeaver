@@ -388,6 +388,7 @@ public class CommonUtils {
                 try {
                     return (int)Double.parseDouble(toString(object));
                 } catch (NumberFormatException e1) {
+                    e1.printStackTrace();
                     return def;
                 }
             }
@@ -428,6 +429,7 @@ public class CommonUtils {
                 try {
                     return (int)Double.parseDouble(toString(object));
                 } catch (NumberFormatException e1) {
+                    e1.printStackTrace();
                     return defValue;
                 }
             }

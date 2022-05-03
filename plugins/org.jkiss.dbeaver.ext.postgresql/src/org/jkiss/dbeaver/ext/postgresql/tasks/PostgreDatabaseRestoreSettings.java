@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -83,7 +84,6 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
         super.loadSettings(runnableContext, store);
-
         inputFile = store.getString("pg.restore.inputFile");
         cleanFirst = store.getBoolean("pg.restore.cleanFirst");
         noOwner = store.getBoolean("pg.restore.noOwner");
@@ -128,7 +128,6 @@ public class PostgreDatabaseRestoreSettings extends PostgreBackupRestoreSettings
     @Override
     public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
         super.saveSettings(runnableContext, store);
-
         store.setValue("pg.restore.inputFile", inputFile);
         store.setValue("pg.restore.cleanFirst", cleanFirst);
         store.setValue("pg.restore.noOwner", noOwner);

@@ -57,7 +57,9 @@ public class GeometryPresentation extends AbstractPresentation {
         leafletViewer = new GISLeafletViewer(
             parent,
             bindings,
-            GisTransformUtils.getSpatialDataProvider(controller.getDataContainer().getDataSource()));
+            GisTransformUtils.getSpatialDataProvider(controller.getDataContainer().getDataSource()),
+            null
+        );
         leafletViewer.getBrowserComposite().setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 

@@ -101,12 +101,12 @@ public class DB2IMetaModel extends GenericMetaModel
         JDBCPreparedStatement dbStat;
         dbStat = session.prepareStatement("SELECT K.CONSTRAINT_NAME AS PK_NAME, K.TABLE_NAME, K.COLUMN_POSITION AS KEY_SEQ, K.COLUMN_NAME, tc.CONSTRAINT_TYPE, '' AS CHECK_CLAUSE FROM QSYS2.SYSKEYCST K\n" +
             "LEFT OUTER JOIN \"SYSIBM\".TABLE_CONSTRAINTS tc ON tc.CONSTRAINT_SCHEMA = K.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = K.CONSTRAINT_NAME\n" +
-            "WHERE K.CONSTRAINT_SCHEMA = ?" +
+            "WHERE tc.CONSTRAINT_TYPE <> 'FOREIGN KEY' AND K.CONSTRAINT_SCHEMA = ?" +
             (forParent != null ? " AND K.TABLE_NAME = ?" : "") +
             "\nUNION ALL" +
             "\nSELECT cc.CONSTRAINT_NAME AS PK_NAME, tc.TABLE_NAME, 0 as KEY_SEQ, '' as COLUMN_NAME, 'CHECK' AS CONSTRAINT_TYPE, cc.CHECK_CLAUSE FROM QSYS2.CHECK_CONSTRAINTS cc\n" +
             "LEFT OUTER JOIN \"SYSIBM\".TABLE_CONSTRAINTS tc ON tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME\n" +
-            "WHERE cc.CONSTRAINT_SCHEMA = ?" +
+            "WHERE tc.CONSTRAINT_TYPE = 'CHECK' AND cc.CONSTRAINT_SCHEMA = ?" +
             (forParent != null ? " AND tc.TABLE_NAME = ?" : ""));
         if (forParent != null) {
             String schemaName = forParent.getSchema().getName();

@@ -16,62 +16,20 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBASecureStorage;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 
 /**
  * EclipseApplicationImpl
  */
-class EclipseApplicationImpl extends BaseApplicationImpl {
-
-    @Override
-    public boolean isStandalone() {
-        return false;
-    }
-
-    @Override
-    public boolean isPrimaryInstance() {
-        return false;
-    }
-
-    @Override
-    public boolean isHeadlessMode() {
-        return false;
-    }
+public abstract class EclipseApplicationImpl extends BaseApplicationImpl {
 
     @NotNull
     @Override
-    public DBASecureStorage getSecureStorage() {
-        return DefaultSecureStorage.INSTANCE;
+    public DBPWorkspace createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace) {
+        return new EclipseWorkspaceImpl(platform, eclipseWorkspace);
     }
 
-    @NotNull
-    @Override
-    public DBASecureStorage getProjectSecureStorage(DBPProject project) {
-        return new ProjectSecureStorage(project);
-    }
-
-    @Override
-    public String getInfoDetails(DBRProgressMonitor monitor) {
-        return "Eclipse";
-    }
-
-    @Override
-    public String getDefaultProjectName() {
-        return "DBeaver";
-    }
-
-    @Override
-    public Object start(IApplicationContext context) throws Exception {
-        return null;
-    }
-
-    @Override
-    public void stop() {
-
-    }
 }

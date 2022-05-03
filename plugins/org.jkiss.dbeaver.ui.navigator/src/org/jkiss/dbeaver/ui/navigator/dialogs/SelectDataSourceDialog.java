@@ -124,7 +124,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             SWT.SINGLE | SWT.BORDER,
             false,
             dsFilter,
-            "Enter a part of connection name here")
+            UINavigatorMessages.filter_connection_name_placeholder)
         {
             @Override
             protected void onTreeRefresh() {

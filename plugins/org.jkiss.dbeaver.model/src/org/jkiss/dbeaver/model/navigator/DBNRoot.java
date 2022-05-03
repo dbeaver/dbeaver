@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -53,7 +55,10 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
             }
         }
         if (model.isGlobal()) {
-            model.getPlatform().getWorkspace().addProjectListener(this);
+            DBPPlatform platform = DBWorkbench.getPlatform();
+            if (platform instanceof DBPPlatformEclipse) {
+                ((DBPPlatformEclipse)platform).getWorkspace().addProjectListener(this);
+            }
         }
         DBNRegistry.getInstance().extendNode(this, false);
     }
@@ -70,7 +75,10 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         extraNodes.clear();
 
         if (model.isGlobal()) {
-            model.getPlatform().getWorkspace().removeProjectListener(this);
+            DBPPlatform platform = DBWorkbench.getPlatform();
+            if (platform instanceof DBPPlatformEclipse) {
+                ((DBPPlatformEclipse)platform).getWorkspace().removeProjectListener(this);
+            }
         }
     }
 
@@ -181,10 +189,12 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     public DBNProject addProject(DBPProject project, boolean reflect) {
+        DBPPlatform platform = DBWorkbench.getPlatform();
         DBNProject projectNode = new DBNProject(
             this,
             project,
-            project.getWorkspace().getResourceHandler(project.getEclipseProject()));
+            platform instanceof DBPPlatformEclipse ?
+                ((DBPPlatformEclipse)platform).getWorkspace().getResourceHandler(project.getEclipseProject()) : null);
         projects = ArrayUtils.add(DBNProject.class, projects, projectNode);
         Arrays.sort(projects, Comparator.comparing(DBNResource::getNodeName));
         if (reflect) {

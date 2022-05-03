@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -169,7 +170,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
                 IFile scriptFile;
                 try {
                     scriptFile = SQLEditorUtils.createNewScript(
-                        DBWorkbench.getPlatform().getWorkspace().getProject(rootFolder.getProject()),
+                        DBPPlatformEclipse.getInstance().getWorkspace().getProject(rootFolder.getProject()),
                         rootFolder,
                         navigatorContext);
                     SQLEditorHandlerOpenEditor.openResource(scriptFile, navigatorContext);
@@ -289,7 +290,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
            @Override
             public String getText(Object element) {
                 final ResourceInfo ri = (ResourceInfo) element;
-                IFolder resourceDefaultRoot = DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(navigatorContext.getProject(), ScriptsHandlerImpl.class, false);
+                IFolder resourceDefaultRoot = DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(navigatorContext.getProject(), ScriptsHandlerImpl.class, false);
                 String path = ri.getLocalFile().getParentFile().getPath();
                 if (resourceDefaultRoot == null){
                     return "";

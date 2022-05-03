@@ -19,12 +19,8 @@ package org.jkiss.dbeaver.ui.navigator;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPResourceCreator;
-import org.jkiss.dbeaver.model.app.DBPResourceHandler;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.fs.nio.NIOResource;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
@@ -52,7 +48,7 @@ public class ResourcePropertyTester extends PropertyTester
             return false;
         }
         IResource resource = (IResource)receiver;
-        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        DBPWorkspaceEclipse workspace = DBPPlatformEclipse.getInstance().getWorkspace();
         DBPResourceHandler handler = workspace.getResourceHandler(resource);
         if (handler == null) {
             return false;
@@ -74,7 +70,7 @@ public class ResourcePropertyTester extends PropertyTester
                 return resource instanceof IProject && (activeProject == null || resource != activeProject.getEclipseProject());
             }
             case PROP_TYPE:
-                final DBPResourceHandler resourceHandler = DBWorkbench.getPlatform().getWorkspace().getResourceHandler(resource);
+                final DBPResourceHandler resourceHandler = workspace.getResourceHandler(resource);
                 return resourceHandler != null && expectedValue.equals(resourceHandler.getTypeName(resource));
             case PROP_IS_LOCAL_FS:
                 return !(resource instanceof NIOResource);

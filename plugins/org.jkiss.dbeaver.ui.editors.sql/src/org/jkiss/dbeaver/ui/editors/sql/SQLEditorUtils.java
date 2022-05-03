@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -72,7 +73,7 @@ public class SQLEditorUtils {
     		IStatus status = new Status(IStatus.ERROR, SQLEditorActivator.PLUGIN_ID, "No active project to locate Script Folder");
 			throw new CoreException(status);
 		}
-        return DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
+        return DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
     }
 
     @Nullable
@@ -135,7 +136,7 @@ public class SQLEditorUtils {
 
     @NotNull
     public static List<ResourceInfo> getScriptsFromProject(@NotNull DBPProject dbpProject) throws CoreException {
-        IFolder resourceDefaultRoot = DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(dbpProject, ScriptsHandlerImpl.class, false);
+        IFolder resourceDefaultRoot = DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(dbpProject, ScriptsHandlerImpl.class, false);
         if (resourceDefaultRoot != null) {
             return getScriptsFromFolder(resourceDefaultRoot);
         } else {

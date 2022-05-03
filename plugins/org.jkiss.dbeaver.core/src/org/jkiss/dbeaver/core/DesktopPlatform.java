@@ -32,7 +32,10 @@ import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.BaseApplicationImpl;
+import org.jkiss.dbeaver.registry.BasePlatformImpl;
+import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
@@ -52,7 +55,7 @@ import java.nio.file.Paths;
 /**
  * DesktopPlatform
  */
-public class DesktopPlatform extends BasePlatformImpl {
+public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEclipse {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
@@ -151,8 +154,9 @@ public class DesktopPlatform extends BasePlatformImpl {
         this.certificateStorage = new DefaultCertificateStorage(
             new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "security"));
 
-        // Register properties adapter
+        // Create workspace
         this.workspace = (BaseWorkspaceImpl) getApplication().createWorkspace(this, ResourcesPlugin.getWorkspace());
+        // Init workspace in UI because it may need some UI interactions to initialize
         this.workspace.initializeProjects();
 
         QMUtils.initApplication(this);
@@ -217,7 +221,7 @@ public class DesktopPlatform extends BasePlatformImpl {
 
     @NotNull
     @Override
-    public DBPWorkspace getWorkspace() {
+    public DBPWorkspaceEclipse getWorkspace() {
         return workspace;
     }
 

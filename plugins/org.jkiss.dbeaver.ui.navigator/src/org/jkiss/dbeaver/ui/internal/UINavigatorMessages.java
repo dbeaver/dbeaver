@@ -262,6 +262,8 @@ public class UINavigatorMessages extends NLS {
     public static String navigator_project_explorer_columns_type_text;
     public static String navigator_project_explorer_columns_type_description;
 
+    public static String datasource_list_action_empty;
+    public static String filter_connection_name_placeholder;
 
     static {
         // initialize resource bundle

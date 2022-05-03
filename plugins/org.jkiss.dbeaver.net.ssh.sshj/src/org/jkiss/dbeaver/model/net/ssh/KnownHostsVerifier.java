@@ -41,7 +41,7 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
         KeyType type = KeyType.fromKey(key);
 
         boolean isConfirmed = platformUI.confirmAction(SSHJUIMessages.verify_connection_confirmation_title,
-            NLS.bind(SSHJUIMessages.verify_connection_confirmation_message, new String[]{hostname, type.toString(), SecurityUtils.getFingerprint(key)}));
+            NLS.bind(SSHJUIMessages.verify_connection_confirmation_message, new String[]{hostname, type.toString(), SecurityUtils.getFingerprint(key)}), true);
 
         if (!isConfirmed) {
             return false;

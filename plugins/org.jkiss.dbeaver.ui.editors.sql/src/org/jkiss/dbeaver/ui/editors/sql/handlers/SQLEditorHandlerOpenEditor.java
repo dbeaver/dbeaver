@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -70,7 +71,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
 
     public static void openResource(IResource resource, @Nullable SQLNavigatorContext navigatorContext) {
         try {
-            DBPResourceHandler handler = DBWorkbench.getPlatform().getWorkspace().getResourceHandler(resource);
+            DBPResourceHandler handler = DBPPlatformEclipse.getInstance().getWorkspace().getResourceHandler(resource);
             if (handler != null) {
                 if (navigatorContext != null && resource instanceof IFile && navigatorContext.getDataSourceContainer() != null) {
                     EditorUtils.setFileDataSource((IFile) resource, navigatorContext);
@@ -265,7 +266,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
                 activeEditor != null &&
                 CommonUtils.equalObjects(res.getResource(), EditorUtils.getFileFromInput(activeEditor.getEditorInput())))
             {
-                // It is already open and active. LEt's open script selector panel
+                // It is already open and active. Let's open script selector panel
                 openEditor(workbenchWindow, editorContext);
             } else {
                 openResourceEditor(workbenchWindow, res, editorContext);

@@ -16,14 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -53,10 +51,10 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
         this.showSavePassword = showSavePassword;
     }
 
-    @Override
-    protected IDialogSettings getDialogBoundsSettings() {
-        return UIUtils.getDialogSettings(DIALOG_ID);
-    }
+//    @Override
+//    protected IDialogSettings getDialogBoundsSettings() {
+//        return UIUtils.getDialogSettings(DIALOG_ID);
+//    }
 
     public void setUserNameLabel(String userNameLabel) {
         this.userNameLabel = userNameLabel;
@@ -139,7 +137,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
                 usernameText = new Text(credGroup, SWT.BORDER);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.grabExcessHorizontalSpace = true;
-                gd.widthHint = 120;
+                gd.widthHint = 200;
                 //gd.horizontalSpan = 3;
                 usernameText.setLayoutData(gd);
                 if (authInfo.getUserName() != null) {
@@ -160,7 +158,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog
             }
         }
 
-        {
+        if (showSavePassword) {
             savePasswordCheck = new Button(addrGroup, SWT.CHECK);
             savePasswordCheck.setEnabled(showSavePassword);
             savePasswordCheck.setText(CommonUtils.toString(savePasswordText, UIConnectionMessages.dialog_connection_auth_checkbox_save_password));

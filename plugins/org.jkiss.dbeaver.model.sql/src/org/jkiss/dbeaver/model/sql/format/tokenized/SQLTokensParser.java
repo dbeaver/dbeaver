@@ -57,6 +57,9 @@ class SQLTokensParser {
         }
 
         String delimiterRedefiner = configuration.getSyntaxManager().getDialect().getScriptDelimiterRedefiner();
+        if(ArrayUtils.contains(configuration.getSyntaxManager().getDialect().getScriptDelimiters(), delimiterRedefiner)) {
+            delimiterRedefiner = null;
+        }
         if (!CommonUtils.isEmpty(delimiterRedefiner)) {
             commands.add(delimiterRedefiner.toUpperCase(Locale.ENGLISH));
         }

@@ -42,10 +42,7 @@ import org.eclipse.ui.part.MarkerTransfer;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DesktopUI;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPProjectListener;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
@@ -79,7 +76,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             refreshProjects();
         }
 
-        DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
+        DBPPlatformEclipse.getInstance().getWorkspace().addProjectListener(this);
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
@@ -107,7 +104,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         // Remove project listener
         DBPPlatform platform = DBWorkbench.getPlatform();
         if (platform != null) {
-            DBPWorkspace workspace = platform.getWorkspace();
+            DBPWorkspaceEclipse workspace = DBPPlatformEclipse.getInstance().getWorkspace();
             workspace.removeProjectListener(this);
         }
 
