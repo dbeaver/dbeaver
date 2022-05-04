@@ -128,11 +128,11 @@ public class AttributePart extends PropertyAwarePart {
         if (value != EditPart.SELECTED_NONE) {
             if (this.getViewer() instanceof ERDGraphicalViewer && associatedRelationsHighlighing == null) {
                 Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
-                associatedRelationsHighlighing = ((ERDGraphicalViewer)this.getViewer()).getEditor().getHighlightingManager().highlightAttributeAssociations(this, color);
+                associatedRelationsHighlighing = ((ERDGraphicalViewer) this.getViewer()).getEditor().getHighlightingManager().highlightAttributeAssociations(this, color);
             }
         } else if (associatedRelationsHighlighing != null) {
             associatedRelationsHighlighing.release();
-            associatedRelationsHighlighing  = null;
+            associatedRelationsHighlighing = null;
         }
     }
 

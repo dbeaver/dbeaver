@@ -119,7 +119,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         implements DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart, INavigatorModelView {
-    private static final Log log = Log.getLog(Searcher.class);
+    private static final Log searcherLog = Log.getLog(Searcher.class);
 
     @Nullable
     protected ProgressControl progressControl;
@@ -165,7 +165,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private ERDDecorator decorator;
     private ZoomComboContributionItem zoomCombo;
     private NavigatorViewerAdapter navigatorViewerAdapter;
-    private ERDHighlightingManger highlightingManager = new ERDHighlightingManger();
+    private ERDHighlightingManager highlightingManager = new ERDHighlightingManager();
 
     /**
      * No-arg constructor
@@ -187,8 +187,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
         return decorator;
     }
-    
-    public ERDHighlightingManger getHighlightingManager() {
+
+    @NotNull
+    public ERDHighlightingManager getHighlightingManager() {
         return highlightingManager;
     }
 
@@ -1280,7 +1281,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Nullable
         private Pattern curSearchPattern;
         private boolean resultsFound;
-        private boolean isPrevStepWasFwd;
+        private Boolean isPrevStepWasFwd;
         @Nullable
         private List<Object> results = null;
         @Nullable
@@ -1296,6 +1297,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 return findNextResult(options == SEARCH_NEXT);
             } else {
                 this.cancelSearch();
+                isPrevStepWasFwd = null;
                 results = new ArrayList<>();
                 this.searchString = searchString;
                 String likePattern = SQLUtils.makeLikePattern(searchString);
@@ -1306,7 +1308,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 try {
                     curSearchPattern = Pattern.compile(likePattern, Pattern.CASE_INSENSITIVE);
                 } catch (PatternSyntaxException e) {
-                    log.warn("Unable to perform search in ERD editor due to an inability to compile search pattern", e);
+                    searcherLog.warn("Unable to perform search in ERD editor due to an inability to compile search pattern", e);
                     if (progressControl != null) {
                         progressControl.setInfo(e.getMessage());
                     }
@@ -1339,7 +1341,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                                 resultsFound = true;
                                 results.add(erdNode);
                                 if (erdNode instanceof GraphicalEditPart) {
-                                    highlightings.add(highlightingManager.highlight(((GraphicalEditPart)erdNode).getFigure(), color));
+                                    highlightings.add(highlightingManager.highlight(((GraphicalEditPart) erdNode).getFigure(), color));
                                 }
                                 graphicalViewer.reveal((EditPart) node);
                             }
@@ -1350,24 +1352,27 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 return resultsFound;
             }
         }
+        
+        private void jumpToNext(boolean isFindNext) {
+            if (resultsIterator == null || isFindNext ? !resultsIterator.hasNext() : !resultsIterator.hasPrevious()) {
+                resultsIterator = results.listIterator(isFindNext ? 0 : results.size());
+            }
+            currentItem = isFindNext ? resultsIterator.next() : resultsIterator.previous();
+        }
 
         private boolean findNextResult(boolean isFindNext) {
             if (resultsFound && results != null) {
-                if (resultsIterator == null || isFindNext ? !resultsIterator.hasNext() : !resultsIterator.hasPrevious()) {
-                    resultsIterator = results.listIterator();
-                }
-
-                if (isPrevStepWasFwd != isFindNext) { 
+                if (isPrevStepWasFwd != null && isPrevStepWasFwd.booleanValue() != isFindNext) { 
                     // direction change gets current item again as if it's a new loop initialization 
-                    currentItem = isFindNext ? resultsIterator.next() : resultsIterator.previous(); 
+                    jumpToNext(isFindNext); 
                 }
                 isPrevStepWasFwd = isFindNext;
-                currentItem = isFindNext ? resultsIterator.next() : resultsIterator.previous();
+                jumpToNext(isFindNext);
 
                 ERDGraphicalViewer graphicalViewer = getGraphicalViewer();
                 graphicalViewer.deselectAll();
-                graphicalViewer.select((EditPart)currentItem);
-                graphicalViewer.reveal((EditPart)currentItem);
+                graphicalViewer.select((EditPart) currentItem);
+                graphicalViewer.reveal((EditPart) currentItem);
                 return true;
             } else {
                 return false;
@@ -1383,7 +1388,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     results = null;
                     currentItem = null;
                     resultsIterator = null;
-                    highlightings.forEach(h -> h.release());
+                    highlightings.forEach(ERDHighlightingHandle::release);
                     highlightings.clear();
                     getGraphicalViewer().deselectAll();
                 }

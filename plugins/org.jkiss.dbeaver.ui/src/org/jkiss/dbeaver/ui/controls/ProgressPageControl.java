@@ -390,6 +390,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                             break;
                         case SWT.CR:
                             performSearch(SearchType.NEXT);
+                            /* fall-through */
                         case SWT.ARROW_UP:
                         case SWT.ARROW_DOWN:
                             if (childPageControl != null) {

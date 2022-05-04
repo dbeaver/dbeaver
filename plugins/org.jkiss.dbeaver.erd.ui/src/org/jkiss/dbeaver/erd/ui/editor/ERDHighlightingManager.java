@@ -23,18 +23,24 @@ import org.eclipse.draw2dl.Connection;
 import org.eclipse.draw2dl.IFigure;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart;
 import org.jkiss.dbeaver.erd.ui.part.AttributePart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
-import org.jkiss.dbeaver.model.sql.parser.ListNode;
+import org.jkiss.dbeaver.utils.ListNode;
 
 
-public class ERDHighlightingManger {
+public class ERDHighlightingManager {
+
+    private static final Log log = Log.getLog(ERDHighlightingManager.class);
 
     @NotNull
     private final Map<IFigure, PartHighlighter> highlightedParts = new HashMap<>();
 
+    // we are removing entry somewhere in the middle of the highlighting stack, so reference identity is required,
+    // which Color class does not follow, as it supports by-value equivalence
     private static final class HighlightingEntry {
         public final Color color;
 
@@ -42,7 +48,7 @@ public class ERDHighlightingManger {
             this.color = color;
         }
     }
-    
+
     private final class PartHighlighter {
         @NotNull
         private final IFigure part;
@@ -77,10 +83,14 @@ public class ERDHighlightingManger {
                 }
                 part.repaint();
             } catch (Throwable ex) {
-                ex.printStackTrace();
+                // any of the figure setters may internally use repaint(), and any of them could use
+                // internal object model infrastructure of the Eclipse Graphics Editor, which might be partially invalidated
+                // due to the underlying mechanics, which are out of the scope of the highlighting logic
+                log.warn("Inconsistent highlighting management detected during figure props refresh.", ex);
             }
         }
-        
+
+        @NotNull
         public ERDHighlightingHandle highlight(@NotNull Color color) {
             HighlightingEntry entry = new HighlightingEntry(color);
             highlightings.addLast(entry);
@@ -99,10 +109,11 @@ public class ERDHighlightingManger {
 
     @NotNull
     public ERDHighlightingHandle highlight(@NotNull IFigure part, @NotNull Color color) {
-        return highlightedParts.computeIfAbsent(part, p -> new PartHighlighter(p)).highlight(color);
+        return highlightedParts.computeIfAbsent(part, PartHighlighter::new).highlight(color);
     }
-    
-    private ERDHighlightingHandle makeHighlightingGroupHandle(ListNode<ERDHighlightingHandle> highlightings) {
+
+    @Nullable
+    private ERDHighlightingHandle makeHighlightingGroupHandle(@Nullable ListNode<ERDHighlightingHandle> highlightings) {
         if (highlightings == null) {
             return null;
         } else {
@@ -113,13 +124,14 @@ public class ERDHighlightingManger {
             };
         }
     }
-    
-    public ERDHighlightingHandle highlightAttributeAssociations(AttributePart attributePart, Color color) {
+
+    @Nullable
+    public ERDHighlightingHandle highlightAttributeAssociations(@NotNull AttributePart attributePart, @NotNull Color color) {
         if (!(attributePart.getParent() instanceof EntityPart)) {
             return null; 
         }
-        
-        ListNode<ERDHighlightingHandle> highlightings = null; 
+
+        ListNode<ERDHighlightingHandle> highlightings = null;
         EntityPart entityPart = (EntityPart)attributePart.getParent();
         
         for (Object connection : entityPart.getSourceConnections()) {
@@ -135,8 +147,9 @@ public class ERDHighlightingManger {
         
         return this.makeHighlightingGroupHandle(highlightings);
     }
-    
-    private ListNode<ERDHighlightingHandle> highlightAttributeAssociation(AttributePart attributePart, AssociationPart associationPart, Color color, ListNode<ERDHighlightingHandle> highlightings) {
+
+    @NotNull
+    private ListNode<ERDHighlightingHandle> highlightAttributeAssociation(@NotNull AttributePart attributePart, @NotNull AssociationPart associationPart, @Nullable Color color, @Nullable ListNode<ERDHighlightingHandle> highlightings) {
         if (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
             associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute())) {
             highlightings = ListNode.push(highlightings, this.highlight(associationPart.getFigure(), color));
@@ -146,12 +159,13 @@ public class ERDHighlightingManger {
         }
     }
 
-    public ERDHighlightingHandle highlightAssociationAndRelatedAttributes(AssociationPart associationPart, Color color) {
+    @Nullable
+    public ERDHighlightingHandle highlightAssociationAndRelatedAttributes(@NotNull AssociationPart associationPart, @NotNull Color color) {
         return this.makeHighlightingGroupHandle(highlightAssociationRelatedAttributes(associationPart, color, null));
     }
-    
-    private ListNode<ERDHighlightingHandle> highlightAssociationRelatedAttributes(AssociationPart associationPart, Color color, ListNode<ERDHighlightingHandle> highlightings) {
 
+    @NotNull
+    private ListNode<ERDHighlightingHandle> highlightAssociationRelatedAttributes(@NotNull AssociationPart associationPart, @NotNull Color color, @Nullable ListNode<ERDHighlightingHandle> highlightings) {
         if (associationPart.getSource() instanceof EntityPart) {
             for (AttributePart attrPart : getEntityAttributes((EntityPart) associationPart.getSource(), associationPart.getAssociation().getSourceAttributes())) {
                 highlightings = ListNode.push(highlightings, this.highlight(attrPart.getFigure(), color));
@@ -166,11 +180,12 @@ public class ERDHighlightingManger {
         return highlightings;
     }
 
-    private List<AttributePart> getEntityAttributes(EntityPart source, List<ERDEntityAttribute> columns) {
+    @NotNull
+    private List<AttributePart> getEntityAttributes(@NotNull EntityPart source, @NotNull List<ERDEntityAttribute> columns) {
         List<AttributePart> result = new ArrayList<>(columns.size());
         for (Object attrPart : source.getChildren()) {
-            if (attrPart instanceof AttributePart && columns.contains(((AttributePart)attrPart).getAttribute())) {
-                result.add((AttributePart)attrPart);
+            if (attrPart instanceof AttributePart && columns.contains(((AttributePart) attrPart).getAttribute())) {
+                result.add((AttributePart) attrPart);
             }
         }
         return result;
