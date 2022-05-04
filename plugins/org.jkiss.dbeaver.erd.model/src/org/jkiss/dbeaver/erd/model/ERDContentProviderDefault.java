@@ -71,7 +71,7 @@ public class ERDContentProviderDefault implements ERDContentProvider {
                         keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) assoc));
                     }
                 }
-                for (DBSEntityConstraint constraint : DBVUtils.getAllConstraints(monitor, entity)) {
+                for (DBSEntityConstraint constraint : CommonUtils.safeCollection(entity.getConstraints(monitor))) {
                     if (constraint instanceof DBSEntityReferrer) {
                         keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) constraint));
                     }
