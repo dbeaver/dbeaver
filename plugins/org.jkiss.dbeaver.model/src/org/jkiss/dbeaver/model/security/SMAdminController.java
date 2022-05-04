@@ -45,7 +45,7 @@ public interface SMAdminController extends SMController {
 
     void setUserMeta(String userId, Map<String, Object> metaParameters) throws DBException;
 
-    void setUserStatus(String userId, boolean status) throws DBException;
+    void enableUser(String userId, boolean enabled) throws DBException;
 
     ///////////////////////////////////////////
     // Roles
