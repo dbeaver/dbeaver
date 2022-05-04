@@ -165,6 +165,13 @@
                 </with>
             </activeWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.erd.diagram.saveAs" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerSaveImage">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart"/>
+                </with>
+            </activeWhen>
+        </handler>
 
     </extension>
 
@@ -410,11 +417,19 @@
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.erd.diagram.view" name="%command.org.jkiss.dbeaver.erd.diagram.view.name" description="%command.org.jkiss.dbeaver.erd.diagram.view.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.erd.diagram.create" name="%command.org.jkiss.dbeaver.erd.diagram.create.name" description="%command.org.jkiss.dbeaver.erd.diagram.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.erd.diagram.saveAs" name="%command.org.jkiss.dbeaver.erd.diagram.saveAs.name" description="%command.org.jkiss.dbeaver.erd.diagram.saveAs.description" categoryId="org.eclipse.gef3.category.view"/>
+        <command id="org.jkiss.dbeaver.erd.toggleHand" name="%command.org.jkiss.dbeaver.erd.toggleHand.name" description="%command.org.jkiss.dbeaver.erd.toggleHand.description" categoryId="org.eclipse.gef3.category.view"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="icons/erd.png"/>
         <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="icons/erd.png"/>
+        <image commandId="org.jkiss.dbeaver.erd.toggleHand" icon="platform:/plugin/org.jkiss.dbeaver.erd.ui/icons/move.png"/>
+        <image commandId="org.jkiss.dbeaver.erd.diagram.saveAs" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/picture_save.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.erd.toggleHand" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -515,6 +530,7 @@
         <exportFormat ext="png" label="PNG format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
         <exportFormat ext="gif" label="GIF format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
         <exportFormat ext="bmp" label="BMP format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
+        <exportFormat ext="erd" label="ERD format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportERD"/>
         <exportFormat ext="graphml" label="GraphML format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportGraphML"/>
     </extension>
 
