@@ -558,7 +558,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @param dirty the new dirty state to set
      */
-    protected void setDirty(boolean dirty)
+    public void setDirty(boolean dirty)
     {
         if (isDirty != dirty) {
             isDirty = dirty;

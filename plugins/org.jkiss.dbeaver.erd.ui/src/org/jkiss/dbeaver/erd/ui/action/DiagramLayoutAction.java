@@ -31,21 +31,18 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
  *
  * @author Serge Rider
  */
-public class DiagramLayoutAction extends Action
-{
-	private ERDEditorPart editor;
+public class DiagramLayoutAction extends Action {
+    private ERDEditorPart editor;
 
-	public DiagramLayoutAction(ERDEditorPart editor)
-	{
-		super(ERDUIMessages.action_diagram_layout_name, DBeaverIcons.getImageDescriptor(ERDIcon.ARRANGE_ALL));
-		this.editor = editor;
-	}
+    public DiagramLayoutAction(ERDEditorPart editor) {
+        super(ERDUIMessages.action_diagram_layout_name, DBeaverIcons.getImageDescriptor(ERDIcon.ARRANGE_ALL));
+        this.editor = editor;
+    }
 
-	@Override
-    public void run()
-	{
-        //editor.get
+    @Override
+    public void run() {
         editor.getDiagramPart().rearrangeDiagram();
-	}
+        editor.setDirty(true);
+    }
 
 }
