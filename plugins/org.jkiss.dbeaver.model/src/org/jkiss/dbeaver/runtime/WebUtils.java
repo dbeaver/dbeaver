@@ -31,6 +31,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.net.*;
+import java.text.NumberFormat;
 import java.util.Base64;
 
 /**
@@ -128,8 +129,7 @@ public class WebUtils {
         final URLConnection connection = openConnection(externalURL, authInfo, null);
         final int contentLength = connection.getContentLength();
         final byte[] buffer = new byte[8192];
-        final ByteNumberFormat numberFormat = new ByteNumberFormat();
-        numberFormat.setUseLongUnitNames(true);
+        final NumberFormat numberFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
 
         // The value of getContentLength() may be -1 and this should not be handled, see IProgressMonitor#UNKNOWN
         monitor.beginTask(taskName + " - " + externalURL, contentLength);
