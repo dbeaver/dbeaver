@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.erd.ui.part;
 
 import org.eclipse.draw2dl.*;
-import org.eclipse.draw2dl.geometry.Dimension;
 import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.PointList;
 import org.eclipse.draw2dl.geometry.Rectangle;
@@ -132,25 +131,25 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             }
             if (entityPart instanceof GraphicalEditPart) {
                 // Self link
-                final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
-                //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
-                //final Dimension entitySize = entity.getFigure().getSize();
-                final Dimension figureSize = entityFigure.getMinimumSize();
-                int entityWidth = figureSize.width;
-                int entityHeight = figureSize.height;
-
-                List<RelativeBendpoint> bends = new ArrayList<>();
-                {
-                    RelativeBendpoint bp1 = new RelativeBendpoint(conn);
-                    bp1.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2), new Dimension(entityWidth / 2, entityHeight / 2));
-                    bends.add(bp1);
-                }
-                {
-                    RelativeBendpoint bp2 = new RelativeBendpoint(conn);
-                    bp2.setRelativeDimensions(new Dimension(-entityWidth, entityHeight / 2), new Dimension(entityWidth, entityHeight));
-                    bends.add(bp2);
-                }
-                conn.setRoutingConstraint(bends);
+//                final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
+//                //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
+//                //final Dimension entitySize = entity.getFigure().getSize();
+//                final Dimension figureSize = entityFigure.getMinimumSize();
+//                int entityWidth = figureSize.width;
+//                int entityHeight = figureSize.height;
+//
+//                List<RelativeBendpoint> bends = new ArrayList<>();
+//                {
+//                    RelativeBendpoint bp1 = new RelativeBendpoint(conn);
+//                    bp1.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2), new Dimension(entityWidth / 2, entityHeight / 2));
+//                    bends.add(bp1);
+//                }
+//                {
+//                    RelativeBendpoint bp2 = new RelativeBendpoint(conn);
+//                    bp2.setRelativeDimensions(new Dimension(-entityWidth, entityHeight / 2), new Dimension(entityWidth, entityHeight));
+//                    bends.add(bp2);
+//                }
+//                conn.setRoutingConstraint(bends);
             }
         }
     }

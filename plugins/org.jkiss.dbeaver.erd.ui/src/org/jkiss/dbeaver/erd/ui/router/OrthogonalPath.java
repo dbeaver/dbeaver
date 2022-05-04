@@ -22,10 +22,55 @@ import org.eclipse.draw2dl.geometry.PointList;
 
 public class OrthogonalPath {
     private boolean isDirty;
-    private PointList bendPoints;
+    private PointList points;
+    private PointList bendpoints;
+    private  OrthogonalPath subPath;
     private Connection connection;
+    private Direction forbiddenDirection;
+    private boolean isChild;
     Point start;
     Point end;
+
+    public enum Direction {
+        UP,
+        DOWN,
+        RIGHT,
+        LEFT
+    }
+
+    public void updateForbiddenDirection(Point origin) {
+        if (start.x == origin.x) {
+            if (start.y > origin.y) {
+                forbiddenDirection = Direction.DOWN;
+            } else {
+                forbiddenDirection = Direction.UP;
+            }
+        }
+        if (start.y == origin.y) {
+            if (start.x > origin.x) {
+                forbiddenDirection = Direction.LEFT;
+            } else {
+                forbiddenDirection = Direction.RIGHT;
+            }
+        }
+        setChild(true);
+    }
+
+    public boolean isChild() {
+        return isChild;
+    }
+
+    public void setChild(boolean child) {
+        isChild = child;
+    }
+
+    public Direction getForbiddenDirection() {
+        return forbiddenDirection;
+    }
+
+    public void setForbiddenDirection(Direction forbiddenDirection) {
+        this.forbiddenDirection = forbiddenDirection;
+    }
 
     public Point getStart() {
         return start;
@@ -35,8 +80,8 @@ public class OrthogonalPath {
         return end;
     }
 
-    public PointList getBendPoints() {
-        return bendPoints;
+    public PointList getPoints() {
+        return points;
     }
 
     public Connection getConnection() {
@@ -66,8 +111,16 @@ public class OrthogonalPath {
         }
     }
 
-    public void setBendPoints(PointList points) {
-        this.bendPoints = points;
+    public void setPoints(PointList points) {
+        this.points = points;
         this.isDirty = true;
+    }
+
+    public PointList getBendpoints() {
+        return bendpoints;
+    }
+
+    public void setBendpoints(PointList bendpoints) {
+        this.bendpoints = bendpoints;
     }
 }

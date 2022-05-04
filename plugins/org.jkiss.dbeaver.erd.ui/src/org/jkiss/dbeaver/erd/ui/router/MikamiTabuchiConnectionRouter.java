@@ -116,7 +116,7 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
             path.setStartPoint(start);
             path.setEndPoint(end);
             if (constraint.isEmpty()) {
-                path.setBendPoints(null);
+                path.setBendpoints(null);
             } else {
                 PointList bends = new PointList(constraint.size());
                 for (Object o : constraint) {
@@ -124,7 +124,7 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
                     bends.addPoint(bp.getLocation());
                 }
 
-                path.setBendPoints(bends);
+                path.setBendpoints(bends);
             }}
 
         this.staleConnections.clear();
@@ -146,15 +146,15 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
             this.ignoreInvalidate = true;
             this.processStaleConnections();
             this.isDirty = false;
-            this.algorithm.setClientArea(container.getClientArea());
+            this.algorithm.setClientArea(container);
             List<OrthogonalPath> updated = this.algorithm.solve();
             for (OrthogonalPath path : updated) {
-                if (path == null || path.getBendPoints() == null) {
+                if (path == null || path.getPoints() == null) {
                     continue;
                 }
                 Connection current = path.getConnection();
                 current.revalidate();
-                PointList points = path.getBendPoints().getCopy();
+                PointList points = path.getPoints().getCopy();
                 Point ref1 = new PrecisionPoint(points.getPoint(1));
                 Point ref2 = new PrecisionPoint(points.getPoint(points.size() - 2));
                 current.translateToAbsolute(ref1);

@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.erd.ui.router;
 
 
+import org.eclipse.draw2dl.Connection;
+import org.eclipse.draw2dl.IFigure;
 import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.PointList;
 import org.eclipse.draw2dl.geometry.PrecisionPoint;
@@ -25,10 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.utils.Pair;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -44,12 +43,15 @@ import java.util.stream.Collectors;
 public class MikamiTabuchiRouter {
 
     private int spacing = 15;
-    private List<Rectangle> obstacles = new ArrayList<>();
+    private final List<Rectangle> obstacles = new ArrayList<>();
     private PrecisionPoint start, finish;
+    private final List<OrthogonalPath> workingPaths = new ArrayList<>();
     private final List<OrthogonalPath> userPaths = new ArrayList<>();
-
+    private Map<OrthogonalPath, List<OrthogonalPath>> pathsToChildPaths = new HashMap<>();
     //Increase for performance, increasing this parameter lowers accuracy.
-    private static final int STEP_SIZE = 1;
+    private static final int STEP_SIZE = 5;
+
+    private Set<Point> pointSet;
 
     private static final int SOURCE_VERTICAL_LINES = 0;
     private static final int SOURCE_HORIZONTAL_LINES = 1;
@@ -60,29 +62,23 @@ public class MikamiTabuchiRouter {
 
     //In worst case scenarios line search may become laggy,
     //if after this amount iterations nothing was found -> stop
-    private static final int MAX_LINE_COUNT = 600000;
+    private static final int MAX_LINE_COUNT = 100000;
     private int currentLineCount;
 
 
-    Rectangle clientArea;
+    IFigure clientArea;
 
-    public void setObstacles(List<Rectangle> obstacles) {
-        this.obstacles = obstacles;
-    }
-
-    public void setClientArea(Rectangle clientArea) {
+    public void setClientArea(IFigure clientArea) {
         this.clientArea = clientArea;
     }
 
     private Pair<TrialLine, TrialLine> result;
 
     private void createLinesFromTrial(TrialLine pos, int iter) {
-        //possible optimisation
-        //We don't want to create line if line of the same orientation already crosses this point.
         float from = pos.vertical ? pos.from.y : pos.from.x;
         float start = pos.start;
         float end = pos.finish;
-        for (float i = (pos.hasForbiddenRange() ? pos.creationForbiddenStart - 1 : from); i >= start; i -= STEP_SIZE) {
+        for (float i = (pos.hasForbiddenStart() ? pos.creationForbiddenStart - 1 : from); i >= start; i -= STEP_SIZE) {
             currentLineCount++;
             if (createTrial(pos, iter, i)) {
                 break;
@@ -91,7 +87,7 @@ public class MikamiTabuchiRouter {
                 return;
             }
         }
-        for (float i = (pos.hasForbiddenRange() ? pos.creationForbiddenFinish + 1 : from); i < end; i += STEP_SIZE) {
+        for (float i = (pos.hasForbiddenFinish() ? pos.creationForbiddenFinish + 1 : from); i < end; i += STEP_SIZE) {
             currentLineCount++;
             if (createTrial(pos, iter, i)) {
                 break;
@@ -104,10 +100,16 @@ public class MikamiTabuchiRouter {
 
     private boolean createTrial(TrialLine pos, int iter, float i) {
         TrialLine trialLine = createTrialLine(i, !pos.vertical, pos);
+        if (trialLine == null) {
+            return false;
+        }
         getLinesMap(trialLine, iter).add(trialLine);
         final TrialLine interception = trialLine.findIntersection();
         // We found needed line, finish execution
         if (interception != null) {
+            if (pointSet.contains(getInterceptionPoint(trialLine, interception))) {
+                return false;
+            }
             if (result == null) {
                 result = new Pair<>(trialLine, interception);
                 return true;
@@ -145,13 +147,19 @@ public class MikamiTabuchiRouter {
         }
     }
 
+    @Nullable
     private TrialLine createTrialLine(float pos, boolean vertical, @NotNull TrialLine parentLine) {
         final TrialLine trialLine;
+        PrecisionPoint point;
         if (vertical) {
-            trialLine = new TrialLine(new PrecisionPoint(pos, parentLine.from.y), parentLine);
+            point = new PrecisionPoint(pos, parentLine.from.y);
         } else {
-            trialLine = new TrialLine(new PrecisionPoint(parentLine.from.x, pos), parentLine);
+            point = new PrecisionPoint(parentLine.from.x, pos);
         }
+        if (pointSet.contains(point)) {
+            return null;
+        }
+        trialLine = new TrialLine(point, parentLine);
         return trialLine;
     }
 
@@ -182,31 +190,110 @@ public class MikamiTabuchiRouter {
                 points.addPoint(line.from);
             }
             point = line.from;
+            pointSet.add(point);
             line = line.getParent();
         }
         points.reverse();
         point = getInterceptionPoint(res.getFirst(), res.getSecond());
+        pointSet.add(point);
         points.addPoint(point);
         line = res.getSecond();
         while (line != null) {
             if (!line.from.equals(point)) {
                 points.addPoint(line.from);
             }
+            point = line.from;
+            pointSet.add(point);
             line = line.getParent();
         }
         return points;
     }
 
     public List<OrthogonalPath> solve() {
-        List<OrthogonalPath> updated = new ArrayList<>();
-        spacing = 15;
-        for (OrthogonalPath userPath : userPaths.stream().filter(OrthogonalPath::isDirty).collect(Collectors.toList())) {
-
-            final PointList pointList = solveConnection(userPath.getStart(), userPath.getEnd());
-            userPath.setBendPoints(pointList);
-            updated.add(userPath);
+        pointSet = new HashSet<>();
+        updateChildPaths();
+        for (OrthogonalPath userPath : workingPaths.stream().filter(OrthogonalPath::isDirty).collect(Collectors.toList())) {
+            final PointList pointList = solvePath(userPath);
+            userPath.setPoints(pointList);
         }
-        return updated;
+        recombineChildrenPaths();
+        return Collections.unmodifiableList(userPaths);
+    }
+
+    private void updateChildPaths() {
+        for (OrthogonalPath path : userPaths) {
+            if (path.isDirty()) {
+                List<OrthogonalPath> children = this.pathsToChildPaths.get(path);
+                int previousCount = 1;
+                int newCount = 1;
+                if (children == null) {
+                    children = new ArrayList<>();
+                } else {
+                    previousCount = children.size();
+                }
+                if (path.getBendpoints() != null) {
+                    newCount = path.getBendpoints().size() + 1;
+                }
+
+                if (previousCount != newCount) {
+                    children = this.regenerateChildPaths(path, children, previousCount, newCount, path.getConnection());
+                }
+
+                this.refreshChildrenEndpoints(path, children);
+            }
+        }
+    }
+
+    private void refreshChildrenEndpoints(OrthogonalPath path, List<OrthogonalPath> children) {
+        Point previous = path.getStart();
+        PointList bendPoints = path.getBendpoints();
+
+        for (int i = 0; i < children.size(); ++i) {
+            Point next;
+            if (i < bendPoints.size()) {
+                next = bendPoints.getPoint(i);
+            } else {
+                next = path.getEnd();
+            }
+            OrthogonalPath child = children.get(i);
+            child.setStartPoint(previous);
+            child.setEndPoint(next);
+            previous = next;
+        }
+        Point previousPointFinish;
+        for (int i = 1; i < children.size() - 1; i++) {
+            previousPointFinish = children.get(i - 1).end;
+            children.get(i).updateForbiddenDirection(previousPointFinish);
+        }
+    }
+
+    private List<OrthogonalPath> regenerateChildPaths(OrthogonalPath path, List<OrthogonalPath> orthogonalPaths, int currentCount, int newCount, Connection connection) {
+        if (currentCount == 1) {
+            this.workingPaths.remove(path);
+            currentCount = 0;
+            orthogonalPaths = new ArrayList<>();
+            this.pathsToChildPaths.put(path, orthogonalPaths);
+        } else if (newCount == 1) {
+            this.workingPaths.removeAll(orthogonalPaths);
+            this.workingPaths.add(path);
+            this.pathsToChildPaths.remove(path);
+            return Collections.EMPTY_LIST;
+        }
+
+        OrthogonalPath child;
+        while (currentCount < newCount) {
+            child = new OrthogonalPath(connection);
+            orthogonalPaths.add(child);
+            this.workingPaths.add(child);
+            ++currentCount;
+        }
+        while (currentCount > newCount) {
+            child = orthogonalPaths.remove(orthogonalPaths.size() - 1);
+            this.workingPaths.remove(child);
+            --currentCount;
+        }
+
+        return orthogonalPaths;
     }
 
     private double calculateDistance(Pair<TrialLine, TrialLine> res) {
@@ -221,21 +308,24 @@ public class MikamiTabuchiRouter {
     }
 
     @Nullable
-    private PointList solveConnection(Point start, Point finish) {
-        if (start.equals(finish)) {
-            return null;
+    private PointList solvePath(OrthogonalPath path) {
+        if (path.getStart().equals(path.getEnd())) {
+            PointList pointList = new PointList();
+            pointList.addPoint(path.getStart());
+            pointList.addPoint(path.getEnd());
+            return pointList;
         }
         //Client are
-        if (!clientArea.contains(start) || !clientArea.contains(finish)) {
-            return null;
+        if (!clientArea.getClientArea().contains(path.start) || !clientArea.getClientArea().contains(path.end)) {
+            clientArea.getUpdateManager().performUpdate();
         }
         linesMap = new HashMap<>();
-        this.start = new PrecisionPoint(start);
+        this.start = new PrecisionPoint(path.start);
         result = null;
-        this.finish = new PrecisionPoint(finish);
+        this.finish = new PrecisionPoint(path.end);
         int iter = 0;
         currentLineCount = 0;
-        initStartingTrialLines();
+        initStartingTrialLines(path.isChild(), path.getForbiddenDirection());
         while (result == null && currentLineCount < MAX_LINE_COUNT) {
             linesMap.put(iter + 1, new HashMap<>());
             initNewLayer(iter + 1);
@@ -243,7 +333,10 @@ public class MikamiTabuchiRouter {
                 for (TrialLine trialLine : linesMap.get(iter).get(i)) {
                     createLinesFromTrial(trialLine, iter + 1);
                     if (currentLineCount > MAX_LINE_COUNT) {
-                        return null;
+                        PointList pointList = new PointList();
+                        pointList.addPoint(start);
+                        pointList.addPoint(finish);
+                        return pointList;
                     }
                     if (result != null) {
                         return traceback(result);
@@ -255,13 +348,37 @@ public class MikamiTabuchiRouter {
         return null;
     }
 
-    private void initStartingTrialLines() {
-        //Deviation from an original algorithm, we want only lines what connect with point horizontally
-        final TrialLine horizontalStartTrial = new TrialLine(start, true, false);
-        final TrialLine horizontalFinishTrial = new TrialLine(finish, false, false);
 
+    private void recombineChildrenPaths() {
+
+        for (OrthogonalPath path : this.pathsToChildPaths.keySet()) {
+            path.getPoints().removeAllPoints();
+            List<OrthogonalPath> childPaths = this.pathsToChildPaths.get(path);
+            OrthogonalPath childPath = null;
+
+            for (OrthogonalPath orthogonalPath : childPaths) {
+                childPath = orthogonalPath;
+                path.getPoints().addAll(childPath.getPoints());
+                path.getPoints().removePoint(path.getPoints().size() - 1);
+            }
+
+            path.getPoints().addPoint(childPath.getPoints().getLastPoint());
+        }
+
+    }
+
+    private void initStartingTrialLines(boolean child, OrthogonalPath.Direction forbiddenDirection) {
+        //Deviation from an original algorithm, we want only lines what connect with point horizontally
         linesMap.put(0, new HashMap<>());
         initNewLayer(0);
+        final TrialLine horizontalStartTrial = new TrialLine(start, true, false, forbiddenDirection);
+        final TrialLine horizontalFinishTrial = new TrialLine(finish, false, false, forbiddenDirection);
+        if (child) {
+            final TrialLine verticalStartTrial = new TrialLine(start, true, true, forbiddenDirection);
+            final TrialLine verticalFinishTrial = new TrialLine(finish, false, true, forbiddenDirection);
+            linesMap.get(0).get(SOURCE_VERTICAL_LINES).add(verticalStartTrial);
+            linesMap.get(0).get(TARGET_VERTICAL_LINES).add(verticalFinishTrial);
+        }
         linesMap.get(0).get(SOURCE_HORIZONTAL_LINES).add(horizontalStartTrial);
         linesMap.get(0).get(TARGET_HORIZONTAL_LINES).add(horizontalFinishTrial);
     }
@@ -278,9 +395,16 @@ public class MikamiTabuchiRouter {
 
     public void removePath(OrthogonalPath path) {
         this.userPaths.remove(path);
+        List<OrthogonalPath> orthogonalPaths = this.pathsToChildPaths.get(path);
+        if (orthogonalPaths == null) {
+            this.workingPaths.remove(path);
+        } else {
+            this.workingPaths.remove(path);
+        }
     }
 
     public void addPath(OrthogonalPath path) {
+        this.workingPaths.add(path);
         this.userPaths.add(path);
     }
 
@@ -298,7 +422,7 @@ public class MikamiTabuchiRouter {
         boolean vertical;
 
         //Starting line is always inside figure, we don't want to create trial line inside it
-        private void calculateForbiddenRange() {
+        private void calculateForbiddenRange(OrthogonalPath.Direction forbiddenDirection) {
             for (Rectangle it : obstacles) {
                 if (isInsideFigure(it, true)) {
                     if (vertical) {
@@ -310,9 +434,37 @@ public class MikamiTabuchiRouter {
                     }
                 }
             }
+            if (forbiddenDirection != null) {
+                switch (forbiddenDirection) {
+                    case DOWN:
+                        if (vertical) {
+                            creationForbiddenStart = this.from.y + spacing;
+                        }
+                        break;
+                    case UP:
+                        if (vertical) {
+                            creationForbiddenFinish = this.from.y - spacing;
+                        }
+                        break;
+                    case LEFT:
+                        if (!vertical) {
+                            creationForbiddenStart = this.from.x - spacing;
+                        }
+                        break;
+                    case RIGHT:
+                        if (!vertical) {
+                            creationForbiddenFinish = this.from.x + spacing;
+                        }
+                        break;
+                }
+            }
         }
 
-        public boolean hasForbiddenRange() {
+        public boolean hasForbiddenStart() {
+            return creationForbiddenStart != Integer.MIN_VALUE;
+        }
+
+        public boolean hasForbiddenFinish() {
             return creationForbiddenFinish != Integer.MIN_VALUE;
         }
 
@@ -327,12 +479,12 @@ public class MikamiTabuchiRouter {
             cutByObstacles(false);
         }
 
-        TrialLine(PrecisionPoint start, boolean fromSource, boolean vertical) {
+        TrialLine(PrecisionPoint start, boolean fromSource, boolean vertical, OrthogonalPath.Direction forbiddenDirection) {
             this.from = start;
             this.vertical = vertical;
             this.fromSource = fromSource;
             this.cutByObstacles(true);
-            this.calculateForbiddenRange();
+            this.calculateForbiddenRange(forbiddenDirection);
         }
 
         private boolean isInsideFigure(Rectangle it, boolean ignoreOffset) {
@@ -362,13 +514,13 @@ public class MikamiTabuchiRouter {
             }
             if (finish == Integer.MIN_VALUE) {
                 if (vertical) {
-                    finish = clientArea.getBottom().y;
+                    finish = clientArea.getClientArea().getBottom().y;
                 } else {
-                    finish = clientArea.getRight().x;
+                    finish = clientArea.getClientArea().getRight().x;
                 }
             }
             if (start == Integer.MIN_VALUE) {
-                start = vertical ? clientArea.getTop().y : clientArea.getLeft().x;
+                start = vertical ? clientArea.getClientArea().getTop().y : clientArea.getClientArea().getLeft().x;
             }
         }
 
