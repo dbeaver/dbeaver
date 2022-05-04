@@ -24,6 +24,7 @@ import java.util.Map;
 public class SMUser {
     private final String userId;
     private final Map<String, String> metaParameters = new LinkedHashMap<>();
+    private boolean active = true;
 
     public SMUser(@NotNull String userId) {
         this.userId = userId;
@@ -34,6 +35,16 @@ public class SMUser {
         this.metaParameters.putAll(metaParameters);
     }
 
+    public SMUser(@NotNull String userId, boolean active) {
+        this.userId = userId;
+        this.active = active;
+    }
+    public SMUser(@NotNull String userId, @NotNull Map<String, String> metaParameters, boolean active) {
+        this.userId = userId;
+        this.metaParameters.putAll(metaParameters);
+        this.active = active;
+    }
+
     @NotNull
     public String getUserId() {
         return userId;
@@ -42,6 +53,14 @@ public class SMUser {
     @NotNull
     public Map<String, String> getMetaParameters() {
         return metaParameters;
+    }
+
+    public boolean getStatus() {
+        return active;
+    }
+
+    public void setStatus(boolean status) {
+        this.active = status;
     }
 
     public void setMetaParameter(String name, String value) {
