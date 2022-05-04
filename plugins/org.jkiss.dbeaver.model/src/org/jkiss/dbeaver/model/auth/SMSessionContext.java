@@ -36,6 +36,9 @@ public interface SMSessionContext {
     @Nullable
     SMSession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull SMAuthSpace space, boolean open) throws DBException;
 
+    @Nullable
+    SMSession findSpaceSession(@NotNull SMAuthSpace space);
+
     SMAuthToken[] getSavedTokens();
 
     void addSession(@NotNull SMSession session);

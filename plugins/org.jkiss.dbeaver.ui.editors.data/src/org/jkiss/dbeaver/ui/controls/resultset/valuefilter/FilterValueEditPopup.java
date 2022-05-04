@@ -171,7 +171,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
 
                 @Override
                 public String getText(Object element) {
-                    if (element instanceof DBDLabelValuePairExt) {
+                    if (element instanceof DBDLabelValuePairExt && isRowCountEnabled()) {
                         return numberFormat.format(((DBDLabelValuePairExt) element).getCount());
                     } else {
                         return null;

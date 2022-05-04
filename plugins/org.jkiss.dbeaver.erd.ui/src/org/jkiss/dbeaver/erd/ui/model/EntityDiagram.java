@@ -118,6 +118,7 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
 
     public void clear() {
         super.clear();
+        this.getNotes().clear();
         this.noteVisuals.clear();
         this.entityVisuals.clear();
     }
