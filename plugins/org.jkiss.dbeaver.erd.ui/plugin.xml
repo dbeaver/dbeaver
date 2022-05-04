@@ -424,8 +424,8 @@
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="icons/erd.png"/>
         <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="icons/erd.png"/>
-        <image commandId="org.jkiss.dbeaver.erd.toggleHand" icon="platform:/plugin/org.jkiss.dbeaver.erd.ui/icons/move.png"/>
         <image commandId="org.jkiss.dbeaver.erd.diagram.saveAs" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/picture_save.png"/>
+        <image commandId="org.jkiss.dbeaver.erd.toggleHand" icon="platform:/plugin/org.jkiss.dbeaver.erd.ui/icons/move.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
@@ -532,18 +532,6 @@
         <exportFormat ext="bmp" label="BMP format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportRasterImage"/>
         <exportFormat ext="erd" label="ERD format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportERD"/>
         <exportFormat ext="graphml" label="GraphML format" class="org.jkiss.dbeaver.erd.ui.export.ERDExportGraphML"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.erd.toggleHand" name="Toggle hand tool" description="Cycle through hand tool and previously used tool" categoryId="org.eclipse.gef3.category.view"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.bindings">
-        <key commandId="org.jkiss.dbeaver.erd.toggleHand" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.erd.toggleHand" icon="platform:/plugin/org.jkiss.dbeaver.erd.ui/icons/move.png"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.confirmations">
