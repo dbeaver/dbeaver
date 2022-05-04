@@ -38,6 +38,8 @@ public class SQLServerAuthModelNTLM extends SQLServerAuthModelAbstract {
 
     @Override
     public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
+        super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
+
         connProperties.put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY, String.valueOf(true));
         connProperties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION_SCHEME, SQLServerConstants.AUTH_NTLM);
         String userName = configuration.getUserName();
