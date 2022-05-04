@@ -43,6 +43,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
@@ -106,7 +107,9 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -162,6 +165,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private ERDDecorator decorator;
     private ZoomComboContributionItem zoomCombo;
     private NavigatorViewerAdapter navigatorViewerAdapter;
+    private ERDHighlightingManger highlightingManager = new ERDHighlightingManger();
 
     /**
      * No-arg constructor
@@ -182,6 +186,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             decorator = createDecorator();
         }
         return decorator;
+    }
+    
+    public ERDHighlightingManger getHighlightingManager() {
+        return highlightingManager;
     }
 
     /////////////////////////////////////////
@@ -1268,55 +1276,102 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     private class Searcher implements ISearchExecutor {
         @Nullable
+        private String searchString = null;
+        @Nullable
         private Pattern curSearchPattern;
         private boolean resultsFound;
-
+        private boolean isPrevStepWasFwd;
+        @Nullable
+        private List<Object> results = null;
+        @Nullable
+        private ListIterator<Object> resultsIterator = null;
+        @Nullable
+        private Object currentItem = null;
+        @Nullable
+        private List<ERDHighlightingHandle> highlightings = new LinkedList<>();
+        
         @Override
         public boolean performSearch(@NotNull String searchString, int options) {
-            String likePattern = SQLUtils.makeLikePattern(searchString);
-            if (likePattern.isEmpty() || (curSearchPattern != null && likePattern.equals(curSearchPattern.pattern()))) {
-                return resultsFound;
-            }
-
-            try {
-                curSearchPattern = Pattern.compile(likePattern, Pattern.CASE_INSENSITIVE);
-            } catch (PatternSyntaxException e) {
-                log.warn("Unable to perform search in ERD editor due to an inability to compile search pattern", e);
-                if (progressControl != null) {
-                    progressControl.setInfo(e.getMessage());
+            if (this.results != null && this.searchString != null && this.searchString.equals(searchString)) {
+                return findNextResult(options == SEARCH_NEXT);
+            } else {
+                this.cancelSearch();
+                results = new ArrayList<>();
+                this.searchString = searchString;
+                String likePattern = SQLUtils.makeLikePattern(searchString);
+                if (likePattern.isEmpty() || (curSearchPattern != null && likePattern.equals(curSearchPattern.pattern()))) {
+                    return resultsFound;
                 }
-                return false;
-            }
 
-            resultsFound = false;
-            ERDGraphicalViewer graphicalViewer = getGraphicalViewer();
-            graphicalViewer.deselectAll();
-            List<Object> nodes = getDiagramPart().getChildren();
-            List<?> allNodesChildren = new ArrayList<>();
-            for (Object node : nodes) {
-                if (node instanceof EntityPart) {
-                    List children = ((EntityPart) node).getChildren();
-                    if (!CommonUtils.isEmpty(children)) {
-                        allNodesChildren.addAll(children);
+                try {
+                    curSearchPattern = Pattern.compile(likePattern, Pattern.CASE_INSENSITIVE);
+                } catch (PatternSyntaxException e) {
+                    log.warn("Unable to perform search in ERD editor due to an inability to compile search pattern", e);
+                    if (progressControl != null) {
+                        progressControl.setInfo(e.getMessage());
                     }
+                    return false;
                 }
-            }
-            if (!CommonUtils.isEmpty(allNodesChildren)) {
-                nodes.addAll(allNodesChildren);
-            }
-            if (!CommonUtils.isEmpty(nodes)) {
-                Object obj = nodes.get(0);
-                if (obj instanceof DBPNamedObject && obj instanceof EditPart) {
-                    for (Object node: nodes) {
-                        if (matchesSearch((DBPNamedObject) node)) {
-                            resultsFound = true;
-                            graphicalViewer.appendSelection((EditPart) node);
-                            graphicalViewer.reveal((EditPart) node);
+
+                resultsFound = false;
+                ERDGraphicalViewer graphicalViewer = getGraphicalViewer();
+                graphicalViewer.deselectAll();
+                List<Object> nodes = getDiagramPart().getChildren();
+                List<?> allNodesChildren = new ArrayList<>();
+                for (Object node : nodes) {
+                    if (node instanceof EntityPart) {
+                        List children = ((EntityPart) node).getChildren();
+                        if (!CommonUtils.isEmpty(children)) {
+                            allNodesChildren.addAll(children);
                         }
                     }
                 }
+                if (!CommonUtils.isEmpty(allNodesChildren)) {
+                    nodes.addAll(allNodesChildren);
+                }
+                if (!CommonUtils.isEmpty(nodes)) {
+                    Object obj = nodes.get(0);
+                    if (obj instanceof DBPNamedObject && obj instanceof EditPart) {
+                        Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_SEARCH_HIGHLIGHTING);
+                        for (Object node : nodes) {
+                            DBPNamedObject erdNode = (DBPNamedObject) node;
+                            if (matchesSearch(erdNode)) {
+                                resultsFound = true;
+                                results.add(erdNode);
+                                if (erdNode instanceof GraphicalEditPart) {
+                                    highlightings.add(highlightingManager.highlight(((GraphicalEditPart)erdNode).getFigure(), color));
+                                }
+                                graphicalViewer.reveal((EditPart) node);
+                            }
+                        }
+                    }
+                }
+                resultsIterator = results.listIterator();
+                return resultsFound;
             }
-            return resultsFound;
+        }
+
+        private boolean findNextResult(boolean isFindNext) {
+            if (resultsFound && results != null) {
+                if (resultsIterator == null || isFindNext ? !resultsIterator.hasNext() : !resultsIterator.hasPrevious()) {
+                    resultsIterator = results.listIterator();
+                }
+
+                if (isPrevStepWasFwd != isFindNext) { 
+                    // direction change gets current item again as if it's a new loop initialization 
+                    currentItem = isFindNext ? resultsIterator.next() : resultsIterator.previous(); 
+                }
+                isPrevStepWasFwd = isFindNext;
+                currentItem = isFindNext ? resultsIterator.next() : resultsIterator.previous();
+
+                ERDGraphicalViewer graphicalViewer = getGraphicalViewer();
+                graphicalViewer.deselectAll();
+                graphicalViewer.select((EditPart)currentItem);
+                graphicalViewer.reveal((EditPart)currentItem);
+                return true;
+            } else {
+                return false;
+            }
         }
 
         @Override
@@ -1325,6 +1380,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 curSearchPattern = null;
                 if (resultsFound) {
                     resultsFound = false;
+                    results = null;
+                    currentItem = null;
+                    resultsIterator = null;
+                    highlightings.forEach(h -> h.release());
+                    highlightings.clear();
                     getGraphicalViewer().deselectAll();
                 }
             }

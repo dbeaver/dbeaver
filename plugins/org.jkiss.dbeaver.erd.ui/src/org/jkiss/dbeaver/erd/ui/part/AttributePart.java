@@ -19,15 +19,20 @@ package org.jkiss.dbeaver.erd.ui.part;
 import org.eclipse.draw2dl.IFigure;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.tools.DragEditPartsTracker;
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.command.AttributeCheckCommand;
+import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
+import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.erd.ui.figures.EditableLabel;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeDragAndDropEditPolicy;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.util.Map;
@@ -40,6 +45,8 @@ import java.util.Map;
 public class AttributePart extends PropertyAwarePart {
 
     public static final String PROP_CHECKED = "CHECKED";
+
+    private ERDHighlightingHandle associatedRelationsHighlighing = null;
 
     public AttributePart() {
 
@@ -117,6 +124,16 @@ public class AttributePart extends PropertyAwarePart {
             }
         }
         columnLabel.repaint();
+
+        if (value != EditPart.SELECTED_NONE) {
+            if (this.getViewer() instanceof ERDGraphicalViewer && associatedRelationsHighlighing == null) {
+                Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
+                associatedRelationsHighlighing = ((ERDGraphicalViewer)this.getViewer()).getEditor().getHighlightingManager().highlightAttributeAssociations(this, color);
+            }
+        } else if (associatedRelationsHighlighing != null) {
+            associatedRelationsHighlighing.release();
+            associatedRelationsHighlighing  = null;
+        }
     }
 
     public void handleNameChange() {
