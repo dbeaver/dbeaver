@@ -331,6 +331,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
     }
 
     private static void exportEdge(int index, ERDElement<?> node, NodePart nodePart, Map<ERDElement<?>, String> associations, XMLBuilder xml) throws IOException {
+        int associationIndex = 0;
         for (ERDAssociation association : node.getAssociations()) {
             AssociationPart associationPart = nodePart.getConnectionPart(association, true);
             if (associationPart == null) {
@@ -339,7 +340,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
             }
 
             xml.startElement("edge");
-            xml.addAttribute("id", "edge" + index);
+            xml.addAttribute("id", "edge" + index + "-" + (associationIndex++));
             xml.addAttribute("source", associations.get(node));
             xml.addAttribute("target", associations.get(association.getTargetEntity()));
 
