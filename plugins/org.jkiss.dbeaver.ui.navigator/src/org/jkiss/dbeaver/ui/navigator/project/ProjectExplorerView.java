@@ -35,9 +35,9 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -52,7 +52,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
     private ViewerColumnController columnController;
-    private final NumberFormat sizeFormat = new DecimalFormat();
+    private final NumberFormat sizeFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
 
     public ProjectExplorerView() {
         DBPPlatformEclipse.getInstance().getWorkspace().addProjectListener(this);

@@ -51,8 +51,7 @@ public class ByteNumberFormatTest {
 
     @Test
     public void testFormatLong() {
-        final ByteNumberFormat format = new ByteNumberFormat();
-        format.setUseLongUnitNames(true);
+        final ByteNumberFormat format = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
         Assert.assertEquals("0", format.format(0));
         Assert.assertEquals("512B", format.format(KB / 2));
         Assert.assertEquals("1023B", format.format(KB - 1));

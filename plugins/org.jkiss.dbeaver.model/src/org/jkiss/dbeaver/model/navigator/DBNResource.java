@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -57,6 +58,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
+    private final ByteNumberFormat numberFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
     private IResource resource;
     private DBPResourceHandler handler;
     private DBNNode[] children;
@@ -535,8 +537,9 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     }
 
     @Property(viewable = true, order = 11)
-    public long getResourceSize() {
-        return resource == null ? 0 : resource.getLocation().toFile().length();
+    public String getResourceSize() {
+        long size = resource == null ? 0 : resource.getLocation().toFile().length();
+        return numberFormat.format(size);
     }
 
     @Property(viewable = true, order = 11)
