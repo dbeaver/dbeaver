@@ -343,11 +343,23 @@ public class ProjectMetadata implements DBPProject {
     }
 
     private void saveProperties() {
+        if (isInMemory()) {
+            return;
+        }
+
         Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
         String settingsString = METADATA_GSON.toJson(properties);
-        try (Writer settingsWriter = new OutputStreamWriter(Files.newOutputStream(settingsFile), StandardCharsets.UTF_8)) {
-            settingsWriter.write(settingsString);
-        } catch (Throwable e) {
+
+        try {
+            Path configFolder = settingsFile.getParent();
+            if (!Files.exists(configFolder)) {
+                Files.createDirectories(configFolder);
+            }
+
+            try (Writer settingsWriter = new OutputStreamWriter(Files.newOutputStream(settingsFile), StandardCharsets.UTF_8)) {
+                settingsWriter.write(settingsString);
+            }
+        } catch (Exception e) {
             log.error("Error writing project '" + getName() + "' setting to "  + settingsFile.toAbsolutePath(), e);
         }
     }

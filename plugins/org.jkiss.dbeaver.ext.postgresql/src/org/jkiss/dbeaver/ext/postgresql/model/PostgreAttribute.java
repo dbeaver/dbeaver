@@ -277,7 +277,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Nullable
-    @Property(viewable = true, editable = true, order = 28)
+    @Property(viewable = true, editableExpr = "!object.table.view", order = 28)
     public PostgreAttributeIdentity getIdentity() {
         return identity;
     }
@@ -292,7 +292,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 50)
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 50)
     public boolean isRequired()
     {
         return super.isRequired();
@@ -311,7 +311,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 70)
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 70)
     public String getDefaultValue()
     {
         if (isGeneratedColumn) {
@@ -358,7 +358,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.description = description;
     }
 
-    @Property(viewable = true, editable = true, order = 30, listProvider = CollationListProvider.class)
+    @Property(viewable = true, editableExpr = "!object.table.view", order = 30, listProvider = CollationListProvider.class)
     public PostgreCollation getCollation(DBRProgressMonitor monitor) throws DBException {
         if (collationId <= 0) {
             return null;
@@ -401,7 +401,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
+    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 20, listProvider = DataTypeListProvider.class)
     public String getFullTypeName() {
         if (dataType == null) {
             return getTypeName();

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.utils.ArrayUtils;
 
 /**
  * TreeLoadVisualizer
@@ -74,6 +75,11 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
             viewerControl.setRedraw(false);
 
             {
+                if (children == null) {
+                    // Some error occurred. In good case children must be at least an empty array
+                    viewer.collapseToLevel(parent, AbstractTreeViewer.ALL_LEVELS);
+                }
+
                 TreeItem item = (TreeItem) viewer.testFindItem(placeHolder);
                 if (item != null && !item.isDisposed()) {
                     if ((item.getParentItem() == null || !item.getParentItem().isDisposed()) || this.parent instanceof IWorkspaceRoot) {
@@ -81,10 +87,7 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
                     }
                 }
 
-                if (children == null) {
-                    // Some error occurred. In good case children must be at least an empty array
-                    viewer.collapseToLevel(parent, -1);
-                } else if (children.length != 0) {
+                if (!ArrayUtils.isEmpty(children)) {
                     boolean isEmpty = false;
                     if (viewerControl instanceof Tree) {
                         isEmpty = ((Tree) viewerControl).getItemCount() == 0;

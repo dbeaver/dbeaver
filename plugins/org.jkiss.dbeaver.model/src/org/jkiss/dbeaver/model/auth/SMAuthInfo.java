@@ -17,22 +17,16 @@
 package org.jkiss.dbeaver.model.auth;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-
-import java.util.Set;
+import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 
 public class SMAuthInfo {
     @NotNull
     private final String authToken;
-    @Nullable
-    private final String userId;
-    @NotNull
-    private final Set<String> permissions;
+    private final SMAuthPermissions userInfo;
 
-    public SMAuthInfo(@NotNull String authToken, @Nullable String userId, @NotNull Set<String> permissions) {
+    public SMAuthInfo(@NotNull String authToken, @NotNull SMAuthPermissions userInfo) {
         this.authToken = authToken;
-        this.userId = userId;
-        this.permissions = permissions;
+        this.userInfo = userInfo;
     }
 
     @NotNull
@@ -41,12 +35,7 @@ public class SMAuthInfo {
     }
 
     @NotNull
-    public Set<String> getPermissions() {
-        return permissions;
-    }
-
-    @Nullable
-    public String getUserId() {
-        return userId;
+    public SMAuthPermissions getUserInfo() {
+        return userInfo;
     }
 }

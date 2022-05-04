@@ -242,7 +242,7 @@ public abstract class DBVUtils {
             }
             if (formatValues && keyValue instanceof Date) {
                 // Convert dates into string to avoid collisions
-                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
+                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.UI);
             }
             String keyLabel;
             long keyCount = 0;
