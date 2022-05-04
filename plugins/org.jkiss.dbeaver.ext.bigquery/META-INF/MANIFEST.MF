@@ -11,4 +11,5 @@ Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.bigquery
 Export-Package: org.jkiss.dbeaver.ext.bigquery,
- org.jkiss.dbeaver.ext.bigquery.model
+ org.jkiss.dbeaver.ext.bigquery.model,
+ org.jkiss.dbeaver.ext.bigquery.auth

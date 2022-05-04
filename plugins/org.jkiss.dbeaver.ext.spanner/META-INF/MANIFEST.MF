@@ -11,4 +11,5 @@ Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.spanner
 Export-Package: org.jkiss.dbeaver.ext.spanner,
- org.jkiss.dbeaver.ext.spanner.model
+ org.jkiss.dbeaver.ext.spanner.model,
+ org.jkiss.dbeaver.ext.spanner.auth
