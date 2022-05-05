@@ -65,10 +65,10 @@ public class DiagramLoader extends ERDPersistedState {
 
     private static class ElementSaveInfo {
         final ERDElement element;
-        final CustomisablePart customisablePart;
+        final NodePart customisablePart;
         final int objectId;
 
-        private ElementSaveInfo(ERDElement element, CustomisablePart customisablePart, int objectId)
+        private ElementSaveInfo(ERDElement element, NodePart customisablePart, int objectId)
         {
             this.element = element;
             this.customisablePart = customisablePart;
@@ -587,7 +587,7 @@ public class DiagramLoader extends ERDPersistedState {
         return dsMap;
     }
 
-    private static void saveColorAndOrder(List allNodeFigures, XMLBuilder xml, CustomisablePart customisablePart) throws IOException {
+    private static void saveColorAndOrder(List allNodeFigures, XMLBuilder xml, NodePart customisablePart) throws IOException {
         if (customisablePart != null) {
             xml.addAttribute(ATTR_ORDER, allNodeFigures.indexOf(customisablePart.getFigure()));
             if (customisablePart.getCustomTransparency()) {

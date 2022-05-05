@@ -197,8 +197,8 @@ public class DiagramPart extends PropertyAwarePart {
     public void rearrangeDiagram()
     {
         for (Object part : getChildren()) {
-            if (part instanceof CustomisablePart) {
-                resetConnectionConstraints(((CustomisablePart) part).getSourceConnections());
+            if (part instanceof NodePart) {
+                resetConnectionConstraints(((NodePart) part).getSourceConnections());
             }
         }
         //delegatingLayoutManager.set
@@ -263,8 +263,8 @@ public class DiagramPart extends PropertyAwarePart {
         List<?> entityParts = getChildren();
 
         for (Object child : entityParts) {
-            if (child instanceof CustomisablePart) {
-                CustomisablePart entityPart = (CustomisablePart) child;
+            if (child instanceof NodePart) {
+                NodePart entityPart = (NodePart) child;
                 IFigure entityFigure = entityPart.getFigure();
 
                 //if we don't find a node for one of the children then we should
@@ -293,8 +293,8 @@ public class DiagramPart extends PropertyAwarePart {
         List<?> nodeParts = getChildren();
 
         for (Object child : nodeParts) {
-            if (child instanceof CustomisablePart) {
-                CustomisablePart entityPart = (CustomisablePart) child;
+            if (child instanceof NodePart) {
+                NodePart entityPart = (NodePart) child;
                 //now check whether we can find an entry in the tableToNodesMap
                 Rectangle bounds = entityPart.getBounds();
                 if (bounds == null) {
@@ -363,7 +363,7 @@ public class DiagramPart extends PropertyAwarePart {
     @Nullable
     public ICustomizablePart getChildByObject(Object object) {
         for (Object child : getChildren()) {
-            if (child instanceof ICustomizablePart && ((CustomisablePart) child).getElement().getObject() == object) {
+            if (child instanceof ICustomizablePart && ((NodePart) child).getElement().getObject() == object) {
                 return (ICustomizablePart) child;
             }
         }

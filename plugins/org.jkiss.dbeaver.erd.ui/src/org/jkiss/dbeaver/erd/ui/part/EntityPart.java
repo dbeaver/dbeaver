@@ -19,6 +19,8 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
+import org.eclipse.draw2dl.ChopboxAnchor;
+import org.eclipse.draw2dl.ConnectionAnchor;
 import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.*;
@@ -48,7 +50,7 @@ import java.util.Map;
  *
  * @author Serge Rider
  */
-public class EntityPart extends CustomisablePart {
+public class EntityPart extends NodePart {
     protected DirectEditManager manager;
 
     public EntityPart() {
@@ -281,5 +283,25 @@ public class EntityPart extends CustomisablePart {
     @Override
     protected void addTargetConnection(ConnectionEditPart connection, int index) {
 
+    }
+
+    @Override
+    public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connectionEditPart) {
+        return new ChopboxAnchor(getFigure());
+    }
+
+    @Override
+    public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connectionEditPart) {
+        return new ChopboxAnchor(getFigure());
+    }
+
+    @Override
+    public ConnectionAnchor getSourceConnectionAnchor(Request request) {
+        return new ChopboxAnchor(getFigure());
+    }
+
+    @Override
+    public ConnectionAnchor getTargetConnectionAnchor(Request request) {
+        return new ChopboxAnchor(getFigure());
     }
 }

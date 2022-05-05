@@ -47,7 +47,7 @@ public class MikamiTabuchiRouter {
     private PrecisionPoint start, finish;
     private final List<OrthogonalPath> workingPaths = new ArrayList<>();
     private final List<OrthogonalPath> userPaths = new ArrayList<>();
-    private Map<OrthogonalPath, List<OrthogonalPath>> pathsToChildPaths = new HashMap<>();
+    private final Map<OrthogonalPath, List<OrthogonalPath>> pathsToChildPaths = new HashMap<>();
     //Increase for performance, increasing this parameter lowers accuracy.
     private static final int STEP_SIZE = 5;
 
@@ -62,7 +62,7 @@ public class MikamiTabuchiRouter {
 
     //In worst case scenarios line search may become laggy,
     //if after this amount iterations nothing was found -> stop
-    private static final int MAX_LINE_COUNT = 100000;
+    private static final int MAX_LINE_COUNT = 200000;
     private int currentLineCount;
 
 
@@ -121,6 +121,15 @@ public class MikamiTabuchiRouter {
         return false;
     }
 
+    boolean pointLiesOnPreviouslyCreatedPath(Point point) {
+        for (OrthogonalPath workingPath : workingPaths) {
+            if (workingPath.getPoints() != null && workingPath.getPoints().polylineContainsPoint(point.x, point.y, 2)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @NotNull
     private List<TrialLine> getLinesMap(TrialLine line, int iteration) {
         if (line.vertical) {
@@ -156,7 +165,7 @@ public class MikamiTabuchiRouter {
         } else {
             point = new PrecisionPoint(parentLine.from.x, pos);
         }
-        if (pointSet.contains(point)) {
+        if (pointSet.contains(point) || pointLiesOnPreviouslyCreatedPath(point)) {
             return null;
         }
         trialLine = new TrialLine(point, parentLine);

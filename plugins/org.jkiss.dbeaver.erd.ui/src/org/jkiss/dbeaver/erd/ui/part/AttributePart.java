@@ -70,7 +70,7 @@ public class AttributePart extends NodePart {
 
     @Override
     protected void addSourceConnection(ConnectionEditPart connection, int index) {
-        if (this.getFigure().isShowing()) {
+        if (this.getFigure().isVisible()) {
             if (((AssociationPart) connection).getAssociation().getSourceAttributes().contains(getAttribute())) {
                 super.addSourceConnection(connection, index);
             }
@@ -91,7 +91,7 @@ public class AttributePart extends NodePart {
 
     @Override
     protected void addTargetConnection(ConnectionEditPart connection, int index) {
-        if (this.getFigure().isShowing()) {
+        if (this.getFigure().isVisible()) {
             if (((AssociationPart) connection).getAssociation().getTargetAttributes().contains(getAttribute())) {
                 super.addTargetConnection(connection, index);
             }

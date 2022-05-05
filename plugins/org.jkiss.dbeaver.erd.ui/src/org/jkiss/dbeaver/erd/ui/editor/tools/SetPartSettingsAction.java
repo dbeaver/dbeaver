@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.erd.ui.part.ICustomizablePart;
-import org.jkiss.dbeaver.erd.ui.part.CustomisablePart;
+import org.jkiss.dbeaver.erd.ui.part.NodePart;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;
 import org.jkiss.dbeaver.ui.SharedFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -67,7 +67,7 @@ public class SetPartSettingsAction extends SelectionAction {
 
     protected boolean calculateEnabled() {
         for (Object item : selection.toArray()) {
-            if (item instanceof CustomisablePart) {
+            if (item instanceof NodePart) {
                 return true;
             }
         }
@@ -90,12 +90,12 @@ public class SetPartSettingsAction extends SelectionAction {
             public void execute() {
                 final Shell shell = UIUtils.createCenteredShell(getWorkbenchPart().getSite().getShell());
                 try {
-                    CustomisablePart customisablePart = null;
+                    NodePart customisablePart = null;
                     boolean hasNotes = false, hasEntities = false;
                     for (Object item : objects) {
-                        if (item instanceof CustomisablePart) {
+                        if (item instanceof NodePart) {
                             if (customisablePart == null) {
-                                customisablePart = (CustomisablePart) item;
+                                customisablePart = (NodePart) item;
                             }
                             if (item instanceof NotePart) {
                                 hasNotes = true;
@@ -170,7 +170,7 @@ public class SetPartSettingsAction extends SelectionAction {
 
     private static class PartSettingsDialog extends BaseDialog {
 
-        private final CustomisablePart node;
+        private final NodePart node;
         private final boolean noteStyles;
         private final boolean entityStyles;
         private Button transparentCheckbox;
@@ -180,7 +180,7 @@ public class SetPartSettingsAction extends SelectionAction {
         private String fontData;
         private ViewSettings newSettings = new ViewSettings();
 
-        public PartSettingsDialog(Shell parentShell, CustomisablePart node, boolean noteStyles, boolean entityStyles) {
+        public PartSettingsDialog(Shell parentShell, NodePart node, boolean noteStyles, boolean entityStyles) {
             super(parentShell, ERDUIMessages.erd_settings_dialog_text_title, null);
             this.node = node;
             this.noteStyles = noteStyles;

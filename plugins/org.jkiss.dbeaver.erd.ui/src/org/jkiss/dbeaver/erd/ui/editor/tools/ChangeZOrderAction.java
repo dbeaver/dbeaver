@@ -22,7 +22,7 @@ import org.eclipse.gef3.ui.actions.SelectionAction;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
-import org.jkiss.dbeaver.erd.ui.part.CustomisablePart;
+import org.jkiss.dbeaver.erd.ui.part.NodePart;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class ChangeZOrderAction extends SelectionAction {
 
     protected boolean calculateEnabled() {
         for (Object item : selection.toArray()) {
-            if (item instanceof CustomisablePart) {
+            if (item instanceof NodePart) {
                 return true;
             }
         }
@@ -63,8 +63,8 @@ public class ChangeZOrderAction extends SelectionAction {
             @Override
             public void execute() {
                 for (Object item : objects) {
-                    if (item instanceof CustomisablePart) {
-                        IFigure child = ((CustomisablePart) item).getFigure();
+                    if (item instanceof NodePart) {
+                        IFigure child = ((NodePart) item).getFigure();
                         final IFigure parent = child.getParent();
                         final List children = parent.getChildren();
                         if (children != null) {

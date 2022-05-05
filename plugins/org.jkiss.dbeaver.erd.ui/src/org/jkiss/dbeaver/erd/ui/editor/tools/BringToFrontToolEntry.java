@@ -22,7 +22,7 @@ import org.eclipse.gef3.SharedImages;
 import org.eclipse.gef3.palette.ToolEntry;
 import org.eclipse.gef3.tools.SelectionTool;
 import org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart;
-import org.jkiss.dbeaver.erd.ui.part.CustomisablePart;
+import org.jkiss.dbeaver.erd.ui.part.NodePart;
 
 public class BringToFrontToolEntry extends ToolEntry {
 
@@ -42,14 +42,14 @@ public class BringToFrontToolEntry extends ToolEntry {
             final ERDEditorPart editorPart = (ERDEditorPart)editDomain.getEditorPart();
             final GraphicalViewer viewer = editorPart.getViewer();
             for (Object child : editorPart.getDiagramPart().getChildren()) {
-                if (child instanceof CustomisablePart) {
-                    bringToFront((CustomisablePart)child);
+                if (child instanceof NodePart) {
+                    bringToFront((NodePart)child);
                 }
             }
             super.activate();
         }
 
-        private void bringToFront(CustomisablePart part) {
+        private void bringToFront(NodePart part) {
 
         }
     }
