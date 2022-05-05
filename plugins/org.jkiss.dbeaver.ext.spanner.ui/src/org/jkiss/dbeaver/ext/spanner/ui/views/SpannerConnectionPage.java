@@ -79,11 +79,11 @@ public class SpannerConnectionPage extends ConnectionPageWithAuth implements IDi
             projectText.addModifyListener(textListener);
 
             instanceText = UIUtils.createLabelText(addrGroup, SpannerMessages.label_instance, ""); //$NON-NLS-2$
-            instanceText.setToolTipText("Spanner Instance ID"); //$NON-NLS-1$
+            instanceText.setToolTipText(SpannerMessages.label_instance_tip);
             instanceText.addModifyListener(textListener);
 
             databaseText = UIUtils.createLabelText(addrGroup, SpannerMessages.label_database, ""); //$NON-NLS-2$
-            databaseText.setToolTipText("Spanner Database ID"); //$NON-NLS-1$
+            databaseText.setToolTipText(SpannerMessages.label_database_tip);
             databaseText.addModifyListener(textListener);
         }
 

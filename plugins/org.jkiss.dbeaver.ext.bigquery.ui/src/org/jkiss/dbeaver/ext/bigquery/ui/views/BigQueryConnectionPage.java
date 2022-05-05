@@ -53,8 +53,6 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
     private Text hostText;
     private Text portText;
 
-    private boolean needsServerInfo;
-
     private static ImageDescriptor logoImage = BigQueryActivator.getImageDescriptor("icons/bigquery_logo.png"); //$NON-NLS-1$
     private DriverPropertiesDialogPage driverPropsPage;
 
@@ -86,25 +84,22 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
             projectText.addModifyListener(textListener);
 
             extraProjectsText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_additional_project, ""); //$NON-NLS-2$
-            extraProjectsText.setToolTipText("Coma-separated list of projects (optional)"); //$NON-NLS-1$
+            extraProjectsText.setToolTipText(BigQueryMessages.label_additional_project_tip);
             extraProjectsText.addModifyListener(textListener);
         }
 
-        needsServerInfo = CommonUtils.getBoolean(getSite().getDriver().getDriverParameter("needsServerInfo"), true);
-        if (needsServerInfo) {
-            // Def host/port
-            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, BigQueryMessages.label_server_info, 4, 0, 0);
-            addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        // Def host/port
+        Composite addrGroup = UIUtils.createControlGroup(settingsGroup, BigQueryMessages.label_server_info, 4, 0, 0);
+        addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            hostText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_host, BigQueryConstants.DEFAULT_HOST_NAME);
-            hostText.addModifyListener(textListener);
+        hostText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_host, BigQueryConstants.DEFAULT_HOST_NAME);
+        hostText.addModifyListener(textListener);
 
-            portText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_port, String.valueOf(BigQueryConstants.DEFAULT_PORT));
-            GridData gd = (GridData) portText.getLayoutData();
-            gd.widthHint = UIUtils.getFontHeight(portText) * 7;
-            portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-            portText.addModifyListener(textListener);
-        }
+        portText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_port, String.valueOf(BigQueryConstants.DEFAULT_PORT));
+        GridData gd = (GridData) portText.getLayoutData();
+        gd.widthHint = UIUtils.getFontHeight(portText) * 7;
+        portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+        portText.addModifyListener(textListener);
 
         createAuthPanel(settingsGroup, 1);
 
@@ -113,10 +108,8 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
     }
 
     @Override
-    public boolean isComplete()
-    {
-        return projectText != null && !CommonUtils.isEmpty(projectText.getText()) &&
-            (!needsServerInfo || (portText != null && CommonUtils.isNotEmpty(portText.getText()) && hostText != null && !CommonUtils.isEmpty(hostText.getText())));
+    public boolean isComplete() {
+        return projectText != null && !CommonUtils.isEmpty(projectText.getText());
     }
 
     @Override

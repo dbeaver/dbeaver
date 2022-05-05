@@ -12,14 +12,14 @@
                 description="%datasource.spanner.description"
                 id="google_spanner"
                 parent="generic"
-                label="Google Spanner"
+                label="Google Cloud Spanner"
                 icon="icons/spanner_icon.png"
                 dialect="spanner">
             <drivers managable="true">
 
                 <driver
                         id="spanner_jdbc_official"
-                        label="Google Spanner"
+                        label="Google Cloud Spanner"
                         icon="icons/spanner_icon.png"
                         iconBig="icons/spanner_icon_big.png"
                         class="com.google.cloud.spanner.jdbc.JdbcDriver"
@@ -63,7 +63,7 @@
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
                 id="spanner_auth"
-                label="Database native"
+                label="Google Cloud Auth"
                 description="Spanner internal authentication"
                 class="org.jkiss.dbeaver.ext.spanner.auth.SpannerAuthModel"
                 default="true">

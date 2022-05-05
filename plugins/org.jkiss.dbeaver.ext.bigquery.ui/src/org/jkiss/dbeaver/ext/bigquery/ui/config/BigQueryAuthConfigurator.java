@@ -40,7 +40,7 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
     @Override
     public void createControl(Composite authPanel, DBAAuthModel object, Runnable propertyChangeListener) {
         usernameText = UIUtils.createLabelText(authPanel, BigQueryMessages.label_service_account, ""); //$NON-NLS-2$
-        usernameText.setToolTipText("Google account email address. Can be left empty if auth type is service based and key file contains all user info (JSON)."); //$NON-NLS-1$
+        usernameText.setToolTipText(BigQueryMessages.label_service_account_tip);
 
         UIUtils.createControlLabel(authPanel, BigQueryMessages.label_oauth_type);
         authTypeCombo = new Combo(authPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -90,10 +90,5 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
         if (authCertFile != null) {
             connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH, authCertFile.getText().trim());
         }
-    }
-
-    @Override
-    public boolean isComplete() {
-        return super.isComplete() && authCertFile != null && CommonUtils.isNotEmpty(authCertFile.getText());
     }
 }
