@@ -81,6 +81,7 @@ import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.erd.ui.part.NodePart;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -108,6 +109,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -165,6 +167,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private ZoomComboContributionItem zoomCombo;
     private NavigatorViewerAdapter navigatorViewerAdapter;
 
+    private String exportMruFilename = null;
+
     /**
      * No-arg constructor
      */
@@ -192,9 +196,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     @Override
     public DBNNode getRootNode() {
-        IEditorInput editorInput = this.getEditorInput();
-        if (editorInput instanceof IDatabaseEditorInput) {
-            return ((IDatabaseEditorInput) editorInput).getNavigatorNode();
+        IDatabaseEditorInput dbEditorInput = getDatabaseEditorInput();
+        if (dbEditorInput != null) {
+            return dbEditorInput.getNavigatorNode();
         }
         return null;
     }
@@ -259,10 +263,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
-    public DBECommandContext getCommandContext() {
+    public IDatabaseEditorInput getDatabaseEditorInput() {
         IEditorInput editorInput = this.getEditorInput();
-        if (editorInput instanceof IDatabaseEditorInput) {
-            return ((IDatabaseEditorInput) editorInput).getCommandContext();
+        return editorInput instanceof IDatabaseEditorInput ? (IDatabaseEditorInput) editorInput : null;
+    }
+
+    public DBECommandContext getCommandContext() {
+        IDatabaseEditorInput dbEditorInput = getDatabaseEditorInput();
+        if (dbEditorInput != null) {
+            return dbEditorInput.getCommandContext();
         }
         return null;
     }
@@ -691,10 +700,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         refreshDiagram(force, true);
         return RefreshResult.REFRESHED;
     }
-
-    public void saveDiagramAs()
+    
+    public void saveDiagramAs() 
     {
+        IDatabaseEditorInput dbEditorInput = getDatabaseEditorInput();
         List<ERDExportFormatRegistry.FormatDescriptor> allFormats = ERDExportFormatRegistry.getInstance().getFormats();
+
         String[] extensions = new String[allFormats.size()];
         String[] filterNames = new String[allFormats.size()];
         for (int i = 0; i < allFormats.size(); i++) {
@@ -705,6 +716,32 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         FileDialog saveDialog = new FileDialog(shell, SWT.SAVE);
         saveDialog.setFilterExtensions(extensions);
         saveDialog.setFilterNames(filterNames);
+
+        String proposedFileName = exportMruFilename;
+        if (CommonUtils.isEmpty(proposedFileName) && dbEditorInput != null) {
+            proposedFileName = dbEditorInput.getErdExportMruFileName();
+        }
+        if (CommonUtils.isEmpty(proposedFileName)) {
+            proposedFileName = this.getTitle();
+        }
+        if (CommonUtils.isEmpty(proposedFileName)) {
+            LinkedList<String> parts = new LinkedList<>();
+            EntityDiagram diagram = this.getDiagram(); 
+            DBSObject obj = diagram.getRootObjectContainer();
+            if (obj == null && diagram.getEntities().size() > 0) {
+                obj = diagram.getEntities().get(0).getObject();
+            }
+            while (obj != null && !(obj instanceof DBPDataSourceContainer)) {
+                parts.addFirst(obj.getName());
+                obj = obj.getParentObject();
+            }
+            
+            if (parts.isEmpty()) {
+                parts.add("unnammed");
+            }
+            proposedFileName = String.join(" - ", parts);
+        }
+        saveDialog.setFileName(proposedFileName);
 
         String filePath = DialogUtils.openFileDialog(saveDialog);
         if (filePath == null || filePath.trim().length() == 0) {
@@ -717,6 +754,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 return;
             }
         }
+
+        if (dbEditorInput != null) {
+            // to preserve last used filename between workspace sessions for restored editor instance
+            dbEditorInput.setErdExportMruFileName(outFile.getName());
+        }
+        exportMruFilename = outFile.getName();
 
         int divPos = filePath.lastIndexOf('.');
         if (divPos == -1) {

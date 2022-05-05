@@ -73,6 +73,8 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, IPersistab
     private DBPDataSourceContainer dataSourceContainer;
     private final String inputClass;
 
+    private String erdExportMruFileName;
+
     public DatabaseLazyEditorInput(IMemento memento) {
         this.memento = memento;
 
@@ -93,6 +95,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, IPersistab
             nodeName = divPos == -1 ? nodePath : nodePath.substring(divPos + 1);
         }
 
+        erdExportMruFileName = memento.getString(DatabaseEditorInputFactory.ERD_EXPORT_MRU_FILENAME);
     }
 
     @Override
@@ -184,6 +187,16 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, IPersistab
     @Override
     public Object setAttribute(String name, Object value) {
         return null;
+    }
+
+    @Override
+    public String getErdExportMruFileName() {
+        return this.erdExportMruFileName;
+    }
+    
+    @Override
+    public void setErdExportMruFileName(String value) {
+        this.erdExportMruFileName = value;
     }
 
     @Override
@@ -285,6 +298,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, IPersistab
                 DatabaseNodeEditorInput realInput = new DatabaseNodeEditorInput((DBNDatabaseNode) node);
                 realInput.setDefaultFolderId(activeFolderId);
                 realInput.setDefaultPageId(activePageId);
+                realInput.setErdExportMruFileName(erdExportMruFileName);
                 return realInput;
             } else {
                 throw new DBException("Database node has bad type: " + node.getClass().getName());
@@ -312,6 +326,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, IPersistab
         if (!CommonUtils.isEmpty(nodeName)) memento.putString(DatabaseEditorInputFactory.TAG_NODE_NAME, nodeName);
         if (!CommonUtils.isEmpty(activePageId)) memento.putString(DatabaseEditorInputFactory.TAG_ACTIVE_PAGE, activePageId);
         if (!CommonUtils.isEmpty(activeFolderId)) memento.putString(DatabaseEditorInputFactory.TAG_ACTIVE_FOLDER, activeFolderId);
+        if (!CommonUtils.isEmpty(erdExportMruFileName)) memento.putString(DatabaseEditorInputFactory.ERD_EXPORT_MRU_FILENAME, erdExportMruFileName);
     }
 
 }

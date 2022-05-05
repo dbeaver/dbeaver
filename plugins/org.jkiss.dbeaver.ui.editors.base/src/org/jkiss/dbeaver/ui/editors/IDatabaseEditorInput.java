@@ -65,4 +65,8 @@ public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextP
     Object getAttribute(String name);
 
     Object setAttribute(String name, Object value);
+
+    String getErdExportMruFileName();
+    
+    void setErdExportMruFileName(String value);
 }

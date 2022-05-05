@@ -35,6 +35,8 @@ public class DatabaseEditorInputFactory implements IElementFactory
     static final String TAG_NODE_NAME = "node-name"; //$NON-NLS-1$
     static final String TAG_ACTIVE_PAGE = "page"; //$NON-NLS-1$
     static final String TAG_ACTIVE_FOLDER = "folder"; //$NON-NLS-1$
+    static final String ERD_EXPORT_MRU_FILENAME = "erd.export.mruFilename"; //$NON-NLS-1$
+
 
     private static volatile boolean lookupEditor;
 
@@ -51,7 +53,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
         return new DatabaseLazyEditorInput(memento);
     }
 
-    public static void saveState(IMemento memento, DatabaseEditorInput input) {
+    public static void saveState(IMemento memento, DatabaseEditorInput<?> input) {
         if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DatabaseEditorPreferences.PROP_SAVE_EDITORS_STATE)) {
             return;
         }
@@ -75,6 +77,9 @@ public class DatabaseEditorInputFactory implements IElementFactory
         }
         if (!CommonUtils.isEmpty(input.getDefaultFolderId())) {
             memento.putString(TAG_ACTIVE_FOLDER, input.getDefaultFolderId());
+        }
+        if (!CommonUtils.isEmpty(input.getErdExportMruFileName())) {
+            memento.putString(ERD_EXPORT_MRU_FILENAME, input.getErdExportMruFileName());
         }
     }
 

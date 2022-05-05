@@ -56,6 +56,8 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     private String defaultFolderId;
     private final Map<String, Object> attributes = new LinkedHashMap<>();
 
+    private String erdExportMruFileName = null;
+
     protected DatabaseEditorInput(@Nullable NODE node)
     {
         this(node, null);
@@ -207,6 +209,16 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     public void setDefaultFolderId(String defaultFolderId)
     {
         this.defaultFolderId = defaultFolderId;
+    }
+
+    @Override
+    public String getErdExportMruFileName() {
+        return this.erdExportMruFileName;
+    }
+
+    @Override
+    public void setErdExportMruFileName(String value) {
+        this.erdExportMruFileName = value;
     }
 
     @Override
