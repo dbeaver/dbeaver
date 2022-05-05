@@ -102,10 +102,10 @@ public class PostgreJobStepManager extends SQLObjectEditor<PostgreJobStep, Postg
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         final PostgreJobStep step = command.getObject();
-        final StringJoiner values = new StringJoiner(", ");
+        final StringJoiner values = new StringJoiner(",\n\t");
 
-        if (command.getProperty("description") != null) {
-            values.add("jstdesc=" + SQLUtils.quoteString(step.getDataSource(), step.getDescription()));
+        if (command.hasProperty("description")) {
+            values.add("jstdesc=" + SQLUtils.quoteString(step.getDataSource(), CommonUtils.notEmpty(step.getDescription())));
         }
 
         if (command.getProperty("kind") != null) {
@@ -116,11 +116,11 @@ public class PostgreJobStepManager extends SQLObjectEditor<PostgreJobStep, Postg
             values.add("jstonerror=" + SQLUtils.quoteString(step.getDataSource(), step.getOnError().name()));
         }
 
-        if (command.getProperty("remoteConnectionString") != null) {
-            values.add("jstconnstr=" + SQLUtils.quoteString(step.getDataSource(), step.getRemoteConnectionString()));
+        if (command.hasProperty("remoteConnectionString")) {
+            values.add("jstconnstr=" + SQLUtils.quoteString(step.getDataSource(), CommonUtils.notEmpty(step.getRemoteConnectionString())));
         }
 
-        if (command.getProperty("targetDatabase") != null) {
+        if (command.hasProperty("targetDatabase")) {
             values.add("jstdbname=" + SQLUtils.quoteString(step.getDataSource(), step.getTargetDatabase() == null ? "" : step.getTargetDatabase().getName()));
         }
 
@@ -135,7 +135,7 @@ public class PostgreJobStepManager extends SQLObjectEditor<PostgreJobStep, Postg
         if (values.length() > 0) {
             actions.add(new SQLDatabasePersistAction(
                 "Alter step",
-                "UPDATE pgagent.pga_jobstep SET " + values + " WHERE jstid=" + step.getObjectId()
+                "UPDATE pgagent.pga_jobstep\nSET\n\t" + values + "\nWHERE jstid=" + step.getObjectId()
             ));
         }
     }
@@ -145,7 +145,7 @@ public class PostgreJobStepManager extends SQLObjectEditor<PostgreJobStep, Postg
         final PostgreJobStep step = command.getObject();
         actions.add(new SQLDatabasePersistAction(
             "Rename step",
-            "UPDATE pgagent.pga_jobstep SET jstname=" + SQLUtils.quoteString(step.getDataSource(), command.getNewName()) + " WHERE jstid=" + step.getObjectId()
+            "UPDATE pgagent.pga_jobstep\nSET\n\tjstname=" + SQLUtils.quoteString(step.getDataSource(), command.getNewName()) + "\nWHERE jstid=" + step.getObjectId()
         ));
     }
 

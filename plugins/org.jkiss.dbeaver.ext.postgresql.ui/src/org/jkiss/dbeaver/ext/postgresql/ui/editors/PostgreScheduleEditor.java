@@ -411,9 +411,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
                 ),
                 new SQLDatabasePersistAction(
                     "Update schedule",
-                    "UPDATE pgagent.pga_schedule" +
-                        "\nSET\n\t" + changes +
-                        "\nWHERE jscid=" + schedule.getObjectId() + " AND jscjobid=" + schedule.getParentObject().getObjectId()
+                    "UPDATE pgagent.pga_schedule\nSET\n\t" + changes + "\nWHERE jscid=" + schedule.getObjectId()
                 )
             };
         }

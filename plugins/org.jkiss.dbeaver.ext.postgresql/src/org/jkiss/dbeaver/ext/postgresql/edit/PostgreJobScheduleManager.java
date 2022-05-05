@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -84,10 +85,10 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         final PostgreJobSchedule schedule = command.getObject();
-        final StringJoiner values = new StringJoiner(", ");
+        final StringJoiner values = new StringJoiner(",\n\t");
 
-        if (command.getProperty("description") != null) {
-            values.add("jscdesc=" + SQLUtils.quoteString(schedule.getDataSource(), schedule.getDescription()));
+        if (command.hasProperty("description")) {
+            values.add("jscdesc=" + SQLUtils.quoteString(schedule.getDataSource(), CommonUtils.notEmpty(schedule.getDescription())));
         }
 
         if (command.getProperty("enabled") != null) {
@@ -97,7 +98,7 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
         if (values.length() > 0) {
             actions.add(new SQLDatabasePersistAction(
                 "Alter schedule",
-                "UPDATE pgagent.pga_schedule SET " + values + " WHERE jscid=" + schedule.getObjectId()
+                "UPDATE pgagent.pga_schedule\nSET\n\t" + values + "\nWHERE jscid=" + schedule.getObjectId()
             ));
         }
     }
@@ -107,7 +108,7 @@ public class PostgreJobScheduleManager extends SQLObjectEditor<PostgreJobSchedul
         final PostgreJobSchedule schedule = command.getObject();
         actions.add(new SQLDatabasePersistAction(
             "Rename schedule",
-            "UPDATE pgagent.pga_schedule SET jscname=" + SQLUtils.quoteString(schedule.getDataSource(), command.getNewName()) + " WHERE jscid=" + schedule.getObjectId()
+            "UPDATE pgagent.pga_schedule\nSET\n\tjscname=" + SQLUtils.quoteString(schedule.getDataSource(), command.getNewName()) + "\nWHERE jscid=" + schedule.getObjectId()
         ));
     }
 

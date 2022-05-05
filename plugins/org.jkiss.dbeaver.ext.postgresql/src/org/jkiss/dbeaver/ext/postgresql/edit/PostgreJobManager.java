@@ -69,7 +69,6 @@ public class PostgreJobManager extends SQLStructEditor<PostgreJob, PostgreDataSo
         return new PostgreJob(monitor, database, name);
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) {
         final PostgreJob job = command.getObject();
@@ -136,18 +135,18 @@ public class PostgreJobManager extends SQLStructEditor<PostgreJob, PostgreDataSo
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         final PostgreJob job = command.getObject();
-        final StringJoiner values = new StringJoiner(", ");
+        final StringJoiner values = new StringJoiner(",\n\t");
 
         if (command.getProperty("jobClass") != null) {
             values.add("jobjclid=" + job.getJobClass().getObjectId());
         }
 
-        if (command.getProperty("description") != null) {
-            values.add("jobdesc=" + SQLUtils.quoteString(job.getDataSource(), job.getDescription()));
+        if (command.hasProperty("description")) {
+            values.add("jobdesc=" + SQLUtils.quoteString(job.getDataSource(), CommonUtils.notEmpty(job.getDescription())));
         }
 
-        if (command.getProperty("hostAgent") != null) {
-            values.add("jobhostagent=" + SQLUtils.quoteString(job.getDataSource(), job.getHostAgent()));
+        if (command.hasProperty("hostAgent")) {
+            values.add("jobhostagent=" + SQLUtils.quoteString(job.getDataSource(), CommonUtils.notEmpty(job.getHostAgent())));
         }
 
         if (command.getProperty("enabled") != null) {
@@ -157,7 +156,7 @@ public class PostgreJobManager extends SQLStructEditor<PostgreJob, PostgreDataSo
         if (values.length() > 0) {
             actions.add(new SQLDatabasePersistAction(
                 "Alter job",
-                "UPDATE pgagent.pga_job\nSET " + values + "\nWHERE jobid=" + job.getObjectId()
+                "UPDATE pgagent.pga_job\nSET\n\t" + values + "\nWHERE jobid=" + job.getObjectId()
             ));
         }
     }
@@ -176,7 +175,7 @@ public class PostgreJobManager extends SQLStructEditor<PostgreJob, PostgreDataSo
         final PostgreJob job = command.getObject();
         actions.add(new SQLDatabasePersistAction(
             "Rename job",
-            "UPDATE pgagent.pga_job\nSET jobname=" + SQLUtils.quoteString(job.getDataSource(), command.getNewName()) + "\nWHERE jobid=" + job.getObjectId()
+            "UPDATE pgagent.pga_job\nSET\n\tjobname=" + SQLUtils.quoteString(job.getDataSource(), command.getNewName()) + "\nWHERE jobid=" + job.getObjectId()
         ));
     }
 
