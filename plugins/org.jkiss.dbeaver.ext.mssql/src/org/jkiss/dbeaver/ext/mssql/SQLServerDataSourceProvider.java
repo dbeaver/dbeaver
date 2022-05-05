@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.ext.mssql.model.SQLServerAuthentication;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -35,7 +34,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implements DBAUserCredentialsProvider {
+public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
 
     private static Map<String,String> connectionsProps;
 
@@ -149,27 +148,6 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
             log.error("Replacement auth model " + amId + " not found");
         }
         return super.detectConnectionAuthModel(driver, connectionInfo);
-    }
-
-    //////////////////////////////////////////////////////////
-    // Windows authentication
-
-    @Override
-    public String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo) {
-        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
-            return "";
-        } else {
-            return connectionInfo.getUserName();
-        }
-    }
-
-    @Override
-    public String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo) {
-        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
-            return "";
-        } else {
-            return connectionInfo.getUserPassword();
-        }
     }
 
 }

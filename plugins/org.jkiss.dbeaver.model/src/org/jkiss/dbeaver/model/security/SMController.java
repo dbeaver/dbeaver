@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
 import org.jkiss.dbeaver.model.auth.SMAuthInfo;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
 
@@ -40,7 +40,7 @@ public interface SMController extends SMAuthCredentialsManager {
 
     SMUser getUserById(String userId) throws DBException;
 
-    Map<String, Object> getUserParameters(String userId) throws DBCException;
+    Map<String, Object> getUserParameters(String userId) throws DBException;
 
     void setUserParameter(String userId, String name, Object value) throws DBException;
 
@@ -75,7 +75,7 @@ public interface SMController extends SMAuthCredentialsManager {
 
     SMAuthInfo authenticate(@NotNull String appSessionId, @NotNull Map<String, Object> sessionParameters, @NotNull SMSessionType sessionType, @NotNull String authProviderId, @NotNull Map<String, Object> userCredentials) throws DBException;
 
-    void updateSession(@NotNull String sessionId, @Nullable String userId, Map<String, Object> parameters) throws DBCException;
+    void updateSession(@NotNull String sessionId, @Nullable String userId, Map<String, Object> parameters) throws DBException;
 
     ///////////////////////////////////////////
     // Permissions
@@ -87,4 +87,6 @@ public interface SMController extends SMAuthCredentialsManager {
     SMDataSourceGrant[] getConnectionSubjectAccess(String connectionId) throws DBException;
 
     void setConnectionSubjectAccess(@NotNull String connectionId, @Nullable String[] subjects, @Nullable String grantorId) throws DBException;
+
+    SMAuthPermissions getTokenPermissions(String token) throws DBException;
 }

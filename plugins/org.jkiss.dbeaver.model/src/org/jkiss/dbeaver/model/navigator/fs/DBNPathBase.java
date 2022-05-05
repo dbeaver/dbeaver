@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.ByteNumberFormat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,6 +56,8 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     private static final Log log = Log.getLog(DBNPathBase.class);
 
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
+
+    private final ByteNumberFormat numberFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
 
     private DBNNode[] children;
     private DBPImage resImage;
@@ -341,8 +344,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
     }
 
     @Property(viewable = true, order = 11)
-    public long getResourceSize() throws IOException {
-        return getPath() == null ? 0 : Files.size(getPath());
+    public String getResourceSize() throws IOException {
+        long size = getPath() == null ? 0 : Files.size(getPath());
+        return numberFormat.format(size);
     }
 
     @Property(viewable = true, order = 11)
