@@ -196,9 +196,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     @Override
     public DBNNode getRootNode() {
-        IDatabaseEditorInput dbEditorInput = getDatabaseEditorInput();
-        if (dbEditorInput != null) {
-            return dbEditorInput.getNavigatorNode();
+        IEditorInput editorInput = this.getEditorInput();
+        if (editorInput instanceof IDatabaseEditorInput) {
+            return ((IDatabaseEditorInput) editorInput).getNavigatorNode();
         }
         return null;
     }
@@ -263,15 +263,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
-    public IDatabaseEditorInput getDatabaseEditorInput() {
-        IEditorInput editorInput = this.getEditorInput();
-        return editorInput instanceof IDatabaseEditorInput ? (IDatabaseEditorInput) editorInput : null;
-    }
-
     public DBECommandContext getCommandContext() {
-        IDatabaseEditorInput dbEditorInput = getDatabaseEditorInput();
-        if (dbEditorInput != null) {
-            return dbEditorInput.getCommandContext();
+        IEditorInput editorInput = this.getEditorInput();
+        if (editorInput instanceof IDatabaseEditorInput) {
+            return ((IDatabaseEditorInput) editorInput).getCommandContext();
         }
         return null;
     }
@@ -700,12 +695,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         refreshDiagram(force, true);
         return RefreshResult.REFRESHED;
     }
-    
-    public void saveDiagramAs() 
-    {
-        IDatabaseEditorInput dbEditorInput = getDatabaseEditorInput();
-        List<ERDExportFormatRegistry.FormatDescriptor> allFormats = ERDExportFormatRegistry.getInstance().getFormats();
 
+    public void saveDiagramAs()
+    {
+        List<ERDExportFormatRegistry.FormatDescriptor> allFormats = ERDExportFormatRegistry.getInstance().getFormats();
         String[] extensions = new String[allFormats.size()];
         String[] filterNames = new String[allFormats.size()];
         for (int i = 0; i < allFormats.size(); i++) {
@@ -718,9 +711,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         saveDialog.setFilterNames(filterNames);
 
         String proposedFileName = exportMruFilename;
-        if (CommonUtils.isEmpty(proposedFileName) && dbEditorInput != null) {
-            proposedFileName = dbEditorInput.getErdExportMruFileName();
-        }
         if (CommonUtils.isEmpty(proposedFileName)) {
             proposedFileName = this.getTitle();
         }
@@ -755,10 +745,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             }
         }
 
-        if (dbEditorInput != null) {
-            // to preserve last used filename between workspace sessions for restored editor instance
-            dbEditorInput.setErdExportMruFileName(outFile.getName());
-        }
         exportMruFilename = outFile.getName();
 
         int divPos = filePath.lastIndexOf('.');
