@@ -105,11 +105,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.EventObject;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -1318,33 +1315,32 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 resultsFound = false;
                 ERDGraphicalViewer graphicalViewer = getGraphicalViewer();
                 graphicalViewer.deselectAll();
-                List<Object> nodes = getDiagramPart().getChildren();
-                List<?> allNodesChildren = new ArrayList<>();
-                for (Object node : nodes) {
+                Set<DBPNamedObject> nodes = new HashSet<>();
+                for (Object node : getDiagramPart().getChildren()) {
+                    if (node instanceof DBPNamedObject && node instanceof EditPart) {
+                        nodes.add((DBPNamedObject) node);
+                    }
                     if (node instanceof EntityPart) {
-                        List children = ((EntityPart) node).getChildren();
+                        List<?> children = ((EntityPart) node).getChildren();
                         if (!CommonUtils.isEmpty(children)) {
-                            allNodesChildren.addAll(children);
+                            for (Object child: children) {
+                                if (child instanceof DBPNamedObject && child instanceof EditPart) {
+                                    nodes.add((DBPNamedObject) child);
+                                }
+                            }
                         }
                     }
                 }
-                if (!CommonUtils.isEmpty(allNodesChildren)) {
-                    nodes.addAll(allNodesChildren);
-                }
                 if (!CommonUtils.isEmpty(nodes)) {
-                    Object obj = nodes.get(0);
-                    if (obj instanceof DBPNamedObject && obj instanceof EditPart) {
-                        Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_SEARCH_HIGHLIGHTING);
-                        for (Object node : nodes) {
-                            DBPNamedObject erdNode = (DBPNamedObject) node;
-                            if (matchesSearch(erdNode)) {
-                                resultsFound = true;
-                                results.add(erdNode);
-                                if (erdNode instanceof GraphicalEditPart) {
-                                    highlightings.add(highlightingManager.highlight(((GraphicalEditPart) erdNode).getFigure(), color));
-                                }
-                                graphicalViewer.reveal((EditPart) node);
+                    Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_SEARCH_HIGHLIGHTING);
+                    for (DBPNamedObject erdNode : nodes) {
+                        if (matchesSearch(erdNode)) {
+                            resultsFound = true;
+                            results.add(erdNode);
+                            if (erdNode instanceof GraphicalEditPart) {
+                                highlightings.add(highlightingManager.highlight(((GraphicalEditPart) erdNode).getFigure(), color));
                             }
+                            graphicalViewer.reveal((EditPart) erdNode);
                         }
                     }
                 }
