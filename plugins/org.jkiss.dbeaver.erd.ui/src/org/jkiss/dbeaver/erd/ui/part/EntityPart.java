@@ -25,6 +25,7 @@ import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.tools.DirectEditManager;
+import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDElement;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
@@ -39,10 +40,12 @@ import org.jkiss.dbeaver.erd.ui.policy.EntityContainerEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityEditPolicy;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Represents the editable/resizable table which can have columns added,
@@ -267,11 +270,6 @@ public class EntityPart extends NodePart {
         return getEntity();
     }
 
-    @Override
-    protected void addSourceConnection(ConnectionEditPart connection, int index) {
-
-    }
-
     public void redirectSourceConnection(ConnectionEditPart connectionEditPart, int index) {
         super.addSourceConnection(connectionEditPart, index);
     }
@@ -281,8 +279,23 @@ public class EntityPart extends NodePart {
     }
 
     @Override
-    protected void addTargetConnection(ConnectionEditPart connection, int index) {
+    protected List<ERDAssociation> getModelSourceConnections() {
+        return super.getModelSourceConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
+    }
 
+    @Override
+    protected List<ERDAssociation> getModelTargetConnections() {
+        return super.getModelTargetConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
+    }
+
+    @Override
+    protected void addSourceConnection(ConnectionEditPart connection, int index) {
+        super.addSourceConnection(connection, index);
+    }
+
+    @Override
+    protected void addTargetConnection(ConnectionEditPart connection, int index) {
+        super.addTargetConnection(connection, index);
     }
 
     @Override

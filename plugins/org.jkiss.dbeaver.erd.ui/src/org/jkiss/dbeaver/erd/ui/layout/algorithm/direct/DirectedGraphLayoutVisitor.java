@@ -154,11 +154,11 @@ public class DirectedGraphLayoutVisitor {
     {
         GraphAnimation.recordInitialState((Connection) connectionPart.getFigure());
         Node source = (Node) partToNodesMap.get(connectionPart.getSource());
-        if (source == null) {
+        if (source == null && connectionPart.getSource().getParent() != null) {
             source = (Node) partToNodesMap.get(connectionPart.getSource().getParent());
         }
         Node target = (Node) partToNodesMap.get(connectionPart.getTarget());
-        if (target == null) {
+        if (target == null && connectionPart.getTarget().getParent() != null) {
             target = (Node) partToNodesMap.get(connectionPart.getTarget().getParent());
         }
         if (source == null || target == null) {
