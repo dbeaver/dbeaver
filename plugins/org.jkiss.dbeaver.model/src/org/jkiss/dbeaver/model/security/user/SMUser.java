@@ -59,8 +59,8 @@ public class SMUser {
         return enabled;
     }
 
-    public void setStatus(boolean status) {
-        this.enabled = status;
+    public void enableUser(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public void setMetaParameter(String name, String value) {
