@@ -16,6 +16,8 @@
  */
 package org.jkiss.utils;
 
+import org.jkiss.code.NotNull;
+
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
@@ -31,13 +33,17 @@ public class ByteNumberFormat extends NumberFormat {
 
     private static final DecimalFormat fpFormat = new DecimalFormat("#.#");
 
-    private boolean useLongUnitNames = false;
+    private final BinaryPrefix binaryPrefix;
 
     /**
      * Creates a new formatter.
      */
     public ByteNumberFormat() {
-        super();
+        binaryPrefix = BinaryPrefix.JEDEC;
+    }
+
+    public ByteNumberFormat(@NotNull BinaryPrefix binaryPrefix) {
+        this.binaryPrefix = binaryPrefix;
     }
 
     public static int computeIndex(double bytes) {
@@ -90,7 +96,7 @@ public class ByteNumberFormat extends NumberFormat {
             str = fpFormat.format(intBytes);
         }
         final Unit unit = UNITS[index];
-        return str + (useLongUnitNames ? unit.fullName : unit.shortName);
+        return str + (binaryPrefix == BinaryPrefix.ISO ? unit.isoPrefix : unit.jedecPrefix);
     }
 
     /**
@@ -137,16 +143,6 @@ public class ByteNumberFormat extends NumberFormat {
         return null;
     }
 
-    /**
-     * Sets whether this formatter should use long names for units.
-     * Note that this formatter uses ISO 80000 compliant names
-     *
-     * @param useLongUnitNames <code>true</code> if formatter should use long names for units, <code>false</code> otherwise
-     */
-    public void setUseLongUnitNames(boolean useLongUnitNames) {
-        this.useLongUnitNames = useLongUnitNames;
-    }
-
     private enum Unit {
         BYTE("B", "B"),
         KILOBYTE("K", "KiB"),
@@ -155,12 +151,27 @@ public class ByteNumberFormat extends NumberFormat {
         TERABYTE("T", "TiB"),
         PETABYTE("P", "PiB");
 
-        private final String shortName;
-        private final String fullName;
+        private final String jedecPrefix;
+        private final String isoPrefix;
 
-        Unit(String shortName, String fullName) {
-            this.shortName = shortName;
-            this.fullName = fullName;
+        Unit(String jedecPrefix, String isoPrefix) {
+            this.jedecPrefix = jedecPrefix;
+            this.isoPrefix = isoPrefix;
         }
+    }
+
+    /**
+     * <a href="https://en.wikipedia.org/wiki/Binary_prefix">A unit prefix for multiples of byte.</a>
+     */
+    public enum BinaryPrefix {
+        /**
+         * JEDEC-compliant prefixes (K, M, G, T, etc.). It's easy to confuse such prefixes with SI prefixes, leading to ambiguity.
+         */
+        JEDEC,
+
+        /**
+         * ISO 80000-13 format. This format explicitly states the binary nature of prefixes right in their names (kibi, mibi, gibi, etc.)
+         */
+        ISO,
     }
 }

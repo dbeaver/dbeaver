@@ -37,6 +37,7 @@ import org.eclipse.gef3.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef3.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef3.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
@@ -95,6 +96,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
@@ -558,7 +560,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @param dirty the new dirty state to set
      */
-    protected void setDirty(boolean dirty)
+    public void setDirty(boolean dirty)
     {
         if (isDirty != dirty) {
             isDirty = dirty;
@@ -740,6 +742,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             IFigure figure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
 
             formatHandler.exportDiagram(getDiagram(), figure, getDiagramPart(), outFile);
+
+            final int openFileDecision = ConfirmationDialog.confirmAction(
+                getGraphicalControl().getShell(),
+                ERDUIConstants.CONFIRM_OPEN_EXPORTED_FILE,
+                ConfirmationDialog.QUESTION);
+
+            if (openFileDecision == IDialogConstants.YES_ID) {
+                ShellUtils.launchProgram(outFile.getAbsolutePath());
+            }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("ERD export failed", null, e);
         }
@@ -956,14 +967,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 ERDUIMessages.erd_editor_control_action_print_diagram,
                 UIIcon.PRINT));
 
-            toolBarManager.add(ActionUtils.makeCommandContribution(
-                getSite(),
-                IWorkbenchCommandConstants.FILE_SAVE_AS,
-                ERDUIMessages.erd_editor_control_action_save_external_format,
-                UIIcon.PICTURE_SAVE));
-
-            DiagramExportAction saveDiagram = new DiagramExportAction(this, getSite().getShell());
-            toolBarManager.add(saveDiagram);
+            toolBarManager.add(ActionUtils.makeCommandContribution(getSite(), ERDUIConstants.CMD_SAVE_AS));
         }
         toolBarManager.add(new Separator("configuration"));
         {

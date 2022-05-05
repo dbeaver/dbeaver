@@ -639,7 +639,7 @@
                 id="sqlserver_custom"
                 label="Custom"
                 description="Custom authentication schema"
-                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelNTLM">
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelCustom">
             <datasource id="sqlserver"/>
         </authModel>
     </extension>
