@@ -59,12 +59,6 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
         return options;
     }
-
-    @Override
-    protected final void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand objectChangeCommand, Map<String, Object> options)
-    {
-        throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
-    }
     
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName, Map<String, Object> options) throws DBException {
         return "CREATE " + getCreateTableType(table) + " " + tableName + " (" + GeneralUtils.getDefaultLineSeparator(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
