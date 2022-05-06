@@ -54,6 +54,8 @@ public class ERDUIConstants {
     public static final String COLOR_ERD_LINES_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.lines.foreground";
     public static final String COLOR_ERD_ATTR_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.attributes.background";
     public static final String COLOR_ERD_ATTR_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.attributes.foreground";
+    public static final String COLOR_ERD_SEARCH_HIGHLIGHTING = "org.jkiss.dbeaver.erd.diagram.search.highlighting";
+    public static final String COLOR_ERD_FK_HIGHLIGHTING = "org.jkiss.dbeaver.erd.diagram.fk.highlighting";
     public static final String COLOR_ERD_NOTE_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.notes.background";
     public static final String COLOR_ERD_NOTE_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.notes.foreground";
 
