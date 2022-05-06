@@ -33,6 +33,7 @@ public class ERDPreferencesInitializer extends AbstractPreferenceInitializer {
       DBPPreferenceStore store = new BundlePreferenceStore(ERDUIActivator.getDefault().getBundle());
       PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, true);
       PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, false);
+      PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN, false);
       PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, true);
       PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, true);
 

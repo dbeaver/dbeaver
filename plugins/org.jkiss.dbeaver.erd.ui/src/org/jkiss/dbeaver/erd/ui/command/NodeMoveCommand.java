@@ -29,14 +29,14 @@ import org.jkiss.dbeaver.erd.ui.part.NodePart;
 public class NodeMoveCommand extends Command
 {
 
-	private NodePart customisablePart;
+	private NodePart nodePart;
 	private Rectangle oldBounds;
 	private Rectangle newBounds;
 
-	public NodeMoveCommand(NodePart customisablePart, Rectangle oldBounds, Rectangle newBounds)
+	public NodeMoveCommand(NodePart nodePart, Rectangle oldBounds, Rectangle newBounds)
 	{
 		super();
-		this.customisablePart = customisablePart;
+		this.nodePart = nodePart;
 		this.oldBounds = oldBounds;
 		this.newBounds = newBounds;
 	}
@@ -52,13 +52,13 @@ public class NodeMoveCommand extends Command
             pc.getConnectionRouter().route(pc);
         }
 */
-        customisablePart.modifyBounds(newBounds);
+        nodePart.modifyBounds(newBounds);
 	}
 
 	@Override
     public void undo()
 	{
-		customisablePart.modifyBounds(oldBounds);
+		nodePart.modifyBounds(oldBounds);
 	}
 
 }

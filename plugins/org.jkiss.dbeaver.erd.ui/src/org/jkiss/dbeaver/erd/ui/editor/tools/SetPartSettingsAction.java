@@ -90,12 +90,12 @@ public class SetPartSettingsAction extends SelectionAction {
             public void execute() {
                 final Shell shell = UIUtils.createCenteredShell(getWorkbenchPart().getSite().getShell());
                 try {
-                    NodePart customisablePart = null;
+                    NodePart nodePart = null;
                     boolean hasNotes = false, hasEntities = false;
                     for (Object item : objects) {
                         if (item instanceof NodePart) {
-                            if (customisablePart == null) {
-                                customisablePart = (NodePart) item;
+                            if (nodePart == null) {
+                                nodePart = (NodePart) item;
                             }
                             if (item instanceof NotePart) {
                                 hasNotes = true;
@@ -105,7 +105,7 @@ public class SetPartSettingsAction extends SelectionAction {
                         }
                     }
 
-                    PartSettingsDialog settingsDialog = new PartSettingsDialog(shell, customisablePart, hasNotes, hasEntities);
+                    PartSettingsDialog settingsDialog = new PartSettingsDialog(shell, nodePart, hasNotes, hasEntities);
                     if (settingsDialog.open() != IDialogConstants.OK_ID) {
                         return;
                     }

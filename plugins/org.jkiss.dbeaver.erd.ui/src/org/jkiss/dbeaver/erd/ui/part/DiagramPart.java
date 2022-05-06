@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
-import org.eclipse.draw2dl.ConnectionLayer;
-import org.eclipse.draw2dl.FanRouter;
-import org.eclipse.draw2dl.IFigure;
-import org.eclipse.draw2dl.PolylineConnection;
+import org.eclipse.draw2dl.*;
 import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.*;
@@ -147,8 +144,14 @@ public class DiagramPart extends PropertyAwarePart {
 
         FanRouter router = new FanRouter();
         router.setSeparation(15);
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         //router.setNextRouter(new BendpointConnectionRouter());
-        router.setNextRouter(new MikamiTabuchiConnectionRouter(figure));
+        if (store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+            router.setNextRouter(new MikamiTabuchiConnectionRouter(figure));
+        } else {
+            router.setNextRouter(new ShortestPathConnectionRouter(figure));
+        }
+
 //        router.setNextRouter(new ManhattanConnectionRouter());
         //router.setNextRouter(new BendpointConnectionRouter());
         cLayer.setConnectionRouter(router);
@@ -361,10 +364,10 @@ public class DiagramPart extends PropertyAwarePart {
     }
 
     @Nullable
-    public ICustomizablePart getChildByObject(Object object) {
+    public NodePart getChildByObject(Object object) {
         for (Object child : getChildren()) {
-            if (child instanceof ICustomizablePart && ((NodePart) child).getElement().getObject() == object) {
-                return (ICustomizablePart) child;
+            if (child instanceof NodePart && ((NodePart) child).getElement().getObject() == object) {
+                return (NodePart) child;
             }
         }
         return null;

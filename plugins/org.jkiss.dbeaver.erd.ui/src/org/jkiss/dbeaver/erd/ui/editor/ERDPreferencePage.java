@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.erd.ui.editor;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.draw2dl.PrintFigureOperation;
+import org.eclipse.lsp4e.ui.UI;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -58,6 +59,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private Spinner spinnerMarginRight;
     private Button gridCheck;
     private Button snapCheck;
+    private Button useExperimentalRouting;
     private Spinner spinnerGridWidth;
     private Spinner spinnerGridHeight;
 
@@ -75,11 +77,16 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         createColorPrefGroup(store, composite);
         createVisibilityGroup(store, composite);
         createStyleGroup(store, composite);
-
+        createRoutingGroup(store, composite);
         createGridGroup(store, composite);
         createPrintGroup(store, composite);
 
         return composite;
+    }
+
+    private void createRoutingGroup(DBPPreferenceStore store, Composite composite) {
+        Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_routing, 1 , GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        useExperimentalRouting = UIUtils.createCheckbox(contentsGroup, ERDUIMessages.erd_preference_page_title_manhattan_routing, store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN));
     }
 
     private void createContentsGroup(DBPPreferenceStore store, Composite composite)
@@ -179,6 +186,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
+        store.setValue(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN, useExperimentalRouting.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, changeBorderColors.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, changeHeaderColors.getSelection());
 

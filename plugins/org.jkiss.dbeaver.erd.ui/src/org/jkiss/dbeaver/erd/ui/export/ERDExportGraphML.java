@@ -332,9 +332,9 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         xml.endElement();
     }
 
-    private static void exportEdge(int index, ERDElement<?> node, NodePart customisablePart, Map<ERDElement<?>, String> associations, XMLBuilder xml) throws IOException {
+    private static void exportEdge(int index, ERDElement<?> node, NodePart nodePart, Map<ERDElement<?>, String> associations, XMLBuilder xml) throws IOException {
         for (ERDAssociation association : node.getAssociations()) {
-            AssociationPart associationPart = customisablePart.getConnectionPart(association, true);
+            AssociationPart associationPart = nodePart.getConnectionPart(association, true);
             if (associationPart == null) {
                 log.debug("Association part not found");
                 continue;

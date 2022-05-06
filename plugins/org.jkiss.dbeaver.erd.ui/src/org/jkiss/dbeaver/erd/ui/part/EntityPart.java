@@ -29,18 +29,22 @@ import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDElement;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.erd.ui.figures.EditableLabel;
 import org.jkiss.dbeaver.erd.ui.figures.EntityFigure;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityContainerEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.EntityEditPolicy;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.utils.CommonUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.util.List;
@@ -280,12 +284,21 @@ public class EntityPart extends NodePart {
 
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+            return super.getModelSourceConnections();
+        }
         return super.getModelSourceConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
-        return super.getModelTargetConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        if (store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+            return super.getModelTargetConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
+        } else {
+            return super.getModelTargetConnections();
+        }
     }
 
     @Override

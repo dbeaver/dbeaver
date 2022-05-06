@@ -58,13 +58,13 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 		if (!(constraint instanceof Rectangle))
 			return null;
 
-		NodePart customisablePart = (NodePart) child;
-		Figure figure = (Figure) customisablePart.getFigure();
+		NodePart nodePart = (NodePart) child;
+		Figure figure = (Figure) nodePart.getFigure();
 		Rectangle oldBounds = figure.getBounds();
 		Rectangle newBounds = (Rectangle) constraint;
 
         // Restrict resize for entities
-        if (!ALLOW_ENTITY_RESIZE && customisablePart instanceof EntityPart) {
+        if (!ALLOW_ENTITY_RESIZE && nodePart instanceof EntityPart) {
             if (oldBounds.width != newBounds.width && newBounds.width != -1)
                 return null;
             if (oldBounds.height != newBounds.height && newBounds.height != -1)
@@ -73,7 +73,7 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 
 		//DiagramPart diagramPart = (DiagramPart) nodePart.getParent();
 
-		return new NodeMoveCommand(customisablePart, oldBounds.getCopy(), newBounds.getCopy());
+		return new NodeMoveCommand(nodePart, oldBounds.getCopy(), newBounds.getCopy());
 	}
 
 	/**

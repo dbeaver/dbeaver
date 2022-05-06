@@ -65,13 +65,13 @@ public class DiagramLoader extends ERDPersistedState {
 
     private static class ElementSaveInfo {
         final ERDElement element;
-        final NodePart customisablePart;
+        final NodePart nodePart;
         final int objectId;
 
-        private ElementSaveInfo(ERDElement element, NodePart customisablePart, int objectId)
+        private ElementSaveInfo(ERDElement element, NodePart nodePart, int objectId)
         {
             this.element = element;
-            this.customisablePart = customisablePart;
+            this.nodePart = nodePart;
             this.objectId = objectId;
         }
     }
@@ -538,8 +538,8 @@ public class DiagramLoader extends ERDPersistedState {
                     }
 
                     // Save bends
-                    if (pkInfo.customisablePart != null) {
-                        AssociationPart associationPart = pkInfo.customisablePart.getConnectionPart(rel, false);
+                    if (pkInfo.nodePart != null) {
+                        AssociationPart associationPart = pkInfo.nodePart.getConnectionPart(rel, false);
                         if (associationPart != null) {
                             final List<Bendpoint> bendpoints = associationPart.getBendpoints();
                             if (!CommonUtils.isEmpty(bendpoints)) {
@@ -587,33 +587,33 @@ public class DiagramLoader extends ERDPersistedState {
         return dsMap;
     }
 
-    private static void saveColorAndOrder(List allNodeFigures, XMLBuilder xml, NodePart customisablePart) throws IOException {
-        if (customisablePart != null) {
-            xml.addAttribute(ATTR_ORDER, allNodeFigures.indexOf(customisablePart.getFigure()));
-            if (customisablePart.getCustomTransparency()) {
+    private static void saveColorAndOrder(List allNodeFigures, XMLBuilder xml, NodePart nodePart) throws IOException {
+        if (nodePart != null) {
+            xml.addAttribute(ATTR_ORDER, allNodeFigures.indexOf(nodePart.getFigure()));
+            if (nodePart.getCustomTransparency()) {
                 xml.addAttribute(ATTR_TRANSPARENT, true);
             }
-            Color bgColor = customisablePart.getCustomBackgroundColor();
+            Color bgColor = nodePart.getCustomBackgroundColor();
             if (bgColor != null) {
-                Color defBgColor = UIUtils.getColorRegistry().get(customisablePart instanceof NotePart ? ERDUIConstants.COLOR_ERD_NOTE_BACKGROUND : ERDUIConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND);
+                Color defBgColor = UIUtils.getColorRegistry().get(nodePart instanceof NotePart ? ERDUIConstants.COLOR_ERD_NOTE_BACKGROUND : ERDUIConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND);
                 if (!CommonUtils.equalObjects(bgColor, defBgColor)) {
                     xml.addAttribute(ATTR_COLOR_BG, StringConverter.asString(bgColor.getRGB()));
                 }
             }
-            Color fgColor = customisablePart.getCustomForegroundColor();
+            Color fgColor = nodePart.getCustomForegroundColor();
             if (fgColor != null) {
-                Color defFgColor = UIUtils.getColorRegistry().get(customisablePart instanceof NotePart ? ERDUIConstants.COLOR_ERD_NOTE_FOREGROUND : ERDUIConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND);
+                Color defFgColor = UIUtils.getColorRegistry().get(nodePart instanceof NotePart ? ERDUIConstants.COLOR_ERD_NOTE_FOREGROUND : ERDUIConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND);
                 if (!CommonUtils.equalObjects(fgColor, defFgColor)) {
                     xml.addAttribute(ATTR_COLOR_FG, StringConverter.asString(fgColor.getRGB()));
                 }
             }
-            int borderWidth = customisablePart.getCustomBorderWidth();
-            int defBorderWidth = customisablePart instanceof NotePart ? ERDUIConstants.DEFAULT_NOTE_BORDER_WIDTH : ERDUIConstants.DEFAULT_ENTITY_BORDER_WIDTH;
+            int borderWidth = nodePart.getCustomBorderWidth();
+            int defBorderWidth = nodePart instanceof NotePart ? ERDUIConstants.DEFAULT_NOTE_BORDER_WIDTH : ERDUIConstants.DEFAULT_ENTITY_BORDER_WIDTH;
             if (borderWidth != defBorderWidth) {
                 xml.addAttribute(ATTR_BORDER_WIDTH, borderWidth);
             }
-            if (!SharedFonts.equalFonts(customisablePart.getCustomFont(), Display.getCurrent().getSystemFont())) {
-                xml.addAttribute(ATTR_FONT, SharedFonts.toString(customisablePart.getCustomFont()));
+            if (!SharedFonts.equalFonts(nodePart.getCustomFont(), Display.getCurrent().getSystemFont())) {
+                xml.addAttribute(ATTR_FONT, SharedFonts.toString(nodePart.getCustomFont()));
             }
         }
     }

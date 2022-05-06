@@ -76,7 +76,10 @@ import org.jkiss.dbeaver.erd.ui.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecorator;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
-import org.jkiss.dbeaver.erd.ui.part.*;
+import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
+import org.jkiss.dbeaver.erd.ui.part.EntityPart;
+import org.jkiss.dbeaver.erd.ui.part.NodePart;
+import org.jkiss.dbeaver.erd.ui.part.NotePart;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -1243,7 +1246,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         boolean hasChanges = false;
         // Collect visual settings from old diagram and apply them to the new one
         for (ERDEntity newEntity : newDiagram.getEntities()) {
-            ICustomizablePart oldEntity = oldDiagram.getChildByObject(newEntity.getObject());
+            NodePart oldEntity = oldDiagram.getChildByObject(newEntity.getObject());
             if (oldEntity instanceof EntityPart) {
                 EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo((EntityPart) oldEntity);
                 newDiagram.addVisualInfo(newEntity.getObject(), vi);
@@ -1252,10 +1255,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         for (ERDNote newNote : newDiagram.getNotes()) {
-            ICustomizablePart oldNotePart = oldDiagram.getChildByObject(newNote.getObject());
+            NodePart oldNotePart = oldDiagram.getChildByObject(newNote.getObject());
             if (oldNotePart instanceof NotePart) {
                 EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo((NotePart) oldNotePart);
-                vi.initBounds = ((NotePart) oldNotePart).getBounds();
+                vi.initBounds = oldNotePart.getBounds();
                 newDiagram.addVisualInfo(newNote, vi);
                 hasChanges = true;
             }
