@@ -72,14 +72,13 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
     }
 
     void addChild(IFigure child) {
-        if (this.connectionToPath != null) {
-            if (!this.figuresToBounds.containsKey(child)) {
-                Rectangle bounds = child.getBounds().getCopy();
-                this.algorithm.addObstacle(bounds);
-                this.figuresToBounds.put(child, bounds);
-                child.addFigureListener(this.figureListener);
-                this.isDirty = true;
-            }
+        if (this.connectionToPath != null && !this.figuresToBounds.containsKey(child)) {
+            Rectangle bounds = child.getBounds().getCopy();
+            this.algorithm.addObstacle(bounds);
+            this.figuresToBounds.put(child, bounds);
+            child.addFigureListener(this.figureListener);
+            this.isDirty = true;
+
         }
     }
 
