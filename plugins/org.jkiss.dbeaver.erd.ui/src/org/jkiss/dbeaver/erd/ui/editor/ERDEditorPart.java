@@ -713,6 +713,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         String proposedFileName = exportMruFilename;
         if (CommonUtils.isEmpty(proposedFileName)) {
             proposedFileName = this.getTitle();
+            if (!CommonUtils.isEmpty(proposedFileName)) {
+                int extIndex = proposedFileName.lastIndexOf('.');
+                if (extIndex != -1) {
+                    proposedFileName = proposedFileName.substring(0, extIndex);
+                }
+            }
         }
         if (CommonUtils.isEmpty(proposedFileName)) {
             LinkedList<String> parts = new LinkedList<>();
