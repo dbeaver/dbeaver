@@ -23,13 +23,11 @@ import org.eclipse.draw2dl.Graphics;
 import org.eclipse.draw2dl.*;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.editparts.LayerManager;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 
@@ -54,11 +52,10 @@ public class ERDExportSVG implements ERDExportFormatHandler {
     }
 
     @Override
-    public void exportDiagram(EntityDiagram diagram, IFigure diagramFigure, DiagramPart diagramPart, File targetFile) throws DBException {
+    public void exportDiagram(EntityDiagram diagram, IFigure figure, DiagramPart diagramPart, File targetFile) {
         checkWriterRegister();
 
         try {
-            IFigure figure = diagramPart.getFigure();
             Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
 
             String svgNS = "http://www.w3.org/2000/svg";
@@ -80,11 +77,7 @@ public class ERDExportSVG implements ERDExportFormatHandler {
                 paintDiagram(graphics, connectionLayer);
             }
 
-            String filePath = targetFile.getAbsolutePath();
-
-            svgGenerator.stream(filePath);
-
-            ShellUtils.launchProgram(filePath);
+            svgGenerator.stream(targetFile.getAbsolutePath());
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Save ERD as SVG", null, e);
         }

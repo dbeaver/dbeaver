@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ui;singleton:=true
-Bundle-Version: 5.1.96.qualifier
-Bundle-Release-Date: 20220502
+Bundle-Version: 5.1.97.qualifier
+Bundle-Release-Date: 20220516
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Activator: org.jkiss.dbeaver.ui.internal.UIActivator
 Bundle-ActivationPolicy: lazy
@@ -24,7 +24,8 @@ Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui.internal,
  org.jkiss.dbeaver.ui.notifications,
  org.jkiss.dbeaver.ui.preferences,
- org.jkiss.dbeaver.ui.properties
+ org.jkiss.dbeaver.ui.properties,
+ org.jkiss.dbeaver.ui.registry
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.core.resources,
@@ -37,6 +38,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.e4.ui.css.swt.theme,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.jkiss.dbeaver.model,
- org.eclipse.ui.forms
+ org.eclipse.ui.forms,
+ org.eclipse.ui.workbench.texteditor
 Automatic-Module-Name: org.jkiss.dbeaver.ui
 

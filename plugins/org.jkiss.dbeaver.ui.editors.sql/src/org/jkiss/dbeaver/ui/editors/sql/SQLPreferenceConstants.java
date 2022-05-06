@@ -136,7 +136,7 @@ public class SQLPreferenceConstants
     public static final String VAR_DRIVER_NAME = "driverName";
     public static final String VAR_ACTIVE_DATABASE = "database";
     public static final String VAR_ACTIVE_SCHEMA = "schema";
-    public static final String VAR_ACTIVE_PROJECT = "project.name";
+    public static final String VAR_ACTIVE_PROJECT = "projectName";
 
 
     public static final String SCRIPT_COMMIT_TYPE                       = "script.commit.type"; //$NON-NLS-1$

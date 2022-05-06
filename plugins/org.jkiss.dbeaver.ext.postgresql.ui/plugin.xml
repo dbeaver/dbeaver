@@ -85,6 +85,7 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep"/>
         </editor>
         <editor id="postgresql.source.ddl" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor"
                 label="%db.editor.ddl.name" description="%db.editor.ddl.description" icon="#sql_text" position="additions_middle"
@@ -92,6 +93,17 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreScriptObjectExt"/>
+        </editor>
+
+        <editor id="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreScheduleEditor"
+                class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreScheduleEditor"
+                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule"
+                label="Scheduler"
+                description="Schedule editor"
+                icon="#job_schedule"
+                position="additions_middle"
+                type="folder">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule"/>
         </editor>
 
         <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreConstraintConfigurator">
