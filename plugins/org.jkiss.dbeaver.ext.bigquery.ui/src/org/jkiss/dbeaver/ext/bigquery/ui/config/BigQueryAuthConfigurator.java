@@ -46,15 +46,11 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
         authTypeCombo = new Combo(authPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         authTypeCombo.add(BigQueryMessages.label_service_based);
         authTypeCombo.add(BigQueryMessages.label_user_based);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        authTypeCombo.setLayoutData(gd);
         authTypeCombo.select(0);
 
         UIUtils.createControlLabel(authPanel, BigQueryMessages.label_key_path);
         authCertFile = new TextWithOpenFile(authPanel, BigQueryMessages.label_private_key_path, new String[]{"*", "*.p12", "*.json"}); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
-        authCertFile.setLayoutData(gd);
+        authCertFile.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING));
     }
 
     @Override
