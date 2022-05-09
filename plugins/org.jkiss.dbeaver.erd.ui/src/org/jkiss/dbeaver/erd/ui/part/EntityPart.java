@@ -25,10 +25,7 @@ import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.tools.DirectEditManager;
-import org.jkiss.dbeaver.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.erd.model.ERDElement;
-import org.jkiss.dbeaver.erd.model.ERDEntity;
-import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
@@ -44,7 +41,6 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.utils.CommonUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.util.List;
@@ -274,18 +270,10 @@ public class EntityPart extends NodePart {
         return getEntity();
     }
 
-    public void redirectSourceConnection(ConnectionEditPart connectionEditPart, int index) {
-        super.addSourceConnection(connectionEditPart, index);
-    }
-
-    public void redirectTargetConnection(ConnectionEditPart connectionEditPart, int index) {
-        super.addSourceConnection(connectionEditPart, index);
-    }
-
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return super.getModelSourceConnections();
         }
         return super.getModelSourceConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
@@ -294,10 +282,10 @@ public class EntityPart extends NodePart {
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
-            return super.getModelTargetConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
-        } else {
+        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return super.getModelTargetConnections();
+        } else {
+            return super.getModelTargetConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
         }
     }
 

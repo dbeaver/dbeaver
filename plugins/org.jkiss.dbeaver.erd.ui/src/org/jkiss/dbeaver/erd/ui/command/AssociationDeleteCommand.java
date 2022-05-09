@@ -22,6 +22,8 @@ import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDElement;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart;
+import org.jkiss.dbeaver.erd.ui.part.AttributePart;
+import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
@@ -36,8 +38,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class AssociationDeleteCommand extends Command {
 
     protected final AssociationPart part;
-    protected final ERDElement sourceEntity;
-    protected final ERDElement targetEntity;
+    protected  ERDElement sourceEntity;
+    protected  ERDElement targetEntity;
     protected final ERDAssociation association;
 
     public AssociationDeleteCommand(AssociationPart part) {
@@ -45,7 +47,13 @@ public class AssociationDeleteCommand extends Command {
         this.part = part;
         association = part.getAssociation();
         sourceEntity = association.getSourceEntity();
+        if (sourceEntity == null && part.getSource() instanceof AttributePart) {
+            sourceEntity = ((EntityPart) part.getSource().getParent()).getEntity();
+        }
         targetEntity = association.getTargetEntity();
+        if (targetEntity == null && part.getTarget() instanceof AttributePart) {
+            targetEntity = ((EntityPart) part.getTarget().getParent()).getEntity();
+        }
     }
 
     /**
@@ -70,7 +78,6 @@ public class AssociationDeleteCommand extends Command {
 
     protected void removeAssociationFromDiagram() {
         part.setSelected(EditPart.SELECTED_NONE);
-
         targetEntity.removeReferenceAssociation(association, true);
         sourceEntity.removeAssociation(association, true);
         association.setSourceEntity(null);
@@ -96,6 +103,7 @@ public class AssociationDeleteCommand extends Command {
         association.setTargetEntity(targetEntity);
         sourceEntity.addAssociation(association, true);
         targetEntity.addReferenceAssociation(association, true);
+        part.activate();
     }
 
 }

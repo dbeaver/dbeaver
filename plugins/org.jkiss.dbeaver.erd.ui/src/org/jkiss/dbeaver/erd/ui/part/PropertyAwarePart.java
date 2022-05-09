@@ -189,7 +189,9 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
             //add new connection
             ConnectionEditPart editPart = createOrFindConnection(newValue);
             int modelIndex = getModelTargetConnections().indexOf(newValue);
-            addTargetConnection(editPart, modelIndex);
+            if (modelIndex != -1) {
+                addTargetConnection(editPart, modelIndex);
+            }
 
         } else {
 
@@ -202,6 +204,21 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
                 if (part.getModel() == oldValue) {
                     partToRemove = part;
                     break;
+                }
+            }
+
+            List<PropertyAwarePart> childrenParts = getChildren();
+            for (Iterator<PropertyAwarePart> iter = childrenParts.iterator(); iter.hasNext();) {
+                PropertyAwarePart next = iter.next();
+                List<?> childrenConnections = next.getTargetConnections();
+                ConnectionEditPart childConnectionPartToRemove;
+                for (Iterator<?> childIter = childrenConnections.iterator(); childIter.hasNext(); ) {
+                    ConnectionEditPart childConnectionPart = (ConnectionEditPart) childIter.next();
+                    if (childConnectionPart.getModel() == oldValue) {
+                        childConnectionPartToRemove = childConnectionPart;
+                        next.removeTargetConnection(childConnectionPartToRemove);
+                        break;
+                    }
                 }
             }
 
@@ -250,6 +267,20 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
                 if (part.getModel() == oldValue) {
                     partToRemove = part;
                     break;
+                }
+            }
+            List<PropertyAwarePart> childrenParts = getChildren();
+            for (Iterator<PropertyAwarePart> iter = childrenParts.iterator(); iter.hasNext();) {
+                PropertyAwarePart next = iter.next();
+                List<?> childrenConnections = next.getSourceConnections();
+                ConnectionEditPart childConnectionPartToRemove = null;
+                for (Iterator<?> childIter = childrenConnections.iterator(); childIter.hasNext(); ) {
+                    ConnectionEditPart childConnectionPart = (ConnectionEditPart) childIter.next();
+                    if (childConnectionPart.getModel() == oldValue) {
+                        childConnectionPartToRemove = childConnectionPart;
+                        next.removeSourceConnection(childConnectionPartToRemove);
+                        break;
+                    }
                 }
             }
 

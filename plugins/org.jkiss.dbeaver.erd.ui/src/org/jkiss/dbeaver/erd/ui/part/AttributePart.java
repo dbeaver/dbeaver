@@ -21,11 +21,8 @@ import org.eclipse.draw2dl.ConnectionAnchor;
 import org.eclipse.draw2dl.IFigure;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.tools.DragEditPartsTracker;
-import org.jkiss.dbeaver.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.erd.model.ERDElement;
 import org.eclipse.swt.graphics.Color;
-import org.jkiss.dbeaver.erd.model.ERDEntity;
-import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.command.AttributeCheckCommand;
@@ -38,14 +35,13 @@ import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeDragAndDropEditPolicy;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Represents an editable Column object in the model
@@ -82,48 +78,52 @@ public class AttributePart extends NodePart {
     @Override
     protected void addSourceConnection(ConnectionEditPart connection, int index) {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return;
         }
-        if (this.getFigure().isVisible()) {
-            if (((AssociationPart) connection).getAssociation().getSourceAttributes().contains(getAttribute())) {
-                super.addSourceConnection(connection, index);
-            }
-        } else {
-            ((EntityPart) getParent()).redirectSourceConnection(connection, index);
+        if (((AssociationPart) connection).getAssociation().getSourceAttributes().contains(getAttribute())) {
+            super.addSourceConnection(connection, index);
         }
     }
 
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return Collections.emptyList();
         }
-        return super.getModelSourceConnections().stream().filter(erdAssociation -> erdAssociation.getSourceAttributes().contains(getAttribute())).collect(Collectors.toList());
+        List<ERDAssociation> list = new ArrayList<>();
+        for (ERDAssociation erdAssociation : super.getModelSourceConnections()) {
+            if (erdAssociation.getSourceAttributes().contains(getAttribute()) && erdAssociation.getSourceEntity() != null) {
+                list.add(erdAssociation);
+            }
+        }
+        return list;
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return Collections.emptyList();
         }
-        return super.getModelTargetConnections().stream().filter(erdAssociation -> erdAssociation.getTargetAttributes().contains(getAttribute())).collect(Collectors.toList());
+        List<ERDAssociation> list = new ArrayList<>();
+        for (ERDAssociation erdAssociation : super.getModelTargetConnections()) {
+            if (erdAssociation.getTargetAttributes().contains(getAttribute()) && erdAssociation.getTargetEntity() != null) {
+                list.add(erdAssociation);
+            }
+        }
+        return list;
     }
 
     @Override
     protected void addTargetConnection(ConnectionEditPart connection, int index) {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return;
         }
-        if (this.getFigure().isVisible()) {
-            if (((AssociationPart) connection).getAssociation().getTargetAttributes().contains(getAttribute())) {
-                super.addTargetConnection(connection, index);
-            }
-        } else {
-            ((EntityPart) getParent()).redirectTargetConnection(connection, index);
+        if (((AssociationPart) connection).getAssociation().getTargetAttributes().contains(getAttribute())) {
+            super.addTargetConnection(connection, index);
         }
     }
 
