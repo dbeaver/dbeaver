@@ -24,12 +24,24 @@ public class OrthogonalPath {
     private boolean isDirty;
     private PointList points;
     private PointList bendpoints;
-    private  OrthogonalPath subPath;
     private Connection connection;
     private Direction forbiddenDirection;
-    private boolean isChild;
+
+    private boolean sourceIsChild;
+    private boolean targetIsChild;
+
     Point start;
     Point end;
+
+    public void setDirty(boolean dirty) {
+        isDirty = dirty;
+    }
+
+    public void reset() {
+        sourceIsChild = false;
+        targetIsChild = false;
+        forbiddenDirection = null;
+    }
 
     public enum Direction {
         UP,
@@ -53,15 +65,22 @@ public class OrthogonalPath {
                 forbiddenDirection = Direction.RIGHT;
             }
         }
-        setChild(true);
     }
 
-    public boolean isChild() {
-        return isChild;
+    public boolean isSourceIsChild() {
+        return sourceIsChild;
     }
 
-    public void setChild(boolean child) {
-        isChild = child;
+    public void setSourceIsChild(boolean child) {
+        sourceIsChild = child;
+    }
+
+    public boolean isTargetIsChild() {
+        return targetIsChild;
+    }
+
+    public void setTargetIsChild(boolean child) {
+        targetIsChild = child;
     }
 
     public Direction getForbiddenDirection() {

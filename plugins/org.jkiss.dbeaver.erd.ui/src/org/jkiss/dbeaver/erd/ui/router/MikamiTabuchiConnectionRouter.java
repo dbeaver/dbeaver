@@ -23,6 +23,7 @@ import org.eclipse.draw2dl.geometry.Point;
 import org.eclipse.draw2dl.geometry.PointList;
 import org.eclipse.draw2dl.geometry.PrecisionPoint;
 import org.eclipse.draw2dl.geometry.Rectangle;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.*;
 
@@ -146,28 +147,31 @@ public class MikamiTabuchiConnectionRouter extends AbstractRouter {
             this.processStaleConnections();
             this.isDirty = false;
             this.algorithm.setClientArea(container);
-            List<OrthogonalPath> updated = this.algorithm.solve();
-            for (OrthogonalPath path : updated) {
-                if (path == null || path.getPoints() == null) {
-                    continue;
+            UIUtils.asyncExec(() -> {
+                List<OrthogonalPath> updated = this.algorithm.solve();
+                for (OrthogonalPath path : updated) {
+                    if (path == null || path.getPoints() == null) {
+                        continue;
+                    }
+                    Connection current = path.getConnection();
+                    current.revalidate();
+                    PointList points = path.getPoints().getCopy();
+                    Point ref1 = new PrecisionPoint(points.getPoint(1));
+                    Point ref2 = new PrecisionPoint(points.getPoint(points.size() - 2));
+                    current.translateToAbsolute(ref1);
+                    current.translateToAbsolute(ref2);
+                    Point start = current.getSourceAnchor().getLocation(ref1).getCopy();
+                    Point end = current.getTargetAnchor().getLocation(ref2).getCopy();
+                    current.translateToRelative(start);
+                    current.translateToRelative(end);
+                    points.setPoint(start, 0);
+                    points.setPoint(end, points.size() - 1);
+                    current.setPoints(points);
                 }
-                Connection current = path.getConnection();
-                current.revalidate();
-                PointList points = path.getPoints().getCopy();
-                Point ref1 = new PrecisionPoint(points.getPoint(1));
-                Point ref2 = new PrecisionPoint(points.getPoint(points.size() - 2));
-                current.translateToAbsolute(ref1);
-                current.translateToAbsolute(ref2);
-                Point start = current.getSourceAnchor().getLocation(ref1).getCopy();
-                Point end = current.getTargetAnchor().getLocation(ref2).getCopy();
-                current.translateToRelative(start);
-                current.translateToRelative(end);
-                points.setPoint(start, 0);
-                points.setPoint(end, points.size() - 1);
-                current.setPoints(points);
+                this.ignoreInvalidate = false;
             }
-            this.ignoreInvalidate = false;
-        }
+            );
+    }
     }
 
 

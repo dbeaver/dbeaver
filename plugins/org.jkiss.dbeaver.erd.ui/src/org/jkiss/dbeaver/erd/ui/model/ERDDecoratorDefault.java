@@ -71,7 +71,12 @@ public class ERDDecoratorDefault implements ERDDecorator {
     @NotNull
     @Override
     public Insets getDefaultEntityInsets() {
-        return new Insets(20, 20, 10, 20);
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        if (store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+            return new Insets(20, 20, 10, 20);
+        } else {
+            return new Insets(50, 50, 50, 50);
+        }
     }
 
     @Nullable

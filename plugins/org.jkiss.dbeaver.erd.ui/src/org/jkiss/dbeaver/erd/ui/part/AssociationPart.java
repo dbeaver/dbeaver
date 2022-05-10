@@ -196,7 +196,12 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
         conn.setLineWidth(2);
         if (!identifying || constraintType.isLogical()) {
-            conn.setLineStyle(SWT.LINE_CUSTOM);
+            final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+            if (store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+                conn.setLineStyle(SWT.LINE_DOT);
+            } else {
+                conn.setLineStyle(SWT.LINE_CUSTOM);
+            }
             conn.setLineDash(
                 constraintType.isLogical() ? new float[]{ 4  } : new float[]{ 5 });
         }
