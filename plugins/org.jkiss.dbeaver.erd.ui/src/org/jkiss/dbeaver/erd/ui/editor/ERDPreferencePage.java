@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.erd.ui.editor;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.draw2dl.PrintFigureOperation;
-import org.eclipse.lsp4e.ui.UI;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;

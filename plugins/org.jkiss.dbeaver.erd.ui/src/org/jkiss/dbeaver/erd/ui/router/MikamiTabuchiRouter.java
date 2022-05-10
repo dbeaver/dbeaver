@@ -42,7 +42,7 @@ import java.util.*;
 //multi-dimensional arrays for trial lines?
 public class MikamiTabuchiRouter {
 
-    private static final Log log  = Log.getLog(MikamiTabuchiRouter.class);
+    private static final Log log = Log.getLog(MikamiTabuchiRouter.class);
 
     private int spacing = 10;
     private final List<Rectangle> obstacles = new ArrayList<>();
@@ -148,8 +148,8 @@ public class MikamiTabuchiRouter {
                 if (point.y - spacing / 2 <= line.getFirst().y && point.y + spacing / 2 > line.getFirst().y) {
                     if (isInsideLine(point.x, line.getFirst().x, line.getSecond().x) ||
                             isInsideLine(secondPoint.x, line.getFirst().x, line.getSecond().x) ||
-                                isInsideLine(line.getFirst().x, point.x, secondPoint.x) ||
-                                        isInsideLine(line.getSecond().x, point.x, secondPoint.x)) {
+                            isInsideLine(line.getFirst().x, point.x, secondPoint.x) ||
+                            isInsideLine(line.getSecond().x, point.x, secondPoint.x)) {
                         return true;
                     }
                 }
@@ -159,7 +159,7 @@ public class MikamiTabuchiRouter {
     }
 
     private boolean isInsideLine(int pointCoordinate, int lineCoordinateFirstPoint, int lineCoordinateSecondPoint) {
-        return Math.min(lineCoordinateFirstPoint, lineCoordinateSecondPoint)  < pointCoordinate
+        return Math.min(lineCoordinateFirstPoint, lineCoordinateSecondPoint) < pointCoordinate
                 && Math.max(lineCoordinateFirstPoint, lineCoordinateSecondPoint) > pointCoordinate;
     }
 
@@ -248,7 +248,7 @@ public class MikamiTabuchiRouter {
             point = line.from;
             line = line.getParent();
         }
-        boolean vertical =  !previousLine.vertical;
+        boolean vertical = !previousLine.vertical;
         for (int i = 0; i < points.size() - 1; i++) {
             resultMap.get(vertical).add(new Pair<>(points.getPoint(i), points.getPoint(i + 1)));
             vertical = !vertical;
@@ -317,7 +317,7 @@ public class MikamiTabuchiRouter {
             previous = next;
         }
         for (int i = 1; i < children.size() - 1; i++) {
-           children.get(i).setChild(true);
+            children.get(i).setChild(true);
         }
     }
 
@@ -331,7 +331,7 @@ public class MikamiTabuchiRouter {
             this.workingPaths.removeAll(orthogonalPaths);
             this.workingPaths.add(path);
             this.pathsToChildPaths.remove(path);
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         OrthogonalPath child;
@@ -440,7 +440,9 @@ public class MikamiTabuchiRouter {
     }
 
     /**
-     * inits list for each type of
+     * init list for each type of trial line
+     * Source horizontal, source vertical, target horizontal, target vertical
+     *
      * @param iter number of algorithm iteration
      */
     private void initNewLayer(int iter) {
@@ -465,22 +467,28 @@ public class MikamiTabuchiRouter {
     }
 
     private class TrialLine {
+        @Nullable
+        TrialLine parent;
+
+        @NotNull
+        final PrecisionPoint from;
 
         double start = Double.MIN_VALUE;
         double finish = Double.MIN_VALUE;
+
         boolean fromSource;
 
         double creationForbiddenStart = Double.MIN_VALUE;
         double creationForbiddenFinish = Double.MIN_VALUE;
-        final PrecisionPoint from;
 
 
         boolean vertical;
 
         //Starting line is always inside figure, we don't want to create trial line inside it
+
         private void calculateForbiddenRange(OrthogonalPath.Direction forbiddenDirection) {
             for (Rectangle it : obstacles) {
-                if (isInsideFigure(it, true)) {
+                if (isInsideFigure(it)) {
                     if (vertical) {
                         creationForbiddenStart = it.getTop().y - spacing;
                         creationForbiddenFinish = it.getBottom().y + spacing;
@@ -524,10 +532,7 @@ public class MikamiTabuchiRouter {
             return creationForbiddenFinish != Double.MIN_VALUE;
         }
 
-        @Nullable
-        TrialLine parent;
-
-        TrialLine(PrecisionPoint start, @NotNull TrialLine parent) {
+        TrialLine(@NotNull PrecisionPoint start, @NotNull TrialLine parent) {
             this.from = start;
             this.parent = parent;
             this.fromSource = parent.fromSource;
@@ -535,7 +540,7 @@ public class MikamiTabuchiRouter {
             cutByObstacles(false);
         }
 
-        TrialLine(PrecisionPoint start, boolean fromSource, boolean vertical, OrthogonalPath.Direction forbiddenDirection) {
+        TrialLine(@NotNull PrecisionPoint start, boolean fromSource, boolean vertical, OrthogonalPath.Direction forbiddenDirection) {
             this.from = start;
             this.vertical = vertical;
             this.fromSource = fromSource;
@@ -543,19 +548,15 @@ public class MikamiTabuchiRouter {
             this.calculateForbiddenRange(forbiddenDirection);
         }
 
-        private boolean isInsideFigure(Rectangle it, boolean ignoreOffset) {
-            int offset = spacing;
-            if (ignoreOffset) {
-                offset = 0;
-            }
-            return (it.getLeft().x - offset <= from.x && it.getRight().x + offset  > from.x
-                && it.getTop().y - offset <= from.y && it.getBottom().y + offset  > from.y);
+        private boolean isInsideFigure(Rectangle it) {
+            return (it.getLeft().x <= from.x && it.getRight().x > from.x
+                    && it.getTop().y <= from.y && it.getBottom().y > from.y);
         }
 
         private void cutByObstacles(boolean startingLine) {
             //Check if object is on axis with line, if it is, reduce line size
             for (Rectangle it : obstacles) {
-                if (isInsideFigure(it, true)) {
+                if (isInsideFigure(it)) {
                     if (startingLine) {
                         continue;
                     } else {
@@ -563,7 +564,7 @@ public class MikamiTabuchiRouter {
                     }
                 }
                 if (vertical && it.getLeft().x - spacing <= from.x && it.getRight().x + spacing > from.x
-                    || !vertical && it.getTop().y - spacing <= from.y && it.getBottom().y + spacing > from.y) {
+                        || !vertical && it.getTop().y - spacing <= from.y && it.getBottom().y + spacing > from.y) {
                     //object is below need to cut start
                     cut(it);
                 }
