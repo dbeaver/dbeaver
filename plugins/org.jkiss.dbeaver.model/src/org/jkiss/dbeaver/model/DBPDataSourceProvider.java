@@ -77,4 +77,8 @@ public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObje
         return connectionInfo.getAuthModelDescriptor();
     }
 
+    default boolean providesDriverClasses() {
+        return true;
+    }
+
 }
