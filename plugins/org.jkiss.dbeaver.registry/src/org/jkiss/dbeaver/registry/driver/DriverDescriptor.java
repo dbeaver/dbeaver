@@ -640,7 +640,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return (T)driverInstance;
     }
 
-    private void resetDriverInstance() {
+    public void resetDriverInstance() {
         this.driverInstance = null;
         this.driverClass = null;
         this.isLoaded = false;
