@@ -97,8 +97,8 @@ public class ERDContentProviderDefault implements ERDContentProvider {
                 if (!CommonUtils.isEmpty(attributes)) {
                     for (DBSEntityAttribute attribute : attributes) {
                         boolean isInIdentifier = idColumns != null && idColumns.contains(attribute);
-                        if (!keyColumns.contains(attribute) && !isAttributeVisible(erdEntity, attribute)) {
-                            // Show all visible attributes and all key attributes
+                        if (!isAttributeVisible(erdEntity, attribute)) {
+                            // Show only visible attributes
                             continue;
                         }
                         if (columnFilter != null && !columnFilter.matches(attribute.getName())) {

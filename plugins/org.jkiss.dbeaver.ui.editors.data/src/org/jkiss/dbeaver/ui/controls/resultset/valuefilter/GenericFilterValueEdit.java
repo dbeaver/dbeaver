@@ -443,7 +443,7 @@ class GenericFilterValueEdit {
                     // And we can change it with the help of valueHandler
                     // We use here same format as date types have in values list
                     DBDValueHandler valueHandler = DBUtils.findValueHandler(attribute.getDataSource(), attribute);
-                    String displayString = valueHandler.getValueDisplayString(attribute, cellValue, DBDDisplayFormat.NATIVE);
+                    String displayString = valueHandler.getValueDisplayString(attribute, cellValue, DBDDisplayFormat.UI);
                     dictValue = findValue(rowData, displayString);
                 }
                 if (dictValue == null) {

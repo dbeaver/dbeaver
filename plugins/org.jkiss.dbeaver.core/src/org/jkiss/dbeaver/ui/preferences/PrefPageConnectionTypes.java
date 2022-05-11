@@ -327,6 +327,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         typeTable.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
+                typeTable.removeControlListener(this);
                 UIUtils.packColumns(typeTable, true);
             }
         });

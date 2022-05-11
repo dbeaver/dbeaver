@@ -21,6 +21,7 @@ import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
+import net.schmizz.sshj.connection.channel.direct.Parameters;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthMethod;
@@ -113,8 +114,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
 
             log.debug("Instantiate SSH tunnel");
 
-            final LocalPortForwarder.Parameters params
-                = new LocalPortForwarder.Parameters(portForward.getLocalHost(), portForward.getLocalPort(), portForward.getRemoteHost(), portForward.getRemotePort());
+            final Parameters params = new Parameters(portForward.getLocalHost(), portForward.getLocalPort(), portForward.getRemoteHost(), portForward.getRemotePort());
             portListener = new LocalPortListener(params);
             portListener.start();
             RuntimeUtils.pause(100);
@@ -168,18 +168,15 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
     }
 
     private class LocalPortListener extends Thread {
-        private LocalPortForwarder.Parameters params;
+        private final Parameters params;
         private LocalPortForwarder portForwarder;
 
-        LocalPortListener(LocalPortForwarder.Parameters params) {
+        LocalPortListener(Parameters params) {
             this.params = params;
         }
 
         public void run() {
             setName("Local port forwarder " + params.getRemoteHost() + ":" + params.getRemotePort() + " socket listener");
-            final LocalPortForwarder.Parameters params
-                = new LocalPortForwarder.Parameters(
-                    this.params.getLocalHost(), this.params.getLocalPort(), this.params.getRemoteHost(), this.params.getRemotePort());
 
             try {
                 ServerSocket serverSocket = new ServerSocket();

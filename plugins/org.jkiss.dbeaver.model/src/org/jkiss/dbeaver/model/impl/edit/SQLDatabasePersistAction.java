@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 
 /**
  * Object persist action implementation
@@ -80,6 +83,10 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
         throws DBCException
     {
         // do nothing
+    }
+
+    public void afterExecute(@NotNull DBCSession session, @Nullable DBCStatement stmt, @Nullable Throwable error) throws DBCException {
+        afterExecute(session, error);
     }
 
     @Override

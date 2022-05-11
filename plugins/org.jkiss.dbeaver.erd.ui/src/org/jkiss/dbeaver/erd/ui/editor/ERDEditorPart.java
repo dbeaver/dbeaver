@@ -37,12 +37,14 @@ import org.eclipse.gef3.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef3.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef3.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
@@ -80,6 +82,7 @@ import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.erd.ui.part.NodePart;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -95,6 +98,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseModellerEditor;
@@ -104,8 +108,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.EventObject;
+import java.util.*;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -116,7 +120,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         implements DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart, INavigatorModelView {
-    private static final Log log = Log.getLog(Searcher.class);
+    private static final Log searcherLog = Log.getLog(Searcher.class);
 
     @Nullable
     protected ProgressControl progressControl;
@@ -162,6 +166,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private ERDDecorator decorator;
     private ZoomComboContributionItem zoomCombo;
     private NavigatorViewerAdapter navigatorViewerAdapter;
+    private ERDHighlightingManager highlightingManager = new ERDHighlightingManager();
+
+    private String exportMruFilename = null;
 
     /**
      * No-arg constructor
@@ -182,6 +189,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             decorator = createDecorator();
         }
         return decorator;
+    }
+
+    @NotNull
+    public ERDHighlightingManager getHighlightingManager() {
+        return highlightingManager;
     }
 
     /////////////////////////////////////////
@@ -558,7 +570,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @param dirty the new dirty state to set
      */
-    protected void setDirty(boolean dirty)
+    public void setDirty(boolean dirty)
     {
         if (isDirty != dirty) {
             isDirty = dirty;
@@ -704,6 +716,35 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         saveDialog.setFilterExtensions(extensions);
         saveDialog.setFilterNames(filterNames);
 
+        String proposedFileName = exportMruFilename;
+        if (CommonUtils.isEmpty(proposedFileName)) {
+            proposedFileName = this.getTitle();
+            if (!CommonUtils.isEmpty(proposedFileName)) {
+                int extIndex = proposedFileName.lastIndexOf('.');
+                if (extIndex != -1) {
+                    proposedFileName = proposedFileName.substring(0, extIndex);
+                }
+            }
+        }
+        if (CommonUtils.isEmpty(proposedFileName)) {
+            LinkedList<String> parts = new LinkedList<>();
+            EntityDiagram diagram = this.getDiagram(); 
+            DBSObject obj = diagram.getRootObjectContainer();
+            if (obj == null && diagram.getEntities().size() > 0) {
+                obj = diagram.getEntities().get(0).getObject();
+            }
+            while (obj != null && !(obj instanceof DBPDataSourceContainer)) {
+                parts.addFirst(obj.getName());
+                obj = obj.getParentObject();
+            }
+            
+            if (parts.isEmpty()) {
+                parts.add("unnammed");
+            }
+            proposedFileName = String.join(" - ", parts);
+        }
+        saveDialog.setFileName(proposedFileName);
+
         String filePath = DialogUtils.openFileDialog(saveDialog);
         if (filePath == null || filePath.trim().length() == 0) {
             return;
@@ -715,6 +756,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 return;
             }
         }
+
+        exportMruFilename = outFile.getName();
 
         int divPos = filePath.lastIndexOf('.');
         if (divPos == -1) {
@@ -740,6 +783,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             IFigure figure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
 
             formatHandler.exportDiagram(getDiagram(), figure, getDiagramPart(), outFile);
+
+            final int openFileDecision = ConfirmationDialog.confirmAction(
+                getGraphicalControl().getShell(),
+                ERDUIConstants.CONFIRM_OPEN_EXPORTED_FILE,
+                ConfirmationDialog.QUESTION);
+
+            if (openFileDecision == IDialogConstants.YES_ID) {
+                ShellUtils.launchProgram(outFile.getAbsolutePath());
+            }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("ERD export failed", null, e);
         }
@@ -956,14 +1008,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 ERDUIMessages.erd_editor_control_action_print_diagram,
                 UIIcon.PRINT));
 
-            toolBarManager.add(ActionUtils.makeCommandContribution(
-                getSite(),
-                IWorkbenchCommandConstants.FILE_SAVE_AS,
-                ERDUIMessages.erd_editor_control_action_save_external_format,
-                UIIcon.PICTURE_SAVE));
-
-            DiagramExportAction saveDiagram = new DiagramExportAction(this, getSite().getShell());
-            toolBarManager.add(saveDiagram);
+            toolBarManager.add(ActionUtils.makeCommandContribution(getSite(), ERDUIConstants.CMD_SAVE_AS));
         }
         toolBarManager.add(new Separator("configuration"));
         {
@@ -1268,55 +1313,105 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     private class Searcher implements ISearchExecutor {
         @Nullable
+        private String searchString = null;
+        @Nullable
         private Pattern curSearchPattern;
         private boolean resultsFound;
-
+        private Boolean isPrevStepWasFwd;
+        @Nullable
+        private List<Object> results = null;
+        @Nullable
+        private ListIterator<Object> resultsIterator = null;
+        @Nullable
+        private Object currentItem = null;
+        @Nullable
+        private List<ERDHighlightingHandle> highlightings = new LinkedList<>();
+        
         @Override
         public boolean performSearch(@NotNull String searchString, int options) {
-            String likePattern = SQLUtils.makeLikePattern(searchString);
-            if (likePattern.isEmpty() || (curSearchPattern != null && likePattern.equals(curSearchPattern.pattern()))) {
-                return resultsFound;
-            }
-
-            try {
-                curSearchPattern = Pattern.compile(likePattern, Pattern.CASE_INSENSITIVE);
-            } catch (PatternSyntaxException e) {
-                log.warn("Unable to perform search in ERD editor due to an inability to compile search pattern", e);
-                if (progressControl != null) {
-                    progressControl.setInfo(e.getMessage());
+            if (this.results != null && this.searchString != null && this.searchString.equals(searchString)) {
+                return findNextResult(options == SEARCH_NEXT);
+            } else {
+                this.cancelSearch();
+                isPrevStepWasFwd = null;
+                results = new ArrayList<>();
+                this.searchString = searchString;
+                String likePattern = SQLUtils.makeLikePattern(searchString);
+                if (likePattern.isEmpty() || (curSearchPattern != null && likePattern.equals(curSearchPattern.pattern()))) {
+                    return resultsFound;
                 }
-                return false;
-            }
 
-            resultsFound = false;
-            ERDGraphicalViewer graphicalViewer = getGraphicalViewer();
-            graphicalViewer.deselectAll();
-            List<Object> nodes = getDiagramPart().getChildren();
-            List<?> allNodesChildren = new ArrayList<>();
-            for (Object node : nodes) {
-                if (node instanceof EntityPart) {
-                    List children = ((EntityPart) node).getChildren();
-                    if (!CommonUtils.isEmpty(children)) {
-                        allNodesChildren.addAll(children);
+                try {
+                    curSearchPattern = Pattern.compile(likePattern, Pattern.CASE_INSENSITIVE);
+                } catch (PatternSyntaxException e) {
+                    searcherLog.warn("Unable to perform search in ERD editor due to an inability to compile search pattern", e);
+                    if (progressControl != null) {
+                        progressControl.setInfo(e.getMessage());
                     }
+                    return false;
                 }
-            }
-            if (!CommonUtils.isEmpty(allNodesChildren)) {
-                nodes.addAll(allNodesChildren);
-            }
-            if (!CommonUtils.isEmpty(nodes)) {
-                Object obj = nodes.get(0);
-                if (obj instanceof DBPNamedObject && obj instanceof EditPart) {
-                    for (Object node: nodes) {
-                        if (matchesSearch((DBPNamedObject) node)) {
-                            resultsFound = true;
-                            graphicalViewer.appendSelection((EditPart) node);
-                            graphicalViewer.reveal((EditPart) node);
+
+                resultsFound = false;
+                ERDGraphicalViewer graphicalViewer = getGraphicalViewer();
+                graphicalViewer.deselectAll();
+                Set<DBPNamedObject> nodes = new HashSet<>();
+                for (Object node : getDiagramPart().getChildren()) {
+                    if (node instanceof DBPNamedObject && node instanceof EditPart) {
+                        nodes.add((DBPNamedObject) node);
+                    }
+                    if (node instanceof EntityPart) {
+                        List<?> children = ((EntityPart) node).getChildren();
+                        if (!CommonUtils.isEmpty(children)) {
+                            for (Object child: children) {
+                                if (child instanceof DBPNamedObject && child instanceof EditPart) {
+                                    nodes.add((DBPNamedObject) child);
+                                }
+                            }
                         }
                     }
                 }
+                if (!CommonUtils.isEmpty(nodes)) {
+                    Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_SEARCH_HIGHLIGHTING);
+                    for (DBPNamedObject erdNode : nodes) {
+                        if (matchesSearch(erdNode)) {
+                            resultsFound = true;
+                            results.add(erdNode);
+                            if (erdNode instanceof GraphicalEditPart) {
+                                highlightings.add(highlightingManager.highlight(((GraphicalEditPart) erdNode).getFigure(), color));
+                            }
+                            graphicalViewer.reveal((EditPart) erdNode);
+                        }
+                    }
+                }
+                resultsIterator = results.listIterator();
+                return resultsFound;
             }
-            return resultsFound;
+        }
+        
+        private void jumpToNext(boolean isFindNext) {
+            if (resultsIterator == null || isFindNext ? !resultsIterator.hasNext() : !resultsIterator.hasPrevious()) {
+                resultsIterator = results.listIterator(isFindNext ? 0 : results.size());
+            }
+            currentItem = isFindNext ? resultsIterator.next() : resultsIterator.previous();
+        }
+
+        private boolean findNextResult(boolean isFindNext) {
+            if (resultsFound && results != null) {
+                if (isPrevStepWasFwd != null && isPrevStepWasFwd.booleanValue() != isFindNext) { 
+                    // direction change gets current item again as if it's a new loop initialization 
+                    jumpToNext(isFindNext); 
+                }
+                isPrevStepWasFwd = isFindNext;
+                jumpToNext(isFindNext);
+
+                ERDGraphicalViewer graphicalViewer = getGraphicalViewer();
+                graphicalViewer.deselectAll();
+                graphicalViewer.select((EditPart) currentItem);
+                graphicalViewer.reveal((EditPart) currentItem);
+                return true;
+            } else {
+                return false;
+            }
         }
 
         @Override
@@ -1325,6 +1420,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 curSearchPattern = null;
                 if (resultsFound) {
                     resultsFound = false;
+                    results = null;
+                    currentItem = null;
+                    resultsIterator = null;
+                    highlightings.forEach(ERDHighlightingHandle::release);
+                    highlightings.clear();
                     getGraphicalViewer().deselectAll();
                 }
             }
