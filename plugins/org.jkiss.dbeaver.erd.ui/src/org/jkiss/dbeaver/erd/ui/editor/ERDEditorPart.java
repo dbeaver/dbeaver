@@ -82,6 +82,7 @@ import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.erd.ui.part.NodePart;
 import org.jkiss.dbeaver.erd.ui.part.NotePart;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -108,6 +109,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.util.*;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -165,6 +167,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private ZoomComboContributionItem zoomCombo;
     private NavigatorViewerAdapter navigatorViewerAdapter;
     private ERDHighlightingManager highlightingManager = new ERDHighlightingManager();
+
+    private String exportMruFilename = null;
 
     /**
      * No-arg constructor
@@ -712,6 +716,35 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         saveDialog.setFilterExtensions(extensions);
         saveDialog.setFilterNames(filterNames);
 
+        String proposedFileName = exportMruFilename;
+        if (CommonUtils.isEmpty(proposedFileName)) {
+            proposedFileName = this.getTitle();
+            if (!CommonUtils.isEmpty(proposedFileName)) {
+                int extIndex = proposedFileName.lastIndexOf('.');
+                if (extIndex != -1) {
+                    proposedFileName = proposedFileName.substring(0, extIndex);
+                }
+            }
+        }
+        if (CommonUtils.isEmpty(proposedFileName)) {
+            LinkedList<String> parts = new LinkedList<>();
+            EntityDiagram diagram = this.getDiagram(); 
+            DBSObject obj = diagram.getRootObjectContainer();
+            if (obj == null && diagram.getEntities().size() > 0) {
+                obj = diagram.getEntities().get(0).getObject();
+            }
+            while (obj != null && !(obj instanceof DBPDataSourceContainer)) {
+                parts.addFirst(obj.getName());
+                obj = obj.getParentObject();
+            }
+            
+            if (parts.isEmpty()) {
+                parts.add("unnammed");
+            }
+            proposedFileName = String.join(" - ", parts);
+        }
+        saveDialog.setFileName(proposedFileName);
+
         String filePath = DialogUtils.openFileDialog(saveDialog);
         if (filePath == null || filePath.trim().length() == 0) {
             return;
@@ -723,6 +756,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 return;
             }
         }
+
+        exportMruFilename = outFile.getName();
 
         int divPos = filePath.lastIndexOf('.');
         if (divPos == -1) {
