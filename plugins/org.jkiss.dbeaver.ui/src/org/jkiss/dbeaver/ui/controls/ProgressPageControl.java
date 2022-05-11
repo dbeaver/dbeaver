@@ -25,6 +25,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ContributionManager;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -41,6 +42,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.progress.UIJob;
+import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
@@ -387,6 +389,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                             cancelSearch(true);
                             break;
                         case SWT.CR:
+                            performSearch(SearchType.NEXT);
+                            /* fall-through */
                         case SWT.ARROW_UP:
                         case SWT.ARROW_DOWN:
                             if (childPageControl != null) {
@@ -419,20 +423,16 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             //ToolBar searchTools = new ToolBar(searchControlsComposite, SWT.HORIZONTAL);
             if (searchToolbarManager == null) {
                 searchToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-                // Do not add prev/next buttons - they doesn't make sense now.
-                // Keep code just in case
-    /*
-                searchToolbarManager.add(ActionUtils.makeCommandContribution(
-                        PlatformUI.getWorkbench(),
-                        IWorkbenchActionDefinitionIds.FIND_NEXT,
-                        null,
-                        UIIcon.ARROW_DOWN));
                 searchToolbarManager.add(ActionUtils.makeCommandContribution(
                         PlatformUI.getWorkbench(),
                         IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
                         null,
                         UIIcon.ARROW_UP));
-    */
+                searchToolbarManager.add(ActionUtils.makeCommandContribution(
+                        PlatformUI.getWorkbench(),
+                        IWorkbenchActionDefinitionIds.FIND_NEXT,
+                        null,
+                        UIIcon.ARROW_DOWN));
                 searchToolbarManager.add(new Action(UIMessages.controls_progress_page_action_close, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
                     @Override
                     public void run() {

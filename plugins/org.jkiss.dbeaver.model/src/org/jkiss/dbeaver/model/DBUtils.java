@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -2227,5 +2229,48 @@ public final class DBUtils {
             }
         }
         return new Pair<>(name, mods);
+    }
+
+    @NotNull
+    public static <PARENT extends DBSObject, CHILD extends DBSObject> String makeNewObjectName(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String template,
+        @NotNull PARENT parent,
+        @NotNull Class<? extends CHILD> type,
+        @NotNull ChildExtractor<PARENT, CHILD> extractor,
+        @NotNull DBECommandContext context)
+    {
+        int suffix = 1;
+
+        while (true) {
+            final String name = Objects.requireNonNull(DBObjectNameCaseTransformer.transformName(parent.getDataSource(), NLS.bind(template, suffix)));
+
+            try {
+                boolean exists = extractor.extract(parent, monitor, name) != null;
+
+                if (!exists) {
+                    for (DBPObject object : context.getEditedObjects()) {
+                        if (type.isInstance(object) && ((DBSObject) object).getParentObject() == parent && name.equalsIgnoreCase(((DBSObject) object).getName())) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!exists) {
+                    return name;
+                }
+            } catch (DBException e) {
+                log.warn(e);
+                return name;
+            }
+
+            suffix += 1;
+        }
+    }
+
+    public interface ChildExtractor<PARENT, CHILD> {
+        @Nullable
+        CHILD extract(@NotNull PARENT parent, @NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException;
     }
 }
