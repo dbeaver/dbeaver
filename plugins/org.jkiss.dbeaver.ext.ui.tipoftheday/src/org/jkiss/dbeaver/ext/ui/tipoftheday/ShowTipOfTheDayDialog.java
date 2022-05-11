@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -162,31 +163,48 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
     }
 
     private void navigateLink(HyperlinkEvent e) {
-        Object href = e.getHref();
-        if (href != null) {
-            String linkURL = href.toString();
-            if (linkURL.startsWith("http:") || linkURL.startsWith("https:")) {
-                ShellUtils.launchProgram(linkURL);
-            } else if (linkURL.startsWith("prefs:")) {
-                String prefPageId = linkURL.substring(linkURL.indexOf("//") + 2);
-                buttonPressed(IDialogConstants.OK_ID);
+        final Object href = e.getHref();
+        if (href == null) {
+            return;
+        }
+        final URI uri = URI.create(href.toString());
+        switch (uri.getScheme()) {
+            case "http":
+            case "https":
+                ShellUtils.launchProgram(href.toString());
+                break;
+            case "prefs":
+                close();
                 UIUtils.asyncExec(() -> {
-                    UIUtils.showPreferencesFor(
-                        UIUtils.getActiveWorkbenchShell(),
-                        null,
-                        prefPageId);
+                    Object element = null;
+
+                    if (uri.getFragment() != null) {
+                        switch (uri.getFragment()) {
+                            case "project":
+                                element = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+                                break;
+                            default:
+                                log.warn("Unknown element type: '" + uri.getFragment() + "'");
+                                break;
+                        }
+                    }
+
+                    UIUtils.showPreferencesFor(UIUtils.getActiveWorkbenchShell(), element, uri.getHost());
                 });
-            } else if (linkURL.startsWith("view:")) {
-                String viewId = linkURL.substring(linkURL.indexOf("//") + 2);
-                buttonPressed(IDialogConstants.OK_ID);
+                break;
+            case "view":
+                close();
                 UIUtils.asyncExec(() -> {
                     try {
-                        UIUtils.getActiveWorkbenchWindow().getActivePage().showView(viewId);
+                        UIUtils.getActiveWorkbenchWindow().getActivePage().showView(uri.getHost());
                     } catch (PartInitException e1) {
-                        DBWorkbench.getPlatformUI().showError("Open view", "Error opening view " + viewId, e1);
+                        DBWorkbench.getPlatformUI().showError("Open view", "Error opening view " + uri.getHost(), e1);
                     }
                 });
-            }
+                break;
+            default:
+                log.warn("Unknown scheme: '" + uri.getScheme() + "'");
+                break;
         }
     }
 
