@@ -235,6 +235,20 @@
             <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.attributes.foreground.description</description>
         </colorDefinition>
         <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.search.highlighting.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.search.highlighting"
+                value="255,230,100">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.search.highlighting.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.fk.highlighting.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.fk.highlighting"
+                value="165,225,135">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.fk.highlighting.description</description>
+        </colorDefinition>
+        <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.notes.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.erd"
                 id="org.jkiss.dbeaver.erd.diagram.notes.foreground"

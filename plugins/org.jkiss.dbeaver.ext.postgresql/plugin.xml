@@ -313,18 +313,16 @@
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/com.github.waffle:waffle-jna:RELEASE[1.9.1]" if="properties.gsslib=='sspi'" optional="true" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <!-- Postgis -->
                     <file type="jar" path="drivers/postgis" optional="true" bundle="drivers.postgresql"/>
-<!--                    <file type="jar" path="drivers/waffle" optional="true" bundle="drivers.postgresql"/>-->
 
                     <parameter name="serverType" value="postgresql"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
-
-                    <parameter name="iam.enabled" value="true"/>
                 </driver>
                 <!-- Bad driver: it must be declared in generic provider -->
                 <driver

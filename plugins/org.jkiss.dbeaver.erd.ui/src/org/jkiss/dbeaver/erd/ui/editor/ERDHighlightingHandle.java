@@ -15,37 +15,8 @@
  * limitations under the License.
  */
 
-/*
- * Created on Jul 13, 2004
- */
-package org.jkiss.dbeaver.erd.ui.part;
+package org.jkiss.dbeaver.erd.ui.editor;
 
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-
-/**
- * Figure with customizable background color
- */
-public interface ICustomizablePart {
-
-    boolean getCustomTransparency();
-
-    void setCustomTransparency(boolean transparency);
-
-    int getCustomBorderWidth();
-
-    void setCustomBorderWidth(int borderWidth);
-
-    Color getCustomBackgroundColor();
-
-    void setCustomBackgroundColor(Color color);
-
-    Color getCustomForegroundColor();
-
-    void setCustomForegroundColor(Color color);
-
-    Font getCustomFont();
-
-    void setCustomFont(Font font);
-
+public interface ERDHighlightingHandle {
+    void release();
 }
