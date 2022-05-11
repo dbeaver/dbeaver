@@ -128,11 +128,11 @@ public class ComplexObjectEditor extends TreeViewer {
             {
                 if (!packing) {
                     packing = true;
+                    treeControl.removeControlListener(this);
                     UIUtils.packColumns(treeControl, true, new float[]{0.2f, 0.8f});
                     if (treeControl.getColumn(0).getWidth() < 100) {
                         treeControl.getColumn(0).setWidth(100);
                     }
-                    treeControl.removeControlListener(this);
                 }
             }
         });

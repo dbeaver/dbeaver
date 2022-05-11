@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.parser.ListNode;
+import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.model.sql.parser.TrieNode;
 
 import java.util.*;

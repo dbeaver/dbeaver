@@ -105,9 +105,9 @@ public class PostgreCreateExtensionDialog extends BaseDialog
                 @Override
                 public void controlResized(ControlEvent e)
                 {
+                    table.removeControlListener(this);
                     UIUtils.packColumns(table);
                     UIUtils.maxTableColumnsWidth(table);
-                    table.removeControlListener(this);
                 }
             });
             

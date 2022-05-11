@@ -27,12 +27,15 @@ import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
+import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
+import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
@@ -55,6 +58,8 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     // Keep original line width to visualize selection
     private Integer oldLineWidth;
+
+    private ERDHighlightingHandle associatedAttributesHighlighing = null;
 
     public AssociationPart() {
     }
@@ -226,34 +231,15 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             return;
         }
 
-        markAssociatedAttributes(value);
-    }
-
-    public void markAssociatedAttributes(int value) {
-        //Color columnColor = value != EditPart.SELECTED_NONE ? Display.getDefault().getSystemColor(SWT.COLOR_RED) : getViewer().getControl().getForeground();
-        //boolean isSelected = value != EditPart.SELECTED_NONE;
-        if (getSource() instanceof EntityPart) {
-            for (AttributePart attrPart : getEntityAttributes((EntityPart) getSource(), getAssociation().getSourceAttributes())) {
-                //attrPart.getFigure().setForegroundColor(columnColor);
-                attrPart.setSelected(value);
+        if (value != EditPart.SELECTED_NONE) {
+            if (this.getViewer() instanceof ERDGraphicalViewer && associatedAttributesHighlighing == null) {
+                Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
+                associatedAttributesHighlighing = ((ERDGraphicalViewer)this.getViewer()).getEditor().getHighlightingManager().highlightAssociationAndRelatedAttributes(this, color);
             }
+        } else if (associatedAttributesHighlighing != null) {
+            associatedAttributesHighlighing.release();
+            associatedAttributesHighlighing  = null;
         }
-        if (getTarget() instanceof EntityPart) {
-            for (AttributePart attrPart : getEntityAttributes((EntityPart) getTarget(), getAssociation().getTargetAttributes())) {
-                //attrPart.getFigure().setForegroundColor(columnColor);
-                attrPart.setSelected(value);
-            }
-        }
-    }
-
-    private List<AttributePart> getEntityAttributes(EntityPart source, List<ERDEntityAttribute> columns) {
-        List<AttributePart> result = new ArrayList<>();
-        for (Object attrPart : source.getChildren()) {
-            if (attrPart instanceof AttributePart && columns.contains(((AttributePart)attrPart).getAttribute())) {
-                result.add((AttributePart)attrPart);
-            }
-        }
-        return result;
     }
 
     @Override

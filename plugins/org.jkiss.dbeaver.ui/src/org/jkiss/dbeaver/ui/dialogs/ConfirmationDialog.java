@@ -23,8 +23,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.registry.ConfirmationRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -150,6 +152,10 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
                 throw new IllegalArgumentException(
                     "Illegal value for kind in MessageDialog.open()"); //$NON-NLS-1$
         }
+    }
+
+    public static int confirmAction(@Nullable Shell shell, @NotNull String id, int type, @NotNull Object... args) {
+        return ConfirmationRegistry.getInstance().confirmAction(shell, id, type, args);
     }
 
     public static boolean confirmAction(ResourceBundle bundle, Shell shell, String id)

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql.parser;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.Set;
 
