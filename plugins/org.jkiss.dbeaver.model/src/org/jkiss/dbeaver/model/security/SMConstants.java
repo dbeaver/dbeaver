@@ -19,4 +19,5 @@ package org.jkiss.dbeaver.model.security;
 public class SMConstants {
     public static final String SESSION_PARAM_LAST_REMOTE_ADDRESS = "lastRemoteAddr";
     public static final String SESSION_PARAM_LAST_REMOTE_USER_AGENT = "lastRemoteUserAgent";
+    public static final String SESSION_PARAM_TRUSTED_USER_ROLES = "trustedUserRoles";
 }

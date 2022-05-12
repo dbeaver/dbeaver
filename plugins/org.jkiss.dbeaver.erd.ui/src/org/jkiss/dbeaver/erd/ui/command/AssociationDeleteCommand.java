@@ -69,7 +69,7 @@ public class AssociationDeleteCommand extends Command {
     }
 
     protected void removeAssociationFromDiagram() {
-        part.markAssociatedAttributes(EditPart.SELECTED_NONE);
+        part.setSelected(EditPart.SELECTED_NONE);
 
         targetEntity.removeReferenceAssociation(association, true);
         sourceEntity.removeAssociation(association, true);

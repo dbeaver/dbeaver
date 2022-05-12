@@ -261,8 +261,8 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 taskCategoryTree.addControlListener(new ControlAdapter() {
                     @Override
                     public void controlResized(ControlEvent e) {
-                        UIUtils.packColumns(taskCategoryTree, true, new float[] { 0.3f, 0.7f});
                         taskCategoryTree.removeControlListener(this);
+                        UIUtils.packColumns(taskCategoryTree, true, new float[] { 0.3f, 0.7f});
                     }
                 });
 

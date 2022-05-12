@@ -18,9 +18,10 @@ package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
 import org.jkiss.dbeaver.model.auth.SMAuthInfo;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
 
@@ -35,13 +36,13 @@ public interface SMController extends SMAuthCredentialsManager {
     ///////////////////////////////////////////
     // Users
     @NotNull
-    SMRole[] getUserRoles(String userId) throws DBCException;
+    SMRole[] getUserRoles(String userId) throws DBException;
 
-    SMUser getUserById(String userId) throws DBCException;
+    SMUser getUserById(String userId) throws DBException;
 
-    Map<String, Object> getUserParameters(String userId) throws DBCException;
+    Map<String, Object> getUserParameters(String userId) throws DBException;
 
-    void setUserParameter(String userId, String name, Object value) throws DBCException;
+    void setUserParameter(String userId, String name, Object value) throws DBException;
 
     ///////////////////////////////////////////
     // Credentials
@@ -49,41 +50,43 @@ public interface SMController extends SMAuthCredentialsManager {
     /**
      * Sets user credentials for specified provider
      */
-    void setUserCredentials(String userId, String authProviderId, Map<String, Object> credentials) throws DBCException;
+    void setUserCredentials(String userId, String authProviderId, Map<String, Object> credentials) throws DBException;
 
     /**
      * Returns list of auth provider IDs associated with this user
      */
-    String[] getUserLinkedProviders(String userId) throws DBCException;
+    String[] getUserLinkedProviders(String userId) throws DBException;
 
     ///////////////////////////////////////////
     // Permissions
 
     @NotNull
-    Set<String> getSubjectPermissions(String subjectId) throws DBCException;
+    Set<String> getSubjectPermissions(String subjectId) throws DBException;
 
     @NotNull
-    Set<String> getUserPermissions(String userId) throws DBCException;
+    Set<String> getUserPermissions(String userId) throws DBException;
 
     ///////////////////////////////////////////
     // Sessions
 
-    boolean isSessionPersisted(String id) throws DBCException;
+    boolean isSessionPersisted(String id) throws DBException;
 
-    SMAuthInfo authenticateAnonymousUser(@NotNull String appSessionId, @NotNull Map<String, Object> sessionParameters, @NotNull SMSessionType sessionType) throws DBCException;
+    SMAuthInfo authenticateAnonymousUser(@NotNull String appSessionId, @NotNull Map<String, Object> sessionParameters, @NotNull SMSessionType sessionType) throws DBException;
 
-    SMAuthInfo authenticate(@NotNull String appSessionId, @NotNull Map<String, Object> sessionParameters, @NotNull SMSessionType sessionType, @NotNull String authProviderId, @NotNull Map<String, Object> userCredentials) throws DBCException;
+    SMAuthInfo authenticate(@NotNull String appSessionId, @NotNull Map<String, Object> sessionParameters, @NotNull SMSessionType sessionType, @NotNull String authProviderId, @NotNull Map<String, Object> userCredentials) throws DBException;
 
-    void updateSession(@NotNull String sessionId, @Nullable String userId, Map<String, Object> parameters) throws DBCException;
+    void updateSession(@NotNull String sessionId, @Nullable String userId, Map<String, Object> parameters) throws DBException;
 
     ///////////////////////////////////////////
     // Permissions
 
     @NotNull
-    SMDataSourceGrant[] getSubjectConnectionAccess(@NotNull String[] subjectId) throws DBCException;
+    SMDataSourceGrant[] getSubjectConnectionAccess(@NotNull String[] subjectId) throws DBException;
 
     @NotNull
-    SMDataSourceGrant[] getConnectionSubjectAccess(String connectionId) throws DBCException;
+    SMDataSourceGrant[] getConnectionSubjectAccess(String connectionId) throws DBException;
 
-    void setConnectionSubjectAccess(@NotNull String connectionId, @Nullable String[] subjects, @Nullable String grantorId) throws DBCException;
+    void setConnectionSubjectAccess(@NotNull String connectionId, @Nullable String[] subjects, @Nullable String grantorId) throws DBException;
+
+    SMAuthPermissions getTokenPermissions(String token) throws DBException;
 }

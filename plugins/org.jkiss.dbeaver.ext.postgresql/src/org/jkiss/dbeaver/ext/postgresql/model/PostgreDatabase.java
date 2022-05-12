@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
@@ -97,6 +98,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
     private final CollationCache collationCache = new CollationCache();
     public final TablespaceCache tablespaceCache = new TablespaceCache();
     private final LongKeyMap<PostgreDataType> dataTypeCache = new LongKeyMap<>();
+    public final JobCache jobCache = new JobCache();
+    public final JobClassCache jobClassCache = new JobClassCache();
 
     public JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> schemaCache;
 
@@ -495,14 +498,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
         throws DBException {
         return extensionCache.getAllObjects(monitor, this);
     }
-    
+
     @Association
     public Collection<PostgreAvailableExtension> getAvailableExtensions(DBRProgressMonitor monitor)
         throws DBException {
         return availableExtensionCache.getAllObjects(monitor, this);
     }
     
-    
+
     @Association
     public Collection<PostgreCollation> getCollations(DBRProgressMonitor monitor)
         throws DBException {
@@ -587,6 +590,34 @@ public class PostgreDatabase extends JDBCRemoteInstance
         for (PostgreTablespace ts : tablespaceCache.getAllObjects(monitor, this)) {
             if (ts.getObjectId() == tablespaceId) {
                 return ts;
+            }
+        }
+        return null;
+    }
+
+    @Association
+    public Collection<PostgreJob> getJobs(@NotNull DBRProgressMonitor monitor) throws DBException {
+        checkInstanceConnection(monitor);
+        return jobCache.getAllObjects(monitor, this);
+    }
+
+    @Nullable
+    public PostgreJob getJob(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+        checkInstanceConnection(monitor);
+        return jobCache.getObject(monitor, this, name);
+    }
+
+    @Association
+    public Collection<PostgreJobClass> getJobClasses(@NotNull DBRProgressMonitor monitor) throws DBException {
+        checkInstanceConnection(monitor);
+        return jobClassCache.getAllObjects(monitor, this);
+    }
+
+    @Nullable
+    public PostgreJobClass getJobClass(@NotNull DBRProgressMonitor monitor, long id) throws DBException {
+        for (PostgreJobClass cls : getJobClasses(monitor)) {
+            if (cls.getObjectId() == id) {
+                return cls;
             }
         }
         return null;
@@ -795,6 +826,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
         availableExtensionCache.clearCache();
         collationCache.clearCache();
         tablespaceCache.clearCache();
+        jobCache.clearCache();
+        jobClassCache.clearCache();
         schemaCache.clearCache();
         cacheDataTypes(monitor, true);
 
@@ -1259,6 +1292,45 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 return null;
             }
             return owner.createSchemaImpl(owner, name, resultSet);
+        }
+    }
+
+    public static class JobCache extends JDBCObjectLookupCache<PostgreDatabase, PostgreJob> {
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable PostgreJob object, @Nullable String objectName) throws SQLException {
+            final StringBuilder sql = new StringBuilder("SELECT * FROM pgagent.pga_job");
+            if (object != null) {
+                sql.append(" WHERE jobid=").append(object.getObjectId());
+            }
+            return session.prepareStatement(sql.toString());
+        }
+
+        @Nullable
+        @Override
+        protected PostgreJob fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new PostgreJob(session.getProgressMonitor(), database, resultSet);
+        }
+
+        @Override
+        protected boolean handleCacheReadError(Exception error) {
+            DBWorkbench.getPlatformUI().showError("Error accessing pgAgent jobs", "Can't access pgAgent jobs.\n\nThis database may not have the extension installed or you don't have sufficient permissions to access them.\n\nIf you believe that this is DBeaver's fault, please report it.", error);
+            setCache(Collections.emptyList());
+            return true;
+        }
+    }
+
+    public static class JobClassCache extends PostgreDatabaseJDBCObjectCache<PostgreJobClass> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database) throws SQLException {
+            return session.prepareStatement("SELECT * FROM pgagent.pga_jobclass");
+        }
+
+        @Nullable
+        @Override
+        protected PostgreJobClass fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet dbResult) {
+            return new PostgreJobClass(database, dbResult);
         }
     }
 

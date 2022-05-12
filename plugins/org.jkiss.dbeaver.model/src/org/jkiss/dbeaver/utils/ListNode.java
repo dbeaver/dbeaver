@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.parser;
+package org.jkiss.dbeaver.utils;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -47,7 +47,7 @@ public class ListNode<T> implements Iterable<T> {
     }
 
     @NotNull
-    public static <T> ListNode<T> push(@NotNull ListNode<T> node, @NotNull T data) {
+    public static <T> ListNode<T> push(@Nullable ListNode<T> node, @NotNull T data) {
         return new ListNode<T>(node, data);
     }
 

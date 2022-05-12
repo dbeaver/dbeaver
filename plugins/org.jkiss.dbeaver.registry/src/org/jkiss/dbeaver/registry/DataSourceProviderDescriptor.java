@@ -230,6 +230,12 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     @Override
+    public boolean matchesId(String id) {
+        if (id.equals(this.id)) return true;
+        return parentProvider != null && parentProvider.matchesId(id);
+    }
+
+    @Override
     public String getId()
     {
         return id;

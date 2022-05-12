@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -23,7 +24,6 @@ import org.jkiss.dbeaver.model.edit.DBEObjectWithDependencies;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
@@ -188,31 +188,9 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         );
     }
 
-    protected String getNewColumnName(DBRProgressMonitor monitor, DBECommandContext context, TABLE_TYPE table)
-    {
-        for (int i = 1; ; i++)  {
-            final String name = DBObjectNameCaseTransformer.transformName(table.getDataSource(), "Column" + i);
-            try {
-                // check for existing columns
-                boolean exists = table.getAttribute(monitor, name) != null;
-                if (!exists) {
-                    // Check for new columns (they are present only within command context)
-                    for (DBPObject contextObject : context.getEditedObjects()) {
-                        if (contextObject instanceof DBSEntityAttribute && ((DBSEntityAttribute) contextObject).getParentObject() == table && name.equalsIgnoreCase(((DBSEntityAttribute) contextObject).getName())) {
-                            exists = true;
-                            break;
-                        }
-                    }
-                }
-                if (!exists) {
-                    return name;
-                }
-            } catch (DBException e) {
-                log.warn(e);
-                return name;
-            }
-        }
-
+    @NotNull
+    protected String getNewColumnName(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, @NotNull TABLE_TYPE table) {
+        return DBUtils.makeNewObjectName(monitor, "Column{0}", table, DBSEntityAttribute.class, DBSEntity::getAttribute, context);
     }
 
     @Override

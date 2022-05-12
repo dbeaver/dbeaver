@@ -70,7 +70,7 @@
                             <level>2</level>
                             <autoStart>true</autoStart>
                         </bundle>
-f                    </bundleStartLevel>
+                    </bundleStartLevel>
 <!--                    <argLine>-agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5006,suspend=y</argLine>-->
                 </configuration>
             </plugin>

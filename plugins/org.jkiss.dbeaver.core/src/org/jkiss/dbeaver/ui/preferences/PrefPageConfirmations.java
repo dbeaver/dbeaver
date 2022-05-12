@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -41,6 +42,8 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.ui.registry.ConfirmationDescriptor;
+import org.jkiss.dbeaver.ui.registry.ConfirmationRegistry;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -121,6 +124,10 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE);
         createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE);
 
+        for (ConfirmationDescriptor confirmation : ConfirmationRegistry.getInstance().getConfirmations()) {
+            createConfirmItem(confirmation);
+        }
+
         //createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_EDITOR_CLOSE);
 
         UIUtils.asyncExec(() -> UIUtils.packColumns(confirmTable, true));
@@ -128,6 +135,14 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         //performDefaults();
 
         return composite;
+    }
+
+    private void createConfirmItem(@NotNull ConfirmationDescriptor descriptor) {
+        final TableItem item = new TableItem(confirmTable, SWT.NONE);
+        item.setData("id", descriptor.getId());
+        item.setText(0, descriptor.getTitle());
+        item.setText(1, descriptor.getGroup());
+        item.setText(2, getCurrentConfirmValue(descriptor.getId()));
     }
 
     private void createConfirmItem(String group, ResourceBundle bundle, String id)
