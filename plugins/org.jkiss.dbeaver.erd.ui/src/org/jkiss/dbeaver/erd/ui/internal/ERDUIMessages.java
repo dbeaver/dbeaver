@@ -22,20 +22,19 @@ import org.eclipse.osgi.util.NLS;
 
 public class ERDUIMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages"; //$NON-NLS-1$
-	static {
+
+    static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ERDUIMessages.class);
 	}
 
-
-
-	public static String action_diagram_layout_name;
+    public static String action_diagram_layout_name;
 	public static String column_;
-	public static String entity_diagram_;
-	public static String part_note_title;
+    public static String entity_diagram_;
+    public static String part_note_title;
 	public static String pref_page_erd_checkbox_grid_enabled;
 	public static String pref_page_erd_checkbox_snap_to_grid;
-	public static String pref_page_erd_combo_page_mode;
+    public static String pref_page_erd_combo_page_mode;
 	public static String pref_page_erd_group_grid;
 	public static String pref_page_erd_group_print;
 	public static String pref_page_erd_item_fit_height;
@@ -49,7 +48,7 @@ public class ERDUIMessages extends NLS {
 	public static String pref_page_erd_spinner_margin_right;
 	public static String pref_page_erd_spinner_margin_top;
 
-	public static String wizard_diagram_create_title;
+    public static String wizard_diagram_create_title;
 
 	public static String wizard_page_diagram_create_description;
 	public static String wizard_page_diagram_create_group_settings;
@@ -70,7 +69,7 @@ public class ERDUIMessages extends NLS {
 	public static String erd_preference_page_title_diagram_contents;
 	public static String erd_preference_page_title_shows_views;
 	public static String erd_preference_page_title_shows_partitions;
-	public static String erd_preference_page_title_manhattan_routing;
+	public static String erd_preference_page_title_routing_combo;
 	public static String erd_preference_page_title_color_pref;
 	public static String erd_preference_page_title_change_border_colors;
 	public static String erd_preference_page_title_change_header_colors;

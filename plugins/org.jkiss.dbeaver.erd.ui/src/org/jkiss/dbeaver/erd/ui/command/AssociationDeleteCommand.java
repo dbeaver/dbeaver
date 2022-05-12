@@ -38,21 +38,23 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class AssociationDeleteCommand extends Command {
 
     protected final AssociationPart part;
-    protected  ERDElement sourceEntity;
-    protected  ERDElement targetEntity;
+    protected final ERDElement sourceEntity;
+    protected final ERDElement targetEntity;
     protected final ERDAssociation association;
 
     public AssociationDeleteCommand(AssociationPart part) {
         super();
         this.part = part;
         association = part.getAssociation();
-        sourceEntity = association.getSourceEntity();
-        if (sourceEntity == null && part.getSource() instanceof AttributePart) {
+        if (association.getSourceEntity() == null && part.getSource() instanceof AttributePart) {
             sourceEntity = ((EntityPart) part.getSource().getParent()).getEntity();
+        } else {
+            sourceEntity = association.getSourceEntity();
         }
-        targetEntity = association.getTargetEntity();
-        if (targetEntity == null && part.getTarget() instanceof AttributePart) {
+        if (association.getTargetEntity() == null && part.getTarget() instanceof AttributePart) {
             targetEntity = ((EntityPart) part.getTarget().getParent()).getEntity();
+        } else {
+            targetEntity = association.getTargetEntity();
         }
     }
 

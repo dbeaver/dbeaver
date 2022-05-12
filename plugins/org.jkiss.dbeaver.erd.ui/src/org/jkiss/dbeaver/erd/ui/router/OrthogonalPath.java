@@ -43,13 +43,6 @@ public class OrthogonalPath {
         forbiddenDirection = null;
     }
 
-    public enum Direction {
-        UP,
-        DOWN,
-        RIGHT,
-        LEFT
-    }
-
     public void updateForbiddenDirection(Point origin) {
         if (start.x == origin.x) {
             if (start.y > origin.y) {
@@ -142,4 +135,12 @@ public class OrthogonalPath {
     public void setBendpoints(PointList bendpoints) {
         this.bendpoints = bendpoints;
     }
+
+    public enum Direction {
+        UP,
+        DOWN,
+        RIGHT,
+        LEFT
+    }
+
 }

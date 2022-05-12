@@ -273,7 +273,7 @@ public class EntityPart extends NodePart {
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return super.getModelSourceConnections();
         }
         return super.getModelSourceConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
@@ -282,21 +282,11 @@ public class EntityPart extends NodePart {
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return super.getModelTargetConnections();
         } else {
             return super.getModelTargetConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
         }
-    }
-
-    @Override
-    protected void addSourceConnection(ConnectionEditPart connection, int index) {
-        super.addSourceConnection(connection, index);
-    }
-
-    @Override
-    protected void addTargetConnection(ConnectionEditPart connection, int index) {
-        super.addTargetConnection(connection, index);
     }
 
     @Override

@@ -136,14 +136,12 @@ public class DirectedGraphLayoutVisitor {
     protected void addEntityEdges(GraphicalEditPart entityPart)
     {
         List<?> outgoing = entityPart.getSourceConnections();
-        for (int i = 0; i < outgoing.size(); i++) {
-            AbstractConnectionEditPart connectionPart = (AbstractConnectionEditPart) outgoing.get(i);
-            addConnectionEdges(connectionPart);
+        for (Object o : outgoing) {
+            addConnectionEdges((AbstractConnectionEditPart) o);
         }
         for (Object child : entityPart.getChildren()) {
             for (Object sourceConnection : ((AttributePart) child).getSourceConnections()) {
-                AbstractConnectionEditPart connectionPart = ((AbstractConnectionEditPart) sourceConnection);
-                addConnectionEdges(connectionPart);
+                addConnectionEdges((AbstractConnectionEditPart) sourceConnection);
             }
         }
     }
@@ -154,11 +152,11 @@ public class DirectedGraphLayoutVisitor {
     {
         GraphAnimation.recordInitialState((Connection) connectionPart.getFigure());
         Node source = (Node) partToNodesMap.get(connectionPart.getSource());
-        if (source == null && connectionPart.getSource().getParent() != null) {
+        if (source == null && connectionPart.getSource() != null) {
             source = (Node) partToNodesMap.get(connectionPart.getSource().getParent());
         }
         Node target = (Node) partToNodesMap.get(connectionPart.getTarget());
-        if (target == null && connectionPart.getTarget().getParent() != null) {
+        if (target == null && connectionPart.getTarget() != null) {
             target = (Node) partToNodesMap.get(connectionPart.getTarget().getParent());
         }
         if (source == null || target == null) {
@@ -208,13 +206,11 @@ public class DirectedGraphLayoutVisitor {
         tableFigure.setBounds(bounds);
 
         for (int i = 0; i < entityPart.getSourceConnections().size(); i++) {
-            AbstractConnectionEditPart relationship = (AbstractConnectionEditPart) entityPart.getSourceConnections().get(i);
-            applyConnectionResults(relationship);
+            applyConnectionResults((AbstractConnectionEditPart) entityPart.getSourceConnections().get(i));
         }
         for (Object child : entityPart.getChildren()) {
             for (Object sourceConnection : ((AttributePart) child).getSourceConnections()) {
-                AbstractConnectionEditPart relationship = (AbstractConnectionEditPart) sourceConnection;
-                applyConnectionResults(relationship);
+                applyConnectionResults((AbstractConnectionEditPart) sourceConnection);
             }
         }
     }

@@ -78,7 +78,7 @@ public class AttributePart extends NodePart {
     @Override
     protected void addSourceConnection(ConnectionEditPart connection, int index) {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return;
         }
         if (((AssociationPart) connection).getAssociation().getSourceAttributes().contains(getAttribute())) {
@@ -89,7 +89,7 @@ public class AttributePart extends NodePart {
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return Collections.emptyList();
         }
         List<ERDAssociation> list = new ArrayList<>();
@@ -104,7 +104,7 @@ public class AttributePart extends NodePart {
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return Collections.emptyList();
         }
         List<ERDAssociation> list = new ArrayList<>();
@@ -119,7 +119,7 @@ public class AttributePart extends NodePart {
     @Override
     protected void addTargetConnection(ConnectionEditPart connection, int index) {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
             return;
         }
         if (((AssociationPart) connection).getAssociation().getTargetAttributes().contains(getAttribute())) {
@@ -276,13 +276,11 @@ public class AttributePart extends NodePart {
     @Override
     public ConnectionAnchor getSourceConnectionAnchor(Request request) {
         return new ChopboxAnchor(getFigure());
-        //return new TopAnchor(getFigure());
     }
 
     @Override
     public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection) {
         return new ChopboxAnchor(getFigure());
-        //return new BottomAnchor(getFigure());
     }
 
     @Override

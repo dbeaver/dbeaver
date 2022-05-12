@@ -146,7 +146,7 @@ public class DiagramPart extends PropertyAwarePart {
         router.setSeparation(15);
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         //router.setNextRouter(new BendpointConnectionRouter());
-        if (store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+        if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
             router.setNextRouter(new MikamiTabuchiConnectionRouter(figure));
         } else {
             router.setNextRouter(new ShortestPathConnectionRouter(figure));

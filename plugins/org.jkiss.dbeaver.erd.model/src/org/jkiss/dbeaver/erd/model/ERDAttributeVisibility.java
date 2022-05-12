@@ -60,8 +60,7 @@ public enum ERDAttributeVisibility
     }
 
     public static boolean isHideAttributeAssociations(DBPPreferenceStore store) {
-        ERDAttributeVisibility defaultVisibility = getDefaultVisibility(store);
-        return defaultVisibility != ALL;
+        return getDefaultVisibility(store) != ALL;
     }
 
     public static void setDefaultVisibility(DBPPreferenceStore store, ERDAttributeVisibility visibility)

@@ -37,31 +37,30 @@ import java.util.*;
  * 3. Continue until a line from source intersects another line from target
  * 4. Backtrace from interception
  */
-//possible optimizations
-//By the rules of math parallel lines couldn't collide, so we need to check only perpendicular lines of opposite source/target origin
-//multi-dimensional arrays for trial lines?
 public class MikamiTabuchiRouter {
 
     private static final Log log = Log.getLog(MikamiTabuchiRouter.class);
-
-    private int spacing = 15;
-    private final List<Rectangle> obstacles = new ArrayList<>();
-    private PrecisionPoint start;
-    private PrecisionPoint finish;
-    private final List<OrthogonalPath> workingPaths = new ArrayList<>();
-    private final List<OrthogonalPath> userPaths = new ArrayList<>();
-    private final Map<OrthogonalPath, List<OrthogonalPath>> pathsToChildPaths = new HashMap<>();
-    //Increase for performance, increasing this parameter lowers accuracy.
-
-    private Set<TrialLine> trialLinesWithPenalty;
-    private Map<Boolean, List<Pair<Point, Point>>> resultMap;
 
     private static final int SOURCE_VERTICAL_LINES = 0;
     private static final int SOURCE_HORIZONTAL_LINES = 1;
     private static final int TARGET_VERTICAL_LINES = 2;
     private static final int TARGET_HORIZONTAL_LINES = 3;
 
-    private Map<Integer, Map<Integer, List<TrialLine>>> linesMap;
+    private int spacing = 15;
+    private final List<Rectangle> obstacles = new ArrayList<>();
+
+    private PrecisionPoint start;
+    private PrecisionPoint finish;
+
+    private final List<OrthogonalPath> workingPaths = new ArrayList<>();
+    private final List<OrthogonalPath> userPaths = new ArrayList<>();
+    private final Map<OrthogonalPath, List<OrthogonalPath>> pathsToChildPaths = new HashMap<>();
+
+    private Set<TrialLine> trialLinesWithPenalty;
+    private Map<Boolean, List<Pair<Point, Point>>> resultMap;
+
+
+    private final Map<Integer, Map<Integer, List<TrialLine>>> linesMap = new LinkedHashMap<>();
     private Pair<TrialLine, TrialLine> result;
 
     //In worst case scenarios line search may become laggy,
@@ -216,9 +215,7 @@ public class MikamiTabuchiRouter {
     }
 
     public boolean updateObstacle(Rectangle rectangle, Rectangle newBounds) {
-        boolean result = obstacles.remove(rectangle);
-        result |= obstacles.add(newBounds);
-        return result;
+        return obstacles.remove(rectangle) | obstacles.add(newBounds);
     }
 
     public void addObstacle(Rectangle bounds) {
@@ -395,12 +392,11 @@ public class MikamiTabuchiRouter {
             pointList.addPoint(path.getEnd());
             return pointList;
         }
-        //Client are
         if (!clientArea.getClientArea().contains(path.start) || !clientArea.getClientArea().contains(path.end)) {
             clientArea.getUpdateManager().performUpdate();
         }
         trialLinesWithPenalty = new HashSet<>();
-        linesMap = new HashMap<>();
+        linesMap.clear();
         resultIsNotPreferred = false;
         this.start = new PrecisionPoint(path.start);
         result = null;
@@ -515,21 +511,21 @@ public class MikamiTabuchiRouter {
 
     private class TrialLine {
         @Nullable
-        TrialLine parent;
+        private TrialLine parent;
 
         @NotNull
-        final PrecisionPoint from;
-
-        double start = Double.MIN_VALUE;
-        double finish = Double.MIN_VALUE;
-
-        boolean fromSource;
-
-        double creationForbiddenStart = Double.MIN_VALUE;
-        double creationForbiddenFinish = Double.MIN_VALUE;
+        private final PrecisionPoint from;
+        private final boolean fromSource;
+        private final boolean vertical;
 
 
-        boolean vertical;
+        private double start = Double.MIN_VALUE;
+        private double finish = Double.MIN_VALUE;
+
+
+        private double creationForbiddenStart = Double.MIN_VALUE;
+        private double creationForbiddenFinish = Double.MIN_VALUE;
+
 
         //Starting line is always inside figure, we don't want to create trial line inside it
 

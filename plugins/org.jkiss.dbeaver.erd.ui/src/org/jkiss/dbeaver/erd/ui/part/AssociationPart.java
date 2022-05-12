@@ -29,8 +29,8 @@ import org.eclipse.gef3.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
-import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
@@ -94,8 +94,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        PolylineConnection conn =
-            new PolylineConnection();
+        PolylineConnection conn = new PolylineConnection();
 
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
 
@@ -138,7 +137,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 entityPart = getTarget();
             }
             final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-            if (entityPart instanceof GraphicalEditPart && !store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+            if (entityPart instanceof GraphicalEditPart && (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
                 // Self link
                 final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
                 //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
@@ -197,7 +196,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         conn.setLineWidth(2);
         if (!identifying || constraintType.isLogical()) {
             final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-            if (store.getBoolean(ERDUIConstants.PREF_ROUTING_DIAGRAM_MANHATTAN)) {
+            if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
                 conn.setLineStyle(SWT.LINE_DOT);
             } else {
                 conn.setLineStyle(SWT.LINE_CUSTOM);
