@@ -180,7 +180,11 @@ public class DBWHandlerConfiguration {
 
     @Nullable
     public String getSecureProperty(@NotNull String name) {
-        return secureProperties.get(name);
+        String value = secureProperties.get(name);
+        if (value == null) {
+            value = CommonUtils.toString(properties.get(name), null);
+        }
+        return value;
     }
 
     @NotNull
