@@ -47,16 +47,18 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 public class NewConnectionFromUrlDialog extends BaseDialog {
     private static final int INPUT_DELAY_BEFORE_REFRESH = 300;
+    private static final String GENERIC_URL_TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}]";
 
     private TreeViewer driverViewer;
     private CLabel errorLabel;
 
     private String url;
-    private DBPDriver driver;
+    private DriverInfo driver;
 
     public NewConnectionFromUrlDialog(@NotNull Shell shell) {
         super(shell, CoreMessages.dialog_connection_from_url_title, null);
@@ -82,8 +84,8 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
             driverViewer.setLabelProvider(new DriverLabelProvider());
             driverViewer.addSelectionChangedListener(event -> {
                 final Object element = event.getStructuredSelection().getFirstElement();
-                if (element instanceof DBPDriver) {
-                    driver = (DBPDriver) element;
+                if (element instanceof DriverInfo) {
+                    driver = (DriverInfo) element;
                 }
                 updateCompletion();
             });
@@ -97,7 +99,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
                     UIUtils.asyncExec(() -> {
-                        final List<Map.Entry<DBPDataSourceProviderDescriptor, List<DBPDriver>>> drivers = getSuitableDrivers(urlText.getText());
+                        final var drivers = getSuitableDrivers(urlText.getText());
 
                         url = urlText.getText();
                         driverViewer.getTree().setRedraw(false);
@@ -142,7 +144,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
 
     @NotNull
     public DBPDriver getDriver() {
-        return driver;
+        return driver.driver;
     }
 
     @NotNull
@@ -152,32 +154,40 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
 
     @Nullable
     public DBPConnectionConfiguration extractConnectionConfiguration() {
-        final String sampleUrl = Objects.requireNonNull(driver.getSampleURL());
-        return JDBCURL.extractConfigurationFromUrl(sampleUrl, url);
+        return JDBCURL.extractConfigurationFromUrl(driver.matchedUrl, url);
     }
 
     @NotNull
-    private List<Map.Entry<DBPDataSourceProviderDescriptor, List<DBPDriver>>> getSuitableDrivers(@NotNull String url) {
-        final Map<DBPDataSourceProviderDescriptor, List<DBPDriver>> result = new LinkedHashMap<>();
+    private List<Map.Entry<DBPDataSourceProviderDescriptor, List<DriverInfo>>> getSuitableDrivers(@NotNull String url) {
+        final Map<DBPDataSourceProviderDescriptor, List<DriverInfo>> result = new LinkedHashMap<>();
         final Map<DBPDataSourceProviderDescriptor, Integer> scores = new HashMap<>();
 
         for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
-            final List<DBPDriver> drivers = new ArrayList<>();
+            final List<DriverInfo> drivers = new ArrayList<>();
 
             for (DBPDriver driver : provider.getEnabledDrivers()) {
-                if (CommonUtils.isEmpty(driver.getSampleURL())) {
+                if (CommonUtils.isEmpty(driver.getSampleURL()) || CommonUtils.isEmptyTrimmed(url)) {
                     continue;
                 }
+
                 if (JDBCURL.getPattern(driver.getSampleURL()).matcher(url).matches()) {
-                    drivers.add(driver);
+                    drivers.add(new DriverInfo(driver, driver.getSampleURL()));
+                    scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
+                    continue;
+                }
+
+                final Matcher matcher = JDBCURL.getPattern(GENERIC_URL_TEMPLATE).matcher(url);
+
+                if (matcher.matches() && driver.getId().contains(matcher.group("driver"))) {
+                    drivers.add(new DriverInfo(driver, GENERIC_URL_TEMPLATE));
                     scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
                 }
             }
 
             if (!drivers.isEmpty()) {
                 drivers.sort(Comparator
-                    .comparing(DBPDriver::getPromotedScore)
-                    .thenComparing(DBPDriver::getFullName)
+                    .comparingInt((DriverInfo info) -> info.driver.getPromotedScore())
+                    .thenComparing((DriverInfo info) -> info.driver.getFullName())
                     .reversed());
 
                 result.put(provider, drivers);
@@ -194,7 +204,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
             setCompleted(false, CoreMessages.dialog_connection_from_url_error_no_drivers_found);
             return;
         }
-        if (!(driverViewer.getStructuredSelection().getFirstElement() instanceof DBPDriver)) {
+        if (!(driverViewer.getStructuredSelection().getFirstElement() instanceof DriverInfo)) {
             setCompleted(false, CoreMessages.dialog_connection_from_url_error_no_driver_selected);
             return;
         }
@@ -212,11 +222,11 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
         @SuppressWarnings("unchecked")
         public String getText(Object element) {
             if (element instanceof Map.Entry) {
-                final Map.Entry<DBPDataSourceProviderDescriptor, List<DBPDriver>> entry = (Map.Entry<DBPDataSourceProviderDescriptor, List<DBPDriver>>) element;
+                final var entry = (Map.Entry<DBPDataSourceProviderDescriptor, List<DriverInfo>>) element;
                 return entry.getKey().getName();
             }
-            if (element instanceof DBPDriver) {
-                return ((DBPDriver) element).getName();
+            if (element instanceof DriverInfo) {
+                return ((DriverInfo) element).driver.getName();
             }
             return null;
         }
@@ -225,11 +235,11 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
         @SuppressWarnings("unchecked")
         public Image getImage(Object element) {
             if (element instanceof Map.Entry) {
-                final Map.Entry<DBPDataSourceProviderDescriptor, List<DBPDriver>> entry = (Map.Entry<DBPDataSourceProviderDescriptor, List<DBPDriver>>) element;
+                final var entry = (Map.Entry<DBPDataSourceProviderDescriptor, List<DriverInfo>>) element;
                 return DBeaverIcons.getImage(entry.getKey().getIcon());
             }
-            if (element instanceof DBPDriver) {
-                return DBeaverIcons.getImage(((DBPDriver) element).getIcon());
+            if (element instanceof DriverInfo) {
+                return DBeaverIcons.getImage(((DriverInfo) element).driver.getIcon());
             }
             return null;
         }
@@ -240,7 +250,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
         @SuppressWarnings("unchecked")
         public Object[] getChildren(Object element) {
             if (element instanceof Map.Entry) {
-                final Map.Entry<DBPDataSourceProviderDescriptor, List<DBPDriver>> entry = (Map.Entry<DBPDataSourceProviderDescriptor, List<DBPDriver>>) element;
+                final var entry = (Map.Entry<DBPDataSourceProviderDescriptor, List<DriverInfo>>) element;
                 return entry.getValue().toArray();
             }
             return null;
@@ -249,6 +259,16 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
         @Override
         public boolean hasChildren(Object element) {
             return element instanceof Map.Entry;
+        }
+    }
+
+    private static class DriverInfo {
+        private final DBPDriver driver;
+        private final String matchedUrl;
+
+        public DriverInfo(@NotNull DBPDriver driver, @NotNull String matchedUrl) {
+            this.driver = driver;
+            this.matchedUrl = matchedUrl;
         }
     }
 }
