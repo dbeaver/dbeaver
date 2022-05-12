@@ -33,6 +33,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBIconComposite;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -171,7 +173,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                 }
 
                 if (JDBCURL.getPattern(driver.getSampleURL()).matcher(url).matches()) {
-                    drivers.add(new DriverInfo(driver, driver.getSampleURL()));
+                    drivers.add(new DriverInfo(driver, driver.getSampleURL(), true));
                     scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
                     continue;
                 }
@@ -179,7 +181,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                 final Matcher matcher = JDBCURL.getPattern(GENERIC_URL_TEMPLATE).matcher(url);
 
                 if (matcher.matches() && driver.getId().contains(matcher.group("driver"))) {
-                    drivers.add(new DriverInfo(driver, GENERIC_URL_TEMPLATE));
+                    drivers.add(new DriverInfo(driver, GENERIC_URL_TEMPLATE, false));
                     scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
                 }
             }
@@ -239,7 +241,11 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                 return DBeaverIcons.getImage(entry.getKey().getIcon());
             }
             if (element instanceof DriverInfo) {
-                return DBeaverIcons.getImage(((DriverInfo) element).driver.getIcon());
+                final DriverInfo info = (DriverInfo) element;
+                final DBPImage icon = info.driver.getIcon();
+                return info.genuineUrl
+                    ? DBeaverIcons.getImage(icon)
+                    : DBeaverIcons.getImage(new DBIconComposite(icon, false, null, null, null, DBIcon.OVER_LAMP));
             }
             return null;
         }
@@ -265,10 +271,12 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
     private static class DriverInfo {
         private final DBPDriver driver;
         private final String matchedUrl;
+        private final boolean genuineUrl;
 
-        public DriverInfo(@NotNull DBPDriver driver, @NotNull String matchedUrl) {
+        public DriverInfo(@NotNull DBPDriver driver, @NotNull String matchedUrl, boolean genuineUrl) {
             this.driver = driver;
             this.matchedUrl = matchedUrl;
+            this.genuineUrl = genuineUrl;
         }
     }
 }
