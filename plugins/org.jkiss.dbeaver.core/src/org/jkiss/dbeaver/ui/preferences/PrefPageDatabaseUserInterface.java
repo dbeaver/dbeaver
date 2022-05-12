@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -37,19 +39,20 @@ import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * PrefPageDatabaseUserInterface
@@ -60,6 +63,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     private Button automaticUpdateCheck;
     private Combo workspaceLanguage;
+    private Combo clientTimezone;
 
     private Button longOperationsCheck;
     private Spinner longOperationsTimeout;
@@ -112,7 +116,52 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             Label tipLabel = UIUtils.createLabel(groupLanguage, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart);
             tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
         }
+        if (isStandalone) {
+            Group clientTimezoneGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_timezone, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            clientTimezone = UIUtils.createLabelCombo(clientTimezoneGroup, CoreMessages.pref_page_ui_general_combo_timezone, CoreMessages.pref_page_ui_general_combo_timezone_tip, SWT.DROP_DOWN);
+            clientTimezone.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            clientTimezone.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.keyCode == SWT.BS)
+                    {
+                        Combo cmb = ((Combo) e.getSource());
+                        Point pt = cmb.getSelection();
+                        cmb.setSelection(new Point(Math.max(0, pt.x - 1), pt.y));
+                    }
+                }
 
+                @Override
+                public void keyReleased(KeyEvent e) {
+                    Combo cmb = (Combo) e.getSource();
+                    getClosestValue(cmb);
+                }
+
+                private void getClosestValue(Combo combo) {
+                    String timezone = combo.getText();
+                    String[] items = combo.getItems();
+                    int index = -1;
+                    for (int i = 0; i < items.length; i++) {
+                        if (items[i].toLowerCase().startsWith(timezone.toLowerCase())) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    if (index != -1) {
+                        Point pt = combo.getSelection();
+                        combo.select(index);
+                        combo.setText(items[index]);
+                        combo.setSelection(new Point(pt.x, items[index].length()));
+                    } else {
+                        combo.setText("DEFAULT");
+                    }
+                }
+            });
+            clientTimezone.add("DEFAULT");
+            for (String timezoneName : TimezoneRegistry.getTimezoneNames()) {
+                clientTimezone.add(timezoneName);
+            }
+        }
         // Notifications settings
         {
             Group notificationsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_notifications, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
@@ -155,9 +204,18 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         notificationsEnabled.setSelection(store.getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
         notificationsCloseDelay.setSelection(store.getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
-
+        if (store.getString(DBeaverPreferences.CLIENT_TIMEZONE).equals("DEFAULT")) {
+            clientTimezone.setText(store.getString(DBeaverPreferences.CLIENT_TIMEZONE));
+        } else {
+            clientTimezone.setText(TimezoneRegistry.addGMTTime(store.getString(DBeaverPreferences.CLIENT_TIMEZONE)));
+        }
         longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
         longOperationsTimeout.setSelection(store.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
+    }
+
+    @Override
+    public boolean isValid() {
+        return super.isValid() && Arrays.stream(clientTimezone.getItems()).anyMatch(e -> e.equals(clientTimezone.getText()));
     }
 
     @Override
@@ -177,7 +235,16 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
 
         PrefUtils.savePreferenceStore(store);
+        if (clientTimezone.getSelectionIndex() >= 0) {
 
+            if (!clientTimezone.getText().equals("DEFAULT")) {
+                store.setValue(DBeaverPreferences.CLIENT_TIMEZONE, TimezoneRegistry.extractTimezoneId(clientTimezone.getText()));
+                TimeZone.setDefault(TimeZone.getTimeZone(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())));
+            } else {
+                store.setValue(DBeaverPreferences.CLIENT_TIMEZONE, clientTimezone.getText());
+                TimeZone.setDefault(null);
+            }
+        }
         if (workspaceLanguage.getSelectionIndex() >= 0) {
             PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
             DBPPlatformLanguage curLanguage = DBWorkbench.getPlatform().getLanguage();

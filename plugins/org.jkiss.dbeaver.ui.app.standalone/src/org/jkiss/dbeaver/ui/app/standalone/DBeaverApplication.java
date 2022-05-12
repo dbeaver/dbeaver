@@ -237,7 +237,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         }
 
         initDebugWriter();
-
+        overrideTimezone();
         updateSplashHandler();
 
         final Runtime runtime = Runtime.getRuntime();
@@ -305,6 +305,14 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
 */
             display.dispose();
             display = null;
+        }
+    }
+
+    private void overrideTimezone() {
+        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        final String timezone = preferenceStore.getString(DBeaverPreferences.CLIENT_TIMEZONE);
+        if (timezone != null && !timezone.equals("DEFAULT")) {
+            TimeZone.setDefault(TimeZone.getTimeZone(timezone));
         }
     }
 
