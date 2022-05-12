@@ -373,14 +373,10 @@ public class MikamiTabuchiRouter {
     }
 
     private double calculateDistance(Pair<TrialLine, TrialLine> res) {
-        double distance = 0;
-        PointList traceback = traceback(res, false);
-        for (int i = 0; i < traceback.size() - 1; i++) {
-            Point first = traceback.getPoint(i);
-            Point second = traceback.getPoint(i + 1);
-            distance += first.getDistance(second);
-        }
-        return distance;
+        final PrecisionPoint interceptionPoint = getInterceptionPoint(res.getFirst(), res.getSecond());
+        return res.getFirst().distance +
+            interceptionPoint.getDistance(res.getFirst().from) +
+            interceptionPoint.getDistance(res.getSecond().from) + res.getSecond().distance;
     }
 
     @NotNull
@@ -518,6 +514,7 @@ public class MikamiTabuchiRouter {
         private final boolean fromSource;
         private final boolean vertical;
 
+        double distance = 0;
 
         private double start = Double.MIN_VALUE;
         private double finish = Double.MIN_VALUE;
@@ -586,6 +583,7 @@ public class MikamiTabuchiRouter {
         TrialLine(@NotNull PrecisionPoint start, @NotNull TrialLine parent) {
             this.from = start;
             this.parent = parent;
+            distance += start.getDistance(parent.from);
             this.fromSource = parent.fromSource;
             this.vertical = !parent.vertical;
             cutByObstacles(false);
@@ -622,13 +620,13 @@ public class MikamiTabuchiRouter {
             }
             if (finish == Double.MIN_VALUE) {
                 if (vertical) {
-                    finish = clientArea.getClientArea().getBottom().y;
+                    finish = clientArea.getClientArea().getBottom().y - 1;
                 } else {
-                    finish = clientArea.getClientArea().getRight().x;
+                    finish = clientArea.getClientArea().getRight().x - 1 ;
                 }
             }
             if (start == Double.MIN_VALUE) {
-                start = vertical ? clientArea.getClientArea().getTop().y : clientArea.getClientArea().getLeft().x;
+                start = vertical ? clientArea.getClientArea().getTop().y + 1 : clientArea.getClientArea().getLeft().x + 1;
             }
         }
 
