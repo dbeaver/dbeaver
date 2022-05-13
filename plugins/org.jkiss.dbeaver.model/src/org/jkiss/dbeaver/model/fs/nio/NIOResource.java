@@ -214,7 +214,7 @@ public abstract class NIOResource extends PlatformObject implements IResource, I
     }
 
     public IPath getFullPath() {
-        return new org.eclipse.core.runtime.Path(nioPath.toString());
+        return new org.eclipse.core.runtime.Path(nioPath.toUri().getSchemeSpecificPart());
     }
 
     public long getLocalTimeStamp() {
