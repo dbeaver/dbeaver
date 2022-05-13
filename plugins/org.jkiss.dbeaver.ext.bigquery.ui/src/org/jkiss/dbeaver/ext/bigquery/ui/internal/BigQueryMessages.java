@@ -33,8 +33,6 @@ public class BigQueryMessages extends NLS {
 	public static String label_project;
 	public static String label_security;
 	public static String label_server_info;
-	public static String label_service_account;
-	public static String label_service_account_tip;
 	public static String label_service_based;
 	public static String label_user_based;
 

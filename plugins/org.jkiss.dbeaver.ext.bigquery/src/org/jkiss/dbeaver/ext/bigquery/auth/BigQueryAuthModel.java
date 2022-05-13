@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 
 public class BigQueryAuthModel extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
 
-    public static final String ID = "biqguery_auth";
+    public static final String ID = "google_bigquery";
 
     @Override
     public boolean isUserPasswordApplicable() {

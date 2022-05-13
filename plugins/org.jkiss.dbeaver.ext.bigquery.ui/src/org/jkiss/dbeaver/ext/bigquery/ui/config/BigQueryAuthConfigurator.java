@@ -33,15 +33,11 @@ import org.jkiss.utils.CommonUtils;
 
 public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurator {
 
-    private Text usernameText;
     private Combo authTypeCombo;
     private TextWithOpenFile authCertFile;
 
     @Override
     public void createControl(Composite authPanel, DBAAuthModel object, Runnable propertyChangeListener) {
-        usernameText = UIUtils.createLabelText(authPanel, BigQueryMessages.label_service_account, ""); //$NON-NLS-2$
-        usernameText.setToolTipText(BigQueryMessages.label_service_account_tip);
-
         UIUtils.createControlLabel(authPanel, BigQueryMessages.label_oauth_type);
         authTypeCombo = new Combo(authPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         authTypeCombo.add(BigQueryMessages.label_service_based);
@@ -59,9 +55,6 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
 
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
 
-        if (usernameText != null) {
-            usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
-        }
         if (authTypeCombo != null) {
             authTypeCombo.select(CommonUtils.toInt(connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_OAUTH_TYPE)));
         }
@@ -77,9 +70,6 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
 
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
 
-        if (usernameText != null) {
-            connectionInfo.setUserName(usernameText.getText().trim());
-        }
         if (authTypeCombo != null) {
             connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_OAUTH_TYPE, String.valueOf(authTypeCombo.getSelectionIndex()));
         }

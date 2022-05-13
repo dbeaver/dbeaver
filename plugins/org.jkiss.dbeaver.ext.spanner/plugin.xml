@@ -62,7 +62,7 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
-                id="spanner_auth"
+                id="google_spanner"
                 label="Google Cloud Auth"
                 description="Spanner internal authentication"
                 class="org.jkiss.dbeaver.ext.spanner.auth.SpannerAuthModel"

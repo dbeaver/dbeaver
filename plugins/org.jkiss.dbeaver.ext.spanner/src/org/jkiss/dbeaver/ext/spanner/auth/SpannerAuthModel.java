@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 
 public class SpannerAuthModel extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
 
-    public static final String ID = "spanner_auth";
+    public static final String ID = "google_spanner";
 
     @Override
     public boolean isUserPasswordApplicable() {

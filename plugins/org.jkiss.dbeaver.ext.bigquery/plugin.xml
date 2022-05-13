@@ -51,7 +51,7 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
-                id="biqguery_auth"
+                id="google_bigquery"
                 label="Google Cloud Auth"
                 description="BigQuery internal authentication"
                 class="org.jkiss.dbeaver.ext.bigquery.auth.BigQueryAuthModel"
