@@ -354,9 +354,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     {
         credentialsPanel.saveSettings(configuration, "");
 
-        final String jumpServerSettingsPrefix = SSHImplementationAbstract.getJumpServerSettingsPrefix(0);
-        jumpServerCredentialsPanel.saveSettings(configuration, jumpServerSettingsPrefix);
-        configuration.setProperty(jumpServerSettingsPrefix + RegistryConstants.ATTR_ENABLED, jumpServerEnabledCheck.getSelection());
+        boolean jumpServersEnabled = jumpServerEnabledCheck.getSelection();
+        if (jumpServersEnabled) {
+            final String jumpServerSettingsPrefix = SSHImplementationAbstract.getJumpServerSettingsPrefix(0);
+            jumpServerCredentialsPanel.saveSettings(configuration, jumpServerSettingsPrefix);
+            configuration.setProperty(jumpServerSettingsPrefix + RegistryConstants.ATTR_ENABLED, jumpServersEnabled);
+        }
 
         String implLabel = tunnelImplCombo.getText();
         for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
