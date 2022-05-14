@@ -47,6 +47,21 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
     static final String PROP_UNIT = "unit";
     static final String ZONE_ID = "zoneId";
 
+    private static final int GIGA = 1_000_000_000;
+    private static final int TEN_MEGA = 10_000_000;
+    private static final int TICKS_TO_NANOS = 100;
+    private static final long DOTNET_TICKS_OFFSET = 621_355_968_000_000_000L;  // DateTime.UnixEpoch.Ticks
+    private static final long W32_FILETIME_OFFSET = 116_444_736_000_000_000L;  // DateTime.UnixEpoch.ToFileTimeUtc()
+    private static final double OADATE_OFFSET = 25569.0;  // DateTime.UnixEpoch.ToOADate()
+    private static final double SQLITE_JULIAN_OFFSET = 2440587.5;  // select julianday(0, "unixepoch")
+    private static final int SECONDS_IN_DAY = 24 * 3600;
+
+    private static final DateTimeFormatter SECONDS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+    private static final DateTimeFormatter MILLIS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
+    // 100 ns precision
+    private static final DateTimeFormatter DOTNET_TICKS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnn", Locale.ENGLISH);
+    private static final DateTimeFormatter NANOS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnnnn",Locale.ENGLISH);
+
     private enum EpochUnit {
         seconds {
             @Override
@@ -187,27 +202,14 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             double daysSinceUnixEpoch = rawValue - offset;
             long wholeDaysSinceUnixEpoch = (long)daysSinceUnixEpoch;
             double fractionalDay = daysSinceUnixEpoch - wholeDaysSinceUnixEpoch;
-            return Instant.ofEpochSecond(wholeDaysSinceUnixEpoch * SECONDS_IN_DAY, (long)(fractionalDay * SECONDS_IN_DAY * GIGA));
+            long fractionalDayNanos = (long)(fractionalDay * SECONDS_IN_DAY * GIGA);
+            return Instant.ofEpochSecond(wholeDaysSinceUnixEpoch * SECONDS_IN_DAY, fractionalDayNanos);
         }
 
         private static double instantToDays(Instant instant, double offset) {
             double daysSinceUnixEpoch = (instant.getEpochSecond() + 1e-9 * instant.getNano()) / SECONDS_IN_DAY;
             return daysSinceUnixEpoch + offset;
         }
-
-        private static final long GIGA = 1_000_000_000;
-        private static final long TEN_MEGA = 10_000_000;
-        private static final int TICKS_TO_NANOS = 100;
-        private static final long DOTNET_TICKS_OFFSET = 621_355_968_000_000_000L;  // DateTime.UnixEpoch.Ticks
-        private static final long W32_FILETIME_OFFSET = 116_444_736_000_000_000L;  // DateTime.UnixEpoch.ToFileTimeUtc()
-        private static final double OADATE_OFFSET = 25569.0;  // DateTime.UnixEpoch.ToOADate()
-        private static final double SQLITE_JULIAN_OFFSET = 2440587.5;  // select julianday(0, "unixepoch")
-        private static int SECONDS_IN_DAY = 24 * 3600;
-
-        private static final DateTimeFormatter SECONDS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
-        private static final DateTimeFormatter MILLIS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
-        private static final DateTimeFormatter DOTNET_TICKS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnn", Locale.ENGLISH);
-        private static final DateTimeFormatter NANOS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnnnn",Locale.ENGLISH);
 
         abstract Instant toInstant(Number value);
 
