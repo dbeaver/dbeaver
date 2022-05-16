@@ -20,7 +20,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.bigquery.model.BigQueryConstants;
 import org.jkiss.dbeaver.ext.bigquery.ui.internal.BigQueryMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
