@@ -20,6 +20,9 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
+import org.eclipse.jface.fieldassist.ContentProposal;
+import org.eclipse.jface.fieldassist.IContentProposal;
+import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -44,7 +47,6 @@ import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
-import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -52,6 +54,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.TimezoneUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -73,6 +76,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private Spinner notificationsCloseDelay;
 
     private boolean isStandalone = DesktopPlatform.isStandalone();
+    private boolean timezoneSelected = false;
+
 
     public PrefPageDatabaseUserInterface()
     {
@@ -128,10 +133,19 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             clientTimezone.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
-                    setValid(Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText())));
+                    timezoneSelected = (Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText())));
+                    getContainer().updateButtons();
                 }
             });
-            StringContentProposalProvider proposalProvider = new StringContentProposalProvider(true, clientTimezone.getItems());
+            IContentProposalProvider proposalProvider = (contents, position) -> {
+                List<IContentProposal> proposals = new ArrayList<>();
+                for (String item : clientTimezone.getItems()) {
+                    if (item.contains(contents)) {
+                        proposals.add(new ContentProposal(item));
+                    }
+                }
+                return proposals.toArray(IContentProposal[]::new);
+            };
             ContentAssistUtils.installContentProposal(clientTimezone, new ComboContentAdapter(), proposalProvider);
 
         }
@@ -183,8 +197,14 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         } else {
             clientTimezone.setText(TimezoneUtils.addGMTTime(string));
         }
+
         longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
         longOperationsTimeout.setSelection(store.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
+    }
+
+    @Override
+    public boolean isValid() {
+        return super.isValid() && timezoneSelected;
     }
 
     @Override

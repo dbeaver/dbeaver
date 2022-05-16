@@ -18,11 +18,10 @@ package org.jkiss.dbeaver.utils;
 
 import org.jkiss.code.NotNull;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class TimezoneUtils {
 
@@ -32,12 +31,14 @@ public class TimezoneUtils {
 
     @NotNull
     public static List<String> getTimezoneNames() {
-        return Arrays.stream(TimeZone.getAvailableIDs()).sorted((o1, o2) -> {
-            final int firstOffset = TimeZone.getTimeZone(o1).getRawOffset();
-            final int secondOffset = TimeZone.getTimeZone(o2).getRawOffset();
-            return Integer.compare(firstOffset, secondOffset);
-        }).map(TimezoneUtils::addGMTTime).collect(Collectors.toList());
+        List<String> list = new ArrayList<>();
+        for (String s : TimeZone.getAvailableIDs()) {
+            String addGMTTime = addGMTTime(s);
+            list.add(addGMTTime);
+        }
+        return list;
     }
+
 
     public static String addGMTTime(@NotNull String availableID) {
         String result;
@@ -51,7 +52,7 @@ public class TimezoneUtils {
         } else {
             hoursWithSymbol = '+' +Long.toString(hours);
         }
-        result = String.format("%s (GMT%s:%02d)", availableID, hoursWithSymbol, minutes);
+        result = String.format("%s (UTC%s:%02d)", availableID, hoursWithSymbol, minutes);
         return result;
     }
 
