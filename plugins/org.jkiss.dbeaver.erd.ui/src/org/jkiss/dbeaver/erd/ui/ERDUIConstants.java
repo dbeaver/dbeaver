@@ -84,7 +84,7 @@ public class ERDUIConstants {
     public static final int DEFAULT_NOTE_BORDER_WIDTH = 1;
     public static final int DEFAULT_ENTITY_BORDER_WIDTH = 2;
 
-    public static final String ROUTING_MIKAMI = "Mikami-Tabuchi routing algorithm (EXPERIMENTAL)";
+    public static final String ROUTING_MIKAMI = "Mikami-Tabuchi (Experimental)";
     public static final String ROUTING_SHORTEST_PATH = "Shortest Path";
 
 }
