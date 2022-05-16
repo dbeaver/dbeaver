@@ -17,50 +17,43 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.TimezoneUtils;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.TimeZone;
 
 public class TimezoneRegistry {
 
-    @NotNull
-    public static List<String> getTimezoneNames() {
-        final ArrayList<String> timezones = new ArrayList<>();
-        String result;
-        final List<String> IDs = Arrays.stream(TimeZone.getAvailableIDs()).sorted((o1, o2) -> {
-            final int firstOffset = TimeZone.getTimeZone(o1).getRawOffset();
-            final int secondOffset = TimeZone.getTimeZone(o2).getRawOffset();
-            return Integer.compare(firstOffset, secondOffset);
-        }).collect(Collectors.toList());
-        for (String availableID : IDs) {
-            result = addGMTTime(availableID);
-            timezones.add(result);
-        }
-        return timezones;
+    private static DBPPreferenceStore preferenceStore;
+    public static final String DEFAULT_VALUE = "N/A";
+    private TimezoneRegistry() {
     }
 
-    public static String addGMTTime(@NotNull String availableID) {
-        String result;
-        long hours = TimeUnit.MILLISECONDS.toHours(TimeZone.getTimeZone(availableID).getRawOffset());
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(TimeZone.getTimeZone(availableID).getRawOffset())
-            - TimeUnit.HOURS.toMinutes(hours);
-        // avoid -4:-30 issue
-        minutes = Math.abs(minutes);
-        String hoursWithSymbol;
-        if (hours < 0) {
-            hoursWithSymbol = Long.toString(hours);
+    public static void setUsedTime(@NotNull String text) {
+        initStore();
+        if (!text.equals(DEFAULT_VALUE)) {
+            preferenceStore.setValue(DBeaverPreferences.CLIENT_TIMEZONE, TimezoneUtils.extractTimezoneId(text));
+            TimeZone.setDefault(TimeZone.getTimeZone(TimezoneUtils.extractTimezoneId(text)));
         } else {
-            hoursWithSymbol = '+' +Long.toString(hours);
+            preferenceStore.setValue(DBeaverPreferences.CLIENT_TIMEZONE, text);
+            TimeZone.setDefault(null);
         }
-        result = String.format("(GMT%s:%02d) %s", hoursWithSymbol, minutes, availableID);
-        return result;
     }
 
-
-    public static String extractTimezoneId(@NotNull String timezone) {
-        return timezone.split(" ")[1];
+    public static void overrideTimezone() {
+        initStore();
+        final String timezone = preferenceStore.getString(DBeaverPreferences.CLIENT_TIMEZONE);
+        if (timezone != null && !timezone.equals(DEFAULT_VALUE)) {
+            TimeZone.setDefault(TimeZone.getTimeZone(timezone));
+        }
     }
 
+    private static void initStore() {
+        if (preferenceStore == null) {
+            preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        }
+    }
 
 }

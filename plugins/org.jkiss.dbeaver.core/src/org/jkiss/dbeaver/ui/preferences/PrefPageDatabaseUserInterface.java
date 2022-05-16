@@ -19,11 +19,10 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -44,15 +43,17 @@ import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.utils.TimezoneUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.TimeZone;
 
 /**
  * PrefPageDatabaseUserInterface
@@ -120,47 +121,19 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             Group clientTimezoneGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_timezone, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             clientTimezone = UIUtils.createLabelCombo(clientTimezoneGroup, CoreMessages.pref_page_ui_general_combo_timezone, CoreMessages.pref_page_ui_general_combo_timezone_tip, SWT.DROP_DOWN);
             clientTimezone.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            clientTimezone.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    if (e.keyCode == SWT.BS)
-                    {
-                        Combo cmb = ((Combo) e.getSource());
-                        Point pt = cmb.getSelection();
-                        cmb.setSelection(new Point(Math.max(0, pt.x - 1), pt.y));
-                    }
-                }
-
-                @Override
-                public void keyReleased(KeyEvent e) {
-                    Combo cmb = (Combo) e.getSource();
-                    getClosestValue(cmb);
-                }
-
-                private void getClosestValue(Combo combo) {
-                    String timezone = combo.getText();
-                    String[] items = combo.getItems();
-                    int index = -1;
-                    for (int i = 0; i < items.length; i++) {
-                        if (items[i].toLowerCase().startsWith(timezone.toLowerCase())) {
-                            index = i;
-                            break;
-                        }
-                    }
-                    if (index != -1) {
-                        Point pt = combo.getSelection();
-                        combo.select(index);
-                        combo.setText(items[index]);
-                        combo.setSelection(new Point(pt.x, items[index].length()));
-                    } else {
-                        combo.setText("DEFAULT");
-                    }
-                }
-            });
-            clientTimezone.add("DEFAULT");
-            for (String timezoneName : TimezoneRegistry.getTimezoneNames()) {
+            clientTimezone.add(TimezoneRegistry.DEFAULT_VALUE);
+            for (String timezoneName : TimezoneUtils.getTimezoneNames()) {
                 clientTimezone.add(timezoneName);
             }
+            clientTimezone.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    setValid(Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText())));
+                }
+            });
+            StringContentProposalProvider proposalProvider = new StringContentProposalProvider(true, clientTimezone.getItems());
+            ContentAssistUtils.installContentProposal(clientTimezone, new ComboContentAdapter(), proposalProvider);
+
         }
         // Notifications settings
         {
@@ -204,18 +177,14 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         notificationsEnabled.setSelection(store.getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
         notificationsCloseDelay.setSelection(store.getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
-        if (store.getString(DBeaverPreferences.CLIENT_TIMEZONE).equals("DEFAULT")) {
-            clientTimezone.setText(store.getString(DBeaverPreferences.CLIENT_TIMEZONE));
+        final String string = store.getString(DBeaverPreferences.CLIENT_TIMEZONE);
+        if (string.equals("N/A")) {
+            clientTimezone.setText(string);
         } else {
-            clientTimezone.setText(TimezoneRegistry.addGMTTime(store.getString(DBeaverPreferences.CLIENT_TIMEZONE)));
+            clientTimezone.setText(TimezoneUtils.addGMTTime(string));
         }
         longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
         longOperationsTimeout.setSelection(store.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
-    }
-
-    @Override
-    public boolean isValid() {
-        return super.isValid() && Arrays.stream(clientTimezone.getItems()).anyMatch(e -> e.equals(clientTimezone.getText()));
     }
 
     @Override
@@ -235,16 +204,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
 
         PrefUtils.savePreferenceStore(store);
-        if (clientTimezone.getSelectionIndex() >= 0) {
-
-            if (!clientTimezone.getText().equals("DEFAULT")) {
-                store.setValue(DBeaverPreferences.CLIENT_TIMEZONE, TimezoneRegistry.extractTimezoneId(clientTimezone.getText()));
-                TimeZone.setDefault(TimeZone.getTimeZone(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())));
-            } else {
-                store.setValue(DBeaverPreferences.CLIENT_TIMEZONE, clientTimezone.getText());
-                TimeZone.setDefault(null);
-            }
-        }
+        TimezoneRegistry.setUsedTime(clientTimezone.getText());
         if (workspaceLanguage.getSelectionIndex() >= 0) {
             PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
             DBPPlatformLanguage curLanguage = DBWorkbench.getPlatform().getLanguage();

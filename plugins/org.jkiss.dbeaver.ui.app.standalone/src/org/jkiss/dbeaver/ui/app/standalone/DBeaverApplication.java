@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.EclipseApplicationImpl;
+import org.jkiss.dbeaver.registry.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
@@ -237,7 +238,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         }
 
         initDebugWriter();
-        overrideTimezone();
+        TimezoneRegistry.overrideTimezone();
         updateSplashHandler();
 
         final Runtime runtime = Runtime.getRuntime();
@@ -308,13 +309,6 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         }
     }
 
-    private void overrideTimezone() {
-        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        final String timezone = preferenceStore.getString(DBeaverPreferences.CLIENT_TIMEZONE);
-        if (timezone != null && !timezone.equals("DEFAULT")) {
-            TimeZone.setDefault(TimeZone.getTimeZone(timezone));
-        }
-    }
 
     private void markLocationReadOnly(Location instanceLoc) {
         try {
