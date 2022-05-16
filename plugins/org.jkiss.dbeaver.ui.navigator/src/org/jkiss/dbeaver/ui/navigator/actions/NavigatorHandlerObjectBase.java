@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -114,8 +111,8 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             for (final IEditorReference editorRef : activePage.getEditorReferences()) {
                 final IEditorPart editor = editorRef.getEditor(false);
                 if (editor instanceof IDatabaseEditor) {
-                    final IDatabaseEditorInput editorInput = (IDatabaseEditorInput) editor.getEditorInput();
-                    if (editorInput.getDatabaseObject() == objectToSeek) {
+                    final IEditorInput editorInput = editor.getEditorInput();
+                    if (editorInput instanceof IDatabaseEditorInput && ((IDatabaseEditorInput) editorInput).getDatabaseObject() == objectToSeek) {
                         activePage.activate(editor);
                         if (editor.getAdapter(IDatabaseModellerEditor.class) == null) {
                             // Switch to folder unless we are already in modelling mode
