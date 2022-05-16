@@ -71,7 +71,12 @@ public class ERDDecoratorDefault implements ERDDecorator {
     @NotNull
     @Override
     public Insets getDefaultEntityInsets() {
-        return new Insets(20, 20, 10, 20);
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
+            return new Insets(20, 20, 10, 20);
+        } else {
+            return new Insets(50, 50, 50, 50);
+        }
     }
 
     @Nullable

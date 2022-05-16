@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.erd.ui.editor;
 
-import java.util.*;
-
 import org.eclipse.draw2dl.Connection;
 import org.eclipse.draw2dl.IFigure;
 import org.eclipse.swt.graphics.Color;
@@ -30,6 +28,8 @@ import org.jkiss.dbeaver.erd.ui.part.AssociationPart;
 import org.jkiss.dbeaver.erd.ui.part.AttributePart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.utils.ListNode;
+
+import java.util.*;
 
 
 public class ERDHighlightingManager {
@@ -130,8 +130,19 @@ public class ERDHighlightingManager {
         if (!(attributePart.getParent() instanceof EntityPart)) {
             return null; 
         }
-
         ListNode<ERDHighlightingHandle> highlightings = null;
+        for (Object connection : attributePart.getSourceConnections()) {
+            if (connection instanceof AssociationPart) {
+                highlightings = this.highlightAttributeAssociation(attributePart, (AssociationPart) connection, color, highlightings);
+            }
+        }
+        for (Object connection : attributePart.getTargetConnections()) {
+            if (connection instanceof AssociationPart) {
+                highlightings = this.highlightAttributeAssociation(attributePart, (AssociationPart) connection, color, highlightings);
+            }
+        }
+
+
         EntityPart entityPart = (EntityPart)attributePart.getParent();
         
         for (Object connection : entityPart.getSourceConnections()) {
@@ -176,7 +187,15 @@ public class ERDHighlightingManager {
                 highlightings = ListNode.push(highlightings, this.highlight(attrPart.getFigure(), color));
             }
         }
-        
+
+        if (associationPart.getSource() instanceof AttributePart) {
+            highlightings = ListNode.push(highlightings, this.highlight(((AttributePart) associationPart.getSource()).getFigure(), color));
+        }
+
+        if (associationPart.getTarget() instanceof AttributePart) {
+            highlightings = ListNode.push(highlightings, this.highlight(((AttributePart) associationPart.getTarget()).getFigure(), color));
+        }
+
         return highlightings;
     }
 

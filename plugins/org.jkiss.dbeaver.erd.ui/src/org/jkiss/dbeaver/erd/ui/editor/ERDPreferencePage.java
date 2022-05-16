@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +59,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private Spinner spinnerMarginRight;
     private Button gridCheck;
     private Button snapCheck;
+    private Combo routingType;
     private Spinner spinnerGridWidth;
     private Spinner spinnerGridHeight;
 
@@ -75,11 +77,23 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         createColorPrefGroup(store, composite);
         createVisibilityGroup(store, composite);
         createStyleGroup(store, composite);
-
         createGridGroup(store, composite);
         createPrintGroup(store, composite);
+        createRoutingGroup(store, composite);
 
         return composite;
+    }
+
+    private void createRoutingGroup(DBPPreferenceStore store, Composite composite) {
+        Group contentsGroup = UIUtils.createControlGroup(composite, ERDUIMessages.erd_preference_page_title_routing, 1 , GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        routingType = UIUtils.createLabelCombo(contentsGroup, ERDUIMessages.erd_preference_page_title_routing_combo, SWT.DROP_DOWN | SWT.READ_ONLY);
+        routingType.add(ERDUIConstants.ROUTING_SHORTEST_PATH);
+        routingType.add(ERDUIConstants.ROUTING_MIKAMI);
+        if (!CommonUtils.isEmpty(store.getString(ERDUIConstants.PREF_ROUTING_TYPE))) {
+            routingType.setText(store.getString(ERDUIConstants.PREF_ROUTING_TYPE));
+        } else {
+            routingType.setText(ERDUIConstants.ROUTING_SHORTEST_PATH);
+        }
     }
 
     private void createContentsGroup(DBPPreferenceStore store, Composite composite)
@@ -179,6 +193,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
+        store.setValue(ERDUIConstants.PREF_ROUTING_TYPE, routingType.getText());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, changeBorderColors.getSelection());
         store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, changeHeaderColors.getSelection());
 

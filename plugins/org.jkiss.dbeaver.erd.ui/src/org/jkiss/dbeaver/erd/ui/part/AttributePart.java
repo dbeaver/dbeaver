@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.erd.ui.part;
 
+import org.eclipse.draw2dl.ChopboxAnchor;
+import org.eclipse.draw2dl.ConnectionAnchor;
 import org.eclipse.draw2dl.IFigure;
 import org.eclipse.gef3.*;
 import org.eclipse.gef3.tools.DragEditPartsTracker;
 import org.eclipse.swt.graphics.Color;
-import org.jkiss.dbeaver.erd.model.ERDEntity;
-import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.command.AttributeCheckCommand;
@@ -29,12 +30,17 @@ import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.erd.ui.figures.EditableLabel;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeConnectionEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AttributeDragAndDropEditPolicy;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,7 +48,7 @@ import java.util.Map;
  *
  * @author Serge Rider
  */
-public class AttributePart extends PropertyAwarePart {
+public class AttributePart extends NodePart {
 
     public static final String PROP_CHECKED = "CHECKED";
 
@@ -67,6 +73,58 @@ public class AttributePart extends PropertyAwarePart {
 
     public String getAttributeLabel() {
         return ERDUIUtils.getFullAttributeLabel(getDiagram(), getAttribute(), false);
+    }
+
+    @Override
+    protected void addSourceConnection(ConnectionEditPart connection, int index) {
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+            return;
+        }
+        if (((AssociationPart) connection).getAssociation().getSourceAttributes().contains(getAttribute())) {
+            super.addSourceConnection(connection, index);
+        }
+    }
+
+    @Override
+    protected List<ERDAssociation> getModelSourceConnections() {
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+            return Collections.emptyList();
+        }
+        List<ERDAssociation> list = new ArrayList<>();
+        for (ERDAssociation erdAssociation : super.getModelSourceConnections()) {
+            if (erdAssociation.getSourceAttributes().contains(getAttribute()) && erdAssociation.getSourceEntity() != null) {
+                list.add(erdAssociation);
+            }
+        }
+        return list;
+    }
+
+    @Override
+    protected List<ERDAssociation> getModelTargetConnections() {
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+            return Collections.emptyList();
+        }
+        List<ERDAssociation> list = new ArrayList<>();
+        for (ERDAssociation erdAssociation : super.getModelTargetConnections()) {
+            if (erdAssociation.getTargetAttributes().contains(getAttribute()) && erdAssociation.getTargetEntity() != null) {
+                list.add(erdAssociation);
+            }
+        }
+        return list;
+    }
+
+    @Override
+    protected void addTargetConnection(ConnectionEditPart connection, int index) {
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+            return;
+        }
+        if (((AssociationPart) connection).getAssociation().getTargetAttributes().contains(getAttribute())) {
+            super.addTargetConnection(connection, index);
+        }
     }
 
     /**
@@ -205,4 +263,28 @@ public class AttributePart extends PropertyAwarePart {
         return ERDUIMessages.column_.trim() + " " + getAttribute().getLabelText();
     }
 
+    @Override
+    public ERDElement getElement() {
+        return getEntity();
+    }
+
+    @Override
+    public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection) {
+        return new ChopboxAnchor(getFigure());
+    }
+
+    @Override
+    public ConnectionAnchor getSourceConnectionAnchor(Request request) {
+        return new ChopboxAnchor(getFigure());
+    }
+
+    @Override
+    public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection) {
+        return new ChopboxAnchor(getFigure());
+    }
+
+    @Override
+    public ConnectionAnchor getTargetConnectionAnchor(Request request) {
+        return new ChopboxAnchor(getFigure());
+    }
 }
