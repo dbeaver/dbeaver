@@ -56,6 +56,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button closeTabOnErrorCheck;
     private Combo resultsOrientationCombo;
     private Button autoOpenOutputView;
+    private Button replaceCurrentTab;
 
     public PrefPageSQLEditor()
     {
@@ -112,6 +113,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             ((GridData)layoutGroup.getLayoutData()).horizontalSpan = 2;
 
             closeTabOnErrorCheck = UIUtils.createCheckbox(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_close_results_tab_on_error, null, false, 2);
+            replaceCurrentTab = UIUtils.createCheckbox(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_replace_on_single_query_exec_view, SQLEditorMessages.pref_page_sql_editor_label_replace_on_single_query_exec_view_tip, true, 2);
 
             resultsOrientationCombo = UIUtils.createLabelCombo(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_results_orientation, SQLEditorMessages.pref_page_sql_editor_label_results_orientation_tip, SWT.READ_ONLY | SWT.DROP_DOWN);
             ((GridData)resultsOrientationCombo.getLayoutData()).grabExcessHorizontalSpace = false;
@@ -148,6 +150,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             autoSaveActiveSchema.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA));
 
             closeTabOnErrorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR));
+            replaceCurrentTab.setSelection(store.getBoolean(SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB));
             SQLEditor.ResultSetOrientation orientation = SQLEditor.ResultSetOrientation.valueOf(
                 DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
             resultsOrientationCombo.setText(orientation.getLabel());
@@ -171,6 +174,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA, autoSaveActiveSchema.getSelection());
 
             store.setValue(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR, closeTabOnErrorCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB, replaceCurrentTab.getSelection());
             String orientationLabel = resultsOrientationCombo.getText();
             for (SQLEditor.ResultSetOrientation orientation : SQLEditor.ResultSetOrientation.values()) {
                 if (orientationLabel.equals(orientation.getLabel())) {
@@ -198,6 +202,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA);
 
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR);
+        store.setToDefault(SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB);
         DBWorkbench.getPlatform().getPreferenceStore().setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
         store.setToDefault(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW);
     }

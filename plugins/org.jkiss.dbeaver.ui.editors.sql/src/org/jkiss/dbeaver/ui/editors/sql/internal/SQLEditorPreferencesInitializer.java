@@ -111,6 +111,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, false);
 
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB, true);
         PrefUtils.setDefaultPreferenceValue(
             store,
             SQLPreferenceConstants.RESULT_SET_ORIENTATION, SQLEditor.ResultSetOrientation.HORIZONTAL.name());
