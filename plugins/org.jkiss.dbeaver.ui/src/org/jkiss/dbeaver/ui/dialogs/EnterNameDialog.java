@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -121,6 +122,11 @@ public class EnterNameDialog extends Dialog {
     }
 
     private void updateButtonsState() {
-        getButton(IDialogConstants.OK_ID).setEnabled(!CommonUtils.isEmptyTrimmed(propNameText.getText()));
+        UIUtils.asyncExec(() -> {
+            final Button button = getButton(IDialogConstants.OK_ID);
+            if (button != null) {
+                button.setEnabled(!CommonUtils.isEmptyTrimmed(propNameText.getText()));
+            }
+        });
     }
 }
