@@ -77,6 +77,8 @@ public interface SMController extends SMAuthCredentialsManager {
 
     void updateSession(@NotNull String sessionId, @Nullable String userId, Map<String, Object> parameters) throws DBException;
 
+    String getSessionFromToken(String token) throws DBException;
+
     ///////////////////////////////////////////
     // Permissions
 
