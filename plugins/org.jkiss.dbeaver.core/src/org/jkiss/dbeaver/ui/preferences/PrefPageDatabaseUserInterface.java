@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -75,7 +76,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private Spinner notificationsCloseDelay;
 
     private boolean isStandalone = DesktopPlatform.isStandalone();
-    private boolean timezoneSelected = false;
 
 
     public PrefPageDatabaseUserInterface()
@@ -194,7 +194,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (string.isEmpty()) {
             clientTimezone.setText(TimezoneRegistry.DEFAULT_VALUE);
         } else {
-            clientTimezone.setText(TimezoneRegistry.addGMTTime(string));
+            clientTimezone.setText(TimezoneRegistry.getGMTString(string));
         }
 
         longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
@@ -204,7 +204,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     @Override
     public boolean isValid() {
         return super.isValid() &&
-            clientTimezone != null &&
             (Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText())));
     }
 
@@ -225,7 +224,11 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
 
         PrefUtils.savePreferenceStore(store);
-        TimezoneRegistry.setUsedTime(clientTimezone.getText());
+        if (!clientTimezone.getText().equals(TimezoneRegistry.DEFAULT_VALUE)) {
+            TimezoneRegistry.setDefaultZone(ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())));
+        } else {
+            TimezoneRegistry.setDefaultZone(null);
+        }
         if (workspaceLanguage.getSelectionIndex() >= 0) {
             PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
             DBPPlatformLanguage curLanguage = DBWorkbench.getPlatform().getLanguage();

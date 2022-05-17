@@ -17,14 +17,17 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.ArrayList;
+import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class TimezoneRegistry {
 
@@ -32,11 +35,11 @@ public class TimezoneRegistry {
     private TimezoneRegistry() {
     }
 
-    public static void setUsedTime(@NotNull String text) {
+    public static void setDefaultZone(@Nullable ZoneId id) {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        if (!text.equals(DEFAULT_VALUE)) {
-            preferenceStore.setValue(DBeaverPreferences.CLIENT_TIMEZONE, extractTimezoneId(text));
-            TimeZone.setDefault(TimeZone.getTimeZone(extractTimezoneId(text)));
+        if (id != null) {
+            preferenceStore.setValue(DBeaverPreferences.CLIENT_TIMEZONE, id.getId());
+            TimeZone.setDefault(TimeZone.getTimeZone(id));
         } else {
             preferenceStore.setToDefault(DBeaverPreferences.CLIENT_TIMEZONE);
             TimeZone.setDefault(null);
@@ -53,19 +56,14 @@ public class TimezoneRegistry {
 
     @NotNull
     public static List<String> getTimezoneNames() {
-        List<String> list = new ArrayList<>();
-        for (String s : TimeZone.getAvailableIDs()) {
-            String addGMTTime = addGMTTime(s);
-            list.add(addGMTTime);
-        }
-        return list;
+        return Arrays.stream(TimeZone.getAvailableIDs()).map(TimezoneRegistry::getGMTString).collect(Collectors.toList());
     }
 
     @NotNull
-    public static String addGMTTime(@NotNull String availableID) {
+    public static String getGMTString(@NotNull String id) {
         String result;
-        long hours = TimeUnit.MILLISECONDS.toHours(TimeZone.getTimeZone(availableID).getRawOffset());
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(TimeZone.getTimeZone(availableID).getRawOffset())
+        long hours = TimeUnit.MILLISECONDS.toHours(TimeZone.getTimeZone(id).getRawOffset());
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(TimeZone.getTimeZone(id).getRawOffset())
             - TimeUnit.HOURS.toMinutes(hours);
         minutes = Math.abs(minutes);
         String hoursWithSymbol;
@@ -74,7 +72,7 @@ public class TimezoneRegistry {
         } else {
             hoursWithSymbol = '+' +Long.toString(hours);
         }
-        result = String.format("%s (UTC%s:%02d)", availableID, hoursWithSymbol, minutes);
+        result = String.format("%s (UTC%s:%02d)", id, hoursWithSymbol, minutes);
         return result;
     }
 
