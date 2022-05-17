@@ -67,7 +67,7 @@ public class DataExporterXML extends StreamExporterAbstract {
     private void printHeader()
     {
         PrintWriter out = getWriter();
-        out.write("<?xml version=\"1.0\" ?>\n");
+        out.write("<?xml version=\"1.0\" encoding=\"" + getSite().getOutputEncoding() + "\"?>\n");
         tableName = escapeXmlElementName(getSite().getSource().getName());
         out.write("<!DOCTYPE " + tableName + " [\n");
         out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
