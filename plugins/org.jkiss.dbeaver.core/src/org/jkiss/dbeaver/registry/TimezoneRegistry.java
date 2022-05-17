@@ -22,11 +22,11 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.time.Instant;
 import java.time.ZoneId;
-import java.util.Arrays;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class TimezoneRegistry {
@@ -56,24 +56,14 @@ public class TimezoneRegistry {
 
     @NotNull
     public static List<String> getTimezoneNames() {
-        return Arrays.stream(TimeZone.getAvailableIDs()).map(TimezoneRegistry::getGMTString).collect(Collectors.toList());
+        return ZoneId.getAvailableZoneIds().stream().map(TimezoneRegistry::getGMTString).sorted(String::compareTo).collect(Collectors.toList());
     }
 
     @NotNull
     public static String getGMTString(@NotNull String id) {
-        String result;
-        long hours = TimeUnit.MILLISECONDS.toHours(TimeZone.getTimeZone(id).getRawOffset());
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(TimeZone.getTimeZone(id).getRawOffset())
-            - TimeUnit.HOURS.toMinutes(hours);
-        minutes = Math.abs(minutes);
-        String hoursWithSymbol;
-        if (hours < 0) {
-            hoursWithSymbol = Long.toString(hours);
-        } else {
-            hoursWithSymbol = '+' +Long.toString(hours);
-        }
-        result = String.format("%s (UTC%s:%02d)", id, hoursWithSymbol, minutes);
-        return result;
+        Instant instant = Instant.now();
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of(id));
+        return  String.format("%s (UTC%s)", id, zonedDateTime.getOffset());
     }
 
 

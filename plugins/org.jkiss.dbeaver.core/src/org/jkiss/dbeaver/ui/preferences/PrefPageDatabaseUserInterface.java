@@ -203,7 +203,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     @Override
     public boolean isValid() {
-        return super.isValid() &&
+        return super.isValid() && clientTimezone != null &&
             (Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText())));
     }
 
