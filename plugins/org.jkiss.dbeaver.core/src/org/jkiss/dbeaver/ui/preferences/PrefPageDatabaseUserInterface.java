@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.utils.TimezoneUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -127,13 +126,13 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             clientTimezone = UIUtils.createLabelCombo(clientTimezoneGroup, CoreMessages.pref_page_ui_general_combo_timezone, CoreMessages.pref_page_ui_general_combo_timezone_tip, SWT.DROP_DOWN);
             clientTimezone.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             clientTimezone.add(TimezoneRegistry.DEFAULT_VALUE);
-            for (String timezoneName : TimezoneUtils.getTimezoneNames()) {
+            for (String timezoneName : TimezoneRegistry.getTimezoneNames()) {
                 clientTimezone.add(timezoneName);
             }
             clientTimezone.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
-                    timezoneSelected = (Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText())));
+                    updateApplyButton();
                     getContainer().updateButtons();
                 }
             });
@@ -192,10 +191,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         notificationsEnabled.setSelection(store.getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
         notificationsCloseDelay.setSelection(store.getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
         final String string = store.getString(DBeaverPreferences.CLIENT_TIMEZONE);
-        if (string.equals("N/A")) {
-            clientTimezone.setText(string);
+        if (string.isEmpty()) {
+            clientTimezone.setText(TimezoneRegistry.DEFAULT_VALUE);
         } else {
-            clientTimezone.setText(TimezoneUtils.addGMTTime(string));
+            clientTimezone.setText(TimezoneRegistry.addGMTTime(string));
         }
 
         longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
@@ -204,7 +203,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     @Override
     public boolean isValid() {
-        return super.isValid() && timezoneSelected;
+        return super.isValid() &&
+            clientTimezone != null &&
+            (Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText())));
     }
 
     @Override
