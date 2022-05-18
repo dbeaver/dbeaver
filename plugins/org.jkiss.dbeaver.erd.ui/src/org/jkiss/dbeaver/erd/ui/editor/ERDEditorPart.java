@@ -62,7 +62,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
-import org.jkiss.dbeaver.erd.ui.action.*;
+import org.jkiss.dbeaver.erd.ui.action.DiagramLayoutAction;
+import org.jkiss.dbeaver.erd.ui.action.DiagramToggleGridAction;
+import org.jkiss.dbeaver.erd.ui.action.DiagramToggleHandAction;
+import org.jkiss.dbeaver.erd.ui.action.ERDEditorPropertyTester;
 import org.jkiss.dbeaver.erd.ui.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.erd.ui.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.erd.ui.dnd.NodeDropTargetListener;
@@ -108,9 +111,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.*;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -243,7 +245,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         super.init(site, input);
 
-        // add selection change listener
+        // add  selection change listener
         //getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
 
         configPropertyListener = new ConfigPropertyListener();
@@ -541,8 +543,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         IAction zoomOut = new ZoomOutAction(zoomManager);
         addAction(zoomIn);
         addAction(zoomOut);
-        addAction(new DiagramToggleHandAction(editDomain.getPaletteViewer()));
-
+        if (editDomain.getPaletteViewer() != null) {
+            addAction(new DiagramToggleHandAction(editDomain.getPaletteViewer()));
+        }
         graphicalViewer.addSelectionChangedListener(event -> {
             String status;
             IStructuredSelection selection = (IStructuredSelection)event.getSelection();
@@ -995,7 +998,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         //toolBarManager.add(createAttributeVisibilityMenu());
         toolBarManager.add(new DiagramLayoutAction(ERDEditorPart.this));
         toolBarManager.add(new DiagramToggleGridAction());
-        toolBarManager.add(new DiagramToggleHandAction(editDomain.getPaletteViewer()));
+        if (editDomain.getPaletteViewer() != null) {
+            toolBarManager.add(new DiagramToggleHandAction(editDomain.getPaletteViewer()));
+        }
         toolBarManager.add(new Separator());
         toolBarManager.add(new ToggleViewAction(IPageLayout.ID_PROP_SHEET));
         toolBarManager.add(new ToggleViewAction(IPageLayout.ID_OUTLINE));
