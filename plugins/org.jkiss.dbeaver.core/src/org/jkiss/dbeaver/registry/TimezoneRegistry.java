@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -44,6 +45,7 @@ public class TimezoneRegistry {
             preferenceStore.setToDefault(DBeaverPreferences.CLIENT_TIMEZONE);
             TimeZone.setDefault(null);
         }
+        UIUtils.updateTimezoneBarIfExists();
     }
 
     public static void overrideTimezone() {

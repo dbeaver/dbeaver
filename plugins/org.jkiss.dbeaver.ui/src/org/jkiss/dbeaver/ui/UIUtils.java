@@ -69,11 +69,13 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
+import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.registry.StatusLineContributionItemsRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -83,10 +85,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Locale;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * UI Utils
@@ -634,6 +633,15 @@ public class UIUtils {
         }
 
         return text;
+    }
+
+    public static void updateTimezoneBarIfExists() {
+        if (DBWorkbench.getPlatform().getApplication().isStandalone()) {
+            StatusLineContributionItemEx tzItem = StatusLineContributionItemsRegistry.getInstanceOfItem("Time Zone");
+            TimeZone tzDefault = TimeZone.getDefault();
+            tzItem.setText(tzDefault.getDisplayName(false, TimeZone.SHORT));
+            tzItem.setToolTip(tzDefault.getDisplayName(false, TimeZone.LONG));
+        }
     }
 
     @NotNull
