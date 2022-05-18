@@ -22,4 +22,8 @@
         </view>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.spanner.auth.SpannerAuthModel" uiClass="org.jkiss.dbeaver.ext.spanner.ui.config.SpannerAuthConfigurator"/>
+    </extension>
+
 </plugin>
