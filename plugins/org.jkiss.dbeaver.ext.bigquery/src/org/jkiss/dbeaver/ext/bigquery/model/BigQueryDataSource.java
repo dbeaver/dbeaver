@@ -42,6 +42,8 @@ public class BigQueryDataSource extends GenericDataSource {
         props.put(BigQueryConstants.DRIVER_PROP_PROJECT_ID, connectionInfo.getDatabaseName());
         if (connectionInfo.getUserName() != null) {
             props.put(BigQueryConstants.DRIVER_PROP_ACCOUNT, connectionInfo.getUserName());
+        } else {
+            props.put(BigQueryConstants.DRIVER_PROP_ACCOUNT, "");
         }
 
         return props;
