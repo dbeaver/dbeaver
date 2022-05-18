@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * DBNRoot
@@ -180,8 +177,10 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     public DBNProject getProjectNode(DBPProject project) {
+        UUID projectID = project.getProjectID();
         for (DBNProject node : projects) {
-            if (node.getProject() == project) {
+            DBPProject nodeProject = node.getProject();
+            if (nodeProject != null && (nodeProject == project || nodeProject.getProjectID().compareTo(projectID) == 0)) {
                 return node;
             }
         }

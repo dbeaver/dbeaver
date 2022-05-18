@@ -46,6 +46,6 @@ public interface ICustomizablePart {
 
     Font getCustomFont();
 
-    void setCustomFont(Font color);
+    void setCustomFont(Font font);
 
 }

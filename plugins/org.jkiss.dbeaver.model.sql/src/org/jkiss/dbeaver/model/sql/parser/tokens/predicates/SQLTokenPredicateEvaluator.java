@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.parser.*;
+import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.*;
 

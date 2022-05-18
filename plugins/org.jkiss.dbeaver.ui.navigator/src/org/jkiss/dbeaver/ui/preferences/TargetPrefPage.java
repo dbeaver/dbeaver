@@ -191,14 +191,14 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         configurationBlockControl = createPreferenceContent(composite);
         configurationBlockControl.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
 
-        if (isDataSourcePreferencePage()) {
-            boolean useProjectSettings = hasDataSourceSpecificOptions(getDataSourceContainer());
-            enableDataSourceSpecificSettings(useProjectSettings);
-        }
-
         {
             DBPPreferenceStore store = getTargetPreferenceStore();
             loadPreferences(store);
+        }
+
+        if (isDataSourcePreferencePage()) {
+            boolean useProjectSettings = hasDataSourceSpecificOptions(getDataSourceContainer());
+            enableDataSourceSpecificSettings(useProjectSettings);
         }
 
         Dialog.applyDialogFont(composite);

@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.wmi
 Bundle-Version: 2.0.175.qualifier
-Bundle-Release-Date: 20220516
+Bundle-Release-Date: 20220523
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ActivationPolicy: lazy

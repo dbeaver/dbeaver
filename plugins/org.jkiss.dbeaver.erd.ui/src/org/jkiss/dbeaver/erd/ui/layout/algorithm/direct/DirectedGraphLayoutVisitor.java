@@ -26,13 +26,14 @@ import org.eclipse.draw2dl.geometry.Rectangle;
 import org.eclipse.draw2dl.graph.*;
 import org.eclipse.gef3.EditPart;
 import org.eclipse.gef3.GraphicalEditPart;
-import org.eclipse.gef3.NodeEditPart;
 import org.eclipse.gef3.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef3.editparts.AbstractGraphicalEditPart;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.layout.GraphAnimation;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecorator;
+import org.jkiss.dbeaver.erd.ui.part.AttributePart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
+import org.jkiss.dbeaver.erd.ui.part.NodePart;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -87,14 +88,14 @@ public class DirectedGraphLayoutVisitor {
         GraphAnimation.recordInitialState(diagram.getFigure());
         //IFigure fig = diagram.getFigure();
         for (Object child : diagram.getChildren()) {
-            addEntityNode((NodeEditPart) child);
+            addEntityNode((NodePart) child);
         }
     }
 
     /**
      * Adds nodes to the graph object for use by the GraphLayoutAuto
      */
-    protected void addEntityNode(NodeEditPart nodeEditPart)
+    protected void addEntityNode(NodePart nodeEditPart)
     {
         Node entityNode;
         if (nodeEditPart instanceof EntityPart && ((EntityPart)nodeEditPart).getEntity().hasSelfLinks()) {
@@ -135,9 +136,13 @@ public class DirectedGraphLayoutVisitor {
     protected void addEntityEdges(GraphicalEditPart entityPart)
     {
         List<?> outgoing = entityPart.getSourceConnections();
-        for (int i = 0; i < outgoing.size(); i++) {
-            AbstractConnectionEditPart connectionPart = (AbstractConnectionEditPart) outgoing.get(i);
-            addConnectionEdges(connectionPart);
+        for (Object o : outgoing) {
+            addConnectionEdges((AbstractConnectionEditPart) o);
+        }
+        for (Object child : entityPart.getChildren()) {
+            for (Object sourceConnection : ((AttributePart) child).getSourceConnections()) {
+                addConnectionEdges((AbstractConnectionEditPart) sourceConnection);
+            }
         }
     }
 
@@ -147,7 +152,13 @@ public class DirectedGraphLayoutVisitor {
     {
         GraphAnimation.recordInitialState((Connection) connectionPart.getFigure());
         Node source = (Node) partToNodesMap.get(connectionPart.getSource());
+        if (source == null && connectionPart.getSource() != null) {
+            source = (Node) partToNodesMap.get(connectionPart.getSource().getParent());
+        }
         Node target = (Node) partToNodesMap.get(connectionPart.getTarget());
+        if (target == null && connectionPart.getTarget() != null) {
+            target = (Node) partToNodesMap.get(connectionPart.getTarget().getParent());
+        }
         if (source == null || target == null) {
             log.warn("Source or target node not found");
             return;
@@ -195,8 +206,12 @@ public class DirectedGraphLayoutVisitor {
         tableFigure.setBounds(bounds);
 
         for (int i = 0; i < entityPart.getSourceConnections().size(); i++) {
-            AbstractConnectionEditPart relationship = (AbstractConnectionEditPart) entityPart.getSourceConnections().get(i);
-            applyConnectionResults(relationship);
+            applyConnectionResults((AbstractConnectionEditPart) entityPart.getSourceConnections().get(i));
+        }
+        for (Object child : entityPart.getChildren()) {
+            for (Object sourceConnection : ((AttributePart) child).getSourceConnections()) {
+                applyConnectionResults((AbstractConnectionEditPart) sourceConnection);
+            }
         }
     }
 
@@ -206,6 +221,7 @@ public class DirectedGraphLayoutVisitor {
     {
 
         Edge connEdge = (Edge) partToNodesMap.get(connectionPart);
+
         NodeList edgeNodes = connEdge.vNodes;
 
         PolylineConnection conn = (PolylineConnection) connectionPart.getConnectionFigure();

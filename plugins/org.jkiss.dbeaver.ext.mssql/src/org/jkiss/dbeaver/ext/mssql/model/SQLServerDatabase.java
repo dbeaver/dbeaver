@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
@@ -145,7 +146,7 @@ public class SQLServerDatabase
 
     @Override
     public boolean isSystem() {
-        return name.equals("msdb");
+        return ArrayUtils.contains(SQLServerConstants.SYSTEM_DATABASES, name);
     }
 
     public DataTypeCache getDataTypesCache() {

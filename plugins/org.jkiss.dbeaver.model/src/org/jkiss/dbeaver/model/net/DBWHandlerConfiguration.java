@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -49,8 +49,8 @@ public class DBWHandlerConfiguration {
     public DBWHandlerConfiguration(@NotNull DBWHandlerDescriptor descriptor, DBPDataSourceContainer dataSource) {
         this.descriptor = descriptor;
         this.dataSource = dataSource;
-        this.properties = new HashMap<>();
-        this.secureProperties = new HashMap<>();
+        this.properties = new LinkedHashMap<>();
+        this.secureProperties = new LinkedHashMap<>();
     }
 
     public DBWHandlerConfiguration(@NotNull DBWHandlerConfiguration configuration) {
@@ -60,8 +60,8 @@ public class DBWHandlerConfiguration {
         this.userName = configuration.userName;
         this.password = configuration.password;
         this.savePassword = configuration.savePassword;
-        this.properties = new HashMap<>(configuration.properties);
-        this.secureProperties = new HashMap<>(configuration.secureProperties);
+        this.properties = new LinkedHashMap<>(configuration.properties);
+        this.secureProperties = new LinkedHashMap<>(configuration.secureProperties);
     }
 
     @NotNull
@@ -180,7 +180,11 @@ public class DBWHandlerConfiguration {
 
     @Nullable
     public String getSecureProperty(@NotNull String name) {
-        return secureProperties.get(name);
+        String value = secureProperties.get(name);
+        if (value == null) {
+            value = CommonUtils.toString(properties.get(name), null);
+        }
+        return value;
     }
 
     @NotNull

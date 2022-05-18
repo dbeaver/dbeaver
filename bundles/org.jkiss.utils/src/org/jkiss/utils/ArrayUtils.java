@@ -273,6 +273,18 @@ public class ArrayUtils {
         return list.toArray((T[]) Array.newInstance(type, list.size()));
     }
 
+    @Nullable
+    public static boolean[] unbox(@Nullable Boolean[] source) {
+        if (source == null) {
+            return null;
+        }
+        final boolean[] result = new boolean[source.length];
+        for (int i = 0; i < source.length; i++) {
+            result[i] = source[i];
+        }
+        return result;
+    }
+
     public static void reverse(@Nullable Object[] array) {
         if (array == null || array.length <= 1) {
             return;

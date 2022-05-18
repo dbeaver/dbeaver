@@ -194,8 +194,8 @@ public class UIUtils {
         control.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
-                runnable.run();
                 control.removeControlListener(this);
+                runnable.run();
             }
         });
     }

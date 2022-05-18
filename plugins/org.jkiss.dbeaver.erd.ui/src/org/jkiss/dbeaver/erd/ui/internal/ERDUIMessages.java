@@ -63,11 +63,13 @@ public class ERDUIMessages extends NLS {
 	public static String erd_editor_control_action_configuration;
 	//ERD editor action item control
 
+	public static String erd_preference_page_title_routing;
 	public static String erd_preference_page_title_attribute_style;
 	public static String erd_preference_page_title_attributes_visibility;
 	public static String erd_preference_page_title_diagram_contents;
 	public static String erd_preference_page_title_shows_views;
 	public static String erd_preference_page_title_shows_partitions;
+	public static String erd_preference_page_title_routing_combo;
 	public static String erd_preference_page_title_color_pref;
 	public static String erd_preference_page_title_change_border_colors;
 	public static String erd_preference_page_title_change_header_colors;
