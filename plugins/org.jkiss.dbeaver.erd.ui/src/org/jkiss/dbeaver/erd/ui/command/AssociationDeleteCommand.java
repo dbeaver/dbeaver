@@ -58,7 +58,7 @@ public class AssociationDeleteCommand extends Command {
         if (entityAssociation instanceof DBVEntityForeignKey) {
             DBVEntityForeignKey vfk = (DBVEntityForeignKey) entityAssociation;
             vEntity = DBVUtils.getVirtualEntity(entityAssociation.getParentObject(), false);
-            virtualFkSupplier = EditForeignKeyPage.makeVirtualForeignKeySupplier(vEntity, vfk.getReferencedConstraint(), vfk.getAttributes());
+            virtualFkSupplier = EditForeignKeyPage.makeVirtualForeignKeySupplier(vfk);
         } else {
             vEntity = null;
             virtualFkSupplier = null;

@@ -180,7 +180,7 @@ public class AssociationCreateCommand extends Command {
             DBVEntity vEntity = DBVUtils.getVirtualEntity(srcEntityObject, true);
             assert vEntity != null;
 
-            Supplier<DBVEntityForeignKey> virtualFkSupplier = EditForeignKeyPage.makeVirtualForeignKeySupplier(
+            Supplier<DBVEntityForeignKey> virtualFkSupplier = EditForeignKeyPage.makeVirtualForeignKeySupplierWithEditor(
                 vEntity,
                 targetEntityObject,
                 new EditForeignKeyPage.FKType[] {
