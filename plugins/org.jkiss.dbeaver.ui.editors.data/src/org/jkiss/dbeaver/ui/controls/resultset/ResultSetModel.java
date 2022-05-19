@@ -743,9 +743,14 @@ public class ResultSetModel {
                                     final Object cellValue = getCellValue(binding, row);
                                     double value = DBExecUtils.makeNumericValue(cellValue);
                                     if (value >= minValue && value <= maxValue) {
-                                        foreground = acs.colorForeground;
-                                        RGB rowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
-                                        background = UIUtils.getSharedColor(rowRGB);
+                                        RGB bgRowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
+                                        background = UIUtils.getSharedColor(bgRowRGB);
+                                        if (acs.colorForeground != null && acs.colorForeground2 != null) {
+                                            RGB fgRowRGB1 = ResultSetUtils.makeGradientValue(acs.colorForeground.getRGB(), acs.colorForeground2.getRGB(), minValue, maxValue, value);
+                                            foreground = UIUtils.getSharedColor(fgRowRGB1);
+                                        } else if (acs.colorForeground != null || acs.colorForeground2 != null) {
+                                            foreground = acs.colorForeground != null ? acs.colorForeground : acs.colorForeground2;
+                                        }
                                     }
                                     // FIXME: coloring value before and after range. Maybe we need an option for this.
                                     /* else if (value < minValue) {
