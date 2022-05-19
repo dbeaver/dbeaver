@@ -33,6 +33,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Command to create association
@@ -41,6 +42,8 @@ public class AssociationCreateCommand extends Command {
 
     private static final Log log = Log.getLog(AssociationCreateCommand.class);
 
+    protected DBVEntityForeignKey virtualFk;
+    protected Supplier<DBVEntityForeignKey> virtualFkSupplier;
     protected ERDAssociation association;
     protected ERDElement<?> sourceEntity;
     protected ERDElement<?> targetEntity;
@@ -127,6 +130,11 @@ public class AssociationCreateCommand extends Command {
     @Override
     public void redo() {
         if (association != null) {
+            if (virtualFkSupplier != null) { 
+                virtualFk = virtualFkSupplier.get();
+                association.setObject(virtualFk);
+            }
+
             sourceEntity.addAssociation(association, true);
             targetEntity.addReferenceAssociation(association, true);
         }
@@ -137,6 +145,12 @@ public class AssociationCreateCommand extends Command {
         if (association != null) {
             sourceEntity.removeAssociation(association, true);
             targetEntity.removeReferenceAssociation(association, true);
+
+            if (virtualFk != null) { 
+                virtualFk.getEntity().removeForeignKey(virtualFk);
+                virtualFk.getEntity().persistConfiguration();
+                virtualFk = null;
+            }
         }
     }
 
@@ -167,7 +181,7 @@ public class AssociationCreateCommand extends Command {
             DBVEntity vEntity = DBVUtils.getVirtualEntity(srcEntityObject, true);
             assert vEntity != null;
 
-            DBVEntityForeignKey vfk = EditForeignKeyPage.createVirtualForeignKey(
+            Supplier<DBVEntityForeignKey> virtualFkSupplier = EditForeignKeyPage.makeVirtualForeignKeySupplier(
                 vEntity,
                 targetEntityObject,
                 new EditForeignKeyPage.FKType[] {
@@ -175,11 +189,17 @@ public class AssociationCreateCommand extends Command {
                 },
                 srcAttrs,
                 refAttrs);
+            DBVEntityForeignKey vfk = virtualFkSupplier.get();
             if (vfk == null) {
+                this.virtualFk = null;
+                this.virtualFkSupplier = null;
                 return null;
+            } else {
+                vEntity.persistConfiguration();
+                this.virtualFk = vfk;
+                this.virtualFkSupplier = virtualFkSupplier;
+                return new ERDAssociation(vfk, (ERDEntity) sourceEntity, (ERDEntity) targetEntity, true);
             }
-            vEntity.persistConfiguration();
-            return new ERDAssociation(vfk, (ERDEntity)sourceEntity, (ERDEntity)targetEntity, true);
         } else {
             return new ERDAssociation(sourceEntity, targetEntity, true);
         }
