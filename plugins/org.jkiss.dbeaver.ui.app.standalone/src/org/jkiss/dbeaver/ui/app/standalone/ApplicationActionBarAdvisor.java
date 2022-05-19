@@ -35,6 +35,7 @@ import org.eclipse.ui.internal.commands.CommandImageManager;
 import org.eclipse.ui.internal.commands.CommandImageService;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -52,7 +53,6 @@ import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
-import org.jkiss.dbeaver.ui.registry.StatusLineContributionItemsRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -380,13 +380,24 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         //coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_DATASOURCE));
     }
 
+    private void updateTimezoneItem(StatusLineContributionItemEx tzItem) {
+        TimeZone tzDefault = TimeZone.getDefault();
+        tzItem.setText(tzDefault.getDisplayName(false, TimeZone.SHORT));
+        tzItem.setToolTip(tzDefault.getDisplayName(false, TimeZone.LONG));
+    }
+
     @Override
     protected void fillStatusLine(IStatusLineManager statusLine) {
         {
-            StatusLineContributionItemEx tzItem = StatusLineContributionItemsRegistry.getInstanceOfItem("Time Zone");
-            TimeZone tzDefault = TimeZone.getDefault();
-            tzItem.setText(tzDefault.getDisplayName(false, TimeZone.SHORT));
-            tzItem.setToolTip(tzDefault.getDisplayName(false, TimeZone.LONG));
+            StatusLineContributionItemEx tzItem = new StatusLineContributionItemEx("Time Zone");
+            updateTimezoneItem(tzItem);
+
+            DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(event -> {
+                if (event.getProperty().equals(DBeaverPreferences.CLIENT_TIMEZONE)) {
+                    updateTimezoneItem(tzItem);
+                }
+            });
+
             tzItem.setDoubleClickListener(() -> {
                 UIUtils.showMessageBox(null, "Time zone", "You can change time zone by changing 'client timezone' in 'Settings' -> 'User Interface' or by adding parameter:\n" +
                         "-D" + StandardConstants.ENV_USER_TIMEZONE + "=<TimeZone>\n" +
@@ -396,7 +407,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             statusLine.add(tzItem);
         }
         {
-            StatusLineContributionItemEx localeItem =  StatusLineContributionItemsRegistry.getInstanceOfItem("Locale");
+            StatusLineContributionItemEx localeItem =  new StatusLineContributionItemEx("Locale");
             localeItem.setText(Locale.getDefault().toString());
             localeItem.setToolTip(Locale.getDefault().getDisplayName());
             localeItem.setDoubleClickListener(() -> {

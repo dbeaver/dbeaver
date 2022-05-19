@@ -139,7 +139,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             IContentProposalProvider proposalProvider = (contents, position) -> {
                 List<IContentProposal> proposals = new ArrayList<>();
                 for (String item : clientTimezone.getItems()) {
-                    if (item.contains(contents)) {
+                    if (item.toLowerCase().contains(contents.toLowerCase())) {
                         proposals.add(new ContentProposal(item));
                     }
                 }

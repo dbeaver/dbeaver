@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -33,6 +32,8 @@ import java.util.stream.Collectors;
 public class TimezoneRegistry {
 
     public static final String DEFAULT_VALUE = "N/A";
+    public static String userDefaultTimezone = "";
+
     private TimezoneRegistry() {
     }
 
@@ -41,18 +42,21 @@ public class TimezoneRegistry {
         if (id != null) {
             preferenceStore.setValue(DBeaverPreferences.CLIENT_TIMEZONE, id.getId());
             TimeZone.setDefault(TimeZone.getTimeZone(id));
+            System.setProperty("user.timezone", id.getId());
         } else {
             preferenceStore.setToDefault(DBeaverPreferences.CLIENT_TIMEZONE);
-            TimeZone.setDefault(null);
+            TimeZone.setDefault(TimeZone.getTimeZone(userDefaultTimezone));
+            System.setProperty("user.timezone", userDefaultTimezone);
         }
-        UIUtils.updateTimezoneBarIfExists();
     }
 
     public static void overrideTimezone() {
+        userDefaultTimezone = System.getProperty("user.timezone");
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         final String timezone = preferenceStore.getString(DBeaverPreferences.CLIENT_TIMEZONE);
         if (timezone != null && !timezone.equals(DEFAULT_VALUE)) {
             TimeZone.setDefault(TimeZone.getTimeZone(timezone));
+            System.setProperty("user.timezone", timezone);
         }
     }
 
