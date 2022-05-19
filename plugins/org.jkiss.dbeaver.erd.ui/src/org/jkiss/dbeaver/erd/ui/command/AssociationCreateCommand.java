@@ -148,7 +148,6 @@ public class AssociationCreateCommand extends Command {
 
             if (virtualFk != null) { 
                 virtualFk.getEntity().removeForeignKey(virtualFk);
-                virtualFk.getEntity().persistConfiguration();
                 virtualFk = null;
             }
         }
@@ -195,7 +194,6 @@ public class AssociationCreateCommand extends Command {
                 this.virtualFkSupplier = null;
                 return null;
             } else {
-                vEntity.persistConfiguration();
                 this.virtualFk = vfk;
                 this.virtualFkSupplier = virtualFkSupplier;
                 return new ERDAssociation(vfk, (ERDEntity) sourceEntity, (ERDEntity) targetEntity, true);

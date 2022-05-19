@@ -80,7 +80,6 @@ public class AssociationDeleteCommand extends Command {
                 return;
             }
             vEntity.removeForeignKey((DBVEntityForeignKey) entityAssociation);
-            vEntity.persistConfiguration();
         }
         removeAssociationFromDiagram();
     }
