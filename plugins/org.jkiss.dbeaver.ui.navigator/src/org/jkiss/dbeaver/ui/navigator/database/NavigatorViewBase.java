@@ -237,11 +237,13 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         if (!structSel.isEmpty()) {
             lastSelection = structSel.getFirstElement();
             if (lastSelection instanceof DBNNode) {
-                String desc = ((DBNNode)lastSelection).getNodeDescription();
+                final String name = ((DBNNode) lastSelection).getNodeName();
+                final String desc = ((DBNNode) lastSelection).getNodeDescription();
                 if (CommonUtils.isEmpty(desc)) {
-                    desc = ((DBNNode)lastSelection).getNodeName();
+                    getViewSite().getActionBars().getStatusLineManager().setMessage(name);
+                } else {
+                    getViewSite().getActionBars().getStatusLineManager().setMessage(name + " - " + desc);
                 }
-                getViewSite().getActionBars().getStatusLineManager().setMessage(desc);
             }
         } else {
             lastSelection = null;
