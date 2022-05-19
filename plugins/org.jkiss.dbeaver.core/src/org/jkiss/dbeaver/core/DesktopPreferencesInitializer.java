@@ -48,7 +48,6 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, RuntimeUtils.isWindows());
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, 30);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.CLIENT_TIMEZONE, "");
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE, true);
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, false);

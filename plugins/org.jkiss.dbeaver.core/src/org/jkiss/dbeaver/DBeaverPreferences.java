@@ -39,7 +39,6 @@ public final class DBeaverPreferences
     public static final String CONFIRM_VERSION_CHECK = "version_check"; //$NON-NLS-1$
 
     public static final String NAVIGATOR_EDITOR_FULL_NAME = DatabaseEditorPreferences.PROP_TITLE_SHOW_FULL_NAME; //$NON-NLS-1$
-    public static final String CLIENT_TIMEZONE = "java.client.timezone";
 
     private static final String PROPERTY_USE_ALL_COLUMNS_QUIET = "virtual-key-quiet";
 

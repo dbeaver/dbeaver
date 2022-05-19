@@ -35,8 +35,8 @@ import org.eclipse.ui.internal.commands.CommandImageManager;
 import org.eclipse.ui.internal.commands.CommandImageService;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -393,7 +393,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             updateTimezoneItem(tzItem);
 
             DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(event -> {
-                if (event.getProperty().equals(DBeaverPreferences.CLIENT_TIMEZONE)) {
+                if (event.getProperty().equals(ModelPreferences.CLIENT_TIMEZONE)) {
                     updateTimezoneItem(tzItem);
                 }
             });

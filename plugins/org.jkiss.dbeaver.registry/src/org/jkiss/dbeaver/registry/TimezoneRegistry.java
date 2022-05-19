@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 public class TimezoneRegistry {
 
-    public static final String DEFAULT_VALUE = "N/A";
+    public static final String DEFAULT_VALUE = "Default";
     public static String userDefaultTimezone = "";
 
     private TimezoneRegistry() {
@@ -40,11 +40,11 @@ public class TimezoneRegistry {
     public static void setDefaultZone(@Nullable ZoneId id) {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (id != null) {
-            preferenceStore.setValue(DBeaverPreferences.CLIENT_TIMEZONE, id.getId());
+            preferenceStore.setValue(ModelPreferences.CLIENT_TIMEZONE, id.getId());
             TimeZone.setDefault(TimeZone.getTimeZone(id));
             System.setProperty("user.timezone", id.getId());
         } else {
-            preferenceStore.setToDefault(DBeaverPreferences.CLIENT_TIMEZONE);
+            preferenceStore.setToDefault(ModelPreferences.CLIENT_TIMEZONE);
             TimeZone.setDefault(TimeZone.getTimeZone(userDefaultTimezone));
             System.setProperty("user.timezone", userDefaultTimezone);
         }
@@ -53,7 +53,7 @@ public class TimezoneRegistry {
     public static void overrideTimezone() {
         userDefaultTimezone = System.getProperty("user.timezone");
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        final String timezone = preferenceStore.getString(DBeaverPreferences.CLIENT_TIMEZONE);
+        final String timezone = preferenceStore.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (timezone != null && !timezone.equals(DEFAULT_VALUE)) {
             TimeZone.setDefault(TimeZone.getTimeZone(timezone));
             System.setProperty("user.timezone", timezone);
@@ -72,7 +72,7 @@ public class TimezoneRegistry {
         return  String.format("%s (UTC%s)", id, zonedDateTime.getOffset());
     }
 
-
+    @NotNull
     public static String extractTimezoneId(@NotNull String timezone) {
         return timezone.split(" ")[0];
     }

@@ -190,7 +190,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         notificationsEnabled.setSelection(store.getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
         notificationsCloseDelay.setSelection(store.getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
-        final String string = store.getString(DBeaverPreferences.CLIENT_TIMEZONE);
+        final String string = store.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (string.isEmpty()) {
             clientTimezone.setText(TimezoneRegistry.DEFAULT_VALUE);
         } else {
@@ -224,10 +224,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
 
         PrefUtils.savePreferenceStore(store);
-        if (!clientTimezone.getText().equals(TimezoneRegistry.DEFAULT_VALUE)) {
-            TimezoneRegistry.setDefaultZone(ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())));
-        } else {
+        if (clientTimezone.getText().equals(TimezoneRegistry.DEFAULT_VALUE)) {
             TimezoneRegistry.setDefaultZone(null);
+        } else {
+            TimezoneRegistry.setDefaultZone(ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())));
         }
         if (workspaceLanguage.getSelectionIndex() >= 0) {
             PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
