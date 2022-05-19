@@ -29,6 +29,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Mikami-Tabuchi’s Algorithm
@@ -47,55 +50,52 @@ public class MikamiTabuchiRouter {
     private static final int TARGET_HORIZONTAL_LINES = 3;
 
     private int spacing = 15;
-    private final List<Rectangle> obstacles = new ArrayList<>();
+    private final Set<Rectangle> obstacles = new HashSet<>();
 
     private PrecisionPoint start;
     private PrecisionPoint finish;
 
+    private OrthogonalPath activePath;
     private final List<OrthogonalPath> workingPaths = new ArrayList<>();
     private final List<OrthogonalPath> userPaths = new ArrayList<>();
     private final Map<OrthogonalPath, List<OrthogonalPath>> pathsToChildPaths = new HashMap<>();
 
-    private Set<TrialLine> trialLinesWithPenalty;
-    private Map<Boolean, List<Pair<Point, Point>>> resultMap;
+    private final Map<OrthogonalPath, Map<Boolean, List<Pair<Point, Point>>>> resultMap = new HashMap<>();
 
 
-    private final Map<Integer, Map<Integer, List<TrialLine>>> linesMap = new LinkedHashMap<>();
-    private Pair<TrialLine, TrialLine> result;
+    private final Map<Integer, Map<Integer, List<TrialLine>>> linesMap = new ConcurrentHashMap<>();
+    private ResultPairWithFine result;
 
     //In worst case scenarios line search may become laggy,
     //if after this amount iterations nothing was found -> stop
-    private static final int MAX_LINE_COUNT = 50000;
-    private int currentLineCount;
+    private static final int MAX_LINE_COUNT = 20000;
+    private final AtomicInteger currentLineCount = new AtomicInteger();
 
 
     IFigure clientArea;
-    private boolean requiresStep;
-    private boolean resultIsNotPreferred;
 
     public void setClientArea(IFigure clientArea) {
         this.clientArea = clientArea;
     }
 
-    private void createLinesFromTrial(TrialLine pos, int iter) {
+    private void createLinesFromTrial(TrialLine pos, int iteration) {
         double from = pos.vertical ? pos.from.y : pos.from.x;
         double start = pos.start;
         double end = pos.finish;
         double startPosition = pos.hasForbiddenStart() ? pos.creationForbiddenStart : from;
         for (double i = startPosition - (startPosition - start) / 20; i > start; i -= (startPosition - start) / 20) {
-            currentLineCount++;
-            createTrial(pos, iter, i);
 
-            if (currentLineCount > MAX_LINE_COUNT) {
+            createTrial(pos, iteration, i);
+
+            if (currentLineCount.incrementAndGet() > MAX_LINE_COUNT) {
                 return;
             }
         }
         final double finishPosition = pos.hasForbiddenFinish() ? pos.creationForbiddenFinish : from;
         for (double i = finishPosition + (end - finishPosition) / 20; i < end; i += (end - finishPosition) / 20) {
-            currentLineCount++;
-            createTrial(pos, iter, i);
+            createTrial(pos, iteration, i);
 
-            if (currentLineCount > MAX_LINE_COUNT) {
+            if (currentLineCount.incrementAndGet() > MAX_LINE_COUNT) {
                 return;
             }
         }
@@ -106,38 +106,37 @@ public class MikamiTabuchiRouter {
         getLinesMap(trialLine, iteration).add(trialLine);
         final TrialLine interception = trialLine.findIntersection();
         if (interception != null) {
+            boolean isFined = trialLine.requiresStep || interception.requiresStep;
             if (lineLiesOnPreviouslyCreatedLine(trialLine.from, getInterceptionPoint(trialLine, interception), trialLine.vertical)
             || lineLiesOnPreviouslyCreatedLine(interception.from, getInterceptionPoint(trialLine, interception), interception.vertical)){
-                requiresStep = true;
+                isFined = true;
             }
-            if (trialLinesWithPenalty.contains(trialLine) || trialLinesWithPenalty.contains(interception)) {
-                requiresStep = true;
-            }
-            if (result == null) {
-                result = new Pair<>(trialLine, interception);
-                resultIsNotPreferred = requiresStep;
-                requiresStep = false;
-                return true;
-            } else {
-                Pair<TrialLine, TrialLine> trialLinePair = new Pair<>(trialLine, interception);
-                int resultMultiplier = resultIsNotPreferred ? 2 : 1;
-                int interceptionMultiplier = requiresStep ? 2 : 1;
-                if (calculateDistance(result) * resultMultiplier > calculateDistance(trialLinePair) * interceptionMultiplier) {
-                    result = trialLinePair;
-                    resultIsNotPreferred = requiresStep;
-                    requiresStep = false;
+            synchronized (this) {
+                if (result == null) {
+                    result = new ResultPairWithFine(isFined, new Pair<>(trialLine, interception));
                     return true;
+                } else {
+                    Pair<TrialLine, TrialLine> trialLinePair = new Pair<>(trialLine, interception);
+                    int resultMultiplier = result.fined ? 2 : 1;
+                    int interceptionMultiplier = isFined ? 2 : 1;
+                    if (calculateDistance(result.pair) * resultMultiplier > calculateDistance(trialLinePair) * interceptionMultiplier) {
+                        result = new ResultPairWithFine(isFined, trialLinePair);
+                        return true;
+                    }
+                    return false;
                 }
-                requiresStep = false;
-                return false;
             }
         }
-        requiresStep = false;
         return false;
     }
 
     boolean lineLiesOnPreviouslyCreatedLine(Point point, Point secondPoint, boolean vertical) {
-        for (Pair<Point, Point> line : resultMap.get(vertical)) {
+        final List<Pair<Point, Point>> collect = new ArrayList<>();
+        for (Map<Boolean, List<Pair<Point, Point>>> it : resultMap.values()) {
+            List<Pair<Point, Point>> pairs = it.get(vertical);
+            collect.addAll(pairs);
+        }
+        for (Pair<Point, Point> line : collect) {
             if (vertical) {
                 if (point.x - 5 <= line.getFirst().x && point.x + spacing / 5 >= line.getFirst().x) {
                     if (isInsideLine(point.y, line.getFirst().y, line.getSecond().y) ||
@@ -203,9 +202,8 @@ public class MikamiTabuchiRouter {
             point = new PrecisionPoint(parentLine.from.x, pos);
         }
         trialLine = new TrialLine(point, parentLine);
-        if (trialLinesWithPenalty.contains(parentLine) || lineLiesOnPreviouslyCreatedLine(point, parentLine.from, !vertical)) {
-            trialLinesWithPenalty.add(trialLine);
-            requiresStep = true;
+        if ((trialLine.parent != null && trialLine.parent.requiresStep) || lineLiesOnPreviouslyCreatedLine(point, parentLine.from, !vertical)) {
+            trialLine.requiresStep = true;
         }
         return trialLine;
     }
@@ -215,7 +213,9 @@ public class MikamiTabuchiRouter {
     }
 
     public boolean updateObstacle(Rectangle rectangle, Rectangle newBounds) {
-        return obstacles.remove(rectangle) | obstacles.add(newBounds);
+        obstacles.remove(rectangle);
+        obstacles.add(newBounds);
+        return true;
     }
 
     public void addObstacle(Rectangle bounds) {
@@ -226,7 +226,7 @@ public class MikamiTabuchiRouter {
         return obstacles.remove(bounds);
     }
 
-    private PointList traceback(Pair<TrialLine, TrialLine> res, boolean saveResults) {
+    private PointList traceback(Pair<TrialLine, TrialLine> res) {
         PointList points = new PointList();
         TrialLine line = res.getFirst().fromSource ? res.getFirst() : res.getSecond();
         TrialLine previousLine = res.getFirst();
@@ -250,39 +250,49 @@ public class MikamiTabuchiRouter {
             point = line.from;
             line = line.getParent();
         }
-        if (saveResults) {
-            boolean vertical = !previousLine.vertical;
-            for (int i = 1; i < points.size() - 2; i++) {
-                resultMap.get(vertical).add(new Pair<>(points.getPoint(i), points.getPoint(i + 1)));
-                vertical = !vertical;
-            }
+        boolean vertical = !previousLine.vertical;
+        for (int i = 1; i < points.size() - 2; i++) {
+            resultMap.get(activePath).get(vertical).add(new Pair<>(points.getPoint(i), points.getPoint(i + 1)));
+            vertical = !vertical;
         }
         return points;
     }
 
+    public void sortWorkingPaths() {
+        workingPaths.sort(Comparator.comparingInt(o -> o.start.x + o.start.y));
+    }
+
     public List<OrthogonalPath> solve() {
+        sortWorkingPaths();
         resetWorkingPaths();
         updateChildPaths();
         Point point = null;
-        init();
-        for (OrthogonalPath userPath : workingPaths) {
+
+        final List<OrthogonalPath> dirtyPaths = workingPaths.stream().filter(OrthogonalPath::isDirty).collect(Collectors.toList());
+        workingPaths.forEach(this::init);
+        for (OrthogonalPath userPath : dirtyPaths) {
+            activePath = userPath;
             if (userPath.isSourceIsChild() && point != null) {
                 userPath.updateForbiddenDirection(point);
             }
             final PointList pointList = solvePath(userPath);
-            if (pointList != null && pointList.size() >= 2) {
+            if (pointList.size() >= 2) {
                 point = pointList.getPoint(pointList.size() - 2);
             }
             userPath.setPoints(pointList);
         }
         recombineChildrenPaths();
+        userPaths.stream().filter(path -> path.getPoints().size() != 2).forEach(path -> path.setDirty(false));
+        workingPaths.stream().filter(path -> path.getPoints().size() != 2).forEach(path -> path.setDirty(false));
         return Collections.unmodifiableList(userPaths);
     }
 
-    private void init() {
-        resultMap = new HashMap<>();
-        resultMap.put(false, new ArrayList<>());
-        resultMap.put(true, new ArrayList<>());
+    private void init(OrthogonalPath path) {
+        if (path.isDirty() || resultMap.get(path) == null) {
+            resultMap.put(path, new HashMap<>());
+            resultMap.get(path).put(false, new ArrayList<>());
+            resultMap.get(path).put(true, new ArrayList<>());
+        }
     }
 
     private void resetWorkingPaths() {
@@ -297,6 +307,7 @@ public class MikamiTabuchiRouter {
                 List<OrthogonalPath> children = this.pathsToChildPaths.get(path);
                 int previousCount = 1;
                 int newCount = 1;
+
                 if (children == null) {
                     children = new ArrayList<>();
                 } else {
@@ -311,6 +322,9 @@ public class MikamiTabuchiRouter {
                 }
 
                 this.refreshChildrenEndpoints(path, children);
+                for (OrthogonalPath child : children) {
+                    child.setDirty(true);
+                }
             }
         }
     }
@@ -391,39 +405,36 @@ public class MikamiTabuchiRouter {
         if (!clientArea.getClientArea().contains(path.start) || !clientArea.getClientArea().contains(path.end)) {
             clientArea.getUpdateManager().performUpdate();
         }
-        trialLinesWithPenalty = new HashSet<>();
         linesMap.clear();
-        resultIsNotPreferred = false;
         this.start = new PrecisionPoint(path.start);
         result = null;
         this.finish = new PrecisionPoint(path.end);
-        int iter = 0;
-        currentLineCount = 0;
+        int iteration = 0;
+        currentLineCount.lazySet(0);
         initStartingTrialLines(path, path.getForbiddenDirection());
         while (true) {
-            linesMap.put(iter + 1, new HashMap<>());
-            initNewLayer(iter + 1);
+            linesMap.put(iteration + 1, new ConcurrentHashMap<>());
+            initNewLayer(iteration + 1);
             boolean hasValues = false;
             for (int i = 0; i < 4; i++) {
-                for (TrialLine trialLine : linesMap.get(iter).get(i)) {
-                    createLinesFromTrial(trialLine, iter + 1);
-                    if (currentLineCount > MAX_LINE_COUNT) {
-                        if (result != null) {
-                            return traceback(result, true);
-                        }
-//                        log.debug("[Routing] Max amount of tries exceeded, path can't be found");
-                        PointList pointList = new PointList();
-                        pointList.addPoint(start);
-                        pointList.addPoint(finish);
-                        return pointList;
-                    }
-                }
+                int finalIteration = iteration;
+                linesMap.get(iteration).get(i).parallelStream().forEach(it -> createLinesFromTrial(it, finalIteration + 1));
             }
-            if (result != null && !resultIsNotPreferred) {
-                return traceback(result, true);
+            if (currentLineCount.get() > MAX_LINE_COUNT) {
+                if (result != null) {
+                    return traceback(result.pair);
+                }
+                log.debug("[Routing] Max amount of tries exceeded, path can't be found");
+                PointList pointList = new PointList();
+                pointList.addPoint(start);
+                pointList.addPoint(finish);
+                return pointList;
+            }
+            if (result != null && !result.fined) {
+                return traceback(result.pair);
             }
             for (int i = 0; i < 4; i++) {
-                if (linesMap.get(iter + 1).get(i).size() != 0) {
+                if (linesMap.get(iteration + 1).get(i).size() != 0) {
                     hasValues = true;
                 }
             }
@@ -433,7 +444,7 @@ public class MikamiTabuchiRouter {
                 pointList.addPoint(finish);
                 return pointList;
             }
-            iter++;
+            iteration++;
         }
     }
 
@@ -482,25 +493,30 @@ public class MikamiTabuchiRouter {
      * init list for each type of trial line
      * Source horizontal, source vertical, target horizontal, target vertical
      *
-     * @param iter number of algorithm iteration
+     * @param iteration number of algorithm iteration
      */
-    private void initNewLayer(int iter) {
+    private void initNewLayer(int iteration) {
         for (int i = 0; i < 4; i++) {
-            linesMap.get(iter).put(i, new ArrayList<>());
+            linesMap.get(iteration).put(i, Collections.synchronizedList(new ArrayList<>()));
         }
     }
 
     public void removePath(OrthogonalPath path) {
         this.userPaths.remove(path);
         List<OrthogonalPath> orthogonalPaths = this.pathsToChildPaths.get(path);
+        resultMap.remove(path);
         if (orthogonalPaths == null) {
             this.workingPaths.remove(path);
         } else {
+            for (OrthogonalPath orthogonalPath : orthogonalPaths) {
+                resultMap.remove(orthogonalPath);
+            }
             this.workingPaths.removeAll(orthogonalPaths);
         }
     }
 
     public void addPath(OrthogonalPath path) {
+        path.setDirty(true);
         this.workingPaths.add(path);
         this.userPaths.add(path);
     }
@@ -516,6 +532,7 @@ public class MikamiTabuchiRouter {
 
         double distance = 0;
 
+        private boolean requiresStep = false;
         private double start = Double.MIN_VALUE;
         private double finish = Double.MIN_VALUE;
 
@@ -670,4 +687,15 @@ public class MikamiTabuchiRouter {
             return parent;
         }
     }
+
+    private class ResultPairWithFine {
+        boolean fined;
+        private final Pair<TrialLine, TrialLine> pair;
+
+        public ResultPairWithFine(boolean fined, Pair<TrialLine, TrialLine> pair) {
+            this.fined = fined;
+            this.pair = pair;
+        }
+    }
+
 }
