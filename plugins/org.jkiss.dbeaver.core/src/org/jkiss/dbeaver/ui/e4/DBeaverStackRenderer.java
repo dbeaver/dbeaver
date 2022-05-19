@@ -66,8 +66,9 @@ public class DBeaverStackRenderer extends StackRenderer {
             activePage.activate(workbenchPart);
         }
         new MenuItem(menu, SWT.SEPARATOR);
-
-        addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_EDITOR_NEW);
+        if (workbenchPart instanceof SQLEditor) {
+            addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_EDITOR_NEW);
+        }
         {
             MenuItem menuItemOpenFolder = new MenuItem(menu, SWT.NONE);
             menuItemOpenFolder.setText(CoreMessages.editor_file_open_in_explorer);
@@ -95,7 +96,9 @@ public class DBeaverStackRenderer extends StackRenderer {
         new MenuItem(menu, SWT.SEPARATOR);
 
         {
-            addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
+            if (workbenchPart instanceof SQLEditor) {
+                addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
+            }
 
             if (inputFile != null) {
                 MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
