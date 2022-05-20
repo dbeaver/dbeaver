@@ -229,10 +229,6 @@ public class EditConnectionWizard extends ConnectionWizard
             }
         }
 
-        // Save
-        saveSettings(originalDataSource);
-        originalDataSource.getRegistry().updateDataSource(originalDataSource);
-
         if (originalDataSource.isConnected()) {
             if (UIUtils.confirmAction(
                 getShell(),
@@ -240,6 +236,13 @@ public class EditConnectionWizard extends ConnectionWizard
                 NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, originalDataSource.getName()) ))
             {
                 DataSourceHandler.reconnectDataSource(null, originalDataSource);
+
+                // Save
+                // Guess we shouldn't apply changes if reconnect was rejected,
+                // because in this case they are in inconsistent state
+                saveSettings(originalDataSource);
+                originalDataSource.getRegistry().updateDataSource(originalDataSource);
+
             }
         }
 
