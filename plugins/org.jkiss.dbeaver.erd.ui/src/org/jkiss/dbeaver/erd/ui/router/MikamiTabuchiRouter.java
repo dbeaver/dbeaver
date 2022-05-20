@@ -68,7 +68,7 @@ public class MikamiTabuchiRouter {
 
     //In worst case scenarios line search may become laggy,
     //if after this amount iterations nothing was found -> stop
-    private static final int MAX_LINE_COUNT = 20000;
+    private static final int MAX_LINE_COUNT = 100000;
     private final AtomicInteger currentLineCount = new AtomicInteger();
 
 
@@ -108,7 +108,7 @@ public class MikamiTabuchiRouter {
         if (interception != null) {
             boolean isFined = trialLine.requiresStep || interception.requiresStep;
             if (lineLiesOnPreviouslyCreatedLine(trialLine.from, getInterceptionPoint(trialLine, interception), trialLine.vertical)
-            || lineLiesOnPreviouslyCreatedLine(interception.from, getInterceptionPoint(trialLine, interception), interception.vertical)){
+                || lineLiesOnPreviouslyCreatedLine(interception.from, getInterceptionPoint(trialLine, interception), interception.vertical)) {
                 isFined = true;
             }
             synchronized (this) {
@@ -123,8 +123,15 @@ public class MikamiTabuchiRouter {
                         result = new ResultPairWithFine(isFined, trialLinePair);
                         return true;
                     }
+                    if (calculateDistance(result.pair) * resultMultiplier == calculateDistance(trialLinePair) * interceptionMultiplier) {
+                        if (getInterceptionPoint(result.pair.getFirst(), result.pair.getSecond()).getDistance(start) > getInterceptionPoint(interception, trialLine).getDistance(start)) {
+                            result = new ResultPairWithFine(isFined, trialLinePair);
+                            return true;
+                        }
+                    }
                     return false;
                 }
+
             }
         }
         return false;
@@ -140,9 +147,9 @@ public class MikamiTabuchiRouter {
             if (vertical) {
                 if (point.x - 5 <= line.getFirst().x && point.x + spacing / 5 >= line.getFirst().x) {
                     if (isInsideLine(point.y, line.getFirst().y, line.getSecond().y) ||
-                            isInsideLine(secondPoint.y, line.getFirst().y, line.getSecond().y) ||
-                            isInsideLine(line.getFirst().y, point.y, secondPoint.y) ||
-                            isInsideLine(line.getSecond().y, point.y, secondPoint.y)) {
+                        isInsideLine(secondPoint.y, line.getFirst().y, line.getSecond().y) ||
+                        isInsideLine(line.getFirst().y, point.y, secondPoint.y) ||
+                        isInsideLine(line.getSecond().y, point.y, secondPoint.y)) {
                         return true;
                     }
 
@@ -150,9 +157,9 @@ public class MikamiTabuchiRouter {
             } else {
                 if (point.y - spacing / 5 <= line.getFirst().y && point.y + spacing / 5 >= line.getFirst().y) {
                     if (isInsideLine(point.x, line.getFirst().x, line.getSecond().x) ||
-                            isInsideLine(secondPoint.x, line.getFirst().x, line.getSecond().x) ||
-                            isInsideLine(line.getFirst().x, point.x, secondPoint.x) ||
-                            isInsideLine(line.getSecond().x, point.x, secondPoint.x)) {
+                        isInsideLine(secondPoint.x, line.getFirst().x, line.getSecond().x) ||
+                        isInsideLine(line.getFirst().x, point.x, secondPoint.x) ||
+                        isInsideLine(line.getSecond().x, point.x, secondPoint.x)) {
                         return true;
                     }
                 }
@@ -163,7 +170,7 @@ public class MikamiTabuchiRouter {
 
     private boolean isInsideLine(int pointCoordinate, int lineCoordinateFirstPoint, int lineCoordinateSecondPoint) {
         return Math.min(lineCoordinateFirstPoint, lineCoordinateSecondPoint) <= pointCoordinate
-                && Math.max(lineCoordinateFirstPoint, lineCoordinateSecondPoint) >= pointCoordinate;
+            && Math.max(lineCoordinateFirstPoint, lineCoordinateSecondPoint) >= pointCoordinate;
     }
 
     @NotNull
@@ -281,6 +288,7 @@ public class MikamiTabuchiRouter {
             }
             userPath.setPoints(pointList);
         }
+        linesMap.clear();
         recombineChildrenPaths();
         userPaths.stream().filter(path -> path.getPoints().size() != 2).forEach(path -> path.setDirty(false));
         workingPaths.stream().filter(path -> path.getPoints().size() != 2).forEach(path -> path.setDirty(false));
@@ -322,9 +330,7 @@ public class MikamiTabuchiRouter {
                 }
 
                 this.refreshChildrenEndpoints(path, children);
-                for (OrthogonalPath child : children) {
-                    child.setDirty(true);
-                }
+
             }
         }
     }
@@ -616,7 +622,7 @@ public class MikamiTabuchiRouter {
 
         private boolean isInsideFigure(Rectangle it) {
             return (it.getLeft().x <= from.x && it.getRight().x > from.x
-                    && it.getTop().y <= from.y && it.getBottom().y > from.y);
+                && it.getTop().y <= from.y && it.getBottom().y > from.y);
         }
 
         private void cutByObstacles(boolean startingLine) {
@@ -630,7 +636,7 @@ public class MikamiTabuchiRouter {
                     }
                 }
                 if (vertical && it.getLeft().x - spacing <= from.x && it.getRight().x + spacing > from.x
-                        || !vertical && it.getTop().y - spacing <= from.y && it.getBottom().y + spacing > from.y) {
+                    || !vertical && it.getTop().y - spacing <= from.y && it.getBottom().y + spacing > from.y) {
                     //object is below need to cut start
                     cut(it);
                 }
@@ -639,7 +645,7 @@ public class MikamiTabuchiRouter {
                 if (vertical) {
                     finish = clientArea.getClientArea().getBottom().y - 1;
                 } else {
-                    finish = clientArea.getClientArea().getRight().x - 1 ;
+                    finish = clientArea.getClientArea().getRight().x - 1;
                 }
             }
             if (start == Double.MIN_VALUE) {
