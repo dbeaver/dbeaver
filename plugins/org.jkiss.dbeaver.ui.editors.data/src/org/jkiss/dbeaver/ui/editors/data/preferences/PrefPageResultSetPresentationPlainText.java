@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.data.preferences;
 
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -78,9 +79,9 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
         return true;
     }
 
+    @NotNull
     @Override
-    protected Control createPreferenceContent(Composite parent)
-    {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
         
         {

@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.jkiss.code.NotNull;
 
 /**
  * PrefPageEmpty
@@ -31,9 +32,9 @@ public class PrefPageEmpty extends AbstractPrefPage implements IWorkbenchPrefere
         super();
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent)
-    {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         super.noDefaultAndApplyButton();
         return parent;
     }
