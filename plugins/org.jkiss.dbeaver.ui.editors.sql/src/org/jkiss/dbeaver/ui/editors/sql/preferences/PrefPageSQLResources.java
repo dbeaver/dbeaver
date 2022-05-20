@@ -77,8 +77,9 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         super();
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
 
         // Resources
