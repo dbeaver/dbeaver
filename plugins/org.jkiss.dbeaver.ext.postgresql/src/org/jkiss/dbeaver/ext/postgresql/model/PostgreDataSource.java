@@ -280,6 +280,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
             props.put("prepareThreshold", "0");
         }
+
+        if (getContainer().isConnectionReadOnly()) {
+            props.put("readOnly", "true");
+            props.put("readOnlyMode", "always");
+        }
+
         return props;
     }
 
