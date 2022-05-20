@@ -86,6 +86,13 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     private Font fontItalic;
 
+    /**
+     * Sometimes we hide the vertical scrollbar manually. This variable is used to restore the visibility of the scrollbar.
+     *
+     * @see StatisticsNavigatorNodeRenderer#handleHover(DBNNode, Tree, TreeItem, Event)
+     */
+    private boolean overlayVerticalScrollbarMadeInvisible;
+
     public StatisticsNavigatorNodeRenderer(INavigatorModelView view) {
         this.view = view;
     }
@@ -153,11 +160,25 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     public void handleHover(DBNNode node, Tree tree, TreeItem item, Event event) {
         super.handleHover(node, tree, item, event);
 
+        // On machines with gtk3, vertical scrollbar overlays navigator nodes. It makes action buttons unclickable.
+        // Solution: hide the scrollbar if the mouse is over the action button.
+        boolean scrollbarOverlay = CommonUtils.isBitSet(tree.getScrollbarsMode(), SWT.SCROLLBAR_OVERLAY);
+        ScrollBar verticalBar = tree.getVerticalBar();
+
         if (isOverActionButton(tree, item, event)) {
             tree.setCursor(tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+            if (scrollbarOverlay && verticalBar.isVisible()) {
+                verticalBar.setVisible(false);
+                overlayVerticalScrollbarMadeInvisible = true;
+            }
             return;
         }
+
         tree.setCursor(null);
+        if (scrollbarOverlay && overlayVerticalScrollbarMadeInvisible) {
+            verticalBar.setVisible(true);
+            overlayVerticalScrollbarMadeInvisible = false;
+        }
     }
 
     private String getDetailsTipText(DBNNode element, Tree tree, Event event) {
