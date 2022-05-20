@@ -31,6 +31,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -111,7 +112,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             int widthOccupied = 0;
             if (element instanceof DBNDataSource) {
-                if (!scrollEnabled && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
+                if (!scrollEnabled && isNodeActionsEnabled()) {
                     widthOccupied += renderDataSourceNodeActions((DBNDatabaseNode) element, tree, gc, event);
                 }
                 if (preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
@@ -139,7 +140,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
     @Override
     public void performAction(DBNNode node, Tree tree, Event event, boolean defaultAction) {
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
+        if (isNodeActionsEnabled()) {
             // Detect active action
             INavigatorNodeActionHandler overActionButton = getActionButtonFor(node, tree, event);
             if (overActionButton != null) {
@@ -152,18 +153,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     public void handleHover(DBNNode node, Tree tree, TreeItem item, Event event) {
         super.handleHover(node, tree, item, event);
 
-        boolean scrollEnabled = isHorizontalScrollbarEnabled(tree);
-        Object element = item.getData();
-
-        if (element instanceof DBNDatabaseNode) {
-            if (element instanceof DBNDataSource) {
-                if (!scrollEnabled && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
-                    if (isOverActionButton((DBNDatabaseNode) element, tree, item, event.gc, event)) {
-                        tree.setCursor(tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-                        return;
-                    }
-                }
-            }
+        if (isOverActionButton(tree, item, event)) {
+            tree.setCursor(tree.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+            return;
         }
         tree.setCursor(null);
     }
@@ -171,7 +163,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private String getDetailsTipText(DBNNode element, Tree tree, Event event) {
         if (element instanceof DBNDatabaseNode) {
             if (element instanceof DBNDataSource) {
-                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS)) {
+                if (isNodeActionsEnabled()) {
                     // Detect active action
                     INavigatorNodeActionHandler overActionButton = getActionButtonFor(element, tree, event);
                     if (overActionButton != null) {
@@ -355,7 +347,12 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         return widthOccupied;
     }
 
-    private boolean isOverActionButton(DBNDatabaseNode element, Tree tree, TreeItem item, GC gc, Event event) {
+    private boolean isOverActionButton(@NotNull Tree tree, @NotNull TreeItem item, @NotNull Event event) {
+        if (!isNodeActionsEnabled() || isHorizontalScrollbarEnabled(tree) || !(item.getData() instanceof DBNDataSource)) {
+            return false;
+        }
+        DBNDataSource element = (DBNDataSource) item.getData();
+
         List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
         int xPos = getTreeWidth(tree);
         for (INavigatorNodeActionHandler nah : nodeActions) {
@@ -591,7 +588,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         return treeWidth - xShift;
     }
 
-    private static boolean isHorizontalScrollbarEnabled(Tree tree) {
+    private static boolean isHorizontalScrollbarEnabled(@NotNull Tree tree) {
         ScrollBar horizontalBar = tree.getHorizontalBar();
         if (horizontalBar == null) {
             return false;
@@ -600,5 +597,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             return tree.getClientArea().width != horizontalBar.getMaximum();
         }
         return horizontalBar.isVisible();
+    }
+
+    private static boolean isNodeActionsEnabled() {
+        DBPPlatform platform = DBWorkbench.getPlatform();
+        DBPPreferenceStore preferenceStore = platform.getPreferenceStore();
+        return preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS);
     }
 }
