@@ -767,7 +767,8 @@
                     webURL="https://kyuubi.apache.org/"
                     category="Hadoop"
                     categories="hadoop">
-                    <file type="jar" path="maven:/org.apache.kyuubi:kyuubi-hive-jdbc-shaded:RELEASE"/>
+                    <file type="jar" path="maven:/org.apache.kyuubi:kyuubi-hive-jdbc-shaded:RELEASE" bundle="!drivers.kyuubi"/>
+                    <file type="jar" path="drivers/kyuubi" bundle="drivers.kyuubi"/>
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
