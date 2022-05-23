@@ -2363,10 +2363,14 @@ public class SQLEditor extends SQLEditorBase implements
             outputViewer.clearOutput();
         }
 
+        boolean replaceCurrentTab = getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB);
+
         if (!export) {
-            // We only need to prompt user to close extra (unpinned) tabs if
-            // the user is not executing query in a new tab
-            if (!newTab) {
+            // We only need to prompt user to close extra (unpinned) tabs if:
+            // 1. The user is not executing query in a new tab
+            // 2. The user is executing script that may open several result sets
+            //    and replace current tab on single query execution option is not set
+            if (!newTab && (!isSingleQuery || (isSingleQuery && !replaceCurrentTab))) {
                 int tabsClosed = closeExtraResultTabs(null, true, false);
                 if (tabsClosed == IDialogConstants.CANCEL_ID) {
                     return false;

@@ -272,7 +272,7 @@ public class ResultSetModel {
         DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
         if (constraint != null && constraint.isVisible() != visible) {
             constraint.setVisible(visible);
-            if (attribute.getParentObject() == null) {
+            if (attribute.getParentObject() == null || attribute.getParentObject() == documentAttribute) {
                 if (visible) {
                     visibleAttributes.add(attribute);
                 } else {
@@ -951,7 +951,7 @@ public class ResultSetModel {
 
         for (DBSAttributeBase attr : this.dataFilter.getOrderedVisibleAttributes()) {
             DBDAttributeBinding binding = getAttributeBinding(attr);
-            if (binding != null && binding.getParentObject() == null) {
+            if (binding != null && (binding.getParentObject() == null || binding.getParentObject() == documentAttribute)) {
                 newBindings.add(binding);
             }
         }
@@ -1010,7 +1010,7 @@ public class ResultSetModel {
                 } else {
                     if (!visibleAttributes.contains(cAttr)) {
                         DBDAttributeBinding attribute = (DBDAttributeBinding) cAttr;
-                        if (attribute.getParentObject() == null) {
+                        if (attribute.getParentObject() == null || attribute.getParentObject() == documentAttribute) {
                             // Add only root attributes
                             visibleAttributes.add(attribute);
                         }

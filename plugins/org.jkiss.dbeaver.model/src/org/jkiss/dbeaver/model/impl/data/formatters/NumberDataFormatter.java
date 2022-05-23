@@ -50,6 +50,10 @@ public class NumberDataFormatter implements DBDDataFormatter {
         if (useGrouping != null) {
             numberFormat.setGroupingUsed(CommonUtils.toBoolean(useGrouping));
         }
+        Object groupingSize = properties.get(NumberFormatSample.PROP_GROUPING_SIZE);
+        if (groupingSize != null) {
+            numberFormat.setGroupingSize(CommonUtils.toInt(groupingSize, numberFormat.getGroupingSize()));
+        }
         Object maxIntDigits = properties.get(NumberFormatSample.PROP_MAX_INT_DIGITS);
         if (maxIntDigits != null) {
             numberFormat.setMaximumIntegerDigits(CommonUtils.toInt(maxIntDigits));

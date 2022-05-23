@@ -48,7 +48,7 @@
                 <property id="dbname" description="Database name" defaultValue="${database}"/>
             </propertyGroup>
         </fdw>
-        <fdw id="mysql" fdwId="mysql_fdw" databases="mysql" name="MySQL" description="MySQL FDW by EnterpriseDB" docURL="https://github.com/EnterpriseDB/mysql_fdw">
+        <fdw id="mysql" fdwId="mysql_fdw" databases="mysql" name="MySQL" description="MySQL FDW by EDB" docURL="https://github.com/EnterpriseDB/mysql_fdw">
             <propertyGroup label="Options">
                 <property id="host" description="Host name" defaultValue="${host}"/>
                 <property id="port" description="Port number" defaultValue="${port}"/>
@@ -484,7 +484,7 @@
 
                 <driver
                         id="postgres-edb-jdbc"
-                        label="EnterpriseDB"
+                        label="EDB"
                         icon="icons/edb_icon.png"
                         iconBig="icons/edb_icon_big.png"
                         class="com.edb.Driver"

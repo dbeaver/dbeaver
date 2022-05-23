@@ -63,9 +63,9 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
 
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent)
-    {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         ResourceBundle coreBundle = DBeaverActivator.getCoreResourceBundle();
         ResourceBundle rsvBundle = ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME);
         ResourceBundle navigatorBundle = ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME);

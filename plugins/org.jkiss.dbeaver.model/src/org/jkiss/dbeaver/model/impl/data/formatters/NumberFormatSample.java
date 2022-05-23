@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Locale;
@@ -26,6 +27,7 @@ import java.util.Map;
 public class NumberFormatSample implements DBDDataFormatterSample {
 
     public static final String PROP_USE_GROUPING ="useGrouping";
+    public static final String PROP_GROUPING_SIZE = "groupingSize";
     public static final String PROP_MAX_INT_DIGITS ="maxIntegerDigits";
     public static final String PROP_MIN_INT_DIGITS ="minIntegerDigits";
     public static final String PROP_MAX_FRACT_DIGITS ="maxFractionDigits";
@@ -36,9 +38,10 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     @Override
     public Map<String, Object> getDefaultProperties(Locale locale)
     {
-        NumberFormat tmp = NumberFormat.getNumberInstance(locale);
-        Map<String, Object> props = new HashMap<>();
+        final DecimalFormat tmp = (DecimalFormat) NumberFormat.getNumberInstance(locale);
+        final Map<String, Object> props = new HashMap<>();
         props.put(PROP_USE_GROUPING, tmp.isGroupingUsed());
+        props.put(PROP_GROUPING_SIZE, tmp.getGroupingSize());
         props.put(PROP_MAX_INT_DIGITS, tmp.getMaximumIntegerDigits());
         props.put(PROP_MIN_INT_DIGITS, tmp.getMinimumIntegerDigits());
         props.put(PROP_MAX_FRACT_DIGITS, Math.max(tmp.getMaximumFractionDigits(), 10));

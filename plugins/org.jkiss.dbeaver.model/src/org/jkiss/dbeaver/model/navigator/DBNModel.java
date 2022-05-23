@@ -593,12 +593,12 @@ public class DBNModel implements IResourceChangeListener {
         }
     }
 
-    void fireNodeUpdate(Object source, DBNNode node, DBNEvent.NodeChange nodeChange)
+    public void fireNodeUpdate(Object source, DBNNode node, DBNEvent.NodeChange nodeChange)
     {
         this.fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, nodeChange, node));
     }
 
-    void fireNodeEvent(final DBNEvent event)
+    public void fireNodeEvent(final DBNEvent event)
     {
         if (!isGlobal() || platform.isShuttingDown()) {
             return;

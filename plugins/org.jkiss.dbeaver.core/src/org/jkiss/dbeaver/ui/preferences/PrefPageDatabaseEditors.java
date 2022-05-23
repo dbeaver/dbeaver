@@ -89,9 +89,9 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
 
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent)
-    {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
