@@ -738,28 +738,29 @@ public class ResultSetModel {
                             if (acs.attributeValues != null && acs.attributeValues.length > 1) {
                                 double minValue = DBExecUtils.makeNumericValue(acs.attributeValues[0]);
                                 double maxValue = DBExecUtils.makeNumericValue(acs.attributeValues[1]);
-                                if (acs.colorBackground != null && acs.colorBackground2 != null) {
-                                    final DBDAttributeBinding binding = entry.getKey();
-                                    final Object cellValue = getCellValue(binding, row);
-                                    double value = DBExecUtils.makeNumericValue(cellValue);
-                                    if (value >= minValue && value <= maxValue) {
-                                        RGB bgRowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
-                                        background = UIUtils.getSharedColor(bgRowRGB);
-                                        if (acs.colorForeground != null && acs.colorForeground2 != null) {
-                                            RGB fgRowRGB1 = ResultSetUtils.makeGradientValue(acs.colorForeground.getRGB(), acs.colorForeground2.getRGB(), minValue, maxValue, value);
-                                            foreground = UIUtils.getSharedColor(fgRowRGB1);
-                                        } else if (acs.colorForeground != null || acs.colorForeground2 != null) {
-                                            foreground = acs.colorForeground != null ? acs.colorForeground : acs.colorForeground2;
-                                        }
+                                final DBDAttributeBinding binding = entry.getKey();
+                                final Object cellValue = getCellValue(binding, row);
+                                double value = DBExecUtils.makeNumericValue(cellValue);
+                                if (value >= minValue && value <= maxValue) {
+                                    if (acs.colorBackground != null && acs.colorBackground2 != null && value >= minValue && value <= maxValue) {
+                                            RGB bgRowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
+                                            background = UIUtils.getSharedColor(bgRowRGB);
+                                            
+                                        // FIXME: coloring value before and after range. Maybe we need an option for this.
+                                        /* else if (value < minValue) {
+                                            foreground = acs.colorForeground;
+                                            background = acs.colorBackground;
+                                        } else if (value > maxValue) {
+                                            foreground = acs.colorForeground2;
+                                            background = acs.colorBackground2;
+                                        }*/
                                     }
-                                    // FIXME: coloring value before and after range. Maybe we need an option for this.
-                                    /* else if (value < minValue) {
-                                        foreground = acs.colorForeground;
-                                        background = acs.colorBackground;
-                                    } else if (value > maxValue) {
-                                        foreground = acs.colorForeground2;
-                                        background = acs.colorBackground2;
-                                    }*/
+                                    if (acs.colorForeground != null && acs.colorForeground2 != null) {
+                                        RGB fgRowRGB1 = ResultSetUtils.makeGradientValue(acs.colorForeground.getRGB(), acs.colorForeground2.getRGB(), minValue, maxValue, value);
+                                        foreground = UIUtils.getSharedColor(fgRowRGB1);
+                                    } else if (acs.colorForeground != null || acs.colorForeground2 != null) {
+                                        foreground = acs.colorForeground != null ? acs.colorForeground : acs.colorForeground2;
+                                    }
                                 }
                             }
                         } else {
