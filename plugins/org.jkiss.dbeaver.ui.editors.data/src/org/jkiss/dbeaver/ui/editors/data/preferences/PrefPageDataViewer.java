@@ -21,6 +21,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -58,8 +59,9 @@ public class PrefPageDataViewer extends TargetPrefPage {
         return true;
     }
 
+    @NotNull
     @Override
-    protected Control createPreferenceContent(Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         final Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {

@@ -49,4 +49,16 @@
         </dialect>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+                id="google_bigquery"
+                label="Google Cloud Auth"
+                description="BigQuery internal authentication"
+                class="org.jkiss.dbeaver.ext.bigquery.auth.BigQueryAuthModel"
+                default="true">
+            <replace model="native"/>
+            <datasource id="bigquery"/>
+        </authModel>
+    </extension>
+
 </plugin>

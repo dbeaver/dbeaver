@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
@@ -43,8 +44,9 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
         // nothing to initialize
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         final Composite composite = UIUtils.createComposite(parent, 1);
         final DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
 

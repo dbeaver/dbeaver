@@ -62,8 +62,9 @@ public class PrefPageDriversClasspath extends AbstractPrefPage implements IWorkb
         // nothing to initialize
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         final Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
