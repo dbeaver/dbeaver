@@ -25,16 +25,22 @@ import java.util.Set;
 public class SMAuthPermissions {
     @Nullable
     private final String userId;
+    private final String sessionId;
     private final Set<String> permissions;
 
-    public SMAuthPermissions(@Nullable String userId, Set<String> permissions) {
+    public SMAuthPermissions(@Nullable String userId, String sessionId, Set<String> permissions) {
         this.userId = userId;
         this.permissions = permissions;
+        this.sessionId = sessionId;
     }
 
     @Nullable
     public String getUserId() {
         return userId;
+    }
+
+    public String getSessionId() {
+        return sessionId;
     }
 
     public Set<String> getPermissions() {

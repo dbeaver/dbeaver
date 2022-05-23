@@ -21,6 +21,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -49,9 +50,9 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
     {
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent)
-    {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {

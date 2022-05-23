@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -94,8 +95,9 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
     public void init(IWorkbench workbench) {
     }
 
+    @NotNull
     @Override
-    protected Control createContents(final Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         CustomSashForm divider = UIUtils.createPartDivider(null, parent, SWT.HORIZONTAL);
 
         {

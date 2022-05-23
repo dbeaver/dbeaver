@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDocumentContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
@@ -69,16 +68,14 @@ public class ERDObjectAdapter implements IAdapterFactory {
             }
             if (object instanceof ERDObject) {
                 object = ((ERDObject<?>) object).getObject();
-                if (object instanceof DBSDocumentContainer) {
-                    unwrapParentNode = false;
-                } else if (object instanceof DBSObject && adaptableObject instanceof DiagramPart && ((DBSObject) object).getParentObject() instanceof DBSStructContainer) {
+                if (object instanceof DBSObject && adaptableObject instanceof DiagramPart && ((DBSObject) object).getParentObject() instanceof DBSStructContainer) {
                     object = ((DBSObject) object).getParentObject();
                 }
             }
             if (object instanceof DBSObject) {
                 DBNDatabaseNode node = DBNUtils.getNodeByObject((DBSObject) object);
                 if (node instanceof DBNDatabaseItem && node.getObject() instanceof DBSStructContainer) {
-                    node = getTablesFolderNode(node);
+                    node = getItemsFolderNode(node);
                 } else if (node != null && node.getParentNode() instanceof DBNDatabaseNode && unwrapParentNode) {
                     node = (DBNDatabaseNode) node.getParentNode();
                 }
@@ -122,25 +119,28 @@ public class ERDObjectAdapter implements IAdapterFactory {
 
     // That's tricky
     // Try to get Table folder. It is handy for Create New command
-    private DBNDatabaseNode getTablesFolderNode(DBNDatabaseNode node) {
+    private DBNDatabaseNode getItemsFolderNode(DBNDatabaseNode node) {
         for (DBXTreeNode childFolderMeta : node.getMeta().getChildren(node)) {
             if (childFolderMeta instanceof DBXTreeFolder) {
                 List<DBXTreeNode> childItems = childFolderMeta.getChildren(node);
                 if (!childItems.isEmpty()) {
                     DBXTreeNode itemMeta = childItems.get(0);
-                    if (itemMeta instanceof DBXTreeItem && ((DBXTreeItem) itemMeta).getPropertyName().contains("table")) {
-                        try {
-                            // Safe to use fake monitor because we read local folders
-                            for (DBNDatabaseNode navFolder : node.getChildren(new VoidProgressMonitor())) {
-                                if (navFolder.getMeta() == childFolderMeta) {
-                                    node = navFolder;
-                                    break;
+                    if (itemMeta instanceof DBXTreeItem) {
+                        String itemPropName = ((DBXTreeItem) itemMeta).getPropertyName();
+                        if (itemPropName.contains("table") || itemPropName.contains("collection")) {
+                            try {
+                                // Safe to use fake monitor because we read local folders
+                                for (DBNDatabaseNode navFolder : node.getChildren(new VoidProgressMonitor())) {
+                                    if (navFolder.getMeta() == childFolderMeta) {
+                                        node = navFolder;
+                                        break;
+                                    }
                                 }
+                            } catch (DBException ignored) {
+                                // Shouldn't be here
                             }
-                        } catch (DBException ignored) {
-                            // Shouldn't be here
+                            break;
                         }
-                        break;
                     }
                 }
             }

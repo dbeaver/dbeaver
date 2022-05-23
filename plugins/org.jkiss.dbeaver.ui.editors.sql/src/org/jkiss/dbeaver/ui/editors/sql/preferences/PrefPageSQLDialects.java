@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -67,8 +68,9 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
         super();
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         boolean isPrefPage = element == null;
 
         Composite composite = UIUtils.createComposite(parent, isPrefPage ? 2 : 1);

@@ -74,8 +74,9 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
     public void init(IWorkbench workbench) {
     }
 
+    @NotNull
     @Override
-    protected Control createContents(final Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 

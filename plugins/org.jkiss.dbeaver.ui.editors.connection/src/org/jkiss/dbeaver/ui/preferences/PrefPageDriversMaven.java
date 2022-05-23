@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.registry.maven.MavenRegistry;
 import org.jkiss.dbeaver.registry.maven.MavenRepository;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -66,9 +67,9 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
     {
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent)
-    {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         enabledColor = parent.getForeground();
         disabledColor = parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);

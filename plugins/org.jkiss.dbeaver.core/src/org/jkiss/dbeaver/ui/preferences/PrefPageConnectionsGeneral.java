@@ -27,6 +27,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
@@ -53,8 +54,9 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         defaultNavigatorSettings = DataSourceNavigatorSettings.PRESET_FULL.getSettings();
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {

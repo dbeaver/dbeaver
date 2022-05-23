@@ -22,6 +22,8 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,6 +31,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -113,8 +116,6 @@ final class MessageBoxModern extends Dialog {
         }
 
         if (message != null) {
-            Label messageLabel = new Label(parent, SWT.WRAP);
-            messageLabel.setText(message);
             GridData gd = new GridData();
             gd.minimumWidth = 1;
             gd.minimumHeight = 1;
@@ -122,7 +123,22 @@ final class MessageBoxModern extends Dialog {
             gd.verticalAlignment = SWT.BEGINNING;
             gd.grabExcessHorizontalSpace = true;
             gd.widthHint = convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH);
-            messageLabel.setLayoutData(gd);
+
+            if (message.contains("</a>")) {
+                Link messageLink = new Link(parent, SWT.WRAP);
+                messageLink.setText(message);
+                messageLink.setLayoutData(gd);
+                messageLink.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        ShellUtils.launchProgram(e.text);
+                    }
+                });
+            } else {
+                Label messageLabel = new Label(parent, SWT.WRAP);
+                messageLabel.setText(message);
+                messageLabel.setLayoutData(gd);
+            }
         }
 
         // create the top level composite for the dialog area

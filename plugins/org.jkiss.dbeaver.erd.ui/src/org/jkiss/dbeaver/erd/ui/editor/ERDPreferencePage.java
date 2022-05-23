@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
@@ -66,9 +67,9 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private List<Button> visibilityButtons = new ArrayList<>();
     private List<Button> styleButtons = new ArrayList<>();
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent)
-    {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
 
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);

@@ -24,30 +24,29 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.spanner.model.SpannerConstants;
+import org.jkiss.dbeaver.ext.spanner.auth.SpannerAuthModel;
 import org.jkiss.dbeaver.ext.spanner.ui.SpannerActivator;
 import org.jkiss.dbeaver.ext.spanner.ui.internal.SpannerMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * SpannerConnectionPage
  */
-public class SpannerConnectionPage extends ConnectionPageAbstract implements IDialogPageProvider
+public class SpannerConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider
 {
     private static final Log log = Log.getLog(SpannerConnectionPage.class);
 
     private Text projectText;
     private Text instanceText;
     private Text databaseText;
-    private TextWithOpenFile privateKeyFile;
 
     private static ImageDescriptor logoImage = SpannerActivator.getImageDescriptor("icons/spanner_logo.png"); //$NON-NLS-1$
     private DriverPropertiesDialogPage driverPropsPage;
@@ -80,20 +79,15 @@ public class SpannerConnectionPage extends ConnectionPageAbstract implements IDi
             projectText.addModifyListener(textListener);
 
             instanceText = UIUtils.createLabelText(addrGroup, SpannerMessages.label_instance, ""); //$NON-NLS-2$
-            instanceText.setToolTipText("Spanner Instance ID"); //$NON-NLS-1$
+            instanceText.setToolTipText(SpannerMessages.label_instance_tip);
             instanceText.addModifyListener(textListener);
 
             databaseText = UIUtils.createLabelText(addrGroup, SpannerMessages.label_database, ""); //$NON-NLS-2$
-            databaseText.setToolTipText("Spanner Database ID"); //$NON-NLS-1$
+            databaseText.setToolTipText(SpannerMessages.label_database_tip);
             databaseText.addModifyListener(textListener);
-
-            UIUtils.createControlLabel(addrGroup, SpannerMessages.label_private_key_path);
-            privateKeyFile = new TextWithOpenFile(addrGroup, SpannerMessages.label_private_key_path, new String[] { "*", "*.json" } ); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
-            //gd.horizontalSpan = 3;
-            privateKeyFile.setLayoutData(gd);
         }
 
+        createAuthPanel(settingsGroup, 1);
         createDriverPanel(settingsGroup);
         setControl(settingsGroup);
     }
@@ -122,9 +116,6 @@ public class SpannerConnectionPage extends ConnectionPageAbstract implements IDi
         if (databaseText != null) {
             databaseText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
         }
-        if (privateKeyFile != null) {
-            privateKeyFile.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH)));
-        }
     }
 
     @Override
@@ -140,10 +131,13 @@ public class SpannerConnectionPage extends ConnectionPageAbstract implements IDi
         if (databaseText != null) {
             connectionInfo.setDatabaseName(databaseText.getText().trim());
         }
-        if (privateKeyFile != null) {
-            connectionInfo.setProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH, privateKeyFile.getText().trim());
-        }
         super.saveSettings(dataSource);
+    }
+
+    @NotNull
+    @Override
+    protected String getDefaultAuthModelId(DBPDataSourceContainer dataSource) {
+        return SpannerAuthModel.ID;
     }
 
     @Override
