@@ -72,6 +72,8 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         gd.grabExcessHorizontalSpace = true;
         timeEditor.getControl().setLayoutData(gd);
         timeEditor.createDateFormat(valueController.getValueType());
+        timeEditor.setEditable(!valueController.isReadOnly());
+
         if (!ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)){
             timeEditor.setToTextComposite();
         }
