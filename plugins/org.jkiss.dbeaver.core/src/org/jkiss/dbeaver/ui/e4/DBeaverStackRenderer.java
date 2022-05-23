@@ -66,7 +66,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
             IEditorInput editorInput = ((IEditorPart) workbenchPart).getEditorInput();
             if (editorInput instanceof IDatabaseEditorInput) {
-                populateEditorMenu(menu, workbenchPart, (IDatabaseEditorInput) editorInput);
+                populateEditorMenu(menu, (IDatabaseEditorInput) editorInput);
             }
 
             File localFile = EditorUtils.getLocalFileFromInput(editorInput);
@@ -127,7 +127,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
     }
 
-    private void populateEditorMenu(@NotNull Menu menu, @NotNull IWorkbenchPart part, @NotNull IDatabaseEditorInput input) {
+    private void populateEditorMenu(@NotNull Menu menu, @NotNull IDatabaseEditorInput input) {
         final DBSObject object = input.getDatabaseObject();
         final DBNDatabaseNode node = input.getNavigatorNode();
 
