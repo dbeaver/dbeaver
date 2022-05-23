@@ -596,7 +596,6 @@
         </authModel>
         <authModel
                 id="sqlserver_ntlm"
-                desktop="true"
                 label="NTLM"
                 description="NTLM authentication"
                 class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelNTLM">
@@ -604,7 +603,6 @@
         </authModel>
         <authModel
                 id="sqlserver_ad_password"
-                desktop="true"
                 label="Active Directory - Password"
                 description="Active Directory password based authentication"
                 class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelADPassword">
@@ -612,7 +610,6 @@
         </authModel>
         <authModel
                 id="sqlserver_msi"
-                desktop="true"
                 label="Active Directory - MSI"
                 description="Active Directory MSI based authentication"
                 class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelMSI">
@@ -644,7 +641,6 @@
         </authModel>
         <authModel
                 id="sqlserver_custom"
-                desktop="true"
                 label="Custom"
                 description="Custom authentication schema"
                 class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelCustom">
