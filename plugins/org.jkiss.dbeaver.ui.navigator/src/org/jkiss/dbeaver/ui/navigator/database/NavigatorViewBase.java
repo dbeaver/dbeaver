@@ -236,7 +236,10 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     private void onSelectionChange(IStructuredSelection structSel) {
         if (!structSel.isEmpty()) {
             lastSelection = structSel.getFirstElement();
-            if (lastSelection instanceof DBNNode) {
+            if (lastSelection instanceof DBNRoot) {
+                // Don't display status message for root node - it has no meaningful information
+                getViewSite().getActionBars().getStatusLineManager().setMessage(null);
+            } else if (lastSelection instanceof DBNNode) {
                 final String name = ((DBNNode) lastSelection).getNodeName();
                 final String desc = ((DBNNode) lastSelection).getNodeDescription();
                 if (CommonUtils.isEmpty(desc)) {
