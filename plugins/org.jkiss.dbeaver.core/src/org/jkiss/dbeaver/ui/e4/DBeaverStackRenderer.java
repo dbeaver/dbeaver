@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.e4;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.renderers.swt.StackRenderer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -34,10 +35,16 @@ import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
@@ -52,7 +59,16 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         IWorkbenchPart workbenchPart = getWorkbenchPart(part);
         if (workbenchPart instanceof IEditorPart) {
+            IWorkbenchPage activePage = workbenchPart.getSite().getWorkbenchWindow().getActivePage();
+            if (activePage.getActiveEditor() != workbenchPart) {
+                activePage.activate(workbenchPart);
+            }
+
             IEditorInput editorInput = ((IEditorPart) workbenchPart).getEditorInput();
+            if (editorInput instanceof IDatabaseEditorInput) {
+                populateEditorMenu(menu, workbenchPart, (IDatabaseEditorInput) editorInput);
+            }
+
             File localFile = EditorUtils.getLocalFileFromInput(editorInput);
             if (localFile != null) {
                 populateFileMenu(menu, workbenchPart, EditorUtils.getFileFromInput(editorInput), localFile);
@@ -61,10 +77,6 @@ public class DBeaverStackRenderer extends StackRenderer {
     }
 
     private void populateFileMenu(@NotNull final Menu menu, @NotNull final IWorkbenchPart workbenchPart, @Nullable final IFile inputFile, @NotNull final File file) {
-        IWorkbenchPage activePage = workbenchPart.getSite().getWorkbenchWindow().getActivePage();
-        if (activePage.getActiveEditor() != workbenchPart) {
-            activePage.activate(workbenchPart);
-        }
         new MenuItem(menu, SWT.SEPARATOR);
 
         addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_EDITOR_NEW);
@@ -113,6 +125,28 @@ public class DBeaverStackRenderer extends StackRenderer {
             }
         }
 
+    }
+
+    private void populateEditorMenu(@NotNull Menu menu, @NotNull IWorkbenchPart part, @NotNull IDatabaseEditorInput input) {
+        final DBSObject object = input.getDatabaseObject();
+        final DBNDatabaseNode node = input.getNavigatorNode();
+
+        if (object != null && node != null) {
+            final String label = node.getMeta().getNodeTypeLabel(object.getDataSource(), null);
+
+            if (label != null) {
+                new MenuItem(menu, SWT.SEPARATOR);
+
+                final MenuItem item = new MenuItem(menu, SWT.NONE);
+                item.setText(NLS.bind(CoreMessages.editor_file_copy_object_name, label));
+                item.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DBWorkbench.getPlatformUI().copyTextToClipboard(DBUtils.getObjectFullName(object, DBPEvaluationContext.UI), false);
+                    }
+                });
+            }
+        }
     }
 
     private static void addActionItem(@NotNull IWorkbenchPart workbenchPart, @NotNull Menu menu, @NotNull String actionId) {
