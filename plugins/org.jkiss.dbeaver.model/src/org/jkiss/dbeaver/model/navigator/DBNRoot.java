@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
@@ -176,11 +177,13 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return null;
     }
 
-    public DBNProject getProjectNode(DBPProject project) {
-        UUID projectID = project.getProjectID();
+    @Nullable
+    public DBNProject getProjectNode(@Nullable DBPProject project) {
+        if (project == null) {
+            return null;
+        }
         for (DBNProject node : projects) {
-            DBPProject nodeProject = node.getProject();
-            if (nodeProject != null && (nodeProject == project || nodeProject.getProjectID().compareTo(projectID) == 0)) {
+            if (node.getProject().equals(project) || node.getProject().getProjectID().equals(project.getProjectID())) {
                 return node;
             }
         }
