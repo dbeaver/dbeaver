@@ -1936,15 +1936,28 @@ public class UIUtils {
         return item;
     }
 
-    public static void resizeShell(Shell shell) {
-        Point shellSize = shell.getSize();
-        Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-        //compSize.y += 20;
-        //compSize.x += 20;
-        if (shellSize.y < compSize.y || shellSize.x < compSize.x) {
-            compSize.x = Math.max(shellSize.x, compSize.x);
-            compSize.y = Math.max(shellSize.y, compSize.y);
-            shell.setSize(compSize);
+    public static void resizeShell(@NotNull Shell shell) {
+        final Rectangle displayArea = shell.getDisplay().getClientArea();
+        final Point shellLocation = shell.getLocation();
+        final Point shellSize = shell.getSize();
+        final Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+        boolean needsLayout = false;
+
+        if (shellSize.x < compSize.x || shellSize.y < compSize.y) {
+            shellSize.x = Math.max(shellSize.x, compSize.x);
+            shellSize.y = Math.max(shellSize.y, compSize.y);
+            shell.setSize(shellSize);
+            needsLayout = true;
+        }
+
+        if (shellLocation.x + shellSize.x > displayArea.width || shellLocation.y + shellSize.y > displayArea.height) {
+            shellLocation.x = CommonUtils.clamp(displayArea.width - shellSize.x, 0, shellLocation.x);
+            shellLocation.y = CommonUtils.clamp(displayArea.height - shellSize.y, 0, shellLocation.y);
+            shell.setLocation(shellLocation.x, shellLocation.y);
+            needsLayout = true;
+        }
+
+        if (needsLayout) {
             shell.layout(true);
         }
     }
