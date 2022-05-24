@@ -40,13 +40,13 @@ public class TimezoneRegistry {
     public static void setDefaultZone(@Nullable ZoneId id) {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (id != null) {
-            preferenceStore.setValue(ModelPreferences.CLIENT_TIMEZONE, id.getId());
             TimeZone.setDefault(TimeZone.getTimeZone(id));
             System.setProperty("user.timezone", id.getId());
+            preferenceStore.setValue(ModelPreferences.CLIENT_TIMEZONE, id.getId());
         } else {
-            preferenceStore.setToDefault(ModelPreferences.CLIENT_TIMEZONE);
             TimeZone.setDefault(TimeZone.getTimeZone(userDefaultTimezone));
             System.setProperty("user.timezone", userDefaultTimezone);
+            preferenceStore.setToDefault(ModelPreferences.CLIENT_TIMEZONE);
         }
     }
 
