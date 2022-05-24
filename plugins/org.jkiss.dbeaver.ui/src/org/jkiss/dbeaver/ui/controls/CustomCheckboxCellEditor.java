@@ -59,7 +59,7 @@ public class CustomCheckboxCellEditor extends CellEditor implements BooleanStyle
         super(parent);
         this.changeOnActivate = changeOnActivate;
         if (!changeOnActivate) {
-            // added to prevent checkbox flickering when the changeOnActivate is set
+            // added to prevent checkbox flickering when the changeOnActivate is set to true
             checkBox.setBackground(parent.getBackground());
             checkBox.getParent().setBackground(parent.getBackground());
         }
