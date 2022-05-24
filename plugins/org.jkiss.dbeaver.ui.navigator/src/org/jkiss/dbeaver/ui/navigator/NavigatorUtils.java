@@ -373,8 +373,6 @@ public class NavigatorUtils {
             final DragSource source = new DragSource(viewer.getControl(), operations);
             source.setTransfer(dragTransferTypes);
             source.addDragListener(new DragSourceListener() {
-                private final List<File> tmpFiles = new ArrayList<>();
-
                 private IStructuredSelection selection;
 
                 @Override
@@ -388,12 +386,10 @@ public class NavigatorUtils {
                         List<DBNNode> nodes = new ArrayList<>();
                         List<DBPNamedObject> objects = new ArrayList<>();
                         List<String> names = new ArrayList<>();
-                        tmpFiles.clear();
-
                         String lineSeparator = CommonUtils.getLineSeparator();
                         StringBuilder buf = new StringBuilder();
-                        for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
-                            Object nextSelected = i.next();
+
+                        for (Object nextSelected : selection) {
                             if (!(nextSelected instanceof DBNNode)) {
                                 continue;
                             }
@@ -432,7 +428,6 @@ public class NavigatorUtils {
                                                     try (OutputStream out = Files.newOutputStream(tmpFile.toPath())) {
                                                         ContentUtils.copyStreams(is, streamSize, out, monitor);
                                                     }
-                                                    tmpFiles.add(tmpFile);
                                                 }
                                             } catch (Exception e) {
                                                 if (!tmpFile.delete()) {
@@ -481,13 +476,11 @@ public class NavigatorUtils {
 
                 @Override
                 public void dragFinished(DragSourceEvent event) {
-                    if (!tmpFiles.isEmpty()) {
-                        for (File tmpFile : tmpFiles) {
-                            if (!tmpFile.delete()) {
-                                log.error("Error deleting temp file " + tmpFile.getAbsolutePath());
-                            }
-                        }
-                    }
+                    // We don't want to delete any temporary file right after the drag is finished
+                    // because we delete the file faster than the OS can copy/move it. In the case
+                    // of a partially succeeded move, it produces a corrupted file.
+                    //
+                    // Any temporary file will be automatically deleted upon application exit.
                 }
             });
         }

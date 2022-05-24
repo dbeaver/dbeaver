@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.osgi.util.NLS;
@@ -76,8 +75,6 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
 
     protected void createPreferenceHeader(Composite composite) {
     }
-
-    protected abstract Control createPreferenceContent(Composite composite);
 
     protected abstract void loadPreferences(DBPPreferenceStore store);
 
@@ -157,10 +154,9 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
                     enableDataSourceSpecificSettings(enabled);
                 }
             });
-            String dataSourceName = dataSourceContainer.getName();
-            dataSourceSettingsButton.setText(NLS.bind(UINavigatorMessages.pref_page_target_button_use_datasource_settings, dataSourceName));
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            dataSourceSettingsButton.setLayoutData(gd);
+            dataSourceSettingsButton.setText(NLS.bind(UINavigatorMessages.pref_page_target_button_use_datasource_settings, dataSourceContainer.getName()));
+            dataSourceSettingsButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            dataSourceSettingsButton.setFont(parent.getFont());
 
             changeSettingsTargetLink = createLink(composite, UINavigatorMessages.pref_page_target_link_show_global_settings);
             changeSettingsTargetLink.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
@@ -174,7 +170,6 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
 
         Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
         horizontalLine.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 2, 1));
-        horizontalLine.setFont(parent.getFont());
 
         createPreferenceHeader(parent);
 
@@ -186,23 +181,19 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
      */
     @Override
     protected Control createContents(Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
-
-        configurationBlockControl = createPreferenceContent(composite);
-        configurationBlockControl.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
-
-        if (isDataSourcePreferencePage()) {
-            boolean useProjectSettings = hasDataSourceSpecificOptions(getDataSourceContainer());
-            enableDataSourceSpecificSettings(useProjectSettings);
-        }
+        configurationBlockControl = super.createContents(parent);
 
         {
             DBPPreferenceStore store = getTargetPreferenceStore();
             loadPreferences(store);
         }
 
-        Dialog.applyDialogFont(composite);
-        return composite;
+        if (isDataSourcePreferencePage()) {
+            boolean useProjectSettings = hasDataSourceSpecificOptions(getDataSourceContainer());
+            enableDataSourceSpecificSettings(useProjectSettings);
+        }
+
+        return configurationBlockControl;
     }
 
     protected DBPPreferenceStore getTargetPreferenceStore() {

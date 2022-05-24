@@ -55,7 +55,7 @@ public class SpannerDataSource extends GenericDataSource {
 	        props.put(SpannerConstants.DRIVER_PROP_INSTANCE_ID, connectionInfo.getHostName());
 	        props.put(SpannerConstants.DRIVER_PROP_DATABASE_ID, connectionInfo.getDatabaseName());
 	        props.put(SpannerConstants.DRIVER_PROP_PVTKEYPATH, connectionInfo.getProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH));
-        } else {
+        } else if (connectionInfo.getProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH) != null) {
             props.put(SpannerConstants.DRIVER_PROP_CREDENTIALS_FILE, connectionInfo.getProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH));
         }
         return props;

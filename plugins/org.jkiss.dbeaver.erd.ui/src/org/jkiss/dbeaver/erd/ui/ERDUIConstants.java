@@ -33,6 +33,7 @@ public class ERDUIConstants {
     public static final String PREF_PRINT_MARGIN_LEFT = "erd.print.margin-left";
     public static final String PREF_PRINT_MARGIN_RIGHT = "erd.print.margin-right";
 
+    public static final String PREF_ROUTING_TYPE = "erd.routing.type";
     public static final int PRINT_MODE_DEFAULT = PrintFigureOperation.TILE;
     public static final int PRINT_MARGIN_DEFAULT = 0;
 
@@ -82,5 +83,8 @@ public class ERDUIConstants {
 
     public static final int DEFAULT_NOTE_BORDER_WIDTH = 1;
     public static final int DEFAULT_ENTITY_BORDER_WIDTH = 2;
+
+    public static final String ROUTING_MIKAMI = "Mikami-Tabuchi (Experimental)";
+    public static final String ROUTING_SHORTEST_PATH = "Shortest Path";
 
 }

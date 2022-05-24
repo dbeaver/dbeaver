@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
@@ -30,10 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * DBNRoot
@@ -179,9 +177,13 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return null;
     }
 
-    public DBNProject getProjectNode(DBPProject project) {
+    @Nullable
+    public DBNProject getProjectNode(@Nullable DBPProject project) {
+        if (project == null) {
+            return null;
+        }
         for (DBNProject node : projects) {
-            if (node.getProject() == project) {
+            if (node.getProject().equals(project) || node.getProject().getProjectID().equals(project.getProjectID())) {
                 return node;
             }
         }

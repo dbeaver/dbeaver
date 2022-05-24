@@ -29,17 +29,19 @@ import org.eclipse.gef3.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.erd.model.ERDAttributeVisibility;
 import org.jkiss.dbeaver.erd.model.ERDEntity;
-import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.erd.model.ERDUtils;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.erd.ui.editor.ERDHighlightingHandle;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
+import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.erd.ui.policy.AssociationEditPolicy;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -134,7 +136,8 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             if (entityPart == null) {
                 entityPart = getTarget();
             }
-            if (entityPart instanceof GraphicalEditPart) {
+            final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+            if (entityPart instanceof GraphicalEditPart && (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store))) {
                 // Self link
                 final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
                 //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
@@ -192,7 +195,12 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
         conn.setLineWidth(2);
         if (!identifying || constraintType.isLogical()) {
-            conn.setLineStyle(SWT.LINE_CUSTOM);
+            final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+            if (store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)) {
+                conn.setLineStyle(SWT.LINE_DOT);
+            } else {
+                conn.setLineStyle(SWT.LINE_CUSTOM);
+            }
             conn.setLineDash(
                 constraintType.isLogical() ? new float[]{ 4  } : new float[]{ 5 });
         }
@@ -230,6 +238,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             // This part seems to be deleted
             return;
         }
+
 
         if (value != EditPart.SELECTED_NONE) {
             if (this.getViewer() instanceof ERDGraphicalViewer && associatedAttributesHighlighing == null) {

@@ -903,11 +903,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             log.error("Error creating problem marker", e);
         }
 
+        // We don't want to show this view every time because it makes everyone mad.
+        // But there's a catch: the user can't remove the annotation outside of this
+        // view, and also can't open this view without knowing about it in advance.
+        // Should we display a confirmation dialog with "Remember my choice" option?
+
+        /*
         try {
             UIUtils.getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROBLEM_VIEW, null, IWorkbenchPage.VIEW_VISIBLE);
         } catch (PartInitException e) {
             log.debug("Error opening problem view", e);
         }
+        */
 
         return true;
     }
