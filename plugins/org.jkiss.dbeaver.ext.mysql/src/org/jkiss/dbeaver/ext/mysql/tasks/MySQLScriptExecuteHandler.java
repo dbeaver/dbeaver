@@ -16,14 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
@@ -50,6 +54,11 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
 
     @Override
     protected boolean validateTaskParameters(DBTTask task, MySQLScriptExecuteSettings settings, Log log) {
+        if (settings.isImport() && DBUtils.isReadOnly(settings.getDataSourceContainer().getDataSource())) {
+            DBWorkbench.getPlatformUI().showWarningMessageBox(ModelMessages.tasks_restore_readonly_title,
+                NLS.bind(ModelMessages.tasks_restore_readonly_message, settings.getDataSourceContainer().getDataSource().getName()));
+            return false;
+        }
         return true;
     }
 
