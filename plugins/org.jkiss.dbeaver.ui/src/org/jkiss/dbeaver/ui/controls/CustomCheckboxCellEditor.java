@@ -43,7 +43,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class CustomCheckboxCellEditor extends CellEditor implements BooleanStyleDecorator {
 
-    private static final boolean CHANGE_ON_ACTIVATE = false;
+    private final boolean changeOnActivate;
 
     private Label checkBox;
     private boolean initialValue;
@@ -52,8 +52,17 @@ public class CustomCheckboxCellEditor extends CellEditor implements BooleanStyle
     private UIElementAlignment alignment;
 
     public CustomCheckboxCellEditor(Composite parent) {
-        super(parent);
+        this(parent, false);
+    }
 
+    public CustomCheckboxCellEditor(Composite parent, boolean changeOnActivate) {
+        super(parent);
+        this.changeOnActivate = changeOnActivate;
+        if (!changeOnActivate) {
+            // added to prevent checkbox flickering when the changeOnActivate is set
+            checkBox.setBackground(parent.getBackground());
+            checkBox.getParent().setBackground(parent.getBackground());
+        }
         final IPropertyChangeListener styleChangeListener = event -> {
             booleanStyles = BooleanStyleSet.getDefaultStyles(DBWorkbench.getPlatform().getPreferenceStore());
         };
@@ -70,11 +79,8 @@ public class CustomCheckboxCellEditor extends CellEditor implements BooleanStyle
         gl.marginHeight = 0;
         ph.setLayout(gl);
 
-        ph.setBackground(parent.getBackground());
         checkBox = new Label(ph, SWT.NONE);
         checkBox.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true));
-        checkBox.setBackground(ph.getBackground());
-
         ph.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -183,11 +189,11 @@ public class CustomCheckboxCellEditor extends CellEditor implements BooleanStyle
 
     @Override
     public void activate() {
-        if (CHANGE_ON_ACTIVATE) {
+        if (changeOnActivate) {
             checked = !checked;
         }
         updateCheckVisuals();
-        if (CHANGE_ON_ACTIVATE) {
+        if (changeOnActivate) {
             applyEditorValue();
             // Run in async to avoid NPE. fireApplyEditorValue disposes and nullifies editor
             UIUtils.asyncExec(() -> {
