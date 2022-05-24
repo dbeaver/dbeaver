@@ -50,6 +50,7 @@ public final class ModelPreferences
     public static final String EXECUTE_RECOVER_RETRY_COUNT = "execute.recover.retryCount"; //$NON-NLS-1$
     public static final String EXECUTE_CANCEL_CHECK_TIMEOUT = "execute.cancel.checkTimeout"; //$NON-NLS-1$
 
+    public static final String DEFAULT_CONNECTION_NAME_PATTERN = "navigator.settings.default.connectionPattern";
     public static final String CONNECTION_OPEN_TIMEOUT = "connection.open.timeout"; //$NON-NLS-1$
     public static final String CONNECTION_VALIDATION_TIMEOUT = "connection.validation.timeout"; //$NON-NLS-1$
     public static final String CONNECTION_CLOSE_TIMEOUT = "connection.close.timeout"; //$NON-NLS-1$
@@ -180,7 +181,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_RETRY_COUNT, 1);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_CANCEL_CHECK_TIMEOUT, 0);
-
+        PrefUtils.setDefaultPreferenceValue(store, DEFAULT_CONNECTION_NAME_PATTERN, "${host_or_database}");
         PrefUtils.setDefaultPreferenceValue(store, CONNECTION_OPEN_TIMEOUT, 0);
         PrefUtils.setDefaultPreferenceValue(store, CONNECTION_VALIDATION_TIMEOUT, 10000);
         PrefUtils.setDefaultPreferenceValue(store, CONNECTION_CLOSE_TIMEOUT, 5000);

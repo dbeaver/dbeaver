@@ -182,6 +182,8 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private static final String DEFAULT_MERGE_ENTITIES = "navigator.settings.default.mergeEntities";
     private static final String DEFAULT_HIDE_FOLDERS = "navigator.settings.default.hideFolders";
     private static final String DEFAULT_MERGE_SCHEMAS = "navigator.settings.default.hideSchemas";
+
+
     private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
     public static DBNBrowseSettings getDefaultSettings() {
@@ -224,7 +226,6 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         } else {
             preferences.setValue(DEFAULT_NAVIGATOR_SETTINGS_PRESET, presetId);
         }
-
         // Save custom settings
         preferences.setValue(DEFAULT_SHOW_SYSTEM_OBJECTS, settings.isShowSystemObjects());
         preferences.setValue(DEFAULT_SHOW_UTILITY_OBJECTS, settings.isShowUtilityObjects());

@@ -28,29 +28,38 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ConnectionNameResolver;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
+import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral;
 import org.jkiss.dbeaver.ui.dialogs.connection.NavigatorSettingsStorage;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage, NavigatorSettingsStorage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
     private Combo navigatorSettingsCombo;
+    private Text connectionDefaultNamePatternText;
 
+    private String connectionNamePattern;
     private DBPConnectionType defaultConnectionType;
     private DBNBrowseSettings defaultNavigatorSettings;
 
     public PrefPageConnectionsGeneral() {
         super();
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
-
+        connectionNamePattern = ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
         defaultNavigatorSettings = DataSourceNavigatorSettings.PRESET_FULL.getSettings();
     }
 
@@ -70,6 +79,23 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 }
             });
             navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(groupDefaults, this, null);
+            connectionDefaultNamePatternText = UIUtils.createLabelText(groupDefaults, CoreMessages.pref_page_connection_label_default_connection_name_pattern, CoreMessages.pref_page_connection_label_default_connection_name_pattern_tip);
+            ContentAssistUtils.installContentProposal(
+                connectionDefaultNamePatternText,
+                new SmartTextContentAdapter(),
+                new StringContentProposalProvider(ConnectionNameResolver.getConnectionVariables().stream().map(GeneralUtils::variablePattern).toArray(String[]::new))
+            );
+            connectionDefaultNamePatternText.setText(connectionNamePattern);
+            UIUtils.setContentProposalToolTip(connectionDefaultNamePatternText, "Connection name patterns",
+                ConnectionNameResolver.getConnectionVariables().toArray(String[]::new));
+
+            new VariablesHintLabel(
+                groupDefaults,
+                CoreMessages.pref_page_connection_label_default_connection_template_variables,
+                CoreMessages.pref_page_connection_label_default_connection_template_variables_tip,
+                ConnectionNameResolver.getConnectionVariablesInfo().stream().map(u -> u.toArray(new String[0])).toArray(String[][]::new),
+                false
+            );
         }
 
         {
@@ -84,7 +110,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             addLinkToSettings(groupObjects, PrefPageTransactions.PAGE_ID);
         }
 
-        performDefaults();
+        updateCombosAndSettings();
 
         return composite;
     }
@@ -124,12 +150,16 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     @Override
     protected void performDefaults()
     {
+        connectionDefaultNamePatternText.setText(ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+        connectionNamePattern = ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
+        updateCombosAndSettings();
+    }
+
+    private void updateCombosAndSettings() {
         defaultConnectionType = DBPConnectionType.getDefaultConnectionType();
         connectionTypeCombo.select(defaultConnectionType);
-
         defaultNavigatorSettings = DataSourceNavigatorSettings.getDefaultSettings();
         ConnectionPageGeneral.updateNavigatorSettingsPreset(navigatorSettingsCombo, defaultNavigatorSettings);
-
         super.performDefaults();
     }
 
@@ -141,6 +171,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         if (!defaultNavigatorSettings.equals(DataSourceNavigatorSettings.getDefaultSettings())) {
             DataSourceNavigatorSettings.setDefaultSettings(defaultNavigatorSettings);
         }
+        ModelPreferences.getPreferences().setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
 
         return super.performOk();
     }
