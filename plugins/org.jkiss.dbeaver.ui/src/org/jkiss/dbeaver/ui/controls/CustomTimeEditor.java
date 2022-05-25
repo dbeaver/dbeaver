@@ -309,4 +309,10 @@ public class CustomTimeEditor {
         return basePart;
     }
 
+    public void selectAllContent() {
+        if (textEditor != null && !textEditor.isDisposed()) {
+            textEditor.selectAll();
+        }
+    }
+
 }

@@ -224,6 +224,9 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
                 textMode.run();
             }
         }
+        if (valueController.getEditType() == IValueController.EditType.INLINE) {
+            timeEditor.selectAllContent();
+        }
     }
 
 }
