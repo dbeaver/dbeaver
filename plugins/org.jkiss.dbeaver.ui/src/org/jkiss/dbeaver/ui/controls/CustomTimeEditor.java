@@ -314,5 +314,4 @@ public class CustomTimeEditor {
             textEditor.selectAll();
         }
     }
-
 }
