@@ -36,6 +36,7 @@ import org.eclipse.ui.internal.commands.CommandImageService;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -379,22 +380,34 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         //coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_DATASOURCE));
     }
 
+    private void updateTimezoneItem(StatusLineContributionItemEx tzItem) {
+        TimeZone tzDefault = TimeZone.getDefault();
+        tzItem.setText(tzDefault.getDisplayName(false, TimeZone.SHORT));
+        tzItem.setToolTip(tzDefault.getDisplayName(false, TimeZone.LONG));
+    }
+
     @Override
     protected void fillStatusLine(IStatusLineManager statusLine) {
         {
             StatusLineContributionItemEx tzItem = new StatusLineContributionItemEx("Time Zone");
-            TimeZone tzDefault = TimeZone.getDefault();
-            tzItem.setText(tzDefault.getDisplayName(false, TimeZone.SHORT));
-            tzItem.setToolTip(tzDefault.getDisplayName(false, TimeZone.LONG));
+            updateTimezoneItem(tzItem);
+
+            DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(event -> {
+                if (event.getProperty().equals(ModelPreferences.CLIENT_TIMEZONE)) {
+                    updateTimezoneItem(tzItem);
+                }
+            });
+
             tzItem.setDoubleClickListener(() -> {
-                UIUtils.showMessageBox(null, "Time zone", "You can change time zone by adding parameter\n" +
-                    "-D" + StandardConstants.ENV_USER_TIMEZONE  + "=<TimeZone>\n" +
-                    "in the end of file '" + DBWorkbench.getPlatform().getApplicationConfiguration().getAbsolutePath() + "'", SWT.ICON_INFORMATION);
+                UIUtils.showMessageBox(null, "Time zone", "You can change time zone by changing 'client timezone' in 'Settings' -> 'User Interface' or by adding parameter:\n" +
+                        "-D" + StandardConstants.ENV_USER_TIMEZONE + "=<TimeZone>\n" +
+                        "in the end of file'\n" + DBWorkbench.getPlatform().getApplicationConfiguration().getAbsolutePath() + "'\n" , SWT.ICON_INFORMATION
+                );
             });
             statusLine.add(tzItem);
         }
         {
-            StatusLineContributionItemEx localeItem = new StatusLineContributionItemEx("Locale");
+            StatusLineContributionItemEx localeItem =  new StatusLineContributionItemEx("Locale");
             localeItem.setText(Locale.getDefault().toString());
             localeItem.setToolTip(Locale.getDefault().getDisplayName());
             localeItem.setDoubleClickListener(() -> {
