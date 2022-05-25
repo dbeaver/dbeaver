@@ -35,6 +35,8 @@ public interface RMController {
 
     void deleteProject(@NotNull String projectId) throws DBException;
 
+    RMProject getProject(@NotNull String projectId) throws DBException;
+
     @NotNull
     RMResource[] listResources(
         @NotNull String projectId,
@@ -58,6 +60,9 @@ public interface RMController {
         @NotNull String resourcePath,
         boolean recursive) throws DBException;
 
+    RMResource[] getResourceTree(@NotNull String projectId,
+                                 @NotNull String resourcePath) throws DBException;
+
     @NotNull
     byte[] getResourceContents(
         @NotNull String projectId,
@@ -69,4 +74,5 @@ public interface RMController {
         @NotNull String resourcePath,
         @NotNull byte[] data) throws DBException;
 
+    void addRMEventListener(RMEventListener listener);
 }
