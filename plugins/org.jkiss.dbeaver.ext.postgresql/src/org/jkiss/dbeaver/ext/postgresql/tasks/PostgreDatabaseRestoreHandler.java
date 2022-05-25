@@ -65,7 +65,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
         } else if (task.getType().getId().equals(PostgreSQLTasks.TASK_DATABASE_RESTORE)) {
             DBPDataSource dataSource = settings.getDataSourceContainer().getDataSource();
             if (dataSource != null && DBUtils.isReadOnly(settings.getDataSourceContainer().getDataSource())) {
-                log.warn(NLS.bind(ModelMessages.tasks_restore_readonly_message, dataSource.getName()));
+                log.error(NLS.bind(ModelMessages.tasks_restore_readonly_message, dataSource.getName()));
                 return false; 
             }
         }

@@ -56,7 +56,7 @@ public class MySQLScriptExecuteHandler extends MySQLNativeToolHandler<MySQLScrip
     protected boolean validateTaskParameters(DBTTask task, MySQLScriptExecuteSettings settings, Log log) {
         DBPDataSource dataSource = settings.getDataSourceContainer().getDataSource();
         if (settings.isImport() && dataSource != null && DBUtils.isReadOnly(dataSource)) {
-            log.warn(NLS.bind(ModelMessages.tasks_restore_readonly_message, dataSource.getName()));
+            log.error(NLS.bind(ModelMessages.tasks_restore_readonly_message, dataSource.getName()));
             return false;
         }
         return true;
