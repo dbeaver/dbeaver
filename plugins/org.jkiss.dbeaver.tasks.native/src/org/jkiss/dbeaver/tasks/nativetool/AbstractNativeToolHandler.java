@@ -68,6 +68,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         settings.setLogWriter(logStream);
         if (!validateTaskParameters(task, settings, log)) {
             listener.taskFinished(task, null, new InterruptedException("Task parameters validation failed"), settings);
+            log.error("Task parameters validation failed");
             return new DBTTaskRunStatus();
         }
         try {

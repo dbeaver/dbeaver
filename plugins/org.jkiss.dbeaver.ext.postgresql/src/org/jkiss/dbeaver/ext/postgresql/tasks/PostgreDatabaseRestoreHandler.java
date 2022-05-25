@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -61,11 +62,12 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
                     return false;
                 }
             }
-        } else if (task.getType().getId().equals(PostgreSQLTasks.TASK_DATABASE_RESTORE) &&
-            DBUtils.isReadOnly(settings.getDataSourceContainer().getDataSource())) {
-            DBWorkbench.getPlatformUI().showWarningMessageBox(ModelMessages.tasks_restore_readonly_title,
-            NLS.bind(ModelMessages.tasks_restore_readonly_message, settings.getDataSourceContainer().getDataSource().getName()));
-            return false;
+        } else if (task.getType().getId().equals(PostgreSQLTasks.TASK_DATABASE_RESTORE)) {
+            DBPDataSource dataSource = settings.getDataSourceContainer().getDataSource();
+            if (dataSource != null && DBUtils.isReadOnly(settings.getDataSourceContainer().getDataSource())) {
+                log.warn(NLS.bind(ModelMessages.tasks_restore_readonly_message, dataSource.getName()));
+                return false; 
+            }
         }
         return true;
     }
