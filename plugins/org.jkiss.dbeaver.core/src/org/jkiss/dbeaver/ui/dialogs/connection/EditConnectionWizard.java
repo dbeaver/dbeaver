@@ -289,6 +289,8 @@ public class EditConnectionWizard extends ConnectionWizard {
     protected void saveSettings(DataSourceDescriptor dataSource, boolean isSaveConnectionSettings) {
         if (isPageActive(pageSettings) && isSaveConnectionSettings) {
             pageSettings.saveSettings(dataSource);
+            dataSource.setConnectionReadOnly(pageGeneral.isConnectionReadonly());
+            dataSource.setModifyPermissions(pageGeneral.getAccessRestrictions());
         }
         pageGeneral.saveSettings(dataSource);
         pageInit.saveSettings(dataSource);
