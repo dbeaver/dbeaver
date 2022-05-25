@@ -981,6 +981,8 @@ public class SQLEditor extends SQLEditorBase implements
 */
 
         sideToolBar.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.VERTICAL_ALIGN_BEGINNING));
+        CSSUtils.setCSSClass(sideToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        sideToolBar.pack();
     }
 
     private void createPresentationSwitchBar(Composite sqlEditorPanel) {
@@ -2549,6 +2551,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         DatabaseEditorUtils.setPartBackground(this, resultTabs);
+        resultsSash.setBackground(resultTabs.getBackground());
+        sideToolBar.setBackground(resultTabs.getBackground());
 
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
             ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
