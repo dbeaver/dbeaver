@@ -30,6 +30,7 @@ package org.jkiss.dbeaver.ui.controls;
  *  CustomSashForm
  */
 
+import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.custom.SashForm;
@@ -38,7 +39,10 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.util.ArrayList;
@@ -87,7 +91,6 @@ public class CustomSashForm extends SashForm {
         }
     }
 
-    ;
 
     public interface ICustomSashFormListener {
         void dividerMoved(int firstControlWeight, int secondControlWeight);
@@ -109,8 +112,7 @@ public class CustomSashForm extends SashForm {
             UP_HIDE_ARROW = 1,
             DOWN_RESTORE_ARROW = 2,
             DOWN_HIDE_ARROW = 3,
-
-    HIDE_ARROWS = 4;
+            HIDE_ARROWS = 4;
 
     protected static final int
             ARROW_TYPE_INDEX = 0,
@@ -157,8 +159,8 @@ public class CustomSashForm extends SashForm {
 
         SASH_WIDTH = 3 + getOrientation() == SWT.VERTICAL ? ARROW_HEIGHT : ARROW_WIDTH;
 
-        arrowColor = new Color(parent.getDisplay(), 99, 101, 156);
-        borderColor = new Color(parent.getDisplay(), 132, 130, 132);
+        arrowColor = new Color(parent.getDisplay(), 96, 96, 96);//244, 132, 0);
+        borderColor = new Color(parent.getDisplay(), 205, 205, 205);
 
         addDisposeListener(new DisposeListener() {
             /**
@@ -343,12 +345,18 @@ public class CustomSashForm extends SashForm {
                     Color oldFg = gc.getForeground();
                     Color oldBg = gc.getBackground();
 
-/*
-                    gc.setBackground(borderColor);
-                    gc.setFillRule(SWT.FILL_EVEN_ODD);
+
+                    // gc.setBackground(borderColor);
+                    gc.setForeground(borderColor);
+                    // gc.setFillRule(SWT.FILL_EVEN_ODD);
                     Point bounds = currentSashInfo.sash.getSize();
-                    gc.fillRectangle(1, 1, bounds.x - 2, bounds.y - 2);
-*/
+                    // gc.fillRectangle(1, 1, bounds.x - 2, bounds.y - 2);
+                    if (getOrientation() == SWT.VERTICAL) {
+                        gc.drawRectangle(-1, 0, bounds.x + 2, bounds.y - 1);
+                    } else {
+                        gc.drawRectangle(0, -1, bounds.x - 1, bounds.y + 2);
+                    }
+
 /*
                     Point size = currentSashInfo.sash.getSize();
                     gc.setLineStyle(SWT.LINE_DOT);
@@ -402,6 +410,72 @@ public class CustomSashForm extends SashForm {
                     currentSashInfo = null;
                 }
             });
+            
+            ToolTip tt = new ToolTip(newSash, ToolTip.NO_RECREATE, false) {
+                
+                @Override
+                protected Composite createToolTipContentArea(Event event, Composite parent) {
+                    Composite body = new Composite(parent, SWT.NONE);
+                    body.setLayout(new GridLayout(1, true));
+                    ToolBar tb = new ToolBar(body, SWT.NONE);
+//                    ToolBarManager tbm = new ToolBarManager(tb);
+//                    tbm.removeAll();
+                    
+                    // TODO choose icon based on currentSashInfo (see drawArrow(..) method)
+                    ToolItem up = UIUtils.createToolItem(tb, "Toggle upper panel", 
+                        getOrientation() == SWT.VERTICAL ? UIIcon.ARROW_UP : UIIcon.ARROW_LEFT,
+                        new SelectionAdapter() {
+                            @Override
+                            public void widgetSelected(SelectionEvent e) {
+                                switch (currentSashInfo.sashLocs[0][ARROW_TYPE_INDEX]) {
+                                    case UP_RESTORE_ARROW:
+                                        upRestoreClicked(currentSashInfo);
+                                        break;
+                                    case UP_HIDE_ARROW:
+                                        upHideClicked(currentSashInfo);
+                                        break;
+                                    case DOWN_RESTORE_ARROW:
+                                        downRestoreClicked(currentSashInfo);
+                                        break;
+                                    case DOWN_HIDE_ARROW:
+                                        downHideClicked(currentSashInfo);
+                                        break;
+                                }
+                            }
+                        }
+                    );
+                    if (currentSashInfo.sashLocs.length > 1) {
+                        ToolItem down = UIUtils.createToolItem(tb, "Toggle bottom panel",
+                                getOrientation() == SWT.VERTICAL ? UIIcon.ARROW_DOWN : UIIcon.ARROW_RIGHT,
+                                new SelectionAdapter() {
+                            @Override
+                            public void widgetSelected(SelectionEvent e) {
+                                switch (currentSashInfo.sashLocs[1][ARROW_TYPE_INDEX]) {
+                                case UP_RESTORE_ARROW:
+                                    upRestoreClicked(currentSashInfo);
+                                    break;
+                                case UP_HIDE_ARROW:
+                                    upHideClicked(currentSashInfo);
+                                    break;
+                                case DOWN_RESTORE_ARROW:
+                                    downRestoreClicked(currentSashInfo);
+                                    break;
+                                case DOWN_HIDE_ARROW:
+                                    downHideClicked(currentSashInfo);
+                                    break;
+                                }
+                            }
+                        });                    
+                    }
+                  
+                    // body.pack();
+                    return body;
+                }
+            };
+            tt.setPopupDelay(50);
+            tt.setHideDelay(0);
+            tt.setHideOnMouseDown(false);
+            tt.setShift(new Point(3, -5));
 
             // This is a kludge because we can't override the set cursor hit test.
             newSash.addMouseMoveListener(new MouseMoveListener() {
