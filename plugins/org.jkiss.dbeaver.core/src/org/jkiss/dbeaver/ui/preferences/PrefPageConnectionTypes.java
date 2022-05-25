@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -75,8 +76,9 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     public void init(IWorkbench workbench) {
     }
 
+    @NotNull
     @Override
-    protected Control createContents(final Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
 
         {
@@ -327,6 +329,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         typeTable.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
+                typeTable.removeControlListener(this);
                 UIUtils.packColumns(typeTable, true);
             }
         });

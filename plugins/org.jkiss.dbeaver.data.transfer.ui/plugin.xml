@@ -97,4 +97,8 @@
                 uiClass="org.jkiss.dbeaver.tools.transfer.ui.processor.config.ExecuteCommandEventProcessorConfigurator"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <pragma id="export" class="org.jkiss.dbeaver.sql.pragma.SQLPragmaExport"/>
+    </extension>
+
 </plugin>

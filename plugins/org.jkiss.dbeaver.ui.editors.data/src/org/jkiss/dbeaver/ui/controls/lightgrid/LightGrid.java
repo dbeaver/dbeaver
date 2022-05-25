@@ -62,7 +62,7 @@ public abstract class LightGrid extends Canvas {
     /**
      * Horizontal scrolling increment, in pixels.
      */
-    private static final int HORZ_SCROLL_INCREMENT = 5;
+    private static final int HORZ_SCROLL_INCREMENT = 12;
 
     /**
      * The area to the left and right of the column boundary/resizer that is
@@ -3023,7 +3023,7 @@ public abstract class LightGrid extends Canvas {
     }
 
     private void onMouseHorizontalWheel(Event e) {
-        if (hScroll.getVisible()) {
+        if (hScroll.getVisible() & columnScrolling) {
             scrollHorizontally(e.count);
             e.doit = false;
         }

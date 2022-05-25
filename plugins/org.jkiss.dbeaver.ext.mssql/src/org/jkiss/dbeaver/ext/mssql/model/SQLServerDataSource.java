@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -62,7 +63,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     private boolean supportsColumnProperty;
     private String serverVersion;
-    private boolean supportsIsExternalColumn;
+    private volatile Boolean supportsIsExternalColumn;
 
     private volatile transient boolean hasStatistics;
     private boolean isBabelfish;
@@ -79,10 +80,44 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return supportsColumnProperty;
     }
 
+    /**
+     * @deprecated This method is intended to be used only within
+     * the {@code visibleIf} attribute of a navigator tree node.
+     * <p>
+     * This method will be removed once #16366 is implemented.
+     */
+    @Deprecated(forRemoval = true)
     public boolean supportsExternalTables() {
-        if (isBabelfish) {
+        if (supportsIsExternalColumn != null) {
+            return supportsIsExternalColumn;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(new VoidProgressMonitor(), this, "Determine external tables availability")) {
+            return supportsExternalTables(session);
+        } catch (DBCException ignored) {
             return false;
         }
+    }
+
+    public boolean supportsExternalTables(JDBCSession session) {
+        if (supportsIsExternalColumn != null) {
+            return supportsIsExternalColumn;
+        }
+        if (isBabelfish) {
+            supportsIsExternalColumn = false;
+            return false;
+        }
+
+        // The "is_external" column can be used to identify external tables support.
+        // But not all SQL Server versions supports this column in the all_columns view
+        // Sometimes checking the version does not work for some reason - see #15036
+        // Let's check the existence of column directly at the database
+        try {
+            JDBCUtils.queryString(session, "SELECT TOP 1 is_external from sys.tables where 1<>1");
+            this.supportsIsExternalColumn = true;
+        } catch (Exception ignored) {
+            this.supportsIsExternalColumn = false;
+        }
+
         return supportsIsExternalColumn;
     }
 
@@ -168,10 +203,6 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         }
 
         fillConnectionProperties(connectionInfo, properties);
-
-        SQLServerAuthentication authSchema = SQLServerUtils.detectAuthSchema(connectionInfo);
-
-        authSchema.getInitializer().initializeAuthentication(connectionInfo, properties);
 
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(SQLServerConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
@@ -282,21 +313,6 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             } catch (SQLException e) {
                 log.debug("Can't read Database Engine edition info", e);
             }
-
-            if (!isBabelfish) {
-                // The "is_external" column can be used to identify external tables support.
-                // But not all SQL Server versions supports this column in the all_columns view
-                // Sometimes checking the version does not work for some reason - see #15036
-                // Let's check the existence of column directly at the database
-                try {
-                    JDBCUtils.queryString(session, "SELECT TOP 1 is_external from sys.tables");
-                    this.supportsIsExternalColumn = true;
-                } catch (Exception e) {
-                    this.supportsIsExternalColumn = false;
-                }
-            }
-
-
         } catch (Throwable e) {
             log.error("Error during connection initialization", e);
         }

@@ -114,6 +114,7 @@ public class SQLPreferenceConstants
     public final static String CLEAR_OUTPUT_BEFORE_EXECUTE              = "SQLEditor.clearOutputBeforeExecute";
 
     public final static String RESULT_SET_CLOSE_ON_ERROR                = "SQLEditor.resultSet.closeOnError";
+    public final static String RESULT_SET_REPLACE_CURRENT_TAB           = "SQLEditor.resultSet.replaceCurrentTab"; //$NON-NLS-1$
     public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation";
     public static final String RESULTS_PANEL_RATIO                      = "SQLEditor.resultSet.ratio";
     public static final String EXTRA_PANEL_RATIO                        = "SQLEditor.extraPanels.ratio";
@@ -136,7 +137,7 @@ public class SQLPreferenceConstants
     public static final String VAR_DRIVER_NAME = "driverName";
     public static final String VAR_ACTIVE_DATABASE = "database";
     public static final String VAR_ACTIVE_SCHEMA = "schema";
-    public static final String VAR_ACTIVE_PROJECT = "project.name";
+    public static final String VAR_ACTIVE_PROJECT = "projectName";
 
 
     public static final String SCRIPT_COMMIT_TYPE                       = "script.commit.type"; //$NON-NLS-1$

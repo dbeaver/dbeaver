@@ -36,9 +36,14 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
 import org.eclipse.ui.texteditor.*;
@@ -316,8 +321,32 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
 
         if (sourceViewer != null) {
+            final StyledText widget = sourceViewer.getTextWidget();
+
             // Context listener
-            EditorUtils.trackControlContext(getSite(), sourceViewer.getTextWidget(), SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
+            EditorUtils.trackControlContext(getSite(), widget, SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
+
+            // Mouse listener that moves cursor upon clicking with the right mouse button
+            widget.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseUp(MouseEvent e) {
+                    if (e.button == 3) {
+                        final StyledText widget = sourceViewer.getTextWidget();
+                        final ISelectionProvider selectionProvider = sourceViewer.getSelectionProvider();
+                        final ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
+
+                        int offset = widget.getOffsetAtPoint(new Point(e.x, e.y));
+
+                        if (offset < 0) {
+                            offset = widget.getOffsetAtLine(widget.getLineIndex(e.y));
+                        }
+
+                        if (offset >= 0 && (selection.getOffset() > offset || offset >= selection.getOffset() + selection.getLength())) {
+                            selectionProvider.setSelection(new TextSelection(offset, 0));
+                        }
+                    }
+                }
+            });
         }
     }
 
@@ -903,11 +932,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             log.error("Error creating problem marker", e);
         }
 
+        // We don't want to show this view every time because it makes everyone mad.
+        // But there's a catch: the user can't remove the annotation outside of this
+        // view, and also can't open this view without knowing about it in advance.
+        // Should we display a confirmation dialog with "Remember my choice" option?
+
+        /*
         try {
             UIUtils.getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROBLEM_VIEW, null, IWorkbenchPage.VIEW_VISIBLE);
         } catch (PartInitException e) {
             log.debug("Error opening problem view", e);
         }
+        */
 
         return true;
     }

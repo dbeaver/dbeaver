@@ -16,23 +16,27 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
-import java.util.Date;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.meta.Property;
+
+import java.time.OffsetDateTime;
 
 /**
  * Resource manager API
  */
-public class RMProject {
+public class RMProject implements DBPObject {
     private String id;
     private String name;
     private String description;
     private boolean shared;
 
-    private Date createTime;
+    private OffsetDateTime createTime;
     private String creator;
 
     public RMProject() {
     }
 
+    @Property
     public String getId() {
         return id;
     }
@@ -57,6 +61,7 @@ public class RMProject {
         this.description = description;
     }
 
+    @Property
     public boolean isShared() {
         return shared;
     }
@@ -65,11 +70,11 @@ public class RMProject {
         this.shared = shared;
     }
 
-    public Date getCreateTime() {
+    public OffsetDateTime getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(OffsetDateTime createTime) {
         this.createTime = createTime;
     }
 

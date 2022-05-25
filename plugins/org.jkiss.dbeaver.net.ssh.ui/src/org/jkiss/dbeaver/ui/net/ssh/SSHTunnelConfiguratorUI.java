@@ -65,7 +65,7 @@ import java.util.Locale;
 /**
  * SSH tunnel configuration
  */
-public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWHandlerConfiguration> {
+public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
 
     private DBWHandlerConfiguration savedConfiguration;
 
@@ -85,7 +85,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private VariablesHintLabel variablesHintLabel;
 
     @Override
-    public void createControl(Composite parent, Runnable propertyChangeListener)
+    public void createControl(Composite parent, Object object, Runnable propertyChangeListener)
     {
         final Composite composite = new Composite(parent, SWT.NONE);
         //gd.minimumHeight = 200;
@@ -354,9 +354,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     {
         credentialsPanel.saveSettings(configuration, "");
 
-        final String jumpServerSettingsPrefix = SSHImplementationAbstract.getJumpServerSettingsPrefix(0);
-        jumpServerCredentialsPanel.saveSettings(configuration, jumpServerSettingsPrefix);
-        configuration.setProperty(jumpServerSettingsPrefix + RegistryConstants.ATTR_ENABLED, jumpServerEnabledCheck.getSelection());
+        boolean jumpServersEnabled = jumpServerEnabledCheck.getSelection();
+        if (jumpServersEnabled) {
+            final String jumpServerSettingsPrefix = SSHImplementationAbstract.getJumpServerSettingsPrefix(0);
+            jumpServerCredentialsPanel.saveSettings(configuration, jumpServerSettingsPrefix);
+            configuration.setProperty(jumpServerSettingsPrefix + RegistryConstants.ATTR_ENABLED, jumpServersEnabled);
+        }
 
         String implLabel = tunnelImplCombo.getText();
         for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {

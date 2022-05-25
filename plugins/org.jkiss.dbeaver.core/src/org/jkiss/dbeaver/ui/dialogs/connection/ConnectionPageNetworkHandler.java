@@ -57,7 +57,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
     private final IDataSourceConnectionEditorSite site;
     private final NetworkHandlerDescriptor handlerDescriptor;
 
-    private IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
+    private IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator;
     private ControlEnableState blockEnableState;
     private DBWHandlerConfiguration handlerConfiguration;
     private Composite handlerComposite;
@@ -149,7 +149,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         handlerComposite = UIUtils.createComposite(composite, 1);
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        configurator.createControl(handlerComposite, this::updatePageCompletion);
+        configurator.createControl(handlerComposite, handlerDescriptor, this::updatePageCompletion);
 
         configurator.loadSettings(handlerConfiguration);
         useHandlerCheck.setSelection(handlerConfiguration.isEnabled());

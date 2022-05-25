@@ -157,7 +157,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             });
             deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            Button unDeleteButton = UIUtils.createPushButton(buttonBar, "Un-delete", null, new SelectionAdapter() {
+            Button unDeleteButton = UIUtils.createPushButton(buttonBar, UIConnectionMessages.dialog_driver_manager_button_undelete, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (undeleteDrivers()) {

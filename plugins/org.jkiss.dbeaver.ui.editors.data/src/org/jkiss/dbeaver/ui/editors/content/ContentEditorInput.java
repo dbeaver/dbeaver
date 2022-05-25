@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.LocalFileStorage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.IStatefulEditorInput;
@@ -193,13 +194,14 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
     private void prepareContent(DBRProgressMonitor monitor)
         throws DBException
     {
-        Object value = getValue();
+        final Object[] value = new Object[1];
+        UIUtils.syncExec(() -> value[0] = getValue());
         DBDContent content;
-        if (value instanceof DBDContent) {
-            content = (DBDContent) value;
+        if (value[0] instanceof DBDContent) {
+            content = (DBDContent) value[0];
         } else {
             // No need to do init
-            stringStorage = new StringEditorInput(getName(), CommonUtils.toString(value), isReadOnly(), fileCharset).getStorage();
+            stringStorage = new StringEditorInput(getName(), CommonUtils.toString(value[0]), isReadOnly(), fileCharset).getStorage();
             return;
         }
 

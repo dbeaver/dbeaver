@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -67,13 +68,13 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
     private static final Log log = Log.getLog(PrefPageProjectNetworkProfiles.class);
 
     private static class HandlerBlock {
-        private final IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
+        private final IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator;
         private final Composite blockControl;
         private final Button useHandlerCheck;
         private ControlEnableState blockEnableState;
         private final Map<DBWNetworkProfile, DBWHandlerConfiguration> loadedConfigs = new HashMap<>();
 
-        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck)
+        private HandlerBlock(IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck)
         {
             this.configurator = configurator;
             this.blockControl = blockControl;
@@ -94,8 +95,9 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
     public void init(IWorkbench workbench) {
     }
 
+    @NotNull
     @Override
-    protected Control createContents(final Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         CustomSashForm divider = UIUtils.createPartDivider(null, parent, SWT.HORIZONTAL);
 
         {
@@ -264,7 +266,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
     private void createHandlerTab(final NetworkHandlerDescriptor descriptor)
     {
-        IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
+        IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator;
         try {
             String implName = descriptor.getHandlerType().getImplName();
             UIPropertyConfiguratorDescriptor configDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(implName);
@@ -314,7 +316,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        configurator.createControl(handlerComposite, this::updateApplyButton);
+        configurator.createControl(handlerComposite, descriptor, this::updateApplyButton);
 
         enableHandlerContent(descriptor);
     }

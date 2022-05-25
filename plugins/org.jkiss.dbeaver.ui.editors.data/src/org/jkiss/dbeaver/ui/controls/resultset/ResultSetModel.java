@@ -247,11 +247,32 @@ public class ResultSetModel {
         return visibleAttributes.get(index);
     }
 
+    @NotNull
+    public List<DBDAttributeBinding> getVisibleLeafAttributes() {
+        final List<DBDAttributeBinding> children = new ArrayList<>();
+        final Deque<DBDAttributeBinding> parents = new ArrayDeque<>(getVisibleAttributes());
+
+        while (!parents.isEmpty()) {
+            final DBDAttributeBinding attribute = parents.removeFirst();
+            final List<DBDAttributeBinding> nested = getVisibleAttributes(attribute);
+
+            if (CommonUtils.isEmpty(nested)) {
+                children.add(attribute);
+            } else {
+                for (int i = nested.size() - 1; i >= 0; i--) {
+                    parents.offerFirst(nested.get(i));
+                }
+            }
+        }
+
+        return children;
+    }
+
     public void setAttributeVisibility(@NotNull DBDAttributeBinding attribute, boolean visible) {
         DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
         if (constraint != null && constraint.isVisible() != visible) {
             constraint.setVisible(visible);
-            if (attribute.getParentObject() == null) {
+            if (attribute.getParentObject() == null || attribute.getParentObject() == documentAttribute) {
                 if (visible) {
                     visibleAttributes.add(attribute);
                 } else {
@@ -717,23 +738,29 @@ public class ResultSetModel {
                             if (acs.attributeValues != null && acs.attributeValues.length > 1) {
                                 double minValue = DBExecUtils.makeNumericValue(acs.attributeValues[0]);
                                 double maxValue = DBExecUtils.makeNumericValue(acs.attributeValues[1]);
-                                if (acs.colorBackground != null && acs.colorBackground2 != null) {
-                                    final DBDAttributeBinding binding = entry.getKey();
-                                    final Object cellValue = getCellValue(binding, row);
-                                    double value = DBExecUtils.makeNumericValue(cellValue);
-                                    if (value >= minValue && value <= maxValue) {
-                                        foreground = acs.colorForeground;
-                                        RGB rowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
-                                        background = UIUtils.getSharedColor(rowRGB);
+                                final DBDAttributeBinding binding = entry.getKey();
+                                final Object cellValue = getCellValue(binding, row);
+                                double value = DBExecUtils.makeNumericValue(cellValue);
+                                if (value >= minValue && value <= maxValue) {
+                                    if (acs.colorBackground != null && acs.colorBackground2 != null && value >= minValue && value <= maxValue) {
+                                            RGB bgRowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
+                                            background = UIUtils.getSharedColor(bgRowRGB);
+                                            
+                                        // FIXME: coloring value before and after range. Maybe we need an option for this.
+                                        /* else if (value < minValue) {
+                                            foreground = acs.colorForeground;
+                                            background = acs.colorBackground;
+                                        } else if (value > maxValue) {
+                                            foreground = acs.colorForeground2;
+                                            background = acs.colorBackground2;
+                                        }*/
                                     }
-                                    // FIXME: coloring value before and after range. Maybe we need an option for this.
-                                    /* else if (value < minValue) {
-                                        foreground = acs.colorForeground;
-                                        background = acs.colorBackground;
-                                    } else if (value > maxValue) {
-                                        foreground = acs.colorForeground2;
-                                        background = acs.colorBackground2;
-                                    }*/
+                                    if (acs.colorForeground != null && acs.colorForeground2 != null) {
+                                        RGB fgRowRGB1 = ResultSetUtils.makeGradientValue(acs.colorForeground.getRGB(), acs.colorForeground2.getRGB(), minValue, maxValue, value);
+                                        foreground = UIUtils.getSharedColor(fgRowRGB1);
+                                    } else if (acs.colorForeground != null || acs.colorForeground2 != null) {
+                                        foreground = acs.colorForeground != null ? acs.colorForeground : acs.colorForeground2;
+                                    }
                                 }
                             }
                         } else {
@@ -930,7 +957,7 @@ public class ResultSetModel {
 
         for (DBSAttributeBase attr : this.dataFilter.getOrderedVisibleAttributes()) {
             DBDAttributeBinding binding = getAttributeBinding(attr);
-            if (binding != null && binding.getParentObject() == null) {
+            if (binding != null && (binding.getParentObject() == null || binding.getParentObject() == documentAttribute)) {
                 newBindings.add(binding);
             }
         }
@@ -989,7 +1016,7 @@ public class ResultSetModel {
                 } else {
                     if (!visibleAttributes.contains(cAttr)) {
                         DBDAttributeBinding attribute = (DBDAttributeBinding) cAttr;
-                        if (attribute.getParentObject() == null) {
+                        if (attribute.getParentObject() == null || attribute.getParentObject() == documentAttribute) {
                             // Add only root attributes
                             visibleAttributes.add(attribute);
                         }

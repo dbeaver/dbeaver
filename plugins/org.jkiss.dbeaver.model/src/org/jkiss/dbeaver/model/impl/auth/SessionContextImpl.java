@@ -45,13 +45,13 @@ public class SessionContextImpl implements SMSessionContext {
     @Nullable
     @Override
     public SMSession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull SMAuthSpace space, boolean open) throws DBException {
-        for (SMSession session : sessions) {
-            if (CommonUtils.equalObjects(session.getSessionSpace(), space)) {
-                return session;
-            }
+        SMSession session = findSpaceSession(space);
+        if (session != null) {
+            return session;
         }
+
         //log.debug(">> Session not found in context " + this + " for space " + space);
-        SMSession session = parentContext == null ? null : parentContext.getSpaceSession(monitor, space, false);
+        session = parentContext == null ? null : parentContext.getSpaceSession(monitor, space, false);
         if (session == null && open) {
             SMSessionProviderService sessionProviderService = DBWorkbench.getService(SMSessionProviderService.class);
             if (sessionProviderService != null) {
@@ -67,6 +67,17 @@ public class SessionContextImpl implements SMSessionContext {
             }
         }
         return session;
+    }
+
+    @Nullable
+    @Override
+    public SMSession findSpaceSession(@NotNull SMAuthSpace space) {
+        for (SMSession session : sessions) {
+            if (CommonUtils.equalObjects(session.getSessionSpace(), space)) {
+                return session;
+            }
+        }
+        return null;
     }
 
     @Override

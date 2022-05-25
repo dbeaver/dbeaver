@@ -141,12 +141,12 @@ public class DialogUtils {
         if (curDialogFolder != null) {
             fileDialog.setFilterPath(curDialogFolder);
         }
-        String fileName = fileDialog.open();
-        if (!CommonUtils.isEmpty(fileName)) {
+        String filePath = fileDialog.open();
+        if (!CommonUtils.isEmpty(filePath)) {
             setCurDialogFolder(fileDialog.getFilterPath());
-            fileName = fixMissingFileExtension(fileDialog, fileName);
+            filePath = fixMissingFileExtension(fileDialog, filePath);
         }
-        return fileName;
+        return filePath;
     }
 
     public static String getCurDialogFolder()
@@ -217,16 +217,16 @@ public class DialogUtils {
 
     /* SWT 2021-06-02 bug: file extension is not appended on Windows */
     @NotNull
-    private static String fixMissingFileExtension(@NotNull FileDialog dialog, @NotNull String filename) {
-        if (CommonUtils.isBitSet(dialog.getStyle(), SWT.SAVE) && filename.indexOf('.') < 0 && RuntimeUtils.isWindows()) {
+    private static String fixMissingFileExtension(@NotNull FileDialog dialog, @NotNull String filePath) {
+        if (CommonUtils.isBitSet(dialog.getStyle(), SWT.SAVE) && new File(filePath).getName().indexOf('.') < 0 && RuntimeUtils.isWindows()) {
             final String[] filters = dialog.getFilterExtensions();
             if (dialog.getFilterIndex() >= 0 && dialog.getFilterIndex() < filters.length) {
                 final String filter = filters[dialog.getFilterIndex()];
                 if (!filter.equals("*") && !filter.equals("*.*") && filter.indexOf('.') >= 0) {
-                    return filename + filter.substring(filter.lastIndexOf('.'));
+                    return filePath + filter.substring(filter.lastIndexOf('.'));
                 }
             }
         }
-        return filename;
+        return filePath;
     }
 }

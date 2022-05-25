@@ -30,12 +30,12 @@ import org.jkiss.utils.CommonUtils;
 /**
  * PgPass UI config (user name only)
  */
-public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurator<DBPDataSourceContainer> {
+public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurator<Object, DBPDataSourceContainer> {
 
     protected Text usernameText;
 
     @Override
-    public void createControl(Composite authPanel, Runnable propertyChangeListener) {
+    public void createControl(Composite authPanel, Object object, Runnable propertyChangeListener) {
         int fontHeight = UIUtils.getFontHeight(authPanel);
 
         Label usernameLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_auth_label_username);

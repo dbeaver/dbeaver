@@ -333,11 +333,12 @@
     <extension point="org.jkiss.dbeaver.sqlInsertMethod">
         <method id="mysqlInsertIgnore" class="org.jkiss.dbeaver.ext.mysql.model.MySQLInsertReplaceMethodIgnore" label="INSERT IGNORE" description="Insert ignore duplicate key value"/>
         <method id="mysqlReplaceIgnore" class="org.jkiss.dbeaver.ext.mysql.model.MySQLInsertReplaceMethod" label="REPLACE INTO" description="Insert replace duplicate key value"/>
+        <method id="mysqlReplaceIgnoreUpdate" class="org.jkiss.dbeaver.ext.mysql.model.MySQLInsertReplaceMethodUpdate" label="ON DUPLICATE KEY UPDATE" description="Insert update duplicate key value"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="mysql" parent="basic" class="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" label="MySQL" description="MySQL dialect." icon="icons/mysql_icon.png">
-            <property name="insertMethods" value="mysqlInsertIgnore,mysqlReplaceIgnore"/>
+            <property name="insertMethods" value="mysqlInsertIgnore,mysqlReplaceIgnore,mysqlReplaceIgnoreUpdate"/>
             <keywords value=""/>
             <execKeywords value=""/>
             <ddlKeywords value=""/>

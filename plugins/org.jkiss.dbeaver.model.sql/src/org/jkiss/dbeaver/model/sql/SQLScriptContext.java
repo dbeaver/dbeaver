@@ -45,8 +45,7 @@ public class SQLScriptContext implements DBCScriptContext {
 
     private final Map<String, VariableInfo> variables = new LinkedHashMap<>();
     private final Map<String, Object> defaultParameters = new HashMap<>();
-    private final Map<String, Object> pragmas = new HashMap<>();
-    private Map<String, Object> statementPragmas;
+    private final Map<String, Map<String, Object>> pragmas = new HashMap<>();
 
     private DBCScriptContextListener[] listeners = null;
 
@@ -188,19 +187,20 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     @NotNull
-    public Map<String, Object> getPragmas() {
-        return pragmas;
-    }
-
-    public void setStatementPragma(String name, Object value) {
-        if (statementPragmas == null) {
-            statementPragmas = new LinkedHashMap<>();
+    public Map<String, Map<String, Object>> getPragmas() {
+        if (parentContext != null) {
+            return parentContext.getPragmas();
+        } else {
+            return pragmas;
         }
-        statementPragmas.put(name, value);
     }
 
-    public Object getStatementPragma(String name) {
-        return statementPragmas == null ? null : statementPragmas.get(name);
+    public void setPragma(@NotNull String id, @Nullable Map<String, Object> params) {
+        if (parentContext != null) {
+            parentContext.setPragma(id, params);
+        } else {
+            pragmas.put(id, params);
+        }
     }
 
     @Override
@@ -220,7 +220,7 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     public void clearStatementContext() {
-        statementPragmas = null;
+        pragmas.clear();
     }
 
     public boolean isIgnoreParameters() {

@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ImageUtils;
-import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.File;
@@ -42,8 +41,7 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
     private static final int MARGIN_Y = 10;
 
     @Override
-    public void exportDiagram(EntityDiagram diagram, IFigure figure, DiagramPart diagramPart, File targetFile) throws DBException
-    {
+    public void exportDiagram(EntityDiagram diagram, IFigure figure, DiagramPart diagramPart, File targetFile) {
         int imageType = SWT.IMAGE_BMP;
         {
             String filePath = targetFile.getName().toLowerCase();
@@ -96,9 +94,6 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
 
                 fos.flush();
             }
-
-            ShellUtils.launchProgram(targetFile.getAbsolutePath());
-
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Save ERD as image", null, e);
         }

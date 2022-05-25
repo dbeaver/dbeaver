@@ -169,6 +169,14 @@ public class DBGeometry implements DBDValue {
         this.properties = properties;
     }
 
+    public void putProperties(@NotNull Map<String, Object> properties) {
+        if (this.properties == null) {
+            this.properties = new LinkedHashMap<>();
+        }
+
+        this.properties.putAll(properties);
+    }
+
     public DBGeometry copy() {
         return new DBGeometry(this);
     }

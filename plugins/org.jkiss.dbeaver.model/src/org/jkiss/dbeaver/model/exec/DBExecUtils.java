@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.net.DBWForwarder;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -312,7 +313,11 @@ public class DBExecUtils {
             try {
                 action.beforeExecute(session);
                 dbStat.executeStatement();
-                action.afterExecute(session, null);
+                if (action instanceof SQLDatabasePersistAction) {
+                    ((SQLDatabasePersistAction) action).afterExecute(session, dbStat, null);
+                } else {
+                    action.afterExecute(session, null);
+                }
             } catch (DBCException e) {
                 action.afterExecute(session, e);
                 throw e;

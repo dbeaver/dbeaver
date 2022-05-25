@@ -95,7 +95,15 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
         return credentials;
     }
 
+    public boolean isUserNameApplicable() {
+        return true;
+    }
+
     protected boolean isUserNameNeeded(@NotNull DBPDataSource dataSource) {
+        return true;
+    }
+
+    public boolean isUserPasswordApplicable() {
         return true;
     }
 

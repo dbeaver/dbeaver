@@ -21,6 +21,7 @@ import com.google.gson.GsonBuilder;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
@@ -43,12 +44,16 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.*;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
@@ -67,10 +72,10 @@ import org.jkiss.utils.IOUtils;
 import org.locationtech.jts.geom.Geometry;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
-public class GISLeafletViewer implements IGeometryValueEditor {
+public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceListener {
     private static final Log log = Log.getLog(GISLeafletViewer.class);
 
     private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
@@ -96,7 +101,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
     private boolean flipCoordinates = false;
     private final Composite composite;
 
-    public GISLeafletViewer(Composite parent, @NotNull DBDAttributeBinding[] bindings, SpatialDataProvider spatialDataProvider) {
+    public GISLeafletViewer(Composite parent, @NotNull DBDAttributeBinding[] bindings, @Nullable SpatialDataProvider spatialDataProvider, @Nullable IResultSetPresentation presentation) {
         this.bindings = bindings;
 
         this.flipCoordinates = spatialDataProvider != null && spatialDataProvider.isFlipCoordinates();
@@ -107,7 +112,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         browser = new Browser(composite, SWT.NONE);
         browser.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        final BrowserFunction setClipboardContents = new BrowserFunction(browser, "setClipboardContents") {
+        new BrowserFunction(browser, "setClipboardContents") {
             @Override
             public Object function(Object[] arguments) {
                 UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), arguments[0]);
@@ -115,9 +120,24 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             }
         };
 
+        if (presentation instanceof AbstractPresentation) {
+            new BrowserFunction(browser, "setPresentationSelection") {
+                @Override
+                public Object function(Object[] arguments) {
+                    final List<GridPos> selection = new ArrayList<>();
+                    for (Object pos : ((Object[]) arguments[0])) {
+                        final String[] split = ((String) pos).split(":");
+                        selection.add(new GridPos(CommonUtils.toInt(split[0]), CommonUtils.toInt(split[1])));
+                    }
+                    ((AbstractPresentation) presentation).setSelection(new StructuredSelection(selection), false);
+                    return null;
+                }
+            };
+        }
+
         browser.addDisposeListener(e -> {
             cleanupFiles();
-            setClipboardContents.dispose();
+            GISViewerActivator.getDefault().getPreferences().removePropertyChangeListener(this);
         });
 
         {
@@ -162,6 +182,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 }
             }
         }
+
+        GISViewerActivator.getDefault().getPreferences().addPropertyChangeListener(this);
     }
 
     @Override
@@ -210,6 +232,11 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Refresh", "Can't refresh value viewer", e);
         }
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent event) {
+        refresh();
     }
 
     public void setGeometryData(@Nullable DBGeometry[] values) throws DBException {
@@ -361,6 +388,8 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                         return geomCRS;
                     case "geomBounds":
                         return CommonUtils.toString(bounds, "undefined");
+                    case "minZoomLevel":
+                        return String.valueOf(GISViewerActivator.getDefault().getPreferences().getInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL));
                     case "defaultTiles":
                         LeafletTilesDescriptor descriptor = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
                         if (descriptor == null) {

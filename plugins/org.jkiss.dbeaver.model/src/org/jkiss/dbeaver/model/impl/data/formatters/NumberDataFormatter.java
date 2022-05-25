@@ -50,6 +50,10 @@ public class NumberDataFormatter implements DBDDataFormatter {
         if (useGrouping != null) {
             numberFormat.setGroupingUsed(CommonUtils.toBoolean(useGrouping));
         }
+        Object groupingSize = properties.get(NumberFormatSample.PROP_GROUPING_SIZE);
+        if (groupingSize != null) {
+            numberFormat.setGroupingSize(CommonUtils.toInt(groupingSize, numberFormat.getGroupingSize()));
+        }
         Object maxIntDigits = properties.get(NumberFormatSample.PROP_MAX_INT_DIGITS);
         if (maxIntDigits != null) {
             numberFormat.setMaximumIntegerDigits(CommonUtils.toInt(maxIntDigits));
@@ -92,10 +96,18 @@ public class NumberDataFormatter implements DBDDataFormatter {
                 numberFormat.setMinimumFractionDigits(fractionDigits);
             }
         }
-        if (type != null && (type.getTypeModifiers() & DBSTypedObject.TYPE_MOD_NUMBER_LEADING_ZEROES) > 0) {
-            // Override number format style set from properties in favor of type's own formatting rules
-            numberFormat.setMinimumIntegerDigits((int) type.getMaxLength());
-            numberFormat.setGroupingUsed(false);
+        if (type != null && CommonUtils.isBitSet(type.getTypeModifiers(), DBSTypedObject.TYPE_MOD_NUMBER_LEADING_ZEROES)) {
+            // Override number format style set from properties in favor of type's precision
+            if (type.getPrecision() != null && type.getPrecision() > 0) {
+                if (type.getScale() != null && type.getScale() > 0) {
+                    numberFormat.setMinimumIntegerDigits(type.getPrecision() - type.getScale());
+                    numberFormat.setMinimumFractionDigits(type.getScale());
+                } else {
+                    numberFormat.setMinimumIntegerDigits(type.getPrecision());
+                }
+
+                numberFormat.setGroupingUsed(false);
+            }
         }
         buffer = new StringBuffer();
         position = new FieldPosition(0);

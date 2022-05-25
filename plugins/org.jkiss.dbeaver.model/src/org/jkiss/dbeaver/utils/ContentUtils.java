@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -145,7 +146,8 @@ public class ContentUtils {
         try {
             byte[] buffer = new byte[STREAM_COPY_BUFFER_SIZE];
             long totalCopied = 0;
-            NumberFormat nf = NumberFormat.getInstance();
+            NumberFormat nf = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
+            String subtaskSuffix = " / " + nf.format(contentLength);
             for (;;) {
                 if (monitor.isCanceled()) {
                     break;
@@ -158,7 +160,7 @@ public class ContentUtils {
                 outputStream.write(buffer, 0, count);
                 monitor.worked(STREAM_COPY_BUFFER_SIZE);
                 if (contentLength > 0) {
-                    monitor.subTask(nf.format(totalCopied) + " of " + nf.format(contentLength));
+                    monitor.subTask(nf.format(totalCopied) + subtaskSuffix);
                 }
             }
         }

@@ -149,6 +149,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_close_results_tab_on_error;
     public static String pref_page_sql_editor_label_auto_open_output_view;
     public static String pref_page_sql_editor_label_auto_open_output_view_tip;
+    public static String pref_page_sql_editor_label_replace_on_single_query_exec_view;
+    public static String pref_page_sql_editor_label_replace_on_single_query_exec_view_tip;
     public static String pref_page_sql_editor_label_results_orientation;
     public static String pref_page_sql_editor_label_results_orientation_tip;
     public static String pref_page_sql_editor_link_text_editor;
@@ -321,6 +323,24 @@ public class SQLEditorMessages extends NLS {
     public static String script_selector_project_table_info_description;
     public static String script_selector_project_table_folder_description;
     public static String script_selector_project_table_folder_label;
+
+    public static String source_viewer_open_in_sql_console;
+    public static String source_viewer_show_ddl_text;
+    public static String source_viewer_show_ddl_tip;
+    public static String source_viewer_show_permissions_text;
+    public static String source_viewer_show_permissions_tip;
+    public static String source_viewer_separate_fk_text;
+    public static String source_viewer_separate_fk_tip;
+    public static String source_viewer_show_comments_text;
+    public static String source_viewer_show_comments_tip;
+
+    public static String sql_editor_action_clear;
+    public static String sql_editor_title_tooltip_path;
+    public static String sql_editor_title_tooltip_connecton;
+    public static String sql_editor_title_tooltip_type;
+    public static String sql_editor_title_tooltip_url;
+    public static String sql_editor_title_tooltip_database;
+    public static String sql_editor_title_tooltip_schema;
 
 
     static {

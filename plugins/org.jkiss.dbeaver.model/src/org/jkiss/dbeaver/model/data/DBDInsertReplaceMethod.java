@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 public interface DBDInsertReplaceMethod {
 
     @NotNull
-    String getOpeningClause(DBSTable table, DBRProgressMonitor monitor);
+    String getOpeningClause(@NotNull DBSTable table, @NotNull DBRProgressMonitor monitor);
 
-    String getTrailingClause(DBSTable table, DBRProgressMonitor monitor, DBSAttributeBase[] attributes);
+    String getTrailingClause(@NotNull DBSTable table, @NotNull DBRProgressMonitor monitor, DBSAttributeBase[] attributes);
 
 }

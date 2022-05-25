@@ -33,6 +33,7 @@ public class ERDUIConstants {
     public static final String PREF_PRINT_MARGIN_LEFT = "erd.print.margin-left";
     public static final String PREF_PRINT_MARGIN_RIGHT = "erd.print.margin-right";
 
+    public static final String PREF_ROUTING_TYPE = "erd.routing.type";
     public static final int PRINT_MODE_DEFAULT = PrintFigureOperation.TILE;
     public static final int PRINT_MARGIN_DEFAULT = 0;
 
@@ -54,6 +55,8 @@ public class ERDUIConstants {
     public static final String COLOR_ERD_LINES_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.lines.foreground";
     public static final String COLOR_ERD_ATTR_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.attributes.background";
     public static final String COLOR_ERD_ATTR_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.attributes.foreground";
+    public static final String COLOR_ERD_SEARCH_HIGHLIGHTING = "org.jkiss.dbeaver.erd.diagram.search.highlighting";
+    public static final String COLOR_ERD_FK_HIGHLIGHTING = "org.jkiss.dbeaver.erd.diagram.fk.highlighting";
     public static final String COLOR_ERD_NOTE_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.notes.background";
     public static final String COLOR_ERD_NOTE_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.notes.foreground";
 
@@ -73,9 +76,15 @@ public class ERDUIConstants {
     public static final String COLOR_ERD_HEADER_COLOR_6 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.6"; //$NON-NLS-1$
     public static final String COLOR_ERD_HEADER_COLOR_7 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.7"; //$NON-NLS-1$
 
+    public static final String CMD_SAVE_AS = "org.jkiss.dbeaver.erd.diagram.saveAs";
+    public static final String CONFIRM_OPEN_EXPORTED_FILE = "erd_open_exported_file";
+
     public static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + ERDUIActivator.PLUGIN_ID + "/icons/";
 
     public static final int DEFAULT_NOTE_BORDER_WIDTH = 1;
     public static final int DEFAULT_ENTITY_BORDER_WIDTH = 2;
+
+    public static final String ROUTING_MIKAMI = "Mikami-Tabuchi (Experimental)";
+    public static final String ROUTING_SHORTEST_PATH = "Shortest Path";
 
 }

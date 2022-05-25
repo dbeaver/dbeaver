@@ -34,6 +34,7 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.EclipseApplicationImpl;
+import org.jkiss.dbeaver.registry.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
@@ -236,7 +238,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         }
 
         initDebugWriter();
-
+        TimezoneRegistry.overrideTimezone();
         updateSplashHandler();
 
         final Runtime runtime = Runtime.getRuntime();
@@ -306,6 +308,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
             display = null;
         }
     }
+
 
     private void markLocationReadOnly(Location instanceLoc) {
         try {
@@ -396,11 +399,18 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
 
     private static void saveWorkspacesToBackup(@NotNull Iterable<? extends CharSequence> workspaces) {
         try {
+            if (!Files.exists(FILE_WITH_WORKSPACES)) {
+                Files.createDirectories(FILE_WITH_WORKSPACES);
+            }
             Files.write(FILE_WITH_WORKSPACES, workspaces, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             System.err.println("Unable to save backed up workspaces"); //$NON-NLS-1$
             e.printStackTrace();
         }
+    }
+    @Nullable
+    public Path getDefaultWorkingFolder() {
+        return  Path.of(WORKSPACE_DIR_CURRENT);
     }
 
     private String getDefaultInstanceLocation() {

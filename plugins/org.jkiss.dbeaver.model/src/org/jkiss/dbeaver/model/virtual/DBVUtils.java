@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -58,7 +59,7 @@ public abstract class DBVUtils {
 
     @Nullable
     public static DBVTransformSettings getTransformSettings(@NotNull DBDAttributeBinding binding, boolean create) {
-        if (DBUtils.isDynamicAttribute(binding.getAttribute())) {
+        if (DBUtils.isDynamicAttribute(binding.getAttribute()) && (binding.getParentObject() == null || binding.getParentObject().getDataKind() != DBPDataKind.DOCUMENT)) {
             return null;
         }
         DBVEntity vEntity = getVirtualEntity(binding, create);
@@ -242,7 +243,7 @@ public abstract class DBVUtils {
             }
             if (formatValues && keyValue instanceof Date) {
                 // Convert dates into string to avoid collisions
-                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
+                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.UI);
             }
             String keyLabel;
             long keyCount = 0;

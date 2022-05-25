@@ -23,8 +23,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -115,32 +116,15 @@ public abstract class JDBCDataSource
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose)
         throws DBCException
     {
-        // It MUST be a JDBC driver
-        Driver driverInstance = null;
         DBPDriver driver = getContainer().getDriver();
-        if (driver.isInstantiable() && !CommonUtils.isEmpty(driver.getDriverClassName())) {
-            try {
-                driverInstance = getDriverInstance(monitor);
-            } catch (DBException e) {
-                throw new DBCConnectException("Can't create driver instance", e, this);
-            }
-        } else {
-            if (!CommonUtils.isEmpty(driver.getDriverClassName())) {
-                try {
-                    driver.loadDriver(monitor);
-                    Class.forName(driver.getDriverClassName(), true, driver.getClassLoader());
-                } catch (Exception e) {
-                    throw new DBCException("Driver class '" + driver.getDriverClassName() + "' not found", e);
-                }
-            }
-        }
 
         DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration(container.getActualConnectionConfiguration());
         Properties connectProps = getAllConnectionProperties(monitor, context, purpose, connectionInfo);
 
         final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
 
-        DBAAuthModel authModel = connectionInfo.getAuthModel();
+        DBPAuthModelDescriptor authModelDescriptor = driver.getDataSourceProvider().detectConnectionAuthModel(driver, connectionInfo);
+        DBAAuthModel authModel = authModelDescriptor.getInstance();
 
         // Obtain connection
         try {
@@ -149,22 +133,13 @@ public abstract class JDBCDataSource
             }
             final String url = getConnectionURL(connectionInfo);
             boolean isInvalidURL = false;
-            if (driverInstance != null) {
-                try {
-                    if (!driverInstance.acceptsURL(url)) {
-                        // Just set the mark. Some drivers are poorly coded and always returns false here.
-                        isInvalidURL = true;
-                    }
-                } catch (Throwable e) {
-                    log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
-                }
-            }
+
             monitor.subTask("Connecting " + purpose);
             Connection[] connection = new Connection[1];
             Exception[] error = new Exception[1];
             int openTimeout = getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
-            final Driver driverInstanceFinal = driverInstance;
 
+            // Init authentication first (it may affect driver properties or driver configuration or even driver libraries)
             try {
                 DBAAuthCredentials credentials = authModel.loadCredentials(getContainer(), connectionInfo);
 
@@ -176,6 +151,37 @@ public abstract class JDBCDataSource
             } catch (DBException e) {
                 throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
+
+            // It MUST be a JDBC driver
+            Driver driverInstance = null;
+            if (driver.isInstantiable() && !CommonUtils.isEmpty(driver.getDriverClassName())) {
+                try {
+                    driverInstance = getDriverInstance(monitor);
+                } catch (DBException e) {
+                    throw new DBCConnectException("Can't create driver instance", e, this);
+                }
+            } else {
+                if (!CommonUtils.isEmpty(driver.getDriverClassName())) {
+                    try {
+                        driver.loadDriver(monitor);
+                        Class.forName(driver.getDriverClassName(), true, driver.getClassLoader());
+                    } catch (Exception e) {
+                        throw new DBCException("Driver class '" + driver.getDriverClassName() + "' not found", e);
+                    }
+                }
+            }
+
+            if (driverInstance != null) {
+                try {
+                    if (!driverInstance.acceptsURL(url)) {
+                        // Just set the mark. Some drivers are poorly coded and always returns false here.
+                        isInvalidURL = true;
+                    }
+                } catch (Throwable e) {
+                    log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
+                }
+            }
+            final Driver driverInstanceFinal = driverInstance;
 
             DBRRunnableWithProgress connectTask = monitor1 -> {
                 try {

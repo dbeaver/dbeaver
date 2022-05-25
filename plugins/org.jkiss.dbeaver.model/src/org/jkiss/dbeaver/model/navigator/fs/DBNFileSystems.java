@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.fs.nio.NIOListener;
 import org.jkiss.dbeaver.model.fs.nio.NIOMonitor;
 import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -179,6 +180,7 @@ public class DBNFileSystems extends DBNNode implements NIOListener {
 
     public void resetFileSystems() {
         children = null;
+        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
     }
 
     @Override

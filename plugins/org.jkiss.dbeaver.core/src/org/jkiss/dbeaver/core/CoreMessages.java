@@ -340,10 +340,13 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_ui_general_checkbox_automatic_updates;
 	public static String pref_page_ui_general_combo_language;
+	public static String pref_page_ui_general_combo_timezone;
+	public static String pref_page_ui_general_combo_timezone_tip;
 	public static String pref_page_ui_general_combo_language_tip;
 	public static String pref_page_ui_general_keep_database_editors;
 	public static String pref_page_ui_general_refresh_editor_on_open;
 	public static String pref_page_ui_general_group_general;
+	public static String pref_page_ui_general_group_timezone;
 	public static String pref_page_ui_general_group_language;
 	public static String pref_page_ui_general_group_editors;
 	public static String pref_page_eclipse_ui_general_group_general;
@@ -366,6 +369,7 @@ public class CoreMessages extends NLS {
 
 	public static String editor_file_open_in_explorer;
 	public static String editor_file_copy_path;
+	public static String editor_file_copy_object_name;
 	public static String editor_file_rename;
 
 	// New Connection Wizard
@@ -588,6 +592,9 @@ public class CoreMessages extends NLS {
 
 	public static String toolbar_checkbox_connection_readonly_tooltip;
 	public static String toolbar_checkbox_connection_not_readonly_tooltip;
+
+	public static String driver_connection_sort_by;
+	public static String monitor_panel_transaction_monitor_tip;
 
 	static {
 		// initialize resource bundle

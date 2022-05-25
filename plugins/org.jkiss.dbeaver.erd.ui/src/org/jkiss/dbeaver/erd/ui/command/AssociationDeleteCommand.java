@@ -22,6 +22,8 @@ import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDElement;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart;
+import org.jkiss.dbeaver.erd.ui.part.AttributePart;
+import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
@@ -44,8 +46,16 @@ public class AssociationDeleteCommand extends Command {
         super();
         this.part = part;
         association = part.getAssociation();
-        sourceEntity = association.getSourceEntity();
-        targetEntity = association.getTargetEntity();
+        if (association.getSourceEntity() == null && part.getSource() instanceof AttributePart) {
+            sourceEntity = ((EntityPart) part.getSource().getParent()).getEntity();
+        } else {
+            sourceEntity = association.getSourceEntity();
+        }
+        if (association.getTargetEntity() == null && part.getTarget() instanceof AttributePart) {
+            targetEntity = ((EntityPart) part.getTarget().getParent()).getEntity();
+        } else {
+            targetEntity = association.getTargetEntity();
+        }
     }
 
     /**
@@ -69,8 +79,7 @@ public class AssociationDeleteCommand extends Command {
     }
 
     protected void removeAssociationFromDiagram() {
-        part.markAssociatedAttributes(EditPart.SELECTED_NONE);
-
+        part.setSelected(EditPart.SELECTED_NONE);
         targetEntity.removeReferenceAssociation(association, true);
         sourceEntity.removeAssociation(association, true);
         association.setSourceEntity(null);
@@ -96,6 +105,7 @@ public class AssociationDeleteCommand extends Command {
         association.setTargetEntity(targetEntity);
         sourceEntity.addAssociation(association, true);
         targetEntity.addReferenceAssociation(association, true);
+        part.activate();
     }
 
 }

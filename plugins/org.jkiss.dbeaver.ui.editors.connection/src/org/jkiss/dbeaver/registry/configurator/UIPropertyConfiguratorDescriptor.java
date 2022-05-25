@@ -48,7 +48,7 @@ public class UIPropertyConfiguratorDescriptor extends AbstractContextDescriptor
 
     @SuppressWarnings("unchecked")
     @NotNull
-    public <T extends IObjectPropertyConfigurator<?>> T createConfigurator() throws DBException {
+    public <T extends IObjectPropertyConfigurator<Object, ?>> T createConfigurator() throws DBException {
         return (T) uiConfigType.createInstance(IObjectPropertyConfigurator.class);
     }
 

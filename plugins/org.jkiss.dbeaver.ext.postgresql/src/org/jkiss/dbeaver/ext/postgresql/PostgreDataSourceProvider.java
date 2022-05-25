@@ -108,6 +108,17 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         return new PostgreDataSource(monitor, container);
     }
 
+    /**
+     * We disable provider bundle as classes source because is contains JNA dependency
+     * which conflicts with Waffle (which contains JNA 4.5).
+     * Technically it is a hack.
+     * Solution: move all JNA-dependent functions to a separate bundle.
+     */
+    @Override
+    public boolean providesDriverClasses() {
+        return false;
+    }
+
     ////////////////////////////////////////////////////////////////
     // Local client
 

@@ -640,7 +640,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return (T)driverInstance;
     }
 
-    private void resetDriverInstance() {
+    public void resetDriverInstance() {
         this.driverInstance = null;
         this.driverClass = null;
         this.isLoaded = false;
@@ -1097,7 +1097,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return driverCopy;
     }
 
-    private void loadDriver(DBRProgressMonitor monitor, boolean forceReload)
+    public void loadDriver(DBRProgressMonitor monitor, boolean forceReload)
             throws DBException {
         if (isLoaded && !forceReload) {
             return;
@@ -1156,11 +1156,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             libraryURLs.add(url);
         }
         // Make class loader
+        ClassLoader baseClassLoader = rootClassLoader;
+        if (baseClassLoader == null) {
+            DBPDataSourceProvider dataSourceProvider = getDataSourceProvider();
+            if (dataSourceProvider.providesDriverClasses()) {
+                // Use driver provider class loader
+                baseClassLoader = dataSourceProvider.getClass().getClassLoader();
+            } else {
+                // Use model classloader
+                baseClassLoader = DBPDataSource.class.getClassLoader();
+            }
+        }
         this.classLoader = new DriverClassLoader(
             this,
             libraryURLs.toArray(new URL[0]),
-            rootClassLoader != null ? rootClassLoader : getDataSourceProvider().getClass().getClassLoader()
-        );
+            baseClassLoader);
     }
 
     private static synchronized void loadGlobalLibraries() {
@@ -1463,7 +1473,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (!CommonUtils.isEmpty(driversHome)) {
             homeFolder = Path.of(driversHome);
         } else {
-            homeFolder = platform.getWorkspace().getAbsolutePath().getParent().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
+            if (platform.getWorkspace().getAbsolutePath().getParent() == null) {
+                homeFolder = platform.getApplication().getDefaultWorkingFolder();
+                if (homeFolder != null && homeFolder.getParent() != null) {
+                    homeFolder = homeFolder.getParent().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
+                } else {
+                    log.warn("Can't find folder path for drivers");
+                    return null;
+                }
+            } else {
+                homeFolder = platform.getWorkspace().getAbsolutePath().getParent().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
+            }
         }
         if (!Files.exists(homeFolder)) {
             try {

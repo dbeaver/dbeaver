@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 /**
  * SSL configuration
  */
-public abstract class SSLConfiguratorAbstractUI implements IObjectPropertyConfigurator<DBWHandlerConfiguration> {
+public abstract class SSLConfiguratorAbstractUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
 
     @Override
     public void resetSettings(DBWHandlerConfiguration configuration) {

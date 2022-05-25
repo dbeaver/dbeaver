@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -63,8 +64,9 @@ public class PrefPageSQLCodeEditing extends AbstractPrefPage implements IWorkben
         super();
     }
 
+    @NotNull
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
 
         // Folding

@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -85,8 +86,8 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         this.aggregateTable = new Tree(parent, SWT.SINGLE | SWT.FULL_SELECTION);
         this.aggregateTable.setHeaderVisible(true);
         this.aggregateTable.setLinesVisible(true);
-        new TreeColumn(this.aggregateTable, SWT.LEFT).setText("Function");
-        new TreeColumn(this.aggregateTable, SWT.LEFT).setText("Value");
+        new TreeColumn(this.aggregateTable, SWT.LEFT).setText(ResultSetMessages.aggregate_columns_function_text);
+        new TreeColumn(this.aggregateTable, SWT.LEFT).setText(ResultSetMessages.aggregate_columns_value_text);
 
         if (this.presentation instanceof ISelectionProvider) {
             ((ISelectionProvider) this.presentation).addSelectionChangedListener(event -> {
@@ -316,7 +317,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class GroupByColumnsAction extends Action {
         public GroupByColumnsAction() {
-            super("Group by columns", IAction.AS_CHECK_BOX);
+            super(ResultSetMessages.aggreagate_columns_group_by_column_text, IAction.AS_CHECK_BOX);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.GROUP_BY_ATTR));
             setChecked(groupByColumns);
         }
@@ -331,7 +332,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class ValueTypeToggleAction extends Action {
         public ValueTypeToggleAction() {
-            super("Toggle numbers/strings aggregation", IAction.AS_CHECK_BOX);
+            super(ResultSetMessages.aggreagate_columns_toggle_aggregation_text, IAction.AS_CHECK_BOX);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(
                 aggregateAsStrings ? DBIcon.TYPE_STRING : DBIcon.TYPE_NUMBER));
             setChecked(aggregateAsStrings);
@@ -348,7 +349,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class AddFunctionAction extends Action {
         public AddFunctionAction() {
-            super("Add function", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
+            super(ResultSetMessages.aggregate_columns_add_function_text, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
         }
 
         @Override
@@ -393,7 +394,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class RemoveFunctionAction extends Action {
         public RemoveFunctionAction() {
-            super("Remove function", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REMOVE));
+            super(ResultSetMessages.aggregate_columns_remove_function_text, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REMOVE));
         }
 
         @Override
@@ -413,7 +414,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class ResetFunctionsAction extends Action {
         public ResetFunctionsAction() {
-            super("Reset", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REFRESH));
+            super(ResultSetMessages.aggregate_columns_reset_text, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_REFRESH));
         }
 
         @Override
@@ -426,7 +427,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class CopyAction extends Action {
         public CopyAction() {
-            super("Copy Value");
+            super(ResultSetMessages.aggregate_columns_copy_value_text);
         }
 
         @Override
@@ -446,7 +447,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class CopyAllAction extends Action {
         public CopyAllAction() {
-            super("Copy All");
+            super(ResultSetMessages.aggregate_columns_copy_all_text);
         }
 
         @Override

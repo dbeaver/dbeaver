@@ -50,6 +50,7 @@ public class EntityFigure extends Figure {
     private AttributeListFigure keyFigure;
     private AttributeListFigure attributeFigure;
     private EditableLabel nameLabel;
+    private Label descLabel;
 
     public EntityFigure(EntityPart part)
     {
@@ -79,7 +80,7 @@ public class EntityFigure extends Figure {
         nameLabel.setIcon(tableImage);
         nameLabel.setBorder(new MarginBorder(3));
 
-        Label descLabel = null;
+        descLabel = null;
         if (showComments && !CommonUtils.isEmpty(entity.getObject().getDescription())) {
             descLabel = new Label(entity.getObject().getDescription());
         }
@@ -193,13 +194,21 @@ public class EntityFigure extends Figure {
     }
 
 
-    public void updateTitleForegroundColor() {
+    private void updateTitleForegroundColor() {
         Color bgColor = getBackgroundColor();
         
-        if(bgColor == null)
-        	nameLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
-        else
-	        nameLabel.setForegroundColor(UIUtils.getContrastColor(bgColor));
+        if (bgColor == null) {
+            nameLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
+            if (descLabel != null) {
+                descLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
+            }
+        } else {
+            nameLabel.setForegroundColor(UIUtils.getContrastColor(bgColor));
+            if (descLabel != null) {
+                descLabel.setForegroundColor(UIUtils.getContrastColor(bgColor));
+            }
+        }
+
     }
 
     @Override

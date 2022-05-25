@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
 import java.util.Map;
 
-public interface IDataTransferEventProcessorConfigurator extends IObjectPropertyConfigurator<Map<String, Object>> {
+public interface IDataTransferEventProcessorConfigurator extends IObjectPropertyConfigurator<Object, Map<String, Object>> {
     boolean isApplicable(@NotNull StreamConsumerSettings configuration);
 
     default boolean hasControl() {

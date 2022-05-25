@@ -64,6 +64,8 @@ public class DataSourceUtils {
     private static final String PARAM_MERGE_ENTITIES = "mergeEntities";
     private static final String PARAM_FOLDER = "folder";
     private static final String PARAM_AUTO_COMMIT = "autoCommit";
+    private static final String PARAM_CREATE = "create";
+    private static final String PARAM_SAVE = "save";
 
     private static final String PREFIX_HANDLER = "handler.";
     private static final String PREFIX_PROP = "prop.";
@@ -88,7 +90,8 @@ public class DataSourceUtils {
             hideFolders = false,
             hideSchemas = false,
             mergeEntities = false,
-            savePassword = true;
+            savePassword = true,
+            isTemporary = true;
         Boolean autoCommit = null;
         Map<String, String> conProperties = new HashMap<>();
         Map<String, Map<String, String>> handlerProps = new HashMap<>();
@@ -170,6 +173,15 @@ public class DataSourceUtils {
                     break;
                 case PARAM_AUTO_COMMIT:
                     autoCommit = CommonUtils.toBoolean(paramValue);
+                    break;
+                case PARAM_CREATE:
+                    createNewDataSource = CommonUtils.toBoolean(paramValue);
+                    if (parameterHandler != null) {
+                        parameterHandler.setParameter(paramName, paramValue);
+                    }
+                    break;
+                case PARAM_SAVE:
+                    isTemporary = !CommonUtils.toBoolean(paramValue);
                     break;
                 default:
                     boolean handled = false;
@@ -331,7 +343,7 @@ public class DataSourceUtils {
 
         DBPDataSourceContainer newDS = dsRegistry.createDataSource(driver, connConfig);
         newDS.setName(dsName);
-        ((DataSourceDescriptor)newDS).setTemporary(true);
+        ((DataSourceDescriptor)newDS).setTemporary(isTemporary);
         if (savePassword) {
             newDS.setSavePassword(true);
         }
