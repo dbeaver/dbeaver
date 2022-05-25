@@ -330,21 +330,44 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             widget.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseUp(MouseEvent e) {
-                    if (e.button == 3) {
-                        final StyledText widget = sourceViewer.getTextWidget();
-                        final ISelectionProvider selectionProvider = sourceViewer.getSelectionProvider();
-                        final ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
-
-                        int offset = widget.getOffsetAtPoint(new Point(e.x, e.y));
-
-                        if (offset < 0) {
-                            offset = widget.getOffsetAtLine(widget.getLineIndex(e.y));
-                        }
-
-                        if (offset >= 0 && (selection.getOffset() > offset || offset >= selection.getOffset() + selection.getLength())) {
-                            selectionProvider.setSelection(new TextSelection(offset, 0));
-                        }
+                    if (e.button != 3) {
+                        return;
                     }
+
+                    final StyledText widget = sourceViewer.getTextWidget();
+                    final ISelectionProvider selectionProvider = sourceViewer.getSelectionProvider();
+                    final ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
+
+                    int offset = widget.getOffsetAtPoint(new Point(e.x, e.y));
+
+                    if (offset < 0) {
+                        offset = widget.getOffsetAtLine(widget.getLineIndex(e.y));
+                    }
+
+                    if (offset < 0) {
+                        return;
+                    }
+
+                    boolean withinExistingSelection = false;
+
+                    if (selection instanceof IBlockTextSelection) {
+                        for (IRegion region : ((IBlockTextSelection) selection).getRegions()) {
+                            if (within(region, offset)) {
+                                withinExistingSelection = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        withinExistingSelection = within(new Region(selection.getOffset(), selection.getLength()), offset);
+                    }
+
+                    if (!withinExistingSelection) {
+                        selectionProvider.setSelection(new TextSelection(offset, 0));
+                    }
+                }
+
+                private boolean within(@NotNull IRegion region, int index) {
+                    return region.getOffset() <= index && index < region.getOffset() + region.getLength();
                 }
             });
         }
