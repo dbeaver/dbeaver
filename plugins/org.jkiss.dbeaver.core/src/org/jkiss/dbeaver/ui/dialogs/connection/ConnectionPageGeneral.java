@@ -152,7 +152,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             ConnectionPageSettings settings = wizard.getPageSettings();
 
             if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
-                connectionNameText.setText(generateConnectionName(settings, ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN))); ;
+                connectionNameText.setText(generateConnectionName(settings, ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN)));
                 connectionNameChanged = true;
             } else {
                 if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {

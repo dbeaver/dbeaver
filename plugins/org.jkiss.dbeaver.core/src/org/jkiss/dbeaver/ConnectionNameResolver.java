@@ -16,7 +16,8 @@
  */
 package org.jkiss.dbeaver;
 
-import org.eclipse.jgit.annotations.Nullable;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -32,6 +33,7 @@ public class ConnectionNameResolver extends SQLNewScriptTemplateVariablesResolve
     public static final String VAR_DEFAULT = "host_or_database";
     private final DataSourceDescriptor descriptor;
 
+    @NotNull
     public static Set<String> getConnectionVariables() {
         final Set<String> strings = Arrays.stream(ArrayUtils.concatArrays(DBPConnectionConfiguration.ALL_VARIABLES, new String[]{VAR_DEFAULT})).collect(Collectors.toSet());
         strings.remove(DBPConnectionConfiguration.VARIABLE_DATASOURCE);
@@ -39,6 +41,7 @@ public class ConnectionNameResolver extends SQLNewScriptTemplateVariablesResolve
         return strings;
     };
 
+    @NotNull
     public static List<List<String>> getConnectionVariablesInfo() {
         final String[][] strings = ArrayUtils.concatArrays(
             ALL_VARIABLES_INFO,
@@ -59,6 +62,7 @@ public class ConnectionNameResolver extends SQLNewScriptTemplateVariablesResolve
         this.descriptor = descriptor;
     }
 
+    @NotNull
     private String generateLegacyConnectionName() {
         String newName = descriptor == null ? "" : getDataSourceContainer().getName(); //$NON-NLS-1$
         if (CommonUtils.isEmpty(newName)) {

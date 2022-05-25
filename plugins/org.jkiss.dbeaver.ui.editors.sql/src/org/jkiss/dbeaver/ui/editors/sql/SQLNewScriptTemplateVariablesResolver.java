@@ -39,7 +39,6 @@ public class SQLNewScriptTemplateVariablesResolver extends DataSourceVariableRes
         }
     );
 
-
     public SQLNewScriptTemplateVariablesResolver(DBPDataSourceContainer dataSourceContainer, DBPConnectionConfiguration configuration) {
         super(dataSourceContainer, configuration);
     }
