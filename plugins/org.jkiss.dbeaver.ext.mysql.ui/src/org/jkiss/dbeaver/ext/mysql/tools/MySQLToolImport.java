@@ -17,11 +17,15 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolWizardDialog;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 
@@ -37,10 +41,13 @@ public class MySQLToolImport implements IUserInterfaceTool
     {
         for (DBSObject object : objects) {
             if (object instanceof MySQLCatalog) {
-                NativeToolWizardDialog dialog = new NativeToolWizardDialog(
-                    window,
-                    new MySQLScriptExecuteWizard((MySQLCatalog) object, true));
-                dialog.open();
+                if (DBUtils.isReadOnly(object)) {
+                    DBWorkbench.getPlatformUI().showWarningMessageBox(ModelMessages.tasks_restore_readonly_title,
+                        NLS.bind(ModelMessages.tasks_restore_readonly_message, object.getDataSource().getName()));
+                } else {
+                    NativeToolWizardDialog dialog = new NativeToolWizardDialog(window, new MySQLScriptExecuteWizard((MySQLCatalog) object, true));
+                    dialog.open();
+                }
             }
         }
     }

@@ -119,7 +119,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                     completeMessage.toString(),
                     DBPMessageType.INFORMATION,
                     null);
-            } else if (error != null) {
+            } else if (error != null && !(error instanceof InterruptedException)) {
                 DBWorkbench.getPlatformUI().showError("Task error", "Task execution failed", error);
             }
         });
