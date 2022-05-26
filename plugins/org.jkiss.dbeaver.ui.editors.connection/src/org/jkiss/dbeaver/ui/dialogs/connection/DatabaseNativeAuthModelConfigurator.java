@@ -163,6 +163,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally,
             dataSource == null || dataSource.isSavePassword());
         savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password_locally);
+        savePasswordCheck.setEnabled(false);
         savePasswordCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

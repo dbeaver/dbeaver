@@ -333,7 +333,7 @@ public class DesktopUI implements DBPPlatformUI {
             @Override
             public DBPAuthInfo runTask() {
                 final Shell shell = UIUtils.getActiveWorkbenchShell();
-                final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly, showSavePassword);
+                final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly, false);
                 authDialog.setUserNameLabel(userNameLabel);
                 authDialog.setPasswordLabel(passwordLabel);
                 if (!passwordOnly) {
