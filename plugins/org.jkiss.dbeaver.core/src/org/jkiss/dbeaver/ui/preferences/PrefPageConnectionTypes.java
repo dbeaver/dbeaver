@@ -265,7 +265,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
             epButton.setLayoutData(gd);
         }
 
-        performDefaults();
+        performDefaults(false);
 
         return composite;
     }
@@ -308,12 +308,33 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         }
     }
 
+    private static DBPConnectionType findSystemType(DBPConnectionType type) {
+        for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
+            if (ct.getId().equals(type.getId())) {
+                return ct;
+            }
+        }
+        return null;
+    }
+
     @Override
     protected void performDefaults() {
+        performDefaults(true);
+        super.performDefaults();
+    }
+
+    protected void performDefaults(boolean resetSystemSettings) {
         typeTable.removeAll();
-        //colorPicker.loadStandardColors();
+
         for (DBPConnectionType source : DataSourceProviderRegistry.getInstance().getConnectionTypes()) {
-            addTypeToTable(source, new DBPConnectionType(source));
+            DBPConnectionType systemType = resetSystemSettings ? findSystemType(source) : null;
+            DBPConnectionType connectionType;
+            if (systemType != null) {
+                connectionType = systemType;
+            } else {
+                connectionType = new DBPConnectionType(source);
+            }
+            addTypeToTable(source, connectionType);
         }
         typeTable.select(0);
         if (selectedType != null) {
@@ -333,7 +354,6 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 UIUtils.packColumns(typeTable, true);
             }
         });
-        super.performDefaults();
     }
 
     private void addTypeToTable(DBPConnectionType source, DBPConnectionType connectionType) {
