@@ -2550,9 +2550,11 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
-        DatabaseEditorUtils.setPartBackground(this, resultTabs);
-        resultsSash.setBackground(resultTabs.getBackground());
-        sideToolBar.setBackground(resultTabs.getBackground());
+        if (resultTabs != null) {
+            DatabaseEditorUtils.setPartBackground(this, resultTabs);
+            resultsSash.setBackground(resultTabs.getBackground());
+            sideToolBar.setBackground(resultTabs.getBackground());
+        }
 
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
             ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
