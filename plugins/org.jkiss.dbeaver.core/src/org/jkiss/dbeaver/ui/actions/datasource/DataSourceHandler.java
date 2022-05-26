@@ -156,7 +156,7 @@ public class DataSourceHandler {
                 }
             }
         }
-        if (!checkAndCloseActiveTransaction(dataSourceContainer)) {
+        if (!checkAndCloseActiveTransaction(dataSourceContainer, false)) {
             return;
         }
 
@@ -195,21 +195,21 @@ public class DataSourceHandler {
         });
     }
 
-    public static boolean checkAndCloseActiveTransaction(DBPDataSourceContainer container) {
+    public static boolean checkAndCloseActiveTransaction(DBPDataSourceContainer container, boolean isReconnect) {
         DBPDataSource dataSource = container.getDataSource();
         if (dataSource == null) {
             return true;
         }
 
         for (DBSInstance instance : dataSource.getAvailableInstances()) {
-            if (!checkAndCloseActiveTransaction(instance.getAllContexts())) {
+            if (!checkAndCloseActiveTransaction(instance.getAllContexts(), isReconnect)) {
                 return false;
             }
         }
         return true;
     }
 
-    public static boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts) {
+    public static boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts, boolean isReconnect) {
         if (contexts == null) {
             return true;
         }
@@ -221,7 +221,10 @@ public class DataSourceHandler {
                 if (QMUtils.isTransactionActive(context)) {
                     if (commitTxn == null) {
                         // Ask for confirmation
-                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(context.getDataSource().getContainer().getName() + " (" + context.getContextName() + ")");
+                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(
+                            context.getDataSource().getContainer().getName() + " (" + context.getContextName() + ")",
+                            isReconnect
+                        );
                         UIUtils.syncExec(closeConfirmer);
                         switch (closeConfirmer.result) {
                             case IDialogConstants.YES_ID:
@@ -315,10 +318,12 @@ public class DataSourceHandler {
 
     private static class TransactionCloseConfirmer implements Runnable {
         final String name;
+        final boolean isReconnect;
         int result = IDialogConstants.NO_ID;
 
-        private TransactionCloseConfirmer(String name) {
+        private TransactionCloseConfirmer(String name, boolean isReconnect) {
             this.name = name;
+            this.isReconnect = isReconnect;
         }
 
         @Override
@@ -326,7 +331,7 @@ public class DataSourceHandler {
             result = ConfirmationDialog.showConfirmDialog(
                 DBeaverActivator.getCoreResourceBundle(),
                 null,
-                DBeaverPreferences.CONFIRM_TXN_DISCONNECT,
+                this.isReconnect ? DBeaverPreferences.CONFIRM_TXN_RECONNECT : DBeaverPreferences.CONFIRM_TXN_DISCONNECT,
                 ConfirmationDialog.QUESTION_WITH_CANCEL,
                 name);
         }

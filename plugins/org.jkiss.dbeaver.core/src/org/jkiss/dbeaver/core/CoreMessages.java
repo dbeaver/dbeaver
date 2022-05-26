@@ -75,6 +75,10 @@ public class CoreMessages extends NLS {
 	public static String confirm_disconnect_txn_message;
 	public static String confirm_disconnect_txn_toggleMessage;
 
+	public static String confirm_reconnect_txn_title;
+	public static String confirm_reconnect_txn_message;
+	public static String confirm_reconnect_txn_toggleMessage;
+
 	public static String confirm_driver_download_title;
 	public static String confirm_driver_download_message;
 	public static String confirm_driver_download_toggleMessage;
