@@ -1023,7 +1023,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
-    	System.out.println("preference change event!");
     	
     	 PrefPageSQLFormat.formatEditorsSQL(this);
         switch (event.getProperty()) {
