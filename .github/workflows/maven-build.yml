@@ -3,7 +3,7 @@ name: Maven Build Verify
 on: 
   pull_request:
     branches:
-      - devel
+      - main
 jobs:
   build:
 
