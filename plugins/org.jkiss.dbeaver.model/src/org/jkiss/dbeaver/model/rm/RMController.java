@@ -60,7 +60,7 @@ public interface RMController {
         @NotNull String resourcePath,
         boolean recursive) throws DBException;
 
-    RMResource[] getResourceTree(@NotNull String projectId,
+    RMResource[] getResourcePath(@NotNull String projectId,
                                  @NotNull String resourcePath) throws DBException;
 
     @NotNull
@@ -75,4 +75,6 @@ public interface RMController {
         @NotNull byte[] data) throws DBException;
 
     void addRMEventListener(RMEventListener listener);
+
+    void removeRMEventListener(RMEventListener listener);
 }
