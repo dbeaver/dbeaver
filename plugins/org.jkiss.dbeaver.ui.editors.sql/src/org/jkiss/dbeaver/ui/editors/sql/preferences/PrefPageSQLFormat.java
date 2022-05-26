@@ -190,7 +190,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
                     return null;
                 }
             };
-            System.out.println("create preference content189");
+
             try {
                 try (final InputStream sqlStream = getClass().getResourceAsStream(FORMAT_FILE_NAME)) {
                     final String sqlText = ContentUtils.readToString(sqlStream, StandardCharsets.UTF_8);
@@ -348,24 +348,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
     }
     
     
-    
-//    //  @Override
-//    protected void doSetInput(IEditorInput input) throws CoreException {
-//        handleInputChange(input);
-//
-//        final IFile file = GeneralUtils.adapt(input, IFile.class);
-//        if (file != null && SQLEditorUtils.isNewScriptFile(file)) {
-//            // Move cursor to the end of the file past script template
-//            UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));
-//        }
-//
-//        super.doSetInput(input);
-//    }
-    
-    
-
-
-    
     public static void formatEditorsSQL(SQLEditorBase sqlViewer1) {
         try {
         	IEditorInput input_name=sqlViewer1.getEditorInput();
@@ -381,19 +363,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         		
         		
         	}
-//              // Move cursor to the end of the file past script template
-//              UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));          }
-        	
-//            try (final InputStream sqlStream = getClass().getResourceAsStream(FORMAT_FILE_NAME)) {
-        	
-                
-//            	final String sqlText = ContentUtils.readToString(sqlStream, StandardCharsets.UTF_8);
-//            	final String sqlText="SELECT ABC JOIN BUT\n";
-            	
-//            	String sqlText=String(sqltext);
-//              
-              
-//            }
+
         } catch (Exception e) {
             log.error(e);
         }
