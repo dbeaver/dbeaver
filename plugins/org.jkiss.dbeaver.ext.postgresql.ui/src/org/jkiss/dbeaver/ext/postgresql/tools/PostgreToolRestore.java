@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolWizardDialog;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 
@@ -44,10 +48,13 @@ public class PostgreToolRestore implements IUserInterfaceTool
             } else {
                 continue;
             }
-            NativeToolWizardDialog dialog = new NativeToolWizardDialog(
-                window,
-                new PostgreRestoreWizard(database));
-            dialog.open();
+            if (DBUtils.isReadOnly(database)) {
+                DBWorkbench.getPlatformUI().showWarningMessageBox(ModelMessages.tasks_restore_readonly_title,
+                    NLS.bind(ModelMessages.tasks_restore_readonly_message, database.getDataSource().getName()));
+            } else {
+                NativeToolWizardDialog dialog = new NativeToolWizardDialog(window, new PostgreRestoreWizard(database));
+                dialog.open();
+            }
         }
     }
 }

@@ -316,9 +316,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private Color colorLightGreen;
     private Color colorLightRed;
     private Color colorLightYellow;
-    private Color shadowColor;
     private final Font boldFont;
-    private final Font hintFont;
     private DragSource dndSource;
 
     private volatile boolean reloadInProgress = false;
@@ -338,23 +336,13 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         colorLightGreen = colorRegistry.get(COLOR_UNCOMMITTED);
         colorLightRed = colorRegistry.get(COLOR_REVERTED);
         colorLightYellow = colorRegistry.get(COLOR_TRANSACTION);
-        shadowColor = parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
         boldFont = UIUtils.makeBoldFont(parent.getFont());
-        hintFont = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
 
         boolean inDialog = UIUtils.isInDialog(parent);
         // Search field
         this.searchText = new Text(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
         this.searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        this.searchText.addPaintListener(e -> {
-            if (searchText.isEnabled() && searchText.getCharCount() == 0) {
-                e.gc.setForeground(shadowColor);
-                e.gc.setFont(hintFont);
-                e.gc.drawText(SQLEditorMessages.editor_query_log_viewer_draw_text_type_qury_part,
-                    2, 0, true);
-                e.gc.setFont(null);
-            }
-        });
+        this.searchText.setMessage(SQLEditorMessages.editor_query_log_viewer_draw_text_type_qury_part);
         this.searchText.addModifyListener(e -> scheduleLogRefresh());
         TextEditorUtils.enableHostEditorKeyBindingsSupport(site, searchText);
 
@@ -504,7 +492,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         UIUtils.dispose(dndSource);
         UIUtils.dispose(logTable);
         UIUtils.dispose(boldFont);
-        UIUtils.dispose(hintFont);
     }
 
     public Text getSearchText() {
