@@ -62,7 +62,7 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
 
     @Override
     public boolean checkAndCloseActiveTransaction(@NotNull DBCExecutionContext[] contexts) {
-        return DataSourceHandler.checkAndCloseActiveTransaction(contexts);
+        return DataSourceHandler.checkAndCloseActiveTransaction(contexts, false);
     }
 
     @Override
