@@ -515,7 +515,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                         new DBNDatabaseObject(this, (DBXTreeObject) child));
                 } else {
                     for (DBNDatabaseNode oldObject : oldList) {
-                        if (oldObject.getMeta() == child) {
+                        if (oldObject.getMeta().equals(child)) {
                             oldObject.reloadChildren(monitor, source, reflect);
                             toList.add(oldObject);
                             break;
