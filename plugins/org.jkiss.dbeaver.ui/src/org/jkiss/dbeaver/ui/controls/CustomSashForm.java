@@ -70,6 +70,10 @@ public class CustomSashForm extends SashForm {
 
     private static final int NO_WEIGHT = -1;
     private static final int NO_ARROW = -1;
+    
+    protected Color arrowColor;
+    protected Color borderColor;
+    protected Color arrowRestoreColor;
 
     private class SashInfo {
         public Sash sash;
@@ -124,8 +128,6 @@ public class CustomSashForm extends SashForm {
             ARROW_HEIGHT = 5,
             ARROW_MARGIN = 5;    // Margin on each side of arrow
 
-    protected Color arrowColor, borderColor, arrowRestoreColor;
-
 
     public CustomSashForm(Composite parent, int style) {
         this(parent, style, SWT.NONE);
@@ -156,7 +158,7 @@ public class CustomSashForm extends SashForm {
         SASH_WIDTH = (3 + getOrientation() == SWT.VERTICAL ? ARROW_HEIGHT : ARROW_HEIGHT) + ARROW_MARGIN;
 
         arrowColor = new Color(parent.getDisplay(), 96, 96, 96);
-        arrowRestoreColor = new Color(parent.getDisplay(), 244, 132, 0);
+        arrowRestoreColor = new Color(parent.getDisplay(), 51, 142, 204);
         borderColor = new Color(parent.getDisplay(), 205, 205, 205);
 
         addDisposeListener(new DisposeListener() {
