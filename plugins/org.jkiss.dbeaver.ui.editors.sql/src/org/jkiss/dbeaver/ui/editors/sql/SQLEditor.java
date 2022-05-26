@@ -807,7 +807,7 @@ public class SQLEditor extends SQLEditorBase implements
                 parent,
                 resultSetOrientation.getSashOrientation() | SWT.SMOOTH);
         CSSUtils.setCSSClass(resultsSash, DBStyles.COLORED_BY_CONNECTION_TYPE);
-        resultsSash.setSashWidth(5);
+        resultsSash.setSashWidth(8);
 
         UIUtils.setHelp(resultsSash, IHelpContextIds.CTX_SQL_EDITOR);
 
