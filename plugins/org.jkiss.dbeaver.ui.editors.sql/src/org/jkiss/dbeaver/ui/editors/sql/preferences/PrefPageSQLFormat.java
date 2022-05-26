@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -30,6 +32,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -50,6 +53,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.format.SQLExternalFormatterConfigurationPage;
@@ -186,6 +190,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
                     return null;
                 }
             };
+            System.out.println("create preference content189");
             try {
                 try (final InputStream sqlStream = getClass().getResourceAsStream(FORMAT_FILE_NAME)) {
                     final String sqlText = ContentUtils.readToString(sqlStream, StandardCharsets.UTF_8);
@@ -287,6 +292,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     }
 
     private void showFormatterSettings() {
+
         if (curConfigurator != null) {
             curConfigurator.saveSettings(getTargetPreferenceStore());
         }
@@ -340,5 +346,59 @@ public class PrefPageSQLFormat extends TargetPrefPage
             log.error(e);
         }
     }
+    
+    
+    
+//    //  @Override
+//    protected void doSetInput(IEditorInput input) throws CoreException {
+//        handleInputChange(input);
+//
+//        final IFile file = GeneralUtils.adapt(input, IFile.class);
+//        if (file != null && SQLEditorUtils.isNewScriptFile(file)) {
+//            // Move cursor to the end of the file past script template
+//            UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));
+//        }
+//
+//        super.doSetInput(input);
+//    }
+    
+    
+
+
+    
+    public static void formatEditorsSQL(SQLEditorBase sqlViewer1) {
+        try {
+        	IEditorInput input_name=sqlViewer1.getEditorInput();
+        	
+        	final IFile file = GeneralUtils.adapt(input_name, IFile.class);
+        	if (file != null ) {
+        		String sqlText=ContentUtils.readToString(file.getContents(),StandardCharsets.UTF_8);
+        		  sqlViewer1.setInput(new StringEditorInput("SQL viewer", sqlText, true, GeneralUtils.getDefaultFileEncoding()));
+                sqlViewer1.getTextViewer().setSelection(new TextSelection(0, sqlText.length()));
+                sqlViewer1.getTextViewer().doOperation(ISourceViewer.FORMAT);
+                sqlViewer1.getTextViewer().setSelection(new TextSelection(0, 0));
+                sqlViewer1.reloadSyntaxRules();
+        		
+        		
+        	}
+//              // Move cursor to the end of the file past script template
+//              UIUtils.asyncExec(() -> selectAndReveal(Integer.MAX_VALUE, 0));          }
+        	
+//            try (final InputStream sqlStream = getClass().getResourceAsStream(FORMAT_FILE_NAME)) {
+        	
+                
+//            	final String sqlText = ContentUtils.readToString(sqlStream, StandardCharsets.UTF_8);
+//            	final String sqlText="SELECT ABC JOIN BUT\n";
+            	
+//            	String sqlText=String(sqltext);
+//              
+              
+//            }
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+    
+    
 
 }
