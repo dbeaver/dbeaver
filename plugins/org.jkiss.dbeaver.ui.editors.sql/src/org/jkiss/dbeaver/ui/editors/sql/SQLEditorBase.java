@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 
 import org.eclipse.core.resources.IFile;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -83,6 +84,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLFormat;
 
 /**
  * SQL Executor
@@ -169,6 +171,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         completionContext = new SQLEditorCompletionContext(this);
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
+        
+        
     }
 
     @Override
@@ -239,7 +243,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @Override
     protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
         if (!occurrencesHighlighter.handlePreferenceStoreChanged(event)) {
-            super.handlePreferenceStoreChanged(event);
+            super.handlePreferenceStoreChanged(event);   
         }
     }
 
@@ -325,6 +329,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
             // Context listener
             EditorUtils.trackControlContext(getSite(), widget, SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
+//            PrefPageSQLFormat.formatEditorsSQL(this);
 
             // Mouse listener that moves cursor upon clicking with the right mouse button
             widget.addMouseListener(new MouseAdapter() {
@@ -1018,7 +1023,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
+    	System.out.println("preference change event!");
+    	
+    	 PrefPageSQLFormat.formatEditorsSQL(this);
         switch (event.getProperty()) {
+        
             case SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES:
                 sqlSymbolInserter.setCloseSingleQuotesEnabled(CommonUtils.toBoolean(event.getNewValue()));
                 return;
@@ -1046,6 +1055,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
                 occurrencesHighlighter.updateInput(getEditorInput());
         }
+       
     }
 
     void setLastQueryErrorPosition(int lastQueryErrorPosition) {
