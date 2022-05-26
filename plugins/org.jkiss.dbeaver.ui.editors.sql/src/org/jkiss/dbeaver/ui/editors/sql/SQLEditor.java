@@ -2320,7 +2320,8 @@ public class SQLEditor extends SQLEditorBase implements
         final boolean isSingleQuery = !forceScript && (queries.size() == 1);
         if (isSingleQuery && queries.get(0) instanceof SQLQuery) {
             SQLQuery query = (SQLQuery) queries.get(0);
-            if (query.isDeleteUpdateDangerous()) {
+            boolean isDropTable = query.isDropTableDangerous();
+            if (query.isDeleteUpdateDangerous() || isDropTable) {
                 String targetName = "multiple tables";
                 if (query.getEntityMetadata(false) != null) {
                     targetName = query.getEntityMetadata(false).getEntityName();
@@ -2328,7 +2329,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (ConfirmationDialog.showConfirmDialogEx(
                     ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME),
                     getSite().getShell(),
-                    SQLPreferenceConstants.CONFIRM_DANGER_SQL,
+                    isDropTable ? SQLPreferenceConstants.CONFIRM_DROP_SQL : SQLPreferenceConstants.CONFIRM_DANGER_SQL,
                     ConfirmationDialog.CONFIRM,
                     ConfirmationDialog.WARNING,
                     query.getType().name(),
