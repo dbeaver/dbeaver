@@ -756,6 +756,24 @@
                     <parameter name="supports-references" value="false"/>
                 </driver>
                 <driver
+                    id="kyuubi_hive"
+                    label="Apache Kyuubi (Incubating)"
+                    icon="icons/kyuubi_hive_icon.png"
+                    iconBig="icons/kyuubi_hive_icon_big.png"
+                    class="org.apache.kyuubi.jdbc.KyuubiHiveDriver"
+                    sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
+                    defaultPort="10009"
+                    description="Kyuubi Thrift Server connector"
+                    webURL="https://kyuubi.apache.org/"
+                    category="Hadoop"
+                    categories="hadoop">
+                    <file type="jar" path="maven:/org.apache.kyuubi:kyuubi-hive-jdbc-shaded:RELEASE" bundle="!drivers.kyuubi"/>
+                    <file type="jar" path="drivers/kyuubi" bundle="drivers.kyuubi"/>
+
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                </driver>
+                <driver
                     id="apache_drill"
                     label="Apache Drill"
                     icon="icons/drill_icon.png"
