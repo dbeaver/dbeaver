@@ -1093,4 +1093,13 @@
         </colorDefinition>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+            id="org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable"
+            title="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.title"
+            message="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.message"
+            toggleMessage="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.toggleMessage"
+            group="Object editor"/>
+    </extension>
+
 </plugin>
