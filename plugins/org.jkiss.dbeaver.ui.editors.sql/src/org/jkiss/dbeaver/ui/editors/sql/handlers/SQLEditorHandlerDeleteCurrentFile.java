@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -48,7 +49,7 @@ public class SQLEditorHandlerDeleteCurrentFile extends AbstractDataSourceHandler
         if (file == null) {
             File localFile = EditorUtils.getLocalFileFromInput(editor.getEditorInput());
             if (localFile != null) {
-                if (UIUtils.confirmAction(SQLEditorMessages.editor_file_delete_confirm_delete_title, NLS.bind(SQLEditorMessages.editor_file_delete_confirm_delete_text, localFile.getName()))) {
+                if (UIUtils.confirmAction(null, SQLEditorMessages.editor_file_delete_confirm_delete_title, NLS.bind(SQLEditorMessages.editor_file_delete_confirm_delete_text, localFile.getName()), DBIcon.STATUS_ERROR)) {
                     if (!localFile.delete()) {
                         DBWorkbench.getPlatformUI().showError(SQLEditorMessages.editor_file_delete_error_title, NLS.bind(SQLEditorMessages.editor_file_delete_error_text, localFile.getName()));
                     }
@@ -57,7 +58,7 @@ public class SQLEditorHandlerDeleteCurrentFile extends AbstractDataSourceHandler
                 DBWorkbench.getPlatformUI().showError("Rename", "Can't rename - no source file");
             }
         } else {
-            if (UIUtils.confirmAction(SQLEditorMessages.editor_file_delete_confirm_delete_title, NLS.bind(SQLEditorMessages.editor_file_delete_confirm_delete_text, file.getName()))) {
+            if (UIUtils.confirmAction(null, SQLEditorMessages.editor_file_delete_confirm_delete_title, NLS.bind(SQLEditorMessages.editor_file_delete_confirm_delete_text, file.getName()), DBIcon.STATUS_ERROR)) {
                 try {
                     file.delete(true, true, new NullProgressMonitor());
                 } catch (CoreException e1) {
