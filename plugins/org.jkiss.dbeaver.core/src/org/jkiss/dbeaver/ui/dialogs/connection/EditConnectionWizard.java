@@ -57,8 +57,7 @@ import java.util.Locale;
  * Edit connection dialog
  */
 
-public class EditConnectionWizard extends ConnectionWizard
-{
+public class EditConnectionWizard extends ConnectionWizard {
     @NotNull
     private DataSourceDescriptor originalDataSource;
     @NotNull
@@ -73,8 +72,7 @@ public class EditConnectionWizard extends ConnectionWizard
     /**
      * Constructor for SampleNewWizard.
      */
-    public EditConnectionWizard(@NotNull DataSourceDescriptor dataSource)
-    {
+    public EditConnectionWizard(@NotNull DataSourceDescriptor dataSource) {
         this.originalDataSource = dataSource;
         this.dataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
         if (!this.dataSource.isSavePassword()) {
@@ -102,8 +100,7 @@ public class EditConnectionWizard extends ConnectionWizard
     }
 
     @Override
-    public DBPDriver getSelectedDriver()
-    {
+    public DBPDriver getSelectedDriver() {
         return dataSource.getDriver();
     }
 
@@ -119,8 +116,7 @@ public class EditConnectionWizard extends ConnectionWizard
 
     @Nullable
     @Override
-    public ConnectionPageSettings getPageSettings()
-    {
+    public ConnectionPageSettings getPageSettings() {
         return this.pageSettings;
     }
 
@@ -128,8 +124,7 @@ public class EditConnectionWizard extends ConnectionWizard
      * Adding the page to the wizard.
      */
     @Override
-    public void addPages()
-    {
+    public void addPages() {
         DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(
             dataSource.getDriver().getProviderDescriptor(),
             IActionConstants.EDIT_CONNECTION_POINT);
@@ -209,11 +204,10 @@ public class EditConnectionWizard extends ConnectionWizard
      * using wizard as execution context.
      */
     @Override
-    public boolean performFinish()
-    {
+    public boolean performFinish() {
         DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, originalDataSource.getRegistry());
         DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
-        saveSettings(dsChanged);
+        saveSettings(dsChanged, true);
 
         if (dsCopy.equalSettings(dsChanged)) {
             // No changes
@@ -229,19 +223,23 @@ public class EditConnectionWizard extends ConnectionWizard
             }
         }
 
+
+        boolean saveConnectionSettings = true;
+        if (originalDataSource.isConnected() && UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_conn_change_title,
+            NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question,
+            originalDataSource.getName()) )
+        ) {
+            DataSourceHandler.reconnectDataSource(null, originalDataSource);
+        } else {
+            // Guess we shouldn't apply connection settings changes if reconnect was rejected,
+            // because in this case they are in inconsistent state
+            saveConnectionSettings = false;
+        }
+
         // Save
-        saveSettings(originalDataSource);
+        saveSettings(originalDataSource, saveConnectionSettings);
         originalDataSource.getRegistry().updateDataSource(originalDataSource);
 
-        if (originalDataSource.isConnected()) {
-            if (UIUtils.confirmAction(
-                getShell(),
-                CoreMessages.dialog_connection_edit_wizard_conn_change_title,
-                NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, originalDataSource.getName()) ))
-            {
-                DataSourceHandler.reconnectDataSource(null, originalDataSource);
-            }
-        }
 
         return true;
     }
@@ -275,8 +273,7 @@ public class EditConnectionWizard extends ConnectionWizard
     }
 
     @Override
-    public boolean performCancel()
-    {
+    public boolean performCancel() {
         return super.performCancel();
     }
 
@@ -285,15 +282,15 @@ public class EditConnectionWizard extends ConnectionWizard
      * we can initialize from it.
      */
     @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection)
-    {
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
     }
 
     @Override
-    protected void saveSettings(DataSourceDescriptor dataSource)
-    {
-        if (isPageActive(pageSettings)) {
+    protected void saveSettings(DataSourceDescriptor dataSource, boolean isSaveConnectionSettings) {
+        if (isPageActive(pageSettings) && isSaveConnectionSettings) {
             pageSettings.saveSettings(dataSource);
+            dataSource.setConnectionReadOnly(pageGeneral.isConnectionReadonly());
+            dataSource.setModifyPermissions(pageGeneral.getAccessRestrictions());
         }
         pageGeneral.saveSettings(dataSource);
         pageInit.saveSettings(dataSource);

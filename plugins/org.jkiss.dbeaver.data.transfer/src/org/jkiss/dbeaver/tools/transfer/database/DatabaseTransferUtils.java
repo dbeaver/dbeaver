@@ -118,7 +118,21 @@ public class DatabaseTransferUtils {
         if (containerMapping.getMappingType() == DatabaseMappingType.skip) {
             return new DBEPersistAction[0];
         }
-        monitor.subTask("Create table '" + containerMapping.getTargetName() + "'");
+        // Check whether we have any changes in mappings
+        if (containerMapping.getMappingType() == DatabaseMappingType.existing) {
+            boolean hasChanges = false;
+            for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                if (attr.getMappingType() != DatabaseMappingType.existing &&
+                    attr.getMappingType() != DatabaseMappingType.skip) {
+                    hasChanges = true;
+                    break;
+                }
+            }
+            if (!hasChanges) {
+                return new DBEPersistAction[0];
+            }
+        }
+        monitor.subTask("Validate table structure table '" + containerMapping.getTargetName() + "'");
         if (USE_STRUCT_DDL) {
             try {
                 return generateStructTableDDL(monitor, executionContext, schema, containerMapping);

@@ -148,7 +148,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             }, new EditingSupport(columnsViewer) {
                 @Override
                 protected CellEditor getCellEditor(Object element) {
-                    return new CustomCheckboxCellEditor(((TreeViewer) getViewer()).getTree());
+                    return new CustomCheckboxCellEditor(((TreeViewer) getViewer()).getTree(), true);
                 }
 
                 @Override
@@ -181,7 +181,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             }, new EditingSupport(columnsViewer) {
                 @Override
                 protected CellEditor getCellEditor(Object element) {
-                    return new CustomCheckboxCellEditor(((TreeViewer) getViewer()).getTree());
+                    return new CustomCheckboxCellEditor(((TreeViewer) getViewer()).getTree(), true);
                 }
 
                 @Override

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
@@ -31,7 +32,6 @@ import java.util.stream.Collectors;
 
 public class TimezoneRegistry {
 
-    public static final String DEFAULT_VALUE = "Default";
     public static String userDefaultTimezone = "";
 
     private TimezoneRegistry() {
@@ -40,13 +40,17 @@ public class TimezoneRegistry {
     public static void setDefaultZone(@Nullable ZoneId id) {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (id != null) {
-            TimeZone.setDefault(TimeZone.getTimeZone(id));
-            System.setProperty("user.timezone", id.getId());
-            preferenceStore.setValue(ModelPreferences.CLIENT_TIMEZONE, id.getId());
+            if (!TimeZone.getDefault().getID().equals(id.getId())) {
+                TimeZone.setDefault(TimeZone.getTimeZone(id));
+                System.setProperty("user.timezone", id.getId());
+                preferenceStore.setValue(ModelPreferences.CLIENT_TIMEZONE, id.getId());
+            }
         } else {
-            TimeZone.setDefault(TimeZone.getTimeZone(userDefaultTimezone));
-            System.setProperty("user.timezone", userDefaultTimezone);
-            preferenceStore.setToDefault(ModelPreferences.CLIENT_TIMEZONE);
+            if (!TimeZone.getDefault().getID().equals(userDefaultTimezone)) {
+                TimeZone.setDefault(TimeZone.getTimeZone(userDefaultTimezone));
+                System.setProperty("user.timezone", userDefaultTimezone);
+                preferenceStore.setToDefault(ModelPreferences.CLIENT_TIMEZONE);
+            }
         }
     }
 
@@ -54,7 +58,7 @@ public class TimezoneRegistry {
         userDefaultTimezone = System.getProperty("user.timezone");
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         final String timezone = preferenceStore.getString(ModelPreferences.CLIENT_TIMEZONE);
-        if (timezone != null && !timezone.equals(DEFAULT_VALUE)) {
+        if (timezone != null && !timezone.equals(DBConstants.DEFAULT_TIMEZONE)) {
             TimeZone.setDefault(TimeZone.getTimeZone(timezone));
             System.setProperty("user.timezone", timezone);
         }

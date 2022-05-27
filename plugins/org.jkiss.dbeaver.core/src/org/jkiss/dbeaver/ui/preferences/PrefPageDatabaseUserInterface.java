@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DesktopPlatform;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -126,7 +127,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             Group clientTimezoneGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_timezone, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             clientTimezone = UIUtils.createLabelCombo(clientTimezoneGroup, CoreMessages.pref_page_ui_general_combo_timezone, CoreMessages.pref_page_ui_general_combo_timezone_tip, SWT.DROP_DOWN);
             clientTimezone.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            clientTimezone.add(TimezoneRegistry.DEFAULT_VALUE);
+            clientTimezone.add(DBConstants.DEFAULT_TIMEZONE);
             for (String timezoneName : TimezoneRegistry.getTimezoneNames()) {
                 clientTimezone.add(timezoneName);
             }
@@ -192,8 +193,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         notificationsEnabled.setSelection(store.getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
         notificationsCloseDelay.setSelection(store.getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
         final String string = store.getString(ModelPreferences.CLIENT_TIMEZONE);
-        if (string.isEmpty()) {
-            clientTimezone.setText(TimezoneRegistry.DEFAULT_VALUE);
+        if (string.equals(DBConstants.DEFAULT_TIMEZONE)) {
+            clientTimezone.setText(DBConstants.DEFAULT_TIMEZONE);
         } else {
             clientTimezone.setText(TimezoneRegistry.getGMTString(string));
         }
@@ -225,7 +226,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
 
         PrefUtils.savePreferenceStore(store);
-        if (clientTimezone.getText().equals(TimezoneRegistry.DEFAULT_VALUE)) {
+        if (clientTimezone.getText().equals(DBConstants.DEFAULT_TIMEZONE)) {
             TimezoneRegistry.setDefaultZone(null);
         } else {
             TimezoneRegistry.setDefaultZone(ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())));
