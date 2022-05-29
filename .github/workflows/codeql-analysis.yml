@@ -23,4 +23,4 @@ jobs:
       with:
         fetch-depth: 2
 
-    - uses: red-panda-productions/dbeaver/.github/actions/java-codeql@devel
+    - uses: red-panda-productions/dbeaver/.github/actions/java-codeql@main
