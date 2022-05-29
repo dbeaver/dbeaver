@@ -106,7 +106,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
 
     public abstract ConnectionPageSettings getPageSettings();
 
-    protected abstract void saveSettings(DataSourceDescriptor dataSource);
+    protected abstract void saveSettings(DataSourceDescriptor dataSource, boolean isSaveConnectionSettings);
 
     @NotNull
     public DataSourceDescriptor getActiveDataSource() {
@@ -142,7 +142,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements INewWizar
         DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
         DataSourceDescriptor testDataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
 
-        saveSettings(testDataSource);
+        saveSettings(testDataSource, true);
         testDataSource.setTemporary(true);
 
         // Generate new ID to avoid session conflicts in QM

@@ -4,6 +4,13 @@ on:
   pull_request:
     branches:
       - devel
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+      - ready_for_review
+      - labeled
 
 jobs:
   check-commit-message:

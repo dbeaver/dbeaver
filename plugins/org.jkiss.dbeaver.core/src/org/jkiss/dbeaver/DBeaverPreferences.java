@@ -34,6 +34,7 @@ public final class DBeaverPreferences
 
     public static final String CONFIRM_EXIT = "exit"; //$NON-NLS-1$
     public static final String CONFIRM_TXN_DISCONNECT = "disconnect_txn"; //$NON-NLS-1$
+    public static final String CONFIRM_TXN_RECONNECT = "reconnect_txn"; //$NON-NLS-1$
     public static final String CONFIRM_DRIVER_DOWNLOAD = "driver_download"; //$NON-NLS-1$
     public static final String CONFIRM_MANUAL_DOWNLOAD = "driver_download_manual"; //$NON-NLS-1$
     public static final String CONFIRM_VERSION_CHECK = "version_check"; //$NON-NLS-1$

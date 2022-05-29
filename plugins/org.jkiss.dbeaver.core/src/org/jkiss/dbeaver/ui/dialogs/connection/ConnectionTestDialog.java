@@ -112,7 +112,11 @@ public class ConnectionTestDialog extends BaseDialog {
 
     private class PropertiesDialog extends BaseDialog {
         public PropertiesDialog(Shell shell) {
-            super(shell, NLS.bind(CoreMessages.dialog_connection_test_properties_title, descriptor.getName()), null);
+            super(shell, NLS.bind(
+                CoreMessages.dialog_connection_test_properties_title, descriptor.getName() != null ?
+                descriptor.getName() :
+                descriptor.getDriver().getName()
+            ), null);
         }
 
         @Override

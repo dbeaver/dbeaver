@@ -68,12 +68,14 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
         return null;
     }
 
-    public static void invalidateDataSource(final DBPDataSource dataSource) {
+    public static boolean invalidateDataSource(final DBPDataSource dataSource) {
         if (dataSource != null) {
             //final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) context;
-            if (!ArrayUtils.isEmpty(Job.getJobManager().find(dataSource.getContainer()))) {
-                // Already connecting/disconnecting - just return
-                return;
+            DBPDataSourceContainer container = dataSource.getContainer();
+            if (!ArrayUtils.isEmpty(Job.getJobManager().find(container)) ||
+                !DataSourceHandler.checkAndCloseActiveTransaction(container, true)) {
+                // Already connecting/disconnecting or cancelled - just return
+                return false;
             }
             final InvalidateJob invalidateJob = new InvalidateJob(dataSource);
             invalidateJob.setFeedbackHandler(() -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
@@ -130,6 +132,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
             });
             invalidateJob.schedule();
         }
+        return true;
     }
 
     public static void showConnectionLostDialog(final Shell shell, final String message, final DBException error)

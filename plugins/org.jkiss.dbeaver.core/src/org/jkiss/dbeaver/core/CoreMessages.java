@@ -75,6 +75,10 @@ public class CoreMessages extends NLS {
 	public static String confirm_disconnect_txn_message;
 	public static String confirm_disconnect_txn_toggleMessage;
 
+	public static String confirm_reconnect_txn_title;
+	public static String confirm_reconnect_txn_message;
+	public static String confirm_reconnect_txn_toggleMessage;
+
 	public static String confirm_driver_download_title;
 	public static String confirm_driver_download_message;
 	public static String confirm_driver_download_toggleMessage;
@@ -340,10 +344,13 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_ui_general_checkbox_automatic_updates;
 	public static String pref_page_ui_general_combo_language;
+	public static String pref_page_ui_general_combo_timezone;
+	public static String pref_page_ui_general_combo_timezone_tip;
 	public static String pref_page_ui_general_combo_language_tip;
 	public static String pref_page_ui_general_keep_database_editors;
 	public static String pref_page_ui_general_refresh_editor_on_open;
 	public static String pref_page_ui_general_group_general;
+	public static String pref_page_ui_general_group_timezone;
 	public static String pref_page_ui_general_group_language;
 	public static String pref_page_ui_general_group_editors;
 	public static String pref_page_eclipse_ui_general_group_general;
@@ -366,6 +373,7 @@ public class CoreMessages extends NLS {
 
 	public static String editor_file_open_in_explorer;
 	public static String editor_file_copy_path;
+	public static String editor_file_copy_object_name;
 	public static String editor_file_rename;
 
 	// New Connection Wizard

@@ -36,9 +36,14 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
 import org.eclipse.ui.texteditor.*;
@@ -316,8 +321,55 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
 
         if (sourceViewer != null) {
+            final StyledText widget = sourceViewer.getTextWidget();
+
             // Context listener
-            EditorUtils.trackControlContext(getSite(), sourceViewer.getTextWidget(), SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
+            EditorUtils.trackControlContext(getSite(), widget, SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
+
+            // Mouse listener that moves cursor upon clicking with the right mouse button
+            widget.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseUp(MouseEvent e) {
+                    if (e.button != 3) {
+                        return;
+                    }
+
+                    final StyledText widget = sourceViewer.getTextWidget();
+                    final ISelectionProvider selectionProvider = sourceViewer.getSelectionProvider();
+                    final ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
+
+                    int offset = widget.getOffsetAtPoint(new Point(e.x, e.y));
+
+                    if (offset < 0) {
+                        offset = widget.getOffsetAtLine(widget.getLineIndex(e.y));
+                    }
+
+                    if (offset < 0) {
+                        return;
+                    }
+
+                    boolean withinExistingSelection = false;
+
+                    if (selection instanceof IBlockTextSelection) {
+                        for (IRegion region : ((IBlockTextSelection) selection).getRegions()) {
+                            if (within(region, offset)) {
+                                withinExistingSelection = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        withinExistingSelection = within(new Region(selection.getOffset(), selection.getLength()), offset);
+                    }
+
+                    if (!withinExistingSelection) {
+                        selectionProvider.setSelection(new TextSelection(offset, 0));
+                    }
+                }
+
+                private boolean within(@NotNull IRegion region, int index) {
+                    return region.getOffset() <= index && index < region.getOffset() + region.getLength();
+                }
+            });
         }
     }
 

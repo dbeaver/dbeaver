@@ -16,8 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -57,6 +61,12 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
                     log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
                     return false;
                 }
+            }
+        } else if (task.getType().getId().equals(PostgreSQLTasks.TASK_DATABASE_RESTORE)) {
+            DBPDataSource dataSource = settings.getDataSourceContainer().getDataSource();
+            if (dataSource != null && DBUtils.isReadOnly(settings.getDataSourceContainer().getDataSource())) {
+                log.error(NLS.bind(ModelMessages.tasks_restore_readonly_message, dataSource.getName()));
+                return false; 
             }
         }
         return true;

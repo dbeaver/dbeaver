@@ -51,6 +51,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         DBNRegistry.getInstance().extendNode(this, false);
     }
 
+    @NotNull
     public DBPProject getProject() {
         return project;
     }

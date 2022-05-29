@@ -347,7 +347,7 @@ public class ColorSettingsDialog extends BaseDialog {
 
         {
             settingsGroup = new Composite(mainGroup, SWT.NONE);
-            settingsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL   ));
+            settingsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
             settingsGroup.setLayout(new GridLayout(3, false));
             GridData gd = new GridData();
             gd.horizontalSpan = 3;
@@ -672,7 +672,6 @@ public class ColorSettingsDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
-
         vEntitySrc.copyFrom(vEntity, vEntity.getModel());
         vEntitySrc.persistConfiguration();
         resultSetViewer.getModel().updateColorMapping(true);

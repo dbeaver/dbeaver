@@ -129,6 +129,20 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
     }
 
+    @Nullable
+    protected Boolean isConnectionReadOnly() {
+        return this.readOnlyConnection == null? null : this.readOnlyConnection.getSelection();
+    }
+
+    @Nullable
+    protected List<DBPDataSourcePermission> getAccessRestrictions() {
+        return this.accessRestrictions;
+    }
+    
+    protected boolean wasActivated() {
+        return this.activated;
+    }
+
     @Override
     public void dispose()
     {
@@ -588,8 +602,9 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
         dsDescriptor.setNavigatorSettings(this.navigatorSettings);
 
-        dsDescriptor.setConnectionReadOnly(this.readOnlyConnection.getSelection());
-        dsDescriptor.setModifyPermissions(this.accessRestrictions);
+        // it should be changed with connection settings and saved only on reconnect when connection is active
+        // dsDescriptor.setConnectionReadOnly(this.readOnlyConnection.getSelection());
+        // dsDescriptor.setModifyPermissions(this.accessRestrictions);
 
         for (FilterInfo filterInfo : filters) {
             if (filterInfo.filter != null) {

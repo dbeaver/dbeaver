@@ -647,12 +647,15 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
         @Override
         public void resourceChanged(IResourceChangeEvent event) {
             if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-                IResourceDelta delta = event.getDelta();
-                for (IResourceDelta childDelta : delta.getAffectedChildren()) {
-                    if (childDelta.getResource() instanceof IProject) {
-                        IProject project = (IProject) childDelta.getResource();
+                // Process removed projects first and added projects afterwards to properly update current active project
+                // Higher delta kind is processed first. See IResourceDelta constants
+                Arrays.stream(event.getDelta().getAffectedChildren())
+                    .filter(delta -> delta.getResource() instanceof IProject)
+                    .sorted(Comparator.comparingInt(IResourceDelta::getKind).reversed())
+                    .forEach(delta -> {
+                        IProject project = (IProject) delta.getResource();
                         if (!projects.containsKey(project)) {
-                            if (childDelta.getKind() == IResourceDelta.ADDED) {
+                            if (delta.getKind() == IResourceDelta.ADDED) {
                                 ProjectMetadata projectMetadata = new ProjectMetadata(BaseWorkspaceImpl.this, project, BaseWorkspaceImpl.this.workspaceAuthContext);
                                 projects.put(project, projectMetadata);
                                 fireProjectAdd(projectMetadata);
@@ -662,10 +665,10 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
                                 }
                             } else {
                                 // Project not found - report an error
-                                log.error("Project '" + childDelta.getResource().getName() + "' not found in workspace");
+                                log.error("Project '" + delta.getResource().getName() + "' not found in workspace");
                             }
                         } else {
-                            if (childDelta.getKind() == IResourceDelta.REMOVED) {
+                            if (delta.getKind() == IResourceDelta.REMOVED) {
                                 // Project deleted
                                 ProjectMetadata projectMetadata = projects.remove(project);
                                 fireProjectRemove(projectMetadata);
@@ -677,12 +680,11 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
                                 // Some changes within project - reflect them in metadata cache
                                 ProjectMetadata projectMetadata = projects.get(project);
                                 if (projectMetadata != null) {
-                                    handleResourceChange(projectMetadata, childDelta);
+                                    handleResourceChange(projectMetadata, delta);
                                 }
                             }
                         }
-                    }
-                }
+                    });
             }
         }
     }
