@@ -247,7 +247,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             }
             for (int i = 0; i < groupFunctions.size(); i++) {
                 String func = groupFunctions.get(i);
-                sql.append(", ").append(func).append(funcAliases[i]);
+                sql.append(", ").append(func).append(" as ").append(funcAliases[i]);
             }
             sql.append(" FROM (\n");
             sql.append(queryText);
