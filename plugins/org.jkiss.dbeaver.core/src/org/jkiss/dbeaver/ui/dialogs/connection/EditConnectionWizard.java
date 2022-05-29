@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -51,6 +52,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.security.MessageDigest;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -225,15 +227,17 @@ public class EditConnectionWizard extends ConnectionWizard {
 
 
         boolean saveConnectionSettings = true;
-        if (originalDataSource.isConnected() && UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_conn_change_title,
-            NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question,
-            originalDataSource.getName()) )
-        ) {
-            DataSourceHandler.reconnectDataSource(null, originalDataSource);
-        } else {
-            // Guess we shouldn't apply connection settings changes if reconnect was rejected,
-            // because in this case they are in inconsistent state
-            saveConnectionSettings = false;
+        if (originalDataSource.isConnected()) {
+            if (UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_conn_change_title,
+                NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question,
+                originalDataSource.getName()) )
+            ) {
+                DataSourceHandler.reconnectDataSource(null, originalDataSource);
+            } else {
+                // Guess we shouldn't apply connection settings changes if reconnect was rejected,
+                // because in this case they are in inconsistent state
+                saveConnectionSettings = false;
+            }
         }
 
         // Save
@@ -289,8 +293,16 @@ public class EditConnectionWizard extends ConnectionWizard {
     protected void saveSettings(DataSourceDescriptor dataSource, boolean isSaveConnectionSettings) {
         if (isPageActive(pageSettings) && isSaveConnectionSettings) {
             pageSettings.saveSettings(dataSource);
-            dataSource.setConnectionReadOnly(pageGeneral.isConnectionReadonly());
-            dataSource.setModifyPermissions(pageGeneral.getAccessRestrictions());
+            if (pageGeneral.wasActivated()) {
+                Boolean isReadOnlyConnection = pageGeneral.isConnectionReadOnly();
+                if (isReadOnlyConnection != null) {
+                    dataSource.setConnectionReadOnly(isReadOnlyConnection);
+                }
+                List<DBPDataSourcePermission> accessRestrictions = pageGeneral.getAccessRestrictions();
+                if (accessRestrictions != null) {
+                    dataSource.setModifyPermissions(accessRestrictions);
+                }
+            }
         }
         pageGeneral.saveSettings(dataSource);
         pageInit.saveSettings(dataSource);
