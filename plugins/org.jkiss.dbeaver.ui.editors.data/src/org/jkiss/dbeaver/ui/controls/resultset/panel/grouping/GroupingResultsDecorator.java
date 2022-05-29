@@ -169,7 +169,7 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
                         DBDAttributeBinding binding = (DBDAttributeBinding) element;
                         String attrName = getAttributeBindingName(binding);
 
-                        if (ArrayUtils.contains(container.getResultSetController().getModel().getAttributes(), binding)) {
+0                        if (ArrayUtils.contains(container.getResultSetController().getModel().getAttributes(), binding)) {
                             // Check for group function - can't move function columns
                             if (container.getGroupAttributes().contains(attrName)) {
                                 // It is column move, not new binding

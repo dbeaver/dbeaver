@@ -632,6 +632,13 @@ public class ResultSetModel {
             CommonUtils.equalObjects(ent1.getEntityName(), ent2.getEntityName());
     }
 
+    void resetMetaData() {
+        this.attributes = new DBDAttributeBinding[0];
+        this.visibleAttributes.clear();
+        this.documentAttribute = null;
+        this.singleSourceEntity = null;
+    }
+
     void updateDataFilter() {
         // Init data filter
         if (metadataChanged) {

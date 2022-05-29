@@ -200,7 +200,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
         referenceKeys.clear();
 
         UIUtils.syncExec(() -> {
-            dataViewer.clearData();
+            dataViewer.clearData(false);
             fkCombo.removeAll();
             dataViewer.showEmptyPresentation();
         });
@@ -385,7 +385,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                     lastSelectedRows = selectedRows;
                     if (selectedRows.isEmpty()) {
                         UIUtils.asyncExec(() -> {
-                            dataViewer.clearData();
+                            dataViewer.clearData(false);
                             dataViewer.showEmptyPresentation();
                         });
                     } else {

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.utils.CommonUtils;
@@ -48,6 +50,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class GroupingResultsContainer implements IResultSetContainer {
 
@@ -188,6 +191,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public void clearGrouping() {
         initDefaultSettings();
+        groupingViewer.clearData(true);
+
         groupingViewer.clearDataFilter(false);
         groupingViewer.resetHistory();
         dataContainer.setGroupingQuery(null);
@@ -206,6 +211,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (statistics == null) {
             throw new DBException("No main query - can't perform grouping");
         }
+        boolean isCustomQuery = !(presentation.getController().getDataContainer() instanceof DBSEntity);
         DBPDataSource dataSource = dataContainer.getDataSource();
         if (dataSource == null) {
             throw new DBException("No active datasource");
@@ -229,14 +235,19 @@ public class GroupingResultsContainer implements IResultSetContainer {
         }
 
         StringBuilder sql = new StringBuilder();
-        if (dialect.supportsSubqueries()) {
+        String[] funcAliases = new String[groupFunctions.size()];
+        for (int i = 0; i < groupFunctions.size(); i++) {
+            funcAliases[i] = makeGroupFunctionAlias(i);
+        }
+        if (isCustomQuery && dialect.supportsSubqueries()) {
             sql.append("SELECT ");
             for (int i = 0; i < groupAttributes.size(); i++) {
                 if (i > 0) sql.append(", ");
                 sql.append(quotedGroupingString(dataSource, groupAttributes.get(i)));
             }
-            for (String func : groupFunctions) {
-                sql.append(", ").append(func);
+            for (int i = 0; i < groupFunctions.size(); i++) {
+                String func = groupFunctions.get(i);
+                sql.append(", ").append(func).append(funcAliases[i]);
             }
             sql.append(" FROM (\n");
             sql.append(queryText);
@@ -256,9 +267,12 @@ public class GroupingResultsContainer implements IResultSetContainer {
                                 new Column(
                                     quotedGroupingString(dataSource, groupAttribute))));
                     }
-                    for (String func : groupFunctions) {
+                    for (int i = 0; i < groupFunctions.size(); i++) {
+                        String func = groupFunctions.get(i);
                         Expression expression = SQLSemanticProcessor.parseExpression(func);
-                        selectItems.add(new SelectExpressionItem(expression));
+                        SelectExpressionItem sei = new SelectExpressionItem(expression);
+                        sei.setAlias(new Alias(funcAliases[i]));
+                        selectItems.add(sei);
                     }
                 }
                 queryText = statement.toString();
@@ -277,7 +291,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
         boolean isShowDuplicatesOnly = dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
         if (isDefaultGrouping && isShowDuplicatesOnly) {
-            sql.append("\nHAVING ").append(DEFAULT_FUNCTION).append(" > 1");
+            sql.append("\nHAVING ").append(funcAliases[0]).append(" > 1");
         }
 
         dataContainer.setGroupingQuery(sql.toString());
@@ -291,7 +305,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
         String defaultSorting = dataSource.getContainer().getPreferenceStore().getString(ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING);
         if (!CommonUtils.isEmpty(defaultSorting) && isDefaultGrouping) {
-            if (dialect.supportsOrderByIndex()) {
+            if (false/*dialect.supportsOrderByIndex()*/) {
                 // By default sort by count in desc order
                 int countPosition = groupAttributes.size() + 1;
                 StringBuilder orderBy = new StringBuilder();
@@ -301,11 +315,27 @@ public class GroupingResultsContainer implements IResultSetContainer {
                 }
                 dataFilter.setOrder(orderBy.toString());
             } else {
-                dataFilter.setOrder(groupFunctions.get(groupFunctions.size() - 1) + " " + defaultSorting);
+                dataFilter.setOrder(funcAliases[funcAliases.length - 1] + " " + defaultSorting);
             }
         }
         groupingViewer.setDataFilter(dataFilter, true);
         //groupingViewer.refresh();
+    }
+
+    private String makeGroupFunctionAlias(int funcIndex) {
+        String function = groupFunctions.get(funcIndex);
+        StringBuilder alias = new StringBuilder();
+        for (int i = 0; i < function.length(); i++) {
+            char c = function.charAt(i);
+            if (Character.isLetterOrDigit(c) || c == '_') {
+                alias.append(c);
+            }
+        }
+        if (alias.length() > 0) {
+            //alias.append('_');
+            return alias.toString().toLowerCase(Locale.ENGLISH);
+        }
+        return "i_" + funcIndex;
     }
 
     void setGrouping(List<String> attributes, List<String> functions) {
