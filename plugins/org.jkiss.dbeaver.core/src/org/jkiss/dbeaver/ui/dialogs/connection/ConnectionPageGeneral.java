@@ -134,12 +134,18 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
     }
 
-    protected boolean isConnectionReadonly() {
-        return this.readOnlyConnection.getSelection();
+    @Nullable
+    protected Boolean isConnectionReadOnly() {
+        return this.readOnlyConnection == null? null : this.readOnlyConnection.getSelection();
     }
 
+    @Nullable
     protected List<DBPDataSourcePermission> getAccessRestrictions() {
         return this.accessRestrictions;
+    }
+    
+    protected boolean wasActivated() {
+        return this.activated;
     }
 
     @Override

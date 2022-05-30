@@ -1900,7 +1900,7 @@ public class ResultSetViewer extends Viewer
         }
 
         savePresentationSettings();
-        clearData();
+        clearData(true);
 
         for (ToolBarManager tb : toolbarList) {
             try {
@@ -4011,13 +4011,16 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
-    public void clearData()
+    public void clearData(boolean clearMetaData)
     {
         this.model.releaseAllData();
         this.model.clearData();
         this.curRow = null;
         this.selectedRecords = new int[0];
         this.activePresentation.clearMetaData();
+        if (clearMetaData) {
+            this.model.resetMetaData();
+        }
     }
 
     @Override

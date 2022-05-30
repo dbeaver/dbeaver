@@ -98,6 +98,11 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
     }
 
     @Override
+    public boolean supportsSubqueries() {
+        return true;
+    }
+
+    @Override
     public boolean supportsAliasInSelect() {
         return true;
     }
