@@ -49,7 +49,7 @@ public class ERDNote extends ERDElement<String> {
     }
 
     @Override
-    public Map<String, Object> toMap(@NotNull ERDContext context) {
+    public Map<String, Object> toMap(@NotNull ERDContext context, boolean fullInfo) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("note", getObject());
         return map;

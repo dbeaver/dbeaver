@@ -110,14 +110,14 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
     }
 
     @Override
-    public Map<String, Object> toMap(@NotNull ERDContext context) {
+    public Map<String, Object> toMap(@NotNull ERDContext context, boolean fullInfo) {
         Map<String, Object> attrMap = new LinkedHashMap<>();
         attrMap.put("name", this.getName());
         if (!CommonUtils.isEmpty(this.getAlias())) {
             attrMap.put("alias", this.getAlias());
         }
         DBSEntityAttribute entityAttribute = this.getObject();
-        if (entityAttribute != null) {
+        if (entityAttribute != null && fullInfo) {
             attrMap.put("dataKind", entityAttribute.getDataKind().name());
             attrMap.put("typeName", entityAttribute.getTypeName());
 
@@ -139,11 +139,13 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
         if (this.isChecked()) {
             attrMap.put("checked", true);
         }
-        if (this.isInPrimaryKey()) {
-            attrMap.put("inPrimaryKey", true);
-        }
-        if (this.isInForeignKey()) {
-            attrMap.put("inForeignKey", true);
+        if (fullInfo) {
+            if (this.isInPrimaryKey()) {
+                attrMap.put("inPrimaryKey", true);
+            }
+            if (this.isInForeignKey()) {
+                attrMap.put("inForeignKey", true);
+            }
         }
         return attrMap;
     }
