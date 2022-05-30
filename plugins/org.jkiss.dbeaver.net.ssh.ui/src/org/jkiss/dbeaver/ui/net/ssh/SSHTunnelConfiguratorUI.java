@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -87,11 +88,16 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     @Override
     public void createControl(Composite parent, Object object, Runnable propertyChangeListener)
     {
-        final Composite composite = new Composite(parent, SWT.NONE);
-        //gd.minimumHeight = 200;
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
+        scrolledComposite.setLayout(new GridLayout(1, false));
+        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        final Composite composite = new Composite(scrolledComposite, SWT.NONE);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new GridLayout(1, false));
-
+        scrolledComposite.setContent(composite);
+        scrolledComposite.setExpandHorizontal( true );
+        scrolledComposite.setExpandVertical( true );
+        scrolledComposite.setAlwaysShowScrollBars(true);
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
             credentialsPanel = new CredentialsPanel(settingsGroup, true);
@@ -103,6 +109,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
                     UIUtils.resizeShell(parent.getShell());
+                    scrolledComposite.setMinSize(parent.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                 }
             });
             group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
@@ -131,6 +138,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
                     UIUtils.resizeShell(parent.getShell());
+                    scrolledComposite.setMinSize(parent.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                 }
             });
             group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
@@ -181,12 +189,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
             tunnelTimeout = UIUtils.createLabelText(client, SSHUIMessages.model_ssh_configurator_label_tunnel_timeout, String.valueOf(SSHConstants.DEFAULT_CONNECT_TIMEOUT));
             setNumberEditStyles(tunnelTimeout);
-        }
-
-        {
-            Composite sc = new Composite(composite, SWT.NONE);
-            sc.setLayout(new GridLayout());
-            sc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         }
 
         {
