@@ -25,6 +25,9 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -45,7 +48,7 @@ import java.util.Map;
 /**
  * TeradataMetaModel
  */
-public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandlerProvider
+public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandlerProvider, DBCQueryTransformProvider
 {
     public TeradataMetaModel() {
         super();
@@ -223,5 +226,14 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
         } catch (SQLException e) {
             throw new DBException(e, container.getDataSource());
         }
+    }
+
+    @Nullable
+    @Override
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
+        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
+            return new TeradataQueryTransformerTop();
+        }
+        return null;
     }
 }
