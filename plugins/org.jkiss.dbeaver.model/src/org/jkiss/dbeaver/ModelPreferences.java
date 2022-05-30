@@ -19,6 +19,7 @@ package org.jkiss.dbeaver;
 
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -182,7 +183,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_RETRY_COUNT, 1);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_CANCEL_CHECK_TIMEOUT, 0);
-        PrefUtils.setDefaultPreferenceValue(store, DEFAULT_CONNECTION_NAME_PATTERN, "${host_or_database}");
+        PrefUtils.setDefaultPreferenceValue(store, DEFAULT_CONNECTION_NAME_PATTERN, GeneralUtils.variablePattern(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE));
         PrefUtils.setDefaultPreferenceValue(store, CLIENT_TIMEZONE, DBConstants.DEFAULT_TIMEZONE);
 
         PrefUtils.setDefaultPreferenceValue(store, CONNECTION_OPEN_TIMEOUT, 0);

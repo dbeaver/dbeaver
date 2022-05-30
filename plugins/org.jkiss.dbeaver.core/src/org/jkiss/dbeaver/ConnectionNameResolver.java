@@ -30,12 +30,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ConnectionNameResolver extends SQLNewScriptTemplateVariablesResolver {
-    public static final String VAR_DEFAULT = "host_or_database";
     private final DataSourceDescriptor descriptor;
 
     @NotNull
     public static Set<String> getConnectionVariables() {
-        final Set<String> strings = Arrays.stream(ArrayUtils.concatArrays(DBPConnectionConfiguration.ALL_VARIABLES, new String[]{VAR_DEFAULT})).collect(Collectors.toSet());
+        final Set<String> strings = Arrays.stream(ArrayUtils.concatArrays(DBPConnectionConfiguration.ALL_VARIABLES, new String[]{DBPConnectionConfiguration.VAR_HOST_OR_DATABASE})).collect(Collectors.toSet());
         strings.remove(DBPConnectionConfiguration.VARIABLE_DATASOURCE);
         strings.remove(DBPConnectionConfiguration.VARIABLE_SERVER);
         return strings;
@@ -46,7 +45,7 @@ public class ConnectionNameResolver extends SQLNewScriptTemplateVariablesResolve
         final String[][] strings = ArrayUtils.concatArrays(
             ALL_VARIABLES_INFO,
             new String[][]{
-                {VAR_DEFAULT, "Legacy name"},
+                {DBPConnectionConfiguration.VAR_HOST_OR_DATABASE, CoreMessages.variable_host_or_database},
             });
         List<List<String>> list = new ArrayList<>();
         for (String[] string : strings) {
@@ -92,7 +91,7 @@ public class ConnectionNameResolver extends SQLNewScriptTemplateVariablesResolve
 
     @Override
     public String get(String name) {
-        if (name.equals(VAR_DEFAULT)) {
+        if (name.equals(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE)) {
             return generateLegacyConnectionName();
         }
         return super.get(name);
