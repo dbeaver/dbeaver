@@ -835,6 +835,9 @@ public class CustomSashForm extends SashForm {
     }
 
     protected void drawArrow(GC gc, int[] sashLoc, boolean selected, boolean isSlammed) {
+        int oldAntialias = gc.getAntialias();
+        gc.setAntialias(SWT.ON);
+
         int indent = 0;
         if (selected) {
             if (!inMouseClick) {
@@ -885,6 +888,10 @@ public class CustomSashForm extends SashForm {
                     drawRightArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
                     break;
             }
+        }
+
+        if (oldAntialias != SWT.ON) {
+            gc.setAntialias(oldAntialias);
         }
     }
 
