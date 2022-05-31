@@ -91,12 +91,14 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
         scrolledComposite.setLayout(new GridLayout(1, false));
         scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
         final Composite composite = new Composite(scrolledComposite, SWT.NONE);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new GridLayout(1, false));
+
         scrolledComposite.setContent(composite);
-        scrolledComposite.setExpandHorizontal( true );
-        scrolledComposite.setExpandVertical( true );
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
         scrolledComposite.setAlwaysShowScrollBars(true);
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
@@ -108,8 +110,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
-                    UIUtils.resizeShell(parent.getShell());
                     scrolledComposite.setMinSize(parent.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                    UIUtils.resizeShell(parent.getShell());
                 }
             });
             group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
@@ -137,8 +139,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
-                    UIUtils.resizeShell(parent.getShell());
                     scrolledComposite.setMinSize(parent.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                    UIUtils.resizeShell(parent.getShell());
                 }
             });
             group.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
@@ -192,7 +194,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
 
         {
-            Composite controlGroup = UIUtils.createComposite(composite, 3);
+            Composite sc = new Composite(parent, SWT.NONE);
+            sc.setLayout(new GridLayout());
+            sc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        }
+
+        {
+            Composite controlGroup = UIUtils.createComposite(parent, 3);
             controlGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, new SelectionAdapter() {
