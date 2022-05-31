@@ -209,20 +209,22 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 }
             });
 
-            columnsController.addColumn(ResultSetMessages.controls_resultset_filter_column_order, null, SWT.LEFT, true, false, new CellLabelProvider() {
-                @Override
-                public void update(ViewerCell cell) {
-                    final DBDAttributeBinding binding = (DBDAttributeBinding) cell.getElement();
-                    final DBDAttributeConstraint constraint = getBindingConstraint(binding);
-                    if (constraint.getOrderPosition() > 0) {
-                        cell.setText(" " + constraint.getOrderPosition());
-                        cell.setImage(DBeaverIcons.getImage(constraint.isOrderDescending() ? UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE));
-                    } else {
-                        cell.setText(null);
-                        cell.setImage(null);
+            if (resultSetViewer.getDataSource() != null && resultSetViewer.getDataSource().getInfo().supportsResultSetOrdering()) {
+                columnsController.addColumn(ResultSetMessages.controls_resultset_filter_column_order, null, SWT.LEFT, true, false, new CellLabelProvider() {
+                    @Override
+                    public void update(ViewerCell cell) {
+                        final DBDAttributeBinding binding = (DBDAttributeBinding) cell.getElement();
+                        final DBDAttributeConstraint constraint = getBindingConstraint(binding);
+                        if (constraint.getOrderPosition() > 0) {
+                            cell.setText(" " + constraint.getOrderPosition());
+                            cell.setImage(DBeaverIcons.getImage(constraint.isOrderDescending() ? UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE));
+                        } else {
+                            cell.setText(null);
+                            cell.setImage(null);
+                        }
                     }
-                }
-            });
+                });
+            }
 
             columnsController.addColumn(ResultSetMessages.controls_resultset_filter_column_criteria, null, SWT.LEFT, true, false, new CellLabelProvider() {
                 @Override

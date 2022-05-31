@@ -34,6 +34,10 @@ public class SQLEditorMessages extends NLS {
     public static String confirm_dangerous_sql_message;
     public static String confirm_dangerous_sql_toggleMessage;
 
+    public static String confirm_drop_sql_title;
+    public static String confirm_drop_sql_message;
+    public static String confirm_drop_sql_toggleMessage;
+
     public static String confirm_mass_parallel_sql_title;
     public static String confirm_mass_parallel_sql_message;
     public static String confirm_mass_parallel_sql_toggleMessage;

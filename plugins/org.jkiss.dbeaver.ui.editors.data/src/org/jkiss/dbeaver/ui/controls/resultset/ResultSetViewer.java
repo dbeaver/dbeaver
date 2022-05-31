@@ -135,6 +135,7 @@ public class ResultSetViewer extends Viewer
     private static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
+    private static final String CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE = "org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable";
 
     public static final String EMPTY_TRANSFORMER_NAME = "Default";
     public static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
@@ -2199,20 +2200,29 @@ public class ResultSetViewer extends Viewer
             return;
         }
 
+        boolean serverSideOrdering;
+
         switch (orderingMode) {
-            case SMART:
-                if (this.isHasMoreData()) {
-                    this.refreshData(null);
-                } else {
-                    this.reorderLocally();
-                }
-                break;
             case CLIENT_SIDE:
-                this.reorderLocally();
+                serverSideOrdering = false;
                 break;
             case SERVER_SIDE:
-                this.refreshData(null);
+                serverSideOrdering = true;
                 break;
+            default:
+                serverSideOrdering = isHasMoreData();
+                break;
+        }
+
+        if (serverSideOrdering && getDataSource() != null && !getDataSource().getInfo().supportsResultSetOrdering()) {
+            ConfirmationDialog.confirmAction(getControl().getShell(), CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE, ConfirmationDialog.WARNING);
+            serverSideOrdering = false;
+        }
+
+        if (serverSideOrdering) {
+            this.refreshData(null);
+        } else {
+            this.reorderLocally();
         }
     }
 

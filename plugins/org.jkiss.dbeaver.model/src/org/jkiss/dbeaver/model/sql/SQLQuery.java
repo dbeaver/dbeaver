@@ -434,6 +434,11 @@ public class SQLQuery implements SQLScriptElement {
         return false;
     }
 
+    public boolean isDropTableDangerous() {
+        parseQuery();
+        return statement != null && statement instanceof Drop && ((Drop) statement).getName() != null;
+    }
+
     private static class SingleTableMeta implements DBCEntityMetaData {
 
         private final String catalogName;
