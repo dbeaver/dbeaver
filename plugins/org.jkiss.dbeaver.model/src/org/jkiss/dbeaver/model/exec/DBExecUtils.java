@@ -763,10 +763,14 @@ public class DBExecUtils {
                     }
 
                     if (tableColumn != null) {
+                        boolean structurallyInconsistentTypes = tableColumn.getDataKind().isComplex() != 
+                            resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition()).getDataKind().isComplex();
                         boolean updateColumnHandler = updateColumnMeta &&
                             (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta)) &&
                             rows != null;
-                        if (!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind()) {
+                        if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind())
+                            || structurallyInconsistentTypes
+                        ) {
                             // Different data kind. Probably it is an alias which conflicts with column name
                             // Do not update entity attribute.
                             // It is a silly workaround for PG-like databases
