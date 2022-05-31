@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -305,10 +306,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             ContentAssistUtils.installContentProposal(
                 connectionNameText,
                 new SmartTextContentAdapter(),
-                new StringContentProposalProvider(ConnectionNameResolver.getConnectionVariables().stream().map(GeneralUtils::variablePattern).toArray(String[]::new))
+                new StringContentProposalProvider(Arrays.stream(ConnectionNameResolver.getConnectionVariables()).map(GeneralUtils::variablePattern).toArray(String[]::new))
             );
             UIUtils.setContentProposalToolTip(connectionNameText, "Connection name patterns",
-                ConnectionNameResolver.getConnectionVariables().toArray(String[]::new));
+                ConnectionNameResolver.getConnectionVariables());
 
             {
                 connectionTypeCombo = createConnectionTypeCombo(miscGroup);

@@ -490,6 +490,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_connections_application_name_text;
 	public static String pref_page_connection_label_default_connection_name_pattern;
 	public static String pref_page_connection_label_default_connection_name_pattern_tip;
+	public static String pref_page_connection_label_default_connection_name_pattern_sample_tip;
+	public static String pref_page_connection_label_default_connection_name_pattern_sample;
 	public static String pref_page_connection_label_default_connection_template_variables;
 	public static String pref_page_connection_label_default_connection_template_variables_tip;
 

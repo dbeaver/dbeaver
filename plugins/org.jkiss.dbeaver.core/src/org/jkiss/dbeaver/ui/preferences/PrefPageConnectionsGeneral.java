@@ -31,9 +31,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ConnectionNameResolver;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -45,6 +49,8 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral;
 import org.jkiss.dbeaver.ui.dialogs.connection.NavigatorSettingsStorage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.util.Arrays;
+
 public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage, NavigatorSettingsStorage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
@@ -55,6 +61,8 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     private String connectionNamePattern;
     private DBPConnectionType defaultConnectionType;
     private DBNBrowseSettings defaultNavigatorSettings;
+    private Text sampleConnectionName;
+    private ConnectionNameResolver fakeConnectionNameResolver;
 
     public PrefPageConnectionsGeneral() {
         super();
@@ -83,17 +91,23 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             ContentAssistUtils.installContentProposal(
                 connectionDefaultNamePatternText,
                 new SmartTextContentAdapter(),
-                new StringContentProposalProvider(ConnectionNameResolver.getConnectionVariables().stream().map(GeneralUtils::variablePattern).toArray(String[]::new))
+                new StringContentProposalProvider(Arrays.stream(ConnectionNameResolver.getConnectionVariables()).map(GeneralUtils::variablePattern).toArray(String[]::new))
             );
             connectionDefaultNamePatternText.setText(connectionNamePattern);
             UIUtils.setContentProposalToolTip(connectionDefaultNamePatternText, "Connection name patterns",
-                ConnectionNameResolver.getConnectionVariables().toArray(String[]::new));
+                ConnectionNameResolver.getConnectionVariables());
+
+            fakeConnectionNameResolver = generateFakeDatasourceResolver();
+            sampleConnectionName = UIUtils.createLabelText(groupDefaults, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample_tip);
+            sampleConnectionName.setEditable(false);
+            sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
+            connectionDefaultNamePatternText.addModifyListener(e -> sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver)));
 
             new VariablesHintLabel(
                 groupDefaults,
                 CoreMessages.pref_page_connection_label_default_connection_template_variables,
                 CoreMessages.pref_page_connection_label_default_connection_template_variables_tip,
-                ConnectionNameResolver.getConnectionVariablesInfo().stream().map(u -> u.toArray(new String[0])).toArray(String[][]::new),
+                ConnectionNameResolver.getConnectionVariablesInfo(),
                 false
             );
         }
@@ -118,6 +132,20 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     @Override
     public void init(IWorkbench iWorkbench) {
 
+    }
+
+    private ConnectionNameResolver generateFakeDatasourceResolver() {
+        final DataSourceRegistry dataSourceRegistry = new DataSourceRegistry(DBWorkbench.getPlatform(), DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        DriverDescriptor driver = DriverDescriptor.NULL_DRIVER;
+        DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
+        conConfig.setHostName("localhost");
+        conConfig.setUserPassword("SamplePassword");
+        conConfig.setDatabaseName("Sample Database Name");
+        conConfig.setHostPort("42");
+        conConfig.setServerName("Sample Server Name");
+        conConfig.setUrl("sample//url");
+        DataSourceDescriptor fakeDataSource = new DataSourceDescriptor(dataSourceRegistry, DataSourceDescriptor.generateNewId(driver), driver, conConfig);
+        return new ConnectionNameResolver(fakeDataSource, conConfig, null);
     }
 
     @Override
@@ -151,6 +179,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     protected void performDefaults()
     {
         connectionDefaultNamePatternText.setText(ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+        sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
         connectionNamePattern = ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
         updateCombosAndSettings();
     }

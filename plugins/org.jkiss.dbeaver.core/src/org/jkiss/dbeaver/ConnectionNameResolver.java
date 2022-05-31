@@ -22,43 +22,71 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLNewScriptTemplateVariablesResolver;
-import org.jkiss.utils.ArrayUtils;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.StringTokenizer;
 
-public class ConnectionNameResolver extends SQLNewScriptTemplateVariablesResolver {
+public class ConnectionNameResolver implements IVariableResolver {
     private final DataSourceDescriptor descriptor;
+    private final DBPConnectionConfiguration configuration;
+    private final DBPDataSourceContainer dataSourceContainer;
 
-    @NotNull
-    public static Set<String> getConnectionVariables() {
-        final Set<String> strings = Arrays.stream(ArrayUtils.concatArrays(DBPConnectionConfiguration.ALL_VARIABLES, new String[]{DBPConnectionConfiguration.VAR_HOST_OR_DATABASE})).collect(Collectors.toSet());
-        strings.remove(DBPConnectionConfiguration.VARIABLE_DATASOURCE);
-        strings.remove(DBPConnectionConfiguration.VARIABLE_SERVER);
-        return strings;
+    public static final String[] CONNECTION_NAME_VARIABLES = new String[]{
+        DBPConnectionConfiguration.VARIABLE_HOST,
+        DBPConnectionConfiguration.VARIABLE_PORT,
+        DBPConnectionConfiguration.VARIABLE_SERVER,
+        DBPConnectionConfiguration.VARIABLE_DATABASE,
+        DBPConnectionConfiguration.VARIABLE_USER,
+        DBPConnectionConfiguration.VARIABLE_PASSWORD,
+        DBPConnectionConfiguration.VARIABLE_URL,
+        DBPConnectionConfiguration.VARIABLE_CONN_TYPE,
+        DBPConnectionConfiguration.VARIABLE_DATASOURCE,
+        DBPConnectionConfiguration.VAR_PROJECT_NAME,
+        DBPConnectionConfiguration.VARIABLE_DATE,
+        DBPConnectionConfiguration.VAR_HOST_OR_DATABASE
+    };
+
+    public static final String[][] CONNECTION_NAME_VARIABLES_INFO = new String[][]{
+        {DBPConnectionConfiguration.VARIABLE_HOST, "target database host"},
+        {DBPConnectionConfiguration.VARIABLE_PORT, "target database port"},
+        {DBPConnectionConfiguration.VARIABLE_SERVER, "target server name"},
+        {DBPConnectionConfiguration.VARIABLE_DATABASE, "target database name"},
+        {DBPConnectionConfiguration.VARIABLE_USER, "database user name"},
+        {DBPConnectionConfiguration.VARIABLE_PASSWORD, "database password (plain)"},
+        {DBPConnectionConfiguration.VARIABLE_URL, "connection URL"},
+        {DBPConnectionConfiguration.VARIABLE_CONN_TYPE, "connection type"},
+        {DBPConnectionConfiguration.VAR_PROJECT_PATH, "project path"},
+        {DBPConnectionConfiguration.VAR_PROJECT_NAME, "project name"},
+        {DBPConnectionConfiguration.VARIABLE_DATE, "current date"},
+        {DBPConnectionConfiguration.VAR_HOST_OR_DATABASE, "Legacy configuration for the connection name"}
     };
 
     @NotNull
-    public static List<List<String>> getConnectionVariablesInfo() {
-        final String[][] strings = ArrayUtils.concatArrays(
-            ALL_VARIABLES_INFO,
-            new String[][]{
-                {DBPConnectionConfiguration.VAR_HOST_OR_DATABASE, CoreMessages.variable_host_or_database},
-            });
-        List<List<String>> list = new ArrayList<>();
-        for (String[] string : strings) {
-            if (!string[0].equals(DBPConnectionConfiguration.VARIABLE_DATASOURCE)) {
-                list.add(List.of(string));
-            }
-        }
-        return list;
+    public static String[] getConnectionVariables() {
+        return CONNECTION_NAME_VARIABLES;
+    }
+
+    ;
+
+    @NotNull
+    public static String[][] getConnectionVariablesInfo() {
+        return CONNECTION_NAME_VARIABLES_INFO;
     }
 
     public ConnectionNameResolver(DBPDataSourceContainer dataSourceContainer, DBPConnectionConfiguration configuration, @Nullable DataSourceDescriptor descriptor) {
-        super(dataSourceContainer, configuration);
+        this.dataSourceContainer = dataSourceContainer;
+        this.configuration = configuration;
         this.descriptor = descriptor;
+    }
+
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
+    }
+
+    public DBPConnectionConfiguration getConfiguration() {
+        return configuration;
     }
 
     @NotNull
@@ -91,9 +119,38 @@ public class ConnectionNameResolver extends SQLNewScriptTemplateVariablesResolve
 
     @Override
     public String get(String name) {
-        if (name.equals(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE)) {
-            return generateLegacyConnectionName();
+        if (configuration != null) {
+            switch (name) {
+                case DBPConnectionConfiguration.VARIABLE_HOST:
+                    return configuration.getHostName();
+                case DBPConnectionConfiguration.VARIABLE_PORT:
+                    return configuration.getHostPort();
+                case DBPConnectionConfiguration.VARIABLE_SERVER:
+                    return configuration.getServerName();
+                case DBPConnectionConfiguration.VARIABLE_DATABASE:
+                    return configuration.getDatabaseName();
+                case DBPConnectionConfiguration.VARIABLE_USER:
+                    return configuration.getUserName();
+                case DBPConnectionConfiguration.VAR_HOST_OR_DATABASE:
+                    return generateLegacyConnectionName();
+                case DBPConnectionConfiguration.VARIABLE_PASSWORD:
+                    return configuration.getUserPassword();
+                case DBPConnectionConfiguration.VARIABLE_URL:
+                    return configuration.getUrl();
+                case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:
+                    return configuration.getConnectionType().getId();
+            }
         }
-        return super.get(name);
+        if (dataSourceContainer != null) {
+            switch (name) {
+                case DBPConnectionConfiguration.VARIABLE_DATASOURCE:
+                    return dataSourceContainer.getName();
+                case DBPConnectionConfiguration.VAR_PROJECT_NAME:
+                    return dataSourceContainer.getProject().getName();
+                case DBPConnectionConfiguration.VARIABLE_DATE:
+                    return RuntimeUtils.getCurrentDate();
+            }
+        }
+        return System.getenv(name);
     }
 }
