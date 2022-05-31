@@ -204,7 +204,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
     }
 
     @Override
-    public Map<String, Object> toMap(@NotNull ERDContext context) {
+    public Map<String, Object> toMap(@NotNull ERDContext context, boolean fullInfo) {
         Map<String, Object> assocMap = new LinkedHashMap<>();
 
         DBSEntityAssociation association = this.getObject();

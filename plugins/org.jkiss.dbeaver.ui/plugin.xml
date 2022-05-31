@@ -73,4 +73,21 @@
                 description="DBeaver Perspective Context"/>
     </extension>
 
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.eclipse.ui.window.openEditorDropDown" class="org.jkiss.dbeaver.ui.CustomWorkbookEditorsHandler">
+            <activeWhen>
+                <and>
+                    <with variable="activeContexts">
+                        <iterate operator="or">
+                            <equals value="org.eclipse.ui.contexts.window"/>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <instanceof value="org.eclipse.ui.IWorkbenchPart"/>
+                    </with>
+                </and>
+            </activeWhen>
+        </handler>
+    </extension>
+
 </plugin>
