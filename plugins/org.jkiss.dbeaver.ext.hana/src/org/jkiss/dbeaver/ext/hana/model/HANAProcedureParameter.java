@@ -35,10 +35,10 @@ public class HANAProcedureParameter extends GenericProcedureParameter {
     private DBSObject tableType;
     private List<HANAInplaceTableTypeColumn> inplaceTableType;
     
-    public HANAProcedureParameter(GenericProcedure procedure, String columnName, String typeName,
+    public HANAProcedureParameter(GenericProcedure procedure, String columnName, String typeName, int typeId,
             int ordinalPosition, int columnSize, Integer scale, DBSProcedureParameterKind parameterKind,
             DBSObject tableType, List<HANAInplaceTableTypeColumn> inplaceTableType, boolean hasDefaultValue) {
-        super(procedure, columnName, typeName, 0 /*valueType*/, ordinalPosition, columnSize, scale,
+        super(procedure, columnName, typeName, typeId, ordinalPosition, columnSize, scale,
         		0 /*precision*/, false /*notNull*/, null /*remarks*/, parameterKind);
         this.tableType = tableType;
         this.inplaceTableType = inplaceTableType;
