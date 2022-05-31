@@ -14,6 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* This program has been developed by students from the bachelor Computer Science 
+ * at Utrecht University within the Software Project course. © Copyright Utrecht 
+ * University (Department of Information and Computing Sciences)*/
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.runtime.Status;
