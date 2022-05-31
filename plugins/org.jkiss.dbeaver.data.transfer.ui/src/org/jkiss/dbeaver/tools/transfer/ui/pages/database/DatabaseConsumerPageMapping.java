@@ -1055,13 +1055,21 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         }
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
-            String sql = SQLUtils.generateScript(dataSource, persistActions, false);
+            boolean showSaveButton;
+            String dialogText;
+            if (dataSource.getInfo().isDynamicMetadata()) {
+                dialogText = DTUIMessages.database_consumer_page_mapping_sqlviewer_nonsql_tables_message;
+                showSaveButton = false;
+            } else {
+                dialogText = SQLUtils.generateScript(dataSource, persistActions, false);
+                showSaveButton = dataSource.getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
+            }
             int result = serviceSQL.openSQLViewer(
                 DBUtils.getDefaultContext(container, true),
                 DTUIMessages.database_consumer_page_mapping_sqlviewer_title,
                 null,
-                sql,
-                dataSource.getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA),
+                dialogText,
+                showSaveButton,
                 false);
             if (result == IDialogConstants.PROCEED_ID) {
                 if (UIUtils.confirmAction(

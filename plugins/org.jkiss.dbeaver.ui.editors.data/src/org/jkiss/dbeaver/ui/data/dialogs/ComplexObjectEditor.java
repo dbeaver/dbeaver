@@ -906,7 +906,7 @@ public class ComplexObjectEditor extends TreeViewer {
             @NotNull
             @Override
             public String getName() {
-                return String.valueOf(collection.items.indexOf(this));
+                return String.valueOf(collection.items.indexOf(this) + 1);
             }
 
             @NotNull

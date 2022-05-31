@@ -474,14 +474,11 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
     }
 
     @Override
-    public Map<String, Object> toMap(@NotNull ERDContext context) {
+    public Map<String, Object> toMap(@NotNull ERDContext context, boolean fullInfo) {
         Map<String, Object> map = new LinkedHashMap<>();
 
-        Map<String, Object> dataList = new LinkedHashMap<>();
-        map.put("data", dataList);
-
         map.put("entities",
-            this.getEntities().stream().map(e -> e.toMap(context)).collect(Collectors.toList()));
+            this.getEntities().stream().map(e -> e.toMap(context, fullInfo)).collect(Collectors.toList()));
 
         {
             List<ERDElement<?>> allElements = new ArrayList<>();
@@ -492,13 +489,18 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
             List<Map<String, Object>> assocList = new ArrayList<>();
             for (ERDElement<?> element : allElements) {
                 for (ERDAssociation rel : element.getAssociations()) {
-                    assocList.add(rel.toMap(context));
+                    assocList.add(rel.toMap(context, fullInfo));
                 }
             }
             map.put("associations", assocList);
         }
 
-        dataList.put("icons", context.getIcons());
+        if (fullInfo) {
+            Map<String, Object> dataList = new LinkedHashMap<>();
+            map.put("data", dataList);
+
+            dataList.put("icons", context.getIcons());
+        }
 
         return map;
     }
