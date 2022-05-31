@@ -302,6 +302,18 @@ public final class RuntimeUtils {
         return IS_WINDOWS;
     }
 
+    public static boolean isWindowsStoreApplication() {
+        if (!IS_WINDOWS) {
+            return false;
+        }
+        String installPath = SystemVariablesResolver.getInstallPath();
+        final String property = System.getProperty("jna.boot.library.path");
+        if (property == null) {
+            return false;
+        }
+        return property.equals(installPath);
+    }
+
     public static boolean isMacOS() {
         return IS_MACOS;
     }
