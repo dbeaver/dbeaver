@@ -34,10 +34,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.*;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -2148,7 +2145,17 @@ public class UIUtils {
     }
 
     public static void installMacOSFocusLostSubstitution(@NotNull Widget widget, @NotNull Runnable onFocusLost) {
-        if (RuntimeUtils.isMacOS()) {
+        if (!RuntimeUtils.isMacOS()) {
+            return;
+        }
+        if (widget instanceof Combo || widget instanceof CCombo) {
+            widget.addListener(SWT.Selection, new TypedListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    onFocusLost.run();
+                }
+            }));
+        } else {
             widget.addDisposeListener(e -> onFocusLost.run());
         }
     }
