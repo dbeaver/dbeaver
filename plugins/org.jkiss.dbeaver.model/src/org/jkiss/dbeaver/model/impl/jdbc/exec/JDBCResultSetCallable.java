@@ -65,7 +65,7 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     @Override
     public Object getAttributeValue(int index) throws DBCException {
         try {
-            return this.getObject(getColumnOriginalIndex(index));
+            return this.getObject(index);
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
         }
