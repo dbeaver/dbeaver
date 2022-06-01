@@ -99,7 +99,7 @@ public class HANAProcedure extends GenericProcedure {
     public void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure parameter")) {
             String stmt;
-            stmt = "SELECT PARAMETER_NAME, DATA_TYPE_NAME, LENGTH, SCALE, POSITION,"+
+            stmt = "SELECT PARAMETER_NAME, DATA_TYPE_NAME, DATA_TYPE_ID, LENGTH, SCALE, POSITION,"+
                    " TABLE_TYPE_SCHEMA, TABLE_TYPE_NAME, IS_INPLACE_TYPE,"+
                    " PARAMETER_TYPE, HAS_DEFAULT_VALUE";
             if (DBSProcedureType.PROCEDURE == getProcedureType()) {
@@ -116,14 +116,15 @@ public class HANAProcedure extends GenericProcedure {
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        String columnName = JDBCUtils.safeGetString(dbResult, 1);
-                        String typeName = JDBCUtils.safeGetString(dbResult, 2);
-                        int columnSize = JDBCUtils.safeGetInt(dbResult, 3);
-                        int scale = JDBCUtils.safeGetInt(dbResult, 4);
-                        int position = JDBCUtils.safeGetInt(dbResult, 5);
-                        String parameterTypeStr = JDBCUtils.safeGetString(dbResult, 9);
-                        boolean hasInplaceTableType = JDBCUtils.safeGetBoolean(dbResult, 8, HANAConstants.SYS_BOOLEAN_TRUE);
-                        boolean hasDefaultValue = JDBCUtils.safeGetBoolean(dbResult, 10, HANAConstants.SYS_BOOLEAN_TRUE);
+                        String columnName = JDBCUtils.safeGetString(dbResult, "PARAMETER_NAME");
+                        String typeName = JDBCUtils.safeGetString(dbResult, "DATA_TYPE_NAME");
+                        int typeId = JDBCUtils.safeGetInt(dbResult, "DATA_TYPE_ID");
+                        int columnSize = JDBCUtils.safeGetInt(dbResult, "LENGTH");
+                        int scale = JDBCUtils.safeGetInt(dbResult, "SCALE");
+                        int position = JDBCUtils.safeGetInt(dbResult, "POSITION");
+                        String parameterTypeStr = JDBCUtils.safeGetString(dbResult, "PARAMETER_TYPE");
+                        boolean hasInplaceTableType = JDBCUtils.safeGetBoolean(dbResult, "IS_INPLACE_TYPE", HANAConstants.SYS_BOOLEAN_TRUE);
+                        boolean hasDefaultValue = JDBCUtils.safeGetBoolean(dbResult, "HAS_DEFAULT_VALUE", HANAConstants.SYS_BOOLEAN_TRUE);
                         
                         DBSProcedureParameterKind parameterType;
                         switch(parameterTypeStr) {
@@ -142,8 +143,8 @@ public class HANAProcedure extends GenericProcedure {
                                 }
                                 inplaceTableType = inplaceTableTypes.get(columnName);
                             } else {
-                                String tableTypeSchema = dbResult.getString(6);
-                                String tableTypeName = dbResult.getString(7);
+                                String tableTypeSchema = dbResult.getString("TABLE_TYPE_SCHEMA");
+                                String tableTypeName = dbResult.getString("TABLE_TYPE_NAME");
                                 GenericSchema schema = getDataSource().getSchema(tableTypeSchema);
                                 if (schema != null) {
                                     tableType = schema.getTable(monitor, tableTypeName);
@@ -151,7 +152,7 @@ public class HANAProcedure extends GenericProcedure {
                             }
                         }
                         addColumn(new HANAProcedureParameter(
-                                this, columnName, typeName, position, columnSize, scale, parameterType, 
+                                this, columnName, typeName, typeId, position, columnSize, scale, parameterType,
                                 tableType, inplaceTableType, hasDefaultValue));
                     }
                 }
