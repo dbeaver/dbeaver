@@ -332,7 +332,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             }
         }
         if (alias.length() > 0) {
-            //alias.append('_');
+            alias.append('_');
             return alias.toString().toLowerCase(Locale.ENGLISH);
         }
         return "i_" + funcIndex;
