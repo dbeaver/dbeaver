@@ -53,28 +53,6 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     public static final String VARIABLE_DATE = "date";
 
-    public static final String[] ALL_VARIABLES = new String[] {
-        VARIABLE_HOST,
-        VARIABLE_PORT,
-        VARIABLE_SERVER,
-        VARIABLE_DATABASE,
-        VARIABLE_USER,
-        VARIABLE_PASSWORD,
-        VARIABLE_URL,
-        VARIABLE_CONN_TYPE,
-        VARIABLE_DATASOURCE,
-        VAR_PROJECT_PATH,
-        VAR_PROJECT_NAME,
-        VARIABLE_DATE,
-        SystemVariablesResolver.VAR_WORKSPACE,
-        SystemVariablesResolver.VAR_HOME,
-        SystemVariablesResolver.VAR_DBEAVER_HOME,
-        SystemVariablesResolver.VAR_APP_PATH,
-        SystemVariablesResolver.VAR_APP_NAME,
-        SystemVariablesResolver.VAR_APP_VERSION,
-        SystemVariablesResolver.VAR_LOCAL_IP
-    };
-
     public static final String[][] CONNECT_VARIABLES = new String[][]{
         {VARIABLE_HOST, "target database host"},
         {VARIABLE_PORT, "target database port"},

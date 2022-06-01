@@ -28,7 +28,6 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ConnectionNameResolver;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -45,6 +44,7 @@ import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionNameResolver;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral;
 import org.jkiss.dbeaver.ui.dialogs.connection.NavigatorSettingsStorage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -77,17 +77,17 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            Group groupDefaults = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_label_default_settings, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-
-            connectionTypeCombo = ConnectionPageGeneral.createConnectionTypeCombo(groupDefaults);
+            Group groupDefaults = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_label_default_settings, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite groupComposite = UIUtils.createComposite(groupDefaults, 2);
+            connectionTypeCombo = ConnectionPageGeneral.createConnectionTypeCombo(groupComposite);
             connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     defaultConnectionType = connectionTypeCombo.getSelectedItem();
                 }
             });
-            navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(groupDefaults, this, null);
-            connectionDefaultNamePatternText = UIUtils.createLabelText(groupDefaults, CoreMessages.pref_page_connection_label_default_connection_name_pattern, CoreMessages.pref_page_connection_label_default_connection_name_pattern_tip);
+            navigatorSettingsCombo = ConnectionPageGeneral.createNavigatorSettingsCombo(groupComposite, this, null);
+            connectionDefaultNamePatternText = UIUtils.createLabelText(groupComposite, CoreMessages.pref_page_connection_label_default_connection_name_pattern, CoreMessages.pref_page_connection_label_default_connection_name_pattern_tip);
             ContentAssistUtils.installContentProposal(
                 connectionDefaultNamePatternText,
                 new SmartTextContentAdapter(),
@@ -98,17 +98,17 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 ConnectionNameResolver.getConnectionVariables());
 
             fakeConnectionNameResolver = generateFakeDatasourceResolver();
-            sampleConnectionName = UIUtils.createLabelText(groupDefaults, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample_tip);
+            sampleConnectionName = UIUtils.createLabelText(groupComposite, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample_tip);
             sampleConnectionName.setEditable(false);
             sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
             connectionDefaultNamePatternText.addModifyListener(e -> sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver)));
 
             new VariablesHintLabel(
-                groupDefaults,
-                CoreMessages.pref_page_connection_label_default_connection_template_variables,
-                CoreMessages.pref_page_connection_label_default_connection_template_variables_tip,
-                ConnectionNameResolver.getConnectionVariablesInfo(),
-                false
+                    groupDefaults,
+                    CoreMessages.pref_page_connection_label_default_connection_template_variables,
+                    CoreMessages.pref_page_connection_label_default_connection_template_variables_tip,
+                    ConnectionNameResolver.getConnectionVariablesInfo(),
+                    false
             );
         }
 
