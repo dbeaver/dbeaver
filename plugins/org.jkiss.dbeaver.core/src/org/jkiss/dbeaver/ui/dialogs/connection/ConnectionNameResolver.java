@@ -139,6 +139,8 @@ public class ConnectionNameResolver implements IVariableResolver {
                     return configuration.getUrl();
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:
                     return configuration.getConnectionType().getId();
+                default:
+                    break;
             }
         }
         if (dataSourceContainer != null) {
@@ -149,6 +151,8 @@ public class ConnectionNameResolver implements IVariableResolver {
                     return dataSourceContainer.getProject().getName();
                 case DBPConnectionConfiguration.VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
+                default:
+                    break;
             }
         }
         return System.getenv(name);

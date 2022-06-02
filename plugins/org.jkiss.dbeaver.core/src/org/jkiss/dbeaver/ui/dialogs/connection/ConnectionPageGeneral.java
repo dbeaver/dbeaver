@@ -252,14 +252,15 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
     private String generateConnectionName(ConnectionPageSettings settings, String usedName) {
         String newName;
+        String resultName = usedName;
         if (settings != null) {
-            if (usedName.isBlank()) {
-                usedName = GeneralUtils.variablePattern(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE);
+            if (resultName.isBlank()) {
+                resultName = GeneralUtils.variablePattern(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE);
             }
             DataSourceDescriptor dataSource = settings.getActiveDataSource();
             DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
             final ConnectionNameResolver resolver = new ConnectionNameResolver(dataSource, connectionInfo, dataSourceDescriptor);
-            newName = GeneralUtils.replaceVariables(usedName, resolver);
+            newName = GeneralUtils.replaceVariables(resultName, resolver);
             String baseName = newName;
             for (int i = 2; ; i++) {
                 if (settings.getDataSourceRegistry().findDataSourceByName(newName) != null) {
