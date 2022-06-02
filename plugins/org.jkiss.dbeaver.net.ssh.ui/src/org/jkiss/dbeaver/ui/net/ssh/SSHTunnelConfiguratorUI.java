@@ -102,6 +102,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         scrolledComposite.setAlwaysShowScrollBars(true);
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
+            parent.getShell().setSize(UIUtils.getFontHeight(settingsGroup) * 80, parent.getShell().getSize().y);
             credentialsPanel = new CredentialsPanel(settingsGroup, true);
         }
 
@@ -110,7 +111,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
-                    scrolledComposite.setMinSize(parent.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });
@@ -139,7 +140,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
-                    scrolledComposite.setMinSize(parent.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });
