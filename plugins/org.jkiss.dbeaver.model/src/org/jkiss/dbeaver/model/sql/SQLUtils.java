@@ -465,8 +465,13 @@ public final class SQLUtils {
         appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria, false);
     }
     
-    public static void appendConditionString(@NotNull DBDDataFilter filter, @NotNull DBPDataSource dataSource,
-        @Nullable String conditionTable, @NotNull StringBuilder query, boolean inlineCriteria, boolean subQuery
+    public static void appendConditionString(
+        @NotNull DBDDataFilter filter,
+        @NotNull DBPDataSource dataSource,
+        @Nullable String conditionTable,
+        @NotNull StringBuilder query, 
+        boolean inlineCriteria, 
+        boolean subQuery
     ) {
         final List<DBDAttributeConstraint> constraints = filter.getConstraints().stream()
             .filter(x -> x.getCriteria() != null || x.getOperator() != null)

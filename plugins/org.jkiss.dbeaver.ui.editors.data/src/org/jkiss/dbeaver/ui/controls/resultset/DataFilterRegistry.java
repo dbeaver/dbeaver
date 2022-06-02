@@ -76,7 +76,9 @@ class DataFilterRegistry {
     }
     
     @NotNull
-    private static DBDAttributeConstraint restoreOffschemaConstraint(@NotNull String unquottedAttrName, @NotNull DBDAttributeConstraintBase savedConstraint) {
+    private static DBDAttributeConstraint restoreOffschemaConstraint(
+        @NotNull String unquottedAttrName, @NotNull DBDAttributeConstraintBase savedConstraint
+    ) {
         DBDAttributeConstraint constraint;
         if (savedConstraint instanceof DBDAttributeConstraint) {
             constraint = (DBDAttributeConstraint) savedConstraint;
@@ -131,7 +133,8 @@ class DataFilterRegistry {
         SavedDataFilter(@NotNull DBPDataSource dataSource, @NotNull DBDDataFilter dataFilter) {
             for (DBDAttributeConstraint c : dataFilter.getConstraints()) {
                 if (c.getAttribute() != null) {
-                    constraints.put(DBUtils.getQuotedIdentifier(dataSource, c.getAttribute().getName()), new DBDAttributeConstraint(c));
+                    constraints.put(DBUtils.getQuotedIdentifier(
+                        dataSource, c.getAttribute().getName()), new DBDAttributeConstraint(c));
                 }
             }
             this.anyConstraint = dataFilter.isAnyConstraint();
@@ -139,13 +142,17 @@ class DataFilterRegistry {
             this.where = dataFilter.getWhere();
         }
 
-        void restoreDataFilter(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer dataContainer, @NotNull DBDDataFilter dataFilter) throws DBException {
+        void restoreDataFilter(
+            @NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer dataContainer, @NotNull DBDDataFilter dataFilter
+        ) throws DBException {
             dataFilter.setAnyConstraint(anyConstraint);
             dataFilter.setOrder(this.order);
             dataFilter.setWhere(this.where);
             List<DBDAttributeConstraint> offschemaConstraints = null; 
             boolean isDocumentSource = dataContainer.getDataSource() != null &&
-                Boolean.TRUE.equals(dataContainer.getDataSource().getDataSourceFeature(DBPDataSource.FEATURE_DOCUMENT_DATA_SOURCE));
+                Boolean.TRUE.equals(
+                    dataContainer.getDataSource().getDataSourceFeature(DBPDataSource.FEATURE_DOCUMENT_DATA_SOURCE)
+                );
             for (Map.Entry<String, DBDAttributeConstraintBase> savedC : constraints.entrySet()) {
                 String attrName = savedC.getKey();
                 DBDAttributeConstraintBase savedConstraint = savedC.getValue();
@@ -153,17 +160,15 @@ class DataFilterRegistry {
                     attrName = DBUtils.getUnQuotedIdentifier(dataContainer.getDataSource(), attrName);
                 }
                 DBDAttributeConstraint attrC = dataFilter.getConstraint(attrName);
-                if (attrC == null) {
-                    if (dataContainer instanceof DBSEntity) {
-                        DBSEntityAttribute attribute = ((DBSEntity) dataContainer).getAttribute(monitor, attrName);
-                        if (attribute != null) {
-                            attrC = new DBDAttributeConstraint(attribute, attribute.getOrdinalPosition());
-                        } else if (savedConstraint != null && savedConstraint.hasCondition() && isDocumentSource) {
-                            attrC = restoreOffschemaConstraint(attrName, savedConstraint);
-                        }
-                        if (attrC != null) {
-                            dataFilter.addConstraints(Collections.singletonList(attrC));
-                        }
+                if (attrC == null && dataContainer instanceof DBSEntity) {
+                    DBSEntityAttribute attribute = ((DBSEntity) dataContainer).getAttribute(monitor, attrName);
+                    if (attribute != null) {
+                        attrC = new DBDAttributeConstraint(attribute, attribute.getOrdinalPosition());
+                    } else if (savedConstraint != null && savedConstraint.hasCondition() && isDocumentSource) {
+                        attrC = restoreOffschemaConstraint(attrName, savedConstraint);
+                    }
+                    if (attrC != null) {
+                        dataFilter.addConstraints(Collections.singletonList(attrC));
                     }
                 }
                 if (attrC != null) {
@@ -177,7 +182,8 @@ class DataFilterRegistry {
             }
             if (offschemaConstraints != null && dataContainer.getDataSource() != null) {
                 StringBuilder sb = new StringBuilder();
-                SQLUtils.appendConditionString(dataFilter, offschemaConstraints, dataContainer.getDataSource(), null, sb, true, false);
+                SQLUtils.appendConditionString(
+                    dataFilter, offschemaConstraints, dataContainer.getDataSource(), null, sb, true, false);
                 dataFilter.setWhere(sb.toString());
             }
         }
@@ -386,7 +392,9 @@ class DataFilterRegistry {
         }
 
         @Override
-        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) throws XMLException {
+        public void saxEndElement(
+            @NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName
+        ) throws XMLException {
             switch (localName) {
                 case "filter": {
                     curSavedDataFilter = null;
