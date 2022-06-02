@@ -385,7 +385,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
 
     @NotNull
     private static Collection<String> getBackedUpWorkspaces() {
-        if (!Files.exists(FILE_WITH_WORKSPACES)) {
+        if (!Files.exists(FILE_WITH_WORKSPACES) || Files.isDirectory(FILE_WITH_WORKSPACES)) {
             return Collections.emptyList();
         }
         try {
