@@ -157,6 +157,21 @@ public class DBeaverCommandLine
             }
         }
 
+        {
+            //Set configuration file for SystemVariableResolver
+            String file = commandLine.getOptionValue(PARAM_CONFIG);
+            if (!CommonUtils.isEmpty(file)) {
+                try (InputStream stream = new FileInputStream(file)) {
+                    Properties properties = new Properties();
+                    properties.load(stream);
+                    SystemVariablesResolver.setConfiguration(properties);
+                } catch (Exception e) {
+                    log.error("Error parsing command line ", e);
+                    return false;
+                }
+            }
+        }
+
         if (controller == null) {
             log.debug("Can't process commands because no running instance is present");
             return false;
@@ -177,21 +192,6 @@ public class DBeaverCommandLine
                 String threadDump = controller.getThreadDump();
                 System.out.println(threadDump);
                 return true;
-            }
-        }
-
-        {
-            //Set configuration file for SystemVariableResolver
-            String file = commandLine.getOptionValue(PARAM_CONFIG);
-            if (!CommonUtils.isEmpty(file)) {
-                try (InputStream stream = new FileInputStream(file)) {
-                    Properties properties = new Properties();
-                    properties.load(stream);
-                    SystemVariablesResolver.setConfiguration(properties);
-                } catch (Exception e) {
-                    log.error("Error parsing command line ", e);
-                    return false;
-                }
             }
         }
 
