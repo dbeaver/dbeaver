@@ -307,7 +307,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     }
 
     public void setInput(DBNNode rootNode) {
-        treeViewer.getTree().removePaintListener(treeLoadingListener);
+        if (treeLoadingListener != null) {
+            treeViewer.getTree().removePaintListener(treeLoadingListener);
+            treeLoadingListener = null;
+        }
         treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 
