@@ -89,7 +89,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private boolean filterShowConnected = false;
     private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
     private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
-    private PaintListener treeLoadingListener;
+    private volatile PaintListener treeLoadingListener;
 
     public static DatabaseNavigatorTree getFromShell(Display display) {
         if (display == null) {
@@ -157,6 +157,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
                 @Override
                 public void paintControl(PaintEvent e) {
+                    if (treeLoadingListener == null) {
+                        return;
+                    }
                     drawCount++;
                     Image image = DBeaverIcons.getImage(ProgressLoaderVisualizer.PROGRESS_IMAGES[drawCount % ProgressLoaderVisualizer.PROGRESS_IMAGES.length]);
                     Rectangle bounds = tree.getBounds();
