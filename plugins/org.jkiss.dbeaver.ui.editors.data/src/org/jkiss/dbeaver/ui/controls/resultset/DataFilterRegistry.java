@@ -18,16 +18,22 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraintBase;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
+import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -42,11 +48,12 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import java.io.*;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.lang.reflect.Array;
 
 /**
  * Viewer columns registry
@@ -60,11 +67,54 @@ class DataFilterRegistry {
 
     private static DataFilterRegistry instance;
 
+    @NotNull
     public static synchronized DataFilterRegistry getInstance() {
         if (instance == null) {
             instance = new DataFilterRegistry();
         }
         return instance;
+    }
+    
+    @NotNull
+    private static DBDAttributeConstraint restoreOffschemaConstraint(@NotNull String unquottedAttrName, @NotNull DBDAttributeConstraintBase savedConstraint) {
+        DBDAttributeConstraint constraint;
+        if (savedConstraint instanceof DBDAttributeConstraint) {
+            constraint = (DBDAttributeConstraint) savedConstraint;
+        } else {
+            DBPDataKind dataKind = getAttributeValueKind(savedConstraint.getValue());
+            DBSAttributeBase attribute = new AbstractAttribute(
+                unquottedAttrName, dataKind.name(), 0, savedConstraint.getOrderPosition(), 0, 0, 0, false, false
+            ) {
+                @Override
+                public DBPDataKind getDataKind() {
+                    return dataKind;
+                }
+            }; 
+            constraint = new DBDAttributeConstraint(attribute, savedConstraint.getVisualPosition());
+            constraint.copyFrom(savedConstraint);
+        }
+        return constraint;
+    }
+
+    @NotNull
+    private static DBPDataKind getAttributeValueKind(@NotNull Object value) {
+        if (value instanceof String) {
+            return DBPDataKind.STRING;
+        } else if (value instanceof Number) {
+            return DBPDataKind.NUMERIC;
+        } else if (value instanceof Boolean) {
+            return DBPDataKind.BOOLEAN;
+        } else if (value instanceof Date) {
+            return DBPDataKind.DATETIME;
+        } else if (value instanceof JsonObject) {
+            return DBPDataKind.STRUCT;
+        } else if (value instanceof JsonArray) {
+            return DBPDataKind.ARRAY;
+        } else if (value != null && value.getClass().isArray() && Array.getLength(value) > 0) {
+            return getAttributeValueKind(Array.get(value, 0));
+        } else {
+            return DBPDataKind.OBJECT;
+        }
     }
 
     static class SavedDataFilter {
@@ -78,7 +128,7 @@ class DataFilterRegistry {
 
         }
 
-        SavedDataFilter(DBPDataSource dataSource, DBDDataFilter dataFilter) {
+        SavedDataFilter(@NotNull DBPDataSource dataSource, @NotNull DBDDataFilter dataFilter) {
             for (DBDAttributeConstraint c : dataFilter.getConstraints()) {
                 if (c.getAttribute() != null) {
                     constraints.put(DBUtils.getQuotedIdentifier(dataSource, c.getAttribute().getName()), new DBDAttributeConstraint(c));
@@ -89,12 +139,16 @@ class DataFilterRegistry {
             this.where = dataFilter.getWhere();
         }
 
-        void restoreDataFilter(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter dataFilter) throws DBException {
+        void restoreDataFilter(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer dataContainer, @NotNull DBDDataFilter dataFilter) throws DBException {
             dataFilter.setAnyConstraint(anyConstraint);
             dataFilter.setOrder(this.order);
             dataFilter.setWhere(this.where);
+            List<DBDAttributeConstraint> offschemaConstraints = null; 
+            boolean isDocumentSource = dataContainer.getDataSource() != null &&
+                Boolean.TRUE.equals(dataContainer.getDataSource().getDataSourceFeature(DBPDataSource.FEATURE_DOCUMENT_DATA_SOURCE));
             for (Map.Entry<String, DBDAttributeConstraintBase> savedC : constraints.entrySet()) {
                 String attrName = savedC.getKey();
+                DBDAttributeConstraintBase savedConstraint = savedC.getValue();
                 if (dataContainer.getDataSource() != null) {
                     attrName = DBUtils.getUnQuotedIdentifier(dataContainer.getDataSource(), attrName);
                 }
@@ -104,18 +158,34 @@ class DataFilterRegistry {
                         DBSEntityAttribute attribute = ((DBSEntity) dataContainer).getAttribute(monitor, attrName);
                         if (attribute != null) {
                             attrC = new DBDAttributeConstraint(attribute, attribute.getOrdinalPosition());
+                        } else if (savedConstraint != null && savedConstraint.hasCondition() && isDocumentSource) {
+                            attrC = restoreOffschemaConstraint(attrName, savedConstraint);
+                        }
+                        if (attrC != null) {
                             dataFilter.addConstraints(Collections.singletonList(attrC));
                         }
                     }
                 }
                 if (attrC != null) {
-                    attrC.copyFrom(savedC.getValue());
+                    attrC.copyFrom(savedConstraint);
+                } else if (savedConstraint != null && savedConstraint.hasCondition() && isDocumentSource) {
+                    if (offschemaConstraints == null) {
+                        offschemaConstraints = new ArrayList<>();
+                    }
+                    offschemaConstraints.add(restoreOffschemaConstraint(attrName, savedConstraint));
                 }
+            }
+            if (offschemaConstraints != null && dataContainer.getDataSource() != null) {
+                StringBuilder sb = new StringBuilder();
+                SQLUtils.appendConditionString(dataFilter, offschemaConstraints, dataContainer.getDataSource(), null, sb, true, false);
+                dataFilter.setWhere(sb.toString());
             }
         }
     }
 
+    @NotNull
     private final Map<String, SavedDataFilter> savedFilters = new HashMap<>();
+    @Nullable
     private volatile ConfigSaver saver = null;
 
     public DataFilterRegistry() {
@@ -125,14 +195,15 @@ class DataFilterRegistry {
         }
     }
 
-    public SavedDataFilter getSavedConfig(DBSDataContainer object) {
+    @NotNull
+    public SavedDataFilter getSavedConfig(@NotNull DBSDataContainer object) {
         String objectId = makeObjectId(object);
         synchronized (savedFilters) {
             return savedFilters.get(objectId);
         }
     }
 
-    void saveDataFilter(DBSDataContainer object, DBDDataFilter dataFilter) {
+    void saveDataFilter(@NotNull DBSDataContainer object, @NotNull DBDDataFilter dataFilter) {
         String objectId = makeObjectId(object);
         synchronized (savedFilters) {
             if (dataFilter.isDirty()) {
@@ -149,7 +220,8 @@ class DataFilterRegistry {
         }
     }
 
-    public static String makeObjectId(DBSObject object) {
+    @NotNull
+    public static String makeObjectId(@NotNull DBSObject object) {
         DBSObject[] path = DBUtils.getObjectPath(object, true);
         StringBuilder objName = new StringBuilder();
         for (DBSObject p : path) {
@@ -159,7 +231,7 @@ class DataFilterRegistry {
         return objName.toString();
     }
 
-    private void loadConfiguration(File configFile) {
+    private void loadConfiguration(@NotNull File configFile) {
         savedFilters.clear();
         try (InputStream in = new FileInputStream(configFile)) {
             SAXReader parser = new SAXReader(in);
@@ -187,7 +259,6 @@ class DataFilterRegistry {
         }
 
         private void flushConfig() {
-
             File configFile = DBWorkbench.getPlatform().getConfigurationFile(CONFIG_FILE);
             try (OutputStream out = new FileOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
@@ -250,16 +321,21 @@ class DataFilterRegistry {
 
     private class DataFilterParser extends SAXListener.BaseListener {
 
+        @Nullable
         private SavedDataFilter curSavedDataFilter = null;
+        @Nullable
         private DBDAttributeConstraintBase curSavedConstraint = null;
         private boolean isInValue = false;
+        @Nullable
         private String curOptionName = null;
 
         private DataFilterParser() {
         }
 
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
+        public void saxStartElement(
+            @NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes atts
+        ) throws XMLException {
             switch (localName) {
                 case "filter": {
                     curSavedDataFilter = new SavedDataFilter();
@@ -310,7 +386,7 @@ class DataFilterRegistry {
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
+        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) throws XMLException {
             switch (localName) {
                 case "filter": {
                     curSavedDataFilter = null;
@@ -332,7 +408,7 @@ class DataFilterRegistry {
         }
 
         @Override
-        public void saxText(SAXReader reader, String data) throws XMLException {
+        public void saxText(@Nullable SAXReader reader, @NotNull String data) throws XMLException {
             if (isInValue) {
                 curSavedConstraint.setValue(GeneralUtils.deserializeObject(data));
             } else if (curOptionName != null) {
