@@ -50,12 +50,12 @@ public interface SMController extends SMAuthCredentialsManager {
     /**
      * Sets user credentials for specified provider
      */
-    void setUserCredentials(String userId, String authProviderId, Map<String, Object> credentials) throws DBException;
+    void setUserCredentials(@NotNull String userId, @NotNull String authProviderId, @NotNull Map<String, Object> credentials) throws DBException;
 
     /**
      * Returns list of auth provider IDs associated with this user
      */
-    String[] getUserLinkedProviders(String userId) throws DBException;
+    String[] getUserLinkedProviders(@NotNull String userId) throws DBException;
 
     ///////////////////////////////////////////
     // Permissions
@@ -71,11 +71,22 @@ public interface SMController extends SMAuthCredentialsManager {
 
     boolean isSessionPersisted(String id) throws DBException;
 
-    SMAuthInfo authenticateAnonymousUser(@NotNull String appSessionId, @NotNull Map<String, Object> sessionParameters, @NotNull SMSessionType sessionType) throws DBException;
+    SMAuthInfo authenticateAnonymousUser(
+        @NotNull String appSessionId,
+        @NotNull Map<String, Object> sessionParameters,
+        @NotNull SMSessionType sessionType) throws DBException;
 
-    SMAuthInfo authenticate(@NotNull String appSessionId, @NotNull Map<String, Object> sessionParameters, @NotNull SMSessionType sessionType, @NotNull String authProviderId, @NotNull Map<String, Object> userCredentials) throws DBException;
+    SMAuthInfo authenticate(
+        @NotNull String appSessionId,
+        @NotNull Map<String, Object> sessionParameters,
+        @NotNull SMSessionType sessionType,
+        @NotNull String authProviderId,
+        @NotNull Map<String, Object> userCredentials) throws DBException;
 
-    void updateSession(@NotNull String sessionId, @Nullable String userId, Map<String, Object> parameters) throws DBException;
+    void updateSession(
+        @NotNull String sessionId,
+        @Nullable String userId,
+        Map<String, Object> parameters) throws DBException;
 
     ///////////////////////////////////////////
     // Permissions
@@ -86,7 +97,10 @@ public interface SMController extends SMAuthCredentialsManager {
     @NotNull
     SMDataSourceGrant[] getConnectionSubjectAccess(String connectionId) throws DBException;
 
-    void setConnectionSubjectAccess(@NotNull String connectionId, @Nullable String[] subjects, @Nullable String grantorId) throws DBException;
+    void setConnectionSubjectAccess(
+        @NotNull String connectionId,
+        @Nullable String[] subjects,
+        @Nullable String grantorId) throws DBException;
 
     SMAuthPermissions getTokenPermissions(String token) throws DBException;
 }

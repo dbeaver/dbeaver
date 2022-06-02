@@ -62,4 +62,9 @@ class SQLServerDataSourceInfo extends JDBCDataSourceInfo {
         return SQLServerObjectType.values();
     }
 
+    @Override
+    public boolean needsTableMetaForColumnResolution() {
+        return false;
+    }
+
 }

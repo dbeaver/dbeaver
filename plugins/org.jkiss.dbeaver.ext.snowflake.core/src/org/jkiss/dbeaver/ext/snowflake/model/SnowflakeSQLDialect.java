@@ -58,4 +58,12 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         }
     }
 
+    @NotNull
+    @Override
+    public String getSearchStringEscape() {
+        // Without escaping of wildcards Snowflake reads all metadata directly from database and ignores specified objects names
+        // #9875
+        return "\\";
+    }
+
 }

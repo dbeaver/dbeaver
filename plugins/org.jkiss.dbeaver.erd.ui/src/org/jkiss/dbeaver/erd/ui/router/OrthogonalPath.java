@@ -105,6 +105,7 @@ public class OrthogonalPath {
     }
 
     public OrthogonalPath(Connection conn) {
+        setDirty(true);
         this.connection = conn;
     }
 
@@ -125,7 +126,6 @@ public class OrthogonalPath {
 
     public void setPoints(PointList points) {
         this.points = points;
-        this.isDirty = true;
     }
 
     public PointList getBendpoints() {
@@ -134,6 +134,7 @@ public class OrthogonalPath {
 
     public void setBendpoints(PointList bendpoints) {
         this.bendpoints = bendpoints;
+        this.setDirty(true);
     }
 
     public enum Direction {
