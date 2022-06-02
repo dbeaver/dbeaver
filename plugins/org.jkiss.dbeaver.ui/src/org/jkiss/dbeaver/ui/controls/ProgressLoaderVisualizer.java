@@ -21,10 +21,7 @@ import org.eclipse.swt.custom.ControlEditor;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -50,7 +47,7 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
 
     protected static final int PROGRESS_VISUALIZE_PERIOD = 100;
 
-    static final DBIcon[] PROGRESS_IMAGES = {
+    public static final DBIcon[] PROGRESS_IMAGES = {
         UIIcon.PROGRESS0, UIIcon.PROGRESS1, UIIcon.PROGRESS2, UIIcon.PROGRESS3,
         UIIcon.PROGRESS4, UIIcon.PROGRESS5, UIIcon.PROGRESS6, UIIcon.PROGRESS7,
         UIIcon.PROGRESS8, UIIcon.PROGRESS9
@@ -160,10 +157,12 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
                 if (cancelButton.isDisposed()) {
                     return;
                 }
+                GC gc = e.gc;
+
                 Image image = DBeaverIcons.getImage(PROGRESS_IMAGES[drawCount % PROGRESS_IMAGES.length]);
                 Rectangle buttonBounds = cancelButton.getBounds();
                 Rectangle imageBounds = image.getBounds();
-                e.gc.drawImage(
+                gc.drawImage(
                     image,
                     (buttonBounds.x + buttonBounds.width / 2) - imageBounds.width / 2,
                     buttonBounds.y - imageBounds.height - 5);
@@ -175,16 +174,16 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
                 String statusMessage = CommonUtils.truncateString(
                     progressMessage.replaceAll("\\s", " "), 64);
                 String status = statusMessage + " - " + elapsedString + "s";
-                e.gc.setFont(cancelButton.getFont());
-                Point statusSize = e.gc.textExtent(status);
+                gc.setFont(cancelButton.getFont());
+                Point statusSize = gc.textExtent(status);
 
                 int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
                 int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
-                e.gc.setForeground(UIStyles.getDefaultTextForeground());
-                e.gc.setBackground(UIStyles.getDefaultTextBackground());
-                e.gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
-                e.gc.drawText(status, statusX, statusY, true);
-                e.gc.drawRoundRectangle(statusX - 3, statusY - 3, statusSize.x + 5, statusSize.y + 5, 5, 5);
+                gc.setForeground(UIStyles.getDefaultTextForeground());
+                gc.setBackground(UIStyles.getDefaultTextBackground());
+                gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
+                gc.drawText(status, statusX, statusY, true);
+                gc.drawRoundRectangle(statusX - 3, statusY - 3, statusSize.x + 5, statusSize.y + 5, 5, 5);
             };
             progressPane.addPaintListener(painListener);
 
