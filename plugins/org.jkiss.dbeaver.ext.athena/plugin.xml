@@ -46,8 +46,8 @@
 
                 <provider-properties drivers="*">
                     <propertyGroup label="Settings">
-                        <property id="server" label="Region" type="string" description="Athena AWS Region"/>
-                        <property id="database" label="S3 Location" type="string" description="Athena AWS S3 Location"/>
+                        <property id="{server}" label="Region" type="string" description="Athena AWS Region"/>
+                        <property id="{database}" label="S3 Location" type="string" description="Athena AWS S3 Location"/>
                     </propertyGroup>
                 </provider-properties>
             </drivers>
