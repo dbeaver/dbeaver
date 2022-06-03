@@ -871,6 +871,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     @Override
+    public boolean supportsAliasInConditions() {
+        return false;
+    }
+
+    @Override
     public boolean supportsTableDropCascade() {
         return true;
     }

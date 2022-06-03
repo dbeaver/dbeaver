@@ -263,6 +263,10 @@ public interface SQLDialect {
 
     boolean supportsAliasInUpdate();
 
+    default boolean supportsAliasInConditions() {
+        return true;
+    }
+
     boolean supportsTableDropCascade();
 
     boolean supportsOrderByIndex();
