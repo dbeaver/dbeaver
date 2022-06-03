@@ -41,6 +41,8 @@ public class AssociationCreateCommand extends Command {
 
     private static final Log log = Log.getLog(AssociationCreateCommand.class);
 
+    protected DBVEntityForeignKey virtualFk;
+    protected DBVEntityForeignKey.Creator virtualFkCreator;
     protected ERDAssociation association;
     protected ERDElement<?> sourceEntity;
     protected ERDElement<?> targetEntity;
@@ -127,6 +129,11 @@ public class AssociationCreateCommand extends Command {
     @Override
     public void redo() {
         if (association != null) {
+            if (virtualFkCreator != null) { 
+                virtualFk = virtualFkCreator.createForeignKey();
+                association.setObject(virtualFk);
+            }
+
             sourceEntity.addAssociation(association, true);
             targetEntity.addReferenceAssociation(association, true);
         }
@@ -137,6 +144,11 @@ public class AssociationCreateCommand extends Command {
         if (association != null) {
             sourceEntity.removeAssociation(association, true);
             targetEntity.removeReferenceAssociation(association, true);
+
+            if (virtualFk != null) { 
+                virtualFk.getEntity().removeForeignKey(virtualFk);
+                virtualFk = null;
+            }
         }
     }
 
@@ -167,7 +179,7 @@ public class AssociationCreateCommand extends Command {
             DBVEntity vEntity = DBVUtils.getVirtualEntity(srcEntityObject, true);
             assert vEntity != null;
 
-            DBVEntityForeignKey vfk = EditForeignKeyPage.createVirtualForeignKey(
+            DBVEntityForeignKey.Creator virtualFkCreator = EditForeignKeyPage.makeVirtualForeignKeyCreatorWithEditor(
                 vEntity,
                 targetEntityObject,
                 new EditForeignKeyPage.FKType[] {
@@ -175,11 +187,16 @@ public class AssociationCreateCommand extends Command {
                 },
                 srcAttrs,
                 refAttrs);
+            DBVEntityForeignKey vfk = virtualFkCreator.createForeignKey();
             if (vfk == null) {
+                this.virtualFk = null;
+                this.virtualFkCreator = null;
                 return null;
+            } else {
+                this.virtualFk = vfk;
+                this.virtualFkCreator = virtualFkCreator;
+                return new ERDAssociation(vfk, (ERDEntity) sourceEntity, (ERDEntity) targetEntity, true);
             }
-            vEntity.persistConfiguration();
-            return new ERDAssociation(vfk, (ERDEntity)sourceEntity, (ERDEntity)targetEntity, true);
         } else {
             return new ERDAssociation(sourceEntity, targetEntity, true);
         }

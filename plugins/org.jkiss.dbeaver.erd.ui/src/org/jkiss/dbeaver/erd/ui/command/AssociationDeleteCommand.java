@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.erd.ui.command;
 
-import org.eclipse.gef3.EditPart;
 import org.eclipse.gef3.commands.Command;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDElement;
+import org.jkiss.dbeaver.erd.model.ERDEntity;
 import org.jkiss.dbeaver.erd.ui.part.AssociationPart;
-import org.jkiss.dbeaver.erd.ui.part.AttributePart;
+import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.erd.ui.part.EntityPart;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -37,24 +37,28 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class AssociationDeleteCommand extends Command {
 
-    protected final AssociationPart part;
+    protected final DiagramPart diagramPart;
     protected final ERDElement sourceEntity;
     protected final ERDElement targetEntity;
     protected final ERDAssociation association;
+    protected final DBVEntity vEntity;
+    protected final DBVEntityForeignKey.Creator virtualFkCreator;
 
     public AssociationDeleteCommand(AssociationPart part) {
         super();
-        this.part = part;
+        diagramPart = part.getDiagramPart();
         association = part.getAssociation();
-        if (association.getSourceEntity() == null && part.getSource() instanceof AttributePart) {
-            sourceEntity = ((EntityPart) part.getSource().getParent()).getEntity();
+        sourceEntity = association.getSourceEntity();
+        targetEntity = association.getTargetEntity();
+        
+        DBSEntityAssociation entityAssociation = association.getObject();
+        if (entityAssociation instanceof DBVEntityForeignKey) {
+            DBVEntityForeignKey vfk = (DBVEntityForeignKey) entityAssociation;
+            vEntity = DBVUtils.getVirtualEntity(entityAssociation.getParentObject(), false);
+            virtualFkCreator = vfk.decompose();
         } else {
-            sourceEntity = association.getSourceEntity();
-        }
-        if (association.getTargetEntity() == null && part.getTarget() instanceof AttributePart) {
-            targetEntity = ((EntityPart) part.getTarget().getParent()).getEntity();
-        } else {
-            targetEntity = association.getTargetEntity();
+            vEntity = null;
+            virtualFkCreator = null;
         }
     }
 
@@ -65,10 +69,9 @@ public class AssociationDeleteCommand extends Command {
     public void execute() {
         DBSEntityAssociation entityAssociation = association.getObject();
         if (entityAssociation instanceof DBVEntityForeignKey) {
-            if (!UIUtils.confirmAction("Delete logical key", "Are you sure you want to delete logical key '" + part.getAssociation().getName() + "'?")) {
+            if (!UIUtils.confirmAction("Delete logical key", "Are you sure you want to delete logical key '" + association.getName() + "'?")) {
                 return;
             }
-            DBVEntity vEntity = DBVUtils.getVirtualEntity(entityAssociation.getParentObject(), false);
             if (vEntity == null) {
                 UIUtils.showMessageBox(UIUtils.getActiveWorkbenchShell(), "No virtual entity", "Can't find association owner virtual entity", SWT.ICON_ERROR);
                 return;
@@ -79,7 +82,6 @@ public class AssociationDeleteCommand extends Command {
     }
 
     protected void removeAssociationFromDiagram() {
-        part.setSelected(EditPart.SELECTED_NONE);
         targetEntity.removeReferenceAssociation(association, true);
         sourceEntity.removeAssociation(association, true);
         association.setSourceEntity(null);
@@ -94,18 +96,23 @@ public class AssociationDeleteCommand extends Command {
         if (association.getSourceEntity() != null) {
             return;
         }
-        DBSEntityAssociation entityAssociation = association.getObject();
-        if (entityAssociation instanceof DBVEntityForeignKey) {
-            DBVEntity vEntity = DBVUtils.getVirtualEntity(entityAssociation.getParentObject(), false);
-            if (vEntity != null) {
-                vEntity.addForeignKey((DBVEntityForeignKey) entityAssociation);
-            }
+        if (virtualFkCreator != null) { 
+            association.setObject(virtualFkCreator.createForeignKey());
         }
         association.setSourceEntity(sourceEntity);
         association.setTargetEntity(targetEntity);
         sourceEntity.addAssociation(association, true);
         targetEntity.addReferenceAssociation(association, true);
-        part.activate();
+        
+        if (sourceEntity instanceof ERDEntity) {
+            EntityPart sourcePart = diagramPart.getEntityPart((ERDEntity) sourceEntity);
+            sourcePart.getConnectionPart(association, true).activate();
+        }
+    }
+    
+    @Override
+    public void redo() {
+        this.execute();
     }
 
 }

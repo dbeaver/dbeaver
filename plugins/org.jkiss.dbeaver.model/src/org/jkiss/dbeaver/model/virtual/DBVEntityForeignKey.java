@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Virtual foreign key
@@ -260,5 +261,62 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
     @Override
     public String toString() {
         return "VFK: " + entity.getName() + "->" + refEntityId + "." + refConstraintId + " (" + attributes + ")";
+    }
+    
+    @NotNull
+    public Creator decompose() {
+        return makeCreator(getEntity(), getReferencedConstraint(), 
+            getAttributes().stream()
+            .map(c -> new RelationInfo(c.getReferencedColumn(), c.getAttribute())).collect(Collectors.toList()));
+    }
+
+    @NotNull
+    public static Creator makeCreator(@NotNull DBVEntity vEntity, DBSEntityConstraint constraint, List<RelationInfo> fkColumns) {
+        return new Creator() {
+            @Override
+            public DBVEntityForeignKey createForeignKey() {
+                DBVEntityForeignKey virtualFK = new DBVEntityForeignKey(vEntity);
+                try {
+                    virtualFK.setReferencedConstraint(new VoidProgressMonitor(), constraint);
+                } catch (DBException e) {
+                    log.error(e);
+                    return null;
+                }
+                List<DBVEntityForeignKeyColumn> columns = new ArrayList<>();
+                for (RelationInfo tableColumn : fkColumns) {
+                    columns.add(
+                        new DBVEntityForeignKeyColumn(
+                            virtualFK, tableColumn.getOwnColumn().getName(), tableColumn.getRefColumn().getName()));
+                }
+                virtualFK.setAttributes(columns);
+                vEntity.addForeignKey(virtualFK);
+                return virtualFK;
+            }
+        };
+    }
+    
+    public static interface Creator {
+        DBVEntityForeignKey createForeignKey();
+    }
+
+    public static class RelationInfo {
+        private final DBSEntityAttribute refColumn;
+        private final DBSEntityAttribute ownColumn;
+
+        public RelationInfo(DBSEntityAttribute refColumn, DBSEntityAttribute ownColumn)
+        {
+            this.refColumn = refColumn;
+            this.ownColumn = ownColumn;
+        }
+
+        public DBSEntityAttribute getRefColumn()
+        {
+            return refColumn;
+        }
+
+        public DBSEntityAttribute getOwnColumn()
+        {
+            return ownColumn;
+        }
     }
 }
