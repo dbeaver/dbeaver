@@ -42,6 +42,22 @@ public class UISearchMessages extends NLS {
     public static String dialog_search_objects_search_in_definitions;
     public static String dialog_search_objects_title;
 
+    public static String dialog_data_search_hint_text_string_to_search;
+    public static String dialog_data_search_control_group_databases;
+    public static String dialog_data_search_control_group_settings;
+    public static String dialog_data_search_spinner_max_results;
+    public static String dialog_data_search_spinner_max_results_tip;
+    public static String dialog_data_search_checkbox_case_sensitive_tip;
+    public static String dialog_data_search_checkbox_fast_search;
+    public static String dialog_data_search_checkbox_fast_search_tip;
+    public static String dialog_data_search_checkbox_search_in_numbers;
+    public static String dialog_data_search_checkbox_search_in_numbers_tip;
+    public static String dialog_data_search_checkbox_search_in_lob;
+    public static String dialog_data_search_checkbox_search_in_lob_tip;
+    public static String dialog_data_search_checkbox_search_in_foreign_objects;
+    public static String dialog_data_search_checkbox_search_in_foreign_objects_tip;
+    public static String dialog_data_search_info_label_use_ctrl;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UISearchMessages.class);

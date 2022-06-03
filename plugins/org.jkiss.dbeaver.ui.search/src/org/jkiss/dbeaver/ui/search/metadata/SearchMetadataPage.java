@@ -110,7 +110,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
             updateEnablement();
         });
 
-        Composite optionsGroup = new SashForm(searchGroup, 2);
+        Composite optionsGroup = new SashForm(parent, 2);
         optionsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
