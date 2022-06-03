@@ -42,7 +42,6 @@ public class ConnectionNameResolver implements IVariableResolver {
         DBPConnectionConfiguration.VARIABLE_PASSWORD,
         DBPConnectionConfiguration.VARIABLE_URL,
         DBPConnectionConfiguration.VARIABLE_CONN_TYPE,
-        DBPConnectionConfiguration.VARIABLE_DATASOURCE,
         DBPConnectionConfiguration.VAR_PROJECT_NAME,
         DBPConnectionConfiguration.VARIABLE_DATE,
         DBPConnectionConfiguration.VAR_HOST_OR_DATABASE
@@ -145,8 +144,6 @@ public class ConnectionNameResolver implements IVariableResolver {
         }
         if (dataSourceContainer != null) {
             switch (name) {
-                case DBPConnectionConfiguration.VARIABLE_DATASOURCE:
-                    return dataSourceContainer.getName();
                 case DBPConnectionConfiguration.VAR_PROJECT_NAME:
                     return dataSourceContainer.getProject().getName();
                 case DBPConnectionConfiguration.VARIABLE_DATE:

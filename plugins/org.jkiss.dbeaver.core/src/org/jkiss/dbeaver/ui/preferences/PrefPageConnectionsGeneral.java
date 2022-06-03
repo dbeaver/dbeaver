@@ -32,11 +32,12 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -97,7 +98,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             UIUtils.setContentProposalToolTip(connectionDefaultNamePatternText, "Connection name patterns",
                 ConnectionNameResolver.getConnectionVariables());
 
-            fakeConnectionNameResolver = generateFakeDatasourceResolver();
+            fakeConnectionNameResolver = generateSampleDatasourceResolver();
             sampleConnectionName = UIUtils.createLabelText(groupComposite, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample, CoreMessages.pref_page_connection_label_default_connection_name_pattern_sample_tip);
             sampleConnectionName.setEditable(false);
             sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
@@ -134,17 +135,18 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
 
     }
 
-    private ConnectionNameResolver generateFakeDatasourceResolver() {
+    private ConnectionNameResolver generateSampleDatasourceResolver() {
         final DataSourceRegistry dataSourceRegistry = new DataSourceRegistry(DBWorkbench.getPlatform(), DBWorkbench.getPlatform().getWorkspace().getActiveProject());
-        DriverDescriptor driver = DriverDescriptor.NULL_DRIVER;
+        DBPDriver driver = DriverUtils.getRecentDrivers(DriverUtils.getAllDrivers(), 1).get(0);
         DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
-        conConfig.setHostName("localhost");
-        conConfig.setUserPassword("SamplePassword");
-        conConfig.setDatabaseName("Sample Database Name");
+        conConfig.setHostName("hostname");
+        conConfig.setUserPassword("password1");
+        conConfig.setDatabaseName("database1");
         conConfig.setHostPort("42");
-        conConfig.setServerName("Sample Server Name");
+        conConfig.setServerName("server1");
         conConfig.setUrl("sample//url");
         DataSourceDescriptor fakeDataSource = new DataSourceDescriptor(dataSourceRegistry, DataSourceDescriptor.generateNewId(driver), driver, conConfig);
+        dataSourceRegistry.dispose();
         return new ConnectionNameResolver(fakeDataSource, conConfig, null);
     }
 
