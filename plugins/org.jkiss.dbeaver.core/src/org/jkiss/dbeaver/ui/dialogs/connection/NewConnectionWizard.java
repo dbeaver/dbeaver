@@ -205,7 +205,7 @@ public class NewConnectionWizard extends ConnectionWizard
         DataSourceDescriptor dataSourceNew = new DataSourceDescriptor(
             dataSourceRegistry, dataSourceTpl.getId(), driver, dataSourceTpl.getConnectionConfiguration());
         dataSourceNew.copyFrom(dataSourceTpl);
-        saveSettings(dataSourceNew, true);
+        saveSettings(dataSourceNew);
         dataSourceRegistry.addDataSource(dataSourceNew);
         return true;
     }
@@ -217,7 +217,7 @@ public class NewConnectionWizard extends ConnectionWizard
     }
 
     @Override
-    protected void saveSettings(DataSourceDescriptor dataSource, boolean isSaveConnectionSettings) {
+    protected void saveSettings(DataSourceDescriptor dataSource) {
         ConnectionPageSettings pageSettings = getPageSettings(dataSource.getDriver());
         if (pageSettings != null) {
             pageSettings.saveSettings(dataSource);
