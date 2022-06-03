@@ -209,7 +209,7 @@ public class EditConnectionWizard extends ConnectionWizard {
     public boolean performFinish() {
         DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, originalDataSource.getRegistry());
         DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
-        saveSettings(dsChanged, true);
+        saveSettings(dsChanged);
 
         if (dsCopy.equalSettings(dsChanged)) {
             // No changes
@@ -241,7 +241,7 @@ public class EditConnectionWizard extends ConnectionWizard {
         }
 
         // Save
-        saveSettings(originalDataSource, saveConnectionSettings);
+        saveSettings(originalDataSource);
         originalDataSource.getRegistry().updateDataSource(originalDataSource);
 
 
@@ -290,19 +290,9 @@ public class EditConnectionWizard extends ConnectionWizard {
     }
 
     @Override
-    protected void saveSettings(DataSourceDescriptor dataSource, boolean isSaveConnectionSettings) {
-        if (isPageActive(pageSettings) && isSaveConnectionSettings) {
+    protected void saveSettings(DataSourceDescriptor dataSource) {
+        if (isPageActive(pageSettings)) {
             pageSettings.saveSettings(dataSource);
-            if (pageGeneral.wasActivated()) {
-                Boolean isReadOnlyConnection = pageGeneral.isConnectionReadOnly();
-                if (isReadOnlyConnection != null) {
-                    dataSource.setConnectionReadOnly(isReadOnlyConnection);
-                }
-                List<DBPDataSourcePermission> accessRestrictions = pageGeneral.getAccessRestrictions();
-                if (accessRestrictions != null) {
-                    dataSource.setModifyPermissions(accessRestrictions);
-                }
-            }
         }
         pageGeneral.saveSettings(dataSource);
         pageInit.saveSettings(dataSource);
