@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
+import org.jkiss.dbeaver.model.impl.sql.QueryTransformerTop;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -441,7 +442,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     @Override
-    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
             //if (!SQLServerUtils.isDriverAzure(getContainer().getDriver())) {
                 return new QueryTransformerTop();

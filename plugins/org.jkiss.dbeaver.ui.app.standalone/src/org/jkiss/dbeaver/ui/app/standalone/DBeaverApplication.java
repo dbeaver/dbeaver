@@ -385,7 +385,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
 
     @NotNull
     private static Collection<String> getBackedUpWorkspaces() {
-        if (!Files.exists(FILE_WITH_WORKSPACES)) {
+        if (!Files.exists(FILE_WITH_WORKSPACES) || Files.isDirectory(FILE_WITH_WORKSPACES)) {
             return Collections.emptyList();
         }
         try {
@@ -397,10 +397,17 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         }
     }
 
-    private static void saveWorkspacesToBackup(@NotNull Iterable<? extends CharSequence> workspaces) {
+    private static void saveWorkspacesToBackup(@NotNull List<? extends CharSequence> workspaces) {
         try {
-            if (!Files.exists(FILE_WITH_WORKSPACES)) {
-                Files.createDirectories(FILE_WITH_WORKSPACES);
+            if (!Files.exists(FILE_WITH_WORKSPACES.getParent())) {
+                Files.createDirectories(FILE_WITH_WORKSPACES.getParent());
+            } else if (Files.isDirectory(FILE_WITH_WORKSPACES)) {
+                // Bug in 22.0.5
+                try {
+                    Files.delete(FILE_WITH_WORKSPACES);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             Files.write(FILE_WITH_WORKSPACES, workspaces, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
