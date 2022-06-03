@@ -99,10 +99,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         scrolledComposite.setContent(composite);
         scrolledComposite.setExpandHorizontal(true);
         scrolledComposite.setExpandVertical(true);
-        scrolledComposite.setAlwaysShowScrollBars(true);
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
-            parent.getShell().setSize(UIUtils.getFontHeight(settingsGroup) * 80, parent.getShell().getSize().y);
+            parent.getShell().setSize(UIUtils.getFontHeight(settingsGroup) * 80, parent.getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
             credentialsPanel = new CredentialsPanel(settingsGroup, true);
         }
 
