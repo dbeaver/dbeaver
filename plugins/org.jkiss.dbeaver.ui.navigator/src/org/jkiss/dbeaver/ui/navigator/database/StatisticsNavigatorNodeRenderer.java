@@ -22,10 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.ScrollBar;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -207,39 +204,6 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         return null;
     }
 
-    private INavigatorNodeActionHandler getActionButtonFor(DBNNode element, Tree tree, Event event) {
-        List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
-        if (isHorizontalScrollbarEnabled(tree)) {
-            return null;
-        }
-        int widthOccupied = 0;
-        for (INavigatorNodeActionHandler nah : nodeActions) {
-            if (!nah.isSticky(view, element)) {
-                // Non-sticky buttons are active only for selected or hovered items
-                boolean isSelected = (event.stateMask & SWT.SELECTED) != 0;
-                boolean isHover = false;
-                if (!isSelected && !isHover) {
-                    return null;
-                }
-            }
-            widthOccupied += 2; // Margin
-
-            DBPImage icon = nah.getNodeActionIcon(getView(), element);
-            if (icon != null) {
-                Image image = DBeaverIcons.getImage(icon);
-
-                Rectangle imageBounds = image.getBounds();
-                int imageSize = imageBounds.height;
-                widthOccupied += imageSize;
-
-                if (event.x > tree.getClientArea().width - widthOccupied) {
-                    return nah;
-                }
-            }
-        }
-        return null;
-    }
-
     private void renderObjectDescription(@NotNull DBNDatabaseItem element, @NotNull Tree tree, @NotNull GC gc, @NotNull Event event, int widthOccupied) {
         final DBSObject object = element.getObject();
         if (object != null) {
@@ -273,17 +237,12 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             Point hostTextSize = gc.stringExtent(text);
 
             int xOffset = RuntimeUtils.isLinux() ? 16 : 2;
-            ScrollBar hSB = tree.getHorizontalBar();
-            boolean scrollEnabled = (hSB != null && hSB.isVisible());
-
-            if (!scrollEnabled) {
+            if (!isHorizontalScrollbarEnabled(tree)) {
                 // In case of visible scrollbar it must respect full scrollable area size
-                int treeWidth = tree.getClientArea().width;
-
                 gc.setClipping(
                     event.x + event.width + xOffset,
                     event.y + ((event.height - hostTextSize.y) / 2),
-                    treeWidth - (event.x + event.width + xOffset + widthOccupied),
+                    getTreeWidth(tree) - (event.x + event.width + xOffset + widthOccupied),
                     event.height
                 );
             }
@@ -291,7 +250,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 event.x + event.width + xOffset,
                 event.y + ((event.height - hostTextSize.y) / 2),
                 true);
-            if (!scrollEnabled) {
+            if (!isHorizontalScrollbarEnabled(tree)) {
                 gc.setClipping((Rectangle) null);
             }
             gc.setFont(oldFont);
@@ -304,8 +263,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private int renderDataSourceNodeActions(DBNDatabaseNode element, Tree tree, GC gc, Event event) {
         List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
 
-        int xWidth = getTreeWidth(tree);
-        int xPos = xWidth;
+        int xPos = getTreeWidth(tree);
         int widthOccupied = 0;
         for (INavigatorNodeActionHandler nah : nodeActions) {
             if (!nah.isSticky(view, element)) {
@@ -376,6 +334,40 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             }
         }
         return false;
+    }
+
+    @Nullable
+    private INavigatorNodeActionHandler getActionButtonFor(DBNNode element, @NotNull Tree tree, @NotNull Event event) {
+        List<INavigatorNodeActionHandler> nodeActions = NavigatorExtensionsRegistry.getInstance().getNodeActions(getView(), element);
+        if (isHorizontalScrollbarEnabled(tree)) {
+            return null;
+        }
+        int widthOccupied = 0;
+        for (INavigatorNodeActionHandler nah : nodeActions) {
+            if (!nah.isSticky(view, element)) {
+                // Non-sticky buttons are active only for selected or hovered items
+                boolean isSelected = (event.stateMask & SWT.SELECTED) != 0;
+                boolean isHover = false;
+                if (!isSelected && !isHover) {
+                    return null;
+                }
+            }
+            widthOccupied += 2; // Margin
+
+            DBPImage icon = nah.getNodeActionIcon(getView(), element);
+            if (icon != null) {
+                Image image = DBeaverIcons.getImage(icon);
+
+                Rectangle imageBounds = image.getBounds();
+                int imageSize = imageBounds.height;
+                widthOccupied += imageSize;
+
+                if (event.x >= getTreeWidth(tree) - widthOccupied && event.x < getTreeWidth(tree)) {
+                    return nah;
+                }
+            }
+        }
+        return null;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -576,29 +568,37 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     ///////////////////////////////////////////////////////////////////
     // Utils
 
-    private int getTreeWidth(Tree tree) {
-        int treeWidth;
-        int xShift;
-        ScrollBar hSB = tree.getHorizontalBar();
-        if (hSB == null || !hSB.isVisible()) {
-            treeWidth = tree.getClientArea().width;
-            xShift = 0;
+    private static int getTreeWidth(@NotNull Tree tree) {
+        int realWidth;
+        if (isHorizontalScrollbarEnabled(tree)) {
+            ScrollBar hSB = tree.getHorizontalBar();
+            realWidth = hSB.getMaximum() - hSB.getSelection();
         } else {
-            treeWidth = hSB.getMaximum();
-            xShift = hSB.getSelection();
+            realWidth = tree.getClientArea().width;
         }
 
-        return treeWidth - xShift;
+        boolean isOverlayMode = CommonUtils.isBitSet(tree.getScrollbarsMode(), SWT.SCROLLBAR_OVERLAY);
+        boolean isVerticalBarEnabled = isScrollbarEnabled(tree.getVerticalBar(), tree.getClientArea().height);
+        if (isOverlayMode && isVerticalBarEnabled) {
+            // On machines with gtk3, a vertical scrollbar overlays the right side of the navigator.
+            // It makes action buttons unclickable. Solution: crop to the right the working area of the navigator.
+            // Fifteen pixels margin seems to work ok.
+            return realWidth - 15;
+        }
+        return realWidth;
     }
 
-    private static boolean isHorizontalScrollbarEnabled(Tree tree) {
-        ScrollBar horizontalBar = tree.getHorizontalBar();
-        if (horizontalBar == null) {
+    private static boolean isScrollbarEnabled(@Nullable ScrollBar scrollBar, int dimensionLength) {
+        if (scrollBar == null) {
             return false;
         }
         if (RuntimeUtils.isLinux()) {
-            return tree.getClientArea().width != horizontalBar.getMaximum();
+            return dimensionLength != scrollBar.getMaximum();
         }
-        return horizontalBar.isVisible();
+        return scrollBar.isVisible();
+    }
+
+    private static boolean isHorizontalScrollbarEnabled(@NotNull Scrollable scrollable) {
+        return isScrollbarEnabled(scrollable.getHorizontalBar(), scrollable.getClientArea().width);
     }
 }
