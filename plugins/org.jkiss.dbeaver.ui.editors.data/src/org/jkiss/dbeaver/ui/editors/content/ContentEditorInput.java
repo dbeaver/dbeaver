@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.data.storage.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.data.StringContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -220,14 +221,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
             try {
                 // Create file
                 if (contentFile == null) {
-                    String valueId;
-                    if (valueController instanceof IAttributeController) {
-                        valueId = ((IAttributeController) valueController).getColumnId();
-                    } else {
-                        valueId = valueController.getValueName();
-                    }
-
-                    contentFile = ContentUtils.createTempContentFile(monitor, DBWorkbench.getPlatform(), valueId);
+                    createTempContentFile(monitor);
                 }
 
                 // Write value to file
@@ -247,6 +241,31 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         // Mark file as readonly
         if (valueController.isReadOnly()) {
             markReadOnly(true);
+        }
+    }
+
+    private void createTempContentFile(@Nullable DBRProgressMonitor monitor) throws IOException {
+        String valueId;
+        if (valueController instanceof IAttributeController) {
+            valueId = ((IAttributeController) valueController).getColumnId();
+        } else {
+            valueId = valueController.getValueName();
+        }
+        contentFile = ContentUtils.createTempContentFile(monitor, DBWorkbench.getPlatform(), valueId);
+    }
+
+    void createTempFileAndCopyContent(@Nullable DBRProgressMonitor monitor) throws IOException, DBException {
+        createTempContentFile(monitor);
+        final Object[] value = new Object[1];
+        UIUtils.syncExec(() -> value[0] = getValue());
+        DBDContent content = null;
+        if (value[0] instanceof DBDContent) {
+            content = (DBDContent) value[0];
+        } else if (value[0] instanceof String) {
+            content = new StringContent(getExecutionContext(), (String) value[0]);
+        }
+        if (content != null) {
+            copyContentToFile(content, monitor);
         }
     }
 

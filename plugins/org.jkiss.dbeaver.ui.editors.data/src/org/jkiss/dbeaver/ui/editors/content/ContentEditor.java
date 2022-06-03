@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -77,6 +78,9 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
             UIUtils.runInProgressService(initializer);
             editorInput = initializer.editorInput;
+            if (editorInput.getPath() == null) {
+                editorInput.createTempFileAndCopyContent(new VoidProgressMonitor()); // Monitor doesn't used in the original create temp file method
+            }
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException)e).getTargetException();
@@ -549,9 +553,12 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public void closeValueEditor()
     {
-        IWorkbenchPage workbenchPage = this.getEditorSite().getWorkbenchWindow().getActivePage();
-        if (workbenchPage != null) {
-            workbenchPage.closeEditor(this, false);
+        IWorkbenchWindow workbenchWindow = this.getEditorSite().getWorkbenchWindow();
+        if (workbenchWindow != null) {
+            IWorkbenchPage workbenchPage = workbenchWindow.getActivePage();
+            if (workbenchPage != null) {
+                workbenchPage.closeEditor(this, false);
+            }
         }
     }
 
