@@ -93,7 +93,9 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         final Composite composite = new Composite(scrolledComposite, SWT.NONE);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        final GridData gridData = new GridData(GridData.FILL_BOTH);
+        gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
+        composite.setLayoutData(gridData);
         composite.setLayout(new GridLayout(1, false));
 
         scrolledComposite.setContent(composite);
@@ -101,7 +103,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         scrolledComposite.setExpandVertical(true);
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
-            parent.getShell().setSize(UIUtils.getFontHeight(settingsGroup) * 80, parent.getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
             credentialsPanel = new CredentialsPanel(settingsGroup, true);
         }
 
