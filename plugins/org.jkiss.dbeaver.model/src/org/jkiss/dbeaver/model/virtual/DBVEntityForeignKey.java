@@ -264,15 +264,15 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
     }
     
     @NotNull
-    public Creator decompose() {
+    public VirtualForeignKeyCreator decompose() {
         return makeCreator(getEntity(), getReferencedConstraint(), 
             getAttributes().stream()
-            .map(c -> new RelationInfo(c.getReferencedColumn(), c.getAttribute())).collect(Collectors.toList()));
+            .map(c -> new ForeignKeyRelationInfo(c.getReferencedColumn(), c.getAttribute())).collect(Collectors.toList()));
     }
 
     @NotNull
-    public static Creator makeCreator(@NotNull DBVEntity vEntity, DBSEntityConstraint constraint, List<RelationInfo> fkColumns) {
-        return new Creator() {
+    public static VirtualForeignKeyCreator makeCreator(@NotNull DBVEntity vEntity, DBSEntityConstraint constraint, List<ForeignKeyRelationInfo> fkColumns) {
+        return new VirtualForeignKeyCreator() {
             @Override
             public DBVEntityForeignKey createForeignKey() {
                 DBVEntityForeignKey virtualFK = new DBVEntityForeignKey(vEntity);
@@ -283,7 +283,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
                     return null;
                 }
                 List<DBVEntityForeignKeyColumn> columns = new ArrayList<>();
-                for (RelationInfo tableColumn : fkColumns) {
+                for (ForeignKeyRelationInfo tableColumn : fkColumns) {
                     columns.add(
                         new DBVEntityForeignKeyColumn(
                             virtualFK, tableColumn.getOwnColumn().getName(), tableColumn.getRefColumn().getName()));
@@ -295,15 +295,15 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         };
     }
     
-    public static interface Creator {
+    public static interface VirtualForeignKeyCreator {
         DBVEntityForeignKey createForeignKey();
     }
 
-    public static class RelationInfo {
+    public static class ForeignKeyRelationInfo {
         private final DBSEntityAttribute refColumn;
         private final DBSEntityAttribute ownColumn;
 
-        public RelationInfo(DBSEntityAttribute refColumn, DBSEntityAttribute ownColumn)
+        public ForeignKeyRelationInfo(DBSEntityAttribute refColumn, DBSEntityAttribute ownColumn)
         {
             this.refColumn = refColumn;
             this.ownColumn = ownColumn;

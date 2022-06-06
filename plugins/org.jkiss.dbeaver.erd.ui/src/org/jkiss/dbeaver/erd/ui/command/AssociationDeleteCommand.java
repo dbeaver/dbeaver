@@ -42,7 +42,7 @@ public class AssociationDeleteCommand extends Command {
     protected final ERDElement targetEntity;
     protected final ERDAssociation association;
     protected final DBVEntity vEntity;
-    protected final DBVEntityForeignKey.Creator virtualFkCreator;
+    protected final DBVEntityForeignKey.VirtualForeignKeyCreator virtualFkCreator;
 
     public AssociationDeleteCommand(AssociationPart part) {
         super();

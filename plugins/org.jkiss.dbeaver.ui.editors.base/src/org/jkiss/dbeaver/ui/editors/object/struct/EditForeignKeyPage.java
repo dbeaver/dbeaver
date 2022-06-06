@@ -145,8 +145,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             this.ownColumn = ownColumn;
         }
 
-        public DBVEntityForeignKey.RelationInfo toFKRelation() {
-            return new DBVEntityForeignKey.RelationInfo(refColumn, ownColumn);
+        public DBVEntityForeignKey.ForeignKeyRelationInfo toFKRelation() {
+            return new DBVEntityForeignKey.ForeignKeyRelationInfo(refColumn, ownColumn);
         }
     }
 
@@ -1039,7 +1039,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
     
     @Nullable
-    public static DBVEntityForeignKey.Creator makeVirtualForeignKeyCreatorWithEditor(
+    public static DBVEntityForeignKey.VirtualForeignKeyCreator makeVirtualForeignKeyCreatorWithEditor(
         @NotNull DBVEntity vEntity,
         @Nullable DBSEntity refEntity,
         @Nullable FKType[] allowedKeyTypes,
@@ -1065,7 +1065,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             editDialog.setReferenceAttributes(refAttributes);
         }
         if (editDialog.edit()) {
-            List<DBVEntityForeignKey.RelationInfo> rels = editDialog.getColumns().stream().map(c -> c.toFKRelation()).collect(Collectors.toList());
+            List<DBVEntityForeignKey.ForeignKeyRelationInfo> rels = editDialog.getColumns().stream().map(c -> c.toFKRelation()).collect(Collectors.toList());
             return DBVEntityForeignKey.makeCreator(vEntity, editDialog.getUniqueConstraint(), rels);
         } else {
             return null;

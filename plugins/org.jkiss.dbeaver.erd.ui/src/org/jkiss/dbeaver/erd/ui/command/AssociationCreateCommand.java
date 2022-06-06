@@ -42,7 +42,7 @@ public class AssociationCreateCommand extends Command {
     private static final Log log = Log.getLog(AssociationCreateCommand.class);
 
     protected DBVEntityForeignKey virtualFk;
-    protected DBVEntityForeignKey.Creator virtualFkCreator;
+    protected DBVEntityForeignKey.VirtualForeignKeyCreator virtualFkCreator;
     protected ERDAssociation association;
     protected ERDElement<?> sourceEntity;
     protected ERDElement<?> targetEntity;
@@ -179,7 +179,7 @@ public class AssociationCreateCommand extends Command {
             DBVEntity vEntity = DBVUtils.getVirtualEntity(srcEntityObject, true);
             assert vEntity != null;
 
-            DBVEntityForeignKey.Creator virtualFkCreator = EditForeignKeyPage.makeVirtualForeignKeyCreatorWithEditor(
+            DBVEntityForeignKey.VirtualForeignKeyCreator virtualFkCreator = EditForeignKeyPage.makeVirtualForeignKeyCreatorWithEditor(
                 vEntity,
                 targetEntityObject,
                 new EditForeignKeyPage.FKType[] {
