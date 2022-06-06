@@ -57,6 +57,8 @@ public class ERDHighlightingManager {
         private final boolean originalOpaque;
         @NotNull
         private final LinkedList<HighlightingEntry> highlightings = new LinkedList<>();
+        
+        private boolean isDisposed = false;
 
         public PartHighlighter(@NotNull IFigure part) {
             this.originalColor = part instanceof Connection ? part.getForegroundColor() : part.getBackgroundColor();
@@ -97,12 +99,24 @@ public class ERDHighlightingManager {
             this.refresh();
             
             return () -> {
-                highlightings.remove(entry);
-                if (highlightings.isEmpty()) {
-                    highlightedParts.remove(part);
+                if (!isDisposed) {
+                    highlightings.remove(entry);
+                    if (highlightings.isEmpty()) {
+                        highlightedParts.remove(part);
+                        isDisposed = true;
+                    }
+                    refresh();
                 }
-                refresh();
             }; 
+        }
+        
+        public void reset() {
+            if (!isDisposed) {
+                highlightings.clear();
+                highlightedParts.remove(part);
+                isDisposed = true;
+                refresh();
+            }
         }
         
     }
@@ -208,6 +222,12 @@ public class ERDHighlightingManager {
             }
         }
         return result;
+    }
+
+    public void reset() {
+        for (PartHighlighter highlighter: highlightedParts.values().toArray(PartHighlighter[]::new)) {
+            highlighter.reset();
+        }
     }
     
 }

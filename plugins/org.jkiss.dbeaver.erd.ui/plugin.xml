@@ -123,6 +123,20 @@
                 </with>
             </activeWhen>
         </handler>
+        <handler commandId="org.eclipse.ui.file.revert" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerRevert">
+            <activeWhen>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.erd.ERDEditor"/>
+                </with>
+            </activeWhen>
+            <enabledWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.erd.ui.editor.ERDEditorPart">
+                        <test property="org.jkiss.dbeaver.erd.ui.editor.canUndo"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.erd.ui.action.ERDHandlerUndo">
             <activeWhen>
                 <with variable="activeFocusControlId">
