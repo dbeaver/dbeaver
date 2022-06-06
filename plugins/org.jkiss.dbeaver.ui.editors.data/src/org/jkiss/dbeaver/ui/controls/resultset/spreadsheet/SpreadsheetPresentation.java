@@ -125,7 +125,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color foregroundDefault;
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
-    private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;
+
+    private Color cellHeaderForeground;
+    private Color cellHeaderBackground;
+    private Color cellHeaderSelectionBackground;
+    private Color cellHeaderBorder;
 
     private boolean showOddRows = true;
     private boolean highlightRowsWithSelectedCells;
@@ -1334,6 +1338,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         this.cellHeaderForeground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_FOREGROUND);
         this.cellHeaderBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_BACKGROUND);
+        this.cellHeaderBorder = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_BORDER);
+
         {
             if (this.cellHeaderSelectionBackground != null) {
                 UIUtils.dispose(this.cellHeaderSelectionBackground);
@@ -2250,6 +2256,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public Color getCellHeaderSelectionBackground(Object element) {
             return cellHeaderSelectionBackground;
+        }
+
+        @NotNull
+        @Override
+        public Color getCellHeaderBorder(Object element) {
+            return cellHeaderBorder;
         }
 
         @NotNull

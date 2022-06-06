@@ -211,8 +211,7 @@ class GridColumnRenderer extends AbstractRenderer {
             }
 
         } else {
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
-
+            gc.setForeground(grid.getContentProvider().getCellHeaderBorder(null));
             gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
             gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
         }

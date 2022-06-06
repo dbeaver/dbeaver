@@ -4607,7 +4607,7 @@ public abstract class LightGrid extends Canvas {
 
         gc.fillRectangle(x, y, width, height + 1);
 
-        gc.setForeground(getContentProvider().getCellHeaderForeground(null));
+        gc.setForeground(getContentProvider().getCellHeaderBorder(null));
 
         gc.drawLine(
             x + width - 1,
@@ -4640,7 +4640,7 @@ public abstract class LightGrid extends Canvas {
             width - 1,
             height + 1);
 
-        gc.setForeground(getContentProvider().getCellHeaderForeground(null));
+        gc.setForeground(getContentProvider().getCellHeaderBorder(null));
 
         gc.drawLine(
             x + width - 1,
