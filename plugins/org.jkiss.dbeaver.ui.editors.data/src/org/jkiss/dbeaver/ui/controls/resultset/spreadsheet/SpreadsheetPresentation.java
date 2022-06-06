@@ -45,6 +45,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -81,6 +82,7 @@ import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
+import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
@@ -1191,6 +1193,22 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (inline) {
             if (activeInlineEditor != null) {
                 spreadsheet.showCellEditor(placeholder);
+                if (activeInlineEditor instanceof BaseValueEditor && CommonUtils.getBoolean(getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_INLINE_ENTER))) {
+                    ((BaseValueEditor<?>) activeInlineEditor).addAdditionalTraverseActions((it) -> {
+                        //We don't want to create another listener due to baseValueTraverseListener
+                        //removing any information about traverse event and setting it to TRAVERSE_NONE
+                        if (it.getFirst() == SWT.TRAVERSE_RETURN) {
+                            final Event applyEvent = new Event();
+                            if ((it.getSecond() & SWT.SHIFT) == 0) {
+                                applyEvent.keyCode = SWT.ARROW_DOWN;
+                            } else {
+                                applyEvent.keyCode = SWT.ARROW_RIGHT;
+                            }
+                            getSpreadsheet().notifyListeners(SWT.KeyDown, applyEvent);
+                        }
+                    });
+                }
+
                 return activeInlineEditor.getControl();
             } else {
                 // No editor was created so just drop placeholder

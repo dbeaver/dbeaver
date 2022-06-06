@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.utils.Pair;
 
 import java.util.function.Consumer;
 
@@ -55,6 +57,9 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     protected T control;
     protected boolean dirty;
     protected boolean autoSaveEnabled;
+
+    @Nullable
+    private Consumer<Pair<Integer, Integer>> additionalActions;
 
     protected BaseValueEditor(final IValueController valueController)
     {
@@ -119,8 +124,9 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             //inlineControl.setFocus();
 
             if (valueController instanceof IMultiController) { // In dialog it also should handle all standard stuff because we have params dialog
-                 inlineControl.addTraverseListener(e -> {
-                     if (e.detail == SWT.TRAVERSE_RETURN) {
+                inlineControl.addTraverseListener(e -> {
+                    int detail = e.detail;
+                    if (e.detail == SWT.TRAVERSE_RETURN) {
                          if (!valueController.isReadOnly()) {
                              saveValue();
                          }
@@ -137,7 +143,10 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                          e.doit = false;
                          e.detail = SWT.TRAVERSE_NONE;
                      }
-                   });
+                    if (additionalActions != null) {
+                        additionalActions.accept(new Pair<>(detail, e.stateMask));
+                    }
+                });
                  if (!UIUtils.isInDialog(inlineControl)) {
                      if (inlineControl instanceof Composite) {
                          for (Control childControl : ((Composite) inlineControl).getChildren()) {
@@ -256,6 +265,10 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
     public void setAutoSaveEnabled(boolean autoSaveEnabled) {
         this.autoSaveEnabled = autoSaveEnabled;
+    }
+
+    public void addAdditionalTraverseActions(@NotNull Consumer<Pair<Integer, Integer>> method) {
+        this.additionalActions = method;
     }
 
     private class ControlModifyListener implements Listener {
