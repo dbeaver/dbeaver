@@ -91,7 +91,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
             return;
         }
         DBCExecutionContextDefaults contextDefaults = getContextDefaults();
-        if (contextDefaults != null && contextDefaults.supportsCatalogChange()) {
+        if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.supportsSchemaChange()) {
             DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
             if (instanceContainer == null) {
                 UIUtils.showMessageBox(getShell(), "No database objects were found", "No database objects were found. Please set active datasource (" +
@@ -159,7 +159,8 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
 
     protected List<DBNDatabaseNode> getObjects(DBRProgressMonitor monitor) throws DBException {
         DBSObject rootObject;
-        if (selectedInstances != null && currentInstanceName != null) {
+        if (selectedInstances != null && currentInstanceName != null && getContextDefaults() != null
+            && getContextDefaults().supportsSchemaChange()) {
             DBNDatabaseNode instanceNode = DBUtils.findObject(selectedInstances, currentInstanceName);
             rootObject = instanceNode == null ? null : instanceNode.getObject();
         } else {
