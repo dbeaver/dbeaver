@@ -43,6 +43,7 @@ public class NetezzaDataSource extends GenericDataSource {
 
     @Override
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+        super.initializeContextState(monitor, context, initFrom);
         final String name = getContainer().getActualConnectionConfiguration().getUserName();
         if (getSQLDialect().isQuotedIdentifier(name)) {
             // Special case for quoted user names.
