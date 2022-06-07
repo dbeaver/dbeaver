@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraintBase;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.DBDQualifiedObjectAttribute;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -77,47 +78,103 @@ class DataFilterRegistry {
         return instance;
     }
     
-    @NotNull
-    private static DBDAttributeConstraint restoreOffschemaConstraint(
-        @NotNull String unquottedAttrName, @NotNull DBDAttributeConstraintBase savedConstraint
-    ) {
-        DBDAttributeConstraint constraint;
-        if (savedConstraint instanceof DBDAttributeConstraint) {
-            constraint = (DBDAttributeConstraint) savedConstraint;
-        } else {
-            DBPDataKind dataKind = getAttributeValueKind(savedConstraint.getValue());
-            DBSAttributeBase attribute = new AbstractAttribute(
-                unquottedAttrName, dataKind.name(), 0, savedConstraint.getOrderPosition(), 0, 0, 0, false, false
-            ) {
-                @Override
-                public DBPDataKind getDataKind() {
-                    return dataKind;
-                }
-            }; 
-            constraint = new DBDAttributeConstraint(attribute, savedConstraint.getVisualPosition());
-            constraint.copyFrom(savedConstraint);
+    private static class RestoredAttributesInfo {
+        final Map<RestoredAttribute, RestoredAttribute> boundAttrs;
+        
+        private RestoredAttributesInfo(@NotNull Map<RestoredAttribute, RestoredAttribute> boundAttrs) {
+            this.boundAttrs = boundAttrs;
         }
-        return constraint;
-    }
+        @NotNull
+        public static RestoredAttributesInfo bindToDataSource(
+            @NotNull SavedDataFilter savedFilter, @Nullable DBPDataSource dataSource
+        ) {
+            return new RestoredAttributesInfo(
+                dataSource == null ? Collections.emptyMap() : bindToDataSourceImpl(savedFilter, dataSource));
+        }
+        
+        @NotNull
+        private static Map<RestoredAttribute, RestoredAttribute> bindToDataSourceImpl(
+                @NotNull SavedDataFilter savedFilter, @NotNull DBPDataSource dataSource
+        ) {
+            Map<RestoredAttribute, RestoredAttribute> boundAttrs = new HashMap<>();
+            Stack<RestoredAttribute> stack = new Stack<>();
 
-    @NotNull
-    private static DBPDataKind getAttributeValueKind(@NotNull Object value) {
-        if (value instanceof String) {
-            return DBPDataKind.STRING;
-        } else if (value instanceof Number) {
-            return DBPDataKind.NUMERIC;
-        } else if (value instanceof Boolean) {
-            return DBPDataKind.BOOLEAN;
-        } else if (value instanceof Date) {
-            return DBPDataKind.DATETIME;
-        } else if (value instanceof JsonObject) {
-            return DBPDataKind.STRUCT;
-        } else if (value instanceof JsonArray) {
-            return DBPDataKind.ARRAY;
-        } else if (value != null && value.getClass().isArray() && Array.getLength(value) > 0) {
-            return getAttributeValueKind(Array.get(value, 0));
-        } else {
-            return DBPDataKind.OBJECT;
+            for (DBDAttributeConstraintBase savedConstraint : savedFilter.constraints.values()) {
+                if (savedConstraint instanceof DBDAttributeConstraint) {
+                    DBSAttributeBase savedAttr = ((DBDAttributeConstraint) savedConstraint).getAttribute();
+                    if (savedAttr instanceof RestoredAttribute) {
+                        for (RestoredAttribute attr = (RestoredAttribute)savedAttr;
+                            attr != null && !boundAttrs.containsKey(attr);
+                            attr = attr.getParentObject()
+                        ) {
+                            stack.push(attr);
+                        }
+                        while (!stack.isEmpty()) {
+                            RestoredAttribute attr = stack.pop();
+                            RestoredAttribute boundParent = attr.getParentObject() == null ?
+                                null : boundAttrs.get(attr.getParentObject());
+                            boundAttrs.put(attr, new RestoredAttribute(boundParent, attr, dataSource));
+                        }
+                    }
+                }
+            }
+            
+            return boundAttrs; 
+        }
+        
+        @NotNull
+        public DBDAttributeConstraint restoreOffschemaConstraint(
+            @NotNull String unquottedAttrName, @NotNull DBDAttributeConstraintBase savedConstraint
+        ) {
+            DBDAttributeConstraint constraint;
+            if (savedConstraint instanceof DBDAttributeConstraint) {
+                DBDAttributeConstraint savedAttrConstraint = (DBDAttributeConstraint) savedConstraint;
+                if (savedAttrConstraint.getAttribute() instanceof RestoredAttribute) {
+                    RestoredAttribute boundAttr = boundAttrs.get(savedAttrConstraint.getAttribute());
+                    if (boundAttr != null) {
+                        constraint = new DBDAttributeConstraint(boundAttr, savedConstraint.getVisualPosition());
+                        constraint.copyFrom(savedConstraint);
+                    } else {
+                        constraint = savedAttrConstraint;
+                    }
+                } else {
+                    constraint = savedAttrConstraint;
+                }
+            } else {
+                DBPDataKind dataKind = getAttributeValueKind(savedConstraint.getValue());
+                DBSAttributeBase attribute = new AbstractAttribute(
+                    unquottedAttrName, dataKind.name(), 0, savedConstraint.getOrderPosition(), 0, 0, 0, false, false
+                ) {
+                    @Override
+                    public DBPDataKind getDataKind() {
+                        return dataKind;
+                    }
+                }; 
+                constraint = new DBDAttributeConstraint(attribute, savedConstraint.getVisualPosition());
+                constraint.copyFrom(savedConstraint);
+            }
+            return constraint;
+        }
+    
+        @NotNull
+        private static DBPDataKind getAttributeValueKind(@NotNull Object value) {
+            if (value instanceof String) {
+                return DBPDataKind.STRING;
+            } else if (value instanceof Number) {
+                return DBPDataKind.NUMERIC;
+            } else if (value instanceof Boolean) {
+                return DBPDataKind.BOOLEAN;
+            } else if (value instanceof Date) {
+                return DBPDataKind.DATETIME;
+            } else if (value instanceof JsonObject) {
+                return DBPDataKind.STRUCT;
+            } else if (value instanceof JsonArray) {
+                return DBPDataKind.ARRAY;
+            } else if (value != null && value.getClass().isArray() && Array.getLength(value) > 0) {
+                return getAttributeValueKind(Array.get(value, 0));
+            } else {
+                return DBPDataKind.OBJECT;
+            }
         }
     }
 
@@ -151,10 +208,12 @@ class DataFilterRegistry {
             dataFilter.setOrder(this.order);
             dataFilter.setWhere(this.where);
             List<DBDAttributeConstraint> offschemaConstraints = null; 
-            boolean isDocumentSource = dataContainer.getDataSource() != null &&
-                Boolean.TRUE.equals(
-                    dataContainer.getDataSource().getDataSourceFeature(DBPDataSource.FEATURE_DOCUMENT_DATA_SOURCE)
-                );
+            boolean isDocumentSource = dataContainer.getDataSource() != null && Boolean.TRUE.equals(
+                dataContainer.getDataSource().getDataSourceFeature(DBPDataSource.FEATURE_DOCUMENT_DATA_SOURCE)
+            );
+            RestoredAttributesInfo restoredAttrsInfo = RestoredAttributesInfo.bindToDataSource(
+                    this, dataContainer.getDataSource()
+            );
             for (Map.Entry<String, DBDAttributeConstraintBase> savedC : constraints.entrySet()) {
                 String attrName = savedC.getKey();
                 DBDAttributeConstraintBase savedConstraint = savedC.getValue();
@@ -163,11 +222,11 @@ class DataFilterRegistry {
                 }
                 DBDAttributeConstraint attrC = dataFilter.getConstraint(attrName);
                 if (attrC == null && dataContainer instanceof DBSEntity) {
-                    DBSEntityAttribute attribute = ((DBSEntity) dataContainer).getAttribute(monitor, attrName);
+                    DBSEntityAttribute attribute = ((DBSEntity) dataContainer).getAttribute(monitor, attrName); 
                     if (attribute != null) {
                         attrC = new DBDAttributeConstraint(attribute, attribute.getOrdinalPosition());
                     } else if (savedConstraint != null && savedConstraint.hasCondition() && isDocumentSource) {
-                        attrC = restoreOffschemaConstraint(attrName, savedConstraint);
+                        attrC = restoredAttrsInfo.restoreOffschemaConstraint(attrName, savedConstraint);
                     }
                     if (attrC != null) {
                         dataFilter.addConstraints(Collections.singletonList(attrC));
@@ -179,7 +238,7 @@ class DataFilterRegistry {
                     if (offschemaConstraints == null) {
                         offschemaConstraints = new ArrayList<>();
                     }
-                    offschemaConstraints.add(restoreOffschemaConstraint(attrName, savedConstraint));
+                    offschemaConstraints.add(restoredAttrsInfo.restoreOffschemaConstraint(attrName, savedConstraint));
                 }
             }
             if (offschemaConstraints != null && dataContainer.getDataSource() != null) {
@@ -256,8 +315,9 @@ class DataFilterRegistry {
             super("Data filters config save");
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (savedFilters) {
                 //log.debug("Save column config " + System.currentTimeMillis());
                 flushConfig();
@@ -266,7 +326,9 @@ class DataFilterRegistry {
             return Status.OK_STATUS;
         }
         
-        private Map<DBSAttributeBase, String> collectAttrsInfo(XMLBuilder xml, SavedDataFilter sdf) throws IOException {
+        private Map<DBSAttributeBase, String> collectAttrsInfo(
+            @NotNull XMLBuilder xml, @NotNull SavedDataFilter sdf
+        ) throws IOException {
             int counter = 0;
             Map<DBSAttributeBase, String> attrsInfo = new LinkedHashMap<>();
             for (DBDAttributeConstraintBase attrC : sdf.constraints.values()) {
@@ -275,31 +337,35 @@ class DataFilterRegistry {
                 }
             }
 
-            try (XMLBuilder.Element e = xml.startElement("flatten-attribute-bindings")) {
-                for (Entry<DBSAttributeBase, String> entry: attrsInfo.entrySet()) {
-                    try (XMLBuilder.Element ae = xml.startElement("attribute")) {
-                        DBSAttributeBase attribute = entry.getKey();
-                        xml.addAttribute("attrEntryId", entry.getValue());
-                        if (attribute instanceof DBDAttributeBinding) { // DBSObject?
-                            DBDAttributeBinding parent = ((DBDAttributeBinding)attribute).getParentObject();
-                            if (parent != null) {
-                                xml.addAttribute("parentAttrEntryId", attrsInfo.get(parent));
+            if (counter > 0) {
+                try (XMLBuilder.Element e = xml.startElement("flatten-attribute-bindings")) {
+                    for (Entry<DBSAttributeBase, String> entry: attrsInfo.entrySet()) {
+                        try (XMLBuilder.Element ae = xml.startElement("attribute")) {
+                            DBSAttributeBase attribute = entry.getKey();
+                            xml.addAttribute("attrEntryId", entry.getValue());
+                            if (attribute instanceof DBDAttributeBinding) { // DBSObject?
+                                DBDAttributeBinding binding = (DBDAttributeBinding)attribute;
+                                DBDAttributeBinding parent = binding.getParentObject();
+                                if (parent != null) {
+                                    xml.addAttribute("parentAttrEntryId", attrsInfo.get(parent));
+                                }
+                                xml.addAttribute("isPseudoAttribute", binding.isPseudoAttribute());
                             }
+                            xml.addAttribute("name", attribute.getName());
+                            xml.addAttribute("typeName", attribute.getTypeName());
+                            xml.addAttribute("typeId", attribute.getTypeID());
+                            xml.addAttribute("dataKind", attribute.getDataKind().name());
+                            xml.addAttribute("ordinalPosition", attribute.getOrdinalPosition());
+                            xml.addAttribute("maxLength", attribute.getMaxLength());
+                            if (attribute.getScale() != null) {
+                                xml.addAttribute("scale", attribute.getScale());
+                            }
+                            if (attribute.getPrecision() != null) {
+                                xml.addAttribute("precision", attribute.getPrecision());
+                            }
+                            xml.addAttribute("isRequired", attribute.isRequired());
+                            xml.addAttribute("isAutoGenerated", attribute.isAutoGenerated());
                         }
-                        xml.addAttribute("name", attribute.getName());
-                        xml.addAttribute("typeName", attribute.getTypeName());
-                        xml.addAttribute("typeId", attribute.getTypeID());
-                        xml.addAttribute("dataKind", attribute.getDataKind().name());
-                        xml.addAttribute("ordinalPosition", attribute.getOrdinalPosition());
-                        xml.addAttribute("maxLength", attribute.getMaxLength());
-                        if (attribute.getScale() != null) {
-                            xml.addAttribute("scale", attribute.getScale());
-                        }
-                        if (attribute.getPrecision() != null) {
-                            xml.addAttribute("precision", attribute.getPrecision());
-                        }
-                        xml.addAttribute("isRequired", attribute.isRequired());
-                        xml.addAttribute("isAutoGenerated", attribute.isAutoGenerated());
                     }
                 }
             }
@@ -307,12 +373,14 @@ class DataFilterRegistry {
             return attrsInfo;
         }
         
-        private int flattenAttributes(Map<DBSAttributeBase, String> attrs, int idCounter, DBSAttributeBase attribute) {
+        private int flattenAttributes(
+            @NotNull Map<DBSAttributeBase, String> attrs, int idCounter, @NotNull DBSAttributeBase attribute
+        ) {
             if (!attrs.containsKey(attribute)) {
                 if (attribute instanceof DBDAttributeBinding) { // DBSObject?
                     DBDAttributeBinding parent = ((DBDAttributeBinding)attribute).getParentObject();
                     if (parent != null) {
-                        flattenAttributes(attrs, idCounter, parent);
+                        idCounter = flattenAttributes(attrs, idCounter, parent);
                     }
                 }
                 idCounter++;
@@ -413,6 +481,7 @@ class DataFilterRegistry {
                     if (attrsInfo != null) {
                         String attrEntryId = atts.getValue("attrEntryId");
                         String parentAttrEntryId = atts.getValue("parentAttrEntryId");
+                        boolean isPseudoAttribute = CommonUtils.getBoolean(atts.getValue("isPseudoAttribute"), false);
                         String name = atts.getValue("name");
                         String typeName = atts.getValue("typeName");
                         int typeId = CommonUtils.toInt(atts.getValue("typeId"));
@@ -424,19 +493,11 @@ class DataFilterRegistry {
                         boolean isRequired = CommonUtils.getBoolean(atts.getValue("isRequired"), false);
                         boolean isAutoGenerated = CommonUtils.getBoolean(atts.getValue("isAutoGenerated"), false);
                         
-//                        DBSAttributeBase attribute = new AbstractAttribute(
-//                            name, typeName, typeId, ordinalPosition, maxLength, scale, precision, isRequired, isAutoGenerated
-//                        ) {
-//                            @Override
-//                            public DBPDataKind getDataKind() {
-//                                return dataKind;
-//                            }
-//                        };
-                        
                         RestoredAttribute parent = CommonUtils.isEmpty(parentAttrEntryId) ? null : attrsInfo.get(parentAttrEntryId);
                         
                         attrsInfo.put(attrEntryId, new RestoredAttribute(
-                            parent, name, typeName, typeId, dataKind, ordinalPosition, maxLength, scale, precision, isRequired, isAutoGenerated
+                            parent, name, typeName, typeId, dataKind, ordinalPosition, maxLength, scale, precision, 
+                            isRequired, isAutoGenerated, isPseudoAttribute
                         ));
                     }
                     break;
@@ -535,26 +596,43 @@ class DataFilterRegistry {
         }
     }
     
-    private static class RestoredAttribute extends AbstractAttribute implements DBSObject {
+    private static class RestoredAttribute extends AbstractAttribute implements DBDQualifiedObjectAttribute {
         private final RestoredAttribute parent;
         private final DBPDataKind dataKind;
+        private final DBPDataSource dataSource;
+        private final boolean isPseudoAttribute;
         
-        protected RestoredAttribute(
-                RestoredAttribute parent,
-                String name,
-                String typeName,
+        public RestoredAttribute(
+                @Nullable RestoredAttribute parent,
+                @NotNull String name,
+                @NotNull String typeName,
                 int typeId,
-                DBPDataKind dataKind,
+                @NotNull DBPDataKind dataKind,
                 int ordinalPosition,
                 long maxLength,
-                Integer scale,
-                Integer precision,
+                @Nullable Integer scale,
+                @Nullable Integer precision,
                 boolean isRequired,
-                boolean isAutoGenerated)
-        {
+                boolean isAutoGenerated, 
+                boolean isPseudoAttribute
+        ) {
             super(name, typeName, typeId, ordinalPosition, maxLength, scale, precision, isRequired, isAutoGenerated);
             this.parent = parent;
             this.dataKind = dataKind;
+            this.isPseudoAttribute = isPseudoAttribute; 
+            this.dataSource = null;
+        }
+
+        public RestoredAttribute(
+            @Nullable RestoredAttribute boundParent, @NotNull RestoredAttribute original, @NotNull DBPDataSource dataSource
+        ) {
+            super(original.getName(), original.getTypeName(), original.getTypeID(),
+                original.getOrdinalPosition(), original.getMaxLength(), original.getScale(),
+                original.getPrecision(), original.isRequired(), original.isAutoGenerated());
+            this.parent = boundParent;
+            this.dataKind = original.getDataKind();
+            this.isPseudoAttribute = original.isPseudoAttribute();
+            this.dataSource = dataSource;
         }
 
         @Override
@@ -562,21 +640,18 @@ class DataFilterRegistry {
             return dataKind;
         }
         
-//        @Nullable
-//        @Override
-//        public DBDAttributeBinding getParentObject() {
-//            
-//        }
+        public boolean isPseudoAttribute() {
+            return isPseudoAttribute;
+        }
 
         @Override
-        public DBSObject getParentObject() {
+        public RestoredAttribute getParentObject() {
             return parent;
         }
         
         @Override
         public DBPDataSource getDataSource() {
-            return null;
+            return dataSource;
         }
-
     }
 }

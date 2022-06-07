@@ -38,7 +38,9 @@ import java.util.Map;
 /**
  * Base attribute binding
  */
-public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBSTypedObjectEx, DBPQualifiedObject {
+public abstract class DBDAttributeBinding 
+    implements DBSObject, DBSAttributeBase, DBSTypedObjectEx, DBPQualifiedObject, DBDQualifiedObjectAttribute
+{
 
     @NotNull
     protected DBDValueHandler valueHandler;
@@ -216,32 +218,6 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     public String getDescription() {
         DBSEntityAttribute attr = getEntityAttribute();
         return attr == null ? null : attr.getDescription();
-    }
-
-    @NotNull
-    @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
-        final DBPDataSource dataSource = getDataSource();
-        if (getParentObject() == null) {
-            return DBUtils.getQuotedIdentifier(dataSource, getName());
-        }
-        char structSeparator = dataSource.getSQLDialect().getStructSeparator();
-
-        StringBuilder query = new StringBuilder();
-        boolean hasPrevIdentifier = false;
-        for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.getParentObject()) {
-            if (attribute.isPseudoAttribute() || (attribute.getParentObject() == null && attribute.getDataKind() == DBPDataKind.DOCUMENT)) {
-                // Skip pseudo attributes and document attributes (e.g. Mongo root document)
-                continue;
-            }
-            if (hasPrevIdentifier) {
-                query.insert(0, structSeparator);
-            }
-            query.insert(0, DBUtils.getQuotedIdentifier(dataSource, attribute.getName()));
-            hasPrevIdentifier = true;
-        }
-
-        return query.toString();
     }
 
     @Override
