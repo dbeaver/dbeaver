@@ -220,7 +220,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     int maxRows = site.getSettings().getMaxRows();
                     int targetAttrSize = entityMapping.getStreamColumns().size();
                     boolean headerRead = false;
-                    for (int lineNum = 0; ; ) {
+                    for (long lineNum = 0; ; ) {
                         if (monitor.isCanceled()) {
                             break;
                         }
@@ -274,7 +274,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         lineNum++;
 
                         if (DBFetchProgress.monitorFetchProgress(lineNum)) {
-                            monitor.subTask(lineNum + " rows processed");
+                            monitor.subTask(Long.toUnsignedString(lineNum) + " rows processed");
                         }
                     }
                 }
