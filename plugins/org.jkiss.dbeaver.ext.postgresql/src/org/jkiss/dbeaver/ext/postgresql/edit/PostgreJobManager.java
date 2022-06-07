@@ -40,10 +40,9 @@ import java.util.Map;
 import java.util.StringJoiner;
 
 public class PostgreJobManager extends SQLStructEditor<PostgreJob, PostgreDataSource> implements DBEObjectRenamer<PostgreJob> {
-    private static final Class<?>[] CHILD_TYPES = {
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         PostgreJobStep.class,
-        PostgreJobSchedule.class
-    };
+        PostgreJobSchedule.class);
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
@@ -52,7 +51,7 @@ public class PostgreJobManager extends SQLStructEditor<PostgreJob, PostgreDataSo
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes() {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES;
     }
 

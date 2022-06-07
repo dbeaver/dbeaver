@@ -1049,4 +1049,9 @@ public class CommonUtils {
         }
         return null;
     }
+
+    @SafeVarargs
+    public static <T> T[] array(T ... elems) {
+        return elems;
+    }
 }
