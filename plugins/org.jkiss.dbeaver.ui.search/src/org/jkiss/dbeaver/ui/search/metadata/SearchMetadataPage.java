@@ -349,7 +349,10 @@ public class SearchMetadataPage extends AbstractSearchPage {
     {
         IStructuredSelection selection = (IStructuredSelection) dataSourceTree.getViewer().getSelection();
         if (!selection.isEmpty()) {
-            return (DBNNode) selection.getFirstElement();
+            final Object firstElement = selection.getFirstElement();
+            if (firstElement instanceof DBNNode) {
+                return (DBNNode) firstElement;
+            }
         }
         return null;
     }

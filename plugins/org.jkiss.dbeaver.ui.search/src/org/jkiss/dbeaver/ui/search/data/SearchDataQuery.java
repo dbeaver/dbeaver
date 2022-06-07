@@ -141,7 +141,7 @@ public class SearchDataQuery implements ISearchQuery {
         }
 
         String objectName = DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
-        DBNDatabaseNode node = dbnModel.findNode(dataContainer);
+        DBNDatabaseNode node = dbnModel.getNodeByObject(monitor, dataContainer, false);
         if (node == null) {
             log.warn("Can't find tree node for object \"" + objectName + "\"");
             return false;

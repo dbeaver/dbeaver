@@ -136,10 +136,9 @@ public class SearchDataPage extends AbstractSearchPage {
                         }
                         if (element instanceof DBSWrapper) {
                             DBSObject object = ((DBSWrapper) element).getObject();
-                            if (object instanceof DBSDataContainer && object instanceof DBSEntity) {
-                                if (!((DBSDataContainer) object).isFeatureSupported(DBSDataContainer.FEATURE_DATA_SEARCH)) {
-                                    return false;
-                                }
+                            if (object instanceof DBSDataContainer && object instanceof DBSEntity &&
+                                !((DBSDataContainer) object).isFeatureSupported(DBSDataContainer.FEATURE_DATA_SEARCH)) {
+                                return false;
                             }
                             return object instanceof DBSInstance ||
                                 object instanceof DBSObjectContainer ||
@@ -214,6 +213,10 @@ public class SearchDataPage extends AbstractSearchPage {
             infoLabel.setLayoutData(gridData);
         }
         UIUtils.asyncExec(this::restoreCheckedNodes);
+
+        if (!params.selectedNodes.isEmpty()) {
+            navigatorTree.getViewer().setSelection(new StructuredSelection(params.selectedNodes));
+        }
 
         navigatorTree.setEnabled(true);
     }
