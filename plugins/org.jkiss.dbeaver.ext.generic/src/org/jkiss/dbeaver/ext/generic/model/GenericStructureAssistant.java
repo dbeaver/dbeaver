@@ -180,7 +180,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         return tableSchema != null ? tableSchema : tableCatalog != null ? tableCatalog : dataSource;
     }
 
-    private abstract class ObjectReference extends AbstractObjectReference {
+    private abstract static class ObjectReference extends AbstractObjectReference<DBSObject> {
 
         ObjectReference(GenericStructContainer container, String name, String description, Class<?> objectClass, DBSObjectType type)
         {

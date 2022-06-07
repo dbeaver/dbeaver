@@ -272,7 +272,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                             final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
                             final SQLServerObjectType objectType = SQLServerObjectType.valueOf(objectTypeName);
                             SQLServerSchema objectSchema = schemaId == 0 ? null : database.getSchema(session.getProgressMonitor(), schemaId);
-                            objects.add(new AbstractObjectReference(
+                            objects.add(new AbstractObjectReference<DBSObject>(
                                 objectName,
                                 objectSchema != null ? objectSchema : database,
                                 null,
@@ -336,7 +336,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                     final String objectNameTrimmed = extractTempTableName(objectName);
                     final SQLServerObjectType objectType = SQLServerObjectType.valueOf(JDBCUtils.safeGetStringTrimmed(dbResult, "type"));
 
-                    objects.add(new AbstractObjectReference(objectName, database, null, objectType.getTypeClass(), objectType) {
+                    objects.add(new AbstractObjectReference<>(objectName, database, null, objectType.getTypeClass(), objectType) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             DBSObject object = schema.getChild(session.getProgressMonitor(), objectName);
