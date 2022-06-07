@@ -102,6 +102,9 @@ public interface IGridContentProvider extends IContentProvider {
     Color getCellHeaderSelectionBackground(Object element);
 
     @NotNull
+    Color getCellHeaderBorder(@Nullable Object element);
+
+    @NotNull
     String getCellLinkText(Object colElement, Object rowElement);
 
     // Resets all cached colors
