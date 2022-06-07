@@ -49,7 +49,6 @@ import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -84,6 +83,7 @@ class DataFilterRegistry {
         private RestoredAttributesInfo(@NotNull Map<RestoredAttribute, RestoredAttribute> boundAttrs) {
             this.boundAttrs = boundAttrs;
         }
+        
         @NotNull
         public static RestoredAttributesInfo bindToDataSource(
             @NotNull SavedDataFilter savedFilter, @Nullable DBPDataSource dataSource
@@ -103,7 +103,7 @@ class DataFilterRegistry {
                 if (savedConstraint instanceof DBDAttributeConstraint) {
                     DBSAttributeBase savedAttr = ((DBDAttributeConstraint) savedConstraint).getAttribute();
                     if (savedAttr instanceof RestoredAttribute) {
-                        for (RestoredAttribute attr = (RestoredAttribute)savedAttr;
+                        for (RestoredAttribute attr = (RestoredAttribute) savedAttr;
                             attr != null && !boundAttrs.containsKey(attr);
                             attr = attr.getParentObject()
                         ) {
@@ -333,18 +333,18 @@ class DataFilterRegistry {
             Map<DBSAttributeBase, String> attrsInfo = new LinkedHashMap<>();
             for (DBDAttributeConstraintBase attrC : sdf.constraints.values()) {
                 if (attrC instanceof DBDAttributeConstraint) {
-                    counter = flattenAttributes(attrsInfo, counter, ((DBDAttributeConstraint)attrC).getAttribute());
+                    counter = flattenAttributes(attrsInfo, counter, ((DBDAttributeConstraint) attrC).getAttribute());
                 }
             }
 
             if (counter > 0) {
                 try (XMLBuilder.Element e = xml.startElement("flatten-attribute-bindings")) {
-                    for (Entry<DBSAttributeBase, String> entry: attrsInfo.entrySet()) {
+                    for (Entry<DBSAttributeBase, String> entry : attrsInfo.entrySet()) {
                         try (XMLBuilder.Element ae = xml.startElement("attribute")) {
                             DBSAttributeBase attribute = entry.getKey();
                             xml.addAttribute("attrEntryId", entry.getValue());
                             if (attribute instanceof DBDAttributeBinding) { // DBSObject?
-                                DBDAttributeBinding binding = (DBDAttributeBinding)attribute;
+                                DBDAttributeBinding binding = (DBDAttributeBinding) attribute;
                                 DBDAttributeBinding parent = binding.getParentObject();
                                 if (parent != null) {
                                     xml.addAttribute("parentAttrEntryId", attrsInfo.get(parent));
@@ -377,8 +377,8 @@ class DataFilterRegistry {
             @NotNull Map<DBSAttributeBase, String> attrs, int idCounter, @NotNull DBSAttributeBase attribute
         ) {
             if (!attrs.containsKey(attribute)) {
-                if (attribute instanceof DBDAttributeBinding) { // DBSObject?
-                    DBDAttributeBinding parent = ((DBDAttributeBinding)attribute).getParentObject();
+                if (attribute instanceof DBDAttributeBinding) {
+                    DBDAttributeBinding parent = ((DBDAttributeBinding) attribute).getParentObject();
                     if (parent != null) {
                         idCounter = flattenAttributes(attrs, idCounter, parent);
                     }
@@ -425,7 +425,7 @@ class DataFilterRegistry {
                                         xml.addAttribute("entity", attrC.getEntityAlias());
                                     }
                                     if (attrC instanceof DBDAttributeConstraint) {
-                                        xml.addAttribute("attrEntryId", attrsInfo.get(((DBDAttributeConstraint)attrC).getAttribute()));
+                                        xml.addAttribute("attrEntryId", attrsInfo.get(((DBDAttributeConstraint) attrC).getAttribute()));
                                     }
                                     if (attrC.getValue() != null) {
                                         xml.startElement("value");

@@ -38,9 +38,7 @@ import java.util.Map;
 /**
  * Base attribute binding
  */
-public abstract class DBDAttributeBinding 
-    implements DBSObject, DBSAttributeBase, DBSTypedObjectEx, DBPQualifiedObject, DBDQualifiedObjectAttribute
-{
+public abstract class DBDAttributeBinding implements DBSTypedObjectEx, DBDQualifiedObjectAttribute {
 
     @NotNull
     protected DBDValueHandler valueHandler;

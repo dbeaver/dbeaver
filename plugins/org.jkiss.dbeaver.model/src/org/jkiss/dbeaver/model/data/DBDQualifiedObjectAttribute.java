@@ -21,7 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.*;
 
-
+/**
+ * Shares attribute-specific methods and interfaces
+ *
+ */
 public interface DBDQualifiedObjectAttribute extends DBSAttributeBase, DBSObject, DBPQualifiedObject {
 
     @Nullable
@@ -42,9 +45,9 @@ public interface DBDQualifiedObjectAttribute extends DBSAttributeBase, DBSObject
         StringBuilder query = new StringBuilder();
         boolean hasPrevIdentifier = false;
         for (DBDQualifiedObjectAttribute attribute = this; attribute != null; attribute = attribute.getParentObject()) {
-            if (attribute.isPseudoAttribute() ||
-                (attribute.getParentObject() == null && attribute.getDataKind() == DBPDataKind.DOCUMENT)
-            ) {
+            if (attribute.isPseudoAttribute() || (
+                attribute.getParentObject() == null && attribute.getDataKind() == DBPDataKind.DOCUMENT
+            )) {
                 // Skip pseudo attributes and document attributes (e.g. Mongo root document)
                 continue;
             }
