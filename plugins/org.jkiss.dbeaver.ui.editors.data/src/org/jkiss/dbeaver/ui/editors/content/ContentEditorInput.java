@@ -272,7 +272,9 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
     @Override
     public IPath getPath()
     {
-        return contentFile == null ? null : new Path(contentFile.getAbsolutePath());
+        return contentFile == null ?
+            new Path("fake_path") : // To avoid NPE from the Eclipse
+            new Path(contentFile.getAbsolutePath());
     }
 
     public boolean isReadOnly() {
