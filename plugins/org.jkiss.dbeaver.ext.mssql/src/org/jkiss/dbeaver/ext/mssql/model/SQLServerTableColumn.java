@@ -59,7 +59,6 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     private long objectId;
     private int userTypeId;
     private SQLServerDataType dataType;
-    private int bytesMaxLength;
     private String collationName;
     private String description;
     private boolean hidden;
@@ -136,13 +135,17 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         if (this.dataType == null) {
             throw new DBCException("Data type '" + userTypeId + "' not found for column '" + getName() + "'");
         }
-        this.bytesMaxLength = JDBCUtils.safeGetInt(dbResult, "max_length");
-        this.maxLength = getDataSource().supportsColumnProperty() ? JDBCUtils.safeGetLong(dbResult, "char_max_length") : 0;
+        if (getDataSource().supportsColumnProperty()) {
+            this.maxLength = JDBCUtils.safeGetLong(dbResult, "char_max_length");
+        }
         if (this.maxLength == 0) {
-            this.maxLength = this.bytesMaxLength;
-            String typeName = getTypeName();
+            this.maxLength = JDBCUtils.safeGetInt(dbResult, "max_length");
+        }
+        if (this.maxLength > 0) {
+            final String typeName = getTypeName();
             if (typeName.equals(SQLServerConstants.TYPE_NVARCHAR) || typeName.equals(SQLServerConstants.TYPE_NCHAR)) {
-                this.maxLength /= 2; // Divide by 2.
+                // https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql#arguments
+                this.maxLength /= 2;
             }
         }
         setRequired(JDBCUtils.safeGetInt(dbResult, "is_nullable") == 0);
@@ -209,11 +212,6 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     @Property(viewable = true, editable = true, updatable = true, order = 41)
     public long getMaxLength() {
         return super.getMaxLength();
-    }
-
-    @Property(order = 42)
-    public int getBytesMaxLength() {
-        return bytesMaxLength;
     }
 
     @Override
