@@ -42,7 +42,7 @@ public class ResultSetAdapterFactory implements IAdapterFactory {
     }
 
     @Override
-    public Class[] getAdapterList() {
+    public Class<?>[] getAdapterList() {
         return ADAPTER_LIST;
     }
 }

@@ -22,15 +22,13 @@ import org.jkiss.dbeaver.ui.editors.sql.preferences.format.SQLFormatterConfigura
 /**
  * Adapts objects to their UI configurators
  */
-public class SQLWorkbenchJAdapterFactory implements IAdapterFactory
-{
+public class SQLWorkbenchJAdapterFactory implements IAdapterFactory {
     private static final Class<?>[] ADAPTER_LIST = {
         SQLFormatterConfigurator.class
     };
 
     @Override
-    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType)
-    {
+    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (adapterType == SQLFormatterConfigurator.class && adaptableObject instanceof SQLWorkbenchJFormatter) {
             return adapterType.cast(new SQLWorkbenchJFormatterSettingsPage());
         }
@@ -38,8 +36,7 @@ public class SQLWorkbenchJAdapterFactory implements IAdapterFactory
     }
 
     @Override
-    public Class[] getAdapterList()
-    {
+    public Class<?>[] getAdapterList() {
         return ADAPTER_LIST;
     }
 }

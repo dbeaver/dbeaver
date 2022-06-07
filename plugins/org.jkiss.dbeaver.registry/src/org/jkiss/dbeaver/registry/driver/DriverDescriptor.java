@@ -129,7 +129,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final DataSourceProviderDescriptor providerDescriptor;
     private final String id;
     private String category;
-    private List<String> categories;
+    private final List<String> categories;
     private String name;
     private String description;
     private String driverClassName;
@@ -187,7 +187,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private final Map<DBPDriverLibrary, List<DriverFileInfo>> resolvedFiles = new HashMap<>();
 
-    private Class driverClass;
+    private Class<?> driverClass;
     private boolean isLoaded;
     private Object driverInstance;
     private DriverClassLoader classLoader;
@@ -196,7 +196,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     static {
         Path driversHome = DriverDescriptor.getCustomDriversHome();
-        System.setProperty(PROP_DRIVERS_LOCATION, driversHome.toAbsolutePath().toString());
+        if (driversHome != null) {
+            System.setProperty(PROP_DRIVERS_LOCATION, driversHome.toAbsolutePath().toString());
+        }
     }
 
     private DriverDescriptor(String id) {
