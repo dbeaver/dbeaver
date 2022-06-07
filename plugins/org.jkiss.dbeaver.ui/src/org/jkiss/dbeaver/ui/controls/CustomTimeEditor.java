@@ -229,6 +229,8 @@ public class CustomTimeEditor {
     public void setValue(@Nullable Date value) {
         if (value != null) {
             calendar.setTime(value);
+        } else {
+            calendar.setTime(new Date());
         }
         setDateFromCalendar();
     }

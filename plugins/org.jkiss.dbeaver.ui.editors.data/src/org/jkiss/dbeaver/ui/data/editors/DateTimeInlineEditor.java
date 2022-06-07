@@ -115,7 +115,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
             if (parent.isDirty()) {
                 try {
                     Object value = parent.extractEditorValue();
-                    if (value instanceof Date) {
+                    if (value instanceof Date || value == null) {
                         editor.setValue((Date) value);
                     }
                 } catch (DBException e) {
@@ -125,7 +125,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
             }
             try {
                 Object value = parent.extractEditorValue();
-                if (!(value instanceof Date)){
+                if (!(value instanceof Date) && value != null){
                     DBWorkbench.getPlatformUI().showWarningMessageBox(ResultSetMessages.dialog_value_view_error_parsing_date_title, NLS.bind(ResultSetMessages.dialog_value_view_error_parsing_date_message, value));
                     ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
                     this.setChecked(false);
