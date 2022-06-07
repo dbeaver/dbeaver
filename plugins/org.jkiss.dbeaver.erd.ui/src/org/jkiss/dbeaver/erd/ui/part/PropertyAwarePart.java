@@ -356,7 +356,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         if (key == IPropertySource.class) {
             Object model = getModel();
             if (model instanceof ERDObject) {
-                Object object = ((ERDObject) model).getObject();
+                Object object = ((ERDObject<?>) model).getObject();
                 if (object instanceof DBSObject) {
                     if (isEditEnabled()) {
                         DBECommandContext commandContext = getCommandContext();

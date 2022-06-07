@@ -123,7 +123,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return null;
     }
 
-    boolean appliesToType(Class objectType) {
+    boolean appliesToType(Class<?> objectType) {
         if (sourceTypes.isEmpty()) {
             return true;
         }

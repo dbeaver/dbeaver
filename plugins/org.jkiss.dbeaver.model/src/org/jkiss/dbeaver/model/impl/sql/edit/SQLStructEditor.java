@@ -76,7 +76,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     protected void createObjectReferences(DBRProgressMonitor monitor, DBECommandContext commandContext, ObjectCreateCommand createCommand) throws DBException {
         OBJECT_TYPE object = createCommand.getObject();
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
-        for (Class childType : getChildTypes()) {
+        for (Class<? extends DBSObject> childType : getChildTypes()) {
             Collection<? extends DBSObject> children = getChildObjects(monitor, object, childType);
             if (!CommonUtils.isEmpty(children)) {
                 SQLObjectEditor<DBSObject, ?> nestedEditor = getObjectEditor(editorsRegistry, childType);
@@ -96,7 +96,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
     }
 
-    protected  <T extends DBSObject> SQLObjectEditor<T, OBJECT_TYPE> getObjectEditor(DBERegistry editorsRegistry, Class<T> type) {
+    protected  <T extends DBSObject> SQLObjectEditor<T, OBJECT_TYPE> getObjectEditor(DBERegistry editorsRegistry, Class<? extends T> type) {
         final Class<? extends T> childType = getChildType(type);
         return childType == null ? null : editorsRegistry.getObjectManager(childType, SQLObjectEditor.class);
     }
