@@ -47,12 +47,12 @@ import java.util.Map;
  */
 public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCatalog> implements DBEObjectRenamer<MySQLTableBase> {
 
-    private static final Class<?>[] CHILD_TYPES = {
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         MySQLTableColumn.class,
         MySQLTableConstraint.class,
         MySQLTableForeignKey.class,
-        MySQLTableIndex.class,
-    };
+        MySQLTableIndex.class
+    );
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
@@ -61,18 +61,16 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
 
     @Nullable
     @Override
-    public DBSObjectCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
-    {
+    public DBSObjectCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object) {
         return object.getContainer().getTableCache();
     }
 
     @Override
-    protected MySQLTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException
-    {
+    protected MySQLTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         final MySQLTable table;
         MySQLCatalog catalog = (MySQLCatalog) container;
         if (copyFrom instanceof DBSEntity) {
-            table = new MySQLTable(monitor, catalog, (DBSEntity)copyFrom);
+            table = new MySQLTable(monitor, catalog, (DBSEntity) copyFrom);
             table.setName(getNewChildName(monitor, catalog, ((DBSEntity) copyFrom).getName()));
         } else if (copyFrom == null) {
             table = new MySQLTable(catalog);
@@ -90,8 +88,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
         query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
         appendTableModifiers(monitor, command.getObject(), command, query, true);
@@ -107,17 +104,16 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_OBJECT_DROP)) {
             final MySQLTableBase table = command.getObject();
             final String tableName = DBUtils.getEntityScriptName(table, options);
-            actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, "DROP TABLE IF EXISTS " + tableName) );
+            actions.add(0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, "DROP TABLE IF EXISTS " + tableName));
         }
 
         super.addStructObjectCreateActions(monitor, executionContext, actions, command, options);
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, MySQLTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
-    {
+    protected void appendTableModifiers(DBRProgressMonitor monitor, MySQLTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
         if (tableBase instanceof MySQLTable) {
-            MySQLTable table =(MySQLTable)tableBase;
+            MySQLTable table = (MySQLTable) tableBase;
             try {
                 final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
                 if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
@@ -143,12 +139,11 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
 
     @Override
     protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
-        return !((MySQLTableIndex)index).isUniqueKeyIndex(monitor) && super.isIncludeIndexInDDL(monitor, index);
+        return !((MySQLTableIndex) index).isUniqueKeyIndex(monitor) && super.isIncludeIndexInDDL(monitor, index);
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         final MySQLDataSource dataSource = command.getObject().getDataSource();
         actions.add(
             new SQLDatabasePersistAction(
@@ -161,8 +156,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes()
-    {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES;
     }
 
@@ -181,8 +175,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull MySQLTableBase object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
-    {
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull MySQLTableBase object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 

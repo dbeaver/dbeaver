@@ -106,7 +106,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     protected <T> Class<? extends T> getChildType(Class<T> type) {
-        for (Class<?> childType : getChildTypes()) {
+        for (Class<? extends DBSObject> childType : getChildTypes()) {
             if (type.isAssignableFrom(childType)) {
                 return (Class<? extends T>) childType;
             }

@@ -19,15 +19,11 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -40,37 +36,37 @@ import java.util.Map;
 public class PostgrePartitionManager extends PostgreTableManager {
 
     private static final Log log = Log.getLog(PostgrePartitionManager.class);
-    
-    private static final Class<?>[] CHILD_TYPES_PART = {
-            PostgreTableConstraint.class,
-            PostgreTableForeignKey.class,
-            PostgreIndex.class
-        };
-    
+
+    private static final Class<? extends DBSObject>[] CHILD_TYPES_PART = CommonUtils.array(
+        PostgreTableConstraint.class,
+        PostgreTableForeignKey.class,
+        PostgreIndex.class
+    );
+
     protected PostgreTablePartition createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
         return new PostgreTablePartition((PostgreTable) container);
     }
 
-    private String getParentTable(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTablePartition partition)  {
-        
+    private String getParentTable(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTablePartition partition) {
+
         List<PostgreTableBase> superTables;
         try {
             superTables = partition.getSuperTables(monitor);
         } catch (DBException e) {
-            log.error("Unable to get parent",e);
+            log.error("Unable to get parent", e);
             return "";//$NON-NLS-1$
         }
-        
+
         if (superTables == null && partition.getPartitionOf() != null) {
             return partition.getPartitionOf().getFullyQualifiedName(DBPEvaluationContext.DDL);
         } else if (CommonUtils.isEmpty(superTables) || superTables.size() > 1) {
             log.error("Unable to get parent");
             return "";//$NON-NLS-1$
         }
-        
+
         return superTables.get(0).getFullyQualifiedName(DBPEvaluationContext.DDL);
-    }   
-    
+    }
+
     @Override
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName, Map<String, Object> options) {
         return "CREATE " + getCreateTableType(table) + " " + tableName + " PARTITION OF " + getParentTable(monitor, (PostgreTablePartition) table) + " ";//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -100,11 +96,10 @@ public class PostgrePartitionManager extends PostgreTableManager {
     public boolean canDeleteObject(PostgreTableBase object) {
         return true;
     }
-    
+
     @NotNull
     @Override
-    public Class<?>[] getChildTypes()
-    {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES_PART;
     }
 
