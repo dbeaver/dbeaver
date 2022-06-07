@@ -148,6 +148,7 @@
                     <property id="supports-truncate" label="Driver supports TRUNCATE operation" description="Driver supports TRUNCATE command. It is much faster than DELETE without criteria." type="boolean" required="false" defaultValue="true"/>
                     <property id="read-only-data" label="Driver cannot modify data" description="Driver does not support data (e.g. in table) editing." type="boolean" required="false" defaultValue="false"/>
                     <property id="read-only-meta-data" label="Driver cannot modify meta data" description="Driver does not support meta data (e.g. table or column creating) editing." type="boolean" required="false" defaultValue="false"/>
+                    <property id="supports-multi-insert" label="Driver supports multi insert mode" description="Driver supports multi insert mode: INSERT VALUES(,,)(,,). Used for the multi insert data import" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
@@ -341,6 +342,7 @@
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
                     <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
+                    <parameter name="supports-multi-insert" value="true"/>
                 </driver>
                 <driver
                     id="derby_server"
@@ -366,6 +368,7 @@
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
                     <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
+                    <parameter name="supports-multi-insert" value="true"/>
                 </driver>
                 <driver
                     id="mimer"
@@ -975,6 +978,7 @@
                     <parameter name="use-search-string-escape" value="true"/>
                     <parameter name="krb5.show-service" value="true"/>
                     <parameter name="krb5.show-ssl-jks" value="true"/>
+                    <parameter name="supports-multi-insert" value="true"/>
                 </driver>
 
                 <!-- CUBRID -->
