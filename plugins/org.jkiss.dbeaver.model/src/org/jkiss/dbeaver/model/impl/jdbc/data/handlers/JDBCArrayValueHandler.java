@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -76,7 +75,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
         } else if (object.getClass().isArray()) {
             return JDBCCollection.makeCollectionFromJavaArray((JDBCSession) session, object);
         } else if (object instanceof Collection) {
-            return JDBCCollection.makeCollectionFromJavaCollection((JDBCSession) session, type, (Collection) object);
+            return JDBCCollection.makeCollectionFromJavaCollection((JDBCSession) session, type, (Collection<?>) object);
         } else {
             return JDBCCollection.makeCollectionFromString((JDBCSession) session, CommonUtils.toString(object));
         }
