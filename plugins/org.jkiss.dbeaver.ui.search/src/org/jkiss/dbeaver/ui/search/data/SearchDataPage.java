@@ -105,7 +105,12 @@ public class SearchDataPage extends AbstractSearchPage {
         optionsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group databasesGroup = UIUtils.createControlGroup(optionsGroup, UISearchMessages.dialog_data_search_control_group_databases, 1, GridData.FILL_BOTH, 0);
+            Group databasesGroup = UIUtils.createControlGroup(
+                optionsGroup,
+                UISearchMessages.dialog_data_search_control_group_databases,
+                1,
+                GridData.FILL_BOTH,
+                0);
             databasesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             DBPPlatform platform = DBWorkbench.getPlatform();
@@ -127,46 +132,62 @@ public class SearchDataPage extends AbstractSearchPage {
                         if (element instanceof DBNDatabaseFolder) {
                             DBNDatabaseFolder folder = (DBNDatabaseFolder) element;
                             Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
-                            return folderItemsClass != null &&
-                                (DBSObjectContainer.class.isAssignableFrom(folderItemsClass) ||
-                                    DBSEntity.class.isAssignableFrom(folderItemsClass));
+                            return folderItemsClass != null
+                                && (DBSObjectContainer.class.isAssignableFrom(folderItemsClass)
+                                    || DBSEntity.class.isAssignableFrom(folderItemsClass));
                         }
-                        if (element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource) {
+                        if (element instanceof DBNProjectDatabases
+                            || element instanceof DBNLocalFolder
+                            || element instanceof DBNDataSource) {
                             return true;
                         }
                         if (element instanceof DBSWrapper) {
                             DBSObject object = ((DBSWrapper) element).getObject();
-                            if (object instanceof DBSDataContainer && object instanceof DBSEntity &&
-                                !((DBSDataContainer) object).isFeatureSupported(DBSDataContainer.FEATURE_DATA_SEARCH)) {
+                            if (object instanceof DBSDataContainer && object instanceof DBSEntity
+                                && !((DBSDataContainer) object).isFeatureSupported(DBSDataContainer.FEATURE_DATA_SEARCH)) {
                                 return false;
                             }
-                            return object instanceof DBSInstance ||
-                                object instanceof DBSObjectContainer ||
-                                (object instanceof DBSDataContainer && object instanceof DBSEntity);
+                            return object instanceof DBSInstance
+                                || object instanceof DBSObjectContainer
+                                || (object instanceof DBSDataContainer && object instanceof DBSEntity);
                         }
                     }
                     return false;
                 }
             });
 
-            navigatorTree.getViewer().addSelectionChangedListener(
-                event -> updateEnablement()
-            );
+            navigatorTree.getViewer().addSelectionChangedListener(event -> updateEnablement());
         }
 
         {
-            Composite optionsGroup2 = UIUtils.createControlGroup(optionsGroup, UISearchMessages.dialog_data_search_control_group_settings, 2, GridData.FILL_HORIZONTAL, 0);
-            optionsGroup2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+            Composite optionsGroup2 = UIUtils.createControlGroup(
+                optionsGroup,
+                UISearchMessages.dialog_data_search_control_group_settings,
+                2,
+                GridData.FILL_HORIZONTAL,
+                0);
+            optionsGroup2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL
+                | GridData.HORIZONTAL_ALIGN_BEGINNING
+                | GridData.VERTICAL_ALIGN_BEGINNING));
 
             if (params.maxResults <= 0) {
                 params.maxResults = 10;
             }
 
-            final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, UISearchMessages.dialog_data_search_spinner_max_results, UISearchMessages.dialog_data_search_spinner_max_results_tip, params.maxResults, 1, Integer.MAX_VALUE);
+            final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(
+                optionsGroup2,
+                UISearchMessages.dialog_data_search_spinner_max_results,
+                UISearchMessages.dialog_data_search_spinner_max_results_tip, params.maxResults,
+                1,
+                Integer.MAX_VALUE);
             maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             maxResultsSpinner.addModifyListener(e -> params.maxResults = maxResultsSpinner.getSelection());
 
-            final Button caseCheckbox = UIUtils.createCheckbox(optionsGroup2, UISearchMessages.dialog_search_objects_case_sensitive, UISearchMessages.dialog_data_search_checkbox_case_sensitive_tip, params.caseSensitive, 2);
+            final Button caseCheckbox = UIUtils.createCheckbox(
+                optionsGroup2,
+                UISearchMessages.dialog_search_objects_case_sensitive,
+                UISearchMessages.dialog_data_search_checkbox_case_sensitive_tip, params.caseSensitive,
+                2);
             caseCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -174,7 +195,11 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
 
-            final Button fastSearchCheckbox = UIUtils.createCheckbox(optionsGroup2, UISearchMessages.dialog_data_search_checkbox_fast_search, UISearchMessages.dialog_data_search_checkbox_fast_search_tip, params.fastSearch, 2);
+            final Button fastSearchCheckbox = UIUtils.createCheckbox(
+                optionsGroup2,
+                UISearchMessages.dialog_data_search_checkbox_fast_search,
+                UISearchMessages.dialog_data_search_checkbox_fast_search_tip, params.fastSearch,
+                2);
             fastSearchCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -183,7 +208,11 @@ public class SearchDataPage extends AbstractSearchPage {
             });
 
 
-            final Button searchNumbersCheckbox = UIUtils.createCheckbox(optionsGroup2, UISearchMessages.dialog_data_search_checkbox_search_in_numbers, UISearchMessages.dialog_data_search_checkbox_search_in_numbers_tip, params.searchNumbers, 2);
+            final Button searchNumbersCheckbox = UIUtils.createCheckbox(
+                optionsGroup2,
+                UISearchMessages.dialog_data_search_checkbox_search_in_numbers,
+                UISearchMessages.dialog_data_search_checkbox_search_in_numbers_tip, params.searchNumbers,
+                2);
             searchNumbersCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -191,7 +220,11 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
 
-            final Button searchLOBCheckbox = UIUtils.createCheckbox(optionsGroup2, UISearchMessages.dialog_data_search_checkbox_search_in_lob, UISearchMessages.dialog_data_search_checkbox_search_in_lob_tip, params.searchLOBs, 2);
+            final Button searchLOBCheckbox = UIUtils.createCheckbox(
+                optionsGroup2,
+                UISearchMessages.dialog_data_search_checkbox_search_in_lob,
+                UISearchMessages.dialog_data_search_checkbox_search_in_lob_tip, params.searchLOBs,
+                2);
             searchLOBCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -199,7 +232,12 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
 
-            final Button searchForeignCheckbox = UIUtils.createCheckbox(optionsGroup2, UISearchMessages.dialog_data_search_checkbox_search_in_foreign_objects, UISearchMessages.dialog_data_search_checkbox_search_in_foreign_objects_tip, params.searchForeignObjects, 2);
+            final Button searchForeignCheckbox = UIUtils.createCheckbox(
+                optionsGroup2,
+                UISearchMessages.dialog_data_search_checkbox_search_in_foreign_objects,
+                UISearchMessages.dialog_data_search_checkbox_search_in_foreign_objects_tip,
+                params.searchForeignObjects,
+                2);
             searchForeignCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -207,7 +245,11 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
 
-            CLabel infoLabel = UIUtils.createInfoLabel(optionsGroup2, UISearchMessages.dialog_data_search_info_label_use_ctrl, GridData.FILL_BOTH, 2);
+            CLabel infoLabel = UIUtils.createInfoLabel(
+                optionsGroup2,
+                UISearchMessages.dialog_data_search_info_label_use_ctrl,
+                GridData.FILL_BOTH,
+                2);
             GridData gridData = new GridData(SWT.FILL, SWT.END, true, true);
             gridData.horizontalSpan = 2;
             infoLabel.setLayoutData(gridData);
@@ -348,7 +390,10 @@ public class SearchDataPage extends AbstractSearchPage {
     }
 
     private List<DBNNode> loadTreeState(DBRProgressMonitor monitor) {
-        return loadTreeState(monitor, NavigatorUtils.getSelectedProject(), DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SOURCES));
+        return loadTreeState(
+            monitor,
+            NavigatorUtils.getSelectedProject(),
+            DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SOURCES));
     }
 
     private void restoreCheckedNodes() {

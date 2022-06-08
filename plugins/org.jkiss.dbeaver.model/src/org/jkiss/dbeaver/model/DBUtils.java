@@ -2271,12 +2271,16 @@ public final class DBUtils {
     }
 
     /**
+     * Returns list of all underlying data containers from different kind of parent nodes (usually from the navigator tree)
+     * 
      * @param monitor can not be null
      * @param parent Parent object: schema, catalog, datasource, DBNDatabaseFolder, even table
      * @return List of data containers (tables, views etc.) from the parent container (schema, catalog, datasource etc.)
-     * @throws DBException
+     * @throws DBException if connection is lost or something is going wrong during children loading
      */
-    public static List<DBSDataContainer> getAllDataContainersFromParentContainer(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject parent) throws DBException {
+    public static List<DBSDataContainer> getAllDataContainersFromParentContainer(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject parent) throws DBException {
         List<DBSDataContainer> result = new ArrayList<>();
         if (parent instanceof DBSDataContainer) {
             result.add((DBSDataContainer) parent);
