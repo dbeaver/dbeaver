@@ -24,7 +24,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -55,7 +58,6 @@ import java.text.Collator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class DatabaseTasksTree {
@@ -518,7 +520,7 @@ public class DatabaseTasksTree {
 
         @Override
         public Object[] getElements(Object inputElement) {
-            return ((Collection) inputElement).toArray();
+            return ((Collection<?>) inputElement).toArray();
         }
 
         @Override

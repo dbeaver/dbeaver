@@ -357,7 +357,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private class TreeRunContentProvider implements ITreeContentProvider {
         @Override
         public Object[] getElements(Object inputElement) {
-            return ((Collection) inputElement).toArray();
+            return ((Collection<?>) inputElement).toArray();
         }
 
         @Override

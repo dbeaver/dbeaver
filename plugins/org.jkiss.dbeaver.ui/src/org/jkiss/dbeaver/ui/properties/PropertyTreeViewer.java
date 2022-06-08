@@ -258,7 +258,7 @@ public class PropertyTreeViewer extends TreeViewer {
                     case FIRST:
                         Object root = getInput();
                         if (root instanceof Collection) {
-                            Collection rootItems = (Collection<?>) root;
+                            Collection<?> rootItems = (Collection<?>) root;
                             if (!rootItems.isEmpty()) {
                                 Object first = rootItems.iterator().next();
                                 PropertyTreeViewer.this.collapseAll();
@@ -934,7 +934,7 @@ public class PropertyTreeViewer extends TreeViewer {
         public Object[] getChildren(Object parent)
         {
             if (parent instanceof Collection) {
-                return ((Collection) parent).toArray();
+                return ((Collection<?>) parent).toArray();
             } else if (parent instanceof TreeNode) {
                 // Add all available property groups
                 return ((TreeNode) parent).children.toArray();
