@@ -145,7 +145,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             this.ownColumn = ownColumn;
         }
 
-        public DBVEntityForeignKey.ForeignKeyRelationInfo toFKRelation() {
+        public DBVEntityForeignKey.ForeignKeyRelationInfo toForeignKeyRelation() {
             return new DBVEntityForeignKey.ForeignKeyRelationInfo(refColumn, ownColumn);
         }
     }
@@ -255,7 +255,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createLabelText(
                 tableGroup,
-                EditorsMessages.dialog_struct_edit_fk_label_table, DBUtils.getObjectFullName(foreignKeyParentEntity, DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
+                EditorsMessages.dialog_struct_edit_fk_label_table,
+                DBUtils.getObjectFullName(foreignKeyParentEntity, DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
 
             if (allowedKeyTypes.length > 1) {
                 UIUtils.createControlLabel(tableGroup, "Key type");
@@ -1065,7 +1066,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             editDialog.setReferenceAttributes(refAttributes);
         }
         if (editDialog.edit()) {
-            List<DBVEntityForeignKey.ForeignKeyRelationInfo> rels = editDialog.getColumns().stream().map(c -> c.toFKRelation()).collect(Collectors.toList());
+            List<DBVEntityForeignKey.ForeignKeyRelationInfo> rels = editDialog.getColumns().stream()
+                .map(c -> c.toForeignKeyRelation()).collect(Collectors.toList());
             return DBVEntityForeignKey.makeCreator(vEntity, editDialog.getUniqueConstraint(), rels);
         } else {
             return null;

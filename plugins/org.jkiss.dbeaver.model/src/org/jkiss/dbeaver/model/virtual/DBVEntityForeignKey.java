@@ -271,13 +271,15 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
     }
 
     @NotNull
-    public static VirtualForeignKeyCreator makeCreator(@NotNull DBVEntity vEntity, DBSEntityConstraint constraint, List<ForeignKeyRelationInfo> fkColumns) {
+    public static VirtualForeignKeyCreator makeCreator(
+        @NotNull DBVEntity virtualEntity, DBSEntityConstraint constraint, List<ForeignKeyRelationInfo> fkColumns
+    ) {
         return new VirtualForeignKeyCreator() {
             @Override
             public DBVEntityForeignKey createForeignKey() {
-                DBVEntityForeignKey virtualFK = new DBVEntityForeignKey(vEntity);
+                DBVEntityForeignKey virtualForeignKey = new DBVEntityForeignKey(virtualEntity);
                 try {
-                    virtualFK.setReferencedConstraint(new VoidProgressMonitor(), constraint);
+                    virtualForeignKey.setReferencedConstraint(new VoidProgressMonitor(), constraint);
                 } catch (DBException e) {
                     log.error(e);
                     return null;
@@ -286,11 +288,11 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
                 for (ForeignKeyRelationInfo tableColumn : fkColumns) {
                     columns.add(
                         new DBVEntityForeignKeyColumn(
-                            virtualFK, tableColumn.getOwnColumn().getName(), tableColumn.getRefColumn().getName()));
+                            virtualForeignKey, tableColumn.getOwnColumn().getName(), tableColumn.getRefColumn().getName()));
                 }
-                virtualFK.setAttributes(columns);
-                vEntity.addForeignKey(virtualFK);
-                return virtualFK;
+                virtualForeignKey.setAttributes(columns);
+                virtualEntity.addForeignKey(virtualForeignKey);
+                return virtualForeignKey;
             }
         };
     }
@@ -303,19 +305,16 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         private final DBSEntityAttribute refColumn;
         private final DBSEntityAttribute ownColumn;
 
-        public ForeignKeyRelationInfo(DBSEntityAttribute refColumn, DBSEntityAttribute ownColumn)
-        {
+        public ForeignKeyRelationInfo(DBSEntityAttribute refColumn, DBSEntityAttribute ownColumn) {
             this.refColumn = refColumn;
             this.ownColumn = ownColumn;
         }
 
-        public DBSEntityAttribute getRefColumn()
-        {
+        public DBSEntityAttribute getRefColumn() {
             return refColumn;
         }
 
-        public DBSEntityAttribute getOwnColumn()
-        {
+        public DBSEntityAttribute getOwnColumn() {
             return ownColumn;
         }
     }

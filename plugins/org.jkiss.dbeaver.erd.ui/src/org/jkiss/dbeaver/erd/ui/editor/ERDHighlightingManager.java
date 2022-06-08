@@ -225,7 +225,7 @@ public class ERDHighlightingManager {
     }
 
     public void reset() {
-        for (PartHighlighter highlighter: highlightedParts.values().toArray(PartHighlighter[]::new)) {
+        for (PartHighlighter highlighter : highlightedParts.values().toArray(PartHighlighter[]::new)) {
             highlighter.reset();
         }
     }

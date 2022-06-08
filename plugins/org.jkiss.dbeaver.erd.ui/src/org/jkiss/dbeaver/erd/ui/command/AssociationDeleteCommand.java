@@ -41,8 +41,8 @@ public class AssociationDeleteCommand extends Command {
     protected final ERDElement sourceEntity;
     protected final ERDElement targetEntity;
     protected final ERDAssociation association;
-    protected final DBVEntity vEntity;
-    protected final DBVEntityForeignKey.VirtualForeignKeyCreator virtualFkCreator;
+    protected final DBVEntity virtualEntity;
+    protected final DBVEntityForeignKey.VirtualForeignKeyCreator virtualForeignKeyCreator;
 
     public AssociationDeleteCommand(AssociationPart part) {
         super();
@@ -54,11 +54,11 @@ public class AssociationDeleteCommand extends Command {
         DBSEntityAssociation entityAssociation = association.getObject();
         if (entityAssociation instanceof DBVEntityForeignKey) {
             DBVEntityForeignKey vfk = (DBVEntityForeignKey) entityAssociation;
-            vEntity = DBVUtils.getVirtualEntity(entityAssociation.getParentObject(), false);
-            virtualFkCreator = vfk.decompose();
+            virtualEntity = DBVUtils.getVirtualEntity(entityAssociation.getParentObject(), false);
+            virtualForeignKeyCreator = vfk.decompose();
         } else {
-            vEntity = null;
-            virtualFkCreator = null;
+            virtualEntity = null;
+            virtualForeignKeyCreator = null;
         }
     }
 
@@ -69,14 +69,17 @@ public class AssociationDeleteCommand extends Command {
     public void execute() {
         DBSEntityAssociation entityAssociation = association.getObject();
         if (entityAssociation instanceof DBVEntityForeignKey) {
-            if (!UIUtils.confirmAction("Delete logical key", "Are you sure you want to delete logical key '" + association.getName() + "'?")) {
+            if (!UIUtils.confirmAction(
+                "Delete logical key",
+                "Are you sure you want to delete logical key '" + association.getName() + "'?"
+            )) {
                 return;
             }
-            if (vEntity == null) {
+            if (virtualEntity == null) {
                 UIUtils.showMessageBox(UIUtils.getActiveWorkbenchShell(), "No virtual entity", "Can't find association owner virtual entity", SWT.ICON_ERROR);
                 return;
             }
-            vEntity.removeForeignKey((DBVEntityForeignKey) entityAssociation);
+            virtualEntity.removeForeignKey((DBVEntityForeignKey) entityAssociation);
         }
         removeAssociationFromDiagram();
     }
@@ -96,8 +99,8 @@ public class AssociationDeleteCommand extends Command {
         if (association.getSourceEntity() != null) {
             return;
         }
-        if (virtualFkCreator != null) { 
-            association.setObject(virtualFkCreator.createForeignKey());
+        if (virtualForeignKeyCreator != null) { 
+            association.setObject(virtualForeignKeyCreator.createForeignKey());
         }
         association.setSourceEntity(sourceEntity);
         association.setTargetEntity(targetEntity);
