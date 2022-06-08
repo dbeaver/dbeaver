@@ -652,7 +652,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private Object createDriverInstance()
             throws DBException {
         try {
-            return driverClass.newInstance();
+            return driverClass.getConstructor().newInstance();
         } catch (InstantiationException ex) {
             throw new DBException("Can't instantiate driver class", ex);
         } catch (IllegalAccessException ex) {

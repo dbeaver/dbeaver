@@ -151,7 +151,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         try {
             processorType.checkObjectClass(IDataTransferProcessor.class);
             Class<? extends IDataTransferProcessor> clazz = processorType.getObjectClass(IDataTransferProcessor.class);
-            return clazz.newInstance();
+            return clazz.getConstructor().newInstance();
         } catch (Exception e) {
             throw new IllegalStateException("Can't instantiate data exporter", e);
         }

@@ -58,7 +58,7 @@ public class ObjectManagerDescriptor extends AbstractDescriptor
         return objectType;
     }
 
-    public boolean appliesToType(Class clazz)
+    public boolean appliesToType(Class<?> clazz)
     {
         return objectType.matchesType(clazz);
     }
@@ -73,7 +73,7 @@ public class ObjectManagerDescriptor extends AbstractDescriptor
             throw new IllegalStateException("Can't instantiate object manager '" + managerType.getImplName() + "'");
         }
         try {
-            managerInstance = clazz.newInstance();
+            managerInstance = clazz.getConstructor().newInstance();
         } catch (Throwable ex) {
             throw new IllegalStateException("Error instantiating object manager '" + clazz.getName() + "'", ex);
         }

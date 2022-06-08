@@ -109,7 +109,7 @@ public final class RuntimeUtils {
 */
     }
 
-    public static boolean isTypeSupported(Class<?> type, Class[] supportedTypes) {
+    public static boolean isTypeSupported(Class<?> type, Class<?>[] supportedTypes) {
         if (type == null || ArrayUtils.isEmpty(supportedTypes)) {
             return false;
         }
