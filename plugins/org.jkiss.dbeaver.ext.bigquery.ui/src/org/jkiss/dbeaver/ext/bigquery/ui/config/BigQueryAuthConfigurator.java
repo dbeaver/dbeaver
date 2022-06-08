@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.bigquery.model.BigQueryConstants;
 import org.jkiss.dbeaver.ext.bigquery.ui.internal.BigQueryMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -36,7 +37,7 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
     private TextWithOpenFile authCertFile;
 
     @Override
-    public void createControl(Composite authPanel, DBAAuthModel object, Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
         UIUtils.createControlLabel(authPanel, BigQueryMessages.label_oauth_type);
         authTypeCombo = new Combo(authPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         authTypeCombo.add(BigQueryMessages.label_service_based);
@@ -49,7 +50,7 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
     }
 
     @Override
-    public void loadSettings(DBPDataSourceContainer dataSource) {
+    public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.loadSettings(dataSource);
 
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
@@ -64,7 +65,7 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.saveSettings(dataSource);
 
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();

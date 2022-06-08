@@ -258,7 +258,7 @@ public class PropertyTreeViewer extends TreeViewer {
                     case FIRST:
                         Object root = getInput();
                         if (root instanceof Collection) {
-                            Collection rootItems = (Collection) root;
+                            Collection rootItems = (Collection<?>) root;
                             if (!rootItems.isEmpty()) {
                                 Object first = rootItems.iterator().next();
                                 PropertyTreeViewer.this.collapseAll();
@@ -800,7 +800,7 @@ public class PropertyTreeViewer extends TreeViewer {
     public Object getCategoryNode(String category) {
         Object input = getInput();
         if (input instanceof Collection) {
-            for (Object element : (Collection)input) {
+            for (Object element : (Collection<?>)input) {
                 if (element instanceof TreeNode && category.equals(((TreeNode) element).category)) {
                     return element;
                 }
@@ -994,7 +994,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         str.append("[");
                         if (propertyValue instanceof Collection) {
                             int i = 0;
-                            for (Object item : (Collection) propertyValue) {
+                            for (Object item : (Collection<?>) propertyValue) {
                                 if (i > 0) str.append(",");
                                 str.append(GeneralUtils.makeDisplayString(item));
                                 i++;

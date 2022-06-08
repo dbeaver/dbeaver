@@ -382,7 +382,7 @@ public final class DBValueFormatting {
         } else if (value instanceof Collection) {
             StringBuilder str = new StringBuilder("[");
             boolean first = true;
-            for (Object item : (Collection)value) {
+            for (Object item : (Collection<?>)value) {
                 if (!first) str.append(", ");
                 first = false;
                 str.append(getDefaultValueDisplayString(item, format));
