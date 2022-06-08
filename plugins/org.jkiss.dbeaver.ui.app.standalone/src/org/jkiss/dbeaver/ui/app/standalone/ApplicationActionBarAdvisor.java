@@ -298,7 +298,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                         try {
                             Bundle actionBundle = Platform.getBundle(action.getContributor().getName());
                             Class<?> actionClass = actionBundle.loadClass(actionClassName);
-                            convertLDMenu.add((IAction)actionClass.newInstance());
+                            convertLDMenu.add((IAction)actionClass.getConstructor().newInstance());
                         } catch (Throwable e) {
                             log.error(e);
                         }

@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -85,13 +86,21 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     private VariablesHintLabel variablesHintLabel;
 
     @Override
-    public void createControl(Composite parent, Object object, Runnable propertyChangeListener)
+    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener)
     {
-        final Composite composite = new Composite(parent, SWT.NONE);
-        //gd.minimumHeight = 200;
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
+        scrolledComposite.setLayout(new GridLayout(1, false));
+        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        final Composite composite = new Composite(scrolledComposite, SWT.NONE);
+        final GridData gridData = new GridData(GridData.FILL_BOTH);
+        gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
+        composite.setLayoutData(gridData);
         composite.setLayout(new GridLayout(1, false));
 
+        scrolledComposite.setContent(composite);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
             credentialsPanel = new CredentialsPanel(settingsGroup, true);
@@ -102,6 +111,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
+                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });
@@ -130,6 +140,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
+                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });
@@ -184,13 +195,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
 
         {
-            Composite sc = new Composite(composite, SWT.NONE);
+            Composite sc = new Composite(parent, SWT.NONE);
             sc.setLayout(new GridLayout());
             sc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         }
 
         {
-            Composite controlGroup = UIUtils.createComposite(composite, 3);
+            Composite controlGroup = UIUtils.createComposite(parent, 3);
             controlGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, new SelectionAdapter() {
@@ -291,7 +302,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     @Override
-    public void loadSettings(DBWHandlerConfiguration configuration)
+    public void loadSettings(@NotNull DBWHandlerConfiguration configuration)
     {
         credentialsPanel.loadSettings(configuration, "");
 
@@ -350,7 +361,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     @Override
-    public void saveSettings(DBWHandlerConfiguration configuration)
+    public void saveSettings(@NotNull DBWHandlerConfiguration configuration)
     {
         credentialsPanel.saveSettings(configuration, "");
 
@@ -400,7 +411,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     @Override
-    public void resetSettings(DBWHandlerConfiguration configuration) {
+    public void resetSettings(@NotNull DBWHandlerConfiguration configuration) {
 
     }
 

@@ -1044,6 +1044,13 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.selected.background.description</description>
         </colorDefinition>
         <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.border.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.header.border"
+                value="COLOR_WIDGET_DARK_SHADOW">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.border.description</description>
+        </colorDefinition>
+        <colorDefinition
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.null.foreground.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.null.foreground"

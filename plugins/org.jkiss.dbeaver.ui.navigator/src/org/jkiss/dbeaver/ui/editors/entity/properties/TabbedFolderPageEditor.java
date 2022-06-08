@@ -212,7 +212,7 @@ public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabas
         this.actionContributor = manager.getContributor(contributorClass);
         if (this.actionContributor == null) {
             try {
-                this.actionContributor = contributorClass.newInstance();
+                this.actionContributor = contributorClass.getConstructor().newInstance();
             } catch (Exception e) {
                 log.error(e);
             }

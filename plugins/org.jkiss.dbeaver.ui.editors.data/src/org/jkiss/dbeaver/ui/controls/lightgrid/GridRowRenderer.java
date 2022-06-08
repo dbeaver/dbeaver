@@ -61,7 +61,7 @@ class GridRowRenderer extends AbstractRenderer {
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height + 1);
 
         {
-            gc.setForeground(grid.getContentProvider().getCellHeaderForeground(element));
+            gc.setForeground(grid.getContentProvider().getCellHeaderBorder(null));
 
             gc.drawLine(
                 bounds.x + bounds.width - 1,

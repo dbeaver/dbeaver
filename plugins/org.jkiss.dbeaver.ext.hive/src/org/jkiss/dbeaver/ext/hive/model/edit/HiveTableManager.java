@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -41,16 +42,16 @@ import java.util.Map;
 
 public class HiveTableManager extends GenericTableManager implements DBEObjectRenamer<GenericTableBase> {
 
-    private static final Class<?>[] CHILD_TYPES = {
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
             HiveTableColumn.class,
             GenericUniqueKey.class,
             GenericTableForeignKey.class,
             HiveIndex.class
-    };
+    );
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes() {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES;
     }
 
