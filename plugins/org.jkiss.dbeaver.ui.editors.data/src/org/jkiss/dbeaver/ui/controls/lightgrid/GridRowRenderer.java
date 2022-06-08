@@ -47,12 +47,12 @@ class GridRowRenderer extends AbstractRenderer {
         DEFAULT_FOREGROUND_TEXT = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, int level, IGridContentProvider.ElementState state, Object element) {
+    public void paint(GC gc, Rectangle bounds, boolean selected, int level, IGridContentProvider.ExpandState state, Object element) {
         String text = grid.getLabelProvider().getText(element);
 
         gc.setFont(grid.normalFont);
 
-        Color background = selected ? grid.getContentProvider().getCellHeaderSelectionBackground(element) : grid.getContentProvider().getCellHeaderBackground(element);
+        Color background = grid.getContentProvider().getCellHeaderBackgroundColor(element, selected);
         if (background == null) {
             background = DEFAULT_BACKGROUND;
         }
@@ -61,7 +61,7 @@ class GridRowRenderer extends AbstractRenderer {
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height + 1);
 
         {
-            gc.setForeground(grid.getContentProvider().getCellHeaderBorder(null));
+            gc.setForeground(grid.getContentProvider().getCellHeaderBorderColor(null));
 
             gc.drawLine(
                 bounds.x + bounds.width - 1,
@@ -79,8 +79,8 @@ class GridRowRenderer extends AbstractRenderer {
         if (level > 0) {
             x += level * LEVEL_SPACING;
         }
-        if (state != IGridContentProvider.ElementState.NONE) {
-            Image expandImage = state == IGridContentProvider.ElementState.EXPANDED ? IMG_COLLAPSE : IMG_EXPAND;
+        if (state != IGridContentProvider.ExpandState.NONE) {
+            Image expandImage = state == IGridContentProvider.ExpandState.EXPANDED ? IMG_COLLAPSE : IMG_EXPAND;
             gc.drawImage(expandImage, x, bounds.y + (bounds.height - EXPANDED_BOUNDS.height) / 2);
             x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
         } else if (grid.hasNodes()) {
@@ -98,7 +98,7 @@ class GridRowRenderer extends AbstractRenderer {
 
         width -= RIGHT_MARGIN;
 
-        Color foreground = grid.getContentProvider().getCellHeaderForeground(element);
+        Color foreground = grid.getContentProvider().getCellHeaderForegroundColor(element);
         if (foreground == null) {
             foreground = grid.getLabelProvider().getForeground(element);
         }

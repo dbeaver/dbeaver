@@ -252,12 +252,12 @@ class GridColumn {
 
     public boolean isSortable()
     {
-        return grid.getContentProvider().getSortOrder(element) != SWT.NONE;
+        return grid.getContentProvider().getColumnSortOrder(element) != SWT.NONE;
     }
 
     public boolean isFilterable()
     {
-        return grid.getContentProvider().isElementSupportsFilter(element);
+        return grid.getContentProvider().isColumnSupportsFilter(element);
     }
 
 	/**
@@ -298,25 +298,24 @@ class GridColumn {
 	}
 
     private int computeCellWidth(Object col, Object row) {
-        int x = 0;
+        int x = leftMargin;
 
-        x += leftMargin;
+        final GridCell cell = new GridCell(col, row);
+        final String cellText = grid.getCellText(cell);
+        final int cellState = grid.getContentProvider().getCellStyle(cell, cellText);
 
-        String cellText = grid.getCellText(col, row);
-        int state = grid.getContentProvider().getCellState(col, row, cellText);
         Rectangle imageBounds;
-        if (GridCellRenderer.isLinkState(state)) {
+        if (GridCellRenderer.isLinkState(cellState)) {
             imageBounds = GridCellRenderer.LINK_IMAGE_BOUNDS;
         } else {
-            DBPImage image = grid.getContentProvider().getCellImage(col, row);
+            DBPImage image = grid.getContentProvider().getCellImage(cell);
             imageBounds = image == null ? null : DBeaverIcons.getImage(image).getBounds();
         }
         if (imageBounds != null) {
             x += imageBounds.width + insideMargin;
         }
 
-        x += grid.sizingGC.textExtent(cellText).x + rightMargin;
-        return x;
+        return x + grid.sizingGC.textExtent(cellText).x + rightMargin;
     }
 
 	/**

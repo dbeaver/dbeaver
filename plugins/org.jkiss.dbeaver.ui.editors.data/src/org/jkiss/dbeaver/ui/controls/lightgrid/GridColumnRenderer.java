@@ -84,24 +84,19 @@ class GridColumnRenderer extends AbstractRenderer {
 
     public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, Object element) {
 
-        boolean hasFilters = grid.getContentProvider().isElementSupportsFilter(element);
+        boolean hasFilters = grid.getContentProvider().isColumnSupportsFilter(element);
 
         //GridColumn col = grid.getColumnByElement(cell.col);
         //AbstractRenderer arrowRenderer = col.getSortRenderer();
-        int sortOrder = grid.getContentProvider().getSortOrder(element);
+        int sortOrder = grid.getContentProvider().getColumnSortOrder(element);
         final Rectangle sortBounds = getSortControlBounds();
         final Rectangle filterBounds = getFilterControlBounds();
 
         boolean flat = true;
         boolean drawSelected = false;
 
-        if (selected || hovering) {
-            gc.setBackground(grid.getContentProvider().getCellHeaderSelectionBackground(element));
-        } else {
-            gc.setBackground(grid.getContentProvider().getCellHeaderBackground(element));
-        }
-        gc.setForeground(grid.getContentProvider().getCellHeaderForeground(element));
-
+        gc.setBackground(grid.getContentProvider().getCellHeaderBackgroundColor(element, selected || hovering));
+        gc.setForeground(grid.getContentProvider().getCellHeaderForegroundColor(element));
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
         int pushedDrawingOffset = 0;
@@ -214,7 +209,7 @@ class GridColumnRenderer extends AbstractRenderer {
             }
 
         } else {
-            gc.setForeground(grid.getContentProvider().getCellHeaderBorder(null));
+            gc.setForeground(grid.getContentProvider().getCellHeaderBorderColor(null));
             gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
             gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
         }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package  org.jkiss.dbeaver.ui.controls.lightgrid;
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.swt.graphics.Color;
@@ -23,89 +23,94 @@ import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.UIElementAlignment;
 
 public interface IGridContentProvider extends IContentProvider {
 
-    enum ElementState {
+    enum ExpandState {
         NONE,
         EXPANDED,
         COLLAPSED
     }
 
-    int STATE_NONE          = 0;
-    int STATE_LINK          = 1;
-    int STATE_HYPER_LINK    = 1 << 1;
-    int STATE_TRANSFORMED   = 1 << 2;
-    int STATE_TOGGLE        = 1 << 3;
-    int STATE_DECORATED     = 1 << 4;
+    // @formatter:off
+    int STYLE_NONE          = 0;
+    int STYLE_LINK          = 1;
+    int STYLE_HYPERLINK     = 1 << 1;
+    int STYLE_TRANSFORMED   = 1 << 2;
+    int STYLE_TOGGLEABLE    = 1 << 3;
+    int STYLE_DECORATED     = 1 << 4;
+    // @formatter:on
 
-    int ALIGN_LEFT          = 0;
-    int ALIGN_CENTER        = 1;
-    int ALIGN_RIGHT         = 2;
+    /* Data */
 
     @NotNull
-    Object[] getElements(boolean horizontal);
+    Object[] getColumnElements();
+
+    @NotNull
+    Object[] getRowElements();
 
     @Nullable
     Object[] getChildren(Object element);
 
-    int getSortOrder(@Nullable Object element);
-
-    ElementState getDefaultState(@NotNull Object element);
-
-    int getColumnPinIndex(@NotNull Object element);
-
-    boolean isElementSupportsFilter(@Nullable Object element);
-
-    boolean isElementSupportsSort(@Nullable Object element);
-
-    boolean isElementReadOnly(Object element);
-
     boolean isGridReadOnly();
 
+    /* Columns content */
+
+    int getColumnSortOrder(@Nullable Object colElement);
+
+    int getColumnPinIndex(@NotNull Object colElement);
+
+    boolean isColumnSupportsFilter(@NotNull Object colElement);
+
+    boolean isColumnReadOnly(@NotNull Object colElement);
+
+    @NotNull
+    ExpandState getColumnDefaultExpandState(@NotNull Object colElement);
+
+    /* Cells content */
+
     /**
-     *
-     * @param cellText    pre-rendered cell text. Used for cache purposes.
+     * @param cellText Pre-rendered cell text. Used for cache purposes.
      */
-    int getCellState(Object colElement, Object rowElement, @Nullable String cellText);
+    int getCellStyle(@NotNull IGridCell cell, @Nullable String cellText);
 
-    int getCellAlign(@Nullable Object colElement, Object rowElement);
+    @NotNull
+    UIElementAlignment getCellAlign(@NotNull IGridCell cell);
 
     @Nullable
-    Font getCellFont(@Nullable Object colElement, Object rowElement);
+    Font getCellFont(@NotNull IGridCell cell);
 
     /**
-     * @param formatString  Format string values or return raw values
-     * @param lockData     Block any automatic data fetch/refresh
+     * @param formatString Format string values or return raw values
+     * @param lockData     Block any automatic data fetch/refresh (without side-effects)
      */
-    Object getCellValue(Object colElement, Object rowElement, boolean formatString, boolean lockData);
+    @Nullable
+    Object getCellValue(@NotNull IGridCell cell, boolean formatString, boolean lockData);
 
     @NotNull
-    String getCellText(Object colElement, Object rowElement);
+    String getCellText(@NotNull IGridCell cell);
 
     @Nullable
-    DBPImage getCellImage(Object colElement, Object rowElement);
+    DBPImage getCellImage(@NotNull IGridCell cell);
 
     @Nullable
-    Color getCellForeground(Object colElement, Object rowElement, boolean selected);
+    Color getCellForegroundColor(@NotNull IGridCell cell, boolean selected);
 
     @Nullable
-    Color getCellBackground(Object colElement, Object rowElement, boolean selected);
+    Color getCellBackgroundColor(@NotNull IGridCell cell, boolean selected);
 
     @Nullable
-    Color getCellHeaderForeground(Object element);
+    Color getCellHeaderForegroundColor(Object element);
 
     @Nullable
-    Color getCellHeaderBackground(Object element);
-
-    @Nullable
-    Color getCellHeaderSelectionBackground(Object element);
+    Color getCellHeaderBackgroundColor(Object element, boolean selected);
 
     @NotNull
-    Color getCellHeaderBorder(@Nullable Object element);
+    Color getCellHeaderBorderColor(@Nullable Object element);
 
     @NotNull
-    String getCellLinkText(Object colElement, Object rowElement);
+    String getCellLinkText(@NotNull IGridCell cell);
 
     // Resets all cached colors
     void resetColors();

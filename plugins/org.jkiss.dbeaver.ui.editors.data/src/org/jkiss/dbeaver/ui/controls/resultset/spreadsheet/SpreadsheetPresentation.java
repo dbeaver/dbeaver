@@ -429,8 +429,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private void updateGridCursor(GridCell cell)
     {
         boolean changed;
-        Object newCol = cell == null ? null : cell.col;
-        Object newRow = cell == null ? null : cell.row;
+        Object newCol = cell == null ? null : cell.getColumnElement();
+        Object newRow = cell == null ? null : cell.getRowElement();
         ResultSetRow curRow = controller.getCurrentRow();
         if (!controller.isRecordMode()) {
             changed = curRow != newRow || curAttribute != newCol;
@@ -512,11 +512,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         GridCell prevCell = null;
         for (GridCell cell : selectedCells) {
-            if (prevCell == null || cell.row != prevCell.row) {
+            if (prevCell == null || cell.getRowElement() != prevCell.getRowElement()) {
                 // Next row
-                if (prevCell != null && prevCell.col != cell.col) {
+                if (prevCell != null && prevCell.getColumnElement() != cell.getColumnElement()) {
                     // Fill empty row tail
-                    int prevColIndex = selectedColumns.indexOf(prevCell.col);
+                    int prevColIndex = selectedColumns.indexOf(prevCell.getColumnElement());
                     for (int i = prevColIndex; i < selectedColumns.size() - 1; i++) {
                         tdt.append(columnDelimiter);
                         if (copyHTML) html.append("<td></td>");
@@ -527,15 +527,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     if (copyHTML) html.append("</tr>").append(rowDelimiter);
                 }
                 if (settings.isCopyRowNumbers()) {
-                    String rowNumber = labelProvider.getText(cell.row);
+                    String rowNumber = labelProvider.getText(cell.getRowElement());
                     tdt.append(rowNumber).append(columnDelimiter);
                     if (copyHTML) html.append("<td>").append(rowNumber).append("</td>");
                 }
                 if (copyHTML) html.append("<tr>");
             }
-            if (prevCell != null && prevCell.col != cell.col) {
-                int prevColIndex = selectedColumns.indexOf(prevCell.col);
-                int curColIndex = selectedColumns.indexOf(cell.col);
+            if (prevCell != null && prevCell.getColumnElement() != cell.getColumnElement()) {
+                int prevColIndex = selectedColumns.indexOf(prevCell.getColumnElement());
+                int curColIndex = selectedColumns.indexOf(cell.getColumnElement());
                 for (int i = prevColIndex; i < curColIndex; i++) {
                     tdt.append(columnDelimiter);
                     if (i != prevColIndex) {
@@ -545,8 +545,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
 
             boolean recordMode = controller.isRecordMode();
-            DBDAttributeBinding column = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
-            ResultSetRow row = (ResultSetRow) (!recordMode ?  cell.row : cell.col);
+            DBDAttributeBinding column = (DBDAttributeBinding) (!recordMode ?  cell.getColumnElement() : cell.getRowElement());
+            ResultSetRow row = (ResultSetRow) (!recordMode ?  cell.getRowElement() : cell.getColumnElement());
             Object value = controller.getModel().getCellValue(column, row);
             if (binaryData == null && (column.getDataKind() == DBPDataKind.BINARY || column.getDataKind() == DBPDataKind.CONTENT)) {
                 if (value instanceof byte[]) {
@@ -1225,8 +1225,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     public void navigateLink(@NotNull GridCell cell, final int state) {
         boolean recordMode = controller.isRecordMode();
-        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-        final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
+        final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
+        final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
 
         Object value = controller.getModel().getCellValue(attr, row);
         if (isShowAsCheckbox(attr)) {
@@ -1417,8 +1417,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (object instanceof GridCell) {
                     GridCell cell = (GridCell) object;
                     boolean recordMode = controller.isRecordMode();
-                    final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.row : cell.col);
-                    final ResultSetRow row = (ResultSetRow) (recordMode ? cell.col : cell.row);
+                    final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
+                    final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
                     final SpreadsheetValueController valueController = new SpreadsheetValueController(
                         controller,
                         attr,
@@ -1663,7 +1663,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public List<DBDAttributeBinding> getSelectedAttributes() {
             if (controller.isRecordMode()) {
-                Object[] elements = spreadsheet.getContentProvider().getElements(false);
+                Object[] elements = spreadsheet.getContentProvider().getRowElements();
                 List<DBDAttributeBinding> attrs = new ArrayList<>();
                 List<Integer> rowSelection = new ArrayList<>(spreadsheet.getRowSelection());
                 Collections.sort(rowSelection);
@@ -1739,32 +1739,30 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private class ContentProvider implements IGridContentProvider {
         @NotNull
         @Override
-        public Object[] getElements(boolean horizontal) {
-            boolean recordMode = controller.isRecordMode();
-            ResultSetModel model = controller.getModel();
-            if (horizontal) {
-                // columns
-                if (!recordMode) {
-                    return model.getVisibleAttributes().toArray();
-                } else {
-                    int[] selectedRecords = controller.getSelectedRecords();
-                    Object[] rows = new Object[selectedRecords.length];
-                    for (int i = 0; i < selectedRecords.length; i++) {
-                        rows[i] = controller.getModel().getRow(selectedRecords[i]);
-                    }
-                    return rows;
+        public Object[] getColumnElements() {
+            if (controller.isRecordMode()) {
+                final int[] selectedRecords = controller.getSelectedRecords();
+                final Object[] rows = new Object[selectedRecords.length];
+                for (int i = 0; i < selectedRecords.length; i++) {
+                    rows[i] = controller.getModel().getRow(selectedRecords[i]);
                 }
+                return rows;
             } else {
-                // rows
-                if (!recordMode) {
-                    return model.getAllRows().toArray();
-                } else {
-                    DBDAttributeBinding[] columns = model.getVisibleAttributes().toArray(new DBDAttributeBinding[model.getVisibleAttributeCount()]);
-                    if (columnOrder != SWT.NONE && columnOrder != SWT.DEFAULT) {
-                        Arrays.sort(columns, (o1, o2) -> o1.getName().compareTo(o2.getName()) * (columnOrder == SWT.UP ? 1 : -1));
-                    }
-                    return columns;
+                return controller.getModel().getVisibleAttributes().toArray();
+            }
+        }
+
+        @NotNull
+        @Override
+        public Object[] getRowElements() {
+            if (controller.isRecordMode()) {
+                final DBDAttributeBinding[] columns = controller.getModel().getVisibleAttributes().toArray(DBDAttributeBinding[]::new);
+                if (columnOrder != SWT.NONE && columnOrder != SWT.DEFAULT) {
+                    Arrays.sort(columns, (o1, o2) -> o1.getName().compareTo(o2.getName()) * (columnOrder == SWT.UP ? 1 : -1));
                 }
+                return columns;
+            } else {
+                return controller.getModel().getAllRows().toArray();
             }
         }
 
@@ -1802,11 +1800,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public int getSortOrder(@Nullable Object column)
-        {
+        public int getColumnSortOrder(@Nullable Object colElement) {
             if (showAttrOrdering) {
-                if (column instanceof DBDAttributeBinding) {
-                    DBDAttributeBinding binding = (DBDAttributeBinding) column;
+                if (colElement instanceof DBDAttributeBinding) {
+                    DBDAttributeBinding binding = (DBDAttributeBinding) colElement;
                     if (!binding.hasNestedBindings()) {
                         DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
                         if (co != null && co.getOrderPosition() > 0) {
@@ -1814,7 +1811,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         }
                         return SWT.DEFAULT;
                     }
-                } else if (column == null && controller.isRecordMode()) {
+                } else if (colElement == null && controller.isRecordMode()) {
                     // Columns order in record mode
                     return columnOrder;
                 }
@@ -1822,25 +1819,26 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return SWT.NONE;
         }
 
+        @NotNull
         @Override
-        public ElementState getDefaultState(@NotNull Object element) {
-            if (element instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) element;
+        public ExpandState getColumnDefaultExpandState(@NotNull Object colElement) {
+            if (colElement instanceof DBDAttributeBinding) {
+                DBDAttributeBinding binding = (DBDAttributeBinding) colElement;
                 switch (binding.getAttribute().getDataKind()) {
                     case STRUCT:
                     case DOCUMENT:
                     case ANY:
-                        return ElementState.EXPANDED;
+                        return ExpandState.EXPANDED;
                     case ARRAY:
                         ResultSetRow curRow = controller.getCurrentRow();
                         if (curRow != null) {
                             Object cellValue = controller.getModel().getCellValue(binding, curRow);
                             if (cellValue instanceof DBDCollection) {
                                 if (((DBDCollection) cellValue).getItemCount() < 3) {
-                                    return ElementState.EXPANDED;
+                                    return ExpandState.EXPANDED;
                                 }
                                 if (!DBUtils.isNullValue(cellValue)) {
-                                    return ElementState.COLLAPSED;
+                                    return ExpandState.COLLAPSED;
                                 }
                             }
                         }
@@ -1849,18 +1847,19 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         break;
                 }
             }
-            return ElementState.NONE;
+            return ExpandState.NONE;
         }
 
+        @NotNull
         @Override
-        public int getCellAlign(@Nullable Object colElement, Object rowElement) {
+        public UIElementAlignment getCellAlign(@NotNull IGridCell cell) {
             if (!controller.isRecordMode()) {
-                final DBDAttributeBinding attr = (DBDAttributeBinding) colElement;
-                final ResultSetRow row = (ResultSetRow) rowElement;
+                final DBDAttributeBinding attr = (DBDAttributeBinding) cell.getColumnElement();
+                final ResultSetRow row = (ResultSetRow) cell.getRowElement();
                 if (attr != null) {
                     if (isShowAsCheckbox(attr)) {
                         if (row.getState() == ResultSetRow.STATE_ADDED) {
-                            return ALIGN_CENTER;
+                            return UIElementAlignment.CENTER;
                         }
                         Object cellValue = controller.getModel().getCellValue(attr, row);
                         if (row.isChanged(attr)) {
@@ -1871,33 +1870,26 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                             cellValue = ((Number) cellValue).byteValue() != 0;
                         }
                         if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
-                            switch (booleanStyles.getStyle((Boolean) cellValue).getAlignment()) {
-                                case LEFT:
-                                    return ALIGN_LEFT;
-                                case CENTER:
-                                    return ALIGN_CENTER;
-                                case RIGHT:
-                                    return ALIGN_RIGHT;
-                            }
+                            return booleanStyles.getStyle((Boolean) cellValue).getAlignment();
                         }
                     }
                     DBPDataKind dataKind = attr.getDataKind();
                     if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
                         (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime))
                     {
-                        return ALIGN_RIGHT;
+                        return UIElementAlignment.RIGHT;
                     }
                 }
             }
-            return ALIGN_LEFT;
+            return UIElementAlignment.LEFT;
         }
 
         @Nullable
         @Override
-        public Font getCellFont(@Nullable Object colElement, Object rowElement) {
+        public Font getCellFont(@NotNull IGridCell cell) {
             final boolean recordMode = controller.isRecordMode();
-            final ResultSetRow row = (ResultSetRow) (recordMode ? colElement : rowElement);
-            final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? rowElement : colElement);
+            final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
+            final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
             if (row != null && attr != null && isShowAsCheckbox(attr)) {
                 Object cellValue = controller.getModel().getCellValue(attr, row);
                 if (cellValue instanceof Number) {
@@ -1911,9 +1903,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public int getColumnPinIndex(@NotNull Object element) {
+        public int getColumnPinIndex(@NotNull Object colElement) {
             if (!controller.isRecordMode()) {
-                DBDAttributeBinding attr = (DBDAttributeBinding)element;
+                DBDAttributeBinding attr = (DBDAttributeBinding) colElement;
                 DBDAttributeConstraint ac = controller.getModel().getDataFilter().getConstraint(attr);
                 if (ac != null) {
                     Integer pinIndex = ac.getOption(ATTR_OPTION_PINNED);
@@ -1924,25 +1916,17 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public boolean isElementSupportsFilter(Object element) {
-            if (element instanceof DBDAttributeBinding) {
-                return supportsAttributeFilter;
+        public boolean isColumnSupportsFilter(@NotNull Object colElement) {
+            if (colElement instanceof DBDAttributeBinding) {
+                return supportsAttributeFilter && !((DBDAttributeBinding) colElement).hasNestedBindings();
             }
             return false;
         }
 
         @Override
-        public boolean isElementSupportsSort(@Nullable Object element) {
-            if (element instanceof DBDAttributeBinding) {
-                return true;
-            }
-            return false;
-        }
-
-        @Override
-        public boolean isElementReadOnly(Object element) {
-            if (element instanceof DBDAttributeBinding) {
-                return controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element) != null;
+        public boolean isColumnReadOnly(@NotNull Object colElement) {
+            if (colElement instanceof DBDAttributeBinding) {
+                return controller.getAttributeReadOnlyStatus((DBDAttributeBinding) colElement) != null;
             }
             return false;
         }
@@ -1953,23 +1937,23 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public int getCellState(Object colElement, Object rowElement, String cellText) {
-            int state = STATE_NONE;
+        public int getCellStyle(@NotNull IGridCell cell, String cellText) {
+            int state = STYLE_NONE;
             boolean recordMode = controller.isRecordMode();
-            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
+            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.getRowElement() : cell.getColumnElement());
             if ((controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_LINKS) != 0) {
-                ResultSetRow row = (ResultSetRow) (recordMode ? colElement : rowElement);
+                ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
                 Object value = controller.getModel().getCellValue(attr, row);
                 if (isShowAsCheckbox(attr)) {
-                    state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
+                    state |= booleanStyles.getMode() == BooleanMode.TEXT ? STYLE_TOGGLEABLE : STYLE_LINK;
                 } else if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
-                    state |= STATE_LINK;
+                    state |= STYLE_LINK;
                 } else {
                     String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
                     if (strValue != null && strValue.contains("://")) {
                         try {
                             new URL(strValue);
-                            state |= STATE_HYPER_LINK;
+                            state |= STYLE_HYPERLINK;
                         } catch (MalformedURLException e) {
                             // Not a hyperlink
                         }
@@ -1977,10 +1961,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
             if (showWhitespaceCharacters) {
-                state |= STATE_DECORATED;
+                state |= STYLE_DECORATED;
             }
             if (attr.isTransformed()) {
-                state |= STATE_TRANSFORMED;
+                state |= STYLE_TRANSFORMED;
             }
             return state;
         }
@@ -1997,10 +1981,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
-        public Object getCellValue(Object colElement, Object rowElement, boolean formatString, boolean lockData)
-        {
-            DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
-            ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
+        public Object getCellValue(@NotNull IGridCell cell, boolean formatString, boolean lockData) {
+            final boolean recordMode = controller.isRecordMode();
+            final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
+            final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
             int rowNum = row.getVisualNumber();
             Object value = controller.getModel().getCellValue(attr, row);
             if (formatString && DBUtils.isNullValue(value) && row.getState() == ResultSetRow.STATE_ADDED) {
@@ -2014,7 +1998,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
 
-            boolean recordMode = controller.isRecordMode();
             if (!lockData &&
                 rowNum > 0 &&
                 !(controller.getContainer().getDataContainer() != null && controller.getContainer().getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_MODIFIED_ON_REFRESH)) &&
@@ -2068,12 +2051,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
-        public DBPImage getCellImage(Object colElement, Object rowElement)
+        public DBPImage getCellImage(@NotNull IGridCell cell)
         {
             if (booleanStyles.getMode() != BooleanMode.TEXT) {
-                DBDAttributeBinding attr = (DBDAttributeBinding) (rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
-                if (isShowAsCheckbox(attr)) {
-                    ResultSetRow row = (ResultSetRow) (colElement instanceof ResultSetRow ? colElement : rowElement);
+                final boolean recordMode = controller.isRecordMode();
+                final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
+                final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
+
+                if (row != null && attr != null && isShowAsCheckbox(attr)) {
                     Object cellValue = controller.getModel().getCellValue(attr, row);
                     if (cellValue instanceof Number) {
                         cellValue = ((Number) cellValue).byteValue() != 0;
@@ -2089,23 +2074,23 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @NotNull
         @Override
-        public String getCellText(Object colElement, Object rowElement)
-        {
-            return String.valueOf(getCellValue(colElement, rowElement, true, false));
+        public String getCellText(@NotNull IGridCell cell) {
+            return String.valueOf(getCellValue(cell, true, false));
         }
 
         @Nullable
         @Override
-        public Color getCellForeground(Object colElement, Object rowElement, boolean selected)
+        public Color getCellForegroundColor(@NotNull IGridCell cell, boolean selected)
         {
             if (selected) {
                 return foregroundSelected;
             }
-            boolean recordMode = controller.isRecordMode();
-            ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
-            DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
-            if (isShowAsCheckbox(attribute) && booleanStyles.getMode() == BooleanMode.TEXT) {
-                Object cellValue = controller.getModel().getCellValue(attribute, row);
+            final boolean recordMode = controller.isRecordMode();
+            final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
+            final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
+
+            if (attr != null && row != null && isShowAsCheckbox(attr) && booleanStyles.getMode() == BooleanMode.TEXT) {
+                Object cellValue = controller.getModel().getCellValue(attr, row);
                 if (cellValue instanceof Number) {
                     cellValue = ((Number) cellValue).byteValue() != 0;
                 }
@@ -2114,33 +2099,34 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
                 return null;
             }
-            Color fg = controller.getLabelProvider().getCellForeground(attribute, row);
+            Color fg = controller.getLabelProvider().getCellForeground(attr, row);
             if (fg != null) {
                 return fg;
             }
-            return UIUtils.getContrastColor(getCellBackground(colElement, rowElement, false));
+            return UIUtils.getContrastColor(getCellBackgroundColor(cell, false));
         }
 
         @Nullable
         @Override
-        public Color getCellBackground(Object colElement, Object rowElement, boolean selected) {
-            return getCellBackground(colElement, rowElement, selected, getController().isRecordMode());
+        public Color getCellBackgroundColor(@NotNull IGridCell cell, boolean selected) {
+            return getCellBackground(cell, selected, getController().isRecordMode());
         }
 
-        private Color getCellBackground(Object colElement, Object rowElement, boolean cellSelected, boolean ignoreRowSelection) {
+        @NotNull
+        private Color getCellBackground(@NotNull IGridCell cell, boolean cellSelected, boolean ignoreRowSelection) {
             final boolean recordMode = controller.isRecordMode();
-            final ResultSetRow row = (ResultSetRow) (recordMode ? colElement : rowElement);
-            final DBDAttributeBinding attribute = (DBDAttributeBinding) (recordMode ? rowElement : colElement);
+            final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
+            final DBDAttributeBinding attribute = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
 
             if (spreadsheet.getCellSelectionSize() == 1 && getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES)) {
                 final GridCell sourceCell = spreadsheet.getCursorCell();
                 if (sourceCell != null) {
-                    final ResultSetRow sourceRow = (ResultSetRow) (recordMode ? sourceCell.col : sourceCell.row);
-                    final DBDAttributeBinding sourceAttribute = (DBDAttributeBinding) (recordMode ? sourceCell.row : sourceCell.col);
+                    final ResultSetRow sourceRow = (ResultSetRow) (recordMode ? sourceCell.getColumnElement() : sourceCell.getRowElement());
+                    final DBDAttributeBinding sourceAttribute = (DBDAttributeBinding) (recordMode ? sourceCell.getRowElement() : sourceCell.getColumnElement());
 
                     if (sourceRow != row || sourceAttribute != attribute) {
-                        final Object sourceValue = spreadsheet.getContentProvider().getCellValue(sourceCell.col, sourceCell.row, false, true);
-                        final Object currentValue = spreadsheet.getContentProvider().getCellValue(colElement, rowElement, false, true);
+                        final Object sourceValue = spreadsheet.getContentProvider().getCellValue(sourceCell, false, true);
+                        final Object currentValue = spreadsheet.getContentProvider().getCellValue(cell, false, true);
 
                         if (CommonUtils.equalObjects(sourceValue, currentValue)) {
                             return backgroundMatched;
@@ -2150,7 +2136,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
 
             if (cellSelected) {
-                Color normalColor = getCellBackground(colElement, rowElement, false, true);
+                Color normalColor = getCellBackground(cell, false, true);
                 if (normalColor == null || normalColor == backgroundNormal) {
                     return backgroundSelected;
                 }
@@ -2172,7 +2158,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (!hasScope || inScope) {
                     java.util.regex.Pattern searchPattern = findReplaceTarget.getSearchPattern();
                     if (searchPattern != null) {
-                        String cellText = CommonUtils.toString(getCellValue(colElement, rowElement, false, false));
+                        String cellText = CommonUtils.toString(getCellValue(cell, false, false));
                         if (searchPattern.matcher(cellText).find()) {
                             return backgroundMatched;
                         }
@@ -2184,7 +2170,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
 
             if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(row.getVisualNumber())) {
-                Color normalColor = getCellBackground(colElement, rowElement, false, true);
+                Color normalColor = getCellBackground(cell, false, true);
                 Color selectedCellColor;
                 if (normalColor == null || normalColor == backgroundNormal) {
                     selectedCellColor = backgroundSelected;
@@ -2241,35 +2227,27 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public Color getCellHeaderForeground(Object element) {
+        public Color getCellHeaderForegroundColor(Object element) {
             return cellHeaderForeground;
         }
 
         @Override
-        public Color getCellHeaderBackground(Object element) {
-//            if (element instanceof DBDAttributeBinding && controller.getAttributeReadOnlyStatus((DBDAttributeBinding) element) != null) {
-//                return backgroundOdd;
-//            }
-            return cellHeaderBackground;
-        }
-
-        @Override
-        public Color getCellHeaderSelectionBackground(Object element) {
-            return cellHeaderSelectionBackground;
+        public Color getCellHeaderBackgroundColor(Object element, boolean selected) {
+            return selected ? cellHeaderSelectionBackground : cellHeaderBackground;
         }
 
         @NotNull
         @Override
-        public Color getCellHeaderBorder(Object element) {
+        public Color getCellHeaderBorderColor(Object element) {
             return cellHeaderBorder;
         }
 
         @NotNull
         @Override
-        public String getCellLinkText(Object colElement, Object rowElement) {
+        public String getCellLinkText(@NotNull IGridCell cell) {
             boolean recordMode = controller.isRecordMode();
-            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
-            ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
+            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.getRowElement() : cell.getColumnElement());
+            ResultSetRow row = (ResultSetRow)(recordMode ? cell.getColumnElement() : cell.getRowElement());
             Object value = controller.getModel().getCellValue(attr, row);
             List<DBSEntityReferrer> referrers = attr.getReferrers();
             if (!CommonUtils.isEmpty(referrers) && !DBUtils.isNullValue(value)) {
@@ -2302,7 +2280,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         return DBDDisplayFormat.UI;
     }
 
-    private boolean isShowAsCheckbox(DBDAttributeBinding attr) {
+    private boolean isShowAsCheckbox(@NotNull DBDAttributeBinding attr) {
         return showBooleanAsCheckbox && attr.getPresentationAttribute().getDataKind() == DBPDataKind.BOOLEAN;
     }
 
@@ -2453,9 +2431,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public Object getValue()
-        {
-            return spreadsheet.getContentProvider().getCellValue(curRow, binding, false, false);
+        public Object getValue() {
+            final boolean recordMode = controller.isRecordMode();
+            final Object colElement = recordMode ? curRow : binding;
+            final Object rowElement = recordMode ? binding : curRow;
+            return spreadsheet.getContentProvider().getCellValue(new GridCell(colElement, rowElement), false, false);
         }
 
         @Override

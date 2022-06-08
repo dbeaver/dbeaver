@@ -17,46 +17,46 @@
 
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.code.Nullable;
 
-/**
- * GridCell
- */
-public class GridCell
-{
-    public Object col;
-    public Object row;
+import java.util.Objects;
 
-    public GridCell(Object col, Object row)
-    {
+public class GridCell implements IGridCell {
+    private final Object col;
+    private final Object row;
+
+    public GridCell(@Nullable Object col, @Nullable Object row) {
         this.col = col;
         this.row = row;
     }
 
-    public GridCell(GridCell copy)
-    {
-        this.col = copy.col;
-        this.row = copy.row;
+    @Nullable
+    @Override
+    public Object getRowElement() {
+        return row;
     }
 
-    public boolean equals(Object object)
-    {
-        return object instanceof GridCell && equalsTo((GridCell) object);
+    @Nullable
+    @Override
+    public Object getColumnElement() {
+        return col;
     }
 
-    public boolean equalsTo(GridCell pos)
-    {
-        return CommonUtils.equalObjects(this.col, pos.col) &&
-            CommonUtils.equalObjects(this.row, pos.row);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GridCell gridCell = (GridCell) o;
+        return Objects.equals(col, gridCell.col) && Objects.equals(row, gridCell.row);
     }
 
-    public String toString()
-    {
-        return col + ":" + row;
+    @Override
+    public int hashCode() {
+        return Objects.hash(col, row);
     }
 
-    public int hashCode()
-    {
-        return col.hashCode() ^ row.hashCode();
+    @Override
+    public String toString() {
+        return row + ":" + col;
     }
 }

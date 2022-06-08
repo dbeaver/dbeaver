@@ -133,7 +133,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         }
         Spreadsheet spreadsheet = owner.getSpreadsheet();
         GridCell cell = spreadsheet.posToCell(selection);
-        String value = cell == null ? "" : CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false, true));
+        String value = cell == null ? "" : CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell, false, true));
         return CommonUtils.toString(value);
     }
 
@@ -323,7 +323,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             } else {
                 GridCell cell = spreadsheet.posToCell(curPosition);
                 if (cell != null) {
-                    cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false, false));
+                    cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell, false, false));
                 } else {
                     continue;
                 }
@@ -362,16 +362,16 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             return;
         }
         final boolean recordMode = owner.getController().isRecordMode();
-        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-        final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
+        final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
+        final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
 
-        String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(attr, row, true, true));
+        String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(cell, true, true));
         String newValue = text;
         if (searchPattern != null) {
             newValue = searchPattern.matcher(oldValue).replaceAll(newValue);
         }
 
-        final Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(attr, row, false, true);
+        final Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(cell, false, true);
         if (originalValue instanceof DBDContent) {
             try {
                 ((DBDContent) originalValue)

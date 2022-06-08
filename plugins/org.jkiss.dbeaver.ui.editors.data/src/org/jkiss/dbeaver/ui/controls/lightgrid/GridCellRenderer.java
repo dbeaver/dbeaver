@@ -20,12 +20,8 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UITextUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -66,12 +62,11 @@ class GridCellRenderer extends AbstractRenderer {
         colorLineFocused = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, Object col, Object row)
-    {
+    public void paint(@NotNull IGridCell cell, GC gc, Rectangle bounds, boolean selected, boolean focus) {
         boolean drawBackground = true;
 
         //if (grid.isEnabled()) {
-            Color back = grid.getCellBackground(col, row, selected);
+            Color back = grid.getCellBackground(cell, selected);
 
             if (back != null) {
                 gc.setBackground(back);
@@ -81,21 +76,21 @@ class GridCellRenderer extends AbstractRenderer {
         /*} else {
             grid.setDefaultBackground(gc);
         }*/
-        gc.setForeground(grid.getCellForeground(col, row, selected));
+        gc.setForeground(grid.getCellForeground(cell, selected));
 
         if (drawBackground) {
             gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
         }
 
-        String text = grid.getCellText(col, row);
-        final int state = grid.getContentProvider().getCellState(col, row, text);
+        String text = grid.getCellText(cell);
+        final int state = grid.getContentProvider().getCellStyle(cell, text);
         int x = LEFT_MARGIN;
 
         Image image;
         Rectangle imageBounds = null;
 
         {
-            DBPImage cellImage = grid.getCellImage(col, row);
+            DBPImage cellImage = grid.getCellImage(cell);
             if (cellImage != null) {
                 image = DBeaverIcons.getImage(cellImage);
                 imageBounds = image.getBounds();
@@ -104,16 +99,16 @@ class GridCellRenderer extends AbstractRenderer {
             }
 
             if (image == null && isLinkState(state)) {
-                image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
+                image = ((state & IGridContentProvider.STYLE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
                 imageBounds = LINK_IMAGE_BOUNDS;
             }
         }
 
-        int columnAlign = grid.getContentProvider().getCellAlign(col, row);
+        final UIElementAlignment columnAlign = grid.getContentProvider().getCellAlign(cell);
 
-        if (image != null && columnAlign != IGridContentProvider.ALIGN_RIGHT) {
+        if (image != null && columnAlign != UIElementAlignment.RIGHT) {
             int y = bounds.y + (bounds.height - imageBounds.height) / 2;
-            if (columnAlign == IGridContentProvider.ALIGN_CENTER) {
+            if (columnAlign == UIElementAlignment.CENTER) {
                 x += (bounds.width - imageBounds.width - RIGHT_MARGIN - LEFT_MARGIN) / 2;
             }
             gc.drawImage(image, bounds.x + x, y);
@@ -132,12 +127,12 @@ class GridCellRenderer extends AbstractRenderer {
             // Replace linefeeds with space
             text = CommonUtils.getSingleLineString(text);
 
-            final Font font = grid.getContentProvider().getCellFont(col, row);
+            final Font font = grid.getContentProvider().getCellFont(cell);
             gc.setFont(font != null ? font : grid.normalFont);
 
             switch (columnAlign) {
                 // Center
-                case IGridContentProvider.ALIGN_CENTER: {
+                case CENTER: {
                     Point textSize = gc.textExtent(text);
                     gc.drawString(
                         text,
@@ -147,7 +142,7 @@ class GridCellRenderer extends AbstractRenderer {
                     );
                     break;
                 }
-                case IGridContentProvider.ALIGN_RIGHT: {
+                case RIGHT: {
                     // Right (numbers, datetimes)
                     Point textSize = gc.textExtent(text);
                     int valueWidth = textSize.x + INSIDE_MARGIN;
@@ -181,8 +176,8 @@ class GridCellRenderer extends AbstractRenderer {
                     break;
                 }
                 default: {
-                    if (CommonUtils.isBitSet(state, IGridContentProvider.STATE_DECORATED)) {
-                        drawCellTextDecorated(gc, originalText, col, row, selected, new Rectangle(
+                    if (CommonUtils.isBitSet(state, IGridContentProvider.STYLE_DECORATED)) {
+                        drawCellTextDecorated(cell, gc, originalText, selected, new Rectangle(
                             bounds.x + x,
                             bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
                             bounds.width - LEFT_MARGIN - RIGHT_MARGIN,
@@ -201,7 +196,7 @@ class GridCellRenderer extends AbstractRenderer {
             }
         }
 
-        if (image != null && columnAlign == IGridContentProvider.ALIGN_RIGHT) {
+        if (image != null && columnAlign == UIElementAlignment.RIGHT) {
             int y = bounds.y + (bounds.height - imageBounds.height) / 2;
             gc.drawImage(image, bounds.x + bounds.width - imageBounds.width - RIGHT_MARGIN, y);
         }
@@ -221,27 +216,29 @@ class GridCellRenderer extends AbstractRenderer {
         IGridContentProvider contentProvider = grid.getContentProvider();
         Object colElement = column.getElement();
         Object rowElement = grid.getRowElement(row);
-        int state = contentProvider.getCellState(colElement, rowElement, null);
 
-        boolean isToggle = (state & IGridContentProvider.STATE_TOGGLE) != 0;
+        final GridCell cell = new GridCell(colElement, rowElement);
+        int state = contentProvider.getCellStyle(cell, null);
+
+        boolean isToggle = (state & IGridContentProvider.STYLE_TOGGLEABLE) != 0;
         if (isToggle) {
-            if (contentProvider.isElementReadOnly(colElement)) {
+            if (contentProvider.isColumnReadOnly(colElement)) {
                 return false;
             }
         }
         if (isLinkState(state) || isToggle) {
-            int columnAlign = contentProvider.getCellAlign(colElement, rowElement);
+            final UIElementAlignment columnAlign = contentProvider.getCellAlign(cell);
             Point origin = grid.getOrigin(column, row);
             Rectangle imageBounds;
             if (isToggle) {
-                String cellText = grid.getCellText(colElement, rowElement);
+                String cellText = grid.getCellText(cell);
                 Point textSize = grid.sizingGC.textExtent(cellText);
                 imageBounds = new Rectangle(0, 0, textSize.x, textSize.y);
             } else {
-                DBPImage cellImage = grid.getCellImage(colElement, rowElement);
+                DBPImage cellImage = grid.getCellImage(cell);
                 Image image;
                 if (cellImage == null) {
-                    image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
+                    image = ((state & IGridContentProvider.STYLE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
                 } else {
                     image = DBeaverIcons.getImage(cellImage);
                 }
@@ -250,20 +247,20 @@ class GridCellRenderer extends AbstractRenderer {
             int verMargin = (grid.getItemHeight() - imageBounds.height) / 2;
 
             switch (columnAlign) {
-                case IGridContentProvider.ALIGN_LEFT:
+                case LEFT:
                     if (x >= origin.x + LEFT_MARGIN && x <= origin.x + LEFT_MARGIN + imageBounds.width &&
                         y >= origin.y + verMargin && y <= origin.y + verMargin + imageBounds.height) {
                         return true;
                     }
                     break;
-                case IGridContentProvider.ALIGN_RIGHT:
+                case RIGHT:
                     int width = column.getWidth();
                     if (x >= origin.x + width - (LEFT_MARGIN + imageBounds.width) && x <= origin.x + width - RIGHT_MARGIN &&
                         y >= origin.y + verMargin && y <= origin.y + verMargin + imageBounds.height) {
                         return true;
                     }
                     break;
-                case IGridContentProvider.ALIGN_CENTER:
+                default:
                     int leftIndent = (column.getWidth() - imageBounds.width - RIGHT_MARGIN - LEFT_MARGIN) / 2;
                     if (x >= origin.x + LEFT_MARGIN + leftIndent && x <= origin.x + LEFT_MARGIN + leftIndent + imageBounds.width &&
                         y >= origin.y + verMargin && y <= origin.y + verMargin + imageBounds.height) {
@@ -277,14 +274,12 @@ class GridCellRenderer extends AbstractRenderer {
     }
 
     public static boolean isLinkState(int state) {
-        return
-            (state & IGridContentProvider.STATE_LINK) != 0 ||
-            (state & IGridContentProvider.STATE_HYPER_LINK) != 0;
+        return (state & (IGridContentProvider.STYLE_LINK | IGridContentProvider.STYLE_HYPERLINK)) != 0;
     }
 
-    private void drawCellTextDecorated(@NotNull GC gc, @NotNull String text, @Nullable Object col, @Nullable Object row, boolean selected, @NotNull Rectangle bounds) {
-        final Color activeForeground = grid.getCellForeground(col, row, selected);
-        final Color activeBackground = grid.getCellBackground(col, row, selected);
+    private void drawCellTextDecorated(@NotNull IGridCell cell, @NotNull GC gc, @NotNull String text, boolean selected, @NotNull Rectangle bounds) {
+        final Color activeForeground = grid.getCellForeground(cell, selected);
+        final Color activeBackground = grid.getCellBackground(cell, selected);
         final Color disabledForeground = UIUtils.getSharedColor(UIUtils.blend(activeForeground.getRGB(), activeBackground.getRGB(), 50));
 
         for (int start = 0; start < text.length(); ) {
