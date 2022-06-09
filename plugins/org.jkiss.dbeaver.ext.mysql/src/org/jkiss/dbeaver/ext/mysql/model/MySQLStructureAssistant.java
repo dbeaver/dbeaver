@@ -129,7 +129,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
-                    objects.add(new AbstractObjectReference(tableName, dataSource.getCatalog(catalogName), null, MySQLTableBase.class, RelationalObjectType.TYPE_TABLE) {
+                    objects.add(new AbstractObjectReference<DBSObject>(tableName, dataSource.getCatalog(catalogName), null, MySQLTableBase.class, RelationalObjectType.TYPE_TABLE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
@@ -176,7 +176,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_SCHEMA);
                     final String procName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_NAME);
-                    objects.add(new AbstractObjectReference(procName, dataSource.getCatalog(catalogName), null, MySQLProcedure.class, RelationalObjectType.TYPE_PROCEDURE) {
+                    objects.add(new AbstractObjectReference<>(procName, dataSource.getCatalog(catalogName), null, MySQLProcedure.class, RelationalObjectType.TYPE_PROCEDURE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             MySQLCatalog procCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
@@ -221,7 +221,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                     final String constrType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_TYPE);
                     final boolean isFK = MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constrType);
                     final boolean isCheck = MySQLConstants.CONSTRAINT_CHECK.equals(constrType);
-                    objects.add(new AbstractObjectReference(constrName, dataSource.getCatalog(catalogName), null, isFK ? MySQLTableForeignKey.class : MySQLTableConstraint.class, RelationalObjectType.TYPE_CONSTRAINT) {
+                    objects.add(new AbstractObjectReference<>(constrName, dataSource.getCatalog(catalogName), null, isFK ? MySQLTableForeignKey.class : MySQLTableConstraint.class, RelationalObjectType.TYPE_CONSTRAINT) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
@@ -282,7 +282,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     final String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
-                    objects.add(new AbstractObjectReference(columnName, dataSource.getCatalog(catalogName), null, MySQLTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
+                    objects.add(new AbstractObjectReference<>(columnName, dataSource.getCatalog(catalogName), null, MySQLTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
                         @NotNull
                         @Override
                         public String getFullyQualifiedName(DBPEvaluationContext context) {

@@ -21,6 +21,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -35,7 +36,7 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
     protected Text usernameText;
 
     @Override
-    public void createControl(Composite authPanel, Object object, Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite authPanel, Object object, @NotNull Runnable propertyChangeListener) {
         int fontHeight = UIUtils.getFontHeight(authPanel);
 
         Label usernameLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_auth_label_username);
@@ -49,18 +50,18 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
     }
 
     @Override
-    public void loadSettings(DBPDataSourceContainer dataSource) {
+    public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         this.usernameText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserName()));
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         dataSource.getConnectionConfiguration().setUserName(this.usernameText.getText());
         dataSource.setSavePassword(true);
     }
 
     @Override
-    public void resetSettings(DBPDataSourceContainer dataSource) {
+    public void resetSettings(@NotNull DBPDataSourceContainer dataSource) {
         loadSettings(dataSource);
     }
 

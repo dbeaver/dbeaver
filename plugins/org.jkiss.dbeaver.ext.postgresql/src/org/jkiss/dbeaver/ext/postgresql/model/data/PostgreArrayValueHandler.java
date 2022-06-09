@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -37,13 +38,14 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * PostgreArrayValueHandler
@@ -106,7 +108,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
         if (value instanceof DBDCollection && !((DBDValue) value).isNull()) {
-            statement.setObject(paramIndex, convertArrayToString(paramType, value, DBDDisplayFormat.NATIVE, true), Types.OTHER);
+            statement.setObject(paramIndex, getValueDisplayString(paramType, value, DBDDisplayFormat.NATIVE), Types.OTHER);
         } else {
             super.bindParameter(session, statement, paramType, paramIndex, value);
         }
@@ -155,49 +157,77 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        return convertArrayToString(column, value, format, false);
+        if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
+            final DBDCollection collection = (DBDCollection) value;
+            final StringJoiner output = new StringJoiner(",", "{", "}");
+
+            for (int i = 0; i < collection.getItemCount(); i++) {
+                final Object item = collection.getItem(i);
+                final String member;
+
+                if (item instanceof DBDCollection) {
+                    member = getArrayMemberDisplayString(column, this, item, format);
+                } else {
+                    final PostgreDataType componentType = (PostgreDataType) collection.getComponentType();
+                    final DBDValueHandler componentHandler = collection.getComponentValueHandler();
+                    member = getArrayMemberDisplayString(componentType, componentHandler, item, format);
+                }
+
+                output.add(member);
+            }
+
+            return output.toString();
+        }
+
+        return super.getValueDisplayString(column, value, format);
     }
 
-    private String convertArrayToString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format, boolean nested) {
-        if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
-            DBDCollection collection = (DBDCollection) value;
-            boolean isNativeFormat = format == DBDDisplayFormat.NATIVE;
-            boolean isStringArray = collection.getComponentType().getDataKind() == DBPDataKind.STRING;
-
-            DBDValueHandler valueHandler = collection.getComponentValueHandler();
-            StringBuilder str = new StringBuilder();
-            if (isNativeFormat && !nested) {
-                str.append("'");
-            }
-            str.append("{");
-            for (int i = 0; i < collection.getItemCount(); i++) {
-                if (i > 0) {
-                    str.append(','); //$NON-NLS-1$
-                }
-                final Object item = collection.getItem(i);
-                String itemString;
-                if (item instanceof JDBCCollection) {
-                    // Multi-dimensional arrays case
-                    itemString = convertArrayToString(column, item, format, true);
-                } else {
-                    itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, DBDDisplayFormat.NATIVE);
-                }
-
-                if (isNativeFormat) {
-                    if (item instanceof String) str.append('"');
-                    str.append(SQLUtils.escapeString(collection.getComponentType().getDataSource(), itemString));
-                    if (item instanceof String) str.append('"');
-                } else {
-                    str.append(itemString);
-                }
-            }
-            str.append("}");
-            if (isNativeFormat && !nested) {
-                str.append("'");
-            }
-
-            return str.toString();
+    @NotNull
+    private static String getArrayMemberDisplayString(@NotNull DBSTypedObject type, @NotNull DBDValueHandler handler, @Nullable Object value, @NotNull DBDDisplayFormat format) {
+        if (DBUtils.isNullValue(value)) {
+            return SQLConstants.NULL_VALUE;
         }
-        return super.getValueDisplayString(column, value, format);
+
+        final String string = handler.getValueDisplayString(type, value, format);
+
+        if (isQuotingRequired(type, string)) {
+            return '"' + string.replaceAll("[\\\\\"]", "\\\\$0") + '"';
+        }
+
+        return string;
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/arrays.html#ARRAYS-IO">8.15.6. Array Input and Output Syntax</a>
+     */
+    private static boolean isQuotingRequired(@NotNull DBSTypedObject type, @NotNull String value) {
+        switch (type.getDataKind()) {
+            case ARRAY:
+            case STRUCT:
+            case NUMERIC:
+                return false;
+            default:
+                break;
+        }
+
+        if (value.isEmpty() || value.equalsIgnoreCase(SQLConstants.NULL_VALUE)) {
+            return true;
+        }
+
+        for (int index = 0; index < value.length(); index++) {
+            switch (value.charAt(index)) {
+                case '{':
+                case '}':
+                case '"':
+                case ',':
+                case ' ':
+                case '\\':
+                    return true;
+                default:
+                    break;
+            }
+        }
+
+        return false;
     }
 }

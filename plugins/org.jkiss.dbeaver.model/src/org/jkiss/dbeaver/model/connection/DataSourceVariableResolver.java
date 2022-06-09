@@ -30,9 +30,17 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
         this.configuration = configuration;
     }
 
+    protected DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
+    }
+
+    protected DBPConnectionConfiguration getConfiguration() {
+        return configuration;
+    }
+
     @Override
     public String get(String name) {
-        if (dataSourceContainer != null) {
+        if (configuration != null) {
             switch (name) {
                 case DBPConnectionConfiguration.VARIABLE_HOST:
                     return configuration.getHostName();

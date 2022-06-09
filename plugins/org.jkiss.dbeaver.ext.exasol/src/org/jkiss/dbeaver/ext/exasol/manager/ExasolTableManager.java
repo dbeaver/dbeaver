@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,12 +55,12 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     private static final String CMD_COMMENT = "Comment on Table";
     private static final String CMD_RENAME = "Rename Table";
 
-    private static final Class<?>[] CHILD_TYPES = {
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
             ExasolTableColumn.class,
             ExasolTableUniqueKey.class,
             ExasolTableForeignKey.class,
             ExasolTableIndex.class
-    };
+    );
 
     // -----------------
     // Business Contract
@@ -67,7 +68,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes() {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES;
     }
 

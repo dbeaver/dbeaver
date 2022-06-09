@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -39,9 +40,8 @@ import java.util.Map;
 
 /**
  * DB2 Table Manager
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implements DBEObjectRenamer<DB2Table> {
 
@@ -61,8 +61,11 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
     private static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
 
-    private static final Class<?>[] CHILD_TYPES = { DB2TableColumn.class, DB2TableUniqueKey.class, DB2TableForeignKey.class,
-        DB2Index.class };
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
+        DB2TableColumn.class,
+        DB2TableUniqueKey.class,
+        DB2TableForeignKey.class,
+        DB2Index.class);
 
     // -----------------
     // Business Contract
@@ -70,15 +73,13 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes()
-    {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES;
     }
 
     @Nullable
     @Override
-    public DBSObjectCache<DB2Schema, DB2Table> getObjectsCache(DB2Table object)
-    {
+    public DBSObjectCache<DB2Schema, DB2Table> getObjectsCache(DB2Table object) {
         return object.getSchema().getTableCache();
     }
 
@@ -88,8 +89,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
     @Override
     public DB2Table createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object db2Schema,
-                                         Object copyFrom, Map<String, Object> options)
-    {
+                                         Object copyFrom, Map<String, Object> options) {
         DB2Table table = new DB2Table((DB2Schema) db2Schema, NEW_TABLE_NAME);
         setNewObjectName(monitor, (DB2Schema) db2Schema, table);
         return table;
@@ -97,8 +97,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void appendTableModifiers(DBRProgressMonitor monitor, DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
-    {
+    public void appendTableModifiers(DBRProgressMonitor monitor, DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
 
         try {
             // Add Tablespaces infos
@@ -123,8 +122,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
         }
     }
 
-    private static String getTablespaceName(Object tablespace)
-    {
+    private static String getTablespaceName(Object tablespace) {
         if (tablespace instanceof DB2Tablespace) {
             return ((DB2Tablespace) tablespace).getName();
         } else if (tablespace != null) {
@@ -149,8 +147,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // ------
 
     @Override
-    public void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    public void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         DB2Table db2Table = command.getObject();
 
         if (command.getProperties().size() > 1) {
@@ -174,8 +171,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // Rename
     // ------
     @Override
-    public void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
+    public void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         String sql = String.format(SQL_RENAME_TABLE,
             DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()),
             DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName()));
@@ -185,16 +181,14 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     }
 
     @Override
-    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull DB2Table object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
-    {
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull DB2Table object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 
     // -------
     // Helpers
     // -------
-    private DBEPersistAction buildCommentAction(DB2Table db2Table)
-    {
+    private DBEPersistAction buildCommentAction(DB2Table db2Table) {
         if (CommonUtils.isNotEmpty(db2Table.getDescription())) {
             String commentSQL = String.format(SQL_COMMENT, db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL), db2Table.getDescription());
             return new SQLDatabasePersistAction(CMD_COMMENT, commentSQL);

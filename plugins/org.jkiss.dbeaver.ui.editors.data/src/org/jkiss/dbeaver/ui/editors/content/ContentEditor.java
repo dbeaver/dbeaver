@@ -549,9 +549,12 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public void closeValueEditor()
     {
-        IWorkbenchPage workbenchPage = this.getEditorSite().getWorkbenchWindow().getActivePage();
-        if (workbenchPage != null) {
-            workbenchPage.closeEditor(this, false);
+        IWorkbenchWindow workbenchWindow = this.getEditorSite().getWorkbenchWindow();
+        if (workbenchWindow != null) {
+            IWorkbenchPage workbenchPage = workbenchWindow.getActivePage();
+            if (workbenchPage != null) {
+                workbenchPage.closeEditor(this, false);
+            }
         }
     }
 

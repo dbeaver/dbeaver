@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -35,9 +36,8 @@ import java.util.Map;
 public class SQLServerExternalTableManager extends SQLServerBaseTableManager<SQLServerExternalTable> {
     private static final Log log = Log.getLog(SQLServerExternalTableManager.class);
 
-    private static final Class<?>[] CHILD_TYPES = {
-        SQLServerTableColumn.class,
-    };
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
+        SQLServerTableColumn.class);
 
     @Override
     protected SQLServerExternalTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
@@ -74,7 +74,7 @@ public class SQLServerExternalTableManager extends SQLServerBaseTableManager<SQL
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes() {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES;
     }
 

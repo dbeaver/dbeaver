@@ -45,14 +45,13 @@ import java.util.Map;
  */
 public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema> {
 
-    private static final Class<?>[] CHILD_TYPES = {
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         OracleTableConstraint.class,
-        OracleTableForeignKey.class,
-    };
+        OracleTableForeignKey.class);
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes() {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES;
     }
 

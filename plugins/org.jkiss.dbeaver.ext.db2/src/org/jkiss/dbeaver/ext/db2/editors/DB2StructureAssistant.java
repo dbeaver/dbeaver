@@ -382,7 +382,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         }
     }
 
-    private class DB2ObjectReference extends AbstractObjectReference {
+    private class DB2ObjectReference extends AbstractObjectReference<DBSObject> {
 
         private DB2ObjectReference(String objectName, DB2Schema db2Schema, DB2ObjectType objectType)
         {

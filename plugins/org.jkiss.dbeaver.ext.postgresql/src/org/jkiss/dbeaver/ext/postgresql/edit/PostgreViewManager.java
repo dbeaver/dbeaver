@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -44,19 +45,18 @@ import java.util.Map;
  */
 public class PostgreViewManager extends PostgreTableManagerBase implements DBEObjectRenamer<PostgreTableBase> {
 
-    private static final Class<?>[] CHILD_TYPES = {
-        PostgreTableColumn.class,
-    };
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
+        PostgreTableColumn.class);
 
+    @NotNull
     @Override
-    public Class<?>[] getChildTypes() {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES;
     }
 
     @Nullable
     @Override
-    public DBSObjectCache<PostgreTableContainer, PostgreTableBase> getObjectsCache(PostgreTableBase object)
-    {
+    public DBSObjectCache<PostgreTableContainer, PostgreTableBase> getObjectsCache(PostgreTableBase object) {
         return object.getContainer().getSchema().getTableCache();
     }
 
@@ -99,12 +99,11 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
-        PostgreViewBase view = (PostgreViewBase)command.getObject();
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+        PostgreViewBase view = (PostgreViewBase) command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
-                "Drop view", 
+                "Drop view",
                 "DROP " + view.getTableTypeName() +
                     " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     (CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : ""))
@@ -133,7 +132,7 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     public void appendViewDeclarationPrefix(DBRProgressMonitor monitor, StringBuilder sqlBuf, PostgreViewBase view) throws DBException {
         String[] relOptions = view.getRelOptions();
         if (!ArrayUtils.isEmpty(relOptions)) {
-            sqlBuf.append("\nWITH(").append(String.join("," , relOptions)).append(")");
+            sqlBuf.append("\nWITH(").append(String.join(",", relOptions)).append(")");
         }
     }
 
@@ -147,8 +146,7 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         PostgreViewBase view = (PostgreViewBase) command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
@@ -163,9 +161,9 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
         PostgreViewBase viewBase = (PostgreViewBase) command.getObject();
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             actions.add(new SQLDatabasePersistAction(
-                    "Comment view",
-                    "COMMENT ON " + viewBase.getTableTypeName() + " " + viewBase.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                            " IS " + SQLUtils.quoteString(viewBase, CommonUtils.notEmpty(viewBase.getDescription()))));
+                "Comment view",
+                "COMMENT ON " + viewBase.getTableTypeName() + " " + viewBase.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    " IS " + SQLUtils.quoteString(viewBase, CommonUtils.notEmpty(viewBase.getDescription()))));
         }
     }
 

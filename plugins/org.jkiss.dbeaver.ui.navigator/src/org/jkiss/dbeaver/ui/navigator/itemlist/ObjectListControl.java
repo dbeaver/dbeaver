@@ -39,11 +39,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -752,7 +748,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     @Nullable
     private static ObjectPropertyDescriptor getPropertyByObject(ObjectColumn column, Object objectValue) {
         ObjectPropertyDescriptor prop = null;
-        for (Class valueClass = objectValue.getClass(); prop == null && valueClass != Object.class; valueClass = valueClass.getSuperclass()) {
+        for (Class<?> valueClass = objectValue.getClass(); prop == null && valueClass != Object.class; valueClass = valueClass.getSuperclass()) {
             prop = column.propMap.get(valueClass);
         }
         if (prop == null) {

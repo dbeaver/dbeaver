@@ -47,9 +47,9 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VARIABLE_URL = "url";
     public static final String VARIABLE_CONN_TYPE = "connectionType";
     public static final String VARIABLE_DATASOURCE = "datasource";
-
     public static final String VAR_PROJECT_PATH = "project.path";
     public static final String VAR_PROJECT_NAME = "project.name";
+    public static final String VAR_HOST_OR_DATABASE   = "host_or_database";
 
     public static final String VARIABLE_DATE = "date";
 

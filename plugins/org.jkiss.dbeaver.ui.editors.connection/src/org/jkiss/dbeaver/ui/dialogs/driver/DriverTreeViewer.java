@@ -279,7 +279,7 @@ public class DriverTreeViewer extends TreeViewer {
         public Object[] getChildren(Object parent)
         {
             if (parent instanceof Collection) {
-                return ((Collection) parent).toArray();
+                return ((Collection<?>) parent).toArray();
             } else if (parent instanceof DriverCategory) {
                 return ((DriverCategory) parent).getDrivers().toArray();
             } else {

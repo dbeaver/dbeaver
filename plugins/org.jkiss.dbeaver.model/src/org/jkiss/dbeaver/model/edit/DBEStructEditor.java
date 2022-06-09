@@ -32,7 +32,7 @@ import java.util.Collection;
 public interface DBEStructEditor<OBJECT_TYPE extends DBPObject> extends DBEObjectEditor<OBJECT_TYPE> {
 
     @NotNull
-    Class<?>[] getChildTypes();
+    Class<? extends DBSObject>[] getChildTypes();
 
     @Nullable
     Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, OBJECT_TYPE object, Class<? extends DBSObject> childType)

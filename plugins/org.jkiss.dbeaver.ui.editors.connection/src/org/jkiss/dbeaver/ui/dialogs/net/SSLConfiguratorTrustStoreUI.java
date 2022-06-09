@@ -22,6 +22,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.net.SSLConfigurationMethod;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -49,7 +50,7 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
     protected Composite sslKeyStoreComposite;
 
     @Override
-    public void createControl(Composite parent, Object object, Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
         final Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -142,7 +143,7 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
     }
 
     @Override
-    public void loadSettings(DBWHandlerConfiguration configuration) {
+    public void loadSettings(@NotNull DBWHandlerConfiguration configuration) {
         if (isCertificatesSupported()) {
             if (caCertPath != null) {
                 caCertPath.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT)));
@@ -179,7 +180,7 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
     }
 
     @Override
-    public void saveSettings(DBWHandlerConfiguration configuration) {
+    public void saveSettings(@NotNull DBWHandlerConfiguration configuration) {
         if (isCertificatesSupported()) {
             if (caCertPath != null) {
                 configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT, caCertPath.getText().trim());

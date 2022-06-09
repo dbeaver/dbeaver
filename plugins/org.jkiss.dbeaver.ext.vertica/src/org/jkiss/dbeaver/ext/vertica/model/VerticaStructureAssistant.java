@@ -146,7 +146,7 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                         continue; // filtered
                     }
                     final VerticaObjectType objectType = VerticaObjectType.valueOf(tableType);
-                    result.add(new AbstractObjectReference(objectName, schema, description, objectType.getClass(), objectType) {
+                    result.add(new AbstractObjectReference<>(objectName, schema, description, objectType.getClass(), objectType) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             DBSObject object = objectType.findObject(monitor, schema, objectName);
@@ -192,10 +192,10 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                     if (schema == null) {
                         continue; // filtered
                     }
-                    result.add(new AbstractObjectReference(objectName, schema, description, VerticaSequence.class, VerticaObjectType.SEQUENCE) {
+                    result.add(new AbstractObjectReference<>(objectName, schema, description, VerticaSequence.class, VerticaObjectType.SEQUENCE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            GenericSequence object = ((GenericObjectContainer) getContainer()).getSequence(monitor, objectName);
+                            GenericSequence object = getContainer().getSequence(monitor, objectName);
                             if (object == null) {
                                 throw new DBException("Can't find object '" + getName() + "' in '"
                                     + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
@@ -243,10 +243,10 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                     if (schema == null) {
                         continue; // filtered
                     }
-                    result.add(new AbstractObjectReference(objectName, schema, description, isFK ? GenericTableForeignKey.class : VerticaConstraint.class, RelationalObjectType.TYPE_CONSTRAINT) {
+                    result.add(new AbstractObjectReference<>(objectName, schema, description, isFK ? GenericTableForeignKey.class : VerticaConstraint.class, RelationalObjectType.TYPE_CONSTRAINT) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            GenericTableBase tableBase = ((GenericObjectContainer) getContainer()).getTable(monitor, tableName);
+                            GenericTableBase tableBase = getContainer().getTable(monitor, tableName);
                             if (tableBase == null) {
                                 throw new DBException("Can't find constraint table '" + tableName + "' in '"
                                     + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
@@ -296,14 +296,14 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                     final String schemaName = dbResult.getString(1);
                     final String objectName = dbResult.getString(2);
                     final String description = dbResult.getString(3);
-                    GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
+                    VerticaSchema schema = (VerticaSchema) (parentSchema != null ? parentSchema : dataSource.getSchema(schemaName));
                     if (schema == null) {
                         continue; // filtered
                     }
-                    result.add(new AbstractObjectReference(objectName, schema, description, VerticaProjection.class, VerticaObjectType.PROJECTION) {
+                    result.add(new AbstractObjectReference<>(objectName, schema, description, VerticaProjection.class, VerticaObjectType.PROJECTION) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            VerticaProjection object = ((VerticaSchema) getContainer()).getProjection(monitor, objectName);
+                            VerticaProjection object = getContainer().getProjection(monitor, objectName);
                             if (object == null) {
                                 throw new DBException("Can't find object '" + objectName + "' in '"
                                     + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
@@ -337,10 +337,10 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String objectName = dbResult.getString(1);
                     final String description = dbResult.getString(2);
-                    result.add(new AbstractObjectReference(objectName, dataSource, description, VerticaNode.class, VerticaObjectType.NODE) {
+                    result.add(new AbstractObjectReference<>(objectName, dataSource, description, VerticaNode.class, VerticaObjectType.NODE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            VerticaNode object = ((VerticaDataSource) getContainer()).getClusterNode(monitor, objectName);
+                            VerticaNode object = getContainer().getClusterNode(monitor, objectName);
                             if (object == null) {
                                 throw new DBException("Can't find object '" + objectName + "' in '"
                                     + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
@@ -375,10 +375,10 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                     if (schema == null)
                         continue; // filtered
 
-                    result.add(new AbstractObjectReference(columnName, schema, null, GenericTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
+                    result.add(new AbstractObjectReference<GenericObjectContainer>(columnName, schema, null, GenericTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor, tableName);
+                            GenericTableBase object = getContainer().getTable(monitor, tableName);
                             if (object == null) {
                                 throw new DBException("Can't find column table '" + tableName + "' in '"
                                     + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
@@ -418,10 +418,10 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                     if (schema == null)
                         continue; // filtered
 
-                    result.add(new AbstractObjectReference(columnName, schema, null, GenericTableColumn.class, RelationalObjectType.TYPE_VIEW_COLUMN) {
+                    result.add(new AbstractObjectReference<GenericObjectContainer>(columnName, schema, null, GenericTableColumn.class, RelationalObjectType.TYPE_VIEW_COLUMN) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor, tableName);
+                            GenericTableBase object = getContainer().getTable(monitor, tableName);
                             if (object == null) {
                                 throw new DBException("Can't find column view '" + tableName + "' in '"
                                     + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
