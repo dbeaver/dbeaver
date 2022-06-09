@@ -133,7 +133,11 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
     }
 
     @NotNull
-    private static String getStructMemberDisplayString(@NotNull DBSTypedObject type, @NotNull DBDValueHandler handler, @Nullable Object value) {
+    private static String getStructMemberDisplayString(
+        @NotNull DBSTypedObject type,
+        @NotNull DBDValueHandler handler,
+        @Nullable Object value
+    ) {
         if (DBUtils.isNullValue(value)) {
             return "";
         }

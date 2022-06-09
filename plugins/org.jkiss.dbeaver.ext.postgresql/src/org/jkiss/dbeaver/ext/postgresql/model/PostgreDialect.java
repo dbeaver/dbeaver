@@ -842,12 +842,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @NotNull
     @Override
     public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
-        if (PostgreUtils.isPGObject(value) ||
-            PostgreConstants.TYPE_BIT.equals(attribute.getTypeName()) ||
-            PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName()) ||
-            attribute.getTypeID() == Types.OTHER ||
-            attribute.getTypeID() == Types.ARRAY ||
-            attribute.getTypeID() == Types.STRUCT)
+        if (PostgreUtils.isPGObject(value)
+            || PostgreConstants.TYPE_BIT.equals(attribute.getTypeName())
+            || PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName())
+            || attribute.getTypeID() == Types.OTHER
+            || attribute.getTypeID() == Types.ARRAY
+            || attribute.getTypeID() == Types.STRUCT)
         {
             // TODO: we need to add value handlers for all PG data types.
             // For now we use workaround: represent objects as strings

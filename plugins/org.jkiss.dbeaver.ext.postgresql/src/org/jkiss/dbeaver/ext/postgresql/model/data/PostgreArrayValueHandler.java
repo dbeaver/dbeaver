@@ -103,7 +103,12 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                     return convertStringToCollection(session, type, itemType, (String) object);
                 }
             } else if (object instanceof Object[]) {
-                return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), (Object[]) object);
+                return new JDBCCollection(
+                    session.getProgressMonitor(),
+                    itemType,
+                    DBUtils.findValueHandler(session, itemType),
+                    (Object[]) object
+                );
             }
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
@@ -187,7 +192,12 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     }
 
     @NotNull
-    private static String getArrayMemberDisplayString(@NotNull DBSTypedObject type, @NotNull DBDValueHandler handler, @Nullable Object value, @NotNull DBDDisplayFormat format) {
+    private static String getArrayMemberDisplayString(
+        @NotNull DBSTypedObject type,
+        @NotNull DBDValueHandler handler,
+        @Nullable Object value,
+        @NotNull DBDDisplayFormat format
+    ) {
         if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
         }
