@@ -63,23 +63,25 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object != null) {
+            final PostgreDataType arrayType = PostgreUtils.findDataType(session, (PostgreDataSource) session.getDataSource(), type);
+            if (arrayType == null) {
+                throw new DBCException("Can't resolve data type " + type.getFullTypeName());
+            }
+
+            PostgreDataType itemType = arrayType.getElementType(session.getProgressMonitor());
+            if (itemType == null && arrayType.getTypeType() == PostgreTypeType.d) {
+                // Domains store component type information in another field
+                itemType = arrayType.getBaseType(session.getProgressMonitor());
+            }
+            if (itemType == null) {
+                throw new DBCException("Array type " + arrayType.getFullTypeName() + " doesn't have a component type");
+            }
+
             String className = object.getClass().getName();
             if (object instanceof String ||
                 PostgreUtils.isPGObject(object) ||
                 className.equals(PostgreConstants.PG_ARRAY_CLASS))
             {
-                final PostgreDataType arrayType = PostgreUtils.findDataType(session, (PostgreDataSource) session.getDataSource(), type);
-                if (arrayType == null) {
-                    throw new DBCException("Can't resolve data type " + type.getFullTypeName());
-                }
-                PostgreDataType itemType = arrayType.getElementType(session.getProgressMonitor());
-                if (itemType == null && arrayType.getTypeType() == PostgreTypeType.d) {
-                    // Domains store component type information in another field
-                    itemType = arrayType.getBaseType(session.getProgressMonitor());
-                }
-                if (itemType == null) {
-                    throw new DBCException("Array type " + arrayType.getFullTypeName() + " doesn't have a component type");
-                }
                 if (className.equals(PostgreConstants.PG_ARRAY_CLASS)) {
                     // Convert arrays to string representation (#7468)
                     // Otherwise we may have problems with domain types decoding (as they come in form of PgObject)
@@ -100,6 +102,8 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 } else {
                     return convertStringToCollection(session, type, itemType, (String) object);
                 }
+            } else if (object instanceof Object[]) {
+                return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), (Object[]) object);
             }
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
@@ -203,7 +207,6 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     private static boolean isQuotingRequired(@NotNull DBSTypedObject type, @NotNull String value) {
         switch (type.getDataKind()) {
             case ARRAY:
-            case STRUCT:
             case NUMERIC:
                 return false;
             default:
