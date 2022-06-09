@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.*;
@@ -64,6 +65,8 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 /**
  * Execution utils
@@ -763,13 +766,14 @@ public class DBExecUtils {
                     }
 
                     if (tableColumn != null) {
-                        boolean structurallyInconsistentTypes = tableColumn.getDataKind().isComplex() != 
-                            resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition()).getDataKind().isComplex();
+                        DBCAttributeMetaData rsAttrMeta = resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition());
+                        boolean structInconsistentTypes = tableColumn.getDataKind().isComplex() != rsAttrMeta.getDataKind().isComplex() 
+                            && !isEnumType(tableColumn);
+                        
                         boolean updateColumnHandler = updateColumnMeta &&
                             (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta)) &&
                             rows != null;
-                        if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind())
-                            || structurallyInconsistentTypes
+                        if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind()) || structInconsistentTypes
                         ) {
                             // Different data kind. Probably it is an alias which conflicts with column name
                             // Do not update entity attribute.
@@ -851,6 +855,18 @@ public class DBExecUtils {
         finally {
             monitor.done();
         }
+    }
+
+    private static boolean isEnumType(DBSEntityAttribute tableColumn) {
+        if (tableColumn instanceof DBSTypedObjectEx) {
+            DBSDataType columnDataType = ((DBSTypedObjectEx) tableColumn).getDataType();
+            Object typeExt = columnDataType.geTypeExtension();
+            if (typeExt instanceof DBPNamedObject) {
+                Predicate<String> hasEnumSubstring = Pattern.compile("\\benum\\b", Pattern.CASE_INSENSITIVE).asPredicate();
+                return hasEnumSubstring.test(((DBPNamedObject)typeExt).getName());
+            }
+        }
+        return false;
     }
 
     public static boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute) {

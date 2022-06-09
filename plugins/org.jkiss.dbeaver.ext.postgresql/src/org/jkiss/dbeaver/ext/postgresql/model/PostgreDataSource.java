@@ -520,6 +520,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     {
         return getDefaultInstance().getLocalDataTypes();
     }
+    
+    @Override
+    public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException {
+        return super.resolveDataType(monitor, typeFullName);
+    }
 
     @Override
     public PostgreDataType getLocalDataType(String typeName)
