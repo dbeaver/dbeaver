@@ -84,6 +84,8 @@ public class DBExecUtils {
     private static final List<DBPDataSourceContainer> ACTIVE_CONTEXTS = new ArrayList<>();
     public static final boolean BROWSE_LAZY_ASSOCIATIONS = false;
 
+    private static final Predicate<String> HAS_ENUM_SUBSTRING = Pattern.compile("\\benum\\b", Pattern.CASE_INSENSITIVE).asPredicate();
+
     public static DBPDataSourceContainer getCurrentThreadContext() {
         return ACTIVE_CONTEXT.get();
     }
@@ -862,8 +864,7 @@ public class DBExecUtils {
             DBSDataType columnDataType = ((DBSTypedObjectEx) tableColumn).getDataType();
             Object typeExt = columnDataType.geTypeExtension();
             if (typeExt instanceof DBPNamedObject) {
-                Predicate<String> hasEnumSubstring = Pattern.compile("\\benum\\b", Pattern.CASE_INSENSITIVE).asPredicate();
-                return hasEnumSubstring.test(((DBPNamedObject)typeExt).getName());
+                return HAS_ENUM_SUBSTRING.test(((DBPNamedObject) typeExt).getName());
             }
         }
         return false;
