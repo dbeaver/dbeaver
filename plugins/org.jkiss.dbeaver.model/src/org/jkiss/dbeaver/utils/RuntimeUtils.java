@@ -306,12 +306,8 @@ public final class RuntimeUtils {
         if (!IS_WINDOWS) {
             return false;
         }
-        String installPath = SystemVariablesResolver.getInstallPath();
-        final String property = System.getProperty("jna.boot.library.path");
-        if (property == null) {
-            return false;
-        }
-        return property.equals(installPath);
+        return Arrays.stream(Platform.getExtensionRegistry().getExtensionPoint("org.jkiss.dbeaver.pluginService")
+                .getExtensions()).anyMatch(extension -> extension.getContributor().getName().equals("org.jkiss.dbeaver.ui.app.winstore"));
     }
 
     public static boolean isMacOS() {
