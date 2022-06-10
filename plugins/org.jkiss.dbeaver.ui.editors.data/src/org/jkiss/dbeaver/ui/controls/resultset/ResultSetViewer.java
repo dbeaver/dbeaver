@@ -2085,7 +2085,7 @@ public class ResultSetViewer extends Viewer
         boolean hasWarnings = !dataReceiver.getErrorList().isEmpty();
         if (hasWarnings) {
             statusMessage += " - " + dataReceiver.getErrorList().size() + " warning(s)";
-        } else {
+        } else if (model.getStatistics() != null) {
             hasWarnings = model.getStatistics().getError() != null;
             if (hasWarnings) {
                 statusMessage += " - finished with error";
