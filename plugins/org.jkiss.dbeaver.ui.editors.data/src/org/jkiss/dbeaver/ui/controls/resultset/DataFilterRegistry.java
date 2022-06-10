@@ -111,8 +111,9 @@ class DataFilterRegistry {
                         }
                         while (!stack.isEmpty()) {
                             RestoredAttribute attr = stack.pop();
-                            RestoredAttribute boundParent = attr.getParentObject() == null ?
-                                null : boundAttrs.get(attr.getParentObject());
+                            RestoredAttribute boundParent = attr.getParentObject() == null
+                                ? null
+                                : boundAttrs.get(attr.getParentObject());
                             boundAttrs.put(attr, new RestoredAttribute(boundParent, attr, dataSource));
                         }
                     }
