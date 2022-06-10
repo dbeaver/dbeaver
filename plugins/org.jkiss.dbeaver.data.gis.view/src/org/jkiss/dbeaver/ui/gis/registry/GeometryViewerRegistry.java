@@ -64,33 +64,37 @@ public class GeometryViewerRegistry {
     }
 
     private GeometryViewerRegistry(@NotNull IExtensionRegistry registry) {
-        Collection<String> notVisiblePredefinedTilesIds = new HashSet<>();
-        populateFromConfig(notVisiblePredefinedTilesIds, userDefinedTiles);
+        try {
+            Collection<String> notVisiblePredefinedTilesIds = new HashSet<>();
+            populateFromConfig(notVisiblePredefinedTilesIds, userDefinedTiles);
 
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(GeometryViewerDescriptor.EXTENSION_ID);
-        for (IConfigurationElement ext : extElements) {
-            GeometryViewerDescriptor type = new GeometryViewerDescriptor(ext);
-            viewers.put(type.getId(), type);
-        }
-
-        extElements = registry.getConfigurationElementsFor(LeafletTilesDescriptor.EXTENSION_ID);
-        for (IConfigurationElement ext : extElements) {
-            LeafletTilesDescriptor descriptor = LeafletTilesDescriptor.createPredefined(ext);
-            if (notVisiblePredefinedTilesIds.contains(descriptor.getId())) {
-                descriptor = descriptor.withFlippedVisibility();
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(GeometryViewerDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extElements) {
+                GeometryViewerDescriptor type = new GeometryViewerDescriptor(ext);
+                viewers.put(type.getId(), type);
             }
-            predefinedTiles.add(descriptor);
-        }
 
-        String defTilesId = GISViewerActivator.getDefault().getPreferences().getString(GeometryViewerConstants.PREF_DEFAULT_LEAFLET_TILES);
-        if (!CommonUtils.isEmpty(defTilesId)) {
-            defaultLeafletTiles = Stream.concat(predefinedTiles.stream(), userDefinedTiles.stream())
+            extElements = registry.getConfigurationElementsFor(LeafletTilesDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extElements) {
+                LeafletTilesDescriptor descriptor = LeafletTilesDescriptor.createPredefined(ext);
+                if (notVisiblePredefinedTilesIds.contains(descriptor.getId())) {
+                    descriptor = descriptor.withFlippedVisibility();
+                }
+                predefinedTiles.add(descriptor);
+            }
+
+            String defTilesId = GISViewerActivator.getDefault().getPreferences().getString(GeometryViewerConstants.PREF_DEFAULT_LEAFLET_TILES);
+            if (!CommonUtils.isEmpty(defTilesId)) {
+                defaultLeafletTiles = Stream.concat(predefinedTiles.stream(), userDefinedTiles.stream())
                     .filter(tile -> tile.getId().equals(defTilesId))
                     .findAny()
                     .orElse(null);
-        }
-        if (defaultLeafletTiles == null) {
-            autoAssignDefaultLeafletTiles();
+            }
+            if (defaultLeafletTiles == null) {
+                autoAssignDefaultLeafletTiles();
+            }
+        } catch (Throwable e) {
+            log.error("Error initializing registry", e);
         }
     }
 
