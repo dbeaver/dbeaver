@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskFolder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TaskFolderImpl implements DBTTaskFolder {
@@ -29,9 +30,12 @@ public class TaskFolderImpl implements DBTTaskFolder {
     private String folderName;
     private DBPProject folderProject;
     private List<DBTTask> folderTasks;
+    private DBTTaskFolder parentFolder;
+    private List<DBTTaskFolder> nestedFolders = new ArrayList<>();
 
-    public TaskFolderImpl(@NotNull String folderName, @NotNull DBPProject folderProject, @Nullable List<DBTTask> folderTasks) {
+    public TaskFolderImpl(@NotNull String folderName, @Nullable DBTTaskFolder parentFolder, @NotNull DBPProject folderProject, @Nullable List<DBTTask> folderTasks) {
         this.folderName = folderName;
+        this.parentFolder = parentFolder;
         this.folderProject = folderProject;
         this.folderTasks = folderTasks;
     }
@@ -40,6 +44,11 @@ public class TaskFolderImpl implements DBTTaskFolder {
     @Override
     public DBPProject getProject() {
         return folderProject;
+    }
+
+    @Nullable
+    public DBTTaskFolder getParentFolder() {
+        return parentFolder;
     }
 
     @Nullable
@@ -56,6 +65,17 @@ public class TaskFolderImpl implements DBTTaskFolder {
     @Override
     public void removeTaskFromFolder(DBTTask task) {
         folderTasks.remove(task);
+    }
+
+    @Nullable
+    @Override
+    public List<DBTTaskFolder> getNestedTaskFolders() {
+        return nestedFolders;
+    }
+
+    @Override
+    public void addFolderToFoldersList(@NotNull DBTTaskFolder taskFolder) {
+        nestedFolders.add(taskFolder);
     }
 
     @Override

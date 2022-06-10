@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tasks.ui.view;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -29,6 +30,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTaskFolder;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
@@ -53,8 +55,17 @@ public class TaskHandlerFolderCreate extends AbstractHandler {
             DBPProject folderProject = createFolderDialog.getProject();
             DBTTaskManager taskManager = folderProject.getTaskManager();
             DBTTaskFolder taskFolder = null;
+            DBTTaskFolder parentFolder = null;
+
+            // Check selected object. If it is a folder - then add it as parent for tne new folder
+            ISelection selection = HandlerUtil.getCurrentSelection(event);
+            DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
+            if (selectedObject instanceof DBTTaskFolder) {
+                parentFolder = (DBTTaskFolder) selectedObject;
+            }
+
             try {
-                taskFolder = taskManager.createTaskFolder(folderProject, createFolderDialog.getName(), null);
+                taskFolder = taskManager.createTaskFolder(folderProject, createFolderDialog.getName(), parentFolder, null);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
                         TaskUIViewMessages.task_handler_folder_create_error_title,
