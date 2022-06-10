@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.dbeaver.Log;
 
+import java.util.Map;
+
 /**
  * Abstract QM meta object
  */
@@ -120,4 +122,7 @@ public abstract class QMMObject {
     }
 
     public abstract QMMConnectionInfo getConnection();
+
+    public abstract Map<String, Object> toMap();
+
 }

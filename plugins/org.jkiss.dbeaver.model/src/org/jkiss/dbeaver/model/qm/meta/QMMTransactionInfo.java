@@ -18,6 +18,11 @@
 package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.qm.QMConstants;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * QM Transaction info
@@ -33,6 +38,17 @@ public class QMMTransactionInfo extends QMMObject {
         this.connection = connection;
         this.previous = previous;
         this.savepointStack = new QMMTransactionSavepointInfo(this, null, null, null);
+    }
+
+    private QMMTransactionInfo(Builder builder) {
+        connection = builder.connection;
+        previous = builder.previous;
+        committed = builder.committed;
+        savepointStack = builder.savepointStack;
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     void commit() {
@@ -60,6 +76,18 @@ public class QMMTransactionInfo extends QMMObject {
 
     public QMMConnectionInfo getConnection() {
         return connection;
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("connection", getConnection().toMap());
+        return result;
+    }
+
+    public static QMMTransactionInfo fromMap(Map<String, Object> objectMap) {
+        QMMConnectionInfo connectionInfo = QMMConnectionInfo.fromMap((Map<String, Object>) objectMap.get("connection"));
+        return builder().setConnection(connectionInfo).build();
     }
 
     public QMMTransactionInfo getPrevious() {
@@ -94,5 +122,39 @@ public class QMMTransactionInfo extends QMMObject {
     @Override
     public String getText() {
         return connection.getText();
+    }
+
+    public static final class Builder {
+        private QMMConnectionInfo connection;
+        private QMMTransactionInfo previous;
+        private boolean committed;
+        private QMMTransactionSavepointInfo savepointStack;
+
+        private Builder() {
+        }
+
+        public Builder setConnection(QMMConnectionInfo connection) {
+            this.connection = connection;
+            return this;
+        }
+
+        public Builder setPrevious(QMMTransactionInfo previous) {
+            this.previous = previous;
+            return this;
+        }
+
+        public Builder setCommitted(boolean committed) {
+            this.committed = committed;
+            return this;
+        }
+
+        public Builder setSavepointStack(QMMTransactionSavepointInfo savepointStack) {
+            this.savepointStack = savepointStack;
+            return this;
+        }
+
+        public QMMTransactionInfo build() {
+            return new QMMTransactionInfo(this);
+        }
     }
 }

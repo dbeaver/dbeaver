@@ -23,6 +23,27 @@ package org.jkiss.dbeaver.model.qm;
 public class QMConstants {
     public static final String QM_SESSION_ID_ATTR = "qm_session_id";
 
+
+    public static final String QM_META_EVENT_OBJECT = "qm_object";
+    public static final String QM_META_EVENT_ACTION = "qm_action";
+    public static final String QM_META_EVENT_SESSION = "qm_session";
+    public static final String QM_META_EVENT_PROJECT = "qm_project";
+
+    public static final String QM_META_OBJECT_CONNECTION = "qm.object.connection";
+    public static final String QM_META_OBJECT_OPEN_TIME = "qm.object.openTime";
+
+    public static final String QM_META_CONNECTION_CONTAINER_ID = "qm.connection.containerId";
+    public static final String QM_META_CONNECTION_CONTAINER_NAME = "qm.connection.containerName";
+    public static final String QM_META_CONNECTION_DRIVER_ID = "qm.connection.driverId";
+    public static final String QM_META_CONNECTION_INSTANCE_ID = "qm.connection.instanceId";
+    public static final String QM_META_CONNECTION_CONTEXT_NAME = "qm.connection.contextName";
+    public static final String QM_META_CONNECTION_CONN_USER_NAME = "qm.connection.connectionUserName";
+    public static final String QM_META_CONNECTION_CONN_URL = "qm.connection.connectionURL";
+    public static final String QM_META_PROJECT_ID = "qm.project.id";
+    public static final String QM_META_PROJECT_NAME = "qm.project.name";
+    public static final String QM_META_PROJECT_PATH = "qm.project.path";
+
+
     public static final String PROP_PREFIX = "qm.";
 
     public static final String PROP_OBJECT_TYPES = PROP_PREFIX + "objectTypes";
