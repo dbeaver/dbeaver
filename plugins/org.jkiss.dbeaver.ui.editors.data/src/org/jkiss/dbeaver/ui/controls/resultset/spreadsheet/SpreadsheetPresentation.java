@@ -225,7 +225,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             public void widgetSelected(SelectionEvent e)
             {
                 if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN) {
-                    updateGridCursor((GridCell) e.data);
+                    updateGridCursor((IGridCell) e.data);
                 }
                 fireSelectionChanged(new SpreadsheetSelectionImpl());
             }
@@ -303,8 +303,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     break;
                 case CURRENT:
                     if (curRow != null && !recordMode) {
-                        GridPos curPos = spreadsheet.getCursorPosition();
-                        GridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, curRow.getVisualNumber()));
+                        final GridPos curPos = spreadsheet.getCursorPosition();
+                        final IGridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, curRow.getVisualNumber()));
                         if (newCell != null) {
                             spreadsheet.setCursor(newCell, false, true, true);
                         }
@@ -317,8 +317,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 curRow = controller.getCurrentRow();
                 int newColumnIndex = ArrayUtils.indexOf(controller.getSelectedRecords(), 0, curRow.getVisualNumber());
                 if (newColumnIndex >= 0) {
-                    GridPos focusPos = spreadsheet.getCursorPosition();
-                    GridCell newPos = spreadsheet.posToCell(new GridPos(newColumnIndex, focusPos.row));
+                    final GridPos focusPos = spreadsheet.getCursorPosition();
+                    final IGridCell newPos = spreadsheet.posToCell(new GridPos(newColumnIndex, focusPos.row));
                     if (newPos != null) {
                         spreadsheet.setCursor(newPos, true, true, false);
                     }
@@ -348,12 +348,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Override
     public void setCurrentAttribute(@NotNull DBDAttributeBinding attribute) {
-        this.curAttribute = attribute;
+        final ResultSetRow curRow = controller.getCurrentRow();
+        final IGridCell cell = controller.isRecordMode()
+            ? new GridCell(curRow, attribute)
+            : new GridCell(attribute, curRow);
 
-        ResultSetRow curRow = controller.getCurrentRow();
-        GridCell cell = controller.isRecordMode() ?
-            new GridCell(curRow, this.curAttribute) :
-            new GridCell(this.curAttribute, curRow);
+        this.curAttribute = attribute;
         this.spreadsheet.setCursor(cell, false, true, true);
         //this.spreadsheet.showColumn(this.curAttribute);
     }
@@ -426,8 +426,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         spreadsheet.setDefaultFocusRow();
     }
 
-    private void updateGridCursor(GridCell cell)
-    {
+    private void updateGridCursor(@Nullable IGridCell cell) {
         boolean changed;
         Object newCol = cell == null ? null : cell.getColumnElement();
         Object newRow = cell == null ? null : cell.getRowElement();
@@ -506,12 +505,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         if (copyHTML) html.append("<tbody>");
 
-        List<GridCell> selectedCells = spreadsheet.getCellSelection();
-        boolean quoteCells = settings.isQuoteCells() && selectedCells.size() > 1;
-        boolean forceQuotes = settings.isForceQuotes();
+        final List<IGridCell> selectedCells = spreadsheet.getCellSelection();
+        final boolean quoteCells = settings.isQuoteCells() && selectedCells.size() > 1;
+        final boolean forceQuotes = settings.isForceQuotes();
 
-        GridCell prevCell = null;
-        for (GridCell cell : selectedCells) {
+        IGridCell prevCell = null;
+        for (IGridCell cell : selectedCells) {
             if (prevCell == null || cell.getRowElement() != prevCell.getRowElement()) {
                 // Next row
                 if (prevCell != null && prevCell.getColumnElement() != cell.getColumnElement()) {
@@ -544,10 +543,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
 
-            boolean recordMode = controller.isRecordMode();
-            DBDAttributeBinding column = (DBDAttributeBinding) (!recordMode ?  cell.getColumnElement() : cell.getRowElement());
-            ResultSetRow row = (ResultSetRow) (!recordMode ?  cell.getRowElement() : cell.getColumnElement());
-            Object value = controller.getModel().getCellValue(column, row);
+            final boolean recordMode = controller.isRecordMode();
+            final DBDAttributeBinding column = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
+            final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
+            final Object value = controller.getModel().getCellValue(column, row);
+
             if (binaryData == null && (column.getDataKind() == DBPDataKind.BINARY || column.getDataKind() == DBPDataKind.CONTENT)) {
                 if (value instanceof byte[]) {
                     binaryData = (byte[]) value;
@@ -1223,7 +1223,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     ///////////////////////////////////////////////
     // Links
 
-    public void navigateLink(@NotNull GridCell cell, final int state) {
+    public void navigateLink(@NotNull IGridCell cell, final int state) {
         boolean recordMode = controller.isRecordMode();
         final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
         final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
@@ -1414,9 +1414,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             // Show cell properties
             PropertyPageStandard page = new PropertyPageStandard();
             page.setPropertySourceProvider(object -> {
-                if (object instanceof GridCell) {
-                    GridCell cell = (GridCell) object;
-                    boolean recordMode = controller.isRecordMode();
+                if (object instanceof IGridCell) {
+                    final IGridCell cell = (IGridCell) object;
+                    final boolean recordMode = controller.isRecordMode();
                     final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
                     final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
                     final SpreadsheetValueController valueController = new SpreadsheetValueController(
@@ -2119,7 +2119,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             final DBDAttributeBinding attribute = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
 
             if (spreadsheet.getCellSelectionSize() == 1 && getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES)) {
-                final GridCell sourceCell = spreadsheet.getCursorCell();
+                final IGridCell sourceCell = spreadsheet.getCursorCell();
                 if (sourceCell != null) {
                     final ResultSetRow sourceRow = (ResultSetRow) (recordMode ? sourceCell.getColumnElement() : sourceCell.getRowElement());
                     final DBDAttributeBinding sourceAttribute = (DBDAttributeBinding) (recordMode ? sourceCell.getRowElement() : sourceCell.getColumnElement());

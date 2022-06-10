@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
@@ -131,10 +131,13 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         if (selection == null) {
             return "";
         }
-        Spreadsheet spreadsheet = owner.getSpreadsheet();
-        GridCell cell = spreadsheet.posToCell(selection);
-        String value = cell == null ? "" : CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell, false, true));
-        return CommonUtils.toString(value);
+        final Spreadsheet spreadsheet = owner.getSpreadsheet();
+        final IGridCell cell = spreadsheet.posToCell(selection);
+        if (cell != null) {
+            return CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell, false, true));
+        } else {
+            return "";
+        }
     }
 
     @Override
@@ -321,7 +324,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                 // Header
                 cellText = spreadsheet.getLabelProvider().getText(spreadsheet.getRowElement(curPosition.row));
             } else {
-                GridCell cell = spreadsheet.posToCell(curPosition);
+                final IGridCell cell = spreadsheet.posToCell(curPosition);
                 if (cell != null) {
                     cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell, false, false));
                 } else {
@@ -357,7 +360,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         if (selection == null) {
             return;
         }
-        GridCell cell = owner.getSpreadsheet().posToCell(selection);
+        IGridCell cell = owner.getSpreadsheet().posToCell(selection);
         if (cell == null) {
             return;
         }

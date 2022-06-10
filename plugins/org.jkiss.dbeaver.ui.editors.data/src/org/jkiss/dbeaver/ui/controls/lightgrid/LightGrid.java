@@ -675,8 +675,7 @@ public abstract class LightGrid extends Canvas {
     }
 
     @Nullable
-    public GridCell posToCell(GridPos pos)
-    {
+    public IGridCell posToCell(@NotNull GridPos pos) {
         if (pos.col < 0 || pos.row < 0) {
             return null;
         }
@@ -687,8 +686,7 @@ public abstract class LightGrid extends Canvas {
     }
 
     @NotNull
-    public GridPos cellToPos(GridCell cell)
-    {
+    public GridPos cellToPos(@NotNull IGridCell cell) {
         int colIndex = ArrayUtils.indexOf(columnElements, cell.getColumnElement());
         int rowIndex = ArrayUtils.indexOf(rowElements, cell.getRowElement());
         return new GridPos(colIndex, rowIndex);
@@ -4105,8 +4103,7 @@ public abstract class LightGrid extends Canvas {
     }
 
     @Nullable
-    public GridCell getFocusCell()
-    {
+    public IGridCell getFocusCell() {
         return posToCell(getFocusPos());
     }
     /**
@@ -4286,16 +4283,17 @@ public abstract class LightGrid extends Canvas {
         return Collections.unmodifiableCollection(selectedCells);
     }
 
-    public List<GridCell> getCellSelection()
-    {
+    @NotNull
+    public List<IGridCell> getCellSelection() {
         if (isDisposed() || selectedCells.isEmpty()) {
             return Collections.emptyList();
         }
-        List<GridCell> cells = new ArrayList<>(selectedCells.size());
+        final List<IGridCell> cells = new ArrayList<>(selectedCells.size());
         for (GridPos pos : selectedCells) {
-        	GridCell cell = posToCell(pos);
-        	if (cell != null)
-        		cells.add(cell);
+        	final IGridCell cell = posToCell(pos);
+            if (cell != null) {
+                cells.add(cell);
+            }
         }
         return cells;
     }

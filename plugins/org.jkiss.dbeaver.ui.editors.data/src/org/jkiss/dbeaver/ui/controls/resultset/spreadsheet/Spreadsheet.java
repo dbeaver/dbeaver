@@ -157,8 +157,7 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 
     @Nullable
-    public GridCell getCursorCell()
-    {
+    public IGridCell getCursorCell() {
         if (super.isDisposed()) {
             return null;
         }
@@ -198,15 +197,14 @@ public class Spreadsheet extends LightGrid implements Listener {
             newPos.col = newCol;
         }
 
-        GridCell newCell = posToCell(newPos);
+        final IGridCell newCell = posToCell(newPos);
         if (newCell != null) {
             setCursor(newCell, keepSelection, true, true);
         }
         return true;
     }
 
-    void setCursor(@NotNull GridCell cell, boolean keepSelection, boolean showColumn, boolean notify)
-    {
+    void setCursor(@NotNull IGridCell cell, boolean keepSelection, boolean showColumn, boolean notify) {
         Event selectionEvent = new Event();
         // Move row
         selectionEvent.data = cell;
@@ -356,7 +354,7 @@ public class Spreadsheet extends LightGrid implements Listener {
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and
                 // we don't want to mess current grid state
-                UIUtils.asyncExec(() -> presentation.navigateLink((GridCell) event.data, event.stateMask));
+                UIUtils.asyncExec(() -> presentation.navigateLink((IGridCell) event.data, event.stateMask));
                 break;
         }
     }
