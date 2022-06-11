@@ -168,7 +168,7 @@ public class SubEditorSite implements IEditorSite {
     }
 
     @Override
-    public boolean hasService(Class api)
+    public boolean hasService(Class<?> api)
     {
         return parentSite.hasService(api);
     }

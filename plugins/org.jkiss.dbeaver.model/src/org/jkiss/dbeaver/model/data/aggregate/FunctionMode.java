@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class FunctionMode implements IAggregateFunction {
 
-    private List<Object> cache = new ArrayList<>();
+    private final List<Object> cache = new ArrayList<>();
 
     @Override
     public boolean accumulate(Object value, boolean aggregateAsStrings) {

@@ -11,5 +11,4 @@
   <artifactId>org.jkiss.dbeaver.ext.ui.svg.feature</artifactId>
   <version>1.0.119-SNAPSHOT</version>
   <packaging>eclipse-feature</packaging>
-  <groupId>org.jkiss.dbeaver</groupId>
 </project>

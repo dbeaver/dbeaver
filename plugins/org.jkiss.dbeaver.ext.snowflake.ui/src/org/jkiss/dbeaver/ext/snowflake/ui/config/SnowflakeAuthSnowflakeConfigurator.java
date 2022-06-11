@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -41,7 +42,7 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
     private Combo authTypeCombo;
 
     @Override
-    public void createControl(Composite parent, DBAAuthModel object, Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite parent, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
         ModifyListener textListener = e -> propertyChangeListener.run();
 
         usernameLabel = UIUtils.createLabel(parent, UIConnectionMessages.dialog_connection_auth_label_username);
@@ -80,7 +81,7 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
     }
 
     @Override
-    public void loadSettings(DBPDataSourceContainer dataSource) {
+    public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.loadSettings(dataSource);
 
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
@@ -98,7 +99,7 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.saveSettings(dataSource);
 
         String roleName = userRoleCombo.getText();
@@ -119,7 +120,7 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
     }
 
     @Override
-    public void resetSettings(DBPDataSourceContainer dataSource) {
+    public void resetSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.resetSettings(dataSource);
     }
 

@@ -202,7 +202,7 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
         Object itemsInput = itemControl.getItemsViewer().getInput();
 
         return itemsInput instanceof Collection &&
-            ((Collection) itemsInput).contains(dbEvent.getObject());
+            ((Collection<?>) itemsInput).contains(dbEvent.getObject());
     }
 
     @Override

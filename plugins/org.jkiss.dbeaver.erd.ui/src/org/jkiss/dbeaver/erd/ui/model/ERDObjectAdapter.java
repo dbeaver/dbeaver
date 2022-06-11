@@ -149,7 +149,7 @@ public class ERDObjectAdapter implements IAdapterFactory {
     }
 
     @Override
-    public Class[] getAdapterList() {
-        return new Class[] { ERDObject.class, DBPNamedObject.class, DBPQualifiedObject.class, DBSObject.class, DBNNode.class };
+    public Class<?>[] getAdapterList() {
+        return new Class<?>[] { ERDObject.class, DBPNamedObject.class, DBPQualifiedObject.class, DBSObject.class, DBNNode.class };
     }
 }

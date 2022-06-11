@@ -108,7 +108,7 @@ public class DBeaverCommandLine
             this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
             Bundle cBundle = Platform.getBundle(config.getContributor().getName());
             Class<?> implClass = cBundle.loadClass(config.getAttribute("handler"));
-            handler = (CommandLineParameterHandler) implClass.newInstance();
+            handler = (CommandLineParameterHandler) implClass.getConstructor().newInstance();
         }
     }
 
