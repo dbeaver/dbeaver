@@ -1204,6 +1204,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         validateFilesPresence(true);
     }
 
+    @Override
+    public boolean needsExternalDependencies() {
+        for (DBPDriverLibrary library : libraries) {
+            if (library.isDisabled() || library.isOptional() || !library.matchesCurrentPlatform()) {
+                continue;
+            }
+            if (library.isDownloadable()) {
+                if (library.getLocalFile() == null || !library.getLocalFile().exists()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @NotNull
     private List<File> validateFilesPresence(boolean resetVersions) {
         boolean localLibsExists = false;
@@ -1241,14 +1256,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 localLibsExists = true;
             }
         }
-//        if (!CommonUtils.isEmpty(fileSources)) {
-//            for (DriverFileSource source : fileSources) {
-//                for (DriverFileSource.FileInfo fileInfo : source.getFiles()) {
-//                    DriverLibraryLocal libraryLocal = new DriverLibraryLocal(this, DBPDriverLibrary.FileType.jar, fileInfo.getName());
-//                    final File localFile = libraryLocal.getLocalFile();
-//                }
-//            }
-//        }
 
         boolean downloaded = false;
         if (!downloadCandidates.isEmpty() || (!localLibsExists && !fileSources.isEmpty())) {
