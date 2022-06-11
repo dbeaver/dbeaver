@@ -45,4 +45,8 @@ public interface DBSDataType extends DBSObject, DBSTypedObject
 
     @NotNull
     DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute);
+    
+    default boolean isEnum() {
+        return false;
+    }
 }

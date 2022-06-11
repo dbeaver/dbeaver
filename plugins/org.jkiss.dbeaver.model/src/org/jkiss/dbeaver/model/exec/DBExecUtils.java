@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.*;
@@ -65,8 +64,6 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 /**
  * Execution utils
@@ -83,8 +80,6 @@ public class DBExecUtils {
     private static final ThreadLocal<DBPDataSourceContainer> ACTIVE_CONTEXT = new ThreadLocal<>();
     private static final List<DBPDataSourceContainer> ACTIVE_CONTEXTS = new ArrayList<>();
     public static final boolean BROWSE_LAZY_ASSOCIATIONS = false;
-
-    private static final Predicate<String> HAS_ENUM_SUBSTRING = Pattern.compile("\\benum\\b", Pattern.CASE_INSENSITIVE).asPredicate();
 
     public static DBPDataSourceContainer getCurrentThreadContext() {
         return ACTIVE_CONTEXT.get();
@@ -775,8 +770,7 @@ public class DBExecUtils {
                         boolean updateColumnHandler = updateColumnMeta &&
                             (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta)) &&
                             rows != null;
-                        if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind()) || structInconsistentTypes
-                        ) {
+                        if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind()) || structInconsistentTypes) {
                             // Different data kind. Probably it is an alias which conflicts with column name
                             // Do not update entity attribute.
                             // It is a silly workaround for PG-like databases
@@ -862,10 +856,7 @@ public class DBExecUtils {
     private static boolean isEnumType(DBSEntityAttribute tableColumn) {
         if (tableColumn instanceof DBSTypedObjectEx) {
             DBSDataType columnDataType = ((DBSTypedObjectEx) tableColumn).getDataType();
-            Object typeExt = columnDataType.geTypeExtension();
-            if (typeExt instanceof DBPNamedObject) {
-                return HAS_ENUM_SUBSTRING.test(((DBPNamedObject) typeExt).getName());
-            }
+            return columnDataType != null && columnDataType.isEnum();
         }
         return false;
     }

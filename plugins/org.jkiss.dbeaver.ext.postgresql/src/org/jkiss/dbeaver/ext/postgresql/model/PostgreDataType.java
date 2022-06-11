@@ -365,6 +365,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     public Object geTypeExtension() {
         return typeCategory;
     }
+    
+    @Override
+    public boolean isEnum() {
+        return typeCategory == PostgreTypeCategory.E;
+    }
 
     @Override
     @Property(viewable = false, order = 9)
