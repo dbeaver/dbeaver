@@ -94,29 +94,6 @@ public abstract class LightGrid extends Canvas {
         KEYBOARD,
     }
 
-    static class GridNode {
-        GridNode parent;
-        Object[] rows;
-        IGridContentProvider.ExpandState state;
-        int level;
-
-        private GridNode(GridNode parent, Object[] rows, IGridContentProvider.ExpandState state, int level) {
-            this.parent = parent;
-            this.rows = rows;
-            this.state = state;
-            this.level = level;
-        }
-
-        boolean isParentOf(GridNode node) {
-            for (GridNode p = node; p != null; p = p.parent) {
-                if (p == this) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
     // Tooltips
 
     // Last calculated client area
@@ -165,14 +142,13 @@ public abstract class LightGrid extends Canvas {
     private int maxColumnDepth = 0;
     protected Object[] columnElements = new Object[0];
     protected Object[] rowElements = new Object[0];
-    private GridNode[] parentNodes = new GridNode[0];
-    private final Map<Object, GridNode> rowNodes = new IdentityHashMap<>();
+    private final Map<Object, RowNode> rowNodes = new IdentityHashMap<>();
 
     private int maxColumnDefWidth = 1000;
 
-    private GridColumnRenderer columnHeaderRenderer;
-    private GridRowRenderer rowHeaderRenderer;
-    private GridCellRenderer cellRenderer;
+    private final GridColumnRenderer columnHeaderRenderer;
+    private final GridRowRenderer rowHeaderRenderer;
+    private final GridCellRenderer cellRenderer;
 
     /**
      * Are row headers visible?
@@ -432,37 +408,53 @@ public abstract class LightGrid extends Canvas {
     @Nullable
     public abstract IGridController getGridController();
 
-    public boolean hasNodes() {
-        return !rowNodes.isEmpty();
-    }
-
     public void setMaxColumnDefWidth(int maxColumnDefWidth) {
         this.maxColumnDefWidth = maxColumnDefWidth;
     }
 
-    private void collectRows(List<Object> result, List<GridNode> parents, @Nullable GridNode parent, Object[] rows, int level)
-    {
-        for (Object row : rows) {
-            if (row == null) {
+    private void collectNestedRows(@NotNull List<Object> output, @NotNull Object row) {
+        final IGridContentProvider provider = getContentProvider();
+
+        RowNode node = null;
+
+        for (GridColumn column : columns) {
+            final IGridCell cell = new GridCell(column.getElement(), row);
+            final GridExpandState state = provider.getCellInitialExpandState(cell);
+
+            if (state == GridExpandState.NONE) {
                 continue;
             }
-            result.add(row);
-            parents.add(parent);
-            Object[] children = getContentProvider().getChildren(row);
-            if (children != null) {
-                IGridContentProvider.ExpandState state;
-                GridNode node = rowNodes.get(row);
-                if (node == null) {
-                    state = getContentProvider().getColumnDefaultExpandState(row);
-                    node = new GridNode(parent, children, state, level + 1);
-                } else {
-                    state = node.state;
-                }
-                rowNodes.put(row, node);
-                if (state == IGridContentProvider.ExpandState.EXPANDED) {
-                    collectRows(result, parents, node, children, level + 1);
+
+            if (node == null) {
+                rowNodes.put(row, node = new RowNode(null, row, 1));
+            }
+
+            node.state.put(column.getElement(), state);
+
+            if (state == GridExpandState.EXPANDED) {
+                final Object[] children = provider.getChildren(cell);
+                assert children != null;
+
+                for (int i = 0; i < children.length; i++) {
+                    final VirtualRow vr;
+
+                    if (node.rows.size() <= i) {
+                        node.rows.add(vr = new VirtualRow(node, i + 1));
+                        output.add(vr);
+                    } else {
+                        vr = node.rows.get(i);
+                    }
+
+                    vr.columns.put(column.getElement(), children[i]);
                 }
             }
+        }
+    }
+
+    private void collectRows(@NotNull List<Object> output, @NotNull Object[] rows) {
+        for (Object row : rows) {
+            output.add(row);
+            collectNestedRows(output, row);
         }
     }
 
@@ -498,7 +490,6 @@ public abstract class LightGrid extends Canvas {
             bottomIndex = -1;
         }
         IGridContentProvider contentProvider = getContentProvider();
-        refreshRowsData();
         this.displayedToolTipText = null;
 
         if (refreshColumns) {
@@ -545,7 +536,11 @@ public abstract class LightGrid extends Canvas {
             }
 
             scrollValuesObsolete = true;
+        }
 
+        refreshRowsData();
+
+        if (refreshColumns) {
             if (getColumnCount() == 1 && (fitValue || getGridController().isMaximizeSingleColumn())) {
                 // Here we going to maximize single column to entire grid's width
                 // Sometimes (when new grid created and filled with data very fast our client area size is zero
@@ -637,13 +632,18 @@ public abstract class LightGrid extends Canvas {
 
     public void refreshRowsData() {
         // Prepare rows
-        Object[] initialElements = getContentProvider().getRowElements();
-        this.rowNodes.clear();
-        List<Object> realRows = new ArrayList<>(initialElements.length);
-        List<GridNode> parents = new ArrayList<>(initialElements.length);
-        collectRows(realRows, parents, null, initialElements, 0);
-        this.rowElements = realRows.toArray();
-        this.parentNodes = parents.toArray(new GridNode[0]);
+//        Object[] initialElements = getContentProvider().getRowElements();
+//        this.rowNodes.clear();
+//        List<Object> realRows = new ArrayList<>(initialElements.length);
+//        List<GridNode> parents = new ArrayList<>(initialElements.length);
+//        collectRows(realRows, parents, null, initialElements, 0);
+//        this.rowElements = realRows.toArray();
+//        this.parentNodes = parents.toArray(new GridNode[0]);
+
+        rowNodes.clear();
+        final List<Object> rows = new ArrayList<>();
+        collectRows(rows, getContentProvider().getRowElements());
+        rowElements = rows.toArray();
     }
 
     /**
@@ -682,7 +682,7 @@ public abstract class LightGrid extends Canvas {
         if (pos.col >= columnElements.length || pos.row >= rowElements.length) {
             return null;
         }
-        return new GridCell(columnElements[pos.col], rowElements[pos.row]);
+        return getCell(columnElements[pos.col], rowElements[pos.row]);
     }
 
     @NotNull
@@ -940,6 +940,15 @@ public abstract class LightGrid extends Canvas {
     private int getRowHeaderWidth()
     {
         return rowHeaderWidth;
+    }
+
+    @NotNull
+    public IGridCell getCell(@Nullable Object colElement, @Nullable Object rowElement) {
+        if (rowElement instanceof VirtualRow) {
+            return new GridCellComplex(colElement, (VirtualRow) rowElement);
+        } else {
+            return new GridCell(colElement, rowElement);
+        }
     }
 
     public int getRow(Point point)
@@ -1889,16 +1898,13 @@ public abstract class LightGrid extends Canvas {
 
         // Row header width
         rowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
-        for (int i = 0; i < rowElements.length; i++) {
-            Object row = rowElements[i];
-            GridNode parentNode = parentNodes[i];
-            GridNode nr = rowNodes.get(row);
-            int width = rowHeaderRenderer.computeHeaderWidth(
-                row, nr != null ? nr.level : parentNode == null ? 0 : parentNode.level + 1);
-            rowHeaderWidth = Math.max(rowHeaderWidth, width);
-        }
-        if (rowHeaderWidth > MAX_ROW_HEADER_WIDTH) {
-            rowHeaderWidth = MAX_ROW_HEADER_WIDTH;
+        for (Object row : rowElements) {
+            if (row instanceof VirtualRow) {
+                row = ((VirtualRow) row).node.source;
+            }
+            final RowNode node = rowNodes.get(row);
+            final int width = rowHeaderRenderer.computeHeaderWidth(row, node != null ? node.level + 1 : 0);
+            rowHeaderWidth = CommonUtils.clamp(width, rowHeaderWidth, MAX_ROW_HEADER_WIDTH);
         }
     }
 
@@ -2280,7 +2286,7 @@ public abstract class LightGrid extends Canvas {
                         testPos.col = k;
                         testPos.row = row;
                         cellRenderer.paint(
-                            new GridCell(column.getElement(), rowElement),
+                            getCell(column.getElement(), rowElement),
                             gc,
                             cellBounds,
                             selectedCells.contains(testPos),
@@ -2299,11 +2305,16 @@ public abstract class LightGrid extends Canvas {
 
                 x = 0;
 
-                GridNode rowNode = this.rowNodes.get(rowElements[row]);
-                GridNode parentNode = this.parentNodes[row];
                 if (rowHeaderVisible) {
-
                     if (y >= headerHeight) {
+                        final RowNode node;
+
+                        if (rowElement instanceof VirtualRow) {
+                            node = ((VirtualRow) rowElement).node;
+                        } else {
+                            node = null;
+                        }
+
                         cellBounds.x = 0;
                         cellBounds.y = y;
                         cellBounds.width = rowHeaderWidth;
@@ -2315,8 +2326,7 @@ public abstract class LightGrid extends Canvas {
                                 gc,
                                 cellBounds,
                                 cellInRowSelected,
-                                parentNode == null ? 0 : parentNode.level,
-                                rowNode == null ? IGridContentProvider.ExpandState.NONE : rowNode.state,
+                                node != null ? node.level : 0,
                                 rowElement
                             );
                         } finally {
@@ -2345,7 +2355,7 @@ public abstract class LightGrid extends Canvas {
                         cellBounds.height--;
                         try {
                             cellRenderer.paint(
-                                new GridCell(pc.getElement(), rowElement),
+                                getCell(pc.getElement(), rowElement),
                                 gc,
                                 cellBounds,
                                 selectedCells.contains(testPos),
@@ -3117,15 +3127,15 @@ public abstract class LightGrid extends Canvas {
                 }
 
                 if (e.button == 1 && !shift && !ctrl) {
-                    GridNode node = rowNodes.get(rowElements[row]);
-                    GridNode parentNode = parentNodes[row];
-                    if (node != null && node.state != IGridContentProvider.ExpandState.NONE) {
-                        if (GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
-                        {
-                            toggleRowState(row);
-                            return;
-                        }
-                    }
+//                    GridNode node = rowNodes.get(rowElements[row]);
+//                    GridNode parentNode = parentNodes[row];
+//                    if (node != null && node.state != IGridContentProvider.ExpandState.NONE) {
+//                        if (GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
+//                        {
+//                            toggleRowState(row);
+//                            return;
+//                        }
+//                    }
                 }
                 List<GridPos> cells = new ArrayList<>();
 
@@ -3224,7 +3234,7 @@ public abstract class LightGrid extends Canvas {
         if (selectionEvent != null) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
-            selectionEvent.data = new GridCell(col == null ? null : col.getElement(), row < 0 ? null : rowElements[row]);
+            selectionEvent.data = getCell(col == null ? null : col.getElement(), row < 0 ? null : rowElements[row]);
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
@@ -3234,40 +3244,40 @@ public abstract class LightGrid extends Canvas {
     }
 
     private void toggleRowState(int row) {
-        GridNode node = rowNodes.get(rowElements[row]);
-        if (node == null || node.state == IGridContentProvider.ExpandState.NONE) {
-            log.error("Row [" + row + "] state can't be toggled");
-            return;
-        }
-        if (node.state == IGridContentProvider.ExpandState.EXPANDED) {
-            // Collapse node. Remove all elements with different parent
-            int deleteTo;
-            for (deleteTo = row + 1; deleteTo < rowElements.length; deleteTo++) {
-                if (!node.isParentOf(parentNodes[deleteTo])) {
-                    break;
-                }
-            }
-            rowElements = ArrayUtils.deleteArea(Object.class, rowElements, row + 1, deleteTo - 1);
-            parentNodes = ArrayUtils.deleteArea(GridNode.class, parentNodes, row + 1, deleteTo - 1);
-            node.state = IGridContentProvider.ExpandState.COLLAPSED;
-        } else {
-            // Expand node
-            List<Object> result = new ArrayList<>();
-            List<GridNode> parents = new ArrayList<>();
-            collectRows(result, parents, node, node.rows, node.level);
-            rowElements = ArrayUtils.insertArea(Object.class, rowElements, row + 1, result.toArray());
-            parentNodes = ArrayUtils.insertArea(GridNode.class, parentNodes, row + 1, parents.toArray());
-            node.state = IGridContentProvider.ExpandState.EXPANDED;
-        }
-
-        if (focusItem > row) {
-            focusItem = row;
-        }
-        selectedCells.removeIf(pos -> pos.row > row);
-        updateSelectionCache();
-        computeHeaderSizes();
-        this.scrollValuesObsolete = true;
-        redraw();
+//        GridNode node = rowNodes.get(rowElements[row]);
+//        if (node == null || node.state == IGridContentProvider.ExpandState.NONE) {
+//            log.error("Row [" + row + "] state can't be toggled");
+//            return;
+//        }
+//        if (node.state == IGridContentProvider.ExpandState.EXPANDED) {
+//            // Collapse node. Remove all elements with different parent
+//            int deleteTo;
+//            for (deleteTo = row + 1; deleteTo < rowElements.length; deleteTo++) {
+//                if (!node.isParentOf(parentNodes[deleteTo])) {
+//                    break;
+//                }
+//            }
+//            rowElements = ArrayUtils.deleteArea(Object.class, rowElements, row + 1, deleteTo - 1);
+//            parentNodes = ArrayUtils.deleteArea(GridNode.class, parentNodes, row + 1, deleteTo - 1);
+//            node.state = IGridContentProvider.ExpandState.COLLAPSED;
+//        } else {
+//            // Expand node
+//            List<Object> result = new ArrayList<>();
+//            List<GridNode> parents = new ArrayList<>();
+//            collectRows(result, parents, node, node.rows, node.level);
+//            rowElements = ArrayUtils.insertArea(Object.class, rowElements, row + 1, result.toArray());
+//            parentNodes = ArrayUtils.insertArea(GridNode.class, parentNodes, row + 1, parents.toArray());
+//            node.state = IGridContentProvider.ExpandState.EXPANDED;
+//        }
+//
+//        if (focusItem > row) {
+//            focusItem = row;
+//        }
+//        selectedCells.removeIf(pos -> pos.row > row);
+//        updateSelectionCache();
+//        computeHeaderSizes();
+//        this.scrollValuesObsolete = true;
+//        redraw();
     }
 
     /**
@@ -3295,19 +3305,19 @@ public abstract class LightGrid extends Canvas {
                 if (col != null) {
                     if (isListening(SWT.DefaultSelection)) {
                         Event newEvent = new Event();
-                        newEvent.data = new GridCell(col.getElement(), rowElements[row]);
+                        newEvent.data = getCell(col.getElement(), rowElements[row]);
 
                         notifyListeners(SWT.DefaultSelection, newEvent);
                     }
                 } else {
-                    GridNode node = rowNodes.get(rowElements[row]);
-                    GridNode parentNode = parentNodes[row];
-                    if (node != null && node.state != IGridContentProvider.ExpandState.NONE) {
-                        if (!GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
-                        {
-                            toggleRowState(row);
-                        }
-                    }
+//                    GridNode node = rowNodes.get(rowElements[row]);
+//                    GridNode parentNode = parentNodes[row];
+//                    if (node != null && node.state != IGridContentProvider.ExpandState.NONE) {
+//                        if (!GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
+//                        {
+//                            toggleRowState(row);
+//                        }
+//                    }
                 }
             }
         }
@@ -3327,7 +3337,7 @@ public abstract class LightGrid extends Canvas {
                 event.x = e.x;
                 event.y = e.y;
                 event.stateMask = e.stateMask;
-                event.data = new GridCell(focusColumn.getElement(), rowElements[focusItem]);
+                event.data = getCell(focusColumn.getElement(), rowElements[focusItem]);
                 notifyListeners(Event_NavigateLink, event);
                 return;
             }
@@ -3386,7 +3396,7 @@ public abstract class LightGrid extends Canvas {
                 GridColumn column = getColumn(point);
                 int rowIndex = getRow(point);
                 if (column != null && rowIndex >= 0) {
-                    se.data = new GridCell(column.getElement(), rowElements[rowIndex]);
+                    se.data = getCell(column.getElement(), rowElements[rowIndex]);
                 }
                 se.stateMask = e.stateMask;
                 se.x = e.x;
@@ -3556,7 +3566,7 @@ public abstract class LightGrid extends Canvas {
             GridColumn column = getColumn(point);
             int rowIndex = getRow(point);
             if (column != null && rowIndex >= 0) {
-                selectionEvent.data = new GridCell(column.getElement(), rowElements[rowIndex]);
+                selectionEvent.data = getCell(column.getElement(), rowElements[rowIndex]);
             }
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
@@ -3662,7 +3672,7 @@ public abstract class LightGrid extends Canvas {
 
         if (e.character == '\r' && focusItem >= 0 && focusItem < rowElements.length) {
             Event newEvent = new Event();
-            newEvent.data = new GridCell(focusColumn.getElement(), rowElements[focusItem]);
+            newEvent.data = getCell(focusColumn.getElement(), rowElements[focusItem]);
 
             notifyListeners(SWT.DefaultSelection, newEvent);
             return;
@@ -3795,15 +3805,15 @@ public abstract class LightGrid extends Canvas {
             case SWT.KEYPAD_ADD:
             case SWT.KEYPAD_SUBTRACT:
                 if (focusItem >= 0) {
-                    GridNode node = rowNodes.get(rowElements[focusItem]);
-                    if (node != null) {
-                        boolean isPlus = (e.keyCode == '+' || e.keyCode == '=' || e.keyCode == SWT.KEYPAD_ADD);
-                        if ((node.state == IGridContentProvider.ExpandState.EXPANDED && !isPlus) ||
-                            (node.state == IGridContentProvider.ExpandState.COLLAPSED && isPlus))
-                        {
-                            toggleRowState(focusItem);
-                        }
-                    }
+//                    GridNode node = rowNodes.get(rowElements[focusItem]);
+//                    if (node != null) {
+//                        boolean isPlus = (e.keyCode == '+' || e.keyCode == '=' || e.keyCode == SWT.KEYPAD_ADD);
+//                        if ((node.state == IGridContentProvider.ExpandState.EXPANDED && !isPlus) ||
+//                            (node.state == IGridContentProvider.ExpandState.COLLAPSED && isPlus))
+//                        {
+//                            toggleRowState(focusItem);
+//                        }
+//                    }
                 }
                 break;
             case ' ':
@@ -3839,9 +3849,9 @@ public abstract class LightGrid extends Canvas {
             }
             showItem(newSelection);
 
-            GridCell newPos;
+            final IGridCell newPos;
             if (newSelection >= 0 && newSelection < rowElements.length) {
-                newPos = new GridCell(newColumnFocus.getElement(), rowElements[newSelection]);
+                newPos = getCell(newColumnFocus.getElement(), rowElements[newSelection]);
             } else {
                 newPos = null;
             }
@@ -4008,7 +4018,7 @@ public abstract class LightGrid extends Canvas {
             String newTip = null;
             if ((hoveringItem >= 0) && (hoveringColumn != null)) {
                 if (overLink) {
-                    newTip = getContentProvider().getCellLinkText(new GridCell(columnElements[col.getIndex()], rowElements[row]));
+                    newTip = getContentProvider().getCellLinkText(getCell(columnElements[col.getIndex()], rowElements[row]));
                 }
                 if (CommonUtils.isEmpty(newTip)) {
                     // get cell specific tooltip
@@ -4522,10 +4532,7 @@ public abstract class LightGrid extends Canvas {
         if (col == null || row < 0 || row >= rowElements.length) {
             return null;
         }
-        String toolTip = getCellText(new GridCell(columnElements[col.getIndex()], rowElements[row]));
-        if (toolTip == null) {
-            return null;
-        }
+        String toolTip = getCellText(getCell(columnElements[col.getIndex()], rowElements[row]));
         // Show tooltip only if it's larger than column width
         Point ttSize = sizingGC.textExtent(toolTip);
         if (ttSize.x > col.getWidth() || ttSize.y > getItemHeight()) {
@@ -4590,7 +4597,7 @@ public abstract class LightGrid extends Canvas {
 
     private void drawEmptyColumnHeader(GC gc, int x, int y, int width, int height)
     {
-        gc.setBackground(getContentProvider().getCellHeaderBackgroundColor(null, false));
+        gc.setBackground(getContentProvider().getHeaderBackgroundColor(false));
 
         gc.fillRectangle(
             x, 
@@ -4601,11 +4608,11 @@ public abstract class LightGrid extends Canvas {
 
     private void drawEmptyRowHeader(GC gc, int x, int y, int width, int height)
     {
-        gc.setBackground(getContentProvider().getCellHeaderBackgroundColor(null, false));
+        gc.setBackground(getContentProvider().getHeaderBackgroundColor(false));
 
         gc.fillRectangle(x, y, width, height + 1);
 
-        gc.setForeground(getContentProvider().getCellHeaderBorderColor(null));
+        gc.setForeground(getContentProvider().getHeaderBorderColor());
 
         gc.drawLine(
             x + width - 1,
@@ -4630,7 +4637,7 @@ public abstract class LightGrid extends Canvas {
 
     private void drawTopLeftCell(GC gc, int x, int y, int width, int height) {
         int sortOrder = getContentProvider().getColumnSortOrder(null);
-        gc.setBackground(getContentProvider().getCellHeaderBackgroundColor(null, false));
+        gc.setBackground(getContentProvider().getHeaderBackgroundColor(false));
 
         gc.fillRectangle(
             x,
@@ -4638,7 +4645,7 @@ public abstract class LightGrid extends Canvas {
             width - 1,
             height + 1);
 
-        gc.setForeground(getContentProvider().getCellHeaderBorderColor(null));
+        gc.setForeground(getContentProvider().getHeaderBorderColor());
 
         gc.drawLine(
             x + width - 1,
@@ -4767,7 +4774,7 @@ public abstract class LightGrid extends Canvas {
                             if (text.length() > 0) text.append("\n");
                             for (int i = 0; i < columns.size(); i++) {
                                 GridColumn column = columns.get(i);
-                                String cellText = getContentProvider().getCellText(new GridCell(column.getElement(), getRowElement(row)));
+                                String cellText = getContentProvider().getCellText(getCell(column.getElement(), getRowElement(row)));
                                 if (i > 0) text.append(", ");
                                 text.append(cellText);
                             }
@@ -4910,7 +4917,43 @@ public abstract class LightGrid extends Canvas {
 
     }
 
+    public static class VirtualRow {
+        public final Map<Object, Object> columns;
+        public final RowNode node;
+        public final int index;
 
+        public VirtualRow(@NotNull RowNode node, int index) {
+            this.columns = new IdentityHashMap<>();
+            this.node = node;
+            this.index = index;
+        }
+    }
+
+    public static class RowNode {
+        public final RowNode parent;
+        public final Object source;
+        public final List<VirtualRow> rows;
+        public final Map<Object, GridExpandState> state;
+        public final int level;
+
+        public RowNode(@Nullable RowNode parent, @NotNull Object source, int level) {
+            this.parent = parent;
+            this.source = source;
+            this.rows = new ArrayList<>();
+            this.state = new IdentityHashMap<>();
+            this.level = level;
+        }
+
+        public boolean isParentOf(@NotNull RowNode node) {
+            for (RowNode parent = node; parent != null; parent = parent.parent) {
+                if (parent == this) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
 }
 
 

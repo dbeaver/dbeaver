@@ -212,15 +212,15 @@ class GridCellRenderer extends AbstractRenderer {
         }
     }
 
-    boolean isOverLink(GridColumn column, int row, int x, int y) {
+    boolean isOverLink(@NotNull GridColumn column, int row, int x, int y) {
         IGridContentProvider contentProvider = grid.getContentProvider();
         Object colElement = column.getElement();
         Object rowElement = grid.getRowElement(row);
 
-        final GridCell cell = new GridCell(colElement, rowElement);
-        int state = contentProvider.getCellStyle(cell, null);
+        final IGridCell cell = grid.getCell(colElement, rowElement);
+        final int state = contentProvider.getCellStyle(cell, null);
 
-        boolean isToggle = (state & IGridContentProvider.STYLE_TOGGLEABLE) != 0;
+        boolean isToggle = CommonUtils.isBitSet(state, IGridContentProvider.STYLE_TOGGLEABLE);
         if (isToggle) {
             if (contentProvider.isColumnReadOnly(colElement)) {
                 return false;
@@ -238,7 +238,7 @@ class GridCellRenderer extends AbstractRenderer {
                 DBPImage cellImage = grid.getCellImage(cell);
                 Image image;
                 if (cellImage == null) {
-                    image = ((state & IGridContentProvider.STYLE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
+                    image = CommonUtils.isBitSet(state, IGridContentProvider.STYLE_LINK) ? LINK_IMAGE : LINK2_IMAGE;
                 } else {
                     image = DBeaverIcons.getImage(cellImage);
                 }

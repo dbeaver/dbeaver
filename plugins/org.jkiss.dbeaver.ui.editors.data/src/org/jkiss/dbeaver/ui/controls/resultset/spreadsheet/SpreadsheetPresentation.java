@@ -1799,6 +1799,17 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return null;
         }
 
+        @Nullable
+        @Override
+        public Object[] getChildren(@NotNull IGridCell cell) {
+            final Object value = getCellValue(cell, false, false);
+            if (value instanceof DBDCollection && !((DBDCollection) value).isEmpty()) {
+                return ((DBDCollection) value).toArray();
+            } else {
+                return null;
+            }
+        }
+
         @Override
         public int getColumnSortOrder(@Nullable Object colElement) {
             if (showAttrOrdering) {
@@ -1819,26 +1830,26 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return SWT.NONE;
         }
 
-        @NotNull
+        /*@NotNull
         @Override
-        public ExpandState getColumnDefaultExpandState(@NotNull Object colElement) {
-            if (colElement instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) colElement;
+        public GridExpandState getDefaultExpandState(@NotNull Object element) {
+            if (element instanceof DBDAttributeBinding) {
+                DBDAttributeBinding binding = (DBDAttributeBinding) element;
                 switch (binding.getAttribute().getDataKind()) {
                     case STRUCT:
                     case DOCUMENT:
                     case ANY:
-                        return ExpandState.EXPANDED;
+                        return GridExpandState.EXPANDED;
                     case ARRAY:
                         ResultSetRow curRow = controller.getCurrentRow();
                         if (curRow != null) {
                             Object cellValue = controller.getModel().getCellValue(binding, curRow);
                             if (cellValue instanceof DBDCollection) {
                                 if (((DBDCollection) cellValue).getItemCount() < 3) {
-                                    return ExpandState.EXPANDED;
+                                    return GridExpandState.EXPANDED;
                                 }
                                 if (!DBUtils.isNullValue(cellValue)) {
-                                    return ExpandState.COLLAPSED;
+                                    return GridExpandState.COLLAPSED;
                                 }
                             }
                         }
@@ -1847,7 +1858,18 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         break;
                 }
             }
-            return ExpandState.NONE;
+            return GridExpandState.NONE;
+        }*/
+
+        @NotNull
+        @Override
+        public GridExpandState getCellInitialExpandState(@NotNull IGridCell cell) {
+            final Object value = getCellValue(cell, false, false);
+            if (value instanceof DBDCollection && !((DBDCollection) value).isEmpty()) {
+                return GridExpandState.EXPANDED;
+            } else {
+                return GridExpandState.NONE;
+            }
         }
 
         @NotNull
@@ -1982,6 +2004,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Nullable
         @Override
         public Object getCellValue(@NotNull IGridCell cell, boolean formatString, boolean lockData) {
+            if (cell instanceof GridCellComplex) {
+                final GridCellComplex complexCell = (GridCellComplex) cell;
+                if (complexCell.isValid()) {
+                    return complexCell.getData();
+                } else {
+                    return "";
+                }
+            }
             final boolean recordMode = controller.isRecordMode();
             final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.getRowElement() : cell.getColumnElement());
             final ResultSetRow row = (ResultSetRow) (recordMode ? cell.getColumnElement() : cell.getRowElement());
@@ -2227,22 +2257,22 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public Color getCellHeaderForegroundColor(Object element) {
+        public Color getHeaderForegroundColor() {
             return cellHeaderForeground;
         }
 
         @Override
-        public Color getCellHeaderBackgroundColor(Object element, boolean selected) {
+        public Color getHeaderBackgroundColor(boolean selected) {
             return selected ? cellHeaderSelectionBackground : cellHeaderBackground;
         }
 
         @NotNull
         @Override
-        public Color getCellHeaderBorderColor(Object element) {
+        public Color getHeaderBorderColor() {
             return cellHeaderBorder;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public String getCellLinkText(@NotNull IGridCell cell) {
             boolean recordMode = controller.isRecordMode();
@@ -2263,7 +2293,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
                 return text.toString();
             }
-            return "";
+            return null;
         }
 
         @Override
@@ -2359,6 +2389,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 } else {
                     return attributeBinding.getLabel();
                 }
+            } else if (element instanceof LightGrid.VirtualRow) {
+                return String.valueOf(((LightGrid.VirtualRow) element).index);
             } else {
                 String rowNumber = String.valueOf(((ResultSetRow) element).getVisualNumber() + 1);
                 if (!controller.isRecordMode()) {

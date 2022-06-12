@@ -47,12 +47,12 @@ class GridRowRenderer extends AbstractRenderer {
         DEFAULT_FOREGROUND_TEXT = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, int level, IGridContentProvider.ExpandState state, Object element) {
+    public void paint(GC gc, Rectangle bounds, boolean selected, int level, Object element) {
         String text = grid.getLabelProvider().getText(element);
 
         gc.setFont(grid.normalFont);
 
-        Color background = grid.getContentProvider().getCellHeaderBackgroundColor(element, selected);
+        Color background = grid.getContentProvider().getHeaderBackgroundColor(selected);
         if (background == null) {
             background = DEFAULT_BACKGROUND;
         }
@@ -61,7 +61,7 @@ class GridRowRenderer extends AbstractRenderer {
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height + 1);
 
         {
-            gc.setForeground(grid.getContentProvider().getCellHeaderBorderColor(null));
+            gc.setForeground(grid.getContentProvider().getHeaderBorderColor());
 
             gc.drawLine(
                 bounds.x + bounds.width - 1,
@@ -79,13 +79,6 @@ class GridRowRenderer extends AbstractRenderer {
         if (level > 0) {
             x += level * LEVEL_SPACING;
         }
-        if (state != IGridContentProvider.ExpandState.NONE) {
-            Image expandImage = state == IGridContentProvider.ExpandState.EXPANDED ? IMG_COLLAPSE : IMG_EXPAND;
-            gc.drawImage(expandImage, x, bounds.y + (bounds.height - EXPANDED_BOUNDS.height) / 2);
-            x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
-        } else if (grid.hasNodes()) {
-            x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
-        }
 
         Image image = grid.getLabelProvider().getImage(element);
 
@@ -98,7 +91,7 @@ class GridRowRenderer extends AbstractRenderer {
 
         width -= RIGHT_MARGIN;
 
-        Color foreground = grid.getContentProvider().getCellHeaderForegroundColor(element);
+        Color foreground = grid.getContentProvider().getHeaderForegroundColor();
         if (foreground == null) {
             foreground = grid.getLabelProvider().getForeground(element);
         }
@@ -125,9 +118,6 @@ class GridRowRenderer extends AbstractRenderer {
 
     public int computeHeaderWidth(Object element, int level) {
         int width = GridRowRenderer.LEFT_MARGIN + GridRowRenderer.RIGHT_MARGIN;
-        if (grid.hasNodes()) {
-            width += GridRowRenderer.EXPANDED_BOUNDS.width + EXPANDER_SPACING;
-        }
         Image rowImage = grid.getLabelProvider().getImage(element);
         if (rowImage != null) {
             width += rowImage.getBounds().width;

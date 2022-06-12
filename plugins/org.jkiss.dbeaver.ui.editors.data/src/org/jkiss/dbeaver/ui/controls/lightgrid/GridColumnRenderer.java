@@ -95,8 +95,8 @@ class GridColumnRenderer extends AbstractRenderer {
         boolean flat = true;
         boolean drawSelected = false;
 
-        gc.setBackground(grid.getContentProvider().getCellHeaderBackgroundColor(element, selected || hovering));
-        gc.setForeground(grid.getContentProvider().getCellHeaderForegroundColor(element));
+        gc.setBackground(grid.getContentProvider().getHeaderBackgroundColor(selected || hovering));
+        gc.setForeground(grid.getContentProvider().getHeaderForegroundColor());
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
         int pushedDrawingOffset = 0;
@@ -209,7 +209,7 @@ class GridColumnRenderer extends AbstractRenderer {
             }
 
         } else {
-            gc.setForeground(grid.getContentProvider().getCellHeaderBorderColor(null));
+            gc.setForeground(grid.getContentProvider().getHeaderBorderColor());
             gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
             gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
         }

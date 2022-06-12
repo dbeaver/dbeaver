@@ -27,12 +27,6 @@ import org.jkiss.dbeaver.ui.UIElementAlignment;
 
 public interface IGridContentProvider extends IContentProvider {
 
-    enum ExpandState {
-        NONE,
-        EXPANDED,
-        COLLAPSED
-    }
-
     // @formatter:off
     int STYLE_NONE          = 0;
     int STYLE_LINK          = 1;
@@ -53,6 +47,9 @@ public interface IGridContentProvider extends IContentProvider {
     @Nullable
     Object[] getChildren(Object element);
 
+    @Nullable
+    Object[] getChildren(@NotNull IGridCell cell);
+
     boolean isGridReadOnly();
 
     /* Columns content */
@@ -65,9 +62,6 @@ public interface IGridContentProvider extends IContentProvider {
 
     boolean isColumnReadOnly(@NotNull Object colElement);
 
-    @NotNull
-    ExpandState getColumnDefaultExpandState(@NotNull Object colElement);
-
     /* Cells content */
 
     /**
@@ -77,6 +71,9 @@ public interface IGridContentProvider extends IContentProvider {
 
     @NotNull
     UIElementAlignment getCellAlign(@NotNull IGridCell cell);
+
+    @NotNull
+    GridExpandState getCellInitialExpandState(@NotNull IGridCell cell);
 
     @Nullable
     Font getCellFont(@NotNull IGridCell cell);
@@ -92,6 +89,9 @@ public interface IGridContentProvider extends IContentProvider {
     String getCellText(@NotNull IGridCell cell);
 
     @Nullable
+    String getCellLinkText(@NotNull IGridCell cell);
+
+    @Nullable
     DBPImage getCellImage(@NotNull IGridCell cell);
 
     @Nullable
@@ -101,16 +101,13 @@ public interface IGridContentProvider extends IContentProvider {
     Color getCellBackgroundColor(@NotNull IGridCell cell, boolean selected);
 
     @Nullable
-    Color getCellHeaderForegroundColor(Object element);
+    Color getHeaderForegroundColor();
 
     @Nullable
-    Color getCellHeaderBackgroundColor(Object element, boolean selected);
+    Color getHeaderBackgroundColor(boolean selected);
 
     @NotNull
-    Color getCellHeaderBorderColor(@Nullable Object element);
-
-    @NotNull
-    String getCellLinkText(@NotNull IGridCell cell);
+    Color getHeaderBorderColor();
 
     // Resets all cached colors
     void resetColors();

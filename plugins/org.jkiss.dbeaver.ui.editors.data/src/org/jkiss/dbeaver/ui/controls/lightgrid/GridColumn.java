@@ -300,7 +300,7 @@ class GridColumn {
     private int computeCellWidth(Object col, Object row) {
         int x = leftMargin;
 
-        final GridCell cell = new GridCell(col, row);
+        final IGridCell cell = grid.getCell(col, row);
         final String cellText = grid.getCellText(cell);
         final int cellState = grid.getContentProvider().getCellStyle(cell, cellText);
 
