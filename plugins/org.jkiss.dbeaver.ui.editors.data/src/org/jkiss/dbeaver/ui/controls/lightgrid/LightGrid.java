@@ -416,6 +416,7 @@ public abstract class LightGrid extends Canvas {
         final IGridContentProvider provider = getContentProvider();
 
         RowNode node = null;
+        int rows = 0;
 
         for (GridColumn column : columns) {
             final IGridCell cell = new GridCell(column.getElement(), row);
@@ -434,20 +435,12 @@ public abstract class LightGrid extends Canvas {
             if (state == GridExpandState.EXPANDED) {
                 final Object[] children = provider.getChildren(cell);
                 assert children != null;
-
-                for (int i = 0; i < children.length; i++) {
-                    final VirtualRow vr;
-
-                    if (node.rows.size() <= i) {
-                        node.rows.add(vr = new VirtualRow(node, i + 1));
-                        output.add(vr);
-                    } else {
-                        vr = node.rows.get(i);
-                    }
-
-                    vr.columns.put(column.getElement(), children[i]);
-                }
+                rows = Math.max(rows, children.length);
             }
+        }
+
+        for (int i = 0; i < rows; i++) {
+            output.add(new VirtualRow(node, i));
         }
     }
 
@@ -2039,9 +2032,9 @@ public abstract class LightGrid extends Canvas {
 
             if (x < x2) {
                 int ltSort = getContentProvider().getColumnSortOrder(null);
-                if (ltSort != SWT.NONE 
-                		&& x > x2 - GridColumnRenderer.SORT_WIDTH - GridColumnRenderer.ARROW_MARGIN 
-                		&& x < x2 - GridColumnRenderer.ARROW_MARGIN 
+                if (ltSort != SWT.NONE
+                		&& x > x2 - GridColumnRenderer.SORT_WIDTH - GridColumnRenderer.ARROW_MARGIN
+                		&& x < x2 - GridColumnRenderer.ARROW_MARGIN
                 		&& y > GridColumnRenderer.TOP_MARGIN)
                 {
                     columnBeingSorted = null;
@@ -2058,7 +2051,7 @@ public abstract class LightGrid extends Canvas {
                                 columnBeingSorted = column;
                                 break;
                             }
-                            
+
                             if(column.isOverFilterButton(x - x2, y)) {
                             	columnBeingFiltered = column;
                             	overFilter = true;
@@ -2108,16 +2101,16 @@ public abstract class LightGrid extends Canvas {
         }
 
         if(overFilter != hoveringOnColumnFilter) {
-        	if(overFilter) 
-        		setCursor(sortCursor);        	
+        	if(overFilter)
+        		setCursor(sortCursor);
         	else if(!overSorter) {
         		columnBeingFiltered = null;
         		setCursor(null);
         	}
-        		
+
         	hoveringOnColumnFilter = overFilter;
         }
-        
+
         if (overResizer != hoveringOnColumnResizer) {
             if (overResizer) {
                 setCursor(getDisplay().getSystemCursor(SWT.CURSOR_SIZEWE));
@@ -3070,14 +3063,14 @@ public abstract class LightGrid extends Canvas {
                 return;
             }
         }
-        
+
         if(hoveringOnColumnFilter) {
         	handleHoverOnColumnHeader(e.x, e.y);
         	 if (hoveringOnColumnFilter) {
                  return;
              }
         }
-        
+
         if (hoveringOnColumnResizer) {
             if (e.button == 1) {
                 resizingColumn = true;
@@ -4600,8 +4593,8 @@ public abstract class LightGrid extends Canvas {
         gc.setBackground(getContentProvider().getHeaderBackgroundColor(false));
 
         gc.fillRectangle(
-            x, 
-            y, 
+            x,
+            y,
             width + 1,
             height + 1);
     }
@@ -4918,12 +4911,10 @@ public abstract class LightGrid extends Canvas {
     }
 
     public static class VirtualRow {
-        public final Map<Object, Object> columns;
         public final RowNode node;
         public final int index;
 
         public VirtualRow(@NotNull RowNode node, int index) {
-            this.columns = new IdentityHashMap<>();
             this.node = node;
             this.index = index;
         }
@@ -4932,26 +4923,14 @@ public abstract class LightGrid extends Canvas {
     public static class RowNode {
         public final RowNode parent;
         public final Object source;
-        public final List<VirtualRow> rows;
         public final Map<Object, GridExpandState> state;
         public final int level;
 
         public RowNode(@Nullable RowNode parent, @NotNull Object source, int level) {
             this.parent = parent;
             this.source = source;
-            this.rows = new ArrayList<>();
             this.state = new IdentityHashMap<>();
             this.level = level;
-        }
-
-        public boolean isParentOf(@NotNull RowNode node) {
-            for (RowNode parent = node; parent != null; parent = parent.parent) {
-                if (parent == this) {
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

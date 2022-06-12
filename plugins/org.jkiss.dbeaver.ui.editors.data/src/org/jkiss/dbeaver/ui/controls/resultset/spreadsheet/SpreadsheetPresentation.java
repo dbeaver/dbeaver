@@ -1802,7 +1802,22 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Nullable
         @Override
         public Object[] getChildren(@NotNull IGridCell cell) {
-            final Object value = getCellValue(cell, false, false);
+            final DBDAttributeBinding attr;
+            final ResultSetRow row;
+
+            if (controller.isRecordMode()) {
+                attr = (DBDAttributeBinding) cell.getRowElement();
+                row = (ResultSetRow) cell.getColumnElement();
+            } else {
+                attr = (DBDAttributeBinding) cell.getColumnElement();
+                row = (ResultSetRow) cell.getRowElement();
+            }
+
+            assert attr != null;
+            assert row != null;
+
+            final Object value = controller.getModel().getCellValue(attr, row);
+
             if (value instanceof DBDCollection && !((DBDCollection) value).isEmpty()) {
                 return ((DBDCollection) value).toArray();
             } else {
@@ -2006,8 +2021,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Object getCellValue(@NotNull IGridCell cell, boolean formatString, boolean lockData) {
             if (cell instanceof GridCellComplex) {
                 final GridCellComplex complexCell = (GridCellComplex) cell;
-                if (complexCell.isValid()) {
-                    return complexCell.getData();
+                final Object[] children = getChildren(cell);
+                if (children != null && children.length > complexCell.getRowIndex()) {
+                    return children[complexCell.getRowIndex()];
                 } else {
                     return "";
                 }
@@ -2390,7 +2406,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     return attributeBinding.getLabel();
                 }
             } else if (element instanceof LightGrid.VirtualRow) {
-                return String.valueOf(((LightGrid.VirtualRow) element).index);
+                return String.valueOf(((LightGrid.VirtualRow) element).index + 1);
             } else {
                 String rowNumber = String.valueOf(((ResultSetRow) element).getVisualNumber() + 1);
                 if (!controller.isRecordMode()) {

@@ -42,13 +42,8 @@ public final class GridCellComplex implements IGridCell {
         return col;
     }
 
-    @Nullable
-    public Object getData() {
-        return row.columns.get(col);
-    }
-
-    public boolean isValid() {
-        return row.columns.containsKey(col);
+    public int getRowIndex() {
+        return row.index;
     }
 
     @Override
