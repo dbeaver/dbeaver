@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 
 import java.util.Objects;
 
-public class GridCell implements IGridCell {
+public final class GridCell implements IGridCell {
     private final Object col;
     private final Object row;
 

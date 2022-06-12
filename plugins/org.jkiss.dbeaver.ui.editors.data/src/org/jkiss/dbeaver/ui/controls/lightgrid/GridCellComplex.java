@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public class GridCellComplex implements IGridCell {
+import java.util.Objects;
+
+public final class GridCellComplex implements IGridCell {
     private final Object col;
     private final LightGrid.VirtualRow row;
 
@@ -28,7 +30,7 @@ public class GridCellComplex implements IGridCell {
         this.row = row;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Object getRowElement() {
         return row.node.source;
@@ -47,5 +49,23 @@ public class GridCellComplex implements IGridCell {
 
     public boolean isValid() {
         return row.columns.containsKey(col);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GridCellComplex that = (GridCellComplex) o;
+        return Objects.equals(col, that.col) && Objects.equals(row, that.row);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(col, row);
+    }
+
+    @Override
+    public String toString() {
+        return row.index + "@" + row.node.source + ":" + col;
     }
 }
