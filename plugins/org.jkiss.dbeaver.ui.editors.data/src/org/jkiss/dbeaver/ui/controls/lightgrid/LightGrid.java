@@ -427,7 +427,7 @@ public abstract class LightGrid extends Canvas {
             }
 
             if (node == null) {
-                rowNodes.put(row, node = new RowNode(null, row, 1));
+                rowNodes.put(row, node = new RowNode(row));
             }
 
             node.state.put(column.getElement(), state);
@@ -1893,10 +1893,10 @@ public abstract class LightGrid extends Canvas {
         rowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
         for (Object row : rowElements) {
             if (row instanceof VirtualRow) {
-                row = ((VirtualRow) row).node.source;
+                row = ((VirtualRow) row).getSourceRow();
             }
             final RowNode node = rowNodes.get(row);
-            final int width = rowHeaderRenderer.computeHeaderWidth(row, node != null ? node.level + 1 : 0);
+            final int width = rowHeaderRenderer.computeHeaderWidth(row, node != null ? node.getLevel() + 1 : 0);
             rowHeaderWidth = CommonUtils.clamp(width, rowHeaderWidth, MAX_ROW_HEADER_WIDTH);
         }
     }
@@ -2319,7 +2319,7 @@ public abstract class LightGrid extends Canvas {
                                 gc,
                                 cellBounds,
                                 cellInRowSelected,
-                                node != null ? node.level : 0,
+                                node != null ? node.getLevel() : 0,
                                 rowElement
                             );
                         } finally {
@@ -4911,26 +4911,57 @@ public abstract class LightGrid extends Canvas {
     }
 
     public static class VirtualRow {
-        public final RowNode node;
-        public final int index;
+        /** A node that represents state of the source row */
+        private final RowNode node;
+        /** Index of a collection element */
+        private final int index;
 
         public VirtualRow(@NotNull RowNode node, int index) {
             this.node = node;
             this.index = index;
         }
+
+        @NotNull
+        public RowNode getNode() {
+            return node;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        @NotNull
+        public Object getSourceRow() {
+            return node.getSourceRow();
+        }
     }
 
     public static class RowNode {
-        public final RowNode parent;
-        public final Object source;
-        public final Map<Object, GridExpandState> state;
-        public final int level;
+        /** Either the source row or {@code RowNode} if nested several times */
+        private final Object parent;
+        /** Expansion state for individual column elements for visual appearance */
+        private final Map<Object, GridExpandState> state;
 
-        public RowNode(@Nullable RowNode parent, @NotNull Object source, int level) {
+        public RowNode(@Nullable Object parent) {
             this.parent = parent;
-            this.source = source;
             this.state = new IdentityHashMap<>();
-            this.level = level;
+        }
+
+        @NotNull
+        private Object getSourceRow() {
+            if (parent instanceof RowNode) {
+                return ((RowNode) parent).getSourceRow();
+            } else {
+                return Objects.requireNonNull(parent);
+            }
+        }
+
+        public int getLevel() {
+            if (parent instanceof RowNode) {
+                return ((RowNode) parent).getLevel() + 1;
+            } else {
+                return 1;
+            }
         }
     }
 }

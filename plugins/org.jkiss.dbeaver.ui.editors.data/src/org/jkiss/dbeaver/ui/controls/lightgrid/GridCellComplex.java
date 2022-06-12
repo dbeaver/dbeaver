@@ -33,7 +33,7 @@ public final class GridCellComplex implements IGridCell {
     @NotNull
     @Override
     public Object getRowElement() {
-        return row.node.source;
+        return row.getSourceRow();
     }
 
     @Nullable
@@ -43,7 +43,7 @@ public final class GridCellComplex implements IGridCell {
     }
 
     public int getRowIndex() {
-        return row.index;
+        return row.getIndex();
     }
 
     @Override
@@ -61,6 +61,6 @@ public final class GridCellComplex implements IGridCell {
 
     @Override
     public String toString() {
-        return row.index + "@" + row.node.source + ":" + col;
+        return row.getIndex() + "@" + row.getSourceRow() + ":" + col;
     }
 }

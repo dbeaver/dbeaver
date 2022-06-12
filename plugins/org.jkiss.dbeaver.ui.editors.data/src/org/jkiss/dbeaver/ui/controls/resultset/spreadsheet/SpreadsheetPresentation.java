@@ -2406,7 +2406,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     return attributeBinding.getLabel();
                 }
             } else if (element instanceof LightGrid.VirtualRow) {
-                return String.valueOf(((LightGrid.VirtualRow) element).index + 1);
+                return String.valueOf(((LightGrid.VirtualRow) element).getIndex() + 1);
             } else {
                 String rowNumber = String.valueOf(((ResultSetRow) element).getVisualNumber() + 1);
                 if (!controller.isRecordMode()) {
