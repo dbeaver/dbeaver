@@ -385,6 +385,11 @@ public class TaskManagerImpl implements DBTTaskManager {
         }
     }
 
+    @Override
+    public void updateConfiguration() {
+        saveConfiguration();
+    }
+
     private void serializeTasks(@NotNull JsonWriter jsonWriter) throws IOException {
         jsonWriter.setIndent("\t");
         jsonWriter.beginObject();
