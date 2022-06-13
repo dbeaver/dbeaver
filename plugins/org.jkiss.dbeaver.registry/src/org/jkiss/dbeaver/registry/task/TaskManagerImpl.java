@@ -354,7 +354,7 @@ public class TaskManagerImpl implements DBTTaskManager {
             if (Files.exists(configFile)) {
                 ContentUtils.makeFileBackup(configFile);
             }
-            if (tasks.isEmpty()) {
+            if (tasks.isEmpty() && CommonUtils.isEmpty(tasksFolders)) {
                 try {
                     Files.delete(configFile);
                 } catch (IOException e) {
