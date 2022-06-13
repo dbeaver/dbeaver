@@ -79,6 +79,11 @@ public class TaskFolderImpl implements DBTTaskFolder {
     }
 
     @Override
+    public boolean removeFolderFromFoldersList(@NotNull DBTTaskFolder taskFolder) {
+        return nestedFolders.remove(taskFolder);
+    }
+
+    @Override
     public void setName(String newName) {
         this.folderName = newName;
     }

@@ -174,6 +174,9 @@ public class TaskManagerImpl implements DBTTaskManager {
         synchronized (tasksFolders) {
             tasksFolders.add(taskFolder);
         }
+        if (parentFolder != null) {
+            parentFolder.addFolderToFoldersList(taskFolder);
+        }
 
         TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_ADD));
         return taskFolder;
@@ -232,12 +235,19 @@ public class TaskManagerImpl implements DBTTaskManager {
             throw new DBException("Task folder with name '" + taskFolder.getName() + "' is missing");
         }
 
+        DBTTaskFolder parentFolder = taskFolder.getParentFolder();
+        if (parentFolder != null) {
+            // Remove folder from parent
+            parentFolder.removeFolderFromFoldersList(taskFolder);
+        }
+
         // Remove empty task folder or make task folder empty and then remove it
+        // Move all task to the parent folder if it exists
         List<DBTTask> folderTasks = taskFolder.getTasks();
         if (!CommonUtils.isEmpty(folderTasks)) {
             for (DBTTask task : folderTasks) {
                 if (task instanceof TaskImpl) {
-                    ((TaskImpl)task).setTaskFolder(null);
+                    ((TaskImpl) task).setTaskFolder(parentFolder);
                 }
             }
         }

@@ -39,4 +39,8 @@ public interface DBTTaskFolder extends DBPNamedObject2 {
     List<DBTTaskFolder> getNestedTaskFolders();
 
     void addFolderToFoldersList(@NotNull DBTTaskFolder taskFolder);
+
+    boolean removeFolderFromFoldersList(@NotNull DBTTaskFolder taskFolder);
+
+    DBTTaskFolder getParentFolder();
 }
