@@ -700,7 +700,12 @@ public abstract class LightGrid extends Canvas {
     }
 
     public Object getRowElement(int row) {
-        return rowElements[row];
+        final Object rowElement = rowElements[row];
+        if (rowElement instanceof VirtualRow) {
+            return ((VirtualRow) rowElement).getSourceRow();
+        } else {
+            return rowElement;
+        }
     }
 
     @Override
@@ -4102,7 +4107,7 @@ public abstract class LightGrid extends Canvas {
         if (focusItem < 0 || focusItem >= rowElements.length) {
             return null;
         }
-        return rowElements[focusItem];
+        return getRowElement(focusItem);
     }
 
     @Nullable
