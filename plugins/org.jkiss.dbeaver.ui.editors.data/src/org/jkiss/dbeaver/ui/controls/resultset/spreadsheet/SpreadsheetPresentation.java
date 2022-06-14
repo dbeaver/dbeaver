@@ -1193,7 +1193,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (inline) {
             if (activeInlineEditor != null) {
                 spreadsheet.showCellEditor(placeholder);
-                if (activeInlineEditor instanceof BaseValueEditor && CommonUtils.getBoolean(getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_INLINE_ENTER))) {
+                if (activeInlineEditor instanceof BaseValueEditor && CommonUtils.getBoolean(
+                        getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_INLINE_ENTER))) {
                     ((BaseValueEditor<?>) activeInlineEditor).addAdditionalTraverseActions((it) -> {
                         //We don't want to create another listener due to baseValueTraverseListener
                         //removing any information about traverse event and setting it to TRAVERSE_NONE
