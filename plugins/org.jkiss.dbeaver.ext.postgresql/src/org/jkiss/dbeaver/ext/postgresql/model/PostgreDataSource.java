@@ -514,15 +514,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     public PostgreDataSource getDataSource() {
         return this;
     }
-    
-    @Override
-    public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException {
-        DBSDataType dataType = super.resolveDataType(monitor, typeFullName);
-        if (dataType != null) {
-            return dataType;
-        }
-        return PostgreUtils.resolveTypeFullName(monitor, this, typeFullName);
-    }
 
     @Override
     public Collection<PostgreDataType> getLocalDataTypes()

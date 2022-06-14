@@ -536,7 +536,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
-        return PostgreUtils.resolveTypeFullName(monitor, this, typeFullName);
+        return dataSource.resolveDataType(monitor, typeFullName);
     }
 
     @Override
