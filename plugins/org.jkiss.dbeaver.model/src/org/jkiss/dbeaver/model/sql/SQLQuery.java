@@ -436,7 +436,8 @@ public class SQLQuery implements SQLScriptElement {
 
     public boolean isDropTableDangerous() {
         parseQuery();
-        return statement != null && statement instanceof Drop && ((Drop) statement).getName() != null;
+        return statement != null && statement instanceof Drop &&
+            ((Drop) statement).getName() != null && ((Drop) statement).getType().equalsIgnoreCase("table");
     }
 
     private static class SingleTableMeta implements DBCEntityMetaData {
