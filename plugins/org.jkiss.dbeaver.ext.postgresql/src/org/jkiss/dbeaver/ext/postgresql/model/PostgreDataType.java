@@ -23,9 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
-import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -367,8 +365,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
     
     @Override
-    public boolean isEnum() {
-        return typeCategory == PostgreTypeCategory.E;
+    public boolean isSameDataType(@NotNull DBCAttributeMetaData metaData) {
+        return super.isSameDataType(metaData) || typeCategory == PostgreTypeCategory.E;
     }
 
     @Override

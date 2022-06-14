@@ -763,14 +763,11 @@ public class DBExecUtils {
                     }
 
                     if (tableColumn != null) {
-                        DBCAttributeMetaData rsAttrMeta = resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition());
-                        boolean structInconsistentTypes = tableColumn.getDataKind().isComplex() != rsAttrMeta.getDataKind().isComplex() 
-                            && !isEnumType(tableColumn);
-                        
-                        boolean updateColumnHandler = updateColumnMeta &&
-                            (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta)) &&
-                            rows != null;
-                        if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind()) || structInconsistentTypes) {
+                        boolean updateColumnHandler = updateColumnMeta && rows != null
+                            && (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta));
+
+                        if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind()) ||
+                            !isSameDataTypes(tableColumn, resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition()))) {
                             // Different data kind. Probably it is an alias which conflicts with column name
                             // Do not update entity attribute.
                             // It is a silly workaround for PG-like databases
@@ -853,10 +850,10 @@ public class DBExecUtils {
         }
     }
 
-    private static boolean isEnumType(DBSEntityAttribute tableColumn) {
+    private static boolean isSameDataTypes(DBSEntityAttribute tableColumn, DBCAttributeMetaData resultSetAttributeMeta) {
         if (tableColumn instanceof DBSTypedObjectEx) {
             DBSDataType columnDataType = ((DBSTypedObjectEx) tableColumn).getDataType();
-            return columnDataType != null && columnDataType.isEnum();
+            return columnDataType != null && columnDataType.isSameDataType(resultSetAttributeMeta);
         }
         return false;
     }
