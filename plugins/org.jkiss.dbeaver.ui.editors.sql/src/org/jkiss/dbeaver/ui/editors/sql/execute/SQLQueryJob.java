@@ -119,6 +119,8 @@ public class SQLQueryJob extends DataSourceJob
     private long fetchFlags;
     private SQLQueryResult curResult;
 
+    private transient int rowsFetched;
+
     public SQLQueryJob(
         @NotNull IWorkbenchPartSite partSite,
         @NotNull String name,
@@ -603,7 +605,19 @@ public class SQLQueryJob extends DataSourceJob
                         } else {
                             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
                             if (dataReceiver != null) {
-                                hasResultSet = fetchQueryData(session, resultSet, curResult, curResult.addExecuteResult(true), dataReceiver, true);
+                                try {
+                                    hasResultSet = fetchQueryData(session, resultSet, curResult, curResult.addExecuteResult(true), dataReceiver, true);
+                                } catch (DBCException e) {
+                                    if (rowsFetched == 0) {
+                                        throw e;
+                                    } else {
+                                        // Some rows were fetched so we don't want to fail entire query
+                                        // Ad error as a warning
+                                        log.warn("Fetch failed", e);
+                                        statistics.setRowsFetched(rowsFetched);
+                                        statistics.setError(e);
+                                    }
+                                }
                             }
                         }
                     }
@@ -779,8 +793,10 @@ public class SQLQueryJob extends DataSourceJob
             long fetchStartTime = System.currentTimeMillis();
 
             // Fetch all rows
+            rowsFetched = 0;
             while ((!hasLimits() || !fetchProgress.isMaxRowsFetched(rsMaxRows)) && !fetchProgress.isCanceled() && resultSet.nextRow()) {
                 dataReceiver.fetchRow(session, resultSet);
+                rowsFetched++;
                 fetchProgress.monitorRowFetch();
             }
             if (updateStatistics) {

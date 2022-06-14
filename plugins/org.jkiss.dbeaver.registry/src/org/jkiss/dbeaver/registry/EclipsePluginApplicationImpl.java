@@ -29,7 +29,10 @@ import java.nio.file.Path;
 /**
  * EclipseApplicationImpl
  */
-class EclipsePluginApplicationImpl extends EclipseApplicationImpl {
+public class EclipsePluginApplicationImpl extends EclipseApplicationImpl {
+
+    public EclipsePluginApplicationImpl() {
+    }
 
     @Override
     public boolean isStandalone() {
@@ -70,6 +73,7 @@ class EclipsePluginApplicationImpl extends EclipseApplicationImpl {
 
     @Override
     public Object start(IApplicationContext context) throws Exception {
+
         return null;
     }
 
