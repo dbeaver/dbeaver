@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 
 import java.util.Map;
@@ -123,6 +124,6 @@ public abstract class QMMObject {
 
     public abstract QMMConnectionInfo getConnection();
 
-    public abstract Map<String, Object> toMap();
+    public abstract Map<String, Object> toMap() throws DBException;
 
 }

@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.CommonUtils;
 
@@ -38,6 +40,7 @@ public class QMMConnectionInfo extends QMMObject {
     private UUID projectId;
     private String projectName;
     private String projectPath;
+    private boolean isAnonymousProject;
     private String containerName;
     @Nullable
     private DBPConnectionConfiguration connectionConfiguration;
@@ -65,6 +68,7 @@ public class QMMConnectionInfo extends QMMObject {
         projectId = builder.projectId;
         projectName = builder.projectName;
         projectPath = builder.projectPath;
+        isAnonymousProject = builder.isAnonymousProject;
         containerId = builder.containerId;
         driverId = builder.driverId;
         containerName = builder.containerName;
@@ -135,7 +139,7 @@ public class QMMConnectionInfo extends QMMObject {
     }
 
     @Override
-    public Map<String, Object> toMap() {
+    public Map<String, Object> toMap() throws DBException {
         Map<String, Object> serializedConnectionInfo = new LinkedHashMap<>();
         serializedConnectionInfo.put("containerId", getContainerId());
         serializedConnectionInfo.put("containerName", getContainerName());
@@ -148,6 +152,11 @@ public class QMMConnectionInfo extends QMMObject {
         project.put("id", getProject().getProjectID());
         project.put("name", getProject().getName());
         project.put("path", getProject().getAbsolutePath().toString());
+        var projectSession = getProject()
+            .getSessionContext()
+            .getSpaceSession(new LoggingProgressMonitor(), getProject(), false);
+        boolean isAnonymousProject = projectSession == null || projectSession.getSessionPrincipal() == null;
+        project.put("isAnonymous", isAnonymousProject);
         serializedConnectionInfo.put("project", project);
 
         return serializedConnectionInfo;
@@ -170,6 +179,7 @@ public class QMMConnectionInfo extends QMMObject {
         UUID projectId = UUID.fromString(CommonUtils.toString(project.get("id")));
         String projectName = CommonUtils.toString(project.get("name"));
         String projectPath = CommonUtils.toString(project.get("path"));
+        boolean isAnonymous = CommonUtils.toBoolean(project.get("isAnonymous"));
         return builder()
             .setContainerId(containerId)
             .setContainerName(containerName)
@@ -180,6 +190,7 @@ public class QMMConnectionInfo extends QMMObject {
             .setProjectId(projectId)
             .setProjectName(projectName)
             .setProjectPath(projectPath)
+            .setIsAnonymousProject(isAnonymous)
             .build();
     }
 
@@ -398,11 +409,16 @@ public class QMMConnectionInfo extends QMMObject {
         return new Builder();
     }
 
+    public boolean isAnonymousProject() {
+        return isAnonymousProject;
+    }
+
     private static final class Builder {
         private DBPProject project;
         private UUID projectId;
         private String projectName;
         private String projectPath;
+        private boolean isAnonymousProject;
         private String containerId;
         private String driverId;
         private String containerName;
@@ -435,6 +451,11 @@ public class QMMConnectionInfo extends QMMObject {
 
         public Builder setProjectPath(String projectPath) {
             this.projectPath = projectPath;
+            return this;
+        }
+
+        public Builder setIsAnonymousProject(boolean isAnonymousProject) {
+            this.isAnonymousProject = isAnonymousProject;
             return this;
         }
 
