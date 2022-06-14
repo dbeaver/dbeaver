@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * Base attribute binding
  */
-public abstract class DBDAttributeBinding implements DBSTypedObjectEx, DBDQualifiedObjectAttribute {
+public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBSTypedObjectEx, DBPQualifiedObject {
 
     @NotNull
     protected DBDValueHandler valueHandler;
@@ -217,6 +217,13 @@ public abstract class DBDAttributeBinding implements DBSTypedObjectEx, DBDQualif
         DBSEntityAttribute attr = getEntityAttribute();
         return attr == null ? null : attr.getDescription();
     }
+
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(@Nullable DBPEvaluationContext context) {
+        return DBUtils.getFullyQualifiedName(getDataSource(), this);
+    }
+
 
     @Override
     public boolean isPersisted() {

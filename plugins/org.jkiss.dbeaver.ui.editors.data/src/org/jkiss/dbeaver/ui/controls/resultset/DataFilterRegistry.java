@@ -22,24 +22,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraintBase;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.DBDQualifiedObjectAttribute;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -597,7 +590,7 @@ class DataFilterRegistry {
         }
     }
     
-    private static class RestoredAttribute extends AbstractAttribute implements DBDQualifiedObjectAttribute {
+    private static class RestoredAttribute extends AbstractAttribute implements DBSObject, DBSAttributeBase, DBPQualifiedObject {
         private final RestoredAttribute parent;
         private final DBPDataKind dataKind;
         private final DBPDataSource dataSource;
@@ -653,6 +646,12 @@ class DataFilterRegistry {
         @Override
         public DBPDataSource getDataSource() {
             return dataSource;
+        }
+
+        @NotNull
+        @Override
+        public String getFullyQualifiedName(@Nullable DBPEvaluationContext context) {
+            return DBUtils.getFullyQualifiedName(dataSource, this, attr -> attr.getParentObject(), attr -> attr.isPseudoAttribute());
         }
     }
 }
