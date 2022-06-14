@@ -3044,7 +3044,10 @@ public abstract class LightGrid extends Canvas {
         // when an editor is open
         // and therefore the grid has a child. The solution is to
         // forceFocus()
-        if ((getStyle() & SWT.NO_FOCUS) != SWT.NO_FOCUS) {
+        if ((getStyle() & SWT.NO_FOCUS) != SWT.NO_FOCUS && getCell(new Point(e.x, e.y)) == null) {
+            // We don't want to call this event if there are any cells on cursor position
+            // this is related to bug with wayland handling of force focus, which led to editors
+            // loosing focus on double click see #16705
             forceFocus();
         }
 
