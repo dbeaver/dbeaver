@@ -55,7 +55,10 @@ public interface DBTTaskManager {
     DBTTaskFolder[] getTasksFolders();
 
     @NotNull
-    DBTTaskFolder createTaskFolder(@NotNull DBPProject project, @NotNull String folderName, @Nullable DBTTask[] folderTasks) throws DBException;
+    DBTTaskFolder createTaskFolder(@NotNull DBPProject project,
+                                   @NotNull String folderName,
+                                   @Nullable DBTTaskFolder parentFolder,
+                                   @Nullable DBTTask[] folderTasks) throws DBException;
 
     @NotNull
     DBTTask createTask(
@@ -78,6 +81,8 @@ public interface DBTTaskManager {
     void deleteTaskConfiguration(@NotNull DBTTask task) throws DBException;
 
     void removeTaskFolder(@NotNull DBTTaskFolder taskFolder) throws DBException;
+
+    void updateConfiguration();
 
     @NotNull
     Path getStatisticsFolder();

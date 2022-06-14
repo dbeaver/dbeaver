@@ -346,13 +346,19 @@ public class DatabaseTasksTree {
             } else {
                 // Add task folders as parent elements, task from these folders will be added in children list
                 if (!CommonUtils.isEmpty(allTasksFolders)) {
-                    allTasksFolders.sort(DBUtils.nameComparatorIgnoreCase());
-                    rootObjects.addAll(allTasksFolders);
+                    List<DBTTaskFolder> sortedFoldersWithoutParents = allTasksFolders.stream()
+                        .filter(e -> e.getParentFolder() == null)
+                        .sorted(DBUtils.nameComparatorIgnoreCase())
+                        .collect(Collectors.toList());
+                    rootObjects.addAll(sortedFoldersWithoutParents);
                 }
+
+                // Collect all tasks without folders
                 List<DBTTask> allTasksWithoutFolders = allTasks.stream()
                     .filter(task -> task.getTaskFolder() == null)
                     .sorted(DBUtils.nameComparatorIgnoreCase())
                     .collect(Collectors.toList());
+                
                 // Now we need to distribute all tasks without folders
                 if (!CommonUtils.isEmpty(allTasksWithoutFolders)) {
                     if (groupByCategory) {
@@ -528,16 +534,19 @@ public class DatabaseTasksTree {
             List<Object> children = new ArrayList<>();
             if (parentElement instanceof DBPProject) {
                 DBPProject project = (DBPProject) parentElement;
-                // First add all tasks folders belonging to this project
+
+                // First add all tasks folders belonging to this project without parent folders
                 children.addAll(allTasksFolders.stream()
-                    .filter(taskFolder -> taskFolder.getProject() == parentElement)
+                    .filter(taskFolder -> taskFolder.getProject() == parentElement && taskFolder.getParentFolder() == null)
                     .sorted(DBUtils.nameComparatorIgnoreCase())
                     .collect(Collectors.toList()));
+
                 // Then check all tasks belonging to this project without folder
                 List<DBTTask> thisProjectTasksWithoutFolder = allTasks.stream()
                     .filter(task -> task.getTaskFolder() == null && task.getProject() == parentElement)
                     .sorted(DBUtils.nameComparatorIgnoreCase())
                     .collect(Collectors.toList());
+
                 if (!CommonUtils.isEmpty(thisProjectTasksWithoutFolder)) {
                     if (groupByCategory) {
                         for (DBTTaskCategory category : getTaskCategories(project, null, thisProjectTasksWithoutFolder)) {
@@ -554,6 +563,13 @@ public class DatabaseTasksTree {
             } else if (parentElement instanceof DBTTaskFolder) {
                 DBTTaskFolder taskFolder = (DBTTaskFolder) parentElement;
                 DBPProject folderProject = null;
+
+                // First add nested task folders to elements list
+                List<DBTTaskFolder> nestedTaskFolders = taskFolder.getNestedTaskFolders();
+                if (!CommonUtils.isEmpty(nestedTaskFolders)) {
+                    children.addAll(new ArrayList<>(nestedTaskFolders));
+                }
+
                 List<DBTTask> thisFolderTasks;
                 if (groupByProject) {
                     folderProject = taskFolder.getProject();
