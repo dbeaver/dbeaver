@@ -414,7 +414,7 @@ public class PostgreUtils {
                         PostgreDatabase database = dataSource.getDatabase(databaseName);
                         if (database != null) {
                             String typeName = type.getTypeName();
-                            if (typeName.startsWith("\"") || typeName.contains(".")) {
+                            if (PostgreUtils.isCompositeTypeName(typeName)) {
                                 // Type name in JDBCColumnMetaData can be fully qualified and quoted. Let's fix it for the better search in the getDataType() method
                                 String[] identifiers = SQLUtils.splitFullIdentifier(typeName, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
                                 if (!ArrayUtils.isEmpty(identifiers)) {
@@ -563,13 +563,17 @@ public class PostgreUtils {
         final String identifier = typeNameInfo.getFirst();
 
         String[] parts;
-        if (identifier.startsWith("\"") || identifier.contains(".")) {
+        if (PostgreUtils.isCompositeTypeName(identifier)) {
             parts = SQLUtils.splitFullIdentifier(identifier, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
         } else {
             parts = new String[]{identifier};
         }
 
         return parts;
+    }
+    
+    private static boolean isCompositeTypeName(@NotNull String typeName) {
+        return typeName.startsWith("\"") || typeName.contains(".");
     }
 
     public static void setArrayParameter(JDBCPreparedStatement dbStat, int index, List<? extends PostgreObject> objectList) throws SQLException {
