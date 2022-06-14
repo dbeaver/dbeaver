@@ -12,6 +12,11 @@ on:
       - ready_for_review
       - labeled
 
+permissions:
+  contents: read
+
 jobs:
   check-commit-message:
+    permissions:
+      contents: none
     uses: dbeaver/dbeaver/.github/workflows/reused-commit-msgs-validator.yml@devel
