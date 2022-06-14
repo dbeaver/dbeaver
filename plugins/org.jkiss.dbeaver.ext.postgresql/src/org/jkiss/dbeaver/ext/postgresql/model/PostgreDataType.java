@@ -365,8 +365,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
     
     @Override
-    public boolean isSameDataType(@NotNull DBCAttributeMetaData metaData) {
-        return super.isSameDataType(metaData) || typeCategory == PostgreTypeCategory.E;
+    public boolean isStructurallyConsistentTypeWith(@NotNull DBCAttributeMetaData metaData) {
+        return super.isStructurallyConsistentTypeWith(metaData) || typeCategory == PostgreTypeCategory.E;
     }
 
     @Override

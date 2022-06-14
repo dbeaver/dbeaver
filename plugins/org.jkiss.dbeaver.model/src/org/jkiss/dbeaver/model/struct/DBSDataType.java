@@ -47,7 +47,7 @@ public interface DBSDataType extends DBSObject, DBSTypedObject
     @NotNull
     DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute);
     
-    default boolean isSameDataType(@NotNull DBCAttributeMetaData metaData) {
+    default boolean isStructurallyConsistentTypeWith(@NotNull DBCAttributeMetaData metaData) {
         return this.getDataKind().isComplex() == metaData.getDataKind().isComplex();
     }
 }
