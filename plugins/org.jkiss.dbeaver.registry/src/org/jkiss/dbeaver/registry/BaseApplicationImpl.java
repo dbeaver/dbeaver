@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
+import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -46,7 +48,19 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
 
     public static DBPApplication getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new EclipsePluginApplicationImpl();
+            DBPApplication instance = null;
+            ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
+            if (application != null && application.getImplClass() != null) {
+                try {
+                    instance = application.getImplClass().getConstructor().newInstance();
+                } catch (Throwable e) {
+                    log.error(e);
+                }
+            }
+            if (instance == null) {
+                instance = new EclipsePluginApplicationImpl();
+            }
+            INSTANCE = instance;
         }
         return INSTANCE;
     }

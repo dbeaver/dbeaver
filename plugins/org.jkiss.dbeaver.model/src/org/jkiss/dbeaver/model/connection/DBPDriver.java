@@ -168,6 +168,8 @@ public interface DBPDriver extends DBPNamedObject
 
     List<? extends DBPDriverFileSource> getDriverFileSources();
 
+    boolean needsExternalDependencies();
+
     @NotNull
     <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
 
