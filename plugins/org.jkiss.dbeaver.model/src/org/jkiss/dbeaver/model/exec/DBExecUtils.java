@@ -766,8 +766,8 @@ public class DBExecUtils {
                         boolean updateColumnHandler = updateColumnMeta && rows != null
                             && (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta));
 
-                        if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind()) ||
-                            !isSameDataTypes(tableColumn, resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition()))) {
+                        if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind())
+                            || !isSameDataTypes(tableColumn, resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition()))) {
                             // Different data kind. Probably it is an alias which conflicts with column name
                             // Do not update entity attribute.
                             // It is a silly workaround for PG-like databases
