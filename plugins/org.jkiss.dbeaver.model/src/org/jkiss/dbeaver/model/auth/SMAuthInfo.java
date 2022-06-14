@@ -35,7 +35,7 @@ public class SMAuthInfo {
     }
 
     @NotNull
-    public SMAuthPermissions getUserInfo() {
+    public SMAuthPermissions getAuthPermissions() {
         return userInfo;
     }
 }
