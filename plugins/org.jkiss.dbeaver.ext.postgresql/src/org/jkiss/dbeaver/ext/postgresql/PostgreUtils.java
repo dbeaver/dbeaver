@@ -461,89 +461,82 @@ public class PostgreUtils {
     public static PostgreDataType resolveTypeFullName(
         @NotNull DBRProgressMonitor monitor, @NotNull PostgreSchema schema, @NotNull String fullTypeName
     ) throws DBException {
-        return resolveTypeFullName(monitor, schema, fullTypeName, splitTypeNameIdentifier(schema.getDataSource(), fullTypeName));
-    }
-
-    @Nullable
-    private static PostgreDataType resolveTypeFullName(
-        @NotNull DBRProgressMonitor monitor, @NotNull PostgreSchema schema, @NotNull String identifier, @NotNull String[] parts
-    ) throws DBException {
-        PostgreDataType dataType = schema.getDataTypeCache().getObject(monitor, schema, identifier);
-        if (dataType != null) {
-            return dataType;
-        }
-        return resolveTypeFullName(monitor, schema.getDatabase(), identifier, parts);
+        return resolveTypeFullName(monitor, schema.getDataSource(), schema.getDatabase(), schema, fullTypeName);
     }
 
     @Nullable
     public static PostgreDataType resolveTypeFullName(
         @NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, @NotNull String fullTypeName
     ) throws DBException {
-        return resolveTypeFullName(monitor, database, fullTypeName, splitTypeNameIdentifier(database.getDataSource(), fullTypeName));
-    }
-
-    @Nullable
-    private static PostgreDataType resolveTypeFullName(
-        @NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, @NotNull String identifier, @NotNull String[] parts
-    ) throws DBException {
-        PostgreDataType dataType = database.getLocalDataType(identifier);
-        if (dataType != null) {
-            return dataType;
-        } else if (parts.length > 1) {
-            PostgreSchema resolvedSchema = database.getSchema(monitor, parts[0]);
-            if (resolvedSchema != null) {
-                String schemaTypeName;
-                if(parts.length == 2) {
-                    schemaTypeName = parts[1];
-                } else {
-                    schemaTypeName = DBUtils.getFullyQualifiedName(database.getDataSource(), Arrays.copyOfRange(parts, 1, parts.length));
-                }
-                dataType = resolvedSchema.getDataTypeCache().getObject(monitor, resolvedSchema, schemaTypeName);
-                if (dataType != null) {
-                    return dataType;
-                }
-            }
-        } else {
-            PostgreSchema defaultSchema = database.getMetaContext().getDefaultSchema();
-            dataType = defaultSchema.getDataTypeCache().getObject(monitor, defaultSchema, identifier);
-            if (dataType != null) {
-                return dataType;
-            }
-        }
-        return resolveTypeFullName(monitor, database.getDataSource(), identifier, parts);
+        return resolveTypeFullName(monitor, database.getDataSource(), database, database.getMetaContext().getDefaultSchema(), fullTypeName);
     }
 
     @Nullable
     public static PostgreDataType resolveTypeFullName(
         @NotNull DBRProgressMonitor monitor, @NotNull PostgreDataSource dataSource, @NotNull String fullTypeName
     ) throws DBException {
-        return resolveTypeFullName(monitor, dataSource, fullTypeName, splitTypeNameIdentifier(dataSource, fullTypeName));
+        return resolveTypeFullName(monitor, dataSource, dataSource.getDefaultInstance(), dataSource.getDefaultInstance().getMetaContext().getDefaultSchema(), fullTypeName);
     }
 
     @Nullable
     private static PostgreDataType resolveTypeFullName(
-        @NotNull DBRProgressMonitor monitor, @NotNull PostgreDataSource dataSource, @NotNull String identifier, @NotNull String[] parts
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreDataSource dataSource, @NotNull PostgreDatabase database,
+        @NotNull PostgreSchema schema, @NotNull String fullTypeName
     ) throws DBException {
-        PostgreDataType dataType = dataSource.getLocalDataType(identifier);
+        final String identifier = DBUtils.getTypeModifiers(fullTypeName).getFirst();
+        String[] parts = splitTypeNameIdentifier(dataSource, fullTypeName);
+
+        // Try to get cashed data type from specified schema
+        PostgreDataType dataType = schema.getDataTypeCache().getObject(monitor, schema, identifier);
+        if (dataType != null) {
+            return dataType;
+        }
+        // Try to resolve local data type in specified database
+        dataType = database.getLocalDataType(identifier);
         if (dataType != null) {
             return dataType;
         } else if (parts.length > 1) {
+            // Search data type in schema from fullTypeName part
+            PostgreSchema resolvedSchema = database.getSchema(monitor, parts[0]);
+            if (resolvedSchema != null) {
+                String schemaTypeName;
+                if (parts.length == 2) {
+                    schemaTypeName = parts[1];
+                } else {
+                    schemaTypeName = DBUtils.getFullyQualifiedName(dataSource, Arrays.copyOfRange(parts, 1, parts.length));
+                }
+
+                dataType = resolvedSchema.getDataTypeCache().getObject(monitor, resolvedSchema, schemaTypeName);
+                if (dataType != null) {
+                    return dataType;
+                }
+            }
+        }
+
+        // Try to resolve local data type in specified data source
+        dataType = dataSource.getLocalDataType(identifier);
+        if (dataType != null) {
+            return dataType;
+        } else if (parts.length > 1) {
+            // Search data type in database from fullTypeName part
             PostgreDatabase resolvedDatabase = dataSource.getDatabase(parts[0]);
             if (resolvedDatabase != null) {
                 String dbTypeName;
-                if(parts.length == 2) {
+                if (parts.length == 2) {
                     dbTypeName = parts[1];
                 } else {
                     dbTypeName = DBUtils.getFullyQualifiedName(dataSource, Arrays.copyOfRange(parts, 1, parts.length));
                 }
+                // Try to resolve local data type in database from fullTypeName part
                 dataType = resolvedDatabase.getLocalDataType(dbTypeName);
                 if (dataType != null) {
                     return dataType;
                 } else if (parts.length > 2) {
+                    // Search data type in database and schema from fullTypeName part
                     PostgreSchema resolvedSchema = resolvedDatabase.getSchema(monitor, parts[1]);
                     if (resolvedSchema != null) {
                         String dbSchemaTypeName;
-                        if(parts.length == 3) {
+                        if (parts.length == 3) {
                             dbSchemaTypeName = parts[2];
                         } else {
                             dbSchemaTypeName = DBUtils.getFullyQualifiedName(dataSource, Arrays.copyOfRange(parts, 2, parts.length));
@@ -555,14 +548,7 @@ public class PostgreUtils {
                     }
                 }
             }
-        } else {
-            PostgreDatabase defaultDb = dataSource.getDefaultInstance();
-            dataType = defaultDb.getLocalDataType(identifier);
-            if (dataType != null) {
-                return dataType;
-            }
         }
-
         return null;
     }
 
