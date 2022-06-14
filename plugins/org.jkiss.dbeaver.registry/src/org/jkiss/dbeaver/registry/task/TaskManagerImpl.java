@@ -166,11 +166,17 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @NotNull
     @Override
-    public DBTTaskFolder createTaskFolder(@NotNull DBPProject project, @NotNull String folderName, @Nullable DBTTaskFolder parentFolder, @Nullable DBTTask[] folderTasks) throws DBException {
-        if (!CommonUtils.isEmpty(tasksFolders) && tasksFolders.stream().anyMatch(taskFolder -> taskFolder.getName().equals(folderName))) {
+    public DBTTaskFolder createTaskFolder(@NotNull DBPProject project,
+                                          @NotNull String folderName,
+                                          @Nullable DBTTaskFolder parentFolder,
+                                          @Nullable DBTTask[] folderTasks) throws DBException {
+        if (!CommonUtils.isEmpty(tasksFolders)
+            && tasksFolders.stream().anyMatch(taskFolder -> taskFolder.getName().equals(folderName))) {
             throw new DBException("Task folder with name '" + folderName + "' already exists");
         }
-        TaskFolderImpl taskFolder = new TaskFolderImpl(folderName, parentFolder, project, folderTasks != null ? new ArrayList<>(Arrays.asList(folderTasks)) : new ArrayList<>());
+        TaskFolderImpl taskFolder = new TaskFolderImpl(folderName, parentFolder, project, folderTasks != null ?
+            new ArrayList<>(Arrays.asList(folderTasks))
+            : new ArrayList<>());
         synchronized (tasksFolders) {
             tasksFolders.add(taskFolder);
         }
@@ -288,7 +294,9 @@ public class TaskManagerImpl implements DBTTaskManager {
                     Object property = JSONUtils.getObjectProperty(folderMap.getValue(), TaskConstants.TAG_PARENT);
                     TaskFolderImpl parentFolder = null;
                     if (property != null) {
-                        Optional<TaskFolderImpl> first = tasksFolders.stream().filter(e -> e.getName().equals(property.toString())).findFirst();
+                        Optional<TaskFolderImpl> first = tasksFolders.stream()
+                            .filter(e -> e.getName().equals(property.toString()))
+                            .findFirst();
                         if (first.isPresent()) {
                             parentFolder = first.get();
                         }

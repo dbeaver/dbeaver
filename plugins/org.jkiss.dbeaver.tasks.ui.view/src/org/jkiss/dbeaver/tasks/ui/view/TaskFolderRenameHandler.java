@@ -35,6 +35,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
+/**
+ * You can use this handler for task folder renaming.
+ */
 public class TaskFolderRenameHandler extends AbstractHandler {
 
     private static final Log log = Log.getLog(TaskFolderRenameHandler.class);
@@ -51,14 +54,18 @@ public class TaskFolderRenameHandler extends AbstractHandler {
         }
         DBTTaskFolder taskFolder = (DBTTaskFolder) selectedObject;
 
-        String newFolderName = EnterNameDialog.chooseName(HandlerUtil.getActiveShell(event), TaskUIViewMessages.task_handler_folder_rename_property_label, taskFolder.getName());
+        String newFolderName = EnterNameDialog.chooseName(
+            HandlerUtil.getActiveShell(event),
+            TaskUIViewMessages.task_handler_folder_rename_property_label,
+            taskFolder.getName());
         if (CommonUtils.isEmpty(newFolderName)) {
             return null;
         }
 
         DBTTaskManager taskManager = taskFolder.getProject().getTaskManager();
         DBTTaskFolder[] tasksFolders = taskManager.getTasksFolders();
-        if (!ArrayUtils.isEmpty(tasksFolders) && Arrays.stream(tasksFolders).anyMatch(e -> e.getName().equalsIgnoreCase(newFolderName))) {
+        if (!ArrayUtils.isEmpty(tasksFolders)
+            && Arrays.stream(tasksFolders).anyMatch(e -> e.getName().equalsIgnoreCase(newFolderName))) {
             DBWorkbench.getPlatformUI().showError(
                 TaskUIViewMessages.task_handler_folder_rename_error_title,
                 NLS.bind(TaskUIViewMessages.task_handler_folder_rename_error_message, taskFolder.getName(), newFolderName)
@@ -69,7 +76,8 @@ public class TaskFolderRenameHandler extends AbstractHandler {
 
         taskFolder.setName(newFolderName);
         taskManager.updateConfiguration();
-        TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_UPDATE));
+        TaskRegistry.getInstance().notifyTaskFoldersListeners(
+            new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_UPDATE));
 
         return null;
     }

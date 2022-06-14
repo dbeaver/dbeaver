@@ -85,9 +85,9 @@ public class TaskUIViewMessages extends NLS {
 	public static String task_handler_folder_create_error_title;
 	public static String task_handler_folder_create_error_message;
 
-	public static String task_handler_folder_rename_property_label;
-	public static String task_handler_folder_rename_error_title;
-	public static String task_handler_folder_rename_error_message;
+    public static String task_handler_folder_rename_property_label;
+    public static String task_handler_folder_rename_error_title;
+    public static String task_handler_folder_rename_error_message;
 
 	static {
 		// initialize resource bundle

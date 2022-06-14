@@ -33,7 +33,10 @@ public class TaskFolderImpl implements DBTTaskFolder {
     private DBTTaskFolder parentFolder;
     private List<DBTTaskFolder> nestedFolders = new ArrayList<>();
 
-    public TaskFolderImpl(@NotNull String folderName, @Nullable DBTTaskFolder parentFolder, @NotNull DBPProject folderProject, @Nullable List<DBTTask> folderTasks) {
+    TaskFolderImpl(@NotNull String folderName,
+                   @Nullable DBTTaskFolder parentFolder,
+                   @NotNull DBPProject folderProject,
+                   @Nullable List<DBTTask> folderTasks) {
         this.folderName = folderName;
         this.parentFolder = parentFolder;
         this.folderProject = folderProject;
