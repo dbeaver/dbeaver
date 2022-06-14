@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -2267,6 +2268,63 @@ public final class DBUtils {
 
             suffix += 1;
         }
+    }
+
+    /**
+     * Returns list of all underlying data containers from different kind of parent nodes (usually from the navigator tree)
+     * 
+     * @param monitor can not be null
+     * @param parent Parent object: schema, catalog, datasource, DBNDatabaseFolder, even table
+     * @return List of data containers (tables, views etc.) from the parent container (schema, catalog, datasource etc.)
+     * @throws DBException if connection is lost or something is going wrong during children loading
+     */
+    public static List<DBSDataContainer> getAllDataContainersFromParentContainer(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject parent) throws DBException {
+        List<DBSDataContainer> result = new ArrayList<>();
+        if (parent instanceof DBSDataContainer) {
+            result.add((DBSDataContainer) parent);
+        } else if (parent instanceof DBSObjectContainer) {
+            DBSObjectContainer container = (DBSObjectContainer) parent;
+            Class<? extends DBSObject> primaryChildType = container.getPrimaryChildType(monitor);
+            if (DBSDataContainer.class.isAssignableFrom(primaryChildType)) {
+                // This is schema or catalog with tables
+                Collection<? extends DBSObject> children = container.getChildren(monitor);
+                if (!CommonUtils.isEmpty(children)) {
+                    for (DBSObject child : children) {
+                        result.add((DBSDataContainer) child);
+                    }
+                }
+            } else if (DBSObjectContainer.class.isAssignableFrom(primaryChildType)) {
+                // This is datasource or database probably
+                Collection<? extends DBSObject> children = container.getChildren(monitor);
+                for (DBSObject child : children) {
+                    Collection<? extends DBSObject> dbsObjects = ((DBSObjectContainer) child).getChildren(monitor);
+                    for (DBSObject dbsObject : dbsObjects) {
+                        if (dbsObject instanceof DBSDataContainer) {
+                            result.add((DBSDataContainer) dbsObject);
+                        }
+                    }
+                }
+            }
+        } else if (parent instanceof DBNDatabaseFolder) {
+            Collection<DBSObject> dbsObjects = ((DBNDatabaseFolder) parent).getChildrenObjects(monitor);
+            for (DBSObject dbsObject : dbsObjects) {
+                List<DBSDataContainer> containers = getAllDataContainersFromParentContainer(monitor, dbsObject);
+                if (!CommonUtils.isEmpty(containers)) {
+                    result.addAll(containers);
+                }
+            }
+        } else if (parent instanceof DBPDataSourceContainer) {
+            DBPDataSource dataSource = ((DBPDataSourceContainer) parent).getDataSource();
+            if (dataSource instanceof DBSObjectContainer) {
+                List<DBSDataContainer> containers = getAllDataContainersFromParentContainer(monitor, dataSource);
+                if (!CommonUtils.isEmpty(containers)) {
+                    result.addAll(containers);
+                }
+            }
+        }
+        return result;
     }
 
     public interface ChildExtractor<PARENT, CHILD> {

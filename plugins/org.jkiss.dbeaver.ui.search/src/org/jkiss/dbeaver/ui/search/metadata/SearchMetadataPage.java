@@ -110,7 +110,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
             updateEnablement();
         });
 
-        Composite optionsGroup = new SashForm(searchGroup, 2);
+        Composite optionsGroup = new SashForm(parent, 2);
         optionsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
@@ -349,7 +349,10 @@ public class SearchMetadataPage extends AbstractSearchPage {
     {
         IStructuredSelection selection = (IStructuredSelection) dataSourceTree.getViewer().getSelection();
         if (!selection.isEmpty()) {
-            return (DBNNode) selection.getFirstElement();
+            final Object firstElement = selection.getFirstElement();
+            if (firstElement instanceof DBNNode) {
+                return (DBNNode) firstElement;
+            }
         }
         return null;
     }
