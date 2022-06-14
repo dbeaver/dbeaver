@@ -163,7 +163,10 @@ public class MetaDataPanel implements IResultSetPanel {
     @Override
     public void contributeActions(IContributionManager manager) {
         manager.add(
-            ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), "org.jkiss.dbeaver.ui.editors.sql.generate.ddl.by.resultSet")
+            ActionUtils.makeCommandContribution(
+                UIUtils.getActiveWorkbenchWindow(),
+                "org.jkiss.dbeaver.ui.editors.sql.generate.ddl.by.resultSet"
+            )
         );
     }
 

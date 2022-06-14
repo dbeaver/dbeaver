@@ -475,7 +475,10 @@ public class PostgreUtils {
     public static PostgreDataType resolveTypeFullName(
         @NotNull DBRProgressMonitor monitor, @NotNull PostgreDataSource dataSource, @NotNull String fullTypeName
     ) throws DBException {
-        return resolveTypeFullName(monitor, dataSource, dataSource.getDefaultInstance(), dataSource.getDefaultInstance().getMetaContext().getDefaultSchema(), fullTypeName);
+        return resolveTypeFullName(
+            monitor, dataSource, dataSource.getDefaultInstance(),
+            dataSource.getDefaultInstance().getMetaContext().getDefaultSchema(), fullTypeName
+        );
     }
 
     @Nullable

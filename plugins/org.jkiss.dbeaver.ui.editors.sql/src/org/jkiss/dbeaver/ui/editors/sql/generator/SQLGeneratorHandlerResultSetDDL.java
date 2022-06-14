@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.generator;
 
 import java.util.List;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
