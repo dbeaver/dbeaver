@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.lang.reflect.Array;
 import java.sql.SQLException;
@@ -454,6 +455,132 @@ public class PostgreUtils {
             }
             return dataSource.getLocalDataType(typeName);
         }
+    }
+
+    @Nullable
+    public static PostgreDataType resolveTypeFullName(
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreSchema schema, @NotNull String fullTypeName
+    ) throws DBException {
+        return resolveTypeFullName(monitor, schema, fullTypeName, splitTypeNameIdentifier(schema.getDataSource(), fullTypeName));
+    }
+
+    @Nullable
+    private static PostgreDataType resolveTypeFullName(
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreSchema schema, @NotNull String identifier, @NotNull String[] parts
+    ) throws DBException {
+        PostgreDataType dataType = schema.getDataTypeCache().getObject(monitor, schema, identifier);
+        if (dataType != null) {
+            return dataType;
+        }
+        return resolveTypeFullName(monitor, schema.getDatabase(), identifier, parts);
+    }
+
+    @Nullable
+    public static PostgreDataType resolveTypeFullName(
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, @NotNull String fullTypeName
+    ) throws DBException {
+        return resolveTypeFullName(monitor, database, fullTypeName, splitTypeNameIdentifier(database.getDataSource(), fullTypeName));
+    }
+
+    @Nullable
+    private static PostgreDataType resolveTypeFullName(
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, @NotNull String identifier, @NotNull String[] parts
+    ) throws DBException {
+        PostgreDataType dataType = database.getLocalDataType(identifier);
+        if (dataType != null) {
+            return dataType;
+        } else if (parts.length > 1) {
+            PostgreSchema resolvedSchema = database.getSchema(monitor, parts[0]);
+            if (resolvedSchema != null) {
+                String schemaTypeName;
+                if(parts.length == 2) {
+                    schemaTypeName = parts[1];
+                } else {
+                    schemaTypeName = DBUtils.getFullyQualifiedName(database.getDataSource(), Arrays.copyOfRange(parts, 1, parts.length));
+                }
+                dataType = resolvedSchema.getDataTypeCache().getObject(monitor, resolvedSchema, schemaTypeName);
+                if (dataType != null) {
+                    return dataType;
+                }
+            }
+        } else {
+            PostgreSchema defaultSchema = database.getMetaContext().getDefaultSchema();
+            dataType = defaultSchema.getDataTypeCache().getObject(monitor, defaultSchema, identifier);
+            if (dataType != null) {
+                return dataType;
+            }
+        }
+        return resolveTypeFullName(monitor, database.getDataSource(), identifier, parts);
+    }
+
+    @Nullable
+    public static PostgreDataType resolveTypeFullName(
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreDataSource dataSource, @NotNull String fullTypeName
+    ) throws DBException {
+        return resolveTypeFullName(monitor, dataSource, fullTypeName, splitTypeNameIdentifier(dataSource, fullTypeName));
+    }
+
+    @Nullable
+    private static PostgreDataType resolveTypeFullName(
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreDataSource dataSource, @NotNull String identifier, @NotNull String[] parts
+    ) throws DBException {
+        PostgreDataType dataType = dataSource.getLocalDataType(identifier);
+        if (dataType != null) {
+            return dataType;
+        } else if (parts.length > 1) {
+            PostgreDatabase resolvedDatabase = dataSource.getDatabase(parts[0]);
+            if (resolvedDatabase != null) {
+                String dbTypeName;
+                if(parts.length == 2) {
+                    dbTypeName = parts[1];
+                } else {
+                    dbTypeName = DBUtils.getFullyQualifiedName(dataSource, Arrays.copyOfRange(parts, 1, parts.length));
+                }
+                dataType = resolvedDatabase.getLocalDataType(dbTypeName);
+                if (dataType != null) {
+                    return dataType;
+                } else if (parts.length > 2) {
+                    PostgreSchema resolvedSchema = resolvedDatabase.getSchema(monitor, parts[1]);
+                    if (resolvedSchema != null) {
+                        String dbSchemaTypeName;
+                        if(parts.length == 3) {
+                            dbSchemaTypeName = parts[2];
+                        } else {
+                            dbSchemaTypeName = DBUtils.getFullyQualifiedName(dataSource, Arrays.copyOfRange(parts, 2, parts.length));
+                        }
+                        dataType = resolvedSchema.getDataTypeCache().getObject(monitor, resolvedSchema, dbSchemaTypeName);
+                        if (dataType != null) {
+                            return dataType;
+                        }
+                    }
+                }
+            }
+        } else {
+            PostgreDatabase defaultDb = dataSource.getDefaultInstance();
+            dataType = defaultDb.getLocalDataType(identifier);
+            if (dataType != null) {
+                return dataType;
+            }
+        }
+
+        return null;
+    }
+
+    @NotNull
+    private static String[] splitTypeNameIdentifier(
+        @NotNull PostgreDataSource dataSource, @NotNull String fullTypeName
+    ) throws DBException {
+        final Pair<String, String[]> typeNameInfo = DBUtils.getTypeModifiers(fullTypeName);
+        final String identifier = typeNameInfo.getFirst();
+
+        String[] parts;
+        if (identifier.startsWith("\"") || identifier.contains(".")) {
+            parts = SQLUtils.splitFullIdentifier(identifier, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
+        } else {
+            parts = new String[]{identifier};
+        }
+
+        return parts;
     }
 
 
