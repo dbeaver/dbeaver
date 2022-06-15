@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -41,8 +43,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
@@ -69,7 +70,7 @@ public class ReferenceValueEditor {
     private static final Log log = Log.getLog(ReferenceValueEditor.class);
 
     private final Color selectionColor = UIUtils.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
-    private IValueController valueController;
+    private final IValueController valueController;
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
     private Table editorSelector;
@@ -77,6 +78,9 @@ public class ReferenceValueEditor {
     private volatile boolean sortAsc = true;
     private volatile boolean dictLoaded = false;
     private Object lastPattern;
+    private TableColumn valueColumn;
+    private Object firstValue = null;
+    private Object lastValue = null;
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
@@ -161,7 +165,7 @@ public class ReferenceValueEditor {
         //gd.grabExcessHorizontalSpace = true;
         editorSelector.setLayoutData(gd);
 
-        TableColumn valueColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_value);
+        valueColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_value);
         valueColumn.setData(Boolean.TRUE);
         TableColumn descColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_description);
         descColumn.setData(Boolean.FALSE);
@@ -305,6 +309,16 @@ public class ReferenceValueEditor {
         }
     }
 
+    public ContributionItem[] getContributionItems() {
+        MoveToNextPageAction moveBackward = new MoveToNextPageAction("Move Backward", true,
+            DBeaverIcons.getImageDescriptor(UIIcon.ARROW_LEFT));
+        MoveToNextPageAction moveForward = new MoveToNextPageAction("Move Forward", false,
+            DBeaverIcons.getImageDescriptor(UIIcon.ARROW_RIGHT));
+
+        return new ContributionItem[]{ ActionUtils.makeActionContribution(moveBackward, false),
+            ActionUtils.makeActionContribution(moveForward, false) };
+    }
+
     private void selectCurrentValue() {
         Control editorControl = valueEditor.getControl();
         if (editorControl != null && !editorControl.isDisposed()) {
@@ -340,6 +354,7 @@ public class ReferenceValueEditor {
             }
         }
     }
+
 
     private class CopyAction extends Action {
         public CopyAction() {
@@ -395,15 +410,25 @@ public class ReferenceValueEditor {
     class SelectorLoaderService extends AbstractLoadService<EnumValuesData> {
 
         private Object pattern;
+        private DBSEntityAttribute activeRefColumn;
+
+        public Object getLastValue() {
+            return lastValue;
+        }
+
+        public Object getFirstValue() {
+            return firstValue;
+        }
 
         private SelectorLoaderService() {
             super(ResultSetMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");
         }
 
-        void setPattern(@Nullable Object pattern)
+        public void setPattern(@Nullable Object pattern)
         {
             this.pattern = pattern;
         }
+
 
         @Override
         public EnumValuesData evaluate(DBRProgressMonitor monitor) {
@@ -461,12 +486,20 @@ public class ReferenceValueEditor {
             } else {
                 return null;
             }
-            final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn, false);
-            if (refColumn == null) {
+            activeRefColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn, false);
+            if (activeRefColumn == null) {
                 return null;
             }
+            return getEnumValuesData(monitor, attributeController, fkColumn, association, activeRefColumn);
+        }
+
+        @Nullable
+        private EnumValuesData getEnumValuesData(DBRProgressMonitor monitor, IAttributeController attributeController,
+                                                 DBSEntityAttributeRef fkColumn, DBSEntityAssociation association,
+                                                 DBSEntityAttribute refColumn) throws DBException {
             List<DBDAttributeValue> precedingKeys = null;
-            List<? extends DBSEntityAttributeRef> allColumns = CommonUtils.safeList(refConstraint.getAttributeReferences(monitor));
+            List<? extends DBSEntityAttributeRef> allColumns = CommonUtils.safeList(refConstraint.getAttributeReferences(
+                monitor));
             if (allColumns.size() > 1 && allColumns.get(0) != fkColumn) {
                 // Our column is not a first on in foreign key.
                 // So, fill uo preceeding keys
@@ -491,7 +524,7 @@ public class ReferenceValueEditor {
             final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
             final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
             if (fkAttribute != null && enumConstraint != null) {
-                Collection<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(
+                List<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(
                     monitor,
                     refColumn,
                     pattern,
@@ -506,12 +539,17 @@ public class ReferenceValueEditor {
                 if (monitor.isCanceled()) {
                     return null;
                 }
+                if (enumValues.size() > 1) {
+                    firstValue = enumValues.get(0).getValue();
+                    lastValue = enumValues.get(enumValues.size() - 1).getValue();
+                }
                 final DBDValueHandler colHandler = DBUtils.findValueHandler(fkAttribute.getDataSource(), fkAttribute);
                 return new EnumValuesData(enumValues, fkColumn, colHandler);
             }
 
             return null;
         }
+
 
         @Override
         public Object getFamily() {
@@ -535,8 +573,41 @@ public class ReferenceValueEditor {
             super.completeLoading(result);
             super.visualizeLoading();
             if (result != null) {
-                updateDictionarySelector(result);
+                    updateDictionarySelector(result);
             }
         }
     }
+
+    private class MoveToNextPageAction extends Action {
+        boolean backwardMove;
+
+        private void updateList() throws DBException {
+            if (backwardMove && firstValue != null && !firstValue.equals(lastPattern)) {
+                reloadSelectorValues(firstValue, true);
+            } else if (!backwardMove && lastValue != null && !lastValue.equals(lastPattern)) {
+                reloadSelectorValues(lastValue, true);
+            }
+        }
+
+        private MoveToNextPageAction(String text, boolean backwardMove, ImageDescriptor image) {
+            super(text, image);
+            this.backwardMove = backwardMove;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            try {
+                updateList();
+            } catch (DBException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return super.isEnabled();
+        }
+    }
+
 }
