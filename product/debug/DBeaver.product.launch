@@ -297,6 +297,7 @@
         <setEntry value="org.jkiss.dbeaver.net.ssh.sshj@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.parser.common@default:default"/>
         <setEntry value="org.jkiss.dbeaver.registry@default:default"/>
         <setEntry value="org.jkiss.dbeaver.slf4j@default:false"/>
         <setEntry value="org.jkiss.dbeaver.tasks.native.ui@default:default"/>
