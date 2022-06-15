@@ -236,6 +236,7 @@
         <setEntry value="org.jkiss.dbeaver.ext.athena@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.bigquery.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.bigquery@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.clickhouse.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.clickhouse@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.databricks@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.datavirtuality.ui@default:default"/>

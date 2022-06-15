@@ -6,7 +6,10 @@ Bundle-Version: 1.0.88.qualifier
 Bundle-Release-Date: 20220606
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.parser.common,
  org.jkiss.dbeaver.ext.generic
+Export-Package: org.jkiss.dbeaver.ext.clickhouse,
+ org.jkiss.dbeaver.ext.clickhouse.model
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor
