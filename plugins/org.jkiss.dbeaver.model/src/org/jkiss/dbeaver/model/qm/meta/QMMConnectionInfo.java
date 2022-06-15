@@ -149,14 +149,16 @@ public class QMMConnectionInfo extends QMMObject {
         serializedConnectionInfo.put("connectionUserName", getConnectionConfiguration().getUserName());
         serializedConnectionInfo.put("connectionURL", getConnectionConfiguration().getUrl());
         Map<String, Object> project = new LinkedHashMap<>();
-        project.put("id", getProject().getProjectID());
-        project.put("name", getProject().getName());
-        project.put("path", getProject().getAbsolutePath().toString());
-        var projectSession = getProject()
-            .getSessionContext()
-            .getSpaceSession(new LoggingProgressMonitor(), getProject(), false);
-        boolean isAnonymousProject = projectSession == null || projectSession.getSessionPrincipal() == null;
-        project.put("isAnonymous", isAnonymousProject);
+        if (getProject() != null) {
+            project.put("id", getProject().getProjectID());
+            project.put("name", getProject().getName());
+            project.put("path", getProject().getAbsolutePath().toString());
+            var projectSession = getProject()
+                .getSessionContext()
+                .getSpaceSession(new LoggingProgressMonitor(), getProject(), false);
+            boolean isAnonymousProject = projectSession == null || projectSession.getSessionPrincipal() == null;
+            project.put("isAnonymous", isAnonymousProject);
+        }
         serializedConnectionInfo.put("project", project);
 
         return serializedConnectionInfo;
@@ -176,7 +178,7 @@ public class QMMConnectionInfo extends QMMObject {
         configuration.setUrl(connectionURL);
         //Project information
         Map<String, Object> project = (Map<String, Object>) objectMap.get("project");
-        UUID projectId = UUID.fromString(CommonUtils.toString(project.get("id")));
+        UUID projectId = project.get("id") == null ? null : UUID.fromString(CommonUtils.toString(project.get("id")));
         String projectName = CommonUtils.toString(project.get("name"));
         String projectPath = CommonUtils.toString(project.get("path"));
         boolean isAnonymous = CommonUtils.toBoolean(project.get("isAnonymous"));

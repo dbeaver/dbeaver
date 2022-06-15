@@ -64,11 +64,15 @@ public class QMMetaEventEntity implements QMEvent {
         result.put("object", event.getObject().toMap());
         result.put("action", event.getAction().getId());
         result.put("id", event.getId());
+        if (event.getSessionInfo() != null) {
+            result.put("sessionName", event.getSessionInfo().getUserName());
+            result.put("sessionId", event.getSessionInfo().getUserDomain());
+        }
         return result;
     }
 
     public static QMMetaEventEntity fromMap(Map<String, Object> map) {
-        String className = (String) map.get("objectClassName");
+        String className = CommonUtils.toString(map.get("objectClassName"));
         Map<String, Object> object = (Map<String, Object>) map.get("object");
         QMMObject eventObject;
         if (className.equals(QMMConnectionInfo.class.getName())) {
@@ -84,6 +88,12 @@ public class QMMetaEventEntity implements QMEvent {
         }
         QMEventAction action = QMEventAction.getById(CommonUtils.toInt(map.get("action")));
         long id = CommonUtils.toLong(map.get("id"));
-        return new QMMetaEventEntity(eventObject, action, id, "", null);
+        QMSessionInfo sessionInfo = null;
+        String sessionUserName = CommonUtils.toString(map.get("sessionName"));
+        String sessionUserDomain = CommonUtils.toString(map.get("sessionId"));
+        if (!sessionUserName.isEmpty()) {
+            sessionInfo = new QMSessionInfo(sessionUserName, sessionUserDomain);
+        }
+        return new QMMetaEventEntity(eventObject, action, id, "", sessionInfo);
     }
 }
