@@ -42,6 +42,11 @@ import org.jkiss.utils.ArrayUtils;
 public class SQLGeneratorDDLFromResultSet extends SQLGenerator<IResultSetController> {
 
     @Override
+    public boolean hasOptions() {
+        return false;
+    }
+    
+    @Override
     protected void generateSQL(
         @NotNull DBRProgressMonitor monitor, @NotNull StringBuilder sql, @NotNull IResultSetController object
     ) throws DBException {
