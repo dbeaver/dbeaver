@@ -690,6 +690,15 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @NotNull
     @Override
+    public List<DBDLabelValuePair> getDictionaryEnumeration(@NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityAttribute keyColumn, Object keyPattern, @Nullable List<DBDAttributeValue> preceedingKeys,
+        @NotNull LoadingDirection direction, boolean sortAsc, boolean caseInsensitiveSearch,
+        boolean sortByValue, int maxResults) throws DBException {
+        return Collections.emptyList();
+    }
+
+    @NotNull
+    @Override
     public List<DBDLabelValuePair> getDictionaryValues(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute keyColumn, @NotNull List<Object> keyValues, @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc) throws DBException {
         DBSEntity realEntity = getRealEntity(monitor);
         return realEntity instanceof DBSDictionary ?

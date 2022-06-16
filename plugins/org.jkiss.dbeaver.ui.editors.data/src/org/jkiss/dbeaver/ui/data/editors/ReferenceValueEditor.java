@@ -32,6 +32,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -78,7 +79,6 @@ public class ReferenceValueEditor {
     private volatile boolean sortAsc = true;
     private volatile boolean dictLoaded = false;
     private Object lastPattern;
-    private TableColumn valueColumn;
     private Object firstValue = null;
     private Object lastValue = null;
 
@@ -165,13 +165,11 @@ public class ReferenceValueEditor {
         //gd.grabExcessHorizontalSpace = true;
         editorSelector.setLayoutData(gd);
 
-        valueColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_value);
-        valueColumn.setData(Boolean.TRUE);
+
         TableColumn descColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_description);
         descColumn.setData(Boolean.FALSE);
 
         SortListener sortListener = new SortListener();
-        valueColumn.addListener(SWT.Selection, sortListener);
         descColumn.addListener(SWT.Selection, sortListener);
 
         editorSelector.addSelectionListener(new SelectionAdapter() {
@@ -267,13 +265,17 @@ public class ReferenceValueEditor {
     }
 
     private void reloadSelectorValues(Object pattern, boolean force) {
+        reloadSelectorValues(pattern, force, DBSDictionary.LoadingDirection.LOAD_VALUES_IN_RANGE);
+    }
+
+    private void reloadSelectorValues(Object pattern, boolean force, @NotNull DBSDictionary.LoadingDirection direction) {
         if (!force && dictLoaded && CommonUtils.equalObjects(String.valueOf(lastPattern), String.valueOf(pattern))) {
             selectCurrentValue();
             return;
         }
         lastPattern = pattern;
         dictLoaded = true;
-        SelectorLoaderService loadingService = new SelectorLoaderService();
+        SelectorLoaderService loadingService = new SelectorLoaderService(direction);
         if (pattern != null) {
             loadingService.setPattern(pattern);
         }
@@ -309,6 +311,12 @@ public class ReferenceValueEditor {
         }
     }
 
+
+    /**
+     * Returns action to allow editor paging
+     *
+     * @return actions for paging
+     */
     public ContributionItem[] getContributionItems() {
         MoveToNextPageAction moveBackward = new MoveToNextPageAction("Move Backward", true,
             DBeaverIcons.getImageDescriptor(UIIcon.ARROW_LEFT));
@@ -409,19 +417,16 @@ public class ReferenceValueEditor {
 
     class SelectorLoaderService extends AbstractLoadService<EnumValuesData> {
 
+        private final DBSDictionary.LoadingDirection direction;
         private Object pattern;
-        private DBSEntityAttribute activeRefColumn;
 
         public Object getLastValue() {
             return lastValue;
         }
 
-        public Object getFirstValue() {
-            return firstValue;
-        }
-
-        private SelectorLoaderService() {
+        private SelectorLoaderService(DBSDictionary.LoadingDirection direction) {
             super(ResultSetMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");
+            this.direction = direction;
         }
 
         public void setPattern(@Nullable Object pattern)
@@ -486,7 +491,8 @@ public class ReferenceValueEditor {
             } else {
                 return null;
             }
-            activeRefColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn, false);
+            DBSEntityAttribute activeRefColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn,
+                false);
             if (activeRefColumn == null) {
                 return null;
             }
@@ -524,19 +530,15 @@ public class ReferenceValueEditor {
             final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
             final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
             if (fkAttribute != null && enumConstraint != null) {
-                List<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(
-                    monitor,
-                    refColumn,
-                    pattern,
-                    precedingKeys,
-                    sortByValue,
-                    sortAsc,
-                    false,
-                    200);
+                List<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(monitor, refColumn,
+                    pattern, precedingKeys, direction, sortAsc, false, sortByValue, 200);
 //                        for (DBDLabelValuePair pair : enumValues) {
 //                            keyValues.put(pair.getValue(), pair.getLabel());
 //                        }
                 if (monitor.isCanceled()) {
+                    return null;
+                }
+                if (enumValues.isEmpty()) {
                     return null;
                 }
                 if (enumValues.size() > 1) {
@@ -573,7 +575,7 @@ public class ReferenceValueEditor {
             super.completeLoading(result);
             super.visualizeLoading();
             if (result != null) {
-                    updateDictionarySelector(result);
+                updateDictionarySelector(result);
             }
         }
     }
@@ -582,10 +584,10 @@ public class ReferenceValueEditor {
         boolean backwardMove;
 
         private void updateList() throws DBException {
-            if (backwardMove && firstValue != null && !firstValue.equals(lastPattern)) {
-                reloadSelectorValues(firstValue, true);
-            } else if (!backwardMove && lastValue != null && !lastValue.equals(lastPattern)) {
-                reloadSelectorValues(lastValue, true);
+            if (backwardMove && firstValue != null) {
+                reloadSelectorValues(firstValue, true, DBSDictionary.LoadingDirection.LOAD_VALUES_BEFORE);
+            } else if (!backwardMove && lastValue != null) {
+                reloadSelectorValues(lastValue, true, DBSDictionary.LoadingDirection.LOAD_VALUES_AFTER);
             }
         }
 
@@ -600,14 +602,10 @@ public class ReferenceValueEditor {
             try {
                 updateList();
             } catch (DBException e) {
-                e.printStackTrace();
+                log.error("Can't load new dictionary values", e);
             }
         }
 
-        @Override
-        public boolean isEnabled() {
-            return super.isEnabled();
-        }
     }
 
 }

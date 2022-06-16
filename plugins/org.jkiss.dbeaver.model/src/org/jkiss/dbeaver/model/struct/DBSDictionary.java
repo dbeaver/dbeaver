@@ -62,14 +62,50 @@ public interface DBSDictionary
         int maxResults)
         throws DBException;
 
-    @NotNull
-    List<DBDLabelValuePair> getDictionaryValues(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSEntityAttribute keyColumn,
-        @NotNull List<Object> keyValues,
-        @Nullable List<DBDAttributeValue> preceedingKeys,
-        boolean sortByValue,
-        boolean sortAsc)
-        throws DBException;
 
+    /**
+     * Gets enumeration values
+     *
+     * @param monitor session
+     * @param keyColumn enumeration column.
+     * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
+     * @param preceedingKeys other constrain key values. May be null.
+     * @param sortByValue sort results by value
+     * @param sortAsc ascending sorting (irrelevant is @sortByValue is false)
+     * @param caseInsensitiveSearch use case-insensitive search for {@code keyPattern}
+     * @param direction if value is numerical, loads values before or after, or uses pattern as middle value for
+     *                  selection. Can be used for paging.
+     * @param maxResults maximum enumeration values in result set
+     * @return statement with result set which contains valid enumeration values.
+     */
+    @NotNull
+    List<DBDLabelValuePair> getDictionaryEnumeration(@NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityAttribute keyColumn, Object keyPattern, @Nullable List<DBDAttributeValue> preceedingKeys,
+        @NotNull LoadingDirection direction, boolean sortAsc, boolean caseInsensitiveSearch, boolean sortByValue,
+        int maxResults) throws DBException;
+
+    @NotNull
+    List<DBDLabelValuePair> getDictionaryValues(@NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityAttribute keyColumn, @NotNull List<Object> keyValues,
+        @Nullable List<DBDAttributeValue> preceedingKeys, boolean sortByValue, boolean sortAsc) throws DBException;
+
+
+    /**\
+     * Values used to determine from which position regarding pattern value
+     * new values will be loaded
+     */
+    enum  LoadingDirection {
+        /**
+         * Load values before selected element
+         */
+        LOAD_VALUES_BEFORE,
+        /**
+         * load values before and after selected element
+         */
+        LOAD_VALUES_IN_RANGE,
+        /**
+         * Load values after selected element
+         */
+        LOAD_VALUES_AFTER
+    }
 }

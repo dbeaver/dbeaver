@@ -487,27 +487,22 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
      */
     @NotNull
     @Override
-    public List<DBDLabelValuePair> getDictionaryEnumeration(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSEntityAttribute keyColumn,
-        Object keyPattern,
-        List<DBDAttributeValue> preceedingKeys,
-        boolean sortByValue,
-        boolean sortAsc,
-        boolean caseInsensitiveSearch,
-        int maxResults)
-        throws DBException
-    {
+    public List<DBDLabelValuePair> getDictionaryEnumeration(@NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityAttribute keyColumn, Object keyPattern, List<DBDAttributeValue> preceedingKeys,
+        boolean sortByValue, boolean sortAsc, boolean caseInsensitiveSearch, int maxResults) throws DBException {
         // Use default one
-        return readKeyEnumeration(
-            monitor,
-            keyColumn,
-            keyPattern,
-            preceedingKeys,
-            sortByValue,
-            sortAsc,
-            caseInsensitiveSearch,
-            maxResults);
+        return readKeyEnumeration(monitor, keyColumn, keyPattern, preceedingKeys, sortByValue, sortAsc,
+            caseInsensitiveSearch, maxResults, LoadingDirection.LOAD_VALUES_IN_RANGE);
+    }
+
+    @NotNull
+    @Override
+    public List<DBDLabelValuePair> getDictionaryEnumeration(@NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityAttribute keyColumn, Object keyPattern, @Nullable List<DBDAttributeValue> preceedingKeys,
+        @NotNull LoadingDirection direction, boolean sortAsc, boolean caseInsensitiveSearch, boolean sortByValue,
+        int maxResults) throws DBException {
+        return readKeyEnumeration(monitor, keyColumn, keyPattern, preceedingKeys, sortByValue, sortAsc,
+            caseInsensitiveSearch, maxResults, direction);
     }
 
     @NotNull
@@ -590,7 +585,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         boolean sortByValue,
         boolean sortAsc,
         boolean caseInsensitiveSearch,
-        int maxResults)
+        int maxResults,
+        @NotNull LoadingDirection direction)
         throws DBException
     {
         if (keyColumn.getParentObject() != this) {
@@ -609,25 +605,57 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     boolean allowNegative = ((Number) keyPattern).longValue() < 0;
                     if (keyPattern instanceof Integer) {
                         int intValue = (Integer) keyPattern;
-                        keyPattern = allowNegative || intValue > gapSize ? intValue - gapSize : 0;
+                        if (direction.equals(LoadingDirection.LOAD_VALUES_BEFORE)) {
+                            keyPattern = allowNegative || intValue > maxResults ? intValue - maxResults : 0;
+                        } else if (direction.equals(LoadingDirection.LOAD_VALUES_IN_RANGE)) {
+                            keyPattern = allowNegative || intValue > gapSize ? intValue - gapSize : 0;
+                        }
                     } else if (keyPattern instanceof Short) {
                         int shortValue = (Short) keyPattern;
-                        keyPattern = allowNegative || shortValue > gapSize ? shortValue - gapSize : (short)0;
+                        if (direction.equals(LoadingDirection.LOAD_VALUES_BEFORE)) {
+                            keyPattern = allowNegative || shortValue > maxResults ? shortValue - maxResults : (short) 0;
+                        } else if (direction.equals(LoadingDirection.LOAD_VALUES_IN_RANGE)) {
+                            keyPattern = allowNegative || shortValue > gapSize ? shortValue - gapSize : (short) 0;
+                        }
                     } else if (keyPattern instanceof Long) {
                         long longValue = (Long) keyPattern;
-                        keyPattern = allowNegative || longValue > gapSize ? longValue - gapSize : (long)0;
+                        if (direction.equals(LoadingDirection.LOAD_VALUES_BEFORE)) {
+                            keyPattern = allowNegative || longValue > maxResults ? longValue - maxResults : (long) 0;
+                        } else if (direction.equals(LoadingDirection.LOAD_VALUES_IN_RANGE)) {
+                            keyPattern = allowNegative || longValue > gapSize ? longValue - gapSize : (long) 0;
+                        }
                     } else if (keyPattern instanceof Float) {
                         float floatValue = (Float) keyPattern;
-                        keyPattern = allowNegative || floatValue > gapSize ? floatValue - gapSize : 0.0f;
+                        if (direction.equals(LoadingDirection.LOAD_VALUES_BEFORE)) {
+                            keyPattern = allowNegative || floatValue > maxResults ? floatValue - maxResults : 0.0f;
+                        } else if (direction.equals(LoadingDirection.LOAD_VALUES_IN_RANGE)) {
+                            keyPattern = allowNegative || floatValue > gapSize ? floatValue - gapSize : 0.0f;
+                        }
                     } else if (keyPattern instanceof Double) {
                         double doubleValue = (Double) keyPattern;
-                        keyPattern = allowNegative || doubleValue > gapSize ? doubleValue - gapSize : 0.0;
+                        if (direction.equals(LoadingDirection.LOAD_VALUES_BEFORE)) {
+                            keyPattern = allowNegative || doubleValue > maxResults ? doubleValue - maxResults : 0.0;
+                        } else if (direction.equals(LoadingDirection.LOAD_VALUES_IN_RANGE)) {
+                            keyPattern = allowNegative || doubleValue > gapSize ? doubleValue - gapSize : 0.0;
+                        }
                     } else if (keyPattern instanceof BigInteger) {
                         BigInteger biValue = (BigInteger) keyPattern;
-                        keyPattern = allowNegative || biValue.longValue() > gapSize ? ((BigInteger) keyPattern).subtract(BigInteger.valueOf(gapSize)) : new BigInteger("0");
+                        if (direction.equals(LoadingDirection.LOAD_VALUES_BEFORE)) {
+                            keyPattern = allowNegative || biValue.longValue() > maxResults ? biValue.subtract(
+                                BigInteger.valueOf(maxResults)) : new BigInteger("0");
+                        } else if (direction.equals(LoadingDirection.LOAD_VALUES_IN_RANGE)) {
+                            keyPattern = allowNegative || biValue.longValue() > gapSize ? biValue.subtract(
+                                BigInteger.valueOf(gapSize)) : new BigInteger("0");
+                        }
                     } else if (keyPattern instanceof BigDecimal) {
                         BigDecimal bdValue = (BigDecimal) keyPattern;
-                        keyPattern = allowNegative || bdValue.longValue() > gapSize ? ((BigDecimal) keyPattern).subtract(new BigDecimal(gapSize)) : new BigDecimal(0);
+                        if (direction.equals(LoadingDirection.LOAD_VALUES_BEFORE)) {
+                            keyPattern = allowNegative || bdValue.longValue() > maxResults ? bdValue.subtract(
+                                BigDecimal.valueOf(maxResults)) : new BigDecimal("0");
+                        } else if (direction.equals(LoadingDirection.LOAD_VALUES_IN_RANGE)) {
+                            keyPattern = allowNegative || bdValue.longValue() > gapSize ? bdValue.subtract(
+                                BigDecimal.valueOf(gapSize)) : new BigDecimal("0");
+                        }
                     } else {
                         searchInKeys = false;
                     }
@@ -772,7 +800,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     }
                 }
 
-                dbStat.setLimit(0, maxResults);
+                int offset;
+                switch (direction) {
+                    case LOAD_VALUES_AFTER:
+                        offset = 1;
+                        break;
+                    case LOAD_VALUES_BEFORE:
+                        offset = -1;
+                        break;
+                    default:
+                        offset = 0;
+                        break;
+                }
+                dbStat.setLimit(offset, maxResults);
                 if (dbStat.executeStatement()) {
                     try (DBCResultSet dbResult = dbStat.openResultSet()) {
                         return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult, true, false);
