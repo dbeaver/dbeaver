@@ -39,7 +39,7 @@ public class SQLLogFilter implements QMEventFilter {
     @Override
     public boolean accept(QMEvent event) {
         // Accept only following events:
-        // - statement execution (if statement belongs to specific editor)
+        // - statement execution (if statement belongs to specific execution context)
         // - transaction/savepoint changes (if txn belongs to current datasource)
         // - session changes (if session belongs to active datasource)
         QMMObject object = event.getObject();
@@ -47,13 +47,13 @@ public class SQLLogFilter implements QMEventFilter {
             return editor.getDataSourceContainer() != null && Objects.equals(((QMMConnectionInfo) object).getContainerId(), editor.getDataSourceContainer().getId());
         } else {
             if (object instanceof QMMStatementExecuteInfo) {
-                return belongsToEditor(((QMMStatementExecuteInfo) object).getStatement().getConnection());
+                return belongsToExecutionContext(((QMMStatementExecuteInfo) object).getStatement().getConnection());
             } else if (object instanceof QMMStatementInfo) {
-                return belongsToEditor(((QMMStatementInfo) object).getConnection());
+                return belongsToExecutionContext(((QMMStatementInfo) object).getConnection());
             } else if (object instanceof QMMTransactionInfo) {
-                return belongsToEditor(((QMMTransactionInfo) object).getConnection());
+                return belongsToExecutionContext(((QMMTransactionInfo) object).getConnection());
             } else if (object instanceof QMMTransactionSavepointInfo) {
-                return belongsToEditor(((QMMTransactionSavepointInfo) object).getTransaction().getConnection());
+                return belongsToExecutionContext(((QMMTransactionSavepointInfo) object).getTransaction().getConnection());
             }
         }
         return false;
@@ -63,7 +63,7 @@ public class SQLLogFilter implements QMEventFilter {
         return editor;
     }
 
-    private boolean belongsToEditor(QMMConnectionInfo session) {
+    private boolean belongsToExecutionContext(QMMConnectionInfo session) {
         String containerId = session.getContainerId();
         String contextName = session.getContextName();
         DBCExecutionContext executionContext = editor.getExecutionContext();
