@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.JDBCType;
 import java.sql.Time;
@@ -79,11 +80,11 @@ public class CustomTimeEditor {
             switch (jdbcType) {
                 case DATE:
                     inputMode = InputMode.Date;
-                    disposeDateEditor(timeEditor, timeLabel);
+                    disposeEditor(timeEditor, timeLabel);
                     break;
                 case TIME:
                     inputMode = InputMode.Time;
-                    disposeDateEditor(dateEditor, dateLabel);
+                    disposeEditor(dateEditor, dateLabel);
                     break;
                 default:
                     inputMode = InputMode.DateTime;
@@ -131,9 +132,9 @@ public class CustomTimeEditor {
         if (textEditor != null && !textEditor.isDisposed()) {
             return;
         }
-        disposeDateEditor(timeEditor, timeLabel);
+        disposeEditor(timeEditor, timeLabel);
         timeEditor = null;
-        disposeDateEditor(dateEditor, dateLabel);
+        disposeEditor(dateEditor, dateLabel);
         dateEditor = null;
         textEditor = new Text(basePart, isPanel && !isInline ? style : style | SWT.BORDER);
         final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
@@ -142,16 +143,20 @@ public class CustomTimeEditor {
             warningLabel.dispose();
             warningLabel = null;
         }
+        basePart.setLayoutData(new GridData(GridData.FILL_BOTH));
         allowEdit();
         textEditor.setText(dateAsText);
+        if (mainComposite != null) {
+            mainComposite.layout();
+        }
         basePart.layout();
     }
 
-    private void disposeDateEditor(DateTime dateTimeEditor, Label dateTimeLabel) {
-        if (dateTimeEditor != null) {
-            dateTimeEditor.dispose();
-            if (dateTimeLabel != null) {
-                dateTimeLabel.dispose();
+    private void disposeEditor(Control editor, Label editorLabel) {
+        if (editor != null) {
+            editor.dispose();
+            if (editorLabel != null) {
+                editorLabel.dispose();
             }
         }
     }
@@ -163,13 +168,13 @@ public class CustomTimeEditor {
         if (dateEditor != null || timeEditor != null) {
             return;
         }
-        if (textEditor != null && !textEditor.isDisposed()) {
-            textEditor.dispose();
-            textEditor = null;
-        }
+        disposeEditor(textEditor, null);
         final GridData layoutData = new GridData(SWT.FILL, SWT.RIGHT, true, false, 1, 1);
         if (!isInline) {
             dateLabel = UIUtils.createLabel(basePart, "Date");
+        }
+        if (CommonUtils.isEmpty(dateAsText)) {
+            updateWarningLabel(null);
         }
         this.dateEditor = new DateTime(basePart, SWT.DROP_DOWN);
         dateEditor.setLayoutData(layoutData);
@@ -178,6 +183,7 @@ public class CustomTimeEditor {
         }
         this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM);
         this.timeEditor.setLayoutData(layoutData);
+        basePart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         disposeNotNeededEditors();
         allowEdit();
         setDateFromCalendar();
@@ -269,6 +275,8 @@ public class CustomTimeEditor {
                     break;
                 case DateTime:
                     calendar.setTime(new Timestamp(System.currentTimeMillis()));
+                    break;
+                default:
                     break;
             }
         }
