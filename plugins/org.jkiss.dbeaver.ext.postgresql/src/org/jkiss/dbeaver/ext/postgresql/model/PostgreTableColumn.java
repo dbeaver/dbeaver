@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.gis.DBGeometryDimension;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
@@ -110,7 +111,16 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
 
     @Override
     public boolean isInUniqueKey() {
-        final List<PostgreTableConstraintBase> cCache = getTable().getSchema().getConstraintCache().getCachedObjects(getTable());
+        PostgreTableBase table = getTable();
+        List<PostgreTableConstraintBase> cCache = table.getSchema().getConstraintCache().getCachedObjects(table);
+        if (CommonUtils.isEmpty(cCache) && getDataSource().supportsReadingKeysWithColumns() && !table.isConstraintCacheRead()) {
+            try {
+                cCache = table.getSchema().getConstraintCache().getObjects(new VoidProgressMonitor(), table.getSchema(), table);
+                table.setConstraintCacheRead(true);
+            } catch (DBException e) {
+                log.debug("Can't read table " + table.getName() + " constraints", e);
+            }
+        }
         if (!CommonUtils.isEmpty(cCache)) {
             for (PostgreTableConstraintBase key : cCache) {
                 if (key instanceof PostgreTableConstraint && key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {

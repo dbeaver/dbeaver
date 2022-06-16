@@ -797,4 +797,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     public boolean supportReadingAllDataTypes() {
         return CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
     }
+
+    public boolean supportsReadingKeysWithColumns() {
+        return CommonUtils.toBoolean(
+            getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+    }
 }

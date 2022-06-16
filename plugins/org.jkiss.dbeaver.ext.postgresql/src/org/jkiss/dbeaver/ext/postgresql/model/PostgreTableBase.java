@@ -56,6 +56,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     private Object acl;
     private String[] relOptions;
 
+    private boolean isConstraintCacheRead;
+
     protected PostgreTableBase(PostgreTableContainer container)
     {
         super(container, false);
@@ -156,6 +158,14 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return "TABLE";
     }
 
+    boolean isConstraintCacheRead() {
+        return isConstraintCacheRead;
+    }
+
+    void setConstraintCacheRead(boolean constraintCacheRead) {
+        isConstraintCacheRead = constraintCacheRead;
+    }
+
     @Property(viewable = true, order = 10)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
         return getDatabase().getRoleById(monitor, ownerId);
@@ -250,6 +260,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     {
         getContainer().getSchema().getConstraintCache().clearObjectCache(this);
         getContainer().getSchema().getIndexCache().clearObjectCache(this);
+        isConstraintCacheRead = false;
         return getContainer().getSchema().getTableCache().refreshObject(monitor, getContainer().getSchema(), this);
     }
 
