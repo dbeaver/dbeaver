@@ -129,7 +129,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final DataSourceProviderDescriptor providerDescriptor;
     private final String id;
     private String category;
-    private List<String> categories;
+    private final List<String> categories;
     private String name;
     private String description;
     private String driverClassName;
@@ -187,7 +187,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private final Map<DBPDriverLibrary, List<DriverFileInfo>> resolvedFiles = new HashMap<>();
 
-    private Class driverClass;
+    private Class<?> driverClass;
     private boolean isLoaded;
     private Object driverInstance;
     private DriverClassLoader classLoader;
@@ -196,7 +196,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     static {
         Path driversHome = DriverDescriptor.getCustomDriversHome();
-        System.setProperty(PROP_DRIVERS_LOCATION, driversHome.toAbsolutePath().toString());
+        if (driversHome != null) {
+            System.setProperty(PROP_DRIVERS_LOCATION, driversHome.toAbsolutePath().toString());
+        }
     }
 
     private DriverDescriptor(String id) {
@@ -650,7 +652,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private Object createDriverInstance()
             throws DBException {
         try {
-            return driverClass.newInstance();
+            return driverClass.getConstructor().newInstance();
         } catch (InstantiationException ex) {
             throw new DBException("Can't instantiate driver class", ex);
         } catch (IllegalAccessException ex) {
@@ -1204,6 +1206,19 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         validateFilesPresence(true);
     }
 
+    @Override
+    public boolean needsExternalDependencies() {
+        for (DBPDriverLibrary library : libraries) {
+            if (library.isDisabled() || library.isOptional() || !library.matchesCurrentPlatform()) {
+                continue;
+            }
+            if (library.getLocalFile() == null || !library.getLocalFile().exists()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @NotNull
     private List<File> validateFilesPresence(boolean resetVersions) {
         boolean localLibsExists = false;
@@ -1241,14 +1256,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 localLibsExists = true;
             }
         }
-//        if (!CommonUtils.isEmpty(fileSources)) {
-//            for (DriverFileSource source : fileSources) {
-//                for (DriverFileSource.FileInfo fileInfo : source.getFiles()) {
-//                    DriverLibraryLocal libraryLocal = new DriverLibraryLocal(this, DBPDriverLibrary.FileType.jar, fileInfo.getName());
-//                    final File localFile = libraryLocal.getLocalFile();
-//                }
-//            }
-//        }
 
         boolean downloaded = false;
         if (!downloadCandidates.isEmpty() || (!localLibsExists && !fileSources.isEmpty())) {

@@ -246,7 +246,7 @@ public class NavigatorUtils {
             }
         });
         menuMgr.addMenuListener(manager -> {
-            ViewerColumnController columnController = ViewerColumnController.getFromControl(control);
+            ViewerColumnController<?, ?> columnController = ViewerColumnController.getFromControl(control);
             if (columnController != null && columnController.isClickOnHeader()) {
                 columnController.fillConfigMenu(manager);
                 manager.add(new Separator());

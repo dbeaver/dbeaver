@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,14 +42,14 @@ import java.util.Map;
  */
 public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTableBase> {
 
-    private static final Class<?>[] CHILD_TYPES = {
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         SQLServerTableColumn.class,
         SQLServerTableUniqueKey.class,
         SQLServerTableForeignKey.class,
         SQLServerTableIndex.class,
         SQLServerTableCheckConstraint.class,
-        SQLServerExtendedProperty.class,
-    };
+        SQLServerExtendedProperty.class
+        );
 
     @Override
     protected SQLServerTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
@@ -104,7 +105,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes()
+    public Class<? extends DBSObject>[] getChildTypes()
     {
         return CHILD_TYPES;
     }

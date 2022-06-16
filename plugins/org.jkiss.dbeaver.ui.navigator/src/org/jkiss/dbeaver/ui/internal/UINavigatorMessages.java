@@ -26,6 +26,8 @@ public class UINavigatorMessages extends NLS {
     public static String obj_editor_properties_control_action_filter_setting;
     public static String obj_editor_properties_control_action_configure_columns;
     public static String obj_editor_properties_control_action_configure_columns_description;
+    public static String obj_editor_properties_control_action_columns_fit_width;
+    public static String obj_editor_properties_control_action_columns_fit_width_description;
     //object properties editor
 
     public static String toolbar_datasource_selector_empty;

@@ -248,7 +248,7 @@ public class ObjectPropertyTester extends PropertyTester
                 return true;
             }
 
-            Class objectType;
+            Class<?> objectType;
             if (!(node instanceof DBNContainer)) {
                 if (node.getParentNode() instanceof DBNContainer) {
                     node = node.getParentNode();

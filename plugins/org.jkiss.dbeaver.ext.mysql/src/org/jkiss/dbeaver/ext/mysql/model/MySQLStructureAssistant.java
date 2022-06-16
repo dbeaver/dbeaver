@@ -129,15 +129,10 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
-                    final MySQLCatalog objectCatalog = dataSource.getCatalog(catalogName);
-                    if (objectCatalog == null) {
-                        log.debug("Can't resolve table '" + tableName + "' - owner catalog " + catalogName + " not found");
-                        continue;
-                    }
-                    objects.add(new AbstractObjectReference(tableName, objectCatalog, null, MySQLTableBase.class, RelationalObjectType.TYPE_TABLE) {
+                    objects.add(new AbstractObjectReference<DBSObject>(tableName, dataSource.getCatalog(catalogName), null, MySQLTableBase.class, RelationalObjectType.TYPE_TABLE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            MySQLCatalog tableCatalog = catalog != null ? catalog : objectCatalog;
+                            MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Table catalog '" + catalogName + "' not found");
                             }
@@ -181,15 +176,10 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_SCHEMA);
                     final String procName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_NAME);
-                    final MySQLCatalog procedureCatalog = dataSource.getCatalog(catalogName);
-                    if (procedureCatalog == null) {
-                        log.debug("Can't resolve procedure '" + procName + "' - owner catalog " + catalogName + " not found");
-                        continue;
-                    }
-                    objects.add(new AbstractObjectReference(procName, procedureCatalog, null, MySQLProcedure.class, RelationalObjectType.TYPE_PROCEDURE) {
+                    objects.add(new AbstractObjectReference<>(procName, dataSource.getCatalog(catalogName), null, MySQLProcedure.class, RelationalObjectType.TYPE_PROCEDURE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            MySQLCatalog procCatalog = catalog != null ? catalog : procedureCatalog;
+                            MySQLCatalog procCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (procCatalog == null) {
                                 throw new DBException("Procedure catalog '" + catalogName + "' not found");
                             }
@@ -231,15 +221,10 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                     final String constrType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_TYPE);
                     final boolean isFK = MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constrType);
                     final boolean isCheck = MySQLConstants.CONSTRAINT_CHECK.equals(constrType);
-                    final MySQLCatalog constrCatalog = dataSource.getCatalog(catalogName);
-                    if (constrCatalog == null) {
-                        log.debug("Can't resolve constraint '" + constrName + "' - owner catalog " + catalogName + " not found");
-                        continue;
-                    }
-                    objects.add(new AbstractObjectReference(constrName, constrCatalog, null, isFK ? MySQLTableForeignKey.class : MySQLTableConstraint.class, RelationalObjectType.TYPE_CONSTRAINT) {
+                    objects.add(new AbstractObjectReference<>(constrName, dataSource.getCatalog(catalogName), null, isFK ? MySQLTableForeignKey.class : MySQLTableConstraint.class, RelationalObjectType.TYPE_CONSTRAINT) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            MySQLCatalog tableCatalog = catalog != null ? catalog : constrCatalog;
+                            MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Constraint catalog '" + catalogName + "' not found");
                             }
@@ -297,12 +282,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     final String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
-                    final MySQLCatalog columnCatalog = dataSource.getCatalog(catalogName);
-                    if (columnCatalog == null) {
-                        log.debug("Can't resolve column '" + columnName + "' - owner catalog " + catalogName + " not found");
-                        continue;
-                    }
-                    objects.add(new AbstractObjectReference(columnName, columnCatalog, null, MySQLTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
+                    objects.add(new AbstractObjectReference<>(columnName, dataSource.getCatalog(catalogName), null, MySQLTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
                         @NotNull
                         @Override
                         public String getFullyQualifiedName(DBPEvaluationContext context) {
@@ -316,7 +296,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
 
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            MySQLCatalog tableCatalog = catalog != null ? catalog : columnCatalog;
+                            MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Column catalog '" + catalogName + "' not found");
                             }

@@ -601,8 +601,8 @@ public class ResultSetViewer extends Viewer
                         where,
                         true,
                         SQLSemanticProcessor.isForceFilterSubQuery(context.getDataSource()));
-                    String whereCondition = where.toString().trim();
                     if (resetFilterValue) {
+                        String whereCondition = where.toString().trim();
                         filtersPanel.setFilterValue(whereCondition);
                         if (!whereCondition.isEmpty()) {
                             filtersPanel.addFiltersHistory(whereCondition);
@@ -2085,6 +2085,11 @@ public class ResultSetViewer extends Viewer
         boolean hasWarnings = !dataReceiver.getErrorList().isEmpty();
         if (hasWarnings) {
             statusMessage += " - " + dataReceiver.getErrorList().size() + " warning(s)";
+        } else if (model.getStatistics() != null) {
+            hasWarnings = model.getStatistics().getError() != null;
+            if (hasWarnings) {
+                statusMessage += " - finished with error";
+            }
         }
         if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME)) {
             DBSDataContainer dataContainer = getDataContainer();

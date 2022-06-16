@@ -51,7 +51,7 @@ public class DatabaseEditorPropertyTester extends PropertyTester
 
     private static boolean testObjectClass(Object object, String className)
     {
-        for (Class clazz = object.getClass(); clazz != Object.class; clazz = clazz.getSuperclass()) {
+        for (Class<?> clazz = object.getClass(); clazz != Object.class; clazz = clazz.getSuperclass()) {
             if (clazz.getName().equals(className)) {
                 return true;
             }

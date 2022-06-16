@@ -40,8 +40,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.sql.Date;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Array holder
@@ -355,7 +357,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     }
 
     @NotNull
-    public static JDBCCollection makeCollectionFromJavaCollection(@NotNull JDBCSession session, @NotNull DBSTypedObject column, Collection coll) throws DBCException {
+    public static JDBCCollection makeCollectionFromJavaCollection(@NotNull JDBCSession session, @NotNull DBSTypedObject column, Collection<?> coll) throws DBCException {
         DBPDataTypeProvider dataTypeProvider = session.getDataSource();
         DBPDataKind dataKind = DBPDataKind.OBJECT;
         DBSDataType elementType = dataTypeProvider.getLocalDataType(Types.STRUCT);
