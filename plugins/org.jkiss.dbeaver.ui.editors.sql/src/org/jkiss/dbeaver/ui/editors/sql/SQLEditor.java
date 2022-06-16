@@ -2186,8 +2186,9 @@ public class SQLEditor extends SQLEditorBase implements
         return processSQL(newTab, script, executeFromPosition, null, null);
     }
 
-    public boolean processSQL(boolean newTab, boolean script, boolean executeFromPosition, SQLQueryTransformer transformer, @Nullable SQLQueryListener queryListener)
-    {
+    public boolean processSQL(boolean newTab, boolean script, boolean executeFromPosition, SQLQueryTransformer transformer,
+        @Nullable SQLQueryListener queryListener
+    ) {
         IDocument document = getDocument();
         if (document == null) {
             setStatus(SQLEditorMessages.editors_sql_status_cant_obtain_document, DBPMessageType.ERROR);
@@ -2283,8 +2284,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public boolean processQueries(@NotNull final List<SQLScriptElement> queries, final boolean forceScript, boolean newTab, final boolean export, final boolean checkSession, @Nullable final SQLQueryListener queryListener, @Nullable final SQLScriptContext context)
-    {
+    public boolean processQueries(@NotNull final List<SQLScriptElement> queries, final boolean forceScript,
+        boolean newTab, final boolean export, final boolean checkSession,
+        @Nullable final SQLQueryListener queryListener, @Nullable final SQLScriptContext context
+    ) {
         if (queries.isEmpty()) {
             // Nothing to process
             return false;

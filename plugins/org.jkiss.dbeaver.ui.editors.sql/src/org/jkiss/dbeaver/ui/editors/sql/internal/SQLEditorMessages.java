@@ -58,8 +58,9 @@ public class SQLEditorMessages extends NLS {
     public static String editor_file_delete_confirm_delete_title;
 
     public static String editor_query_log_viewer_draw_text_type_qury_part;
-
-	public static String editor_sql_preference;
+    public static String editor_query_log_viewer_reexecute_query_button_text;
+    
+    public static String editor_sql_preference;
     public static String editors_sql_data_grid;
     public static String editors_sql_description;
     public static String editors_sql_error_cant_execute_query_message;
