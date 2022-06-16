@@ -22,6 +22,7 @@ import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -41,7 +42,6 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
-import org.jkiss.utils.Pair;
 
 import java.util.function.Consumer;
 
@@ -59,7 +59,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     protected boolean autoSaveEnabled;
 
     @Nullable
-    private Consumer<Pair<Integer, Integer>> additionalActions;
+    private Consumer<TraverseEvent> additionalTraverseActions;
 
     protected BaseValueEditor(final IValueController valueController)
     {
@@ -125,27 +125,33 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
             if (valueController instanceof IMultiController) { // In dialog it also should handle all standard stuff because we have params dialog
                 inlineControl.addTraverseListener(e -> {
-                    int detail = e.detail;
                     if (e.detail == SWT.TRAVERSE_RETURN) {
-                         if (!valueController.isReadOnly()) {
-                             saveValue();
-                         }
-                         ((IMultiController) valueController).closeInlineEditor();
-                         e.doit = false;
-                         e.detail = SWT.TRAVERSE_NONE;
+                        if (!valueController.isReadOnly()) {
+                            saveValue();
+                        }
+                        ((IMultiController) valueController).closeInlineEditor();
+                        if (additionalTraverseActions != null) {
+                            additionalTraverseActions.accept(e);
+                        }
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
                      } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                         ((IMultiController) valueController).closeInlineEditor();
-                         e.doit = false;
-                         e.detail = SWT.TRAVERSE_NONE;
+                        ((IMultiController) valueController).closeInlineEditor();
+                        if (additionalTraverseActions != null) {
+                            additionalTraverseActions.accept(e);
+                        }
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
                      } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
-                         saveValue();
-                         ((IMultiController) valueController).nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
-                         e.doit = false;
-                         e.detail = SWT.TRAVERSE_NONE;
+                        saveValue();
+                        ((IMultiController) valueController).nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
+                        if (additionalTraverseActions != null) {
+                            additionalTraverseActions.accept(e);
+                        }
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
                      }
-                    if (additionalActions != null) {
-                        additionalActions.accept(new Pair<>(detail, e.stateMask));
-                    }
+
                 });
                  if (!UIUtils.isInDialog(inlineControl)) {
                      if (inlineControl instanceof Composite) {
@@ -267,8 +273,8 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         this.autoSaveEnabled = autoSaveEnabled;
     }
 
-    public void addAdditionalTraverseActions(@NotNull Consumer<Pair<Integer, Integer>> method) {
-        this.additionalActions = method;
+    public void addAdditionalTraverseActions(@NotNull Consumer<TraverseEvent> method) {
+        this.additionalTraverseActions = method;
     }
 
     private class ControlModifyListener implements Listener {

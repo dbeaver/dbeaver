@@ -1198,9 +1198,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     ((BaseValueEditor<?>) activeInlineEditor).addAdditionalTraverseActions((it) -> {
                         //We don't want to create another listener due to baseValueTraverseListener
                         //removing any information about traverse event and setting it to TRAVERSE_NONE
-                        if (it.getFirst() == SWT.TRAVERSE_RETURN) {
+                        if (it.detail == SWT.TRAVERSE_RETURN) {
                             final Event applyEvent = new Event();
-                            if ((it.getSecond() & SWT.SHIFT) == 0) {
+                            if ((it.stateMask & SWT.SHIFT) == 0) {
                                 applyEvent.keyCode = SWT.ARROW_DOWN;
                             } else {
                                 applyEvent.keyCode = SWT.ARROW_RIGHT;

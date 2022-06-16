@@ -149,7 +149,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             PreferenceLinkArea editorsLink = new PreferenceLinkArea(behaviorGroup, SWT.NONE,
                 "org.jkiss.dbeaver.preferences.editors",
                 "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link
-                    + "  - ''{0}''</a>", (IWorkbenchPreferenceContainer) getContainer(), null);//$NON-NLS-1$
+                    + "  - ''{0}''</a>", (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             editorsLink.getControl().setLayoutData(gd);
