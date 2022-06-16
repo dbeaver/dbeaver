@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -59,16 +60,20 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogFilter;
+import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -302,7 +307,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         COLUMN_CONTEXT,
     };
 
-    private final IWorkbenchPartSite site;
+    protected final IWorkbenchPartSite site;
     private final Text searchText;
     private Table logTable;
     private java.util.List<ColumnDescriptor> columns = new ArrayList<>();
@@ -1087,6 +1092,39 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         protected void createButtonsForButtonBar(Composite parent) {
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+
+            QMMStatementExecuteInfo execInfo = null;
+            if (object.getObject() instanceof QMMStatementExecuteInfo) {
+                execInfo = (QMMStatementExecuteInfo) object.getObject();
+            }
+
+            if (execInfo != null && isQueryLinkedWithEditor(execInfo)) {
+                UIUtils.createPushButton(parent, "Re-execute", null, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (object.getObject() instanceof QMMStatementExecuteInfo) {
+                        	QMMStatementExecuteInfo execInfo = (QMMStatementExecuteInfo) object.getObject();
+                            SQLEditor editor = ((SQLLogFilter) filter).getEditor();
+                            SQLQuery query = new SQLQuery(editor.getDataSource(), execInfo.getQueryString(), 0, 20);
+                            editor.processQueries(List.of(query), false, true, false, true, null, null);
+                        }
+                    }
+                });
+                UIUtils.createPushButton(parent, "Jump to query", null, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        super.widgetSelected(e);
+                        /*if (object.getObject() instanceof QMMStatementExecuteInfo) {
+                            //DBUtils.
+                            // TODO:
+                            //  1. obtain editor by part-reference
+                            //  2.
+
+                        }*/
+                        
+                    }
+                });
+            }
         }
 
         @Override
@@ -1113,6 +1151,13 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         protected boolean isLabelVisible() {
             return false;
+        }
+        
+        private boolean isQueryLinkedWithEditor(QMMStatementExecuteInfo execInfo) {
+            DBCExecutionPurpose purpose = execInfo.getStatement().getPurpose();
+            return (purpose == DBCExecutionPurpose.USER_SCRIPT || purpose == DBCExecutionPurpose.USER)
+                && object.getObject() instanceof QMMStatementExecuteInfo && filter != null && filter instanceof SQLLogFilter
+            	&& ((SQLLogFilter) filter).getEditor() != null;
         }
     }
 

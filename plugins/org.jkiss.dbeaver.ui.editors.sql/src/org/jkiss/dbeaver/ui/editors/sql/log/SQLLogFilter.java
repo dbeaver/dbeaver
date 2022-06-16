@@ -27,7 +27,7 @@ import java.util.Objects;
 /**
  * SQL log filter
  */
-class SQLLogFilter implements QMEventFilter {
+public class SQLLogFilter implements QMEventFilter {
 
     private SQLEditor editor;
 
@@ -57,6 +57,10 @@ class SQLLogFilter implements QMEventFilter {
             }
         }
         return false;
+    }
+    
+    public SQLEditor getEditor() {
+        return editor;
     }
 
     private boolean belongsToEditor(QMMConnectionInfo session) {
