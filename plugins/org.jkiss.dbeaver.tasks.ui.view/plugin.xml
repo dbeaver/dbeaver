@@ -37,6 +37,7 @@
         <command id="org.jkiss.dbeaver.task.create" name="%command.org.jkiss.dbeaver.task.create.name" description="%command.org.jkiss.dbeaver.task.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.task.copy" name="%command.org.jkiss.dbeaver.task.copy.name" description="%command.org.jkiss.dbeaver.task.copy.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.folder.task.create" name="%command.org.jkiss.dbeaver.task.folder.create.name" description="%command.org.jkiss.dbeaver.task.folder.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.folder.rename" name="%command.org.jkiss.dbeaver.folder.rename.name" description="%command.org.jkiss.dbeaver.folder.rename.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.task.group" name="%command.org.jkiss.dbeaver.task.group.name" description="%command.org.jkiss.dbeaver.task.group.description" categoryId="org.jkiss.dbeaver.core.navigator">
             <commandParameter id="group" name="Group by" optional="false"/>
         </command>
@@ -122,6 +123,17 @@
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.folder.task.create" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerFolderCreate"/>
+        <handler commandId="org.jkiss.dbeaver.folder.rename" class="org.jkiss.dbeaver.tasks.ui.view.TaskFolderRenameHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.task.DBTTaskFolder"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.task.group" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerGroupBy">
         </handler>
 
@@ -190,6 +202,7 @@
 
     <extension point="org.eclipse.ui.bindings">
         <key commandId="org.jkiss.dbeaver.task.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="Enter"/>
+        <key commandId="org.jkiss.dbeaver.folder.rename" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F2"/>
     </extension>
 
     <extension point="org.eclipse.ui.perspectiveExtensions">
