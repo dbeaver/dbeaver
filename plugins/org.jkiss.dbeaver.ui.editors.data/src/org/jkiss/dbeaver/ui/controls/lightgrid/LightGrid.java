@@ -805,6 +805,10 @@ public abstract class LightGrid extends Canvas {
         return gridRows[row];
     }
 
+    public Object getRowElement(int row) {
+        return gridRows[row].getElement();
+    }
+
     @Override
     public Color getBackground()
     {
@@ -4845,10 +4849,10 @@ public abstract class LightGrid extends Canvas {
                     if (GridColumnTransfer.INSTANCE.isSupportedType(event.dataType)) {
                         List<Object> elements = new ArrayList<>();
                         if (isDragSingleRow()) {
-                            elements.add(getRow(draggingRow));
+                            elements.add(getRowElement(draggingRow));
                         } else {
                             for (Integer row : selectedRows.keySet()) {
-                                elements.add(getRow(row));
+                                elements.add(getRowElement(row));
                             }
                         }
                         event.data = elements;
