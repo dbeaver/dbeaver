@@ -281,7 +281,6 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec_new.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_exec.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptFromPosition" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_exec.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_exec_new.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_plan.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.cancel.query" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_cancel.png"/>
