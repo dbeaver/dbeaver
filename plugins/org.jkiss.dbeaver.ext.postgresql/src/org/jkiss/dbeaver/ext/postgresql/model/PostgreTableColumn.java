@@ -112,17 +112,19 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
     @Override
     public boolean isInUniqueKey() {
         PostgreTableBase table = getTable();
-        List<PostgreTableConstraintBase> cCache = table.getSchema().getConstraintCache().getCachedObjects(table);
-        if (CommonUtils.isEmpty(cCache) && getDataSource().supportsReadingKeysWithColumns() && !table.isConstraintCacheRead()) {
+        PostgreSchema schema = table.getSchema();
+        PostgreSchema.ConstraintCache constraintCache = schema.getConstraintCache();
+        List<PostgreTableConstraintBase> keyCache = constraintCache.getCachedObjects(table);
+        if (CommonUtils.isEmpty(keyCache) && getDataSource().supportsReadingKeysWithColumns() && !constraintCache.isFullyCached()) {
             try {
-                cCache = table.getSchema().getConstraintCache().getObjects(new VoidProgressMonitor(), table.getSchema(), table);
-                table.setConstraintCacheRead(true);
+                keyCache = constraintCache.getObjects(new VoidProgressMonitor(), schema, table);
+                constraintCache.setFullCache(true);
             } catch (DBException e) {
                 log.debug("Can't read table " + table.getName() + " constraints", e);
             }
         }
-        if (!CommonUtils.isEmpty(cCache)) {
-            for (PostgreTableConstraintBase key : cCache) {
+        if (!CommonUtils.isEmpty(keyCache)) {
+            for (PostgreTableConstraintBase key : keyCache) {
                 if (key instanceof PostgreTableConstraint && key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                     List<PostgreTableConstraintColumn> cColumns = ((PostgreTableConstraint) key).getColumns();
                     if (!CommonUtils.isEmpty(cColumns)) {
