@@ -219,7 +219,7 @@ class GridCellRenderer extends AbstractRenderer {
 
     boolean isOverLink(GridColumn column, int row, int x, int y) {
         IGridContentProvider contentProvider = grid.getContentProvider();
-        IGridRow rowElement = grid.getRowElement(row);
+        IGridRow rowElement = grid.getRow(row);
         int state = contentProvider.getCellState(column, rowElement, null);
 
         boolean isToggle = (state & IGridContentProvider.STATE_TOGGLE) != 0;

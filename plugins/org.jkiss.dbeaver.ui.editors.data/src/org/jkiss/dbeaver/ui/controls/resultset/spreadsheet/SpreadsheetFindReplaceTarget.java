@@ -319,7 +319,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             String cellText;
             if (owner.getController().isRecordMode() && curPosition.col == minColumnNum) {
                 // Header
-                cellText = spreadsheet.getLabelProvider().getText(spreadsheet.getRowElement(curPosition.row));
+                cellText = spreadsheet.getLabelProvider().getText(spreadsheet.getRow(curPosition.row));
             } else {
                 GridCell cell = spreadsheet.posToCell(curPosition);
                 if (cell != null) {

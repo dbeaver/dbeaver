@@ -361,7 +361,7 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 
     @Override
-    protected void toggleCellValue(Object column, Object row) {
+    protected void toggleCellValue(IGridColumn column, IGridRow row) {
         presentation.toggleCellValue(column, row);
 
     }
@@ -374,8 +374,10 @@ public class Spreadsheet extends LightGrid implements Listener {
             GridPos focusPos = getFocusPos();
             presentation.fillContextMenu(
                 manager,
-                isHoveringOnRowHeader() ? null : focusPos.col >= 0 && focusPos.col < columnElements.length ? columnElements[focusPos.col] : null,
-                isHoveringOnHeader() ? null : (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
+                isHoveringOnRowHeader() ? null :
+                    focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null,
+                isHoveringOnHeader() ? null :
+                    (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
             );
         });
         menuMgr.setRemoveAllWhenShown(true);

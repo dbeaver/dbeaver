@@ -275,7 +275,7 @@ class GridColumn implements IGridColumn {
             if (topIndex >= 0 && bottomIndex >= topIndex) {
                 int itemCount = grid.getItemCount();
                 for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
-                    newWidth = Math.max(newWidth, computeCellWidth(grid.getRowElement(i)));
+                    newWidth = Math.max(newWidth, computeCellWidth(grid.getRow(i)));
                 }
             }
         } else {
