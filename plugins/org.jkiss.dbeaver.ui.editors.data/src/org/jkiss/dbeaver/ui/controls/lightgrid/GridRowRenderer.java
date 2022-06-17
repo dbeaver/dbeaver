@@ -47,7 +47,14 @@ class GridRowRenderer extends AbstractRenderer {
         DEFAULT_FOREGROUND_TEXT = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, int level, IGridContentProvider.ElementState state, Object element) {
+    public void paint(
+        GC gc,
+        Rectangle bounds,
+        boolean selected,
+        int level,
+        IGridContentProvider.ElementState state,
+        IGridRow element)
+    {
         String text = grid.getLabelProvider().getText(element);
 
         gc.setFont(grid.normalFont);
@@ -123,7 +130,7 @@ class GridRowRenderer extends AbstractRenderer {
         );
     }
 
-    public int computeHeaderWidth(Object element, int level) {
+    public int computeHeaderWidth(IGridRow element, int level) {
         int width = GridRowRenderer.LEFT_MARGIN + GridRowRenderer.RIGHT_MARGIN;
         if (grid.hasNodes()) {
             width += GridRowRenderer.EXPANDED_BOUNDS.width + EXPANDER_SPACING;

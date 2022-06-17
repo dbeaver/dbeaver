@@ -14,38 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 /**
- * Grid row
+ * Represents data grid node (column or row).
  */
-class GridRow implements IGridRow {
+public interface IGridItem {
 
-    private final Object element;
-    private final int position;
+    /**
+     * App-specific element associated with column
+     */
+    Object getElement();
 
-    public GridRow(Object element, int position) {
-        this.element = element;
-        this.position = position;
-    }
+    IGridItem getParent();
 
-    @Override
-    public Object getElement() {
-        return element;
-    }
-
-    @Override
-    public IGridRow getParent() {
-        return null;
-    }
-
-    @Override
-    public int getVisualPosition() {
-        return position;
-    }
-
-    @Override
-    public int getNestedIndex() {
-        return -1;
-    }
 }

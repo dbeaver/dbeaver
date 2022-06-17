@@ -22,12 +22,8 @@ import java.util.List;
 /**
  * Represents data grid column.
  */
-public interface IGridColumn {
+public interface IGridColumn extends IGridItem {
 
-    /**
-     * App-specific element associated with column
-     */
-    Object getElement();
 
     /**
      * Column index

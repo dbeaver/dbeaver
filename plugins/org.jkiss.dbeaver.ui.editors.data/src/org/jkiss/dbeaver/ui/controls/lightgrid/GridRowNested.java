@@ -35,7 +35,7 @@ class GridRowNested implements IGridRow {
     }
 
     @Override
-    public IGridRow getParentRow() {
+    public IGridRow getParent() {
         return parent;
     }
 

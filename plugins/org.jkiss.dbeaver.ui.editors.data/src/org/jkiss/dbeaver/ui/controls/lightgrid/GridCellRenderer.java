@@ -66,7 +66,7 @@ class GridCellRenderer extends AbstractRenderer {
         colorLineFocused = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, Object col, Object row)
+    public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, IGridColumn col, IGridRow row)
     {
         boolean drawBackground = true;
 
@@ -219,26 +219,25 @@ class GridCellRenderer extends AbstractRenderer {
 
     boolean isOverLink(GridColumn column, int row, int x, int y) {
         IGridContentProvider contentProvider = grid.getContentProvider();
-        Object colElement = column.getElement();
-        Object rowElement = grid.getRowElement(row);
-        int state = contentProvider.getCellState(colElement, rowElement, null);
+        IGridRow rowElement = grid.getRowElement(row);
+        int state = contentProvider.getCellState(column, rowElement, null);
 
         boolean isToggle = (state & IGridContentProvider.STATE_TOGGLE) != 0;
         if (isToggle) {
-            if (contentProvider.isElementReadOnly(colElement)) {
+            if (contentProvider.isElementReadOnly(column)) {
                 return false;
             }
         }
         if (isLinkState(state) || isToggle) {
-            int columnAlign = contentProvider.getCellAlign(colElement, rowElement);
+            int columnAlign = contentProvider.getCellAlign(column, rowElement);
             Point origin = grid.getOrigin(column, row);
             Rectangle imageBounds;
             if (isToggle) {
-                String cellText = grid.getCellText(colElement, rowElement);
+                String cellText = grid.getCellText(column, rowElement);
                 Point textSize = grid.sizingGC.textExtent(cellText);
                 imageBounds = new Rectangle(0, 0, textSize.x, textSize.y);
             } else {
-                DBPImage cellImage = grid.getCellImage(colElement, rowElement);
+                DBPImage cellImage = grid.getCellImage(column, rowElement);
                 Image image;
                 if (cellImage == null) {
                     image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
@@ -282,7 +281,7 @@ class GridCellRenderer extends AbstractRenderer {
             (state & IGridContentProvider.STATE_HYPER_LINK) != 0;
     }
 
-    private void drawCellTextDecorated(@NotNull GC gc, @NotNull String text, @Nullable Object col, @Nullable Object row, boolean selected, @NotNull Rectangle bounds) {
+    private void drawCellTextDecorated(@NotNull GC gc, @NotNull String text, @Nullable IGridColumn col, @Nullable IGridRow row, boolean selected, @NotNull Rectangle bounds) {
         final Color activeForeground = grid.getCellForeground(col, row, selected);
         final Color activeBackground = grid.getCellBackground(col, row, selected);
         final Color disabledForeground = UIUtils.getSharedColor(UIUtils.blend(activeForeground.getRGB(), activeBackground.getRGB(), 50));

@@ -170,7 +170,7 @@ class GridColumn implements IGridColumn {
         if (y < bounds.y || y > bounds.y + bounds.height) {
             return false;
         }
-        Image image = grid.getLabelProvider().getImage(element);
+        Image image = grid.getLabelProvider().getImage(this);
         if (image == null) {
             return false;
         }
@@ -192,11 +192,11 @@ class GridColumn implements IGridColumn {
         }
         if (height < 0) {
             height = topMargin + grid.fontMetrics.getHeight() + bottomMargin;
-            Image image = grid.getLabelProvider().getImage(element);
+            Image image = grid.getLabelProvider().getImage(this);
             if (image != null) {
                 height = Math.max(height, topMargin + image.getBounds().height + bottomMargin);
             }
-            final String description = grid.getLabelProvider().getDescription(element);
+            final String description = grid.getLabelProvider().getDescription(this);
             if (!CommonUtils.isEmpty(description)) {
                 height += topMargin + grid.fontMetrics.getHeight();
             }
@@ -214,7 +214,7 @@ class GridColumn implements IGridColumn {
     {
         int x = leftMargin;
         final IGridLabelProvider labelProvider = grid.getLabelProvider();
-        Image image = labelProvider.getImage(element);
+        Image image = labelProvider.getImage(this);
         if (image != null) {
             x += image.getBounds().width + imageSpacing;
         }
@@ -223,8 +223,8 @@ class GridColumn implements IGridColumn {
             if (Boolean.TRUE.equals(labelProvider.getGridOption(IGridLabelProvider.OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC))) {
                 textWidth = grid.sizingGC.stringExtent("X").x;
             } else {
-                String text = labelProvider.getText(element);
-                String description = labelProvider.getDescription(element);
+                String text = labelProvider.getText(this);
+                String description = labelProvider.getDescription(this);
                 textWidth = grid.sizingGC.stringExtent(text).x;
                 if (!CommonUtils.isEmpty(description)) {
                     int descWidth = grid.sizingGC.stringExtent(description).x;
@@ -254,12 +254,12 @@ class GridColumn implements IGridColumn {
 
     public boolean isSortable()
     {
-        return grid.getContentProvider().getSortOrder(element) != SWT.NONE;
+        return grid.getContentProvider().getSortOrder(this) != SWT.NONE;
     }
 
     public boolean isFilterable()
     {
-        return grid.getContentProvider().isElementSupportsFilter(element);
+        return grid.getContentProvider().isElementSupportsFilter(this);
     }
 
 	/**
@@ -275,7 +275,7 @@ class GridColumn implements IGridColumn {
             if (topIndex >= 0 && bottomIndex >= topIndex) {
                 int itemCount = grid.getItemCount();
                 for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
-                    newWidth = Math.max(newWidth, computeCellWidth(element, grid.getRowElement(i)));
+                    newWidth = Math.max(newWidth, computeCellWidth(grid.getRowElement(i)));
                 }
             }
         } else {
@@ -299,18 +299,18 @@ class GridColumn implements IGridColumn {
         }
 	}
 
-    private int computeCellWidth(Object col, Object row) {
+    private int computeCellWidth(IGridRow row) {
         int x = 0;
 
         x += leftMargin;
 
-        String cellText = grid.getCellText(col, row);
-        int state = grid.getContentProvider().getCellState(col, row, cellText);
+        String cellText = grid.getCellText(this, row);
+        int state = grid.getContentProvider().getCellState(this, row, cellText);
         Rectangle imageBounds;
         if (GridCellRenderer.isLinkState(state)) {
             imageBounds = GridCellRenderer.LINK_IMAGE_BOUNDS;
         } else {
-            DBPImage image = grid.getContentProvider().getCellImage(col, row);
+            DBPImage image = grid.getContentProvider().getCellImage(this, row);
             imageBounds = image == null ? null : DBeaverIcons.getImage(image).getBounds();
         }
         if (imageBounds != null) {
@@ -354,9 +354,9 @@ class GridColumn implements IGridColumn {
 	 */
 	@Nullable
     public String getHeaderTooltip() {
-        String tip = grid.getLabelProvider().getToolTipText(element);
+        String tip = grid.getLabelProvider().getToolTipText(this);
         if (tip == null) {
-            tip = grid.getLabelProvider().getText(element);
+            tip = grid.getLabelProvider().getText(this);
         }
         return tip;
 	}

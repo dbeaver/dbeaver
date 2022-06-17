@@ -365,13 +365,15 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
         final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
 
-        String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(attr, row, true, true));
+        String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(
+            cell.col, cell.row, true, true));
         String newValue = text;
         if (searchPattern != null) {
             newValue = searchPattern.matcher(oldValue).replaceAll(newValue);
         }
 
-        final Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(attr, row, false, true);
+        final Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(
+            cell.col, cell.row, false, true);
         if (originalValue instanceof DBDContent) {
             try {
                 ((DBDContent) originalValue)

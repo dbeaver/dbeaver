@@ -20,11 +20,9 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 /**
  * Represents data grid row.
  */
-public interface IGridRow {
+public interface IGridRow extends IGridItem {
 
-    Object getElement();
-
-    IGridRow getParentRow();
+    IGridRow getParent();
 
     int getVisualPosition();
 
