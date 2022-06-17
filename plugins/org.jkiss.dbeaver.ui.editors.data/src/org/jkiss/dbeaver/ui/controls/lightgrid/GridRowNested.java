@@ -21,10 +21,10 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
  */
 class GridRowNested implements IGridRow {
 
-    private final GridRow parent;
+    private final IGridRow parent;
     private final int position;
 
-    public GridRowNested(GridRow parent, int position) {
+    public GridRowNested(IGridRow parent, int position) {
         this.parent = parent;
         this.position = position;
     }

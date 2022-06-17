@@ -1802,6 +1802,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
+        public boolean isCollectionElement(@NotNull Object element) {
+            if (element instanceof DBDAttributeBinding) {
+                return ((DBDAttributeBinding) element).getDataKind() == DBPDataKind.ARRAY;
+            }
+            return false;
+        }
+
+        @Override
         public int getSortOrder(@Nullable Object column)
         {
             if (showAttrOrdering) {
@@ -1950,6 +1958,65 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public boolean isGridReadOnly() {
             return controller.isAllAttributesReadOnly();
+        }
+
+        @Override
+        public CellInformation getCellInfo(
+            Object colElement,
+            Object rowElement,
+            boolean selected,
+            @Nullable String cellText)
+        {
+            CellInformation info = new CellInformation();
+
+            boolean recordMode = controller.isRecordMode();
+            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
+            ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
+
+            Object cellValue = controller.getModel().getCellValue(attr, row);
+
+            {
+                // State
+                info.state = STATE_NONE;
+                if ((controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_LINKS) != 0) {
+                    if (isShowAsCheckbox(attr)) {
+                        info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
+                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(cellValue)) {
+                        info.state |= STATE_LINK;
+                    } else {
+                        String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
+                        if (strValue != null && strValue.contains("://")) {
+                            try {
+                                new URL(strValue);
+                                info.state |= STATE_HYPER_LINK;
+                            } catch (MalformedURLException e) {
+                                // Not a hyperlink
+                            }
+                        }
+                    }
+                }
+                if (showWhitespaceCharacters) {
+                    info.state |= STATE_DECORATED;
+                }
+                if (attr.isTransformed()) {
+                    info.state |= STATE_TRANSFORMED;
+                }
+            }
+
+            {
+                // Image
+                if (booleanStyles.getMode() != BooleanMode.TEXT) {
+                    if (isShowAsCheckbox(attr)) {
+                        if (cellValue instanceof Number) {
+                            cellValue = ((Number) cellValue).byteValue() != 0;
+                        }
+                        if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
+                            info.image = booleanStyles.getStyle((Boolean) cellValue).getIcon();
+                        }
+                    }
+                }
+            }
+            return info;
         }
 
         @Override

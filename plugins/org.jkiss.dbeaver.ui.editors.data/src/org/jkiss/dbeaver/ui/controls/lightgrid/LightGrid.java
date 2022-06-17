@@ -117,6 +117,15 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
+    static class CollectionCellState {
+        int colSize;
+        boolean expanded;
+
+        public CollectionCellState(int colSize) {
+            this.colSize = colSize;
+        }
+    }
+
     // Tooltips
 
     // Last calculated client area
@@ -139,6 +148,8 @@ public abstract class LightGrid extends Canvas {
     private final List<GridPos> selectedCellsBeforeRangeSelect = new ArrayList<>();
     private final List<GridColumn> selectedColumns = new ArrayList<>();
     private final IntKeyMap<Boolean> selectedRows = new IntKeyMap<>();
+
+    private final Map<GridPos, CollectionCellState> expandedCells = new HashMap<>();
 
     private boolean cellDragSelectionOccurring = false;
     private boolean cellRowDragSelectionOccurring = false;
@@ -440,7 +451,57 @@ public abstract class LightGrid extends Canvas {
         this.maxColumnDefWidth = maxColumnDefWidth;
     }
 
-    private void collectRows(List<Object> result, List<GridNode> parents, @Nullable GridNode parent, Object[] rows, int level)
+    private void collectRowsFromElements(
+        List<IGridRow> result,
+        Object[] elements,
+        List<IGridColumn> collectionColumns)
+    {
+        int index = 0;
+        for (Object element : elements) {
+            if (element == null) {
+                continue;
+            }
+            IGridRow row = new GridRow(element, index++);
+            result.add(row);
+
+            int maxColLength = getMaxNestedRows(index, collectionColumns);
+            if (maxColLength > 0) {
+                index = collectNestedRows(result, row, index, maxColLength, collectionColumns);
+            }
+        }
+    }
+
+    private int getMaxNestedRows(int index, List<IGridColumn> collectionColumns) {
+        // Check for collection cells in row element
+        int maxColLength = 0;
+        for (IGridColumn cc : collectionColumns) {
+            CollectionCellState cellState = expandedCells.get(new GridPos(index, cc.getIndex()));
+            if (cellState != null && cellState.expanded) {
+                maxColLength = Math.max(maxColLength, cellState.colSize);
+            }
+        }
+        return maxColLength;
+    }
+
+    private int collectNestedRows(List<IGridRow> result, IGridRow parentRow, int index, int colLength, List<IGridColumn> collectionColumns) {
+        for (int i = 0; i < colLength; i++) {
+            IGridRow nestedRow = new GridRowNested(parentRow, index++);
+            result.add(nestedRow);
+
+            int maxNestedColLength = getMaxNestedRows(index, collectionColumns);
+            if (maxNestedColLength > 0) {
+                index = collectNestedRows(result, nestedRow, index, maxNestedColLength, collectionColumns);
+            }
+        }
+        return index;
+    }
+
+
+    private void collectRows(
+        List<Object> result,
+        List<GridNode> parents,
+        @Nullable GridNode parent,
+        Object[] rows, int level)
     {
         for (Object row : rows) {
             if (row == null) {
@@ -498,8 +559,6 @@ public abstract class LightGrid extends Canvas {
             bottomIndex = -1;
         }
         IGridContentProvider contentProvider = getContentProvider();
-        refreshRowsData();
-        this.displayedToolTipText = null;
 
         if (refreshColumns) {
             this.maxColumnDepth = 0;
@@ -510,6 +569,11 @@ public abstract class LightGrid extends Canvas {
                 GridColumn column = new GridColumn(this, columnElement);
                 createChildColumns(column);
             }
+        }
+        refreshRowsData();
+        this.displayedToolTipText = null;
+
+        if (refreshColumns) {
             // Invalidate columns structure
             boolean hasChildColumns = false, hasPinnedColumns = false;
             for (Iterator<GridColumn> iter = columns.iterator(); iter.hasNext(); ) {
@@ -642,8 +706,21 @@ public abstract class LightGrid extends Canvas {
         List<Object> realRows = new ArrayList<>(initialElements.length);
         List<GridNode> parents = new ArrayList<>(initialElements.length);
         collectRows(realRows, parents, null, initialElements, 0);
+
         this.rowElements = realRows.toArray();
         this.parentNodes = parents.toArray(new GridNode[0]);
+
+        List<IGridRow> gridRows = new ArrayList<>();
+        List<IGridColumn> colColumns = new ArrayList<>();
+        for (GridColumn c : columns) {
+            if (getContentProvider().isCollectionElement(c.getElement())) {
+                colColumns.add(c);
+            }
+        }
+        collectRowsFromElements(gridRows, initialElements, colColumns);
+        if (!gridRows.isEmpty()) {
+
+        }
     }
 
     /**

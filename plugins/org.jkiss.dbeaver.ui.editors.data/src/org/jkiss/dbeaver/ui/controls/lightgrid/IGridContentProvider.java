@@ -43,11 +43,22 @@ public interface IGridContentProvider extends IContentProvider {
     int ALIGN_CENTER        = 1;
     int ALIGN_RIGHT         = 2;
 
+    class CellInformation {
+        public int state;
+        public int align;
+        public Font font;
+        public DBPImage image;
+        public Color foreground;
+        public Color background;
+    }
+
     @NotNull
     Object[] getElements(boolean horizontal);
 
     @Nullable
     Object[] getChildren(Object element);
+
+    boolean isCollectionElement(@NotNull Object element);
 
     int getSortOrder(@Nullable Object element);
 
@@ -62,6 +73,12 @@ public interface IGridContentProvider extends IContentProvider {
     boolean isElementReadOnly(Object element);
 
     boolean isGridReadOnly();
+
+    /**
+     *
+     * @param cellText pre-rendered cell text. Used for cache purposes.
+     */
+    CellInformation getCellInfo(Object colElement, Object rowElement, boolean selected, @Nullable String cellText);
 
     /**
      *
