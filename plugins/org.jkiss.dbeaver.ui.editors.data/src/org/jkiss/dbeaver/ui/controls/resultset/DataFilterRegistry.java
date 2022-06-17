@@ -79,7 +79,8 @@ class DataFilterRegistry {
         
         @NotNull
         public static RestoredAttributesInfo bindToDataSource(
-            @NotNull SavedDataFilter savedFilter, @Nullable DBPDataSource dataSource
+            @NotNull SavedDataFilter savedFilter,
+            @Nullable DBPDataSource dataSource
         ) {
             return new RestoredAttributesInfo(
                 dataSource == null ? Collections.emptyMap() : bindToDataSourceImpl(savedFilter, dataSource));
@@ -87,10 +88,11 @@ class DataFilterRegistry {
         
         @NotNull
         private static Map<RestoredAttribute, RestoredAttribute> bindToDataSourceImpl(
-                @NotNull SavedDataFilter savedFilter, @NotNull DBPDataSource dataSource
+            @NotNull SavedDataFilter savedFilter,
+            @NotNull DBPDataSource dataSource
         ) {
             Map<RestoredAttribute, RestoredAttribute> boundAttrs = new HashMap<>();
-            Stack<RestoredAttribute> stack = new Stack<>();
+            ArrayList<RestoredAttribute> restoredAttributes = new ArrayList<>();
 
             for (DBDAttributeConstraintBase savedConstraint : savedFilter.constraints.values()) {
                 if (savedConstraint instanceof DBDAttributeConstraint) {
@@ -100,10 +102,10 @@ class DataFilterRegistry {
                             attr != null && !boundAttrs.containsKey(attr);
                             attr = attr.getParentObject()
                         ) {
-                            stack.push(attr);
+                            restoredAttributes.add(attr);
                         }
-                        while (!stack.isEmpty()) {
-                            RestoredAttribute attr = stack.pop();
+                        while (!restoredAttributes.isEmpty()) {
+                            RestoredAttribute attr = restoredAttributes.remove(restoredAttributes.size() - 1);
                             RestoredAttribute boundParent = attr.getParentObject() == null
                                 ? null
                                 : boundAttrs.get(attr.getParentObject());
@@ -118,7 +120,8 @@ class DataFilterRegistry {
         
         @NotNull
         public DBDAttributeConstraint restoreOffschemaConstraint(
-            @NotNull String unquottedAttrName, @NotNull DBDAttributeConstraintBase savedConstraint
+            @NotNull String unquottedAttrName,
+            @NotNull DBDAttributeConstraintBase savedConstraint
         ) {
             DBDAttributeConstraint constraint;
             if (savedConstraint instanceof DBDAttributeConstraint) {
@@ -196,7 +199,9 @@ class DataFilterRegistry {
         }
 
         void restoreDataFilter(
-            @NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer dataContainer, @NotNull DBDDataFilter dataFilter
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBSDataContainer dataContainer,
+            @NotNull DBDDataFilter dataFilter
         ) throws DBException {
             dataFilter.setAnyConstraint(anyConstraint);
             dataFilter.setOrder(this.order);
@@ -320,24 +325,21 @@ class DataFilterRegistry {
             return Status.OK_STATUS;
         }
         
-        private Map<DBSAttributeBase, String> collectAttrsInfo(
-            @NotNull XMLBuilder xml, @NotNull SavedDataFilter sdf
-        ) throws IOException {
-            int counter = 0;
+        private Map<DBSAttributeBase, String> collectAttrsInfo(@NotNull XMLBuilder xml, @NotNull SavedDataFilter sdf) throws IOException {
             Map<DBSAttributeBase, String> attrsInfo = new LinkedHashMap<>();
             for (DBDAttributeConstraintBase attrC : sdf.constraints.values()) {
                 if (attrC instanceof DBDAttributeConstraint) {
-                    counter = flattenAttributes(attrsInfo, counter, ((DBDAttributeConstraint) attrC).getAttribute());
+                    flattenAttributes(attrsInfo, ((DBDAttributeConstraint) attrC).getAttribute());
                 }
             }
 
-            if (counter > 0) {
+            if (attrsInfo.size() > 0) {
                 try (XMLBuilder.Element e = xml.startElement("flatten-attribute-bindings")) {
                     for (Entry<DBSAttributeBase, String> entry : attrsInfo.entrySet()) {
                         try (XMLBuilder.Element ae = xml.startElement("attribute")) {
                             DBSAttributeBase attribute = entry.getKey();
                             xml.addAttribute("attrEntryId", entry.getValue());
-                            if (attribute instanceof DBDAttributeBinding) { // DBSObject?
+                            if (attribute instanceof DBDAttributeBinding) {
                                 DBDAttributeBinding binding = (DBDAttributeBinding) attribute;
                                 DBDAttributeBinding parent = binding.getParentObject();
                                 if (parent != null) {
@@ -367,20 +369,16 @@ class DataFilterRegistry {
             return attrsInfo;
         }
         
-        private int flattenAttributes(
-            @NotNull Map<DBSAttributeBase, String> attrs, int idCounter, @NotNull DBSAttributeBase attribute
-        ) {
+        private void flattenAttributes(@NotNull Map<DBSAttributeBase, String> attrs, @NotNull DBSAttributeBase attribute) {
             if (!attrs.containsKey(attribute)) {
                 if (attribute instanceof DBDAttributeBinding) {
                     DBDAttributeBinding parent = ((DBDAttributeBinding) attribute).getParentObject();
                     if (parent != null) {
-                        idCounter = flattenAttributes(attrs, idCounter, parent);
+                        flattenAttributes(attrs, parent);
                     }
                 }
-                idCounter++;
-                attrs.put(attribute, "fa" + idCounter);
-            } 
-            return idCounter;
+                attrs.put(attribute, "fa" + attrs.size());
+            }
         }
         
         private void flushConfig() {
@@ -464,7 +462,10 @@ class DataFilterRegistry {
 
         @Override
         public void saxStartElement(
-            @NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes atts
+            @NotNull SAXReader reader,
+            @Nullable String namespaceURI,
+            @NotNull String localName,
+            @NotNull Attributes atts
         ) throws XMLException {
             switch (localName) {
                 case "flatten-attribute-bindings": {
@@ -556,9 +557,7 @@ class DataFilterRegistry {
         }
 
         @Override
-        public void saxEndElement(
-            @NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName
-        ) throws XMLException {
+        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) throws XMLException {
             switch (localName) {
                 case "filter": {
                     curSavedDataFilter = null;
@@ -618,7 +617,9 @@ class DataFilterRegistry {
         }
 
         public RestoredAttribute(
-            @Nullable RestoredAttribute boundParent, @NotNull RestoredAttribute original, @NotNull DBPDataSource dataSource
+            @Nullable RestoredAttribute boundParent,
+            @NotNull RestoredAttribute original,
+            @NotNull DBPDataSource dataSource
         ) {
             super(original.getName(), original.getTypeName(), original.getTypeID(),
                 original.getOrdinalPosition(), original.getMaxLength(), original.getScale(),
