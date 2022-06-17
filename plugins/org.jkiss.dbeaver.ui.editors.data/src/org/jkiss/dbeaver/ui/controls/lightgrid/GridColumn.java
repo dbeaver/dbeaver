@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author serge@jkiss.org
  */
-class GridColumn {
+class GridColumn implements IGridColumn {
 
 	/**
 	 * Default width of the column.
@@ -75,10 +75,12 @@ class GridColumn {
         grid.newColumn(this, -1);
     }
 
+    @Override
     public Object getElement() {
         return element;
     }
 
+    @Override
     public int getIndex()
     {
         return grid.indexOf(this);
@@ -359,10 +361,12 @@ class GridColumn {
         return tip;
 	}
 
+    @Override
     public GridColumn getParent() {
         return parent;
     }
 
+    @Override
     public List<GridColumn> getChildren() {
         return children;
     }
