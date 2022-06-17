@@ -31,6 +31,7 @@ public class UISearchMessages extends NLS {
     public static String dialog_search_objects_combo_starts_with;
     public static String dialog_search_objects_group_object_types;
     public static String dialog_search_objects_group_objects_source;
+    public static String dialog_search_objects_group_settings;
     public static String dialog_search_objects_item_list_info;
     public static String dialog_search_objects_label_match_type;
     public static String dialog_search_objects_label_object_name;
