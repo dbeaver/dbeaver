@@ -46,7 +46,16 @@ class GridRowNested implements IGridRow {
 
     @Override
     public int getNestedIndex() {
-        return position - parent.getVisualPosition();
+        return position - parent.getVisualPosition() - 1;
     }
 
+    @Override
+    public int getNestedDepth() {
+        return parent.getNestedDepth() + 1;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(position) + ":" + getNestedIndex();
+    }
 }

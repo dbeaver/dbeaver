@@ -455,14 +455,26 @@ public abstract class LightGrid extends Canvas {
         List<IGridColumn> collectionColumns)
     {
         int index = 0;
+        expandedCells.clear(); // FIXME: delete
         for (Object element : elements) {
             if (element == null) {
                 continue;
             }
-            IGridRow row = new GridRow(element, index++);
+            IGridRow row = new GridRow(element, index);
             result.add(row);
 
+            {
+                // Fake expand
+                // FIXME: delete
+                for (IGridColumn cc : collectionColumns) {
+                    int colSize = getContentProvider().getCollectionSize(cc, row);
+                    CollectionCellState cellStatus = new CollectionCellState(colSize);
+                    cellStatus.expanded = true;
+                    expandedCells.put(new GridPos(cc.getIndex(), index), cellStatus);
+                }
+            }
             int maxColLength = getMaxNestedRows(index, collectionColumns);
+            index++;
             if (maxColLength > 0) {
                 index = collectNestedRows(result, row, index, maxColLength, collectionColumns);
             }
@@ -473,7 +485,7 @@ public abstract class LightGrid extends Canvas {
         // Check for collection cells in row element
         int maxColLength = 0;
         for (IGridColumn cc : collectionColumns) {
-            CollectionCellState cellState = expandedCells.get(new GridPos(index, cc.getIndex()));
+            CollectionCellState cellState = expandedCells.get(new GridPos(cc.getIndex(), index));
             if (cellState != null && cellState.expanded) {
                 maxColLength = Math.max(maxColLength, cellState.colSize);
             }
@@ -704,11 +716,6 @@ public abstract class LightGrid extends Canvas {
         // Prepare rows
         Object[] initialElements = getContentProvider().getElements(false);
         this.rowNodes.clear();
-        //List<Object> realRows = new ArrayList<>(initialElements.length);
-        //List<GridNode> parents = new ArrayList<>(initialElements.length);
-        //collectRows(realRows, parents, null, initialElements, 0);
-        //this.rowElements = realRows.toArray();
-        //this.parentNodes = parents.toArray(new GridNode[0]);
 
         List<IGridRow> rows = new ArrayList<>(initialElements.length);
         List<IGridColumn> colColumns = new ArrayList<>();
@@ -3203,6 +3210,10 @@ public abstract class LightGrid extends Canvas {
         GridColumn col = null;
         if (row >= 0) {
             col = getColumn(point);
+            if (getContentProvider().isVoidCell(col, gridRows[row])) {
+                return;
+            }
+
             boolean isSelectedCell = false;
             if (col != null) {
                 isSelectedCell = selectedCells.contains(new GridPos(col.getIndex(), row));

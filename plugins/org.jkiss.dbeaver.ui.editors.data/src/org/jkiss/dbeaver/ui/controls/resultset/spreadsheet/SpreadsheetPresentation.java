@@ -1702,7 +1702,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     }
                 } else {
                     for (Integer row : spreadsheet.getRowSelection()) {
-                        rows.add(controller.getModel().getRow(row));
+                        IGridRow gridRow = spreadsheet.getRow(row);
+                        ResultSetRow rsr = (ResultSetRow) gridRow.getElement();
+                        if (!rows.contains(rsr)) {
+                            rows.add(rsr);
+                        }
                     }
                 }
                 rows.sort(Comparator.comparingInt(ResultSetRow::getVisualNumber));
@@ -1815,6 +1819,23 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
+        public int getCollectionSize(IGridColumn column, IGridRow row) {
+            if (row.getParent() != null) {
+                // FIXME: implemented deep nested collections support
+                return 0;
+            }
+            if (column.getElement() instanceof DBDAttributeBinding) {
+                DBDAttributeBinding attr = (DBDAttributeBinding) column.getElement();
+                ResultSetRow rsr = (ResultSetRow) row.getElement();
+                Object cellValue = controller.getModel().getCellValue(attr, rsr);
+                if (cellValue instanceof DBDCollection) {
+                    return ((DBDCollection) cellValue).getItemCount();
+                }
+            }
+            return 0;
+        }
+
+        @Override
         public int getSortOrder(@Nullable IGridColumn column) {
             if (showAttrOrdering) {
                 if (column != null && column.getElement() instanceof DBDAttributeBinding) {
@@ -1901,6 +1922,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
             return ALIGN_LEFT;
+        }
+
+        @Override
+        public boolean isVoidCell(IGridColumn gridColumn, IGridRow gridRow) {
+            return getCellValue(gridColumn, gridRow, false, false) == DBDVoid.INSTANCE;
         }
 
         @Nullable
@@ -2063,12 +2089,22 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
-        public Object getCellValue(IGridColumn colElement, IGridRow rowElement, boolean formatString, boolean lockData) {
-            DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
-            ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
+        public Object getCellValue(IGridColumn gridColumn, IGridRow gridRow, boolean formatString, boolean lockData) {
+            DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
+            ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
+            if (attr == null || row == null) {
+                return null;
+            }
 
             int rowNum = row.getVisualNumber();
-            Object value = controller.getModel().getCellValue(attr, row);
+            int[] nestedIndexes = null;
+            if (gridRow.getParent() != null) {
+                nestedIndexes = new int[gridRow.getNestedDepth()];
+                for (IGridRow gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
+                    nestedIndexes[gr.getNestedDepth() - 1] = gr.getNestedIndex();
+                }
+            }
+            Object value = controller.getModel().getCellValue(attr, row, nestedIndexes);
             if (formatString && DBUtils.isNullValue(value) && row.getState() == ResultSetRow.STATE_ADDED) {
                 // New row and no value. Let's try to show default value
                 DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
@@ -2190,6 +2226,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         private Color getCellBackground(IGridColumn colElement, IGridRow rowElement, boolean cellSelected, boolean ignoreRowSelection) {
+            final Object currentValue = spreadsheet.getContentProvider().getCellValue(colElement, rowElement, false, true);
+            if (currentValue == DBDVoid.INSTANCE) {
+                return backgroundNormal;
+            }
+
             final boolean recordMode = controller.isRecordMode();
             final ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
             final DBDAttributeBinding attribute = getAttributeFromGrid(colElement, rowElement);
@@ -2202,7 +2243,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
                     if (sourceRow != row || sourceAttribute != attribute) {
                         final Object sourceValue = spreadsheet.getContentProvider().getCellValue(sourceCell.col, sourceCell.row, false, true);
-                        final Object currentValue = spreadsheet.getContentProvider().getCellValue(colElement, rowElement, false, true);
 
                         if (CommonUtils.equalObjects(sourceValue, currentValue)) {
                             return backgroundMatched;
@@ -2417,15 +2457,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return backgroundNormal;
             }
 
-/*
-            boolean recordMode = controller.isRecordMode();
-            ResultSetRow row = (ResultSetRow) (!recordMode ?  element : controller.getCurrentRow());
-            boolean odd = row != null && row.getVisualNumber() % 2 == 0;
-            if (!recordMode && odd && showOddRows) {
-                return backgroundOdd;
-            }
-            return backgroundNormal;
-*/
             return null;
         }
 
@@ -2440,11 +2471,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     return attributeBinding.getLabel();
                 }
             } else {
-                String rowNumber = String.valueOf(((ResultSetRow) element.getElement()).getVisualNumber() + 1);
                 if (!controller.isRecordMode()) {
+                    IGridRow gridRow = (IGridRow) element;
+                    // Physical row number
+                    String rowNumber = String.valueOf(((ResultSetRow) element.getElement()).getVisualNumber() + 1);
+                    if (gridRow.getParent() != null) {
+                        StringBuilder sb = new StringBuilder();
+                        for (IGridRow gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
+                            sb.append(".").append(gr.getNestedIndex() + 1);
+                        }
+                        rowNumber = "  " + rowNumber + sb;
+                    }
                     return rowNumber;
                 } else {
-                    return ResultSetMessages.controls_resultset_viewer_status_row + " #" + rowNumber;
+                    return ResultSetMessages.controls_resultset_viewer_status_row +
+                        " #" + ((ResultSetRow)element.getElement()).getVisualNumber();
                 }
             }
         }

@@ -60,6 +60,12 @@ public interface IGridContentProvider extends IContentProvider {
 
     boolean isCollectionElement(@NotNull IGridColumn element);
 
+    /**
+     * Return for collection cell values returns size of collection.
+     * Called for all cells of columns for which isCollectionElement() returns true.
+     */
+    int getCollectionSize(IGridColumn column, IGridRow row);
+
     int getSortOrder(@Nullable IGridColumn element);
 
     ElementState getDefaultState(@NotNull IGridColumn element);
@@ -87,6 +93,8 @@ public interface IGridContentProvider extends IContentProvider {
     int getCellState(IGridColumn colElement, IGridRow rowElement, @Nullable String cellText);
 
     int getCellAlign(@Nullable IGridColumn colElement, IGridRow rowElement);
+
+    boolean isVoidCell(IGridColumn gridColumn, IGridRow gridRow);
 
     @Nullable
     Font getCellFont(@Nullable IGridColumn colElement, IGridRow rowElement);

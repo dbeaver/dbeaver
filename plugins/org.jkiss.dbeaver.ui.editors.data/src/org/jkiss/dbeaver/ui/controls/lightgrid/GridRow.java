@@ -48,4 +48,14 @@ class GridRow implements IGridRow {
     public int getNestedIndex() {
         return -1;
     }
+
+    @Override
+    public int getNestedDepth() {
+        return 0;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(position) + " - " + element;
+    }
 }

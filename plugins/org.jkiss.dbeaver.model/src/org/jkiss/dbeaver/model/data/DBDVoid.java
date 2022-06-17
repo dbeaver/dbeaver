@@ -14,20 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.ui.controls.lightgrid;
+package org.jkiss.dbeaver.model.data;
 
 /**
- * Represents data grid row.
+ * Not a value.
  */
-public interface IGridRow extends IGridItem {
+public class DBDVoid implements DBDValue {
 
-    IGridRow getParent();
+    public static final DBDVoid INSTANCE = new DBDVoid();
 
-    int getVisualPosition();
+    private DBDVoid() {
+    }
 
-    int getNestedIndex();
+    @Override
+    public Object getRawValue() {
+        return null;
+    }
 
-    int getNestedDepth();
+    @Override
+    public boolean isNull() {
+        return false;
+    }
+
+    @Override
+    public boolean isModified() {
+        return false;
+    }
+
+    @Override
+    public void release() {
+
+    }
+
+    @Override
+    public String toString() {
+        return "";
+    }
 
 }

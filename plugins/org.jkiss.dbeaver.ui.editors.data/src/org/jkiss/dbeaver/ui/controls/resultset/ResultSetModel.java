@@ -377,7 +377,12 @@ public class ResultSetModel {
 
     @Nullable
     public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
-        return DBUtils.getAttributeValue(attribute, attributes, row.values);
+        return getCellValue(attribute, row, null);
+    }
+
+    @Nullable
+    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row, @Nullable int[] nestedIndexes) {
+        return DBUtils.getAttributeValue(attribute, attributes, row.values, nestedIndexes);
     }
 
     /**
