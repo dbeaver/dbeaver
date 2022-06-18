@@ -307,7 +307,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 if (column.sourceAttr instanceof DBDAttributeBindingCustom) {
                     attrValue = DBUtils.getAttributeValue(column.sourceAttr, sourceBindings, rowValues);
                 } else {
-                    attrValue = column.sourceValueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i);
+                    attrValue = column.sourceValueHandler.fetchValueObject(
+                        session,
+                        resultSet,
+                        column.sourceAttr,
+                        column.sourceAttr.getOrdinalPosition());
                 }
             } else {
                 // No value handler - get raw value
