@@ -55,6 +55,8 @@ public interface IGridContentProvider extends IContentProvider {
     @NotNull
     Object[] getElements(boolean horizontal);
 
+    boolean hasChildren(Object element);
+
     @Nullable
     Object[] getChildren(Object element);
 

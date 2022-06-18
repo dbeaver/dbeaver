@@ -813,7 +813,9 @@ public final class DBUtils {
                 break;
             }
             if (nestedIndexes != null && indexNumber < nestedIndexes.length) {
-                if (curValue instanceof DBDCollection) {
+                if (attr instanceof DBDAttributeBindingElement) {
+                    // Nested value already extracted by element binding
+                } else if (curValue instanceof DBDCollection) {
                     if (((DBDCollection) curValue).getItemCount() <= nestedIndexes[indexNumber]) {
                         // Not an error. This collection is shorter than sibling collection
                         return DBDVoid.INSTANCE;

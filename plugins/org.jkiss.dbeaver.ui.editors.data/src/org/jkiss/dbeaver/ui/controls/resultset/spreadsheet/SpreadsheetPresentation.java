@@ -1811,6 +1811,20 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
         }
 
+        @Override
+        public boolean hasChildren(Object element) {
+            if (element instanceof DBDAttributeBinding) {
+                switch (((DBDAttributeBinding) element).getDataKind()) {
+                    case ARRAY:
+                    case STRUCT:
+                    case DOCUMENT:
+                    case ANY:
+                        return true;
+                }
+            }
+            return false;
+        }
+
         @Nullable
         @Override
         public Object[] getChildren(Object element) {
@@ -1824,9 +1838,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                                 Object value = controller.getModel().getCellValue(
                                     new ResultSetCellLocation(binding, curRow));
                                 if (value instanceof DBDCollection && !DBUtils.isNullValue(value)) {
-                                    return curRow.getCollectionData(
-                                        binding,
-                                        ((DBDCollection) value)).getElements();
+                                    DBDCollection collection = (DBDCollection) value;
+                                    int count = collection.getItemCount();
+                                    DBDAttributeBindingElement[] elements = new DBDAttributeBindingElement[count];
+                                    for (int i = 0; i < count; i++) {
+                                        elements[i] = new DBDAttributeBindingElement(binding, collection, i);
+                                    }
+                                    return elements;
                                 }
                             }
                             return null;
@@ -1834,7 +1852,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     case STRUCT:
                     case DOCUMENT:
                     case ANY:
-                        final List<DBDAttributeBinding> children = controller.getModel().getVisibleAttributes(binding);
+                        final List<DBDAttributeBinding> children =
+                            controller.getModel().getVisibleAttributes(binding);
                         if (children != null) {
                             return children.toArray();
                         }
