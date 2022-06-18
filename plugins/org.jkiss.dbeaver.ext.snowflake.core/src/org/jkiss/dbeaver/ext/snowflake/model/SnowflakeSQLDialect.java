@@ -66,4 +66,9 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         return "\\";
     }
 
+    @NotNull
+    @Override
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
+        return MultiValueInsertMode.GROUP_ROWS;
+    }
 }

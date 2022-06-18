@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.search.metadata;
 
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.MouseAdapter;
@@ -123,7 +120,9 @@ public class SearchMetadataPage extends AbstractSearchPage {
             gd.heightHint = 300;
             dataSourceTree.setLayoutData(gd);
 
-            dataSourceTree.getViewer().addFilter(new ViewerFilter() {
+            TreeViewer treeViewer = dataSourceTree.getViewer();
+
+            treeViewer.addFilter(new ViewerFilter() {
                 @Override
                 public boolean select(Viewer viewer, Object parentElement, Object element)
                 {
@@ -147,7 +146,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     return false;
                 }
             });
-            dataSourceTree.getViewer().addSelectionChangedListener(
+            treeViewer.addSelectionChangedListener(
                 event -> {
                     fillObjectTypes();
                     updateEnablement();
@@ -177,10 +176,24 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     }
                 }
             );
+
+            treeViewer.addDoubleClickListener(event -> {
+                IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+                for (Object node : selection.toArray()) {
+                    if (node instanceof TreeNodeSpecial) {
+                        ((TreeNodeSpecial) node).handleDefaultAction(dataSourceTree);
+                    }
+                }
+            });
         }
 
         {
-            Group settingsGroup = UIUtils.createControlGroup(optionsGroup, "Settings", 2, GridData.FILL_BOTH, 0);
+            Group settingsGroup = UIUtils.createControlGroup(
+                optionsGroup,
+                UISearchMessages.dialog_search_objects_group_settings,
+                2,
+                GridData.FILL_BOTH,
+                0);
 
             {
                 //new Label(searchGroup, SWT.NONE);

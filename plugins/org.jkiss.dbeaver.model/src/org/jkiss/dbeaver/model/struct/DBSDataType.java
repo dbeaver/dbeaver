@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -45,4 +46,8 @@ public interface DBSDataType extends DBSObject, DBSTypedObject
 
     @NotNull
     DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute);
+    
+    default boolean isStructurallyConsistentTypeWith(@NotNull DBCAttributeMetaData metaData) {
+        return this.getDataKind().isComplex() == metaData.getDataKind().isComplex();
+    }
 }

@@ -763,14 +763,11 @@ public class DBExecUtils {
                     }
 
                     if (tableColumn != null) {
-                        boolean structurallyInconsistentTypes = tableColumn.getDataKind().isComplex() != 
-                            resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition()).getDataKind().isComplex();
-                        boolean updateColumnHandler = updateColumnMeta &&
-                            (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta)) &&
-                            rows != null;
+                        boolean updateColumnHandler = updateColumnMeta && rows != null
+                            && (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta));
+
                         if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind())
-                            || structurallyInconsistentTypes
-                        ) {
+                            || !isSameDataTypes(tableColumn, resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition()))) {
                             // Different data kind. Probably it is an alias which conflicts with column name
                             // Do not update entity attribute.
                             // It is a silly workaround for PG-like databases
@@ -851,6 +848,14 @@ public class DBExecUtils {
         finally {
             monitor.done();
         }
+    }
+
+    private static boolean isSameDataTypes(DBSEntityAttribute tableColumn, DBCAttributeMetaData resultSetAttributeMeta) {
+        if (tableColumn instanceof DBSTypedObjectEx) {
+            DBSDataType columnDataType = ((DBSTypedObjectEx) tableColumn).getDataType();
+            return columnDataType != null && columnDataType.isStructurallyConsistentTypeWith(resultSetAttributeMeta);
+        }
+        return false;
     }
 
     public static boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute) {
