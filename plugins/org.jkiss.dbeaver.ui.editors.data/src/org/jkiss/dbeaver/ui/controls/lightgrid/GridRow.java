@@ -22,10 +22,12 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 class GridRow implements IGridRow {
 
     private final Object element;
+    private final int originalPosition;
     private final int position;
 
-    public GridRow(Object element, int position) {
+    public GridRow(Object element, int originalPosition, int position) {
         this.element = element;
+        this.originalPosition = originalPosition;
         this.position = position;
     }
 
@@ -46,7 +48,7 @@ class GridRow implements IGridRow {
 
     @Override
     public int getNestedIndex() {
-        return -1;
+        return originalPosition;
     }
 
     @Override

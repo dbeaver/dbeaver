@@ -1287,7 +1287,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             Object cellValue = controller.getModel().getCellValue(attr, row);
             toggleBooleanValue(attr, row, cellValue);
         } if (isCollectionAttribute(attr) && rowElement.getParent() == null) {
-            spreadsheet.toggleCellExpand(columnElement, rowElement);
+            spreadsheet.toggleRowExpand(rowElement);
         }
     }
 
@@ -2205,7 +2205,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (gridRow.getParent() == null) {
                 DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
                 if (isCollectionAttribute(attr)) {
-                    return UIIcon.TREE_EXPAND;
+                    return spreadsheet.isRowExpanded(gridRow) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
                 }
             }
             return null;
