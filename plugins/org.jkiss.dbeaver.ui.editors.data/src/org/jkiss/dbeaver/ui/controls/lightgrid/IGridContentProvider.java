@@ -58,7 +58,7 @@ public interface IGridContentProvider extends IContentProvider {
     @Nullable
     Object[] getChildren(Object element);
 
-    boolean isCollectionElement(@NotNull IGridColumn element);
+    boolean isCollectionElement(@NotNull IGridItem item);
 
     /**
      * Return for collection cell values returns size of collection.

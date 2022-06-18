@@ -313,15 +313,14 @@ public class Spreadsheet extends LightGrid implements Listener {
                                 presentation.getController().getContainer(),
                                 IResultSetValueReflector.class);
                             if (valueReflector != null) {
-                                DBDAttributeBinding currentAttribute = presentation.getCurrentAttribute();
-                                ResultSetRow currentRow = presentation.getController().getCurrentRow();
-                                if (currentAttribute != null && currentRow != null) {
-                                    Object cellValue = presentation.getController().getModel().getCellValue(currentAttribute, currentRow);
+                                ResultSetCellLocation currentCellLocation = presentation.getCurrentCellLocation();
+                                if (currentCellLocation.getAttribute() != null && currentCellLocation.getRow() != null) {
+                                    Object cellValue = presentation.getController().getModel().getCellValue(currentCellLocation);
                                     ResultSetCopySettings copySettings = new ResultSetCopySettings();
                                     Map<Transfer, Object> selFormats = presentation.copySelection(copySettings);
                                     Object textValue = selFormats.get(TextTransfer.getInstance());
                                     if (textValue != null) {
-                                        valueReflector.insertCurrentCellValue(currentAttribute, cellValue, CommonUtils.toString(textValue));
+                                        valueReflector.insertCurrentCellValue(currentCellLocation.getAttribute(), cellValue, CommonUtils.toString(textValue));
                                     }
                                 }
                             } else {

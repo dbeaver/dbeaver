@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
@@ -129,7 +128,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
     @NotNull
     public String makeArrayString() {
         if (isNull()) {
-            return SQLConstants.NULL_VALUE;
+            return DBConstants.NULL_VALUE_LABEL;
         }
         // This probably was used for pretty-printing, we can't be sure now.
         // In any way, this makes interpreting empty and one-length arrays

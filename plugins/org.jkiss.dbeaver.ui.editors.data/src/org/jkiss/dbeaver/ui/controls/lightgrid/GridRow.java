@@ -47,12 +47,12 @@ class GridRow implements IGridRow {
     }
 
     @Override
-    public int getNestedIndex() {
+    public int getRelativeIndex() {
         return originalPosition;
     }
 
     @Override
-    public int getNestedDepth() {
+    public int getRowDepth() {
         return 0;
     }
 

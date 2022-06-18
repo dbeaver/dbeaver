@@ -165,12 +165,14 @@ public class ResultSetModel {
         return singleSourceEntity;
     }
 
-    public void resetCellValue(DBDAttributeBinding attr, ResultSetRow row) {
+    public void resetCellValue(ResultSetCellLocation cellLocation) {
+        ResultSetRow row = cellLocation.getRow();
+        DBDAttributeBinding attr = cellLocation.getAttribute();
         if (row.getState() == ResultSetRow.STATE_REMOVED) {
             row.setState(ResultSetRow.STATE_NORMAL);
         } else if (row.changes != null && row.changes.containsKey(attr)) {
-            DBUtils.resetValue(getCellValue(attr, row));
-            updateCellValue(attr, row, row.changes.get(attr), false);
+            DBUtils.resetValue(getCellValue(cellLocation));
+            updateCellValue(cellLocation, row.changes.get(attr), false);
             row.resetChange(attr);
             if (row.getState() == ResultSetRow.STATE_NORMAL) {
                 changesCount--;
@@ -376,28 +378,65 @@ public class ResultSetModel {
     }
 
     @Nullable
-    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
-        return getCellValue(attribute, row, null);
+    public Object getCellValue(@NotNull ResultSetCellLocation cellLocation) {
+        return DBUtils.getAttributeValue(
+            cellLocation.getAttribute(),
+            attributes,
+            cellLocation.getRow().values,
+            cellLocation.getRowIndexes());
     }
 
     @Nullable
-    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row, @Nullable int[] nestedIndexes) {
-        return DBUtils.getAttributeValue(attribute, attributes, row.values, nestedIndexes);
+    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
+        return DBUtils.getAttributeValue(
+            attribute,
+            attributes,
+            row.values,
+            null);
+    }
+
+    @Nullable
+    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
+        return DBUtils.getAttributeValue(
+            attribute,
+            attributes,
+            row.values,
+            rowIndexes);
     }
 
     /**
      * Updates cell value. Saves previous value.
      *
-     * @param attr  Attribute
-     * @param row   row index
+     * @param cellLocation cell location
      * @param value new value
      * @return true on success
      */
-    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable Object value) {
-        return updateCellValue(attr, row, value, true);
+    public boolean updateCellValue(
+        @NotNull ResultSetCellLocation cellLocation,
+        @Nullable Object value)
+    {
+        return updateCellValue(cellLocation, value, true);
     }
 
-    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable Object value, boolean updateChanges) {
+    public boolean updateCellValue(
+        @NotNull ResultSetCellLocation cellLocation,
+        @Nullable Object value,
+        boolean updateChanges) {
+        return updateCellValue(
+            cellLocation.getAttribute(),
+            cellLocation.getRow(),
+            cellLocation.getRowIndexes(),
+            value,
+            updateChanges);
+    }
+
+    public boolean updateCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        @Nullable Object value,
+        boolean updateChanges)
+    {
         int depth = attr.getLevel();
         int rootIndex;
         if (depth == 0) {
@@ -744,14 +783,14 @@ public class ResultSetModel {
                 }
 
                 for (ResultSetRow row : rows) {
+                    ResultSetCellLocation cellLocation = new ResultSetCellLocation(entry.getKey(), row);
                     for (AttributeColorSettings acs : entry.getValue()) {
                         Color background = null, foreground = null;
                         if (acs.rangeCheck) {
                             if (acs.attributeValues != null && acs.attributeValues.length > 1) {
                                 double minValue = DBExecUtils.makeNumericValue(acs.attributeValues[0]);
                                 double maxValue = DBExecUtils.makeNumericValue(acs.attributeValues[1]);
-                                final DBDAttributeBinding binding = entry.getKey();
-                                final Object cellValue = getCellValue(binding, row);
+                                final Object cellValue = getCellValue(cellLocation);
                                 double value = DBExecUtils.makeNumericValue(cellValue);
                                 if (value >= minValue && value <= maxValue) {
                                     if (acs.colorBackground != null && acs.colorBackground2 != null && value >= minValue && value <= maxValue) {
@@ -776,8 +815,7 @@ public class ResultSetModel {
                                 }
                             }
                         } else {
-                            final DBDAttributeBinding binding = entry.getKey();
-                            final Object cellValue = getCellValue(binding, row);
+                            final Object cellValue = getCellValue(cellLocation);
                             if (acs.evaluate(cellValue)) {
                                 foreground = acs.colorForeground;
                                 background = acs.colorBackground;
@@ -1077,8 +1115,8 @@ public class ResultSetModel {
                     if (binding == null) {
                         continue;
                     }
-                    Object cell1 = getCellValue(binding, row1);
-                    Object cell2 = getCellValue(binding, row2);
+                    Object cell1 = getCellValue(new ResultSetCellLocation(binding, row1));
+                    Object cell2 = getCellValue(new ResultSetCellLocation(binding, row2));
                     result = DBUtils.compareDataValues(cell1, cell2);
                     if (co.isOrderDescending()) {
                         result = -result;

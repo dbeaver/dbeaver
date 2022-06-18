@@ -364,6 +364,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.spreadsheet.showColumn(attribute);
     }
 
+    @Nullable
+    @Override
+    public int[] getCurrentRowIndexes() {
+        GridPos focusPos = spreadsheet.getFocusPos();
+        if (focusPos.row >= 0) {
+            return getRowNestedIndexes(spreadsheet.getRow(focusPos.row));
+        }
+        return null;
+    }
+
     @Override
     public Point getCursorLocation() {
         GridPos focusPos = spreadsheet.getFocusPos();
@@ -578,7 +588,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 ResultSetRow row = getResultRowFromGrid (cell.col, cell.row);
 
                 IValueController valueController = new SpreadsheetValueController(
-                    controller, column, row, IValueController.EditType.NONE, null);
+                    controller,
+                    new ResultSetCellLocation(column, row, getRowNestedIndexes(cell.row)),
+                    IValueController.EditType.NONE,
+                    null);
                 if (!valueController.isReadOnly()) {
                     valueController.updateValue(BaseValueManager.makeNullValue(valueController), false);
                 }
@@ -667,10 +680,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                             }
                             new SpreadsheetValueController(
                                 controller,
-                                attr,
-                                row,
-                                IValueController.EditType.NONE,
-                                null).updateValue(newValue, false);
+                                new ResultSetCellLocation(attr, row, getRowNestedIndexes(gridRow)),
+                                IValueController.EditType.NONE, null).updateValue(newValue, false);
 
                             colNum++;
                         }
@@ -687,12 +698,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 for (GridPos pos : ssSelection) {
                     DBDAttributeBinding attr;
                     ResultSetRow row;
+                    IGridRow gridRow = spreadsheet.getRow(pos.row);
                     if (controller.isRecordMode()) {
                         attr = (DBDAttributeBinding) spreadsheet.getRowElement(pos.row);
                         row = controller.getCurrentRow();
                     } else {
                         attr = (DBDAttributeBinding) spreadsheet.getColumnElement(pos.col);
-                        row = (ResultSetRow) spreadsheet.getRowElement(pos.row);
+                        row = (ResultSetRow) gridRow.getElement();
                     }
                     if (attr == null || row == null) {
                         continue;
@@ -704,10 +716,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
                     SpreadsheetValueController valueController = new SpreadsheetValueController(
                         controller,
-                        attr,
-                        row,
-                        IValueController.EditType.NONE,
-                        null);
+                        new ResultSetCellLocation(attr, row, getRowNestedIndexes(gridRow)),
+                        IValueController.EditType.NONE, null);
 
                     Object newValue = null;
 
@@ -918,11 +928,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         spreadsheet.layout(true, true);
     }
 
-    void fillContextMenu(@NotNull IMenuManager manager, @Nullable IGridColumn colObject, @Nullable IGridRow rowObject) {
+    void fillContextMenu(
+        @NotNull IMenuManager manager,
+        @Nullable IGridColumn colObject,
+        @Nullable IGridRow rowObject)
+    {
         boolean recordMode = controller.isRecordMode();
         final DBDAttributeBinding attr = getAttributeFromGrid(colObject, rowObject);
         final ResultSetRow row = getResultRowFromGrid(colObject, rowObject);
-        controller.fillContextMenu(manager, attr, row);
+        controller.fillContextMenu(manager, attr, row, getRowNestedIndexes(rowObject));
 
         if (attr != null && row == null) {
             final List<IGridColumn> selectedColumns = spreadsheet.getColumnSelection();
@@ -1101,7 +1115,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return null;
         }
 
-        Object cellValue = getController().getModel().getCellValue(attr, row);
+        ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, getRowNestedIndexes(spreadsheet.getFocusRow()));
+        Object cellValue = getController().getModel().getCellValue(cellLocation);
         if (cellValue instanceof DBDValueError) {
             return null;
         }
@@ -1154,10 +1169,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         SpreadsheetValueController valueController = new SpreadsheetValueController(
             controller,
-            attr,
-            row,
-            inline ? IValueController.EditType.INLINE : IValueController.EditType.EDITOR,
-            placeholder);
+            cellLocation,
+            inline ? IValueController.EditType.INLINE : IValueController.EditType.EDITOR, placeholder);
 
         IValueController.EditType[] supportedEditTypes = valueController.getValueManager().getSupportedEditTypes();
         if (supportedEditTypes.length == 0) {
@@ -1218,10 +1231,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     public void resetCellValue(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement, boolean delete) {
-        boolean recordMode = controller.isRecordMode();
         final DBDAttributeBinding attr = getAttributeFromGrid (colElement, rowElement);
         final ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
-        controller.getModel().resetCellValue(attr, row);
+        controller.getModel().resetCellValue(
+            new ResultSetCellLocation(attr, row, getRowNestedIndexes(rowElement)));
         updateValueView();
         controller.updatePanelsContent(false);
     }
@@ -1233,15 +1246,20 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         final DBDAttributeBinding attr = getAttributeFromGrid(cell.col, cell.row);
         final ResultSetRow row = getResultRowFromGrid(cell.col, cell.row);
 
-        Object value = controller.getModel().getCellValue(attr, row);
+        Object value = controller.getModel().getCellValue(
+            new ResultSetCellLocation(attr, row, getRowNestedIndexes(cell.row)));
         if (isShowAsCheckbox(attr)) {
             if (!getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN)) {
                 return;
             }
             if (!DBExecUtils.isAttributeReadOnly(attr)) {
                 // Switch boolean value
-                toggleBooleanValue(attr, row, value);
+                toggleBooleanValue(
+                    new ResultSetCellLocation(attr, row, getRowNestedIndexes(cell.row)),
+                    value);
             }
+        } else if (isCollectionAttribute(attr)) {
+            spreadsheet.toggleCellValue(cell.col, cell.row);
         } else if (DBUtils.isNullValue(value)) {
             UIUtils.showMessageBox(getSpreadsheet().getShell(), "Wrong link", "Can't navigate to NULL value", SWT.ICON_ERROR);
         } else if (!CommonUtils.isEmpty(attr.getReferrers())) {
@@ -1269,8 +1287,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     return Status.OK_STATUS;
                 }
             }.schedule();
-        } else if (isCollectionAttribute(attr)) {
-            spreadsheet.toggleCellValue(cell.col, cell.row);
         } else {
             // Navigate hyperlink
             String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
@@ -1281,18 +1297,19 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     public void toggleCellValue(IGridColumn columnElement, IGridRow rowElement) {
         final DBDAttributeBinding attr = getAttributeFromGrid(columnElement, rowElement);
         final ResultSetRow row = getResultRowFromGrid(columnElement, rowElement);
+        final ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, getRowNestedIndexes(rowElement));
 
         if (isShowAsCheckbox(attr)) {
             // Switch boolean value
-            Object cellValue = controller.getModel().getCellValue(attr, row);
-            toggleBooleanValue(attr, row, cellValue);
+            Object cellValue = controller.getModel().getCellValue(cellLocation);
+            toggleBooleanValue(cellLocation, cellValue);
         } if (isCollectionAttribute(attr) && rowElement.getParent() == null) {
             spreadsheet.toggleRowExpand(rowElement);
         }
     }
 
-    private void toggleBooleanValue(DBDAttributeBinding attr, ResultSetRow row, Object value) {
-        boolean nullable = !attr.isRequired();
+    private void toggleBooleanValue(ResultSetCellLocation cellLocation, Object value) {
+        boolean nullable = !cellLocation.getAttribute().isRequired();
         if (value instanceof Number) {
             value = ((Number) value).byteValue() != 0;
         }
@@ -1305,13 +1322,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
         final SpreadsheetValueController valueController = new SpreadsheetValueController(
             controller,
-            attr,
-            row,
-            IValueController.EditType.NONE,
-            null);
+            cellLocation,
+            IValueController.EditType.NONE, null);
         // Update value in all selected rows
         for (ResultSetRow selRow : getSelection().getSelectedRows()) {
-            valueController.setCurRow(selRow);
+            valueController.setCurRow(selRow, cellLocation.getRowIndexes());
             valueController.updateValue(value, true);
         }
     }
@@ -1425,10 +1440,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     final ResultSetRow row = getResultRowFromGrid(cell.col, cell.row);
                     final SpreadsheetValueController valueController = new SpreadsheetValueController(
                         controller,
-                        attr,
-                        row,
-                        IValueController.EditType.NONE,
-                        null);
+                        new ResultSetCellLocation(attr, row, getRowNestedIndexes(cell.row)),
+                        IValueController.EditType.NONE, null);
                     PropertyCollector props = new PropertyCollector(valueController.getBinding().getAttribute(), false);
                     props.collectProperties();
                     valueController.getValueManager().contributeProperties(props, valueController);
@@ -1469,7 +1482,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Override
-    public IResultSetSelection getSelection() {
+    public SpreadsheetSelectionImpl getSelection() {
         return new SpreadsheetSelectionImpl();
     }
 
@@ -1630,7 +1643,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         return attr != null && attr.getDataKind() == DBPDataKind.ARRAY;
     }
 
-    private class SpreadsheetSelectionImpl implements IResultSetSelection, IResultSetSelectionExt {
+    class SpreadsheetSelectionImpl implements IResultSetSelection, IResultSetSelectionExt {
 
         @Nullable
         @Override
@@ -1704,9 +1717,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             {
                 List<ResultSetRow> rows = new ArrayList<>();
                 if (controller.isRecordMode()) {
-                    for (Object col : spreadsheet.getColumnSelection()) {
-                        if (col instanceof ResultSetRow) {
-                            rows.add((ResultSetRow) col);
+                    for (IGridColumn col : spreadsheet.getColumnSelection()) {
+                        if (col.getElement() instanceof ResultSetRow) {
+                            rows.add((ResultSetRow) col.getElement());
                         }
                     }
                 } else {
@@ -1723,6 +1736,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
         }
 
+        @NotNull
+        public List<IGridRow> getSelectedGridRows() {
+            return spreadsheet.getRowSelection()
+                .stream().map(i -> spreadsheet.getRow(i)).collect(Collectors.toList());
+        }
+
         @Override
         public DBDAttributeBinding getElementAttribute(Object element) {
             GridPos pos = (GridPos) element;
@@ -1736,6 +1755,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return (ResultSetRow) (controller.isRecordMode() ?
                 controller.getCurrentRow() :
                 spreadsheet.getRowElement(((GridPos) element).row));
+        }
+
+        @Override
+        public int[] getElementRowIndexes(Object element) {
+            IGridRow row = spreadsheet.getRow(((GridPos) element).row);
+            return getRowNestedIndexes(row);
         }
 
         @Override
@@ -1796,7 +1821,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         if (controller.isRecordMode()) {
                             ResultSetRow curRow = controller.getCurrentRow();
                             if (curRow != null) {
-                                Object value = controller.getModel().getCellValue(binding, curRow);
+                                Object value = controller.getModel().getCellValue(
+                                    new ResultSetCellLocation(binding, curRow));
                                 if (value instanceof DBDCollection && !DBUtils.isNullValue(value)) {
                                     return curRow.getCollectionData(
                                         binding,
@@ -1820,9 +1846,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public boolean isCollectionElement(@NotNull IGridColumn element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
-                return isCollectionAttribute((DBDAttributeBinding) element.getElement());
+        public boolean isCollectionElement(@NotNull IGridItem item) {
+            if (item.getElement() instanceof DBDAttributeBinding) {
+                return isCollectionAttribute((DBDAttributeBinding) item.getElement());
             }
             return false;
         }
@@ -1836,7 +1862,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (column.getElement() instanceof DBDAttributeBinding) {
                 DBDAttributeBinding attr = (DBDAttributeBinding) column.getElement();
                 ResultSetRow rsr = (ResultSetRow) row.getElement();
-                Object cellValue = controller.getModel().getCellValue(attr, rsr);
+                Object cellValue = controller.getModel().getCellValue(
+                    new ResultSetCellLocation(attr, rsr, getRowNestedIndexes(row)));
                 if (cellValue instanceof DBDCollection) {
                     return ((DBDCollection) cellValue).getItemCount();
                 }
@@ -1876,7 +1903,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     case ARRAY:
                         ResultSetRow curRow = controller.getCurrentRow();
                         if (curRow != null) {
-                            Object cellValue = controller.getModel().getCellValue(binding, curRow);
+                            Object cellValue = controller.getModel().getCellValue(
+                                new ResultSetCellLocation(binding, curRow));
                             if (cellValue instanceof DBDCollection) {
                                 if (((DBDCollection) cellValue).getItemCount() < 3) {
                                     return ElementState.EXPANDED;
@@ -1904,7 +1932,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         if (row.getState() == ResultSetRow.STATE_ADDED) {
                             return ALIGN_CENTER;
                         }
-                        Object cellValue = controller.getModel().getCellValue(attr, row);
+                        Object cellValue = controller.getModel().getCellValue(new ResultSetCellLocation(attr, row));
                         if (row.isChanged(attr)) {
                             // Use alignment of an original value to prevent unexpected jumping back and forth.
                             cellValue = row.getOriginalValue(attr);
@@ -1944,7 +1972,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             final ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
             final DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
             if (row != null && attr != null && isShowAsCheckbox(attr)) {
-                Object cellValue = controller.getModel().getCellValue(attr, row);
+                Object cellValue = controller.getModel().getCellValue(new ResultSetCellLocation(attr, row));
                 if (cellValue instanceof Number) {
                     cellValue = ((Number) cellValue).byteValue() != 0;
                 }
@@ -2009,7 +2037,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
             ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
 
-            Object cellValue = controller.getModel().getCellValue(attr, row);
+            Object cellValue = controller.getModel().getCellValue(new ResultSetCellLocation(attr, row));
 
             {
                 // State
@@ -2070,9 +2098,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
                 } else if (
                     (isCollectionAttribute(attr) && rowElement.getParent() == null) ||
-                    (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)))
+                    !CommonUtils.isEmpty(attr.getReferrers()))
                 {
-                    state |= STATE_LINK;
+                    if (!DBUtils.isNullValue(value)) {
+                        state |= STATE_LINK;
+                    }
                 } else {
                     String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
                     if (strValue != null && strValue.contains("://")) {
@@ -2112,14 +2142,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
 
             int rowNum = row.getVisualNumber();
-            int[] nestedIndexes = null;
-            if (gridRow.getParent() != null) {
-                nestedIndexes = new int[gridRow.getNestedDepth()];
-                for (IGridRow gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
-                    nestedIndexes[gr.getNestedDepth() - 1] = gr.getNestedIndex();
-                }
-            }
-            Object value = controller.getModel().getCellValue(attr, row, nestedIndexes);
+            Object value = controller.getModel().getCellValue(
+                new ResultSetCellLocation(attr, row, getRowNestedIndexes(gridRow)));
             if (formatString && DBUtils.isNullValue(value) && row.getState() == ResultSetRow.STATE_ADDED) {
                 // New row and no value. Let's try to show default value
                 DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
@@ -2186,12 +2210,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Nullable
         @Override
         public DBPImage getCellImage(IGridColumn gridColumn, IGridRow gridRow) {
+            DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
+            ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
+            Object cellValue = controller.getModel().getCellValue(
+                new ResultSetCellLocation(attr, row, getRowNestedIndexes(gridRow)));
+
             // Show booleans
             if (booleanStyles.getMode() != BooleanMode.TEXT) {
-                DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
                 if (isShowAsCheckbox(attr)) {
-                    ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
-                    Object cellValue = controller.getModel().getCellValue(attr, row);
                     if (cellValue instanceof Number) {
                         cellValue = ((Number) cellValue).byteValue() != 0;
                     }
@@ -2203,8 +2229,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
             // Collections
             if (gridRow.getParent() == null) {
-                DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
-                if (isCollectionAttribute(attr)) {
+                if (!DBUtils.isNullValue(cellValue) && isCollectionAttribute(attr)) {
                     return spreadsheet.isRowExpanded(gridRow) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
                 }
             }
@@ -2226,7 +2251,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
             DBDAttributeBinding attribute = getAttributeFromGrid(colElement, rowElement);
             if (isShowAsCheckbox(attribute) && booleanStyles.getMode() == BooleanMode.TEXT) {
-                Object cellValue = controller.getModel().getCellValue(attribute, row);
+                Object cellValue = controller.getModel().getCellValue(
+                    new ResultSetCellLocation(attribute, row, getRowNestedIndexes(rowElement)));
                 if (cellValue instanceof Number) {
                     cellValue = ((Number) cellValue).byteValue() != 0;
                 }
@@ -2396,7 +2422,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public String getCellLinkText(IGridColumn colElement, IGridRow rowElement) {
             DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
             ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
-            Object value = controller.getModel().getCellValue(attr, row);
+            Object value = controller.getModel().getCellValue(
+                new ResultSetCellLocation(attr, row, getRowNestedIndexes(rowElement)));
             List<DBSEntityReferrer> referrers = attr.getReferrers();
             if (!CommonUtils.isEmpty(referrers) && !DBUtils.isNullValue(value)) {
                 StringBuilder text = new StringBuilder();
@@ -2419,6 +2446,32 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             backgroundNormal = null;
             foregroundDefault = null;
         }
+    }
+
+    public ResultSetCellLocation getCurrentCellLocation() {
+        DBDAttributeBinding currentAttribute = getCurrentAttribute();
+        ResultSetRow currentRow = getController().getCurrentRow();
+        IGridRow focusRow = spreadsheet.getFocusRow();
+        return new ResultSetCellLocation(currentAttribute, currentRow, getRowNestedIndexes(focusRow));
+    }
+
+    public ResultSetCellLocation getCellLocation(GridCell cell) {
+        final boolean recordMode = getController().isRecordMode();
+        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row.getElement() : cell.col.getElement());
+        final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col.getElement() : cell.row.getElement());
+        return new ResultSetCellLocation(attr, row, getRowNestedIndexes(cell.row));
+    }
+
+    @Nullable
+    static int[] getRowNestedIndexes(IGridRow gridRow) {
+        int[] nestedIndexes = null;
+        if (gridRow != null && gridRow.getParent() != null) {
+            nestedIndexes = new int[gridRow.getRowDepth()];
+            for (IGridRow gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
+                nestedIndexes[gr.getRowDepth() - 1] = gr.getRelativeIndex();
+            }
+        }
+        return nestedIndexes;
     }
 
     private DBDDisplayFormat getValueRenderFormat(DBDAttributeBinding attr, Object value) {
@@ -2503,7 +2556,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     if (gridRow.getParent() != null) {
                         StringBuilder sb = new StringBuilder();
                         for (IGridRow gr = gridRow; gr.getParent() != null; gr = gr.getParent()) {
-                            sb.append(".").append(gr.getNestedIndex() + 1);
+                            sb.append(".").append(gr.getRelativeIndex() + 1);
                         }
                         rowNumber = "  " + rowNumber + sb;
                     }
@@ -2572,28 +2625,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         SpreadsheetValueController(
             @NotNull IResultSetController controller,
-            @NotNull DBDAttributeBinding binding,
-            @NotNull ResultSetRow row,
+            @NotNull ResultSetCellLocation cellLocation,
             @NotNull EditType editType,
             @Nullable Composite inlinePlaceholder)
         {
-            super(controller, binding, row, editType, inlinePlaceholder);
+            super(controller, cellLocation, editType, inlinePlaceholder);
         }
 
         @Override
         public Object getValue() {
-            boolean recordMode = controller.isRecordMode();
-            IGridColumn gridColumn = spreadsheet.getColumnByElement(
-                recordMode ? curRow : binding);
-            IGridRow gridRow = spreadsheet.getRowByElement(
-                recordMode ? 0 : curRow.getVisualNumber(),
-                recordMode ? binding : curRow);
-
-            return spreadsheet.getContentProvider().getCellValue(
-                gridColumn,
-                gridRow,
-                false,
-                false);
+            return controller.getModel().getCellValue(cellLocation);
         }
 
         @Override
@@ -2632,6 +2673,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public void updateSelectionValue(Object value) {
             DBDAttributeBinding origAttr = getBinding();
             ResultSetRow origRow = getCurRow();
+            int[] origRowIndexes = cellLocation.getRowIndexes();
             try {
                 Collection<GridPos> ssSelection = spreadsheet.getSelection();
                 for (GridPos pos : ssSelection) {
@@ -2655,14 +2697,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         continue;
                     }
                     setBinding(attr);
-                    setCurRow(row);
+                    setCurRow(row, spreadsheet.getPresentation().getCurrentRowIndexes());
                     updateValue(value, false);
                 }
                 spreadsheet.redrawGrid();
                 controller.updatePanelsContent(false);
             } finally {
                 setBinding(origAttr);
-                setCurRow(origRow);
+                setCurRow(origRow, origRowIndexes);
             }
         }
 

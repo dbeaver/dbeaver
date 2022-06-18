@@ -90,7 +90,7 @@ class GridRowRenderer extends AbstractRenderer {
             Image expandImage = state == IGridContentProvider.ElementState.EXPANDED ? IMG_COLLAPSE : IMG_EXPAND;
             gc.drawImage(expandImage, x, bounds.y + (bounds.height - EXPANDED_BOUNDS.height) / 2);
             x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
-        } else if (grid.hasNodes()) {
+        } else if (grid.hasExpandableRows()) {
             x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
         }
 
@@ -132,7 +132,7 @@ class GridRowRenderer extends AbstractRenderer {
 
     public int computeHeaderWidth(IGridRow element, int level) {
         int width = GridRowRenderer.LEFT_MARGIN + GridRowRenderer.RIGHT_MARGIN;
-        if (grid.hasNodes()) {
+        if (grid.hasExpandableRows()) {
             width += GridRowRenderer.EXPANDED_BOUNDS.width + EXPANDER_SPACING;
         }
         Image rowImage = grid.getLabelProvider().getImage(element);

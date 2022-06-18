@@ -26,8 +26,8 @@ public interface IGridRow extends IGridItem {
 
     int getVisualPosition();
 
-    int getNestedIndex();
+    int getRelativeIndex();
 
-    int getNestedDepth();
+    int getRowDepth();
 
 }

@@ -148,7 +148,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
      */
     void redrawData(boolean attributesChanged, boolean rowsChanged);
 
-    void fillContextMenu(@NotNull IMenuManager manager, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row);
+    void fillContextMenu(@NotNull IMenuManager manager, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, int[] rowIndexes);
 
     @Nullable
     ResultSetRow getCurrentRow();
