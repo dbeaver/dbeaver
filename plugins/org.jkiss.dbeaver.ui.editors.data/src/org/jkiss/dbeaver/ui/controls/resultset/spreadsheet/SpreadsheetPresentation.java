@@ -1269,6 +1269,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     return Status.OK_STATUS;
                 }
             }.schedule();
+        } else if (isCollectionAttribute(attr)) {
+            spreadsheet.toggleCellValue(cell.col, cell.row);
         } else {
             // Navigate hyperlink
             String strValue = attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
@@ -1284,6 +1286,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             // Switch boolean value
             Object cellValue = controller.getModel().getCellValue(attr, row);
             toggleBooleanValue(attr, row, cellValue);
+        } if (isCollectionAttribute(attr) && rowElement.getParent() == null) {
+            spreadsheet.toggleCellExpand(columnElement, rowElement);
         }
     }
 
@@ -1622,6 +1626,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
     }
 
+    private boolean isCollectionAttribute(DBDAttributeBinding attr) {
+        return attr != null && attr.getDataKind() == DBPDataKind.ARRAY;
+    }
 
     private class SpreadsheetSelectionImpl implements IResultSetSelection, IResultSetSelectionExt {
 
@@ -1815,7 +1822,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public boolean isCollectionElement(@NotNull IGridColumn element) {
             if (element.getElement() instanceof DBDAttributeBinding) {
-                return ((DBDAttributeBinding) element.getElement()).getDataKind() == DBPDataKind.ARRAY;
+                return isCollectionAttribute((DBDAttributeBinding) element.getElement());
             }
             return false;
         }
@@ -2052,13 +2059,19 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public int getCellState(IGridColumn colElement, IGridRow rowElement, String cellText) {
             int state = STATE_NONE;
             DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
+            if (attr == null) {
+                return state;
+            }
 
             if ((controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_LINKS) != 0) {
                 //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
                 Object value = getCellValue(colElement, rowElement, false, false);
                 if (isShowAsCheckbox(attr)) {
                     state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
-                } else if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
+                } else if (
+                    (isCollectionAttribute(attr) && rowElement.getParent() == null) ||
+                    (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)))
+                {
                     state |= STATE_LINK;
                 } else {
                     String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
@@ -2151,7 +2164,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
             if (formatString) {
                 if (controller.isRecordMode()) {
-                    if (attr.getDataKind() == DBPDataKind.ARRAY && value instanceof DBDCollection && !DBUtils.isNullValue(value)) {
+                    if (isCollectionAttribute(attr) && value instanceof DBDCollection && !DBUtils.isNullValue(value)) {
                         return "[" + ((DBDCollection) value).getItemCount() + "]";
                     } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
                         return "[" + ((DBDComposite) value).getDataType().getName() + "]";
@@ -2191,7 +2204,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             // Collections
             if (gridRow.getParent() == null) {
                 DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
-                if (attr.getDataKind() == DBPDataKind.ARRAY) {
+                if (isCollectionAttribute(attr)) {
                     return UIIcon.TREE_EXPAND;
                 }
             }

@@ -363,7 +363,6 @@ public class Spreadsheet extends LightGrid implements Listener {
     @Override
     protected void toggleCellValue(IGridColumn column, IGridRow row) {
         presentation.toggleCellValue(column, row);
-
     }
 
     private void hookContextMenu() {

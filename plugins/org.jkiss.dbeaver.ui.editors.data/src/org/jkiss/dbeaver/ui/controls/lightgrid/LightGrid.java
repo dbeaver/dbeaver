@@ -455,7 +455,7 @@ public abstract class LightGrid extends Canvas {
         List<IGridColumn> collectionColumns)
     {
         int index = 0;
-        expandedCells.clear(); // FIXME: delete
+        //expandedCells.clear(); // FIXME: delete
         for (Object element : elements) {
             if (element == null) {
                 continue;
@@ -463,6 +463,7 @@ public abstract class LightGrid extends Canvas {
             IGridRow row = new GridRow(element, index);
             result.add(row);
 
+/*
             {
                 // Fake expand
                 // FIXME: delete
@@ -473,6 +474,7 @@ public abstract class LightGrid extends Canvas {
                     expandedCells.put(new GridPos(cc.getIndex(), index), cellStatus);
                 }
             }
+*/
             int maxColLength = getMaxNestedRows(index, collectionColumns);
             index++;
             if (maxColLength > 0) {
@@ -1529,6 +1531,7 @@ public abstract class LightGrid extends Canvas {
 
         topColumns.clear();
         columns.clear();
+        expandedCells.clear();
         gridRows = new IGridRow[0];
     }
 
@@ -3233,7 +3236,7 @@ public abstract class LightGrid extends Canvas {
                     if (node != null && node.state != IGridContentProvider.ElementState.NONE) {
                         if (GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
                         {
-                            toggleRowState(row);
+                            toggleCellExpand(getColumn(0), getRow(row));
                             return;
                         }
                     }
@@ -3341,11 +3344,21 @@ public abstract class LightGrid extends Canvas {
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
         }
-
-
     }
 
-    private void toggleRowState(int row) {
+    public void toggleCellExpand(IGridColumn column, IGridRow row) {
+        GridPos gridPos = new GridPos(column.getIndex(), row.getVisualPosition());
+        CollectionCellState cellState = expandedCells.get(gridPos);
+        if (cellState == null) {
+            int colSize = getContentProvider().getCollectionSize(column, row);
+            cellState = new CollectionCellState(colSize);
+            cellState.expanded = true;
+            expandedCells.put(gridPos, cellState);
+        } else {
+            cellState.expanded = !cellState.expanded;
+        }
+        refreshRowsData();
+
 /*
         GridNode node = rowNodes.get(gridRows[row]);
         if (node == null || node.state == IGridContentProvider.ElementState.NONE) {
@@ -3419,7 +3432,7 @@ public abstract class LightGrid extends Canvas {
                     if (node != null && node.state != IGridContentProvider.ElementState.NONE) {
                         if (!GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
                         {
-                            toggleRowState(row);
+                            toggleCellExpand(col, getRow(row));
                         }
                     }
                 }
@@ -3915,7 +3928,7 @@ public abstract class LightGrid extends Canvas {
                         if ((node.state == IGridContentProvider.ElementState.EXPANDED && !isPlus) ||
                             (node.state == IGridContentProvider.ElementState.COLLAPSED && isPlus))
                         {
-                            toggleRowState(focusItem);
+                            toggleCellExpand(impliedFocusColumn, gridRows[focusItem]);
                         }
                     }
                 }

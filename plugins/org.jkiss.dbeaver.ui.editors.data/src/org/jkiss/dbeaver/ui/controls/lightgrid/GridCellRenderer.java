@@ -70,17 +70,14 @@ class GridCellRenderer extends AbstractRenderer {
     {
         boolean drawBackground = true;
 
-        //if (grid.isEnabled()) {
-            Color back = grid.getCellBackground(col, row, selected);
+        Color back = grid.getCellBackground(col, row, selected);
 
-            if (back != null) {
-                gc.setBackground(back);
-            } else {
-                drawBackground = false;
-            }
-        /*} else {
-            grid.setDefaultBackground(gc);
-        }*/
+        if (back != null) {
+            gc.setBackground(back);
+        } else {
+            drawBackground = false;
+        }
+
         gc.setForeground(grid.getCellForeground(col, row, selected));
 
         if (drawBackground) {
