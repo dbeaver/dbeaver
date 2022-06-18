@@ -89,7 +89,6 @@ class GridCellRenderer extends AbstractRenderer {
 
         String text = grid.getCellText(col, row);
         final int state = grid.getContentProvider().getCellState(col, row, text);
-        int x = LEFT_MARGIN;
 
         Image image;
         Rectangle imageBounds = null;
@@ -110,6 +109,7 @@ class GridCellRenderer extends AbstractRenderer {
         }
 
         int columnAlign = grid.getContentProvider().getCellAlign(col, row);
+        int x = image == null ? LEFT_MARGIN : LEFT_MARGIN / 2;
 
         if (image != null && columnAlign != IGridContentProvider.ALIGN_RIGHT) {
             int y = bounds.y + (bounds.height - imageBounds.height) / 2;
@@ -248,23 +248,25 @@ class GridCellRenderer extends AbstractRenderer {
             }
             int verMargin = (grid.getItemHeight() - imageBounds.height) / 2;
 
+            int leftMargin = LEFT_MARGIN / 2;
+
             switch (columnAlign) {
                 case IGridContentProvider.ALIGN_LEFT:
-                    if (x >= origin.x + LEFT_MARGIN && x <= origin.x + LEFT_MARGIN + imageBounds.width &&
+                    if (x >= origin.x + leftMargin && x <= origin.x + leftMargin + imageBounds.width &&
                         y >= origin.y + verMargin && y <= origin.y + verMargin + imageBounds.height) {
                         return true;
                     }
                     break;
                 case IGridContentProvider.ALIGN_RIGHT:
                     int width = column.getWidth();
-                    if (x >= origin.x + width - (LEFT_MARGIN + imageBounds.width) && x <= origin.x + width - RIGHT_MARGIN &&
+                    if (x >= origin.x + width - (leftMargin + imageBounds.width) && x <= origin.x + width - RIGHT_MARGIN &&
                         y >= origin.y + verMargin && y <= origin.y + verMargin + imageBounds.height) {
                         return true;
                     }
                     break;
                 case IGridContentProvider.ALIGN_CENTER:
-                    int leftIndent = (column.getWidth() - imageBounds.width - RIGHT_MARGIN - LEFT_MARGIN) / 2;
-                    if (x >= origin.x + LEFT_MARGIN + leftIndent && x <= origin.x + LEFT_MARGIN + leftIndent + imageBounds.width &&
+                    int leftIndent = (column.getWidth() - imageBounds.width - RIGHT_MARGIN - leftMargin) / 2;
+                    if (x >= origin.x + leftMargin + leftIndent && x <= origin.x + leftMargin + leftIndent + imageBounds.width &&
                         y >= origin.y + verMargin && y <= origin.y + verMargin + imageBounds.height) {
                         return true;
                     }

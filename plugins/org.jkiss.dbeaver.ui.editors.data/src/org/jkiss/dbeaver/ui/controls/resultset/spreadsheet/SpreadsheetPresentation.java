@@ -549,8 +549,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
 
             DBDAttributeBinding column = getAttributeFromGrid(cell.col, cell.row);
-            ResultSetRow row = getResultRowFromGrid (cell.col, cell.row);
-            Object value = controller.getModel().getCellValue(column, row);
+            Object value = spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false, false);
+            //Object value = controller.getModel().getCellValue(column, row);
             if (binaryData == null && (column.getDataKind() == DBPDataKind.BINARY || column.getDataKind() == DBPDataKind.CONTENT)) {
                 if (value instanceof byte[]) {
                     binaryData = (byte[]) value;
@@ -575,6 +575,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (copyHTML) html.append("<td>").append(XMLUtils.escapeXml(cellText)).append("</td> ");
 
             if (settings.isCut()) {
+                ResultSetRow row = getResultRowFromGrid (cell.col, cell.row);
+
                 IValueController valueController = new SpreadsheetValueController(
                     controller, column, row, IValueController.EditType.NONE, null);
                 if (!valueController.isReadOnly()) {
@@ -2170,11 +2172,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
-        public DBPImage getCellImage(IGridColumn colElement, IGridRow rowElement) {
+        public DBPImage getCellImage(IGridColumn gridColumn, IGridRow gridRow) {
+            // Show booleans
             if (booleanStyles.getMode() != BooleanMode.TEXT) {
-                DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
+                DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
                 if (isShowAsCheckbox(attr)) {
-                    ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
+                    ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
                     Object cellValue = controller.getModel().getCellValue(attr, row);
                     if (cellValue instanceof Number) {
                         cellValue = ((Number) cellValue).byteValue() != 0;
@@ -2183,6 +2186,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         return booleanStyles.getStyle((Boolean) cellValue).getIcon();
                     }
                     return null;
+                }
+            }
+            // Collections
+            if (gridRow.getParent() == null) {
+                DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
+                if (attr.getDataKind() == DBPDataKind.ARRAY) {
+                    return UIIcon.TREE_EXPAND;
                 }
             }
             return null;
@@ -2228,7 +2238,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         private Color getCellBackground(IGridColumn colElement, IGridRow rowElement, boolean cellSelected, boolean ignoreRowSelection) {
             final Object currentValue = spreadsheet.getContentProvider().getCellValue(colElement, rowElement, false, true);
             if (currentValue == DBDVoid.INSTANCE) {
-                return backgroundNormal;
+                return cellHeaderBackground;
             }
 
             final boolean recordMode = controller.isRecordMode();
@@ -2270,7 +2280,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
             if (findReplaceTarget.isSessionActive()) {
                 boolean hasScope = highlightScopeFirstLine >= 0 && highlightScopeLastLine >= 0;
-                boolean inScope = hasScope && row.getVisualNumber() >= highlightScopeFirstLine && row.getVisualNumber() <= highlightScopeLastLine;
+                boolean inScope = hasScope &&
+                    rowElement.getVisualPosition() >= highlightScopeFirstLine &&
+                    rowElement.getVisualPosition() <= highlightScopeLastLine;
                 if (!hasScope || inScope) {
                     java.util.regex.Pattern searchPattern = findReplaceTarget.getSearchPattern();
                     if (searchPattern != null) {
@@ -2285,7 +2297,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
 
-            if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(row.getVisualNumber())) {
+            if (!ignoreRowSelection && highlightRowsWithSelectedCells && spreadsheet.isRowSelected(rowElement.getVisualPosition())) {
                 Color normalColor = getCellBackground(colElement, rowElement, false, true);
                 Color selectedCellColor;
                 if (normalColor == null || normalColor == backgroundNormal) {

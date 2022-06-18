@@ -812,6 +812,21 @@ public final class DBUtils {
                 curValue = new DBDValueError(e);
                 break;
             }
+            if (nestedIndexes != null && indexNumber < nestedIndexes.length) {
+                if (curValue instanceof DBDCollection) {
+                    if (((DBDCollection) curValue).getItemCount() <= nestedIndexes[indexNumber]) {
+                        // Not an error. This collection is shorter than sibling collection
+                        return DBDVoid.INSTANCE;
+                    }
+                    curValue = ((DBDCollection) curValue).getItem(nestedIndexes[indexNumber]);
+                    indexNumber++;
+                } else {
+                    if (i == depth - 1) {
+                        // Sibling non-collection attribute
+                        return DBDVoid.INSTANCE;
+                    }
+                }
+            }
         }
 
         return curValue;
