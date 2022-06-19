@@ -238,6 +238,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.query.next" name="%command.org.jkiss.dbeaver.ui.editors.sql.query.next.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.query.next.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.query.prev" name="%command.org.jkiss.dbeaver.ui.editors.sql.query.prev.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.query.prev.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.cancel.query" name="%command.org.jkiss.dbeaver.ui.editors.sql.cancel.query.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.cancel.query.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.generate.ddl.by.resultSet" name="%command.org.jkiss.dbeaver.ui.editors.sql.generate.ddl.by.resultSet.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.generate.ddl.by.resultSet.description" categoryId="org.jkiss.dbeaver.core.sql"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.output" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.output.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.output.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.log" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.log.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.log.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -276,7 +277,7 @@
         <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_create.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.console" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"/>
-
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.generate.ddl.by.resultSet" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_text.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec_new.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_exec.png"/>
@@ -381,6 +382,7 @@
                     </enabledWhen>
                 </handler>
         -->
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.generate.ddl.by.resultSet" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorHandlerResultSetDDL"/>
 
         <!-- SQL editor handlers -->
 
@@ -1178,4 +1180,9 @@
         <super type="org.eclipse.core.resources.textmarker"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="ddlByResultSet" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorDDLFromResultSet" label="CREATE" description="CREATE table" order="6">
+            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
+        </generator>
+    </extension>
 </plugin>

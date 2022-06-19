@@ -139,6 +139,10 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
             generatorOptions.put(name, value);
         }
     }
+    
+    public boolean hasOptions() {
+        return true;
+    }
 
     protected String getLineSeparator() {
         return compactSQL ? " " : "\n";

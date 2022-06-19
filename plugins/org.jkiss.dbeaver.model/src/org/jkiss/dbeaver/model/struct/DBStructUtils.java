@@ -276,7 +276,8 @@ public final class DBStructUtils {
                 isBindingWithEntityAttr = true;
             }
         }
-        if (objectContainer != null && (srcTypedObject instanceof DBSEntityAttribute || isBindingWithEntityAttr)) {
+        if (objectContainer != null && (srcTypedObject instanceof DBSEntityAttribute || isBindingWithEntityAttr || (
+                srcTypedObject instanceof DBSObject &&  objectContainer.getDataSource() == ((DBSObject) srcTypedObject).getDataSource()))) {
             // If source and target datasources have the same type then just return the same type name
             DBPDataSource srcDataSource = ((DBSObject) srcTypedObject).getDataSource();
             DBPDataSource tgtDataSource = objectContainer.getDataSource();
