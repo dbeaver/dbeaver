@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSNamespace;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -52,7 +51,17 @@ public class PostgreNamespace implements DBSNamespace  {
     };
 
     public static boolean supportsObjectType(DBSObjectType objectType) {
-        return ArrayUtils.contains(SUPPORTED_TYPES, objectType);
+        for (DBSObjectType ot : SUPPORTED_TYPES) {
+            if (ot == objectType) {
+                return true;
+            }
+        }
+        for (DBSObjectType ot : SUPPORTED_TYPES) {
+            if (ot.isCompatibleWith(objectType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private final PostgreSchema schema;
@@ -72,12 +81,14 @@ public class PostgreNamespace implements DBSNamespace  {
     public DBSObject getObjectByName(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, schema, "Search PG class")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT oid,relkind FROM pg_catalog.pg_class WHERE relname = ?")) {
-                dbStat.setString(1, name);
+                "SELECT oid,relkind,reltype FROM pg_catalog.pg_class WHERE relnamespace=? AND relname=?")) {
+                dbStat.setLong(1, schema.getObjectId());
+                dbStat.setString(2, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         long oid = JDBCUtils.safeGetLong(dbResult, "oid");
                         String relKind = JDBCUtils.safeGetString(dbResult, "relkind");
+                        long reltype = JDBCUtils.safeGetLong(dbResult, "reltype");
                         if (relKind == null) {
                             log.debug("NULL relkind for class " + name);
                             return null;
@@ -96,7 +107,7 @@ public class PostgreNamespace implements DBSNamespace  {
                                 return schema.getSequence(monitor, name);
                             case "c":
                                 schema.getDataTypeCache().getAllObjects(monitor, schema);
-                                return schema.getDataTypeCache().getDataType(oid);
+                                return schema.getDataTypeCache().getDataType(reltype);
                             default:
                                 log.debug("Unknown relkind: " + relKind);
                                 return null;
