@@ -850,12 +850,12 @@ public class DBExecUtils {
         }
     }
 
-    private static boolean isSameDataTypes(DBSEntityAttribute tableColumn, DBCAttributeMetaData resultSetAttributeMeta) {
+    private static boolean isSameDataTypes(@NotNull DBSEntityAttribute tableColumn, @NotNull DBCAttributeMetaData resultSetAttributeMeta) {
         if (tableColumn instanceof DBSTypedObjectEx) {
             DBSDataType columnDataType = ((DBSTypedObjectEx) tableColumn).getDataType();
             return columnDataType != null && columnDataType.isStructurallyConsistentTypeWith(resultSetAttributeMeta);
         }
-        return false;
+        return tableColumn.getDataKind().isComplex() == resultSetAttributeMeta.getDataKind().isComplex();
     }
 
     public static boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute) {
