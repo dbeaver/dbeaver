@@ -122,7 +122,9 @@ public class SearchDataPage extends AbstractSearchPage {
             gd.heightHint = 300;
             navigatorTree.setLayoutData(gd);
 
-            navigatorTree.getViewer().addFilter(new ViewerFilter() {
+            TreeViewer treeViewer = navigatorTree.getViewer();
+
+            treeViewer.addFilter(new ViewerFilter() {
                 @Override
                 public boolean select(Viewer viewer, Object parentElement, Object element) {
                     if (element instanceof TreeNodeSpecial) {
@@ -156,7 +158,17 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
 
-            navigatorTree.getViewer().addSelectionChangedListener(event -> updateEnablement());
+            treeViewer.addSelectionChangedListener(event -> updateEnablement());
+
+            treeViewer.addDoubleClickListener(event -> {
+                IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+                for (Object node : selection.toArray()) {
+                    if (node instanceof TreeNodeSpecial) {
+                        ((TreeNodeSpecial) node).handleDefaultAction(navigatorTree);
+                    }
+                }
+            });
+
         }
 
         {

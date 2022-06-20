@@ -51,6 +51,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private boolean hasDelimiterAfterBlock;
     private boolean callableQueryInBrackets;
     private boolean omitCatalogName;
+    private boolean supportsMultiInsert;
 
     public GenericSQLDialect() {
         super("Generic", "generic");
@@ -92,6 +93,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
             this.dualTable = null;
         }
         this.omitCatalogName = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG_NAME));
+        this.supportsMultiInsert = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_MULTI_INSERT));
     }
 
     @NotNull
@@ -182,5 +184,14 @@ public class GenericSQLDialect extends JDBCSQLDialect {
             return USAGE_NONE;
         }
         return super.getCatalogUsage();
+    }
+
+    @NotNull
+    @Override
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
+        if (supportsMultiInsert) {
+            return MultiValueInsertMode.GROUP_ROWS;
+        }
+        return super.getDefaultMultiValueInsertMode();
     }
 }

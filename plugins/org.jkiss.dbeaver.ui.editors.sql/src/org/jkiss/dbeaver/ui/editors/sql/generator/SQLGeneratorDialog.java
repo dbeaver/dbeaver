@@ -102,6 +102,11 @@ class SQLGeneratorDialog extends ViewSQLDialog {
         }
 
         Composite composite = super.createDialogArea(parent);
+        
+        if (!sqlGenerator.hasOptions()) {
+            return composite;
+        }
+        
         Group settings = UIUtils.createControlGroup(composite, "Settings", 5, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
         settings.setLayout(new RowLayout());
         Button useFQNames = UIUtils.createCheckbox(settings, SQLEditorMessages.sql_generator_dialog_button_use_fully_names, sqlGenerator.isFullyQualifiedNames());
