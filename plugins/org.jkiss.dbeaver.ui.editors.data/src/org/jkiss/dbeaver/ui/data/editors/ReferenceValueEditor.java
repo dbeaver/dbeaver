@@ -32,10 +32,10 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -81,10 +81,15 @@ public class ReferenceValueEditor {
     private Object lastPattern;
     private Object firstValue = null;
     private Object lastValue = null;
+    private int maxResults;
+
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
         this.valueEditor = valueEditor;
+        maxResults =
+            valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getInt(
+                ModelPreferences.DICTIONARY_MAX_ROWS);
     }
 
     public void setValueEditor(IValueEditor valueEditor) {
@@ -265,17 +270,17 @@ public class ReferenceValueEditor {
     }
 
     private void reloadSelectorValues(Object pattern, boolean force) {
-        reloadSelectorValues(pattern, force, DBSDictionary.LoadingDirection.LOAD_VALUES_IN_RANGE);
+        reloadSelectorValues(pattern, force, 0);
     }
 
-    private void reloadSelectorValues(Object pattern, boolean force, @NotNull DBSDictionary.LoadingDirection direction) {
+    private void reloadSelectorValues(Object pattern, boolean force, int offset) {
         if (!force && dictLoaded && CommonUtils.equalObjects(String.valueOf(lastPattern), String.valueOf(pattern))) {
             selectCurrentValue();
             return;
         }
         lastPattern = pattern;
         dictLoaded = true;
-        SelectorLoaderService loadingService = new SelectorLoaderService(direction);
+        SelectorLoaderService loadingService = new SelectorLoaderService(offset);
         if (pattern != null) {
             loadingService.setPattern(pattern);
         }
@@ -417,16 +422,16 @@ public class ReferenceValueEditor {
 
     class SelectorLoaderService extends AbstractLoadService<EnumValuesData> {
 
-        private final DBSDictionary.LoadingDirection direction;
+        int offset;
         private Object pattern;
 
         public Object getLastValue() {
             return lastValue;
         }
 
-        private SelectorLoaderService(DBSDictionary.LoadingDirection direction) {
+        private SelectorLoaderService(int offset) {
             super(ResultSetMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");
-            this.direction = direction;
+            this.offset = offset;
         }
 
         public void setPattern(@Nullable Object pattern)
@@ -531,7 +536,7 @@ public class ReferenceValueEditor {
             final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
             if (fkAttribute != null && enumConstraint != null) {
                 List<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(monitor, refColumn,
-                    pattern, precedingKeys, direction, sortAsc, false, sortByValue, 200);
+                    pattern, precedingKeys, maxResults, sortAsc, false, sortByValue, offset);
 //                        for (DBDLabelValuePair pair : enumValues) {
 //                            keyValues.put(pair.getValue(), pair.getLabel());
 //                        }
@@ -541,7 +546,7 @@ public class ReferenceValueEditor {
                 if (enumValues.isEmpty()) {
                     return null;
                 }
-                if (enumValues.size() > 1) {
+                if (enumValues.size() >= 1) {
                     firstValue = enumValues.get(0).getValue();
                     lastValue = enumValues.get(enumValues.size() - 1).getValue();
                 }
@@ -585,9 +590,9 @@ public class ReferenceValueEditor {
 
         private void updateList() throws DBException {
             if (backwardMove && firstValue != null) {
-                reloadSelectorValues(firstValue, true, DBSDictionary.LoadingDirection.LOAD_VALUES_BEFORE);
+                reloadSelectorValues(firstValue, true, -Math.floorDiv(maxResults, 2));
             } else if (!backwardMove && lastValue != null) {
-                reloadSelectorValues(lastValue, true, DBSDictionary.LoadingDirection.LOAD_VALUES_AFTER);
+                reloadSelectorValues(lastValue, true, Math.round((float) maxResults / 2) + 1);
             }
         }
 
