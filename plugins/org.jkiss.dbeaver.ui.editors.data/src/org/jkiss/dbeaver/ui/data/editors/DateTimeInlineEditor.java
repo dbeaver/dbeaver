@@ -115,7 +115,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
             if (parent.isDirty()) {
                 try {
                     Object value = parent.extractEditorValue();
-                    if (value instanceof Date) {
+                    if (value instanceof Date || value == null) {
                         editor.setValue((Date) value);
                     }
                 } catch (DBException e) {
@@ -125,7 +125,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
             }
             try {
                 Object value = parent.extractEditorValue();
-                if (!(value instanceof Date)){
+                if (!(value instanceof Date) && value != null) {
                     DBWorkbench.getPlatformUI().showWarningMessageBox(ResultSetMessages.dialog_value_view_error_parsing_date_title, NLS.bind(ResultSetMessages.dialog_value_view_error_parsing_date_message, value));
                     ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
                     this.setChecked(false);
@@ -215,11 +215,10 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
 
     @Override
     public void primeEditorValue(@Nullable Object value) {
-        if (value == null) {
-            return;
-        }
         timeEditor.setTextValue(valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT));
-        if (value instanceof Time) {
+        if (value == null) {
+            timeEditor.setValue(null);
+        } else if (value instanceof Time) {
             timeEditor.setValue((Time) value);
         } else if (value instanceof Timestamp) {
             timeEditor.setValue((Timestamp) value);

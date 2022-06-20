@@ -56,6 +56,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     private Button showBooleanAsCheckbox;
     private Button showWhitespaceCharacters;
     private Button toggleBooleanOnClick;
+    private Button moveAfterInlineEnter;
     private Combo gridDoubleClickBehavior;
     private Text gridRowBatchSize;
     private Text maxDefColumnWidth;
@@ -97,38 +98,80 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, DataEditorsMessages.pref_page_database_resultsets_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite,
+                DataEditorsMessages.pref_page_database_resultsets_group_grid, 2, GridData.FILL_BOTH, 0);
 
-            gridShowOddRows = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
-            gridHighlightRowsWithSelectedCells = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_highlight_rows_with_selected_cells, null, false, 2);
-            colorizeDataTypes = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
+            final Group appearanceGroup = UIUtils.createControlGroup(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_group_appearance, 2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            gridShowOddRows = UIUtils.createCheckbox(appearanceGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
+            colorizeDataTypes = UIUtils.createCheckbox(appearanceGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
             //gridShowCellIcons = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
-            gridShowAttrIcons = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_icons, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_icons_tip, false, 2);
-            gridShowAttrFilters = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_filters, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_filters_tip, false, 2);
-            gridShowAttrOrder = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering, DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
-            useSmoothScrolling = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_use_smooth_scrolling, DataEditorsMessages.pref_page_database_resultsets_label_use_smooth_scrolling_tip, false, 2);
-            showBooleanAsCheckbox = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox, DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox_tip, false, 2);
-            showWhitespaceCharacters = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_whitespace_characters, DataEditorsMessages.pref_page_database_resultsets_label_show_whitespace_characters_tip, false, 2);
-            toggleBooleanOnClick = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_toggle_boolean_on_click, DataEditorsMessages.pref_page_database_resultsets_label_toggle_boolean_on_click_tip, false, 2);
-            PreferenceLinkArea editorsLink = new PreferenceLinkArea(uiGroup, SWT.NONE,
+            gridShowAttrIcons = UIUtils.createCheckbox(appearanceGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_attr_icons,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_attr_icons_tip, false, 2);
+            gridShowAttrFilters = UIUtils.createCheckbox(appearanceGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_attr_filters,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_attr_filters_tip, false, 2);
+            gridShowAttrOrder = UIUtils.createCheckbox(appearanceGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
+            showBooleanAsCheckbox = UIUtils.createCheckbox(appearanceGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_as_checkbox_tip, false, 2);
+            showWhitespaceCharacters = UIUtils.createCheckbox(appearanceGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_whitespace_characters,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_whitespace_characters_tip, false, 2);
+            maxDefColumnWidth = UIUtils.createLabelText(appearanceGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width, "", SWT.BORDER);
+            maxDefColumnWidth.setToolTipText(
+                DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width_tip);
+            maxDefColumnWidth.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+
+            final Group behaviorGroup = UIUtils.createControlGroup(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_group_behavior, 2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            gridHighlightRowsWithSelectedCells = UIUtils.createCheckbox(behaviorGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_highlight_rows_with_selected_cells, null, false,
+                2);
+            useSmoothScrolling = UIUtils.createCheckbox(behaviorGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_use_smooth_scrolling,
+                DataEditorsMessages.pref_page_database_resultsets_label_use_smooth_scrolling_tip, false, 2);
+            toggleBooleanOnClick = UIUtils.createCheckbox(behaviorGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_toggle_boolean_on_click,
+                DataEditorsMessages.pref_page_database_resultsets_label_toggle_boolean_on_click_tip, false, 2);
+            moveAfterInlineEnter = UIUtils.createCheckbox(behaviorGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_enter_for_inline_behavior,
+                DataEditorsMessages.pref_page_database_resultsets_label_enter_for_inline_behavior_tip, false, 2);
+
+            PreferenceLinkArea editorsLink = new PreferenceLinkArea(behaviorGroup, SWT.NONE,
                 "org.jkiss.dbeaver.preferences.editors",
-                "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link + "  - ''{0}''</a>",
-                (IWorkbenchPreferenceContainer) getContainer(), null);//$NON-NLS-1$
+                "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link
+                    + "  - ''{0}''</a>", (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             editorsLink.getControl().setLayoutData(gd);
 
-            gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
-            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_none, Spreadsheet.DoubleClickBehavior.NONE.ordinal());
-            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_editor, Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
-            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_inline_editor, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
-            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_copy_cell, Spreadsheet.DoubleClickBehavior.COPY_VALUE.ordinal());
-            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_paste_cell_value, Spreadsheet.DoubleClickBehavior.COPY_PASTE_VALUE.ordinal());
-            gridRowBatchSize = UIUtils.createLabelText(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_row_batch_size, "", SWT.BORDER);
+            gridDoubleClickBehavior = UIUtils.createLabelCombo(behaviorGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
+            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_none,
+                Spreadsheet.DoubleClickBehavior.NONE.ordinal());
+            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_editor,
+                Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
+            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_inline_editor,
+                Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
+            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_copy_cell,
+                Spreadsheet.DoubleClickBehavior.COPY_VALUE.ordinal());
+            gridDoubleClickBehavior.add(DataEditorsMessages.pref_page_result_selector_paste_cell_value,
+                Spreadsheet.DoubleClickBehavior.COPY_PASTE_VALUE.ordinal());
+
+
+            gridRowBatchSize = UIUtils.createLabelText(behaviorGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_row_batch_size, "", SWT.BORDER);
             gridRowBatchSize.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_row_batch_size_tip);
-            maxDefColumnWidth = UIUtils.createLabelText(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width, "", SWT.BORDER);
-            maxDefColumnWidth.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width_tip);
-            maxDefColumnWidth.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+
         }
 
         return composite;
@@ -149,6 +192,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             showBooleanAsCheckbox.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX));
             showWhitespaceCharacters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS));
             toggleBooleanOnClick.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN));
+            moveAfterInlineEnter.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_INLINE_ENTER));
             gridDoubleClickBehavior.select(
                 CommonUtils.valueOf(
                     Spreadsheet.DoubleClickBehavior.class,
@@ -167,6 +211,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     {
         try {
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS, gridShowOddRows.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_INLINE_ENTER, moveAfterInlineEnter.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS, gridHighlightRowsWithSelectedCells.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES, colorizeDataTypes.getSelection());
             //store.setValue(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS, gridShowCellIcons.getSelection());
@@ -192,6 +237,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
+        store.setToDefault(ResultSetPreferences.RESULT_SET_INLINE_ENTER);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);

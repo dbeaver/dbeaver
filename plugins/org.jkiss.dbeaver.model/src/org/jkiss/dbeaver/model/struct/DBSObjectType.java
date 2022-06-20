@@ -31,4 +31,9 @@ public interface DBSObjectType
     DBPImage getImage();
 
     Class<? extends DBSObject> getTypeClass();
+
+    default boolean isCompatibleWith(DBSObjectType other) {
+        return getTypeClass().isAssignableFrom(other.getTypeClass());
+    }
+
 }

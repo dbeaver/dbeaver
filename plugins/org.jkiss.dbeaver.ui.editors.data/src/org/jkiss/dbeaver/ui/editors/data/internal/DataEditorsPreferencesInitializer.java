@@ -77,7 +77,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS, false);
-
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_INLINE_ENTER, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME, true);

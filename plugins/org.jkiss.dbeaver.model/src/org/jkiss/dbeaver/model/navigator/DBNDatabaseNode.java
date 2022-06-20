@@ -816,7 +816,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             if (pathName.length() > 0) {
                 pathName.insert(0, '/');
             }
-            pathName.insert(0, node.getNodeName().replace('/', '_'));
+            pathName.insert(0, node.getNodeName().replace("/", DBNModel.SLASH_ESCAPE_TOKEN));
         }
         return pathName.toString();
     }
