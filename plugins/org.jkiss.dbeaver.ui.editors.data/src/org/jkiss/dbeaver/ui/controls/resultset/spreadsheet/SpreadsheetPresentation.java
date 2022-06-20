@@ -160,28 +160,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         return spreadsheet;
     }
 
-    public boolean isShowOddRows() {
-        return showOddRows;
-    }
-
-    public void setShowOddRows(boolean showOddRows) {
-        this.showOddRows = showOddRows;
-    }
-
-    public boolean isAutoFetchSegments() {
-        return autoFetchSegments;
-    }
-
-    public void setAutoFetchSegments(boolean autoFetchSegments) {
-        this.autoFetchSegments = autoFetchSegments;
-    }
-
-    @Nullable
-    DBPDataSource getDataSource() {
-        DBSDataContainer dataContainer = controller.getDataContainer();
-        return dataContainer == null ? null : dataContainer.getDataSource();
-    }
-
     @Override
     public boolean isDirty() {
         return activeInlineEditor != null &&
@@ -318,7 +296,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (recordMode && controller.getSelectedRecords().length > 1 && curRow != null) {
                 // Shift to new row in record mode
                 curRow = controller.getCurrentRow();
-                int newColumnIndex = ArrayUtils.indexOf(controller.getSelectedRecords(), 0, curRow.getVisualNumber());
+                int newColumnIndex = curRow == null ? -1 : ArrayUtils.indexOf(controller.getSelectedRecords(), 0, curRow.getVisualNumber());
                 if (newColumnIndex >= 0) {
                     GridPos focusPos = spreadsheet.getCursorPosition();
                     GridCell newPos = spreadsheet.posToCell(new GridPos(newColumnIndex, focusPos.row));
@@ -644,7 +622,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (rowNum < 0) {
                     return;
                 }
-                boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
+                //boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
                 try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
 
                     String[][] newLines = parseGridLines(strValue, settings.isInsertMultipleRows());
@@ -946,7 +924,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         if (attr != null && row == null) {
             final List<IGridColumn> selectedColumns = spreadsheet.getColumnSelection();
-            if (selectedColumns.size() == 1 && attr != null) {
+            if (selectedColumns.size() == 1) {
                 IGridColumn attrCol = spreadsheet.getColumnByElement(attr);
                 if (attrCol != null) {
                     selectedColumns.clear();
@@ -1523,7 +1501,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         spreadsheet.deselectAll();
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
             List<GridPos> cellSelection = new ArrayList<>();
-            for (Iterator iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
+            for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
                 Object cell = iter.next();
                 if (cell instanceof GridPos) {
                     cellSelection.add((GridPos) cell);
