@@ -50,6 +50,8 @@ public interface IGridContentProvider extends IContentProvider {
         public DBPImage image;
         public Color foreground;
         public Color background;
+        public Object value;
+        public Object text;
     }
 
     @NotNull
@@ -83,41 +85,23 @@ public interface IGridContentProvider extends IContentProvider {
     boolean isGridReadOnly();
 
     /**
-     * @param cellText pre-rendered cell text. Used for cache purposes.
+     * Checks for additional data read according to the specified cell/row
      */
-    CellInformation getCellInfo(IGridColumn colElement, IGridRow rowElement, boolean selected, @Nullable String cellText);
+    void validateDataPresence(IGridColumn colElement, IGridRow rowElement);
 
     /**
-     * @param colElement
-     * @param rowElement
-     * @param cellText   pre-rendered cell text. Used for cache purposes.
+     * Returns cell information.
+     * TODO: add returnColors parameter for optimization
      */
-    int getCellState(IGridColumn colElement, IGridRow rowElement, @Nullable String cellText);
-
-    int getCellAlign(@Nullable IGridColumn colElement, IGridRow rowElement);
+    CellInformation getCellInfo(IGridColumn colElement, IGridRow rowElement, boolean selected);
 
     boolean isVoidCell(IGridColumn gridColumn, IGridRow gridRow);
 
-    @Nullable
-    Font getCellFont(@Nullable IGridColumn colElement, IGridRow rowElement);
-
     /**
      * @param formatString Format string values or return raw values
-     * @param lockData     Block any automatic data fetch/refresh
+     *
      */
-    Object getCellValue(IGridColumn colElement, IGridRow rowElement, boolean formatString, boolean lockData);
-
-    @NotNull
-    String getCellText(IGridColumn colElement, IGridRow rowElement);
-
-    @Nullable
-    DBPImage getCellImage(IGridColumn colElement, IGridRow rowElement);
-
-    @Nullable
-    Color getCellForeground(IGridColumn colElement, IGridRow rowElement, boolean selected);
-
-    @Nullable
-    Color getCellBackground(IGridColumn colElement, IGridRow rowElement, boolean selected);
+    Object getCellValue(IGridColumn colElement, IGridRow rowElement, boolean formatString);
 
     @Nullable
     Color getCellHeaderForeground(Object element);

@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIElementFontStyle;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -432,7 +431,7 @@ public abstract class LightGrid extends Canvas {
 
         initListeners();
 
-        recalculateSizes();
+        recalculateSizes(true);
 
         addDragAndDropSupport();
         setDragDetect(false);
@@ -665,7 +664,7 @@ public abstract class LightGrid extends Canvas {
         // Recalculate indexes, sizes and update scrollbars
         topIndex = -1;
         bottomIndex = -1;
-        recalculateSizes();
+        recalculateSizes(true);
         updateScrollbars();
 
         // Restore state
@@ -1952,9 +1951,11 @@ public abstract class LightGrid extends Canvas {
     /**
      * Computes and sets the height of the header row. This method will ask for
      * the preferred size of all the column headers and use the max.
+     * @param decreaseSize
      */
-    private void computeHeaderSizes()
+    private void computeHeaderSizes(boolean decreaseSize)
     {
+        int oldRowHeaderWidth = rowHeaderWidth;
         // Item height
         itemHeight = fontMetrics.getHeight() + 3;
 
@@ -1969,14 +1970,17 @@ public abstract class LightGrid extends Canvas {
         }
 
         // Row header width
-        rowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
+        int newRowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
         for (int i = 0; i < gridRows.length; i++) {
             IGridRow row = gridRows[i];
             int width = rowHeaderRenderer.computeHeaderWidth(row, row.getRowDepth());
-            rowHeaderWidth = Math.max(rowHeaderWidth, width);
+            newRowHeaderWidth = Math.max(newRowHeaderWidth, width);
         }
-        if (rowHeaderWidth > MAX_ROW_HEADER_WIDTH) {
-            rowHeaderWidth = MAX_ROW_HEADER_WIDTH;
+        if (newRowHeaderWidth > MAX_ROW_HEADER_WIDTH) {
+            newRowHeaderWidth = MAX_ROW_HEADER_WIDTH;
+        }
+        if (newRowHeaderWidth > oldRowHeaderWidth || decreaseSize) {
+            rowHeaderWidth = newRowHeaderWidth;
         }
     }
 
@@ -2531,6 +2535,11 @@ public abstract class LightGrid extends Canvas {
             gc.setForeground(this.getLineSelectedColor());
             gc.drawLine(rowHeaderWidth + pinnedColumnsWidth - 1, 0, rowHeaderWidth + pinnedColumnsWidth - 1, y);
             gc.drawLine(rowHeaderWidth + pinnedColumnsWidth, 0, rowHeaderWidth + pinnedColumnsWidth, y);
+        }
+
+        if (!columns.isEmpty() && gridRows.length > 0) {
+            int lastRow = row >= gridRows.length ? gridRows.length - 1 : row;
+            getContentProvider().validateDataPresence(columns.get(columns.size() - 1), gridRows[lastRow]);
         }
     }
 
@@ -3340,6 +3349,7 @@ public abstract class LightGrid extends Canvas {
             cellState.expanded = !cellState.expanded;
         }
         refreshRowsData();
+        recalculateSizes(false);
         updateScrollbars();
         redraw();
 
@@ -4172,9 +4182,9 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
-    public void recalculateSizes() {
+    public void recalculateSizes(boolean decreaseSize) {
         int oldHeaderHeight = headerHeight;
-        computeHeaderSizes();
+        computeHeaderSizes(decreaseSize);
         if (oldHeaderHeight != headerHeight) {
             scrollValuesObsolete = true;
         }
@@ -4622,9 +4632,15 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
-    public String getCellText(IGridColumn colElement, IGridRow rowElement)
-    {
-        String text = getContentProvider().getCellText(colElement, rowElement);
+    public String getCellText(IGridColumn colElement, IGridRow rowElement) {
+        Object text = getContentProvider().getCellValue(
+            colElement, rowElement, true);
+        return getCellText(text);
+    }
+
+    @NotNull
+    String getCellText(Object cellValue) {
+        String text = String.valueOf(cellValue);
         // Truncate too long texts (they are really bad for performance)
         if (text.length() > MAX_TOOLTIP_LENGTH) {
             text = text.substring(0, MAX_TOOLTIP_LENGTH) + " ...";
@@ -4666,24 +4682,6 @@ public abstract class LightGrid extends Canvas {
         } else {
             return "";
         }
-    }
-
-    @Nullable
-    public DBPImage getCellImage(IGridColumn colElement, IGridRow rowElement)
-    {
-        return getContentProvider().getCellImage(colElement, rowElement);
-    }
-
-    public Color getCellBackground(IGridColumn colElement, IGridRow rowElement, boolean selected)
-    {
-        Color color = getContentProvider().getCellBackground(colElement, rowElement, selected);
-        return color != null ? color : getBackground();
-    }
-
-    public Color getCellForeground(IGridColumn colElement, IGridRow rowElement, boolean selected)
-    {
-        Color color = getContentProvider().getCellForeground(colElement, rowElement, selected);
-        return color != null ? color : getForeground();
     }
 
     public Rectangle getCellBounds(int columnIndex, int rowIndex) {
@@ -4885,7 +4883,9 @@ public abstract class LightGrid extends Canvas {
                             if (text.length() > 0) text.append("\n");
                             for (int i = 0; i < columns.size(); i++) {
                                 GridColumn column = columns.get(i);
-                                String cellText = getContentProvider().getCellText(column, getRow(row));
+                                Object cellText = getContentProvider().
+                                    getCellValue(column, getRow(row), true);
+
                                 if (i > 0) text.append(", ");
                                 text.append(cellText);
                             }

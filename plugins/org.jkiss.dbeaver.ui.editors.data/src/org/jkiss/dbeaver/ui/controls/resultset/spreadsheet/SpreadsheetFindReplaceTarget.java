@@ -132,7 +132,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         }
         Spreadsheet spreadsheet = owner.getSpreadsheet();
         GridCell cell = spreadsheet.posToCell(selection);
-        String value = cell == null ? "" : CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false, true));
+        String value = cell == null ? "" : CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false));
         return CommonUtils.toString(value);
     }
 
@@ -322,7 +322,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             } else {
                 GridCell cell = spreadsheet.posToCell(curPosition);
                 if (cell != null) {
-                    cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false, false));
+                    cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false));
                 } else {
                     continue;
                 }
@@ -363,14 +363,14 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         ResultSetCellLocation cellLocation = owner.getCellLocation(cell);
 
         String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(
-            cell.col, cell.row, true, true));
+            cell.col, cell.row, true));
         String newValue = text;
         if (searchPattern != null) {
             newValue = searchPattern.matcher(oldValue).replaceAll(newValue);
         }
 
         final Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(
-            cell.col, cell.row, false, true);
+            cell.col, cell.row, false);
         if (originalValue instanceof DBDContent) {
             try {
                 ((DBDContent) originalValue)

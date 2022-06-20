@@ -193,7 +193,10 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             updateActions = true;
             force = true;
         } else {
-            updateActions = force = (force || previewController.getBinding() != attr);
+            updateActions = force = (
+                force ||
+                previewController.getBinding() != attr ||
+                !CommonUtils.equalObjects(rowIndexes, previewController.getRowIndexes()));
             previewController.setCellLocation(new ResultSetCellLocation(attr, row, rowIndexes));
         }
         if (!force && (valueManager == null || valueEditor == null)) {

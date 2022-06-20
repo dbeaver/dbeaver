@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -70,28 +69,34 @@ class GridCellRenderer extends AbstractRenderer {
     {
         boolean drawBackground = true;
 
-        Color back = grid.getCellBackground(col, row, selected);
+        IGridContentProvider.CellInformation cellInfo = grid.getContentProvider().getCellInfo(col, row, selected);
+        if (cellInfo.background == null) {
+            cellInfo.background = grid.getBackground();
+        }
+        if (cellInfo.foreground == null) {
+            cellInfo.foreground = grid.getForeground();
+        }
 
-        if (back != null) {
-            gc.setBackground(back);
+        if (cellInfo.background != null) {
+            gc.setBackground(cellInfo.background);
         } else {
             drawBackground = false;
         }
 
-        gc.setForeground(grid.getCellForeground(col, row, selected));
+        gc.setForeground(cellInfo.foreground);
 
         if (drawBackground) {
             gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
         }
 
-        String text = grid.getCellText(col, row);
-        final int state = grid.getContentProvider().getCellState(col, row, text);
+        String text = grid.getCellText(cellInfo.text);
+        final int state = cellInfo.state;
 
         Image image;
         Rectangle imageBounds = null;
 
         {
-            DBPImage cellImage = grid.getCellImage(col, row);
+            DBPImage cellImage = cellInfo.image;
             if (cellImage != null) {
                 image = DBeaverIcons.getImage(cellImage);
                 imageBounds = image.getBounds();
@@ -105,7 +110,7 @@ class GridCellRenderer extends AbstractRenderer {
             }
         }
 
-        int columnAlign = grid.getContentProvider().getCellAlign(col, row);
+        int columnAlign = cellInfo.align;
         int x = image == null ? LEFT_MARGIN : LEFT_MARGIN / 2;
 
         if (image != null && columnAlign != IGridContentProvider.ALIGN_RIGHT) {
@@ -123,13 +128,13 @@ class GridCellRenderer extends AbstractRenderer {
         final String originalText = text;
 
         // Get cell text
-        if (text != null && !text.isEmpty()) {
+        if (!text.isEmpty()) {
             // Get shortern version of string
             text = UITextUtils.getShortString(grid.fontMetrics, text, width);
             // Replace linefeeds with space
             text = CommonUtils.getSingleLineString(text);
 
-            final Font font = grid.getContentProvider().getCellFont(col, row);
+            final Font font = cellInfo.font;
             gc.setFont(font != null ? font : grid.normalFont);
 
             switch (columnAlign) {
@@ -179,7 +184,7 @@ class GridCellRenderer extends AbstractRenderer {
                 }
                 default: {
                     if (CommonUtils.isBitSet(state, IGridContentProvider.STATE_DECORATED)) {
-                        drawCellTextDecorated(gc, originalText, col, row, selected, new Rectangle(
+                        drawCellTextDecorated(gc, originalText, cellInfo, new Rectangle(
                             bounds.x + x,
                             bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
                             bounds.width - LEFT_MARGIN - RIGHT_MARGIN,
@@ -217,7 +222,10 @@ class GridCellRenderer extends AbstractRenderer {
     boolean isOverLink(GridColumn column, int row, int x, int y) {
         IGridContentProvider contentProvider = grid.getContentProvider();
         IGridRow rowElement = grid.getRow(row);
-        int state = contentProvider.getCellState(column, rowElement, null);
+        IGridContentProvider.CellInformation cellInfo = grid.getContentProvider().getCellInfo(
+            column, rowElement, false);
+
+        int state = cellInfo.state;
 
         boolean isToggle = (state & IGridContentProvider.STATE_TOGGLE) != 0;
         if (isToggle) {
@@ -226,15 +234,15 @@ class GridCellRenderer extends AbstractRenderer {
             }
         }
         if (isLinkState(state) || isToggle) {
-            int columnAlign = contentProvider.getCellAlign(column, rowElement);
+            int columnAlign = cellInfo.align;
             Point origin = grid.getOrigin(column, row);
             Rectangle imageBounds;
             if (isToggle) {
-                String cellText = grid.getCellText(column, rowElement);
+                String cellText = grid.getCellText(cellInfo.text);
                 Point textSize = grid.sizingGC.textExtent(cellText);
                 imageBounds = new Rectangle(0, 0, textSize.x, textSize.y);
             } else {
-                DBPImage cellImage = grid.getCellImage(column, rowElement);
+                DBPImage cellImage = cellInfo.image;
                 Image image;
                 if (cellImage == null) {
                     image = ((state & IGridContentProvider.STATE_LINK) != 0) ? LINK_IMAGE : LINK2_IMAGE;
@@ -280,9 +288,9 @@ class GridCellRenderer extends AbstractRenderer {
             (state & IGridContentProvider.STATE_HYPER_LINK) != 0;
     }
 
-    private void drawCellTextDecorated(@NotNull GC gc, @NotNull String text, @Nullable IGridColumn col, @Nullable IGridRow row, boolean selected, @NotNull Rectangle bounds) {
-        final Color activeForeground = grid.getCellForeground(col, row, selected);
-        final Color activeBackground = grid.getCellBackground(col, row, selected);
+    private void drawCellTextDecorated(@NotNull GC gc, @NotNull String text, @NotNull IGridContentProvider.CellInformation cellInfo, @NotNull Rectangle bounds) {
+        final Color activeForeground = cellInfo.foreground;
+        final Color activeBackground = cellInfo.background;
         final Color disabledForeground = UIUtils.getSharedColor(UIUtils.blend(activeForeground.getRGB(), activeBackground.getRGB(), 50));
 
         for (int start = 0; start < text.length(); ) {

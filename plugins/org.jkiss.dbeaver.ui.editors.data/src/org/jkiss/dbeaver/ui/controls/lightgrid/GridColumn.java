@@ -304,13 +304,16 @@ class GridColumn implements IGridColumn {
 
         x += leftMargin;
 
-        String cellText = grid.getCellText(this, row);
-        int state = grid.getContentProvider().getCellState(this, row, cellText);
+        IGridContentProvider.CellInformation cellInfo = grid.getContentProvider().getCellInfo(
+            this, row, false);
+
+        String cellText = grid.getCellText(cellInfo.text);
+        int state = cellInfo.state;
         Rectangle imageBounds;
         if (GridCellRenderer.isLinkState(state)) {
             imageBounds = GridCellRenderer.LINK_IMAGE_BOUNDS;
         } else {
-            DBPImage image = grid.getContentProvider().getCellImage(this, row);
+            DBPImage image = cellInfo.image;
             imageBounds = image == null ? null : DBeaverIcons.getImage(image).getBounds();
         }
         if (imageBounds != null) {
