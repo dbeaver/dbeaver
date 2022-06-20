@@ -80,10 +80,16 @@ public class PostgreNamespace implements DBSNamespace  {
     @Override
     public DBSObject getObjectByName(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, schema, "Search PG class")) {
+            // To find object we select from both pg_class and pg_type because
+            // enums are (surprise!) are not classes
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT oid,relkind,reltype FROM pg_catalog.pg_class WHERE relnamespace=? AND relname=?")) {
+                "SELECT oid,relkind,reltype FROM pg_catalog.pg_class WHERE relnamespace=? AND relname=?\n" +
+                    "UNION ALL\n" +
+                    "SELECT oid,'c',oid FROM pg_catalog.pg_type WHERE typnamespace=? AND typname=?")) {
                 dbStat.setLong(1, schema.getObjectId());
                 dbStat.setString(2, name);
+                dbStat.setLong(3, schema.getObjectId());
+                dbStat.setString(4, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         long oid = JDBCUtils.safeGetLong(dbResult, "oid");
