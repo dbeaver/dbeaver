@@ -303,9 +303,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 case CURRENT:
                     if (curRow != null && !recordMode) {
                         GridPos curPos = spreadsheet.getCursorPosition();
-                        GridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, curRow.getVisualNumber()));
-                        if (newCell != null) {
-                            spreadsheet.setCursor(newCell, false, true, true);
+                        // Find corresponding grid row
+                        IGridRow gridRow = spreadsheet.getRowByElement(curRow.getVisualNumber(), curRow);
+                        if (gridRow != null) {
+                            GridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, gridRow.getVisualPosition()));
+                            if (newCell != null) {
+                                spreadsheet.setCursor(newCell, false, true, true);
+                            }
                         }
                     }
                     break;
