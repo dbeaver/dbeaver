@@ -2094,6 +2094,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
 
+            info.align = getCellAlign(attr, row, cellValue);
+
             {
                 // Image
                 if (booleanStyles.getMode() != BooleanMode.TEXT) {
@@ -2210,6 +2212,41 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             } catch (Exception e) {
                 return new DBDValueError(e);
             }
+        }
+
+        public int getCellAlign(@Nullable DBDAttributeBinding attr, ResultSetRow row, Object cellValue) {
+            if (!controller.isRecordMode()) {
+                if (attr != null) {
+                    if (isShowAsCheckbox(attr)) {
+                        if (row.getState() == ResultSetRow.STATE_ADDED) {
+                            return ALIGN_CENTER;
+                        }
+                        if (row.isChanged(attr)) {
+                            // Use alignment of an original value to prevent unexpected jumping back and forth.
+                            cellValue = row.getOriginalValue(attr);
+                        }
+                        if (cellValue instanceof Number) {
+                            cellValue = ((Number) cellValue).byteValue() != 0;
+                        }
+                        if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
+                            switch (booleanStyles.getStyle((Boolean) cellValue).getAlignment()) {
+                                case LEFT:
+                                    return ALIGN_LEFT;
+                                case CENTER:
+                                    return ALIGN_CENTER;
+                                case RIGHT:
+                                    return ALIGN_RIGHT;
+                            }
+                        }
+                    }
+                    DBPDataKind dataKind = attr.getDataKind();
+                    if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
+                        (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime)) {
+                        return ALIGN_RIGHT;
+                    }
+                }
+            }
+            return ALIGN_LEFT;
         }
 
         @Nullable
