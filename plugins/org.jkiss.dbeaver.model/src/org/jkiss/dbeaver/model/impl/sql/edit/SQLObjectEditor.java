@@ -349,7 +349,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
                     }
                     OBJECT_TYPE cachedObject = DBUtils.findObject(cachedObjects, objectName);
                     if (cachedObject != null && cachedObject != newObject && cachedObject.isPersisted()) {
-                        throw new DBException(DBUtils.getObjectTypeName(newObject) + " '" + objectName + "' already exists");
+                        throw new DBException(DBUtils.getObjectTypeName(cachedObject) + " '" + objectName + "' already exists");
                     }
                 }
             }

@@ -105,16 +105,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh);
     }
 
-    public void refreshOnlyAttributesMappingTypes(DBRRunnableContext context, boolean forceRefresh) throws DBException {
-        refreshAttributesMappingTypes(new VoidProgressMonitor(), forceRefresh);
-    }
-
-    private void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
+    public void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
         this.mappingType = mappingType;
         refreshAttributesMappingTypes(monitor, forceRefresh);
     }
 
-    private void refreshAttributesMappingTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
+    public void refreshAttributesMappingTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(monitor);
         if (!CommonUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {

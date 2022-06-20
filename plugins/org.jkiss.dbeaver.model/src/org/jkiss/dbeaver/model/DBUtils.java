@@ -2171,6 +2171,12 @@ public final class DBUtils {
     }
 
     public static String getObjectTypeName(DBSObject object) {
+        if (object instanceof DBSObjectWithType) {
+            DBSObjectType objectType = ((DBSObjectWithType) object).getObjectType();
+            if (objectType != null) {
+                return objectType.getTypeName();
+            }
+        }
         DBSObjectType[] objectTypes = object.getDataSource().getInfo().getSupportedObjectTypes();
         for (DBSObjectType ot : objectTypes) {
             Class<? extends DBSObject> typeClass = ot.getTypeClass();
