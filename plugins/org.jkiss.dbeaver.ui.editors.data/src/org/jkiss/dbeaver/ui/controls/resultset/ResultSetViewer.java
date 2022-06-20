@@ -3749,7 +3749,7 @@ public class ResultSetViewer extends Viewer
         }
         nextSegmentReadingBlocked = true;
         UIUtils.asyncExec(() -> {
-            if (!checkForChanges()) {
+            if (isRefreshInProgress() || !checkForChanges()) {
                 nextSegmentReadingBlocked = false;
                 return;
             }
