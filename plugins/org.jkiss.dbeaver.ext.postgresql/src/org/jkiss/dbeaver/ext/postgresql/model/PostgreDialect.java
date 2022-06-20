@@ -809,10 +809,13 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @Override
     public String getCastedAttributeName(@NotNull DBSAttributeBase attribute, String attributeName) {
         // This method actually works for special data types like JSON and XML. Because column names in the condition in a table without key must be also cast, as data in getTypeCast method.
-        if (attribute instanceof DBSObject) {
-            attributeName = DBUtils.isPseudoAttribute(attribute) ?
-                attributeName :
-                DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+        if (attribute instanceof DBSObject && !DBUtils.isPseudoAttribute(attribute)) {
+            if (!CommonUtils.equalObjects(attributeName, attribute.getName())) {
+                // Must use explicit attribute name
+                attributeName = DBUtils.getQuotedIdentifier(((DBSObject) attribute).getDataSource(), attributeName);
+            } else {
+                attributeName = DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+            }
         }
         return getCastedString(attribute, attributeName, true, true);
     }
