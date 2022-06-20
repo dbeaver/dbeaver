@@ -3744,7 +3744,7 @@ public class ResultSetViewer extends Viewer
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (nextSegmentReadingBlocked && isDirty()) {
+        if (nextSegmentReadingBlocked) {
             return;
         }
         nextSegmentReadingBlocked = true;
@@ -3753,25 +3753,21 @@ public class ResultSetViewer extends Viewer
                 nextSegmentReadingBlocked = false;
                 return;
             }
-            try {
-                DBSDataContainer dataContainer = getDataContainer();
-                if (dataContainer != null && !model.isUpdateInProgress()) {
-                    dataReceiver.setHasMoreData(false);
-                    dataReceiver.setNextSegmentRead(true);
+            DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer != null && !model.isUpdateInProgress()) {
+                dataReceiver.setHasMoreData(false);
+                dataReceiver.setNextSegmentRead(true);
 
-                    runDataPump(
-                        dataContainer,
-                        model.getDataFilter(),
-                        model.getRowCount(),
-                        getSegmentMaxRows(),
-                        -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
-                        false,
-                        true,
-                        true,
-                        null);
-                }
-            } finally {
-                nextSegmentReadingBlocked = false;
+                runDataPump(
+                    dataContainer,
+                    model.getDataFilter(),
+                    model.getRowCount(),
+                    getSegmentMaxRows(),
+                    -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
+                    false,
+                    true,
+                    true,
+                    () -> nextSegmentReadingBlocked = false);
             }
         });
     }
@@ -3915,15 +3911,13 @@ public class ResultSetViewer extends Viewer
         final boolean refresh, // Refresh. Nothing was changed but refresh from server or scroll happened
         @Nullable final Runnable finalizer)
     {
-        if (viewerPanel.isDisposed()) {
-            return false;
-        }
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null || dataContainer.getDataSource() != executionContext.getDataSource()) {
             // This may happen during cross-database entity navigation
             executionContext = DBUtils.getDefaultContext(dataContainer, false);
         }
         if (executionContext == null) {
+            if (finalizer != null) finalizer.run();
             UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Can't read data - no active connection", SWT.ICON_WARNING);
             return false;
         }
@@ -4864,7 +4858,17 @@ public class ResultSetViewer extends Viewer
         private final DBDDataFilter dataFilter;
         private final Runnable finalizer;
 
-        ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter useDataFilter, DBCExecutionContext executionContext, Composite progressControl, int focusRow, boolean saveHistory, boolean scroll, DBDDataFilter dataFilter, Runnable finalizer) {
+        ResultSetDataPumpJob(
+            DBSDataContainer dataContainer,
+            DBDDataFilter useDataFilter,
+            DBCExecutionContext executionContext,
+            Composite progressControl,
+            int focusRow,
+            boolean saveHistory,
+            boolean scroll,
+            DBDDataFilter dataFilter,
+            Runnable finalizer)
+        {
             super(dataContainer, useDataFilter, ResultSetViewer.this, executionContext, progressControl);
             this.useDataFilter = useDataFilter;
             this.focusRow = focusRow;
@@ -4878,14 +4882,17 @@ public class ResultSetViewer extends Viewer
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             if (!acquireDataReadLock()) {
+                // Must run finalizer in any case
+                if (finalizer != null) {
+                    finalizer.run();
+                }
                 return Status.CANCEL_STATUS;
             }
             beforeDataRead();
             try {
-                IStatus status = super.run(monitor);
-                afterDataRead();
-                return status;
+                return super.run(monitor);
             } finally {
+                afterDataRead();
                 releaseDataReadLock();
             }
         }

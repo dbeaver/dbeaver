@@ -350,7 +350,7 @@ public class Log {
 
     public void error(Object message, Throwable t) {
         if (handler != null) {
-            handler.error(name, message);
+            handler.error(name, message, t);
         } else {
             writeExceptionStatus(Status.ERROR, message, t);
         }
