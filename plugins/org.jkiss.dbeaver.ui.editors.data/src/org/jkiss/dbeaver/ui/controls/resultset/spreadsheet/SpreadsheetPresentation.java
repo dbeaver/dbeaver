@@ -443,7 +443,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
         } else {
             changed = newRow != null && curAttribute != newRow.getElement();
-            if (newRow.getElement() instanceof DBDAttributeBinding) {
+            if (newRow != null && newRow.getElement() instanceof DBDAttributeBinding) {
                 curAttribute = (DBDAttributeBinding) newRow.getElement();
             }
             if (newCol != null &&
