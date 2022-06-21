@@ -234,10 +234,16 @@ public class GroupingResultsContainer implements IResultSetContainer {
             }
         }
 
+        boolean useAliasForColumns = dataContainer.getDataSource().getSQLDialect().supportsAliasInConditions();
+
         StringBuilder sql = new StringBuilder();
         String[] funcAliases = new String[groupFunctions.size()];
         for (int i = 0; i < groupFunctions.size(); i++) {
-            funcAliases[i] = makeGroupFunctionAlias(i);
+            if (useAliasForColumns) {
+                funcAliases[i] = makeGroupFunctionAlias(i);
+            } else {
+                funcAliases[i] = groupFunctions.get(i);
+            }
         }
         if (isCustomQuery && dialect.supportsSubqueries()) {
             sql.append("SELECT ");
@@ -247,7 +253,10 @@ public class GroupingResultsContainer implements IResultSetContainer {
             }
             for (int i = 0; i < groupFunctions.size(); i++) {
                 String func = groupFunctions.get(i);
-                sql.append(", ").append(func).append(" as ").append(funcAliases[i]);
+                sql.append(", ").append(func);
+                if (useAliasForColumns) {
+                    sql.append(" as ").append(funcAliases[i]);
+                }
             }
             sql.append(" FROM (\n");
             sql.append(queryText);
@@ -271,7 +280,9 @@ public class GroupingResultsContainer implements IResultSetContainer {
                         String func = groupFunctions.get(i);
                         Expression expression = SQLSemanticProcessor.parseExpression(func);
                         SelectExpressionItem sei = new SelectExpressionItem(expression);
-                        sei.setAlias(new Alias(funcAliases[i]));
+                        if (useAliasForColumns) {
+                            sei.setAlias(new Alias(funcAliases[i]));
+                        }
                         selectItems.add(sei);
                     }
                 }
@@ -332,7 +343,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             }
         }
         if (alias.length() > 0) {
-            //alias.append('_');
+            alias.append('_');
             return alias.toString().toLowerCase(Locale.ENGLISH);
         }
         return "i_" + funcIndex;

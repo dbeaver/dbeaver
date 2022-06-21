@@ -49,9 +49,7 @@ public class PostgreValueParser {
 
     public static Object convertStringToValue(DBCSession session, DBSTypedObject arrayType, String string) throws DBCException {
         if (arrayType.getDataKind() == DBPDataKind.ARRAY) {
-            if (CommonUtils.isEmpty(string)) {
-                return new Object[0];
-            } else if (string.startsWith("{") && string.endsWith("}")) {
+            if (string != null && string.startsWith("{") && string.endsWith("}")) {
                 try {
                     return prepareToParseArray(session, arrayType, string);
                 } catch (Exception e) {

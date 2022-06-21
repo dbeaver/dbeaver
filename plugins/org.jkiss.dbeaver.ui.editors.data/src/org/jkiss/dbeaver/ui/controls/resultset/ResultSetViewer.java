@@ -152,7 +152,6 @@ public class ResultSetViewer extends Viewer
     private final Composite mainPanel;
     private final Composite viewerPanel;
     private final IResultSetDecorator decorator;
-    private final ResultSetLabelProviderDefault labelProviderDefault;
     @Nullable
     private ResultSetFilterPanel filtersPanel;
     private final SashForm viewerSash;
@@ -233,7 +232,6 @@ public class ResultSetViewer extends Viewer
         this.site = site;
         this.recordMode = false;
         this.container = container;
-        this.labelProviderDefault = new ResultSetLabelProviderDefault(this);
         this.decorator = container.createResultSetDecorator();
         this.dataReceiver = new ResultSetDataReceiver(this);
         this.dataPropertyListener = event -> {
@@ -408,11 +406,7 @@ public class ResultSetViewer extends Viewer
                 }
                 lastThemeUpdateTime = System.currentTimeMillis();
                 UIUtils.asyncExec(() -> {
-                    ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-                    labelProviderDefault.applyThemeSettings(currentTheme);
-                    if (activePresentation instanceof AbstractPresentation) {
-                        ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
-                    }
+                    applyCurrentPresentationThemeSettings();
                 });
             }
         };
@@ -420,6 +414,13 @@ public class ResultSetViewer extends Viewer
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(dataPropertyListener);
         DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().addPropertyChangeListener(dataPropertyListener);
+    }
+
+    private void applyCurrentPresentationThemeSettings() {
+        if (activePresentation instanceof AbstractPresentation) {
+            ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+            ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
+        }
     }
 
     private void handleDataPropertyChange(@Nullable DBPDataSourceContainer dataSource, @NotNull String property, @Nullable Object oldValue, @Nullable Object newValue) {
@@ -430,7 +431,10 @@ public class ResultSetViewer extends Viewer
         lastPropertyUpdateTime = System.currentTimeMillis();
         UIUtils.asyncExec(() -> {
             if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
-                labelProviderDefault.applyThemeSettings();
+                if (activePresentation instanceof AbstractPresentation) {
+                    ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+                    ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
+                }
             }
             redrawData(false, false);
         });
@@ -446,18 +450,6 @@ public class ResultSetViewer extends Viewer
     @Override
     public IResultSetDecorator getDecorator() {
         return decorator;
-    }
-
-    @NotNull
-    @Override
-    public IResultSetLabelProvider getLabelProvider() {
-        IResultSetLabelProvider labelProvider = decorator.getDataLabelProvider();
-        return labelProvider == null ? labelProviderDefault : labelProvider;
-    }
-
-    @NotNull
-    public IResultSetLabelProvider getDefaultLabelProvider() {
-        return labelProviderDefault;
     }
 
     AutoRefreshControl getAutoRefresh() {
@@ -601,8 +593,8 @@ public class ResultSetViewer extends Viewer
                         where,
                         true,
                         SQLSemanticProcessor.isForceFilterSubQuery(context.getDataSource()));
-                    String whereCondition = where.toString().trim();
                     if (resetFilterValue) {
+                        String whereCondition = where.toString().trim();
                         filtersPanel.setFilterValue(whereCondition);
                         if (!whereCondition.isEmpty()) {
                             filtersPanel.addFiltersHistory(whereCondition);
@@ -2085,6 +2077,11 @@ public class ResultSetViewer extends Viewer
         boolean hasWarnings = !dataReceiver.getErrorList().isEmpty();
         if (hasWarnings) {
             statusMessage += " - " + dataReceiver.getErrorList().size() + " warning(s)";
+        } else if (model.getStatistics() != null) {
+            hasWarnings = model.getStatistics().getError() != null;
+            if (hasWarnings) {
+                statusMessage += " - finished with error";
+            }
         }
         if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME)) {
             DBSDataContainer dataContainer = getDataContainer();
@@ -2560,14 +2557,13 @@ public class ResultSetViewer extends Viewer
     // Context menus
 
     @Override
-    public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row) {
+    public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row, int[] rowIndexes) {
         // Custom oldValue items
         final ResultSetValueController valueController;
         if (attr != null && row != null) {
             valueController = new ResultSetValueController(
                 this,
-                attr,
-                row,
+                new ResultSetCellLocation(attr, row, rowIndexes),
                 IValueController.EditType.NONE,
                 null);
         } else {
@@ -3293,7 +3289,7 @@ public class ResultSetViewer extends Viewer
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
             DBDAttributeBinding ownBinding = bindingsModel.getAttributeBinding(ownAttr.getAttribute());
             if (ownBinding == null) {
-                DBWorkbench.getPlatformUI().showError("Can't navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
+                DBWorkbench.getPlatformUI().showError("Cannot navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
                 return;
             }
 
@@ -3379,13 +3375,13 @@ public class ResultSetViewer extends Viewer
 
     private void createFilterConstraint(@NotNull List<ResultSetRow> rows, DBDAttributeBinding attrBinding, DBDAttributeConstraint constraint) {
         if (rows.size() == 1) {
-            Object keyValue = model.getCellValue(attrBinding, rows.get(0));
+            Object keyValue = model.getCellValue(new ResultSetCellLocation(attrBinding, rows.get(0)));
             constraint.setOperator(DBCLogicalOperator.EQUALS);
             constraint.setValue(keyValue);
         } else {
             Object[] keyValues = new Object[rows.size()];
             for (int k = 0; k < rows.size(); k++) {
-                keyValues[k] = model.getCellValue(attrBinding, rows.get(k));
+                keyValues[k] = model.getCellValue(new ResultSetCellLocation(attrBinding, rows.get(k)));
             }
             constraint.setOperator(DBCLogicalOperator.IN);
             constraint.setValue(keyValues);
@@ -3740,33 +3736,30 @@ public class ResultSetViewer extends Viewer
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (nextSegmentReadingBlocked && isDirty()) {
+        if (nextSegmentReadingBlocked) {
             return;
         }
         nextSegmentReadingBlocked = true;
         UIUtils.asyncExec(() -> {
-            if (!checkForChanges()) {
+            if (isRefreshInProgress() || !checkForChanges()) {
+                nextSegmentReadingBlocked = false;
                 return;
             }
-            try {
-                DBSDataContainer dataContainer = getDataContainer();
-                if (dataContainer != null && !model.isUpdateInProgress()) {
-                    dataReceiver.setHasMoreData(false);
-                    dataReceiver.setNextSegmentRead(true);
+            DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer != null && !model.isUpdateInProgress()) {
+                dataReceiver.setHasMoreData(false);
+                dataReceiver.setNextSegmentRead(true);
 
-                    runDataPump(
-                        dataContainer,
-                        model.getDataFilter(),
-                        model.getRowCount(),
-                        getSegmentMaxRows(),
-                        -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
-                        false,
-                        true,
-                        true,
-                        null);
-                }
-            } finally {
-                nextSegmentReadingBlocked = false;
+                runDataPump(
+                    dataContainer,
+                    model.getDataFilter(),
+                    model.getRowCount(),
+                    getSegmentMaxRows(),
+                    -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
+                    false,
+                    true,
+                    true,
+                    () -> nextSegmentReadingBlocked = false);
             }
         });
     }
@@ -3910,15 +3903,13 @@ public class ResultSetViewer extends Viewer
         final boolean refresh, // Refresh. Nothing was changed but refresh from server or scroll happened
         @Nullable final Runnable finalizer)
     {
-        if (viewerPanel.isDisposed()) {
-            return false;
-        }
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null || dataContainer.getDataSource() != executionContext.getDataSource()) {
             // This may happen during cross-database entity navigation
             executionContext = DBUtils.getDefaultContext(dataContainer, false);
         }
         if (executionContext == null) {
+            if (finalizer != null) finalizer.run();
             UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Can't read data - no active connection", SWT.ICON_WARNING);
             return false;
         }
@@ -4348,8 +4339,14 @@ public class ResultSetViewer extends Viewer
 
                     if (docAttribute != null) {
                         try {
-                            final Object sourceValue = docAttribute.getValueHandler().getValueFromObject(session, docAttribute, model.getCellValue(docAttribute, sourceRow), true, false);
-                            final ResultSetValueController controller = new ResultSetValueController(this, docAttribute, targetRow, IValueController.EditType.NONE, null);
+                            Object cellValue = model.getCellValue(new ResultSetCellLocation(docAttribute, sourceRow));
+                            final Object sourceValue = docAttribute.getValueHandler().getValueFromObject(
+                                session, docAttribute, cellValue, true, false);
+                            final ResultSetValueController controller = new ResultSetValueController(
+                                this,
+                                new ResultSetCellLocation(docAttribute, targetRow, null),
+                                IValueController.EditType.NONE,
+                                null);
                             controller.updateValue(sourceValue, false);
                         } catch (DBCException e) {
                             log.error("Can't extract document value", e);
@@ -4359,8 +4356,13 @@ public class ResultSetViewer extends Viewer
                             if (!metaAttr.isPseudoAttribute() && !metaAttr.isAutoGenerated()) {
                                 final DBSAttributeBase attribute = metaAttr.getAttribute();
                                 try {
-                                    final Object sourceValue = metaAttr.getValueHandler().getValueFromObject(session, attribute, model.getCellValue(metaAttr, sourceRow), true, false);
-                                    final ResultSetValueController controller = new ResultSetValueController(this, metaAttr, targetRow, IValueController.EditType.NONE, null);
+                                    Object cellValue = model.getCellValue(new ResultSetCellLocation(metaAttr, sourceRow));
+                                    final Object sourceValue = metaAttr.getValueHandler().getValueFromObject(session, attribute, cellValue, true, false);
+                                    final ResultSetValueController controller = new ResultSetValueController(
+                                        this,
+                                        new ResultSetCellLocation(metaAttr, sourceRow),
+                                        IValueController.EditType.NONE,
+                                        null);
                                     controller.updateValue(sourceValue, false);
                                 } catch (DBCException e) {
                                     log.error("Can't extract cell value", e);
@@ -4510,7 +4512,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void fireResultSetLoad() {
-        labelProviderDefault.applyThemeSettings();
+        applyCurrentPresentationThemeSettings();
         for (IResultSetListener listener : getListenersCopy()) {
             listener.handleResultSetLoad();
         }
@@ -4581,6 +4583,7 @@ public class ResultSetViewer extends Viewer
         public ResultSetRow getElementRow(Object element) {
             return null;
         }
+
     }
 
     public static class PanelsMenuContributor extends CompoundContributionItem
@@ -4847,7 +4850,17 @@ public class ResultSetViewer extends Viewer
         private final DBDDataFilter dataFilter;
         private final Runnable finalizer;
 
-        ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter useDataFilter, DBCExecutionContext executionContext, Composite progressControl, int focusRow, boolean saveHistory, boolean scroll, DBDDataFilter dataFilter, Runnable finalizer) {
+        ResultSetDataPumpJob(
+            DBSDataContainer dataContainer,
+            DBDDataFilter useDataFilter,
+            DBCExecutionContext executionContext,
+            Composite progressControl,
+            int focusRow,
+            boolean saveHistory,
+            boolean scroll,
+            DBDDataFilter dataFilter,
+            Runnable finalizer)
+        {
             super(dataContainer, useDataFilter, ResultSetViewer.this, executionContext, progressControl);
             this.useDataFilter = useDataFilter;
             this.focusRow = focusRow;
@@ -4861,14 +4874,17 @@ public class ResultSetViewer extends Viewer
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             if (!acquireDataReadLock()) {
+                // Must run finalizer in any case
+                if (finalizer != null) {
+                    finalizer.run();
+                }
                 return Status.CANCEL_STATUS;
             }
             beforeDataRead();
             try {
-                IStatus status = super.run(monitor);
-                afterDataRead();
-                return status;
+                return super.run(monitor);
             } finally {
+                afterDataRead();
                 releaseDataReadLock();
             }
         }

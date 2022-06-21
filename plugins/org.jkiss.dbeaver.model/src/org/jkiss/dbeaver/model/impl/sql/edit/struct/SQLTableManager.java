@@ -49,8 +49,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     public static final String BASE_MATERIALIZED_VIEW_NAME = "NewMView"; //$NON-NLS-1$
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
+    public long getMakerOptions(DBPDataSource dataSource) {
         long options = FEATURE_EDITOR_ON_CREATE;
         {
             if (dataSource.getSQLDialect().supportsTableDropCascade()) {

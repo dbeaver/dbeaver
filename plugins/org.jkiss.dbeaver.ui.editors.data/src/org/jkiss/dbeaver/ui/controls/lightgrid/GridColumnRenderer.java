@@ -47,6 +47,9 @@ class GridColumnRenderer extends AbstractRenderer {
     public static final int SORT_WIDTH = IMAGE_DESC.getBounds().width;
     public static final int FILTER_WIDTH = IMAGE_FILTER.getBounds().width;
 
+    // The border was disabled because it looked goofy
+    private static final boolean PAINT_COLUMN_FOCUS_BORDER = false;
+
     public  GridColumnRenderer(LightGrid grid) {
         super(grid);
     }
@@ -60,26 +63,26 @@ class GridColumnRenderer extends AbstractRenderer {
     }
 
     @Nullable
-    protected Image getColumnImage(Object element) {
+    protected Image getColumnImage(IGridItem element) {
         return grid.getLabelProvider().getImage(element);
     }
 
-    protected String getColumnText(Object element)
+    protected String getColumnText(IGridItem item)
     {
-        return grid.getLabelProvider().getText(element);
+        return grid.getLabelProvider().getText(item);
     }
 
-    protected String getColumnDescription(Object element)
+    protected String getColumnDescription(IGridColumn item)
     {
-        return grid.getLabelProvider().getDescription(element);
+        return grid.getLabelProvider().getDescription(item);
     }
 
-    protected Font getColumnFont(Object element) {
+    protected Font getColumnFont(IGridColumn element) {
         Font font = grid.getLabelProvider().getFont(element);
         return font != null ? font : grid.normalFont;
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, Object element) {
+    public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, IGridColumn element) {
 
         boolean hasFilters = grid.getContentProvider().isElementSupportsFilter(element);
 
@@ -176,7 +179,7 @@ class GridColumnRenderer extends AbstractRenderer {
         }
 
         // Draw border
-        if (element == grid.getFocusColumnElement()) {
+        if (PAINT_COLUMN_FOCUS_BORDER && element == grid.getFocusColumnElement()) {
             drawSelected = selected;
 
             if (drawSelected) {
@@ -211,8 +214,7 @@ class GridColumnRenderer extends AbstractRenderer {
             }
 
         } else {
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
-
+            gc.setForeground(grid.getContentProvider().getCellHeaderBorder(null));
             gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
             gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
         }

@@ -41,6 +41,8 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_auto_completion_tip;
     // ResultSetGrid
     public static String pref_page_database_resultsets_group_grid;
+    public static String pref_page_database_resultsets_group_behavior;
+    public static String pref_page_database_resultsets_group_appearance;
     public static String pref_page_database_resultsets_label_mark_odd_rows;
     public static String pref_page_database_resultsets_label_highlight_rows_with_selected_cells;
     public static String pref_page_database_resultsets_label_colorize_data_types;
@@ -63,6 +65,8 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_toggle_boolean_on_click_tip;
     public static String pref_page_database_resultsets_label_show_boolean_config_link;
     public static String pref_page_database_resultsets_label_double_click_behavior;
+    public static String pref_page_database_resultsets_label_enter_for_inline_behavior;
+    public static String pref_page_database_resultsets_label_enter_for_inline_behavior_tip;
 
     public static String pref_page_result_selector_editor;
 	public static String pref_page_result_selector_inline_editor;

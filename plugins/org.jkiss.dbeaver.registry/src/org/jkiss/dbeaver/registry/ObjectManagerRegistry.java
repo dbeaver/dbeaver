@@ -71,7 +71,7 @@ public class ObjectManagerRegistry implements DBERegistry {
         nullEntityManagerMap.clear();
     }
 
-    private ObjectManagerDescriptor getEntityManager(Class objectType) {
+    private ObjectManagerDescriptor getEntityManager(Class<?> objectType) {
         String targetTypeName = objectType.getName();
 
         // 1. Try exact match

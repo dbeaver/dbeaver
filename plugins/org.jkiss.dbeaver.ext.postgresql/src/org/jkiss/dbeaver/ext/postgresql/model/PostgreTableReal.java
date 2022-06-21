@@ -32,12 +32,14 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
@@ -249,6 +251,11 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
         throw new DBException("Table DDL is read-only");
+    }
+
+    @Override
+    public DBSObjectType getObjectType() {
+        return RelationalObjectType.TYPE_TABLE;
     }
 
     class TriggerCache extends JDBCObjectLookupCache<PostgreTableReal, PostgreTrigger> {

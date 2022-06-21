@@ -46,12 +46,12 @@ import java.util.Map;
  */
 public class PostgreTableManager extends PostgreTableManagerBase implements DBEObjectRenamer<PostgreTableBase> {
 
-    private static final Class<?>[] CHILD_TYPES = {
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         PostgreTableColumn.class,
         PostgreTableConstraint.class,
         PostgreTableForeignKey.class,
         PostgreIndex.class
-    };
+    );
 
     @Nullable
     @Override
@@ -184,7 +184,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes()
+    public Class<? extends DBSObject>[] getChildTypes()
     {
         return CHILD_TYPES;
     }

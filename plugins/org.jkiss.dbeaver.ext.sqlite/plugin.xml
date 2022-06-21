@@ -55,6 +55,7 @@
         <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable"/>
         <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableColumnManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableForeignKeyManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteViewManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteView"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -48,7 +49,7 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
     private Button savePasswordCheckbox;
 
     @Override
-    public void createControl(Composite parent, Object object, Runnable propertyChangeListener)
+    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener)
     {
         final Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, true));
@@ -89,7 +90,7 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
     }
 
     @Override
-    public void loadSettings(DBWHandlerConfiguration configuration)
+    public void loadSettings(@NotNull DBWHandlerConfiguration configuration)
     {
         hostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SocksConstants.PROP_HOST)));
         String portString = configuration.getStringProperty(SocksConstants.PROP_PORT);
@@ -104,7 +105,7 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
     }
 
     @Override
-    public void saveSettings(DBWHandlerConfiguration configuration)
+    public void saveSettings(@NotNull DBWHandlerConfiguration configuration)
     {
         configuration.setProperty(SocksConstants.PROP_HOST, hostText.getText().trim());
         configuration.setProperty(SocksConstants.PROP_PORT, portText.getSelection());
@@ -114,7 +115,7 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<Obj
     }
 
     @Override
-    public void resetSettings(DBWHandlerConfiguration configuration) {
+    public void resetSettings(@NotNull DBWHandlerConfiguration configuration) {
 
     }
 

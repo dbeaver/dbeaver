@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
@@ -53,7 +54,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     private boolean sslClassesResolved;
 
     @Override
-    public void createControl(Composite parent, Object object, Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
         final Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -87,7 +88,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     }
 
     @Override
-    public void loadSettings(final DBWHandlerConfiguration configuration) {
+    public void loadSettings(@NotNull final DBWHandlerConfiguration configuration) {
         super.loadSettings(configuration);
 
         if (CommonUtils.isEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
@@ -134,7 +135,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     }
 
     @Override
-    public void saveSettings(DBWHandlerConfiguration configuration) {
+    public void saveSettings(@NotNull DBWHandlerConfiguration configuration) {
         super.saveSettings(configuration);
 
         configuration.setProperty(PostgreConstants.PROP_SSL_MODE, sslModeCombo.getText());

@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreArrayValueHandler;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -40,10 +41,9 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PostgreValueParserTest {
@@ -170,16 +170,21 @@ public class PostgreValueParserTest {
 
     @Test
     public void convertArrayToString() {
-        PostgreArrayValueHandler arrayVH = new PostgreArrayValueHandler();
-        String[] stringItems = new String[] {
-            "one", "two", " four with spaces ", "f{i,v}e"
-        };
-        JDBCCollection array = new JDBCCollection(session.getProgressMonitor(), stringItemType, arrayVH, stringItems);
-        JDBCCollection array3D = new JDBCCollection(session.getProgressMonitor(), stringItemType, arrayVH, new Object[] { array, array});
-        String arrayString = arrayVH.getValueDisplayString(arrayStringItemType, array, DBDDisplayFormat.NATIVE);
-        Assert.assertEquals("'{\"one\",\"two\",\" four with spaces \",\"f{i,v}e\"}'", arrayString);
-        String arrayString3D = arrayVH.getValueDisplayString(arrayStringItemType, array3D, DBDDisplayFormat.NATIVE);
-        Assert.assertEquals("'{{\"one\",\"two\",\" four with spaces \",\"f{i,v}e\"},{\"one\",\"two\",\" four with spaces \",\"f{i,v}e\"}}'", arrayString3D);
+        final Function<String[], DBDCollection> make2d = values ->
+            new JDBCCollection(session.getProgressMonitor(), stringItemType, PostgreArrayValueHandler.INSTANCE, values);
+
+        final Function<String[][], DBDCollection> make3d = values ->
+            new JDBCCollection(session.getProgressMonitor(), arrayStringItemType, PostgreArrayValueHandler.INSTANCE, Arrays.stream(values).map(make2d).toArray());
+
+        final BiConsumer<String, DBDCollection> tester = (expected, collection) ->
+            Assert.assertEquals(expected, PostgreArrayValueHandler.INSTANCE.getValueDisplayString(collection.getComponentType(), collection, DBDDisplayFormat.NATIVE));
+
+        tester.accept("NULL", make2d.apply(null));
+        tester.accept("{}", make2d.apply(new String[]{}));
+        tester.accept("{NULL,\"NULL\"}", make2d.apply(new String[]{null, "NULL"}));
+        tester.accept("{one,two,\" four with spaces \",\"f{i,v}e\"}", make2d.apply(new String[]{"one", "two", " four with spaces ", "f{i,v}e"}));
+        tester.accept("{{a,b,c},{d,e,f}}", make3d.apply(new String[][]{{"a", "b", "c"}, {"d", "e", "f"}}));
+        tester.accept("{{\"\"},{\"{}\"},{\"\\\"\"}}", make3d.apply(new String[][]{{""}, {"{}"}, {"\""}}));
     }
 
     @Test

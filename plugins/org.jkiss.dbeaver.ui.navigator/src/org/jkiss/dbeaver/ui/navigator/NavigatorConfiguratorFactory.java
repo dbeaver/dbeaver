@@ -25,15 +25,13 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditorsRegistry;
 /**
  * Adapts objects to their UI configurators
  */
-public class NavigatorConfiguratorFactory implements IAdapterFactory
-{
+public class NavigatorConfiguratorFactory implements IAdapterFactory {
     private static final Class<?>[] ADAPTER_LIST = {
         DBEObjectConfigurator.class
     };
 
     @Override
-    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType)
-    {
+    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (adapterType == DBEObjectConfigurator.class && adaptableObject instanceof DBPObject) {
             EntityConfiguratorDescriptor configurator = EntityEditorsRegistry.getInstance().getEntityConfigurator((DBPObject) adaptableObject);
             return configurator == null ? null : adapterType.cast(configurator.createConfigurator());
@@ -42,8 +40,7 @@ public class NavigatorConfiguratorFactory implements IAdapterFactory
     }
 
     @Override
-    public Class[] getAdapterList()
-    {
+    public Class<?>[] getAdapterList() {
         return ADAPTER_LIST;
     }
 }

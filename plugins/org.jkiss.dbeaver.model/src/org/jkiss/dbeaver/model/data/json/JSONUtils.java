@@ -417,7 +417,7 @@ public class JSONUtils {
         List<String> result = new ArrayList<>();
         Object propMap = map.get(name);
         if (propMap instanceof Collection) {
-            for (Object pe : (Collection) propMap) {
+            for (Object pe : (Collection<?>) propMap) {
                 result.add(CommonUtils.toString(pe));
             }
         }

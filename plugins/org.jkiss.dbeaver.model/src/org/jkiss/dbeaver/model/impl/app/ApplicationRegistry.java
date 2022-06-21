@@ -25,6 +25,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ApplicationRegistry {
     private static final Log log = Log.getLog(ApplicationRegistry.class);
@@ -80,7 +81,12 @@ public class ApplicationRegistry {
             if (defaultApplication == null) {
                 defaultApplication = finalApps.get(0);
                 if (finalApps.size() > 1) {
-                    log.error("Multiple applications defined. Use first one (" + defaultApplication.getId() + ")");
+                    log.error("Multiple applications defined. Use the first one (" + defaultApplication.getId() + "), " +
+                        "skip the rest (" +
+                        finalApps.stream()
+                            .filter(a -> a != defaultApplication)
+                            .map(ApplicationDescriptor::getId)
+                            .collect(Collectors.joining(",")) + ")");
                 }
             }
         }

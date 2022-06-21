@@ -131,5 +131,8 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         return super.mustBeQuoted(str, forceCaseSensitive);
     }
 
-
+    @Override
+    public char getStringEscapeCharacter() {
+        return '\\';
+    }
 }

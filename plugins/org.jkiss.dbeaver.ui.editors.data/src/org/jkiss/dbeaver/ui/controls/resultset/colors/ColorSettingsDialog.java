@@ -45,10 +45,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
@@ -690,7 +687,10 @@ public class ColorSettingsDialog extends BaseDialog {
     private class ColorValueController extends ResultSetValueController {
 
         ColorValueController(@Nullable Composite inlinePlaceholder) {
-            super(resultSetViewer, attribute, null, EditType.INLINE, inlinePlaceholder);
+            super(resultSetViewer,
+                new ResultSetCellLocation(attribute, row),
+                EditType.INLINE,
+                inlinePlaceholder);
         }
 
         void setInlinePlaceholder(Composite ph) {

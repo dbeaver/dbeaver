@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithType;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
@@ -44,7 +45,14 @@ import java.util.List;
 /**
  * PostgreTableBase
  */
-public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreTableContainer> implements PostgreClass, PostgreScriptObject, DBPScriptObjectExt2, PostgrePrivilegeOwner, DBPNamedObject2
+public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreTableContainer>
+    implements
+    PostgreClass,
+    PostgreScriptObject,
+    DBPScriptObjectExt2,
+    PostgrePrivilegeOwner,
+    DBPNamedObject2,
+    DBSObjectWithType
 {
     private static final Log log = Log.getLog(PostgreTableBase.class);
 

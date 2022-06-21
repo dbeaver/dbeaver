@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -749,10 +750,25 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static Object getAttributeValue(@NotNull DBDAttributeBinding attribute, DBDAttributeBinding[] allAttributes, Object[] row) {
+    public static Object getAttributeValue(
+        @NotNull DBDAttributeBinding attribute,
+        DBDAttributeBinding[] allAttributes,
+        Object[] row)
+    {
+        return getAttributeValue(attribute, allAttributes, row, null);
+    }
+
+    @Nullable
+    public static Object getAttributeValue(
+        @NotNull DBDAttributeBinding attribute,
+        DBDAttributeBinding[] allAttributes,
+        Object[] row,
+        int[] nestedIndexes)
+    {
         if (attribute.isCustom()) {
             return DBVUtils.executeExpression(((DBDAttributeBindingCustom)attribute).getEntityAttribute(), allAttributes, row);
         }
+
         int depth = attribute.getLevel();
         if (depth == 0) {
             final int index = attribute.getOrdinalPosition();
@@ -760,10 +776,28 @@ public final class DBUtils {
                 log.debug("Bad attribute '" + attribute.getName() + "' index: " + index + " is out of row values' bounds (" + row.length + ")");
                 return null;
             } else {
-                return row[index];
+                if (nestedIndexes == null) {
+                    return row[index];
+                } else {
+                    if (attribute.getDataKind() != DBPDataKind.ARRAY) {
+                        // Sibling non-array attribute
+                        return DBDVoid.INSTANCE;
+                    }
+                    Object colValue = row[index];
+                    if (colValue instanceof DBDCollection) {
+                        if (((DBDCollection) colValue).getItemCount() <= nestedIndexes[0]) {
+                            // Not an error. This collection is shorter than sibling collection
+                            return DBDVoid.INSTANCE;
+                        }
+                        return ((DBDCollection) colValue).getItem(nestedIndexes[0]);
+                    } else {
+                        log.debug("Index specified for non-collection attribute");
+                    }
+                }
             }
         }
         Object curValue = row[attribute.getTopParent().getOrdinalPosition()];
+        int indexNumber = 0;
 
         for (int i = 0; i < depth; i++) {
             if (curValue == null) {
@@ -772,11 +806,30 @@ public final class DBUtils {
             DBDAttributeBinding attr = attribute.getParent(depth - i - 1);
             assert attr != null;
             try {
-                curValue = attr.extractNestedValue(curValue);
+                curValue = attr.extractNestedValue(
+                    curValue,
+                    nestedIndexes == null ? 0 : nestedIndexes[indexNumber++]);
             } catch (Throwable e) {
                 //log.debug("Error reading nested value of [" + attr.getName() + "]", e);
                 curValue = new DBDValueError(e);
                 break;
+            }
+            if (nestedIndexes != null && indexNumber < nestedIndexes.length) {
+                if (attr instanceof DBDAttributeBindingElement || attr instanceof DBDAttributeBindingType) {
+                    // Nested value already extracted by element binding
+                } else if (curValue instanceof DBDCollection) {
+                    if (((DBDCollection) curValue).getItemCount() <= nestedIndexes[indexNumber]) {
+                        // Not an error. This collection is shorter than sibling collection
+                        return DBDVoid.INSTANCE;
+                    }
+                    curValue = ((DBDCollection) curValue).getItem(nestedIndexes[indexNumber]);
+                    indexNumber++;
+                } else {
+                    if (i == depth - 1) {
+                        // Sibling non-collection attribute
+                        return DBDVoid.INSTANCE;
+                    }
+                }
             }
         }
 
@@ -2170,6 +2223,12 @@ public final class DBUtils {
     }
 
     public static String getObjectTypeName(DBSObject object) {
+        if (object instanceof DBSObjectWithType) {
+            DBSObjectType objectType = ((DBSObjectWithType) object).getObjectType();
+            if (objectType != null) {
+                return objectType.getTypeName();
+            }
+        }
         DBSObjectType[] objectTypes = object.getDataSource().getInfo().getSupportedObjectTypes();
         for (DBSObjectType ot : objectTypes) {
             Class<? extends DBSObject> typeClass = ot.getTypeClass();
@@ -2267,6 +2326,63 @@ public final class DBUtils {
 
             suffix += 1;
         }
+    }
+
+    /**
+     * Returns list of all underlying data containers from different kind of parent nodes (usually from the navigator tree)
+     * 
+     * @param monitor can not be null
+     * @param parent Parent object: schema, catalog, datasource, DBNDatabaseFolder, even table
+     * @return List of data containers (tables, views etc.) from the parent container (schema, catalog, datasource etc.)
+     * @throws DBException if connection is lost or something is going wrong during children loading
+     */
+    public static List<DBSDataContainer> getAllDataContainersFromParentContainer(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject parent) throws DBException {
+        List<DBSDataContainer> result = new ArrayList<>();
+        if (parent instanceof DBSDataContainer) {
+            result.add((DBSDataContainer) parent);
+        } else if (parent instanceof DBSObjectContainer) {
+            DBSObjectContainer container = (DBSObjectContainer) parent;
+            Class<? extends DBSObject> primaryChildType = container.getPrimaryChildType(monitor);
+            if (DBSDataContainer.class.isAssignableFrom(primaryChildType)) {
+                // This is schema or catalog with tables
+                Collection<? extends DBSObject> children = container.getChildren(monitor);
+                if (!CommonUtils.isEmpty(children)) {
+                    for (DBSObject child : children) {
+                        result.add((DBSDataContainer) child);
+                    }
+                }
+            } else if (DBSObjectContainer.class.isAssignableFrom(primaryChildType)) {
+                // This is datasource or database probably
+                Collection<? extends DBSObject> children = container.getChildren(monitor);
+                for (DBSObject child : children) {
+                    Collection<? extends DBSObject> dbsObjects = ((DBSObjectContainer) child).getChildren(monitor);
+                    for (DBSObject dbsObject : dbsObjects) {
+                        if (dbsObject instanceof DBSDataContainer) {
+                            result.add((DBSDataContainer) dbsObject);
+                        }
+                    }
+                }
+            }
+        } else if (parent instanceof DBNDatabaseFolder) {
+            Collection<DBSObject> dbsObjects = ((DBNDatabaseFolder) parent).getChildrenObjects(monitor);
+            for (DBSObject dbsObject : dbsObjects) {
+                List<DBSDataContainer> containers = getAllDataContainersFromParentContainer(monitor, dbsObject);
+                if (!CommonUtils.isEmpty(containers)) {
+                    result.addAll(containers);
+                }
+            }
+        } else if (parent instanceof DBPDataSourceContainer) {
+            DBPDataSource dataSource = ((DBPDataSourceContainer) parent).getDataSource();
+            if (dataSource instanceof DBSObjectContainer) {
+                List<DBSDataContainer> containers = getAllDataContainersFromParentContainer(monitor, dataSource);
+                if (!CommonUtils.isEmpty(containers)) {
+                    result.addAll(containers);
+                }
+            }
+        }
+        return result;
     }
 
     public interface ChildExtractor<PARENT, CHILD> {

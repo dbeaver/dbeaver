@@ -162,7 +162,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                     }
 
                     result.add(
-                            new AbstractObjectReference(objectName, schema, null, objectType.getTypeClass(), objectType) {
+                            new AbstractObjectReference<DBSObject>(objectName, schema, null, objectType.getTypeClass(), objectType) {
                                 @Override
                                 public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                                     DBSObject object = objectType.findObject(session.getProgressMonitor(), schema, objectName);
@@ -209,7 +209,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                     if (schema == null)
                         continue; // filtered
 
-                    result.add(new AbstractObjectReference(objectName, schema, description, GenericTable.class,
+                    result.add(new AbstractObjectReference<DBSObject>(objectName, schema, description, GenericTable.class,
                             RelationalObjectType.TYPE_TABLE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
@@ -250,12 +250,11 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                     if (schema == null)
                         continue; // filtered
 
-                    result.add(new AbstractObjectReference(objectName, schema, description, GenericTable.class,
+                    result.add(new AbstractObjectReference<GenericObjectContainer>(objectName, schema, description, GenericTable.class,
                             RelationalObjectType.TYPE_VIEW) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            GenericTableBase object = ((GenericObjectContainer) getContainer()).getTable(monitor,
-                                    getName());
+                            GenericTableBase object = getContainer().getTable(monitor, getName());
                             if (object == null) {
                                 throw new DBException("Can't find object '" + getName() + "' in '"
                                         + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
@@ -291,7 +290,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                     if (schema == null)
                         continue; // filtered
 
-                    result.add(new AbstractObjectReference(objectName, schema, description, GenericProcedure.class,
+                    result.add(new AbstractObjectReference<DBSObject>(objectName, schema, description, GenericProcedure.class,
                             RelationalObjectType.TYPE_PROCEDURE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
@@ -333,7 +332,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                     if (schema == null)
                         continue; // filtered
 
-                    result.add(new AbstractObjectReference(objectName, schema, description, GenericTableColumn.class,
+                    result.add(new AbstractObjectReference<DBSObject>(objectName, schema, description, GenericTableColumn.class,
                             RelationalObjectType.TYPE_TABLE_COLUMN) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
@@ -380,7 +379,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                     if (schema == null)
                         continue; // filtered
 
-                    result.add(new AbstractObjectReference(objectName, schema, description, GenericTableColumn.class,
+                    result.add(new AbstractObjectReference<DBSObject>(objectName, schema, description, GenericTableColumn.class,
                             RelationalObjectType.TYPE_TABLE_COLUMN) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {

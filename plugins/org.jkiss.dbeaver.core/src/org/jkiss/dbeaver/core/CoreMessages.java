@@ -488,6 +488,13 @@ public class CoreMessages extends NLS {
 	public static String pref_page_connection_label_general;
 	public static String pref_page_connection_label_use_environment;
     public static String pref_page_connections_application_name_text;
+	public static String pref_page_connection_label_default_connection_name_pattern;
+	public static String pref_page_connection_label_default_connection_name_pattern_tip;
+	public static String pref_page_connection_label_default_connection_name_pattern_sample_tip;
+	public static String pref_page_connection_label_default_connection_name_pattern_sample;
+	public static String pref_page_connection_label_default_connection_template_variables;
+	public static String pref_page_connection_label_default_connection_template_variables_tip;
+
 
 	public static String pref_page_connection_label_default_settings;
 
@@ -599,8 +606,10 @@ public class CoreMessages extends NLS {
 
 	public static String driver_connection_sort_by;
 	public static String monitor_panel_transaction_monitor_tip;
+	public static String variable_host_or_database;
 
-	static {
+
+    static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
 	}

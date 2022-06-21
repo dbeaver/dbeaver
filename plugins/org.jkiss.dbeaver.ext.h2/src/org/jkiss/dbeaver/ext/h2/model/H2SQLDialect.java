@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.h2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -40,4 +41,9 @@ public class H2SQLDialect extends GenericSQLDialect {
         return true;
     }
 
+    @NotNull
+    @Override
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
+        return MultiValueInsertMode.GROUP_ROWS;
+    }
 }

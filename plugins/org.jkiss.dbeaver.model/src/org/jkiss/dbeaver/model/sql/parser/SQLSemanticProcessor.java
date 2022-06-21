@@ -79,7 +79,7 @@ public class SQLSemanticProcessor {
             }
             return parser.Statement();
         } catch (Exception e) {
-            throw new DBCException("Error parsing SQL query", e);
+            throw new DBCException("Error parsing SQL query: " + e.getMessage(), e);
         }
     }
 

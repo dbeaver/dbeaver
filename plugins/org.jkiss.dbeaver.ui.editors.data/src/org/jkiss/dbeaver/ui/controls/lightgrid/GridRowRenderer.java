@@ -47,7 +47,14 @@ class GridRowRenderer extends AbstractRenderer {
         DEFAULT_FOREGROUND_TEXT = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, int level, IGridContentProvider.ElementState state, Object element) {
+    public void paint(
+        GC gc,
+        Rectangle bounds,
+        boolean selected,
+        int level,
+        IGridContentProvider.ElementState state,
+        IGridRow element)
+    {
         String text = grid.getLabelProvider().getText(element);
 
         gc.setFont(grid.normalFont);
@@ -61,7 +68,7 @@ class GridRowRenderer extends AbstractRenderer {
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height + 1);
 
         {
-            gc.setForeground(grid.getContentProvider().getCellHeaderForeground(element));
+            gc.setForeground(grid.getContentProvider().getCellHeaderBorder(null));
 
             gc.drawLine(
                 bounds.x + bounds.width - 1,
@@ -83,9 +90,9 @@ class GridRowRenderer extends AbstractRenderer {
             Image expandImage = state == IGridContentProvider.ElementState.EXPANDED ? IMG_COLLAPSE : IMG_EXPAND;
             gc.drawImage(expandImage, x, bounds.y + (bounds.height - EXPANDED_BOUNDS.height) / 2);
             x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
-        } else if (grid.hasNodes()) {
+        }/* else if (grid.hasExpandableRows()) {
             x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
-        }
+        }*/
 
         Image image = grid.getLabelProvider().getImage(element);
 
@@ -123,9 +130,9 @@ class GridRowRenderer extends AbstractRenderer {
         );
     }
 
-    public int computeHeaderWidth(Object element, int level) {
+    public int computeHeaderWidth(IGridRow element, int level) {
         int width = GridRowRenderer.LEFT_MARGIN + GridRowRenderer.RIGHT_MARGIN;
-        if (grid.hasNodes()) {
+        if (grid.hasExpandableRows()) {
             width += GridRowRenderer.EXPANDED_BOUNDS.width + EXPANDER_SPACING;
         }
         Image rowImage = grid.getLabelProvider().getImage(element);
