@@ -29,7 +29,7 @@ public class WinStoreService implements IPluginService {
         // Modify JNI binaries path
         String installPath = SystemVariablesResolver.getInstallPath();
         System.setProperty("jna.boot.library.path", installPath);
-
+        System.setProperty("dbeaver-windows-store-app", "true");
         log.debug("JNA boot path set to " + installPath);
     }
 

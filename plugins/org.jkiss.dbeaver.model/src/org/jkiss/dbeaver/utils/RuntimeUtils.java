@@ -302,12 +302,17 @@ public final class RuntimeUtils {
         return IS_WINDOWS;
     }
 
+
+    /**
+     * Checks if current application is shipped from Windows store
+     * @return true if shipped from Windows store, false if not.
+     */
     public static boolean isWindowsStoreApplication() {
         if (!IS_WINDOWS) {
             return false;
         }
-        return Arrays.stream(Platform.getExtensionRegistry().getExtensionPoint("org.jkiss.dbeaver.pluginService")
-                .getExtensions()).anyMatch(extension -> extension.getContributor().getName().equals("org.jkiss.dbeaver.ui.app.winstore"));
+        final String property = System.getProperty("dbeaver-windows-store-app");
+        return property != null && property.equalsIgnoreCase("true");
     }
 
     public static boolean isMacOS() {

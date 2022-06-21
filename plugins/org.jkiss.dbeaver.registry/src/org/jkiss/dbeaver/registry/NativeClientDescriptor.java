@@ -21,9 +21,11 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,22 +57,26 @@ public class NativeClientDescriptor extends AbstractDescriptor {
 
     //Clients can't work from AppData folder, if app is Windows store app we don't want to create any native clients there
     //see #15361
-    private boolean isClientsPathVirtualizedByWindows(String clientFile) {
+    private boolean isClientsPathVirtualizedByWindows(File clientFile) {
         final DBPApplication application = DBWorkbench.getPlatform().getApplication();
         if (!application.isStandalone() || application.isHeadlessMode() || !RuntimeUtils.isWindowsStoreApplication()) {
             return false;
         }
-        return clientFile.contains(System.getenv("AppData"));
+        return clientFile.getPath().contains(System.getenv("AppData"));
     }
 
     public NativeClientDistributionDescriptor findDistribution() {
         OSDescriptor localSystem = DBWorkbench.getPlatform().getLocalSystem();
+        File driversHome = DriverDescriptor.getCustomDriversHome().toFile();
+
         for (NativeClientDistributionDescriptor distr : distributions) {
-            if (distr.getOs().matches(localSystem) && isClientsPathVirtualizedByWindows(distr.getTargetPath())) {
+            if (distr.getOs().matches(localSystem) && !isClientsPathVirtualizedByWindows(
+                new File(driversHome, distr.getTargetPath()))) {
                 return distr;
             }
         }
         return null;
+
     }
 
     @Override
