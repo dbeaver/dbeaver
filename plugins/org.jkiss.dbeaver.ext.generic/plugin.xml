@@ -1201,6 +1201,8 @@
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-table-constraints" value="false"/>
+                    <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
                 </driver>
 
                 <!-- Apache Kylin -->
@@ -1223,6 +1225,8 @@
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-table-constraints" value="false"/>
+                    <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
                 </driver>
 
 
