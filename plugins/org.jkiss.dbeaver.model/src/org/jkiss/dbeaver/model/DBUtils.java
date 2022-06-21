@@ -181,45 +181,6 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getFullyQualifiedName(@NotNull DBPDataSource dataSource, @NotNull DBDAttributeBinding attributeBinding) {
-        return DBUtils.getFullyQualifiedName(
-            dataSource,
-            attributeBinding,
-            attr -> attr.getParentObject(),
-            attr -> attr.isPseudoAttribute()
-        );
-    }
-
-    @NotNull
-    public static <T extends DBSAttributeBase> String getFullyQualifiedName(
-        @NotNull DBPDataSource dataSource, @NotNull T attributeBinding,
-        @NotNull Function<T, T> getParentFunc, @NotNull Function<T, Boolean> isPseudoAttributeFunc
-    ) {
-        if (getParentFunc.apply(attributeBinding) == null) {
-            return DBUtils.getQuotedIdentifier(dataSource, attributeBinding.getName());
-        }
-        char structSeparator = dataSource.getSQLDialect().getStructSeparator();
-
-        StringBuilder query = new StringBuilder();
-        boolean hasPrevIdentifier = false;
-        for (T attribute = attributeBinding; attribute != null; attribute = getParentFunc.apply(attribute)) {
-            if (isPseudoAttributeFunc.apply(attribute)
-                || (getParentFunc.apply(attribute) == null && attribute.getDataKind() == DBPDataKind.DOCUMENT)
-            ) {
-                // Skip pseudo attributes and document attributes (e.g. Mongo root document)
-                continue;
-            }
-            if (hasPrevIdentifier) {
-                query.insert(0, structSeparator);
-            }
-            query.insert(0, DBUtils.getQuotedIdentifier(dataSource, attribute.getName()));
-            hasPrevIdentifier = true;
-        }
-
-        return query.toString();
-    }
-
-    @NotNull
     public static String getSimpleQualifiedName(@NotNull Object... names)
     {
         StringBuilder name = new StringBuilder(names.length * 16);
