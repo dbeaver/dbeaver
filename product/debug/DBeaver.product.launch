@@ -236,6 +236,7 @@
         <setEntry value="org.jkiss.dbeaver.ext.athena@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.bigquery.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.bigquery@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.clickhouse.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.clickhouse@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.databricks@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.datavirtuality.ui@default:default"/>
@@ -297,6 +298,7 @@
         <setEntry value="org.jkiss.dbeaver.net.ssh.sshj@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.parser.common@default:default"/>
         <setEntry value="org.jkiss.dbeaver.registry@default:default"/>
         <setEntry value="org.jkiss.dbeaver.slf4j@default:false"/>
         <setEntry value="org.jkiss.dbeaver.tasks.native.ui@default:default"/>
