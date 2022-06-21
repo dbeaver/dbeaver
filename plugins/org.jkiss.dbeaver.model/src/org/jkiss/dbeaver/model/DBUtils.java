@@ -806,7 +806,9 @@ public final class DBUtils {
             DBDAttributeBinding attr = attribute.getParent(depth - i - 1);
             assert attr != null;
             try {
-                curValue = attr.extractNestedValue(curValue);
+                curValue = attr.extractNestedValue(
+                    curValue,
+                    nestedIndexes == null ? 0 : nestedIndexes[indexNumber++]);
             } catch (Throwable e) {
                 //log.debug("Error reading nested value of [" + attr.getName() + "]", e);
                 curValue = new DBDValueError(e);

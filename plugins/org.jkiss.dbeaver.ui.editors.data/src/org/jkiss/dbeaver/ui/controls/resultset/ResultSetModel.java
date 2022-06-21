@@ -444,6 +444,7 @@ public class ResultSetModel {
         } else {
             rootIndex = attr.getTopParent().getOrdinalPosition();
         }
+        int rowIndex = 0;
         Object rootValue = row.values[rootIndex];
         Object ownerValue = depth > 0 ? rootValue : null;
         {
@@ -460,7 +461,9 @@ public class ResultSetModel {
                 DBDAttributeBinding ownerAttr = attr.getParent(depth - i - 1);
                 assert ownerAttr != null;
                 try {
-                    Object nestedValue = ownerAttr.extractNestedValue(ownerValue);
+                    Object nestedValue = ownerAttr.extractNestedValue(
+                        ownerValue,
+                        rowIndexes == null ? 0 : rowIndexes[rowIndex++]);
                     if (nestedValue == null) {
                         // Try to create nested value
                         DBCExecutionContext context = DBUtils.getDefaultContext(ownerAttr, false);
@@ -499,7 +502,9 @@ public class ResultSetModel {
         Object oldValue = rootValue;
         if (ownerValue != null) {
             try {
-                oldValue = attr.extractNestedValue(ownerValue);
+                oldValue = attr.extractNestedValue(
+                    ownerValue,
+                    rowIndexes == null ? 0 : rowIndexes[rowIndex++]);
             } catch (DBCException e) {
                 log.error("Error getting [" + attr.getName() + "] value", e);
             }
