@@ -22,7 +22,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -76,5 +78,10 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
             return ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
         }
         return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
+    }
+
+    @Override
+    public DBSObjectType getObjectType() {
+        return RelationalObjectType.TYPE_TABLE;
     }
 }

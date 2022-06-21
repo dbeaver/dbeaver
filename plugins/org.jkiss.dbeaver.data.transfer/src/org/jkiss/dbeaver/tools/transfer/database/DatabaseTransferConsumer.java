@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodRegistry;
 import org.jkiss.dbeaver.model.struct.*;
@@ -52,7 +53,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Stream transfer consumer
@@ -307,7 +311,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 if (column.sourceAttr instanceof DBDAttributeBindingCustom) {
                     attrValue = DBUtils.getAttributeValue(column.sourceAttr, sourceBindings, rowValues);
                 } else {
-                    attrValue = column.sourceValueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i);
+                    attrValue = column.sourceValueHandler.fetchValueObject(
+                        session,
+                        resultSet,
+                        column.sourceAttr,
+                        column.sourceAttr.getOrdinalPosition());
                 }
             } else {
                 // No value handler - get raw value
@@ -661,7 +669,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             try {
                 DatabaseTransferUtils.executeDDL(session, actions);
             } catch (DBCException e) {
-                throw new DBCException("Can't create or update target table:\n" + Arrays.toString(actions), e);
+                throw new DBCException(
+                    "Can't create or update target table:\n" +
+                        SQLUtils.generateScript(session.getDataSource(), actions, false), e);
             }
             return actions.length > 0;
         }

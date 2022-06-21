@@ -26,7 +26,9 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject type) {
-        if (type.getDataKind() == DBPDataKind.ARRAY) {
+        if (type.getTypeName().equalsIgnoreCase("enum8") || type.getTypeName().equalsIgnoreCase("enum16")) {
+            return ClickhouseEnumValueHandler.INSTANCE;
+        } else if (type.getDataKind() == DBPDataKind.ARRAY) {
             return ClickhouseArrayValueHandler.INSTANCE;
         } else if (type.getDataKind() == DBPDataKind.STRUCT) {
             return ClickhouseStructValueHandler.INSTANCE;

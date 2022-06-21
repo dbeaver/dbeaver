@@ -2178,8 +2178,17 @@ public class SQLEditor extends SQLEditorBase implements
         processSQL(newTab, script, null, null);
     }
 
-    public boolean processSQL(boolean newTab, boolean script, SQLQueryTransformer transformer, @Nullable SQLQueryListener queryListener)
-    {
+    public boolean processSQL(boolean newTab, boolean script, SQLQueryTransformer transformer, @Nullable SQLQueryListener queryListener) {
+        return processSQL(newTab, script, false, transformer, queryListener);
+    }
+
+    public boolean processSQL(boolean newTab, boolean script, boolean executeFromPosition) {
+        return processSQL(newTab, script, executeFromPosition, null, null);
+    }
+
+    public boolean processSQL(boolean newTab, boolean script, boolean executeFromPosition, SQLQueryTransformer transformer,
+        @Nullable SQLQueryListener queryListener
+    ) {
         IDocument document = getDocument();
         if (document == null) {
             setStatus(SQLEditorMessages.editors_sql_status_cant_obtain_document, DBPMessageType.ERROR);
@@ -2195,12 +2204,21 @@ public class SQLEditor extends SQLEditorBase implements
 
         List<SQLScriptElement> elements;
         if (script) {
-            // Execute all SQL statements consequently
-            ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
-            if (selection.getLength() > 1) {
-                elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true);
+            if (executeFromPosition) {
+                // Get all queries from the current position
+                ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+                elements = extractScriptQueries(selection.getOffset(), document.getLength(), true, false, true);
+                // Replace first query with query under cursor for case if the cursor is in the middle of the query
+                elements.remove(0);
+                elements.add(0, extractActiveQuery());
             } else {
-                elements = extractScriptQueries(0, document.getLength(), true, false, true);
+                // Execute all SQL statements consequently
+                ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+                if (selection.getLength() > 1) {
+                    elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true);
+                } else {
+                    elements = extractScriptQueries(0, document.getLength(), true, false, true);
+                }
             }
         } else {
             // Execute statement under cursor or selected text (if selection present)
@@ -2266,8 +2284,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private boolean processQueries(@NotNull final List<SQLScriptElement> queries, final boolean forceScript, boolean newTab, final boolean export, final boolean checkSession, @Nullable final SQLQueryListener queryListener, @Nullable final SQLScriptContext context)
-    {
+    public boolean processQueries(@NotNull final List<SQLScriptElement> queries, final boolean forceScript,
+        boolean newTab, final boolean export, final boolean checkSession,
+        @Nullable final SQLQueryListener queryListener, @Nullable final SQLScriptContext context
+    ) {
         if (queries.isEmpty()) {
             // Nothing to process
             return false;

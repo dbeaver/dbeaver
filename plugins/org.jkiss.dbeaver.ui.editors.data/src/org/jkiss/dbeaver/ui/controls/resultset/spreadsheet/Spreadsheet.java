@@ -83,8 +83,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         @NotNull final SpreadsheetPresentation presentation,
         @NotNull final IGridContentProvider contentProvider,
         @NotNull final IGridLabelProvider labelProvider,
-        @Nullable final IGridController gridController)
-    {
+        @Nullable final IGridController gridController) {
         super(parent, style);
         GridLayout layout = new GridLayout(1, true);
         layout.numColumns = 1;
@@ -138,18 +137,17 @@ public class Spreadsheet extends LightGrid implements Listener {
         return presentation;
     }
 
-    public Clipboard getClipboard()
-    {
+    public Clipboard getClipboard() {
         return clipboard;
     }
 
     /**
      * Returns current cursor position
      * Note: returned object is not immutable and will be changed if user will change focus cell
+     *
      * @return cursor position.
      */
-    public GridPos getCursorPosition()
-    {
+    public GridPos getCursorPosition() {
         if (super.isDisposed()) {
             return new GridPos(-1, -1);
         }
@@ -157,16 +155,14 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 
     @Nullable
-    public GridCell getCursorCell()
-    {
+    public GridCell getCursorCell() {
         if (super.isDisposed()) {
             return null;
         }
         return super.getFocusCell();
     }
 
-    public boolean shiftCursor(int xOffset, int yOffset, boolean keepSelection)
-    {
+    public boolean shiftCursor(int xOffset, int yOffset, boolean keepSelection) {
         if (xOffset == 0 && yOffset == 0) {
             return false;
         }
@@ -205,8 +201,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         return true;
     }
 
-    void setCursor(@NotNull GridCell cell, boolean keepSelection, boolean showColumn, boolean notify)
-    {
+    void setCursor(@NotNull GridCell cell, boolean keepSelection, boolean showColumn, boolean notify) {
         Event selectionEvent = new Event();
         // Move row
         selectionEvent.data = cell;
@@ -236,14 +231,12 @@ public class Spreadsheet extends LightGrid implements Listener {
         }
     }
 
-    public void addCursorChangeListener(Listener listener)
-    {
+    public void addCursorChangeListener(Listener listener) {
         super.addListener(SWT.Selection, listener);
     }
 
     @Override
-    public void handleEvent(final Event event)
-    {
+    public void handleEvent(final Event event) {
         switch (event.type) {
 //            case SWT.KeyUp:
             case SWT.KeyDown:
@@ -251,12 +244,11 @@ public class Spreadsheet extends LightGrid implements Listener {
 
                 if (!ctrlPressed &&
                     (event.keyCode == SWT.CR ||
-                    (event.keyCode >= SWT.KEYPAD_0 && event.keyCode <= SWT.KEYPAD_9) ||
-                    (event.keyCode == '-' || event.keyCode == '+' || event.keyCode == SWT.KEYPAD_ADD || event.keyCode == SWT.KEYPAD_SUBTRACT) ||
-                    (event.keyCode >= 'a' && event.keyCode <= 'z') ||
-                    (event.keyCode >= '0' && event.keyCode <= '9')) ||
-                    Character.isLetterOrDigit(event.character))
-                {
+                        (event.keyCode >= SWT.KEYPAD_0 && event.keyCode <= SWT.KEYPAD_9) ||
+                        (event.keyCode == '-' || event.keyCode == '+' || event.keyCode == SWT.KEYPAD_ADD || event.keyCode == SWT.KEYPAD_SUBTRACT) ||
+                        (event.keyCode >= 'a' && event.keyCode <= 'z') ||
+                        (event.keyCode >= '0' && event.keyCode <= '9')) ||
+                    Character.isLetterOrDigit(event.character)) {
                     Control editorControl = tableEditor.getEditor();
                     if (editorControl == null || editorControl.isDisposed()) {
                         editorControl = presentation.openValueEditor(true);
@@ -317,25 +309,24 @@ public class Spreadsheet extends LightGrid implements Listener {
                         }
 
                         case COPY_PASTE_VALUE: {
-                                IResultSetValueReflector valueReflector = GeneralUtils.adapt(
-                                    presentation.getController().getContainer(),
-                                    IResultSetValueReflector.class);
-                                if (valueReflector != null) {
-                                    DBDAttributeBinding currentAttribute = presentation.getCurrentAttribute();
-                                    ResultSetRow currentRow = presentation.getController().getCurrentRow();
-                                    if (currentAttribute != null && currentRow != null) {
-                                        Object cellValue = presentation.getController().getModel().getCellValue(currentAttribute, currentRow);
-                                        ResultSetCopySettings copySettings = new ResultSetCopySettings();
-                                        Map<Transfer, Object> selFormats = presentation.copySelection(copySettings);
-                                        Object textValue = selFormats.get(TextTransfer.getInstance());
-                                        if (textValue != null) {
-                                            valueReflector.insertCurrentCellValue(currentAttribute, cellValue, CommonUtils.toString(textValue));
-                                        }
+                            IResultSetValueReflector valueReflector = GeneralUtils.adapt(
+                                presentation.getController().getContainer(),
+                                IResultSetValueReflector.class);
+                            if (valueReflector != null) {
+                                ResultSetCellLocation currentCellLocation = presentation.getCurrentCellLocation();
+                                if (currentCellLocation.getAttribute() != null && currentCellLocation.getRow() != null) {
+                                    Object cellValue = presentation.getController().getModel().getCellValue(currentCellLocation);
+                                    ResultSetCopySettings copySettings = new ResultSetCopySettings();
+                                    Map<Transfer, Object> selFormats = presentation.copySelection(copySettings);
+                                    Object textValue = selFormats.get(TextTransfer.getInstance());
+                                    if (textValue != null) {
+                                        valueReflector.insertCurrentCellValue(currentCellLocation.getAttribute(), cellValue, CommonUtils.toString(textValue));
                                     }
-                                } else {
-                                    // No value reflector - open inline editor then
-                                    presentation.openValueEditor(true);
                                 }
+                            } else {
+                                // No value reflector - open inline editor then
+                                presentation.openValueEditor(true);
+                            }
                             break;
                         }
                     }
@@ -350,9 +341,9 @@ public class Spreadsheet extends LightGrid implements Listener {
                 presentation.changeSorting(event.data, event.stateMask);
                 break;
             case LightGrid.Event_FilterColumn:
-            	//showFiltersMenu
-            	presentation.showFiltering(event.data);
-            	break;
+                //showFiltersMenu
+                presentation.showFiltering(event.data);
+                break;
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and
                 // we don't want to mess current grid state
@@ -369,13 +360,11 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 
     @Override
-    protected void toggleCellValue(Object column, Object row) {
+    protected void toggleCellValue(IGridColumn column, IGridRow row) {
         presentation.toggleCellValue(column, row);
-
     }
 
-    private void hookContextMenu()
-    {
+    private void hookContextMenu() {
         MenuManager menuMgr = new MenuManager(null, AbstractPresentation.RESULT_SET_PRESENTATION_CONTEXT_MENU);
         Menu menu = menuMgr.createContextMenu(this);
         menuMgr.addMenuListener(manager -> {
@@ -383,22 +372,23 @@ public class Spreadsheet extends LightGrid implements Listener {
             GridPos focusPos = getFocusPos();
             presentation.fillContextMenu(
                 manager,
-                isHoveringOnRowHeader() ? null : focusPos.col >= 0 && focusPos.col < columnElements.length ? columnElements[focusPos.col] : null,
-                isHoveringOnHeader() ? null : (focusPos.row >= 0 && focusPos.row < rowElements.length ? rowElements[focusPos.row] : null)
+                isHoveringOnRowHeader() ? null :
+                    focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null,
+                isHoveringOnHeader() ? null :
+                    (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
             );
         });
         menuMgr.setRemoveAllWhenShown(true);
         super.setMenu(menu);
         if (site instanceof IEditorSite) {
             // Exclude editor input contributions from context menu
-            ((IEditorSite)site).registerContextMenu("spreadsheet_menu", menuMgr, presentation, false);
+            ((IEditorSite) site).registerContextMenu("spreadsheet_menu", menuMgr, presentation, false);
         } else {
             site.registerContextMenu(menuMgr, presentation);
         }
     }
 
-    public void cancelInlineEditor()
-    {
+    public void cancelInlineEditor() {
         Control oldEditor = tableEditor.getEditor();
         if (oldEditor != null) {
             if (!oldEditor.isDisposed()) {
@@ -417,15 +407,13 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     @NotNull
     @Override
-    public IGridContentProvider getContentProvider()
-    {
+    public IGridContentProvider getContentProvider() {
         return contentProvider;
     }
 
     @NotNull
     @Override
-    public IGridLabelProvider getLabelProvider()
-    {
+    public IGridLabelProvider getLabelProvider() {
         return labelProvider;
     }
 
@@ -434,19 +422,16 @@ public class Spreadsheet extends LightGrid implements Listener {
         return gridController;
     }
 
-    public void redrawGrid()
-    {
+    public void redrawGrid() {
         Rectangle bounds = super.getBounds();
         super.redraw(bounds.x, bounds.y, bounds.width, bounds.height, true);
     }
 
-    public boolean isRowVisible(int rowNum)
-    {
+    public boolean isRowVisible(int rowNum) {
         return rowNum >= super.getTopIndex() && rowNum <= super.getBottomIndex();
     }
 
-    public void showCellEditor(Composite editor)
-    {
+    public void showCellEditor(Composite editor) {
         int minHeight, minWidth;
         Point editorSize = editor.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         minHeight = editorSize.y;

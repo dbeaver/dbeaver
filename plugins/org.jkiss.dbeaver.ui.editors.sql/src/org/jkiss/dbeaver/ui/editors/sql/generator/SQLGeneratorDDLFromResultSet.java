@@ -52,7 +52,7 @@ public class SQLGeneratorDDLFromResultSet extends SQLGenerator<IResultSetControl
     ) throws DBException {
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(object, new ResultSetDataContainerOptions());
         DatabaseMappingContainer mapping = new DatabaseMappingContainer(new DatabaseConsumerSettings(), dataContainer);
-        mapping.refreshMappingType(null, DatabaseMappingType.create, true);
+        mapping.refreshMappingType(monitor, DatabaseMappingType.create, true);
         
         DBPDataSource dataSource = object.getDataContainer().getDataSource();
         if (dataSource.getInfo().isDynamicMetadata()) {

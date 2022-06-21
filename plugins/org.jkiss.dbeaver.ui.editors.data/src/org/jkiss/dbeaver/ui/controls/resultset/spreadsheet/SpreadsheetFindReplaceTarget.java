@@ -32,7 +32,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -40,8 +39,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCellLocation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.utils.CommonUtils;
@@ -127,13 +126,13 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         if (owner == null) {
             return "";
         }
-        GridPos selection = (GridPos) owner.getSelection().getFirstElement();
+        GridPos selection = owner.getSelection().getFirstElement();
         if (selection == null) {
             return "";
         }
         Spreadsheet spreadsheet = owner.getSpreadsheet();
         GridCell cell = spreadsheet.posToCell(selection);
-        String value = cell == null ? "" : CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false, true));
+        String value = cell == null ? "" : CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false));
         return CommonUtils.toString(value);
     }
 
@@ -319,11 +318,11 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             String cellText;
             if (owner.getController().isRecordMode() && curPosition.col == minColumnNum) {
                 // Header
-                cellText = spreadsheet.getLabelProvider().getText(spreadsheet.getRowElement(curPosition.row));
+                cellText = spreadsheet.getLabelProvider().getText(spreadsheet.getRow(curPosition.row));
             } else {
                 GridCell cell = spreadsheet.posToCell(curPosition);
                 if (cell != null) {
-                    cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false, false));
+                    cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false));
                 } else {
                     continue;
                 }
@@ -353,7 +352,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         if (owner == null) {
             return;
         }
-        GridPos selection = (GridPos) owner.getSelection().getFirstElement();
+        GridPos selection = owner.getSelection().getFirstElement();
         if (selection == null) {
             return;
         }
@@ -361,28 +360,28 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         if (cell == null) {
             return;
         }
-        final boolean recordMode = owner.getController().isRecordMode();
-        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-        final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
+        ResultSetCellLocation cellLocation = owner.getCellLocation(cell);
 
-        String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(attr, row, true, true));
+        String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(
+            cell.col, cell.row, true));
         String newValue = text;
         if (searchPattern != null) {
             newValue = searchPattern.matcher(oldValue).replaceAll(newValue);
         }
 
-        final Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(attr, row, false, true);
+        final Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(
+            cell.col, cell.row, false);
         if (originalValue instanceof DBDContent) {
             try {
                 ((DBDContent) originalValue)
                     .updateContents(new VoidProgressMonitor(), new StringContentStorage(newValue));
-                new ResultSetValueController(owner.getController(), attr, row, IValueController.EditType.NONE, null)
+                new ResultSetValueController(owner.getController(), cellLocation, IValueController.EditType.NONE, null)
                     .updateValue(originalValue, true);
             } catch (DBException e) {
                 log.error("Error updating LOB contents", e);
             }
         } else {
-            owner.getController().getModel().updateCellValue(attr, row, newValue);
+            owner.getController().getModel().updateCellValue(cellLocation, newValue);
         }
 
         owner.getController().updatePanelsContent(false);

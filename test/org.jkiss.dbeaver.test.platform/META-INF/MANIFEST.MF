@@ -17,5 +17,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.data.transfer,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.headless,
+ org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.oracle

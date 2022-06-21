@@ -85,6 +85,8 @@
             <datasource class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource"/>
             <type standard="ARRAY"/>
             <type standard="STRUCT"/>
+            <type name="ENUM8"/>
+            <type name="ENUM16"/>
         </provider>
     </extension>
 

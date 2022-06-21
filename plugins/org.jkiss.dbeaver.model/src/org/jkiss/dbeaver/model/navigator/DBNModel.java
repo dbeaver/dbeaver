@@ -56,6 +56,9 @@ import java.util.function.Function;
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
 public class DBNModel implements IResourceChangeListener {
+
+    public static final String SLASH_ESCAPE_TOKEN = "%2F";
+
     private static final Log log = Log.getLog(DBNModel.class);
 
     private static class NodePath {
@@ -330,8 +333,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @Nullable
-    public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull DBPProject project, @NotNull String path) throws DBException
-    {
+    public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull DBPProject project, @NotNull String path) throws DBException {
         DBNProject projectNode = getRoot().getProjectNode(project);
         if (projectNode == null) {
             log.debug("Project node not found");
@@ -383,7 +385,8 @@ public class DBNModel implements IResourceChangeListener {
         //log.debug("findNodeByPath '" + nodePath + "' in '" + curNode.getNodeItemPath() + "'/" + firstItem);
 
         for (int i = firstItem, itemsSize = nodePath.pathItems.size(); i < itemsSize; i++) {
-            String item = nodePath.pathItems.get(i);
+            String item = nodePath.pathItems.get(i).replace(SLASH_ESCAPE_TOKEN, "/");
+
             DBNNode[] children = curNode.getChildren(monitor);
             DBNNode nextChild = null;
             if (children != null && children.length > 0) {

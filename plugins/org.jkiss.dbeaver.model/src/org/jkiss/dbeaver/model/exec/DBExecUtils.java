@@ -301,6 +301,24 @@ public class DBExecUtils {
         }
     }
 
+    public static void executePersistActions(DBCSession session, DBEPersistAction[] persistActions) throws DBCException {
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        monitor.beginTask(session.getTaskTitle(), persistActions.length);
+        try {
+            for (DBEPersistAction action : persistActions) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                if (!CommonUtils.isEmpty(action.getTitle())) {
+                    monitor.subTask(action.getTitle());
+                }
+                executePersistAction(session, action);
+            }
+        } finally {
+            monitor.done();
+        }
+    }
+
     public static void executePersistAction(DBCSession session, DBEPersistAction action) throws DBCException {
         if (action instanceof SQLDatabasePersistActionComment) {
             return;
@@ -858,7 +876,7 @@ public class DBExecUtils {
         return tableColumn.getDataKind().isComplex() == resultSetAttributeMeta.getDataKind().isComplex();
     }
 
-    public static boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute) {
+    public static boolean isAttributeReadOnly(@Nullable DBDAttributeBinding attribute) {
         if (attribute == null || attribute.getMetaAttribute() == null || attribute.getMetaAttribute().isReadOnly()) {
             return true;
         }

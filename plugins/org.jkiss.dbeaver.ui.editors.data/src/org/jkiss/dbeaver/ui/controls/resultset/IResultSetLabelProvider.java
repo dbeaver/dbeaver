@@ -19,13 +19,9 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 
 public interface IResultSetLabelProvider {
-
-    @Nullable
-    DBPImage getCellImage(DBDAttributeBinding attribute, ResultSetRow row);
 
     @Nullable
     Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row);

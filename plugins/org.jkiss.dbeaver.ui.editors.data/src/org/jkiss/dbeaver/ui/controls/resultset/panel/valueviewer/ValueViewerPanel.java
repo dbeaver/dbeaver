@@ -165,16 +165,17 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
     private void refreshValue(boolean force) {
         DBDAttributeBinding attr = presentation.getCurrentAttribute();
         ResultSetRow row = presentation.getController().getCurrentRow();
+
         if (attr == null || row == null) {
             clearValue();
             return;
         }
+        int[] rowIndexes = presentation.getCurrentRowIndexes();
         boolean updateActions;
         if (previewController == null) {
             previewController = new ResultSetValueController(
                 presentation.getController(),
-                attr,
-                row,
+                new ResultSetCellLocation(attr, row, rowIndexes),
                 IValueController.EditType.PANEL,
                 viewPlaceholder)
             {
@@ -192,9 +193,11 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             updateActions = true;
             force = true;
         } else {
-            updateActions = force = (force || previewController.getBinding() != attr);
-            previewController.setCurRow(row);
-            previewController.setBinding(attr);
+            updateActions = force = (
+                force ||
+                previewController.getBinding() != attr ||
+                !CommonUtils.equalObjects(rowIndexes, previewController.getRowIndexes()));
+            previewController.setCellLocation(new ResultSetCellLocation(attr, row, rowIndexes));
         }
         if (!force && (valueManager == null || valueEditor == null)) {
             force = true;
