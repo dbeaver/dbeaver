@@ -14,19 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+/**
+ * Child grid row
+ * Differs from nested row by having its own element.
+ */
+class GridRowChild extends GridRowNested {
 
-import org.eclipse.swt.graphics.Color;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+    private final Object element;
 
-public interface IResultSetLabelProvider {
+    public GridRowChild(IGridRow parent, int position, Object element) {
+        super(parent, position);
+        this.element = element;
+    }
 
-    @Nullable
-    Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row);
-
-    @Nullable
-    Color getCellBackground(DBDAttributeBinding attribute, ResultSetRow row);
+    @Override
+    public Object getElement() {
+        return element;
+    }
 
 }

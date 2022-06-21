@@ -14,19 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.data;
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+/**
+ * Not a value.
+ */
+public class DBDVoid implements DBDValue {
 
-import org.eclipse.swt.graphics.Color;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+    public static final DBDVoid INSTANCE = new DBDVoid();
 
-public interface IResultSetLabelProvider {
+    private DBDVoid() {
+    }
 
-    @Nullable
-    Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row);
+    @Override
+    public Object getRawValue() {
+        return null;
+    }
 
-    @Nullable
-    Color getCellBackground(DBDAttributeBinding attribute, ResultSetRow row);
+    @Override
+    public boolean isNull() {
+        return false;
+    }
+
+    @Override
+    public boolean isModified() {
+        return false;
+    }
+
+    @Override
+    public void release() {
+
+    }
+
+    @Override
+    public String toString() {
+        return "";
+    }
 
 }

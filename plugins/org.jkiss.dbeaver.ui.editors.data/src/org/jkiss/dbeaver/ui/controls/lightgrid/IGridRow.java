@@ -15,18 +15,19 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.eclipse.swt.graphics.Color;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+/**
+ * Represents data grid row.
+ */
+public interface IGridRow extends IGridItem {
 
-public interface IResultSetLabelProvider {
+    IGridRow getParent();
 
-    @Nullable
-    Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row);
+    int getVisualPosition();
 
-    @Nullable
-    Color getCellBackground(DBDAttributeBinding attribute, ResultSetRow row);
+    int getRelativeIndex();
+
+    int getRowDepth();
 
 }

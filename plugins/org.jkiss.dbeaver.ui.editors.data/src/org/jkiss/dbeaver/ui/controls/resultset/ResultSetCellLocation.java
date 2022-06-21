@@ -14,35 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 
-import java.util.List;
-
 /**
- * Result set selection
+ * Resultset cell location
  */
-public interface IResultSetSelection extends IStructuredSelection {
+public class ResultSetCellLocation {
 
-    @NotNull
-    IResultSetController getController();
+    private final DBDAttributeBinding attribute;
+    private final ResultSetRow row;
+    private final int[] rowIndexes;
 
-    @NotNull
-    List<DBDAttributeBinding> getSelectedAttributes();
-
-    @NotNull
-    List<ResultSetRow> getSelectedRows();
-
-    DBDAttributeBinding getElementAttribute(Object element);
-
-    ResultSetRow getElementRow(Object element);
-
-    default int[] getElementRowIndexes(Object element) {
-        return null;
+    public ResultSetCellLocation(DBDAttributeBinding attribute, ResultSetRow row) {
+        this.attribute = attribute;
+        this.row = row;
+        this.rowIndexes = null;
     }
 
+    public ResultSetCellLocation(DBDAttributeBinding attribute, ResultSetRow row, int[] rowIndexes) {
+        this.attribute = attribute;
+        this.row = row;
+        this.rowIndexes = rowIndexes;
+    }
+
+    public DBDAttributeBinding getAttribute() {
+        return attribute;
+    }
+
+    public ResultSetRow getRow() {
+        return row;
+    }
+
+    public int[] getRowIndexes() {
+        return rowIndexes;
+    }
 }
