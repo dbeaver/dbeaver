@@ -536,7 +536,7 @@ public class ReferenceValueEditor {
             final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
             if (fkAttribute != null && enumConstraint != null) {
                 List<DBDLabelValuePair> enumValues = enumConstraint.getDictionaryEnumeration(monitor, refColumn,
-                    pattern, precedingKeys, maxResults, sortAsc, false, sortByValue, offset);
+                    pattern, precedingKeys, false, sortAsc, sortByValue, offset, maxResults);
 //                        for (DBDLabelValuePair pair : enumValues) {
 //                            keyValues.put(pair.getValue(), pair.getLabel());
 //                        }
@@ -590,9 +590,9 @@ public class ReferenceValueEditor {
 
         private void updateList() throws DBException {
             if (backwardMove && firstValue != null) {
-                reloadSelectorValues(firstValue, true, -Math.floorDiv(maxResults, 2));
+                reloadSelectorValues(firstValue, true, Math.min(-Math.floorDiv(maxResults, 2), -1));
             } else if (!backwardMove && lastValue != null) {
-                reloadSelectorValues(lastValue, true, Math.round((float) maxResults / 2) + 1);
+                reloadSelectorValues(lastValue, true, Math.max(Math.round((float) maxResults / 2) + 1, 1));
             }
         }
 
