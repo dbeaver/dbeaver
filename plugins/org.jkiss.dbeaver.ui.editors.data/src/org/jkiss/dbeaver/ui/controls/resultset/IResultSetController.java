@@ -68,9 +68,6 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     IResultSetDecorator getDecorator();
 
     @NotNull
-    IResultSetLabelProvider getLabelProvider();
-
-    @NotNull
     ResultSetModel getModel();
 
     @NotNull

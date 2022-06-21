@@ -813,7 +813,7 @@ public final class DBUtils {
                 break;
             }
             if (nestedIndexes != null && indexNumber < nestedIndexes.length) {
-                if (attr instanceof DBDAttributeBindingElement) {
+                if (attr instanceof DBDAttributeBindingElement || attr instanceof DBDAttributeBindingType) {
                     // Nested value already extracted by element binding
                 } else if (curValue instanceof DBDCollection) {
                     if (((DBDCollection) curValue).getItemCount() <= nestedIndexes[indexNumber]) {

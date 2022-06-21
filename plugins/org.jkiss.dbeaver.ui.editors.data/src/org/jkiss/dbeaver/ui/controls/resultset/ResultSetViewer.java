@@ -152,7 +152,6 @@ public class ResultSetViewer extends Viewer
     private final Composite mainPanel;
     private final Composite viewerPanel;
     private final IResultSetDecorator decorator;
-    private final ResultSetLabelProviderDefault labelProviderDefault;
     @Nullable
     private ResultSetFilterPanel filtersPanel;
     private final SashForm viewerSash;
@@ -233,7 +232,6 @@ public class ResultSetViewer extends Viewer
         this.site = site;
         this.recordMode = false;
         this.container = container;
-        this.labelProviderDefault = new ResultSetLabelProviderDefault(this);
         this.decorator = container.createResultSetDecorator();
         this.dataReceiver = new ResultSetDataReceiver(this);
         this.dataPropertyListener = event -> {
@@ -408,11 +406,7 @@ public class ResultSetViewer extends Viewer
                 }
                 lastThemeUpdateTime = System.currentTimeMillis();
                 UIUtils.asyncExec(() -> {
-                    ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-                    labelProviderDefault.applyThemeSettings(currentTheme);
-                    if (activePresentation instanceof AbstractPresentation) {
-                        ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
-                    }
+                    applyCurrentPresentationThemeSettings();
                 });
             }
         };
@@ -420,6 +414,13 @@ public class ResultSetViewer extends Viewer
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(dataPropertyListener);
         DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().addPropertyChangeListener(dataPropertyListener);
+    }
+
+    private void applyCurrentPresentationThemeSettings() {
+        if (activePresentation instanceof AbstractPresentation) {
+            ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+            ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
+        }
     }
 
     private void handleDataPropertyChange(@Nullable DBPDataSourceContainer dataSource, @NotNull String property, @Nullable Object oldValue, @Nullable Object newValue) {
@@ -430,7 +431,10 @@ public class ResultSetViewer extends Viewer
         lastPropertyUpdateTime = System.currentTimeMillis();
         UIUtils.asyncExec(() -> {
             if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
-                labelProviderDefault.applyThemeSettings();
+                if (activePresentation instanceof AbstractPresentation) {
+                    ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+                    ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
+                }
             }
             redrawData(false, false);
         });
@@ -446,18 +450,6 @@ public class ResultSetViewer extends Viewer
     @Override
     public IResultSetDecorator getDecorator() {
         return decorator;
-    }
-
-    @NotNull
-    @Override
-    public IResultSetLabelProvider getLabelProvider() {
-        IResultSetLabelProvider labelProvider = decorator.getDataLabelProvider();
-        return labelProvider == null ? labelProviderDefault : labelProvider;
-    }
-
-    @NotNull
-    public IResultSetLabelProvider getDefaultLabelProvider() {
-        return labelProviderDefault;
     }
 
     AutoRefreshControl getAutoRefresh() {
@@ -4520,7 +4512,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void fireResultSetLoad() {
-        labelProviderDefault.applyThemeSettings();
+        applyCurrentPresentationThemeSettings();
         for (IResultSetListener listener : getListenersCopy()) {
             listener.handleResultSetLoad();
         }

@@ -126,7 +126,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color backgroundReadOnly;
     private Color foregroundDefault;
     private Color foregroundSelected, backgroundSelected;
+    private Color foregroundNull;
     private Color backgroundMatched;
+    private Color backgroundError;
 
     private Color cellHeaderForeground;
     private Color cellHeaderBackground;
@@ -155,6 +157,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private int highlightScopeLastLine;
     private Color highlightScopeColor;
     private boolean useNativeNumbersFormat;
+
+    private boolean colorizeDataTypes = true;
+    private final Map<DBPDataKind, Color> dataTypesForegrounds = new IdentityHashMap<>();
 
     public Spreadsheet getSpreadsheet() {
         return spreadsheet;
@@ -1356,8 +1361,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.backgroundOdd = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
         this.backgroundReadOnly = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
         this.foregroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
+        this.foregroundNull = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
         this.backgroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
         this.backgroundMatched = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MATCHED);
+        this.backgroundError = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ERROR_BACK);
 
         this.cellHeaderForeground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_FOREGROUND);
         this.cellHeaderBackground = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_HEADER_BACKGROUND);
@@ -1381,6 +1388,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.spreadsheet.recalculateSizes(true);
 
         this.booleanStyles = BooleanStyleSet.getDefaultStyles(getPreferenceStore());
+
+        this.colorizeDataTypes = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
+
+        this.dataTypesForegrounds.put(DBPDataKind.BINARY, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BINARY_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.BOOLEAN, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_BOOLEAN_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.DATETIME, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_DATETIME_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.NUMERIC, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_NUMERIC_FOREGROUND));
+        this.dataTypesForegrounds.put(DBPDataKind.STRING, colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_STRING_FOREGROUND));
     }
 
     ///////////////////////////////////////////////
@@ -2042,18 +2057,17 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 // State
                 if ((controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_LINKS) != 0) {
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
-                    Object value = getCellValue(colElement, rowElement, false);
                     if (isShowAsCheckbox(attr)) {
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
                     } else if (
                         (isCollectionAttribute(attr) && rowElement != null && rowElement.getParent() == null) ||
                             !CommonUtils.isEmpty(attr.getReferrers())) {
-                        if (!DBUtils.isNullValue(value)) {
+                        if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
                         }
                     } else {
                         String strValue = cellValue != null ? cellValue.toString() :
-                            attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
+                            attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
                         if (strValue != null && strValue.contains("://")) {
                             try {
                                 new URL(strValue);
@@ -2229,6 +2243,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
+            // First check in decorator's label provider
+            IResultSetLabelProvider dataLabelProvider = getController().getDecorator().getDataLabelProvider();
+            if (dataLabelProvider != null) {
+                Color fg = dataLabelProvider.getCellForeground(attribute, row);
+                if (fg != null) {
+                    return fg;
+                }
+            }
+
             if (selected) {
                 return foregroundSelected;
             }
@@ -2241,9 +2264,30 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
                 return null;
             }
-            Color fg = controller.getLabelProvider().getCellForeground(attribute, row);
-            if (fg != null) {
-                return fg;
+
+            {
+                if (row.colorInfo != null) {
+                    if (row.colorInfo.cellFgColors != null) {
+                        Color cellFG = row.colorInfo.cellFgColors[attribute.getOrdinalPosition()];
+                        if (cellFG != null) {
+                            return cellFG;
+                        }
+                    }
+                    if (row.colorInfo.rowForeground != null) {
+                        return row.colorInfo.rowForeground;
+                    }
+                }
+
+                if (DBUtils.isNullValue(cellValue)) {
+                    return foregroundNull;
+                } else {
+                    if (colorizeDataTypes) {
+                        Color color = dataTypesForegrounds.get(attribute.getDataKind());
+                        if (color != null) {
+                            return color;
+                        }
+                    }
+                }
             }
             return UIUtils.getContrastColor(background);
         }
@@ -2256,6 +2300,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean cellSelected,
             boolean ignoreRowSelection)
         {
+            // First check in decorator's label provider
+            IResultSetLabelProvider dataLabelProvider = getController().getDecorator().getDataLabelProvider();
+            if (dataLabelProvider != null) {
+                Color bg = dataLabelProvider.getCellBackground(attribute, row);
+                if (bg != null) {
+                    return bg;
+                }
+            }
+
             if (cellValue == DBDVoid.INSTANCE) {
                 return cellHeaderBackground;
             }
@@ -2343,9 +2396,22 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return backgroundModified;
             }
 
-            Color bg = controller.getLabelProvider().getCellBackground(attribute, row);
-            if (bg != null) {
-                return bg;
+            {
+                if (row.colorInfo != null) {
+                    if (row.colorInfo.cellBgColors != null) {
+                        Color cellBG = row.colorInfo.cellBgColors[attribute.getOrdinalPosition()];
+                        if (cellBG != null) {
+                            return cellBG;
+                        }
+                    }
+                    if (row.colorInfo.rowBackground != null) {
+                        return row.colorInfo.rowBackground;
+                    }
+                }
+
+                if (cellValue != null && cellValue.getClass() == DBDValueError.class) {
+                    return backgroundError;
+                }
             }
 
             if (!controller.isRecordMode() && showOddRows) {
