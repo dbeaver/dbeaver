@@ -244,6 +244,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return query.toString();
     }
 
+
     @Override
     public boolean isPersisted() {
         return false;

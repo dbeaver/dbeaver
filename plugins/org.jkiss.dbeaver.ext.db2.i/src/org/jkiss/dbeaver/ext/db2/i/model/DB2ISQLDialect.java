@@ -48,4 +48,9 @@ public class DB2ISQLDialect extends GenericSQLDialect {
     public MultiValueInsertMode getDefaultMultiValueInsertMode() {
         return MultiValueInsertMode.GROUP_ROWS;
     }
+
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
+    }
 }
