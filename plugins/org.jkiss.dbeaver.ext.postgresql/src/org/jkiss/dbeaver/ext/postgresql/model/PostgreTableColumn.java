@@ -111,20 +111,9 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
 
     @Override
     public boolean isInUniqueKey() {
-        PostgreTableBase table = getTable();
-        PostgreSchema schema = table.getSchema();
-        PostgreSchema.ConstraintCache constraintCache = schema.getConstraintCache();
-        List<PostgreTableConstraintBase> keyCache = constraintCache.getCachedObjects(table);
-        if (CommonUtils.isEmpty(keyCache) && getDataSource().supportsReadingKeysWithColumns() && !constraintCache.isFullyCached()) {
-            try {
-                keyCache = constraintCache.getObjects(new VoidProgressMonitor(), schema, table);
-                constraintCache.setFullCache(true);
-            } catch (DBException e) {
-                log.debug("Can't read table " + table.getName() + " constraints", e);
-            }
-        }
-        if (!CommonUtils.isEmpty(keyCache)) {
-            for (PostgreTableConstraintBase key : keyCache) {
+        final List<PostgreTableConstraintBase> cCache = getTable().getSchema().getConstraintCache().getCachedObjects(getTable());
+        if (!CommonUtils.isEmpty(cCache)) {
+            for (PostgreTableConstraintBase key : cCache) {
                 if (key instanceof PostgreTableConstraint && key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                     List<PostgreTableConstraintColumn> cColumns = ((PostgreTableConstraint) key).getColumns();
                     if (!CommonUtils.isEmpty(cColumns)) {
