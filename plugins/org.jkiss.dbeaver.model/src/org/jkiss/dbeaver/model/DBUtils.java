@@ -60,6 +60,7 @@ import org.jkiss.utils.Pair;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * DBUtils
@@ -1601,7 +1602,7 @@ public final class DBUtils {
     {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
-        } else if (object instanceof DBSObject) {
+        } else if (object instanceof DBSObject && ((DBSObject) object).getDataSource() != null) {
             return getObjectFullName(((DBSObject) object).getDataSource(), object, context);
         } else {
             return object.getName();
