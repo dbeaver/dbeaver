@@ -1216,6 +1216,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                                 applyEvent.keyCode = SWT.ARROW_RIGHT;
                             }
                             getSpreadsheet().notifyListeners(SWT.KeyDown, applyEvent);
+                            openValueEditor(true);
                         }
                     });
                 }
