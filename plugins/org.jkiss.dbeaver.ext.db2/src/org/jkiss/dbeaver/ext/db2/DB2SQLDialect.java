@@ -163,4 +163,9 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
             rules.add(new SQLMultiWordRule(new String[]{"ROW", "END"}, keywordToken));
         }
     }
+
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
+    }
 }

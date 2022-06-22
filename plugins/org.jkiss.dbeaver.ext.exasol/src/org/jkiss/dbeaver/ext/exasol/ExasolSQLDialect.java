@@ -203,5 +203,10 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
         return true;
     }
 
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
+    }
+
 }
 

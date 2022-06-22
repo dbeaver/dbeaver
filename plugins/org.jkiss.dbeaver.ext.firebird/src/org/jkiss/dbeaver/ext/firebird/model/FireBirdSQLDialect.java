@@ -95,4 +95,9 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     public boolean supportsInsertAllDefaultValuesStatement() {
         return true;
     }
+
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
+    }
 }
