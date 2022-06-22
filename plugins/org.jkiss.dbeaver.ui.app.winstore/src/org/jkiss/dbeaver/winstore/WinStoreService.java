@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.winstore;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 
@@ -29,7 +30,7 @@ public class WinStoreService implements IPluginService {
         // Modify JNI binaries path
         String installPath = SystemVariablesResolver.getInstallPath();
         System.setProperty("jna.boot.library.path", installPath);
-        System.setProperty("dbeaver-windows-store-app", "true");
+        System.setProperty(DBConstants.IS_WINDOWS_STORE_APP, "true");
         log.debug("JNA boot path set to " + installPath);
     }
 
