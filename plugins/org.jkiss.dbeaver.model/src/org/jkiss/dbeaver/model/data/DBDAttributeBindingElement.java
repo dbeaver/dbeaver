@@ -107,7 +107,7 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
 
     @Nullable
     @Override
-    public Object extractNestedValue(@NotNull Object ownerValue) throws DBCException {
+    public Object extractNestedValue(@NotNull Object ownerValue, int itemIndex) throws DBCException {
         if (collection.isNull()) {
             // Can happen if values was released
             return null;

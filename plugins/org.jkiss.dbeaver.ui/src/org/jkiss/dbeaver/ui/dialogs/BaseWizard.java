@@ -19,7 +19,11 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * BaseWizard
@@ -32,6 +36,16 @@ public abstract class BaseWizard extends Wizard
 
     public DBRRunnableContext getRunnableContext() {
         return new RunnableContextDelegate(getContainer());
+    }
+
+    public void runWithProgress(DBRRunnableWithProgress runnable) {
+        try {
+            getRunnableContext().run(true, true, runnable::run);
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Internal error", "Internal error while running wizard task", e);
+        } catch (InterruptedException ignored) {
+
+        }
     }
 
 }

@@ -20,8 +20,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -94,4 +96,8 @@ public class PostgreMaterializedView extends PostgreViewBase
     }
 
 
+    @Override
+    public DBSObjectType getObjectType() {
+        return RelationalObjectType.TYPE_MATERIALIZED_VIEW;
+    }
 }

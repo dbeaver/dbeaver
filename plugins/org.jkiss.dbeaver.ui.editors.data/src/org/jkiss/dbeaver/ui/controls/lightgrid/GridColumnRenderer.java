@@ -63,26 +63,26 @@ class GridColumnRenderer extends AbstractRenderer {
     }
 
     @Nullable
-    protected Image getColumnImage(Object element) {
+    protected Image getColumnImage(IGridItem element) {
         return grid.getLabelProvider().getImage(element);
     }
 
-    protected String getColumnText(Object element)
+    protected String getColumnText(IGridItem item)
     {
-        return grid.getLabelProvider().getText(element);
+        return grid.getLabelProvider().getText(item);
     }
 
-    protected String getColumnDescription(Object element)
+    protected String getColumnDescription(IGridColumn item)
     {
-        return grid.getLabelProvider().getDescription(element);
+        return grid.getLabelProvider().getDescription(item);
     }
 
-    protected Font getColumnFont(Object element) {
+    protected Font getColumnFont(IGridColumn element) {
         Font font = grid.getLabelProvider().getFont(element);
         return font != null ? font : grid.normalFont;
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, Object element) {
+    public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, IGridColumn element) {
 
         boolean hasFilters = grid.getContentProvider().isElementSupportsFilter(element);
 

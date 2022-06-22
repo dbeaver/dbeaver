@@ -294,9 +294,10 @@ public interface SQLDialect {
     /**
      * Enables to call particular cast operator or function for special attribute name.
      * @param attribute   attribute data to help decide whether cast and how to cast
+     * @param attributeName
      * @return            casted attribute name
      */
-    String getCastedAttributeName(@NotNull DBSAttributeBase attribute);
+    String getCastedAttributeName(@NotNull DBSAttributeBase attribute, String attributeName);
 
     /**
      * Enables to call particular cast operator or function for special data types.

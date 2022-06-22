@@ -807,15 +807,17 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     @Override
-    public String getCastedAttributeName(@NotNull DBSAttributeBase attribute) {
+    public String getCastedAttributeName(@NotNull DBSAttributeBase attribute, String attributeName) {
         // This method actually works for special data types like JSON and XML. Because column names in the condition in a table without key must be also cast, as data in getTypeCast method.
-        String attrName = attribute.getName();
-        if (attribute instanceof DBSObject) {
-            attrName = DBUtils.isPseudoAttribute(attribute) ?
-                attribute.getName() :
-                DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+        if (attribute instanceof DBSObject && !DBUtils.isPseudoAttribute(attribute)) {
+            if (!CommonUtils.equalObjects(attributeName, attribute.getName())) {
+                // Must use explicit attribute name
+                attributeName = DBUtils.getQuotedIdentifier(((DBSObject) attribute).getDataSource(), attributeName);
+            } else {
+                attributeName = DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+            }
         }
-        return getCastedString(attribute, attrName, true, true);
+        return getCastedString(attribute, attributeName, true, true);
     }
 
     @NotNull
@@ -842,10 +844,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @NotNull
     @Override
     public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
-        if (PostgreUtils.isPGObject(value) ||
-            PostgreConstants.TYPE_BIT.equals(attribute.getTypeName()) ||
-            PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName()) ||
-            attribute.getTypeID() == Types.OTHER)
+        if (PostgreUtils.isPGObject(value)
+            || PostgreConstants.TYPE_BIT.equals(attribute.getTypeName())
+            || PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName())
+            || attribute.getTypeID() == Types.OTHER
+            || attribute.getTypeID() == Types.ARRAY
+            || attribute.getTypeID() == Types.STRUCT)
         {
             // TODO: we need to add value handlers for all PG data types.
             // For now we use workaround: represent objects as strings

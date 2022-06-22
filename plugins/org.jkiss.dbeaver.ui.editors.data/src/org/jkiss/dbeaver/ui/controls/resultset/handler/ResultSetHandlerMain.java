@@ -251,8 +251,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                     if (row != null && attr != null && !DBExecUtils.isAttributeReadOnly(attr)) {
                         ResultSetValueController valueController = new ResultSetValueController(
                             rsv,
-                            attr,
-                            row,
+                            new ResultSetCellLocation(attr, row, selection.getElementRowIndexes(cell)),
                             IValueController.EditType.NONE,
                             null);
                         if (actionId.equals(CMD_CELL_SET_NULL)) {
@@ -267,7 +266,9 @@ public class ResultSetHandlerMain extends AbstractHandler {
                                 }
                             }
                         } else {
-                            rsv.getModel().resetCellValue(attr, row);
+                            rsv.getModel().resetCellValue(
+                                new ResultSetCellLocation(
+                                    attr, row, selection.getElementRowIndexes(cell)));
                         }
                     }
                 }

@@ -17,21 +17,24 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.impl.data.formatters.TimestampFormatSample;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.JDBCType;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * CustomTimeEditor
@@ -44,8 +47,6 @@ public class CustomTimeEditor {
     private DateTime timeEditor;
     private Composite basePart;
 
-    private static final String TIMESTAMP_DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    private String format = "";
     private Label timeLabel;
     private Label dateLabel;
     private int millis = -1;
@@ -58,6 +59,9 @@ public class CustomTimeEditor {
     private Listener modifyListener;
     private SelectionAdapter selectionListener;
     private boolean editable;
+    private CLabel warningLabel;
+    private Composite mainComposite;
+    private JDBCType jdbcType;
 
     private enum InputMode {
         None,
@@ -67,19 +71,25 @@ public class CustomTimeEditor {
     }
 
     public void createDateFormat(@NotNull DBSTypedObject valueType) {
-        final JDBCType jdbcType = JDBCType.valueOf(valueType.getTypeID());
-        switch (jdbcType) {
-            case DATE:
-                inputMode = InputMode.Date;
-                disposeDateEditor(timeEditor, timeLabel);
-                break;
-            case TIME:
-                inputMode = InputMode.Time;
-                disposeDateEditor(dateEditor, dateLabel);
-                break;
-            default:
-                inputMode = InputMode.DateTime;
-                break;
+        jdbcType = JDBCType.valueOf(valueType.getTypeID());
+        disposeNotNeededEditors();
+    }
+
+    private void disposeNotNeededEditors() {
+        if (jdbcType != null) {
+            switch (jdbcType) {
+                case DATE:
+                    inputMode = InputMode.Date;
+                    disposeEditor(timeEditor, timeLabel);
+                    break;
+                case TIME:
+                    inputMode = InputMode.Time;
+                    disposeEditor(dateEditor, dateLabel);
+                    break;
+                default:
+                    inputMode = InputMode.DateTime;
+                    break;
+            }
         }
     }
 
@@ -92,21 +102,27 @@ public class CustomTimeEditor {
 
     @NotNull
     private Composite initEditor(@NotNull Composite parent, int style) {
-        basePart = new Composite(parent, style);
-        GridLayout layout = new GridLayout(2, false);
-        if (isInline) {
-            layout.marginWidth = 0;
-            layout.marginHeight = 0;
+
+        if (!isInline) {
+            GridLayout layout = new GridLayout(1, false);
+            mainComposite = new Composite(parent, style);
+            mainComposite.setLayout(layout);
+            mainComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
-        basePart.setLayout(layout);
+        basePart = new Composite(isInline ? parent : mainComposite, style);
+        basePart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridLayout basePartLayout = new GridLayout(2, false);
+        if (isInline) {
+            basePartLayout.marginHeight = 0;
+            basePartLayout.marginWidth = 0;
+        }
+        basePart.setLayout(basePartLayout);
         setToDateComposite();
 
 
         //fixes calendar issues on inline mode
         basePart.pack();
-
-        this.format = getTimestampFormat();
-        return basePart;
+        return isInline ? basePart : mainComposite;
     }
 
     /**
@@ -116,24 +132,31 @@ public class CustomTimeEditor {
         if (textEditor != null && !textEditor.isDisposed()) {
             return;
         }
-        disposeDateEditor(timeEditor, timeLabel);
+        disposeEditor(timeEditor, timeLabel);
         timeEditor = null;
-        disposeDateEditor(dateEditor, dateLabel);
+        disposeEditor(dateEditor, dateLabel);
         dateEditor = null;
         textEditor = new Text(basePart, isPanel && !isInline ? style : style | SWT.BORDER);
         final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         textEditor.setLayoutData(gridData);
+        if (warningLabel != null) {
+            warningLabel.dispose();
+            warningLabel = null;
+        }
+        basePart.setLayoutData(new GridData(GridData.FILL_BOTH));
         allowEdit();
         textEditor.setText(dateAsText);
+        if (mainComposite != null) {
+            mainComposite.layout();
+        }
         basePart.layout();
     }
 
-    private void disposeDateEditor(DateTime dateTimeEditor, Label dateTimeLabel) {
-        if (dateTimeEditor != null) {
-            dateTimeEditor.dispose();
-            if (dateTimeLabel != null) {
-                dateTimeLabel.dispose();
-
+    private void disposeEditor(Control editor, Label editorLabel) {
+        if (editor != null) {
+            editor.dispose();
+            if (editorLabel != null) {
+                editorLabel.dispose();
             }
         }
     }
@@ -145,26 +168,30 @@ public class CustomTimeEditor {
         if (dateEditor != null || timeEditor != null) {
             return;
         }
-        if (textEditor != null && !textEditor.isDisposed()) {
-            textEditor.dispose();
-            textEditor = null;
-        }
+        disposeEditor(textEditor, null);
         final GridData layoutData = new GridData(SWT.FILL, SWT.RIGHT, true, false, 1, 1);
-        if (!isInline) dateLabel = UIUtils.createLabel(basePart, "Date");
+        if (!isInline) {
+            dateLabel = UIUtils.createLabel(basePart, "Date");
+        }
+        if (CommonUtils.isEmpty(dateAsText)) {
+            updateWarningLabel(null);
+        }
         this.dateEditor = new DateTime(basePart, SWT.DROP_DOWN);
         dateEditor.setLayoutData(layoutData);
-        if (!isInline) timeLabel = UIUtils.createLabel(basePart, "Time");
+        if (!isInline) {
+            timeLabel = UIUtils.createLabel(basePart, "Time");
+        }
         this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM);
         this.timeEditor.setLayoutData(layoutData);
+        basePart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        disposeNotNeededEditors();
         allowEdit();
-
         setDateFromCalendar();
         updateListeners();
         basePart.layout();
-    }
-
-    public void setFormat(@NotNull String format) {
-        this.format = format;
+        if (mainComposite != null) {
+            mainComposite.layout();
+        }
     }
 
     public void updateListeners() {
@@ -177,7 +204,7 @@ public class CustomTimeEditor {
             }
         }
         if (modifyListener != null && textEditor != null && !textEditor.isDisposed()) {
-                textEditor.addListener(SWT.Modify, modifyListener);
+            textEditor.addListener(SWT.Modify, modifyListener);
         }
     }
 
@@ -196,39 +223,62 @@ public class CustomTimeEditor {
         updateListeners();
     }
 
-    private static void setWithoutListener(@NotNull Control control, int type, Listener listener, @NotNull Runnable blockToRun) {
+    private static void setWithoutListener(@NotNull Control control, Listener listener, @NotNull Runnable blockToRun) {
         if (listener != null) {
-            control.removeListener(type, listener);
+            control.removeListener(SWT.Modify, listener);
             blockToRun.run();
-            control.addListener(type, listener);
+            control.addListener(SWT.Modify, listener);
         } else {
             blockToRun.run();
         }
     }
 
-    private String getTimestampFormat() {
-        TimestampFormatSample prefFormat = new TimestampFormatSample();
-        Map<String, Object> map = prefFormat.getDefaultProperties(Locale.getDefault());
-        Object pattern = map.get(FORMAT_PATTERN);
-        if (pattern instanceof String) {
-            format = (String) pattern;
-            return format;
+
+    private void updateWarningLabel(@Nullable Object value) {
+        if (isInline) {
+            return;
         }
-        return TIMESTAMP_DEFAULT_FORMAT;
+        if (value == null && (textEditor == null || textEditor.isDisposed())) {
+            if (warningLabel != null && !warningLabel.isDisposed()) {
+                return;
+            }
+            warningLabel = new CLabel(mainComposite, style);
+            warningLabel.setText("Original value was null, using current time");
+            warningLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+            mainComposite.layout();
+        } else {
+            if (warningLabel != null) {
+                warningLabel.dispose();
+                mainComposite.layout();
+            }
+        }
     }
 
     public void setTextValue(@Nullable String value) {
         dateAsText = value;
         if (textEditor != null && !textEditor.isDisposed()) {
-            setWithoutListener(textEditor, SWT.Modify, modifyListener, () -> {
-                textEditor.setText(value);
-            });
+            setWithoutListener(textEditor, modifyListener, () -> textEditor.setText(dateAsText));
         }
     }
 
     public void setValue(@Nullable Date value) {
+        updateWarningLabel(value);
         if (value != null) {
             calendar.setTime(value);
+        } else {
+            switch (inputMode) {
+                case Time:
+                    calendar.setTime(new Time(System.currentTimeMillis()));
+                    break;
+                case Date:
+                    calendar.setTime(new Date(System.currentTimeMillis()));
+                    break;
+                case DateTime:
+                    calendar.setTime(new Timestamp(System.currentTimeMillis()));
+                    break;
+                default:
+                    break;
+            }
         }
         setDateFromCalendar();
     }
@@ -300,7 +350,7 @@ public class CustomTimeEditor {
     }
 
     public Composite getControl() {
-        return basePart;
+        return isInline ? basePart : mainComposite;
     }
 
     public void selectAllContent() {

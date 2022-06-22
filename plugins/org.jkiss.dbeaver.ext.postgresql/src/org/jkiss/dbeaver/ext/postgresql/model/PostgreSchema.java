@@ -68,7 +68,8 @@ public class PostgreSchema implements
     PostgreObject,
     PostgreScriptObject,
     PostgrePrivilegeOwner,
-    DBPScriptObjectExt2
+    DBPScriptObjectExt2,
+    DBSNamespaceContainer
 {
 
     private static final Log log = Log.getLog(PostgreSchema.class);
@@ -222,19 +223,19 @@ public class PostgreSchema implements
 
 
     @Association
-    public Collection<PostgreExtension> getExtensions(DBRProgressMonitor monitor)
+    public List<PostgreExtension> getExtensions(DBRProgressMonitor monitor)
         throws DBException {
         return extensionCache.getAllObjects(monitor, this);
     }
 
     @Association
-    public Collection<PostgreAggregate> getAggregateFunctions(DBRProgressMonitor monitor)
+    public List<PostgreAggregate> getAggregateFunctions(DBRProgressMonitor monitor)
         throws DBException {
         return aggregateCache.getAllObjects(monitor, this);
     }
 
     @Association
-    public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor)
+    public List<PostgreIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException {
         return indexCache.getObjects(monitor, this, null);
     }
@@ -280,7 +281,7 @@ public class PostgreSchema implements
     }
 
     @Association
-    public Collection<? extends PostgreTable> getTables(DBRProgressMonitor monitor)
+    public List<? extends PostgreTable> getTables(DBRProgressMonitor monitor)
         throws DBException {
         return getTableCache().getTypedObjects(monitor, this, PostgreTable.class)
             .stream()
@@ -289,13 +290,13 @@ public class PostgreSchema implements
     }
 
     @Association
-    public Collection<PostgreView> getViews(DBRProgressMonitor monitor)
+    public List<PostgreView> getViews(DBRProgressMonitor monitor)
         throws DBException {
         return getTableCache().getTypedObjects(monitor, this, PostgreView.class);
     }
 
     @Association
-    public Collection<PostgreMaterializedView> getMaterializedViews(DBRProgressMonitor monitor)
+    public List<PostgreMaterializedView> getMaterializedViews(DBRProgressMonitor monitor)
         throws DBException {
         return getTableCache().getTypedObjects(monitor, this, PostgreMaterializedView.class);
     }
@@ -307,7 +308,7 @@ public class PostgreSchema implements
     }
 
     @Association
-    public Collection<PostgreSequence> getSequences(DBRProgressMonitor monitor)
+    public List<PostgreSequence> getSequences(DBRProgressMonitor monitor)
         throws DBException {
         return getTableCache().getTypedObjects(monitor, this, PostgreSequence.class);
     }
@@ -319,7 +320,7 @@ public class PostgreSchema implements
     }
 
     @Association
-    public Collection<PostgreProcedure> getProcedures(DBRProgressMonitor monitor)
+    public List<PostgreProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException {
         return getProceduresCache().getAllObjects(monitor, this);
     }
@@ -340,7 +341,7 @@ public class PostgreSchema implements
     }
 
     @Override
-    public Collection<? extends JDBCTable> getChildren(@NotNull DBRProgressMonitor monitor)
+    public List<? extends JDBCTable> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         return getTableCache().getTypedObjects(monitor, this, PostgreTableReal.class);
     }
@@ -459,7 +460,7 @@ public class PostgreSchema implements
 
     //@Property
     @Association
-    public Collection<PostgreDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
+    public List<PostgreDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
         return dataTypeCache.getAllObjects(monitor, this).stream()
             .sorted(Comparator
                 .comparing((DBSTypedObject type) -> type.getTypeName().startsWith("_")) // Sort the array data types at the end of the list
@@ -638,6 +639,22 @@ public class PostgreSchema implements
         } catch (Exception e) {
             log.debug("Error reading schema information ", e);
         }
+    }
+
+    @Nullable
+    @Override
+    public DBSNamespace getNamespaceForObjectType(@NotNull DBSObjectType objectType) {
+        if (PostgreNamespace.supportsObjectType(objectType)) {
+            return new PostgreNamespace(this);
+        } else {
+            return null;
+        }
+    }
+
+    @NotNull
+    @Override
+    public DBSNamespace[] getAllNamespaces() {
+        return new DBSNamespace[] { new PostgreNamespace(this) };
     }
 
     class ExtensionCache extends JDBCObjectCache<PostgreSchema, PostgreExtension> {

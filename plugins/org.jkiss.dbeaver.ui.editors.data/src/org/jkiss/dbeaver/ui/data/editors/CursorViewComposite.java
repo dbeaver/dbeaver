@@ -149,7 +149,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
         }
         final DBNDatabaseNode targetNode = executionContext.getDataSource().getContainer().getPlatform().getNavigatorModel().getNodeByObject(monitor, dataContainer, false);
         if (targetNode == null) {
-            UIUtils.showMessageBox(null, "Open link", "Can't navigate to '" + DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.UI) + "' - navigator node not found", SWT.ICON_ERROR);
+            UIUtils.showMessageBox(null, "Open link", "Cannot navigate to '" + DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.UI) + "' - navigator node not found", SWT.ICON_ERROR);
             return;
         }
         AbstractDataEditor.openNewDataEditor(targetNode, newFilter);

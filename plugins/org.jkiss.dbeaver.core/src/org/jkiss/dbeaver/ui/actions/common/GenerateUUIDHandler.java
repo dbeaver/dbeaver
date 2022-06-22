@@ -29,13 +29,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectBase;
 
@@ -61,11 +57,10 @@ public class GenerateUUIDHandler extends NavigatorHandlerObjectBase {
                     if (row != null && attr != null) {
                         ResultSetValueController valueController = new ResultSetValueController(
                             rsc,
-                            attr,
-                            row,
+                            new ResultSetCellLocation(attr, row),
                             IValueController.EditType.NONE,
                             null);
-                        DBDValueHandler valueHandler = valueController.getValueHandler();
+                        //DBDValueHandler valueHandler = valueController.getValueHandler();
                         valueController.updateValue(uuid, false);
                     }
                 }
