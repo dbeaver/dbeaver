@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
 import org.jkiss.dbeaver.model.auth.SMAuthInfo;
+import org.jkiss.dbeaver.model.auth.SMAuthStatus;
 import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
@@ -81,7 +82,18 @@ public interface SMController extends SMAuthCredentialsManager {
         @NotNull Map<String, Object> sessionParameters,
         @NotNull SMSessionType sessionType,
         @NotNull String authProviderId,
+        @Nullable String authProviderConfigurationId,
         @NotNull Map<String, Object> userCredentials) throws DBException;
+
+    void updateAuthStatus(
+        @NotNull String authId,
+        @NotNull SMAuthStatus authStatus,
+        @NotNull Map<String, Object> authInfo,
+        @Nullable String error) throws DBException;
+
+    SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
+
+    SMAuthInfo finishAuthentication(@NotNull String authId) throws DBException;
 
     void updateSession(
         @NotNull String sessionId,
