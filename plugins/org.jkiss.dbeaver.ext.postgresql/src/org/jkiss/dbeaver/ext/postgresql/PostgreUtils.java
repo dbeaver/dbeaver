@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.lang.reflect.Array;
 import java.sql.SQLException;
@@ -413,7 +414,7 @@ public class PostgreUtils {
                         PostgreDatabase database = dataSource.getDatabase(databaseName);
                         if (database != null) {
                             String typeName = type.getTypeName();
-                            if (typeName.startsWith("\"") || typeName.contains(".")) {
+                            if (PostgreUtils.isCompositeTypeName(typeName)) {
                                 // Type name in JDBCColumnMetaData can be fully qualified and quoted. Let's fix it for the better search in the getDataType() method
                                 String[] identifiers = SQLUtils.splitFullIdentifier(typeName, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
                                 if (!ArrayUtils.isEmpty(identifiers)) {
@@ -456,6 +457,124 @@ public class PostgreUtils {
         }
     }
 
+    @Nullable
+    public static PostgreDataType resolveTypeFullName(
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreSchema schema, @NotNull String fullTypeName
+    ) throws DBException {
+        return resolveTypeFullName(monitor, schema.getDataSource(), schema.getDatabase(), schema, fullTypeName);
+    }
+
+    @Nullable
+    public static PostgreDataType resolveTypeFullName(
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, @NotNull String fullTypeName
+    ) throws DBException {
+        return resolveTypeFullName(monitor, database.getDataSource(), database, database.getMetaContext().getDefaultSchema(), fullTypeName);
+    }
+
+    @Nullable
+    public static PostgreDataType resolveTypeFullName(
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreDataSource dataSource, @NotNull String fullTypeName
+    ) throws DBException {
+        return resolveTypeFullName(
+            monitor, dataSource, dataSource.getDefaultInstance(),
+            dataSource.getDefaultInstance().getMetaContext().getDefaultSchema(), fullTypeName
+        );
+    }
+
+    @Nullable
+    private static PostgreDataType resolveTypeFullName(
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreDataSource dataSource, @NotNull PostgreDatabase database,
+        @NotNull PostgreSchema schema, @NotNull String fullTypeName
+    ) throws DBException {
+        final String identifier = DBUtils.getTypeModifiers(fullTypeName).getFirst();
+        String[] parts = splitTypeNameIdentifier(dataSource, fullTypeName);
+
+        // Try to get cashed data type from specified schema
+        PostgreDataType dataType = schema.getDataTypeCache().getObject(monitor, schema, identifier);
+        if (dataType != null) {
+            return dataType;
+        }
+        // Try to resolve local data type in specified database
+        dataType = database.getLocalDataType(identifier);
+        if (dataType != null) {
+            return dataType;
+        } else if (parts.length > 1) {
+            // Search data type in schema from fullTypeName part
+            PostgreSchema resolvedSchema = database.getSchema(monitor, parts[0]);
+            if (resolvedSchema != null) {
+                String schemaTypeName;
+                if (parts.length == 2) {
+                    schemaTypeName = parts[1];
+                } else {
+                    schemaTypeName = DBUtils.getFullyQualifiedName(dataSource, Arrays.copyOfRange(parts, 1, parts.length));
+                }
+
+                dataType = resolvedSchema.getDataTypeCache().getObject(monitor, resolvedSchema, schemaTypeName);
+                if (dataType != null) {
+                    return dataType;
+                }
+            }
+        }
+
+        // Try to resolve local data type in specified data source
+        dataType = dataSource.getLocalDataType(identifier);
+        if (dataType != null) {
+            return dataType;
+        } else if (parts.length > 1) {
+            // Search data type in database from fullTypeName part
+            PostgreDatabase resolvedDatabase = dataSource.getDatabase(parts[0]);
+            if (resolvedDatabase != null) {
+                String dbTypeName;
+                if (parts.length == 2) {
+                    dbTypeName = parts[1];
+                } else {
+                    dbTypeName = DBUtils.getFullyQualifiedName(dataSource, Arrays.copyOfRange(parts, 1, parts.length));
+                }
+                // Try to resolve local data type in database from fullTypeName part
+                dataType = resolvedDatabase.getLocalDataType(dbTypeName);
+                if (dataType != null) {
+                    return dataType;
+                } else if (parts.length > 2) {
+                    // Search data type in database and schema from fullTypeName part
+                    PostgreSchema resolvedSchema = resolvedDatabase.getSchema(monitor, parts[1]);
+                    if (resolvedSchema != null) {
+                        String dbSchemaTypeName;
+                        if (parts.length == 3) {
+                            dbSchemaTypeName = parts[2];
+                        } else {
+                            dbSchemaTypeName = DBUtils.getFullyQualifiedName(dataSource, Arrays.copyOfRange(parts, 2, parts.length));
+                        }
+                        dataType = resolvedSchema.getDataTypeCache().getObject(monitor, resolvedSchema, dbSchemaTypeName);
+                        if (dataType != null) {
+                            return dataType;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    private static String[] splitTypeNameIdentifier(
+        @NotNull PostgreDataSource dataSource, @NotNull String fullTypeName
+    ) throws DBException {
+        final Pair<String, String[]> typeNameInfo = DBUtils.getTypeModifiers(fullTypeName);
+        final String identifier = typeNameInfo.getFirst();
+
+        String[] parts;
+        if (PostgreUtils.isCompositeTypeName(identifier)) {
+            parts = SQLUtils.splitFullIdentifier(identifier, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
+        } else {
+            parts = new String[]{identifier};
+        }
+
+        return parts;
+    }
+    
+    private static boolean isCompositeTypeName(@NotNull String typeName) {
+        return typeName.startsWith("\"") || typeName.contains(".");
+    }
 
     public static void setArrayParameter(JDBCPreparedStatement dbStat, int index, List<? extends PostgreObject> objectList) throws SQLException {
         for (int i = 0; i < objectList.size(); i++) {

@@ -23,9 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
-import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -364,6 +362,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Override
     public Object geTypeExtension() {
         return typeCategory;
+    }
+    
+    @Override
+    public boolean isStructurallyConsistentTypeWith(@NotNull DBCAttributeMetaData metaData) {
+        return super.isStructurallyConsistentTypeWith(metaData) || typeCategory == PostgreTypeCategory.E;
     }
 
     @Override

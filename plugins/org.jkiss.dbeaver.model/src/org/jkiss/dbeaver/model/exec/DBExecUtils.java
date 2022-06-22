@@ -301,6 +301,24 @@ public class DBExecUtils {
         }
     }
 
+    public static void executePersistActions(DBCSession session, DBEPersistAction[] persistActions) throws DBCException {
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        monitor.beginTask(session.getTaskTitle(), persistActions.length);
+        try {
+            for (DBEPersistAction action : persistActions) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                if (!CommonUtils.isEmpty(action.getTitle())) {
+                    monitor.subTask(action.getTitle());
+                }
+                executePersistAction(session, action);
+            }
+        } finally {
+            monitor.done();
+        }
+    }
+
     public static void executePersistAction(DBCSession session, DBEPersistAction action) throws DBCException {
         if (action instanceof SQLDatabasePersistActionComment) {
             return;
@@ -763,14 +781,11 @@ public class DBExecUtils {
                     }
 
                     if (tableColumn != null) {
-                        boolean structurallyInconsistentTypes = tableColumn.getDataKind().isComplex() != 
-                            resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition()).getDataKind().isComplex();
-                        boolean updateColumnHandler = updateColumnMeta &&
-                            (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta)) &&
-                            rows != null;
+                        boolean updateColumnHandler = updateColumnMeta && rows != null
+                            && (sqlQuery == null || !DBDAttributeBindingMeta.haveEqualsTypes(tableColumn, attrMeta));
+
                         if ((!updateColumnHandler && bindingMeta.getDataKind() != tableColumn.getDataKind())
-                            || structurallyInconsistentTypes
-                        ) {
+                            || !isSameDataTypes(tableColumn, resultSet.getMeta().getAttributes().get(attrMeta.getOrdinalPosition()))) {
                             // Different data kind. Probably it is an alias which conflicts with column name
                             // Do not update entity attribute.
                             // It is a silly workaround for PG-like databases
@@ -853,7 +868,15 @@ public class DBExecUtils {
         }
     }
 
-    public static boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute) {
+    private static boolean isSameDataTypes(@NotNull DBSEntityAttribute tableColumn, @NotNull DBCAttributeMetaData resultSetAttributeMeta) {
+        if (tableColumn instanceof DBSTypedObjectEx) {
+            DBSDataType columnDataType = ((DBSTypedObjectEx) tableColumn).getDataType();
+            return columnDataType != null && columnDataType.isStructurallyConsistentTypeWith(resultSetAttributeMeta);
+        }
+        return tableColumn.getDataKind().isComplex() == resultSetAttributeMeta.getDataKind().isComplex();
+    }
+
+    public static boolean isAttributeReadOnly(@Nullable DBDAttributeBinding attribute) {
         if (attribute == null || attribute.getMetaAttribute() == null || attribute.getMetaAttribute().isReadOnly()) {
             return true;
         }

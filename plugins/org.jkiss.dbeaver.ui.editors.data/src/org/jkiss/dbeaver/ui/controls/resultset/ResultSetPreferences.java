@@ -64,6 +64,7 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_RIGHT_JUSTIFY_DATETIME = "resultset.show.rightJustifyDateTime"; //$NON-NLS-1$
     public static final String RESULT_SET_AUTO_SWITCH_MODE = "resultset.behavior.autoSwitchMode"; //$NON-NLS-1$
     public static final String RESULT_SET_DOUBLE_CLICK = "resultset.behavior.doubleClick"; //$NON-NLS-1$
+    public static final String RESULT_SET_INLINE_ENTER = "resultset.behavior.inlineEnter";
     public static final String RESULT_SET_ROW_BATCH_SIZE = "resultset.show.row.batch.size"; //$NON-NLS-1$
     public static final String RESULT_SET_MAX_COLUMN_DEF_WIDTH = "resultset.max.column.def.width"; //$NON-NLS-1$
     
