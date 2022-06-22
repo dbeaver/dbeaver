@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.auth.AuthPropertyDescriptor;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsProfile;
 import org.jkiss.dbeaver.model.auth.SMAuthProvider;
-import org.jkiss.dbeaver.model.auth.SMAuthProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.security.SMAuthProviderDescriptor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -34,7 +34,7 @@ import java.util.*;
 /**
  * Auth service descriptor
  */
-public class AuthProviderDescriptor extends AbstractDescriptor implements SMAuthProviderDescriptor {
+public class AuthProviderDescriptor extends AbstractDescriptor {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.auth.provider"; //$NON-NLS-1$
 
@@ -153,4 +153,12 @@ public class AuthProviderDescriptor extends AbstractDescriptor implements SMAuth
         return getId();
     }
 
+    public SMAuthProviderDescriptor createDescriptorBean() {
+        SMAuthProviderDescriptor smInfo = new SMAuthProviderDescriptor();
+        smInfo.setId(this.getId());
+        smInfo.setLabel(this.getLabel());
+        smInfo.setDescription(this.getDescription());
+        smInfo.setCredentialProfiles(this.getCredentialProfiles());
+        return smInfo;
+    }
 }
