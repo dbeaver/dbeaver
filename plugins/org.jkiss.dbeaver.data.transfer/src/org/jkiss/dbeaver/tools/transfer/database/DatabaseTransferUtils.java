@@ -374,7 +374,7 @@ public class DatabaseTransferUtils {
 
     public static void executeDDL(DBCSession session, DBEPersistAction[] actions) throws DBCException {
         // Process actions
-        DBExecUtils.executeScript(session, actions);
+        DBExecUtils.executePersistActions(session, actions);
         // Commit DDL changes
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
         if (txnManager != null && txnManager.isSupportsTransactions() && !txnManager.isAutoCommit()) {

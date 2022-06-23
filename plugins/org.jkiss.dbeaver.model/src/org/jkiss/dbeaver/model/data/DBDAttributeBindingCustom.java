@@ -198,7 +198,7 @@ public class DBDAttributeBindingCustom extends DBDAttributeBinding {
 
     @Nullable
     @Override
-    public Object extractNestedValue(@NotNull Object ownerValue) throws DBCException {
+    public Object extractNestedValue(@NotNull Object ownerValue, int itemIndex) throws DBCException {
         throw new DBCException("Meta binding doesn't support nested values");
     }
 

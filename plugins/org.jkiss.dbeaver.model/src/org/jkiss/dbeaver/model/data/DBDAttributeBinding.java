@@ -145,7 +145,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     public abstract List<DBSEntityReferrer> getReferrers();
 
     @Nullable
-    public abstract Object extractNestedValue(@NotNull Object ownerValue)
+    public abstract Object extractNestedValue(@NotNull Object ownerValue, int itemIndex)
         throws DBCException;
 
     /**
@@ -243,6 +243,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
         return query.toString();
     }
+
 
     @Override
     public boolean isPersisted() {

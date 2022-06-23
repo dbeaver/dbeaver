@@ -658,4 +658,9 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     public boolean hasCaseSensitiveFiltration() {
         return true;
     }
+
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
+    }
 }

@@ -215,7 +215,7 @@ public class EpochTimeAttributeTransformerTest {
 
         @Nullable
         @Override
-        public Object extractNestedValue(@NotNull Object ownerValue) throws DBCException {
+        public Object extractNestedValue(@NotNull Object ownerValue, int itemIndex) throws DBCException {
             return null;
         }
 

@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.netezza.model;
 
+import java.sql.Connection;
+
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,19 +34,23 @@ import org.jkiss.utils.BeanUtils;
 public class NetezzaDataSource extends GenericDataSource {
 
     private static final Log log = Log.getLog(NetezzaDataSource.class);
+    private static final String COMMAND_SYSTEM_PROPERTY = "sun.java.command";
 
-    public NetezzaDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull GenericMetaModel metaModel) throws DBException {
+    public NetezzaDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container,
+                             @NotNull GenericMetaModel metaModel) throws DBException {
         super(monitor, container, metaModel, new NetezzaSQLDialect());
     }
 
     // Constructor for tests
     @ForTest
-    public NetezzaDataSource(@NotNull DBRProgressMonitor monitor, @NotNull GenericMetaModel metaModel, @NotNull DBPDataSourceContainer container) throws DBException {
+    public NetezzaDataSource(@NotNull DBRProgressMonitor monitor, @NotNull GenericMetaModel metaModel,
+                             @NotNull DBPDataSourceContainer container) throws DBException {
         super(monitor, metaModel, container, new NetezzaSQLDialect());
     }
 
     @Override
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
+                                          JDBCExecutionContext initFrom) throws DBException {
         super.initializeContextState(monitor, context, initFrom);
         final String name = getContainer().getActualConnectionConfiguration().getUserName();
         if (getSQLDialect().isQuotedIdentifier(name)) {
@@ -58,4 +66,18 @@ public class NetezzaDataSource extends GenericDataSource {
         }
     }
 
+    @Override
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context,
+                                        @NotNull String purpose) throws DBCException {
+        // Workaround for an issue where older Netezza JDBC drivers get a NullPointerException
+        // when system property "sun.java.command" is null.
+        // See https://github.com/baztian/jaydebeapi/issues/103
+        // and https://community.microstrategy.com/s/article/Failed-to-Connect-to-IPS-with-the-IBM-Netezza-7-2-1-JDBC-Driver-in-MicroStrategy-2019-and-2020?language=en_US
+
+        final String command = System.getProperty(COMMAND_SYSTEM_PROPERTY);
+        if (command == null) {
+            System.setProperty(COMMAND_SYSTEM_PROPERTY, "");
+        }
+        return super.openConnection(monitor, context, purpose);
+    }
 }

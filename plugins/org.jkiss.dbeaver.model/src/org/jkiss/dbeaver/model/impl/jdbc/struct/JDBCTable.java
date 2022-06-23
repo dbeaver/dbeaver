@@ -863,7 +863,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (tableAlias != null) {
                 query.append(tableAlias).append(dialect.getStructSeparator());
             }
-            query.append(dialect.getCastedAttributeName(attribute));
+            query.append(dialect.getCastedAttributeName(attribute, getAttributeName(attribute)));
         }
         if (DBUtils.isNullValue(value)) {
             query.append(" IS NULL"); //$NON-NLS-1$

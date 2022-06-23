@@ -47,6 +47,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * SQL Utils
@@ -463,9 +464,24 @@ public final class SQLUtils {
     {
         appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria, false);
     }
+    
+    public static void appendConditionString(
+        @NotNull DBDDataFilter filter,
+        @NotNull DBPDataSource dataSource,
+        @Nullable String conditionTable,
+        @NotNull StringBuilder query, 
+        boolean inlineCriteria, 
+        boolean subQuery
+    ) {
+        final List<DBDAttributeConstraint> constraints = filter.getConstraints().stream()
+            .filter(x -> x.getCriteria() != null || x.getOperator() != null)
+            .collect(Collectors.toList());
+        appendConditionString(filter, constraints, dataSource, conditionTable, query, inlineCriteria, false);
+    }
 
     public static void appendConditionString(
         @NotNull DBDDataFilter filter,
+        @NotNull List<DBDAttributeConstraint> constraints,
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
@@ -473,16 +489,13 @@ public final class SQLUtils {
         boolean subQuery)
     {
         final String operator = filter.isAnyConstraint() ? " OR " : " AND ";  //$NON-NLS-1$ $NON-NLS-2$
-        final DBDAttributeConstraint[] constraints = filter.getConstraints().stream()
-            .filter(x -> x.getCriteria() != null || x.getOperator() != null)
-            .toArray(DBDAttributeConstraint[]::new);
 
-        for (int index = 0; index < constraints.length; index++) {
-            final DBDAttributeConstraint constraint = constraints[index];
+        for (int index = 0; index < constraints.size(); index++) {
+            final DBDAttributeConstraint constraint = constraints.get(index);
             if (index > 0) {
                 query.append(operator);
             }
-            if (constraints.length > 1) {
+            if (constraints.size() > 1) {
                 // Add parenthesis for the sake of sanity
                 // Constraint may consist of several conditions and we don't want to break operator precedence
                 query.append('(');
@@ -521,13 +534,13 @@ public final class SQLUtils {
                 attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
             }
             query.append(attrName).append(' ').append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
-            if (constraints.length > 1) {
+            if (constraints.size() > 1) {
                 query.append(')');
             }
         }
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
-            if (constraints.length > 0) {
+            if (constraints.size() > 0) {
                 query.append(operator).append('(').append(filter.getWhere()).append(')');
             } else {
                 query.append(filter.getWhere());

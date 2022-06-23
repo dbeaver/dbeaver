@@ -381,6 +381,11 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private String generateTableName(File file) {
         StringBuilder name = new StringBuilder();
         String fileName = file.getName();
+        // Cut off extension
+        int divPos = fileName.lastIndexOf(".");
+        if (divPos != -1) {
+            fileName = fileName.substring(0, divPos);
+        }
         boolean lastCharSpecial = false;
         char lastChar = (char)0;
         for (int i = 0; i < fileName.length(); i++) {
