@@ -138,6 +138,8 @@ public class PostgreMessages extends NLS {
     public static String dialog_setting_connection_database_statistics_tip;
     public static String dialog_setting_connection_read_all_data_types;
     public static String dialog_setting_connection_read_all_data_types_tip;
+    public static String dialog_setting_connection_read_keys_with_columns;
+    public static String dialog_setting_connection_read_keys_with_columns_tip;
     public static String dialog_setting_group_sql;
     public static String dialog_setting_sql_dd_plain_label;
     public static String dialog_setting_sql_dd_plain_tip;
