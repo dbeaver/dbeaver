@@ -65,6 +65,8 @@ public interface PostgreServerExtension {
 
     boolean supportsSequences();
 
+    PostgreSequence createSequence(@NotNull PostgreSchema schema);
+
     boolean supportsRoles();
 
     boolean supportsSessionActivity();

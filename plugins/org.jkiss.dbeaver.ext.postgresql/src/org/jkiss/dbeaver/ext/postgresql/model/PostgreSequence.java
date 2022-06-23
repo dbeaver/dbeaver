@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
-import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
-import org.jkiss.dbeaver.model.meta.LazyProperty;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.meta.PropertyGroup;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -112,7 +109,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
             this.incrementBy = incrementBy;
         }
 
-        @Property(viewable = true, editable = true, updatable = true, order = 24)
+        @Property(viewable = true, editable = true, updatable = true, order = 24, visibleIf = CacheAndCycleValidator.class)
         public long getCacheValue() {
             return cacheValue;
         }
@@ -121,7 +118,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
             this.cacheValue = cacheValue;
         }
 
-        @Property(viewable = true, editable = true, updatable = true, order = 25)
+        @Property(viewable = true, editable = true, updatable = true, order = 25, visibleIf = CacheAndCycleValidator.class)
         public boolean isCycled() {
             return isCycled;
         }
@@ -129,7 +126,12 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         public void setCycled(boolean cycled) {
             isCycled = cycled;
         }
+
+        public void setLoaded(boolean loaded) {
+            this.loaded = loaded;
+        }
     }
+
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<PostgreSequence> {
         @Override
         public boolean isPropertyCached(PostgreSequence object, Object propertyId)
@@ -160,7 +162,11 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         }
     }
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) {
+    protected AdditionalInfo getAdditionalInfo() {
+        return additionalInfo;
+    }
+
+    public void loadAdditionalInfo(DBRProgressMonitor monitor) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load sequence additional info")) {
             if (getDataSource().isServerVersionAtLeast(10, 0)) {
                 try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
@@ -224,6 +230,10 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     @Override
     public String getTableTypeName() {
         return "SEQUENCE";
+    }
+
+    public boolean supportsCacheAndCycle() {
+        return true;
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -318,6 +328,13 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     @Override
     public DBSObjectType getObjectType() {
         return RelationalObjectType.TYPE_SEQUENCE;
+    }
+
+    public static class CacheAndCycleValidator implements IPropertyValueValidator<PostgreSequence, Object> {
+        @Override
+        public boolean isValidValue(PostgreSequence object, Object value) throws IllegalArgumentException {
+            return object.supportsCacheAndCycle();
+        }
     }
 
 }
