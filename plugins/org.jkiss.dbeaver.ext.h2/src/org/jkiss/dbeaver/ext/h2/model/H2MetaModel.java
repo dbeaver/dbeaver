@@ -211,8 +211,12 @@ public class H2MetaModel extends GenericMetaModel
     }
 
     @Override
-    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
-        return session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SEQUENCES");
+    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container)
+        throws SQLException {
+        JDBCPreparedStatement statement = session.prepareStatement(
+            "SELECT * FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_SCHEMA=?");
+        statement.setString(1, container.getSchema().getName());
+        return statement;
     }
 
     @Override
