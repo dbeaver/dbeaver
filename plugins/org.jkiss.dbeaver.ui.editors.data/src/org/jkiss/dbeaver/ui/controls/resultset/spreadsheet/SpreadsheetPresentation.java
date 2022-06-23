@@ -2122,7 +2122,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     if (cellValue instanceof Number) {
                         cellValue = ((Number) cellValue).byteValue() != 0;
                     }
-                    if (DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) {
+                    if ((DBUtils.isNullValue(cellValue) || cellValue instanceof Boolean) &&
+                        booleanStyles.getMode() != BooleanMode.ICON)
+                    {
                         info.font = spreadsheet.getFont(booleanStyles.getStyle((Boolean) cellValue).getFontStyle());
                     }
                 }
