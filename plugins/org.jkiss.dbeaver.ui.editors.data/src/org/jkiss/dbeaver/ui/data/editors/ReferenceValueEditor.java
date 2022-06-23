@@ -169,12 +169,15 @@ public class ReferenceValueEditor {
         //gd.grabExcessVerticalSpace = true;
         //gd.grabExcessHorizontalSpace = true;
         editorSelector.setLayoutData(gd);
-
+        TableColumn valueColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_value);
+        valueColumn.setData(Boolean.TRUE);
 
         TableColumn descColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_description);
         descColumn.setData(Boolean.FALSE);
 
+
         SortListener sortListener = new SortListener();
+        valueColumn.addListener(SWT.Selection, sortListener);
         descColumn.addListener(SWT.Selection, sortListener);
 
         editorSelector.addSelectionListener(new SelectionAdapter() {
