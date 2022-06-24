@@ -44,6 +44,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
@@ -89,6 +90,7 @@ import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
@@ -153,9 +155,9 @@ public class SQLEditor extends SQLEditorBase implements
     private static final Image IMG_OUTPUT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT);
     private static final Image IMG_OUTPUT_ALERT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT_ALERT);
 
-//    private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side";
+    private static final String SIDE_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side";
 //    private static final String TOOLBAR_GROUP_TOP = "top";
-//    private static final String TOOLBAR_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
+    private static final String TOOLBAR_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
 //    private static final String TOOLBAR_GROUP_PANELS = "panelToggles";
 
 
@@ -939,7 +941,6 @@ public class SQLEditor extends SQLEditorBase implements
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT, false);
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW, false);
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT, false);
-        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT_NEW, false);
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXPLAIN_PLAN, false);
 
         UIUtils.createEmptyLabel(sideToolBar, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
@@ -967,18 +968,23 @@ public class SQLEditor extends SQLEditorBase implements
             SQLEditorCommands.CMD_SQL_SHOW_VARIABLES,
             false);
 
-/*
-        sideToolBar.add(new GroupMarker(TOOLBAR_GROUP_PANELS));
+        // TODO: move Console View to the top and add localization
+        // TODO: move vertical buttons to the toolbar
+        IWorkbenchPartSite site = this.getSite();
+        ToolBarManager sideToolBarManager = new ToolBarManager(SWT.FLAT | SWT.VERTICAL| SWT.LEFT);
+        
+        sideToolBarManager.add(new GroupMarker(TOOLBAR_GROUP_ADDITIONS));
         final IMenuService menuService = getSite().getService(IMenuService.class);
         if (menuService != null) {
-            int prevSize = sideToolBar.getSize();
-            menuService.populateContributionManager(sideToolBar, TOOLBAR_CONTRIBUTION_ID);
-            if (prevSize != sideToolBar.getSize()) {
-                // Something was populated
-                sideToolBar.insertBefore(TOOLBAR_GROUP_ADDITIONS, new ToolbarSeparatorContribution(false));
-            }
+            int prevSize = sideToolBarManager.getSize();
+            menuService.populateContributionManager(sideToolBarManager, SIDE_TOOLBAR_CONTRIBUTION_ID);
+//            if (prevSize != sideToolBarManager.getSize()) {
+//                sideToolBarManager.insertBefore(TOOLBAR_GROUP_ADDITIONS, new ToolbarSeparatorContribution(false));
+//            }
         }
-*/
+
+        ToolBar editorToolBar = sideToolBarManager.createControl(sideToolBar);
+        CSSUtils.setCSSClass(editorToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         sideToolBar.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.VERTICAL_ALIGN_BEGINNING));
         CSSUtils.setCSSClass(sideToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
@@ -1288,10 +1294,12 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         });
 
-                        manager.add(new Separator());
-                        AssignVariableAction action = new AssignVariableAction(SQLEditor.this, container.getQuery().getText());
-                        action.setEditable(false);
-                        manager.add(action);
+                        if (container.getQuery() != null) {
+                            manager.add(new Separator());
+                            AssignVariableAction action = new AssignVariableAction(SQLEditor.this, container.getQuery().getText());
+                            action.setEditable(false);
+                            manager.add(action);
+                        }
                     }
                 }
                 manager.add(new Separator());
@@ -1399,6 +1407,10 @@ public class SQLEditor extends SQLEditorBase implements
         if (getFolderForExtraPanels() != sqlExtraPanelFolder) {
             sqlExtraPanelSash.setMaximizedControl(sqlExtraPanelSash.getChildren()[0]);
         }
+    }
+    
+    public CTabFolder getResultTabsContainer() {
+        return resultTabs;
     }
 
     private CTabFolder getFolderForExtraPanels() {
@@ -3057,7 +3069,7 @@ public class SQLEditor extends SQLEditorBase implements
         int getRunningJobs() {
             return curJobRunning.get();
         }
-
+        
         private QueryResultsContainer createResultsProvider(int resultSetNumber, boolean makeDefault) {
             QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultSetNumber, getMaxResultsTabIndex() + 1, makeDefault);
             resultContainers.add(resultsProvider);
@@ -3322,8 +3334,7 @@ public class SQLEditor extends SQLEditorBase implements
         private CTabItem resultsTab;
         private String tabName;
 
-        private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, int resultSetIndex, boolean makeDefault)
-        {
+        private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, int resultSetIndex, boolean makeDefault) {
             this.queryProcessor = queryProcessor;
             this.resultSetNumber = resultSetNumber;
             this.resultSetIndex = resultSetIndex;
@@ -3344,9 +3355,9 @@ public class SQLEditor extends SQLEditorBase implements
                 this.viewer = sqlView.getViewer();
             } else {
                 // Embedded results viewer
-                this.viewer = new ResultSetViewer(resultTabs, getSite(), this);
+                this.viewer = new ResultSetViewer(resultTabs, getSite(), this, rs -> notifyOnDataListeners(this)); // TODO , consoleView);
                 this.viewer.addListener(this);
-
+                
                 int tabCount = resultTabs.getItemCount();
                 int tabIndex = 0;
                 if (!makeDefault) {
@@ -4360,5 +4371,22 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
     }
+    
+    private void notifyOnDataListeners(QueryResultsContainer container) {
+        DBCExecutionContext context = container.getExecutionContext();
+        DBPPreferenceStore contextPrefStore = context != null 
+                ? context.getDataSource().getContainer().getPreferenceStore()
+                : DBWorkbench.getPlatform().getPreferenceStore();
 
+        // Notify listeners
+        synchronized (listeners) {
+            for (SQLEditorListener listener : listeners) {
+                try {
+                    listener.onDataReceived(contextPrefStore, container.getResultSetController().getModel(), container.getName());
+                } catch (Throwable ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
 }

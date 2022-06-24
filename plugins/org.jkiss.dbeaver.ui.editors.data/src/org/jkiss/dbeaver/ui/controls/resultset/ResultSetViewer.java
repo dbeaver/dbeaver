@@ -111,6 +111,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -226,16 +227,23 @@ public class ResultSetViewer extends Viewer
 
     private volatile boolean nextSegmentReadingBlocked;
 
-    public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
-    {
+    public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container) {
+        this(parent, site, container, null);
+    }
+    
+    public ResultSetViewer(
+        @NotNull Composite parent,
+        @NotNull IWorkbenchPartSite site,
+        @NotNull IResultSetContainer container,
+        @Nullable Consumer<ResultSetViewer> onDataConsumer
+    ) {
         super();
-
         this.site = site;
         this.recordMode = false;
         this.container = container;
         this.labelProviderDefault = new ResultSetLabelProviderDefault(this);
         this.decorator = container.createResultSetDecorator();
-        this.dataReceiver = new ResultSetDataReceiver(this);
+        this.dataReceiver = new ResultSetDataReceiver(this, onDataConsumer);
         this.dataPropertyListener = event -> {
             DBPDataSourceContainer dataSourceContainer = null;
             if (event.getSource() instanceof IDataSourceContainerProvider) {
@@ -275,7 +283,7 @@ public class ResultSetViewer extends Viewer
             this.presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
             CSSUtils.setCSSClass(this.presentationSwitchFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
         } else {
-            this. presentationSwitchFolder = null;
+            this.presentationSwitchFolder = null;
         }
 
         this.viewerPanel = UIUtils.createPlaceholder(mainPanel, 1);
