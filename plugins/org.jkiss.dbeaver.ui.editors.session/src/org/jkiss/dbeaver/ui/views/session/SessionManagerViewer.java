@@ -576,15 +576,17 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
         private final class SessionLoadVisualizer extends ObjectsLoadVisualizer {
             @Override
-            public void completeLoading(@NotNull Collection<SESSION_TYPE> items) {
+            public void completeLoading(Collection<SESSION_TYPE> items) {
                 Collection<DBAServerSession> previouslySelectedSessions = getSelectedSessions();
                 super.completeLoading(items);
-                Object[] sessionsToSelect = previouslySelectedSessions.stream().filter(items::contains).toArray();
-                sessionTable.getItemsViewer().setSelection(new StructuredSelection(sessionsToSelect));
-                if (items.contains(curSession)) {
-                    onSessionSelect(curSession);
-                } else {
-                    onSessionSelect(null);
+                if (items != null) {
+                    Object[] sessionsToSelect = previouslySelectedSessions.stream().filter(items::contains).toArray();
+                    sessionTable.getItemsViewer().setSelection(new StructuredSelection(sessionsToSelect));
+                    if (items.contains(curSession)) {
+                        onSessionSelect(curSession);
+                    } else {
+                        onSessionSelect(null);
+                    }
                 }
             }
 
