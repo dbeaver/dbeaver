@@ -103,4 +103,11 @@ public interface SMController extends SMAuthCredentialsManager {
         @Nullable String grantorId) throws DBException;
 
     SMAuthPermissions getTokenPermissions(String token) throws DBException;
+
+    ///////////////////////////////////////////
+    // Auth providers
+
+    SMAuthProviderDescriptor[] getAvailableAuthProviders() throws DBException;
+
+
 }

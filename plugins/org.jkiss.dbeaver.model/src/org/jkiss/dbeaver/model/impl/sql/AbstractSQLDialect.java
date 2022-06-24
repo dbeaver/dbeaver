@@ -361,14 +361,21 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return DBPIdentifierCase.MIXED;
     }
 
+    /**
+     * Appends cast clause to attribute name.
+     * @attributeName is preformatted name of attribute
+     */
     @Override
-    public String getCastedAttributeName(@NotNull DBSAttributeBase attribute) {
-        if (attribute instanceof DBSObject) {
-            return DBUtils.isPseudoAttribute(attribute) ?
-                attribute.getName() :
-                DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+    public String getCastedAttributeName(@NotNull DBSAttributeBase attribute, String attributeName) {
+        if (attribute instanceof DBSObject && !DBUtils.isPseudoAttribute(attribute)) {
+            if (!CommonUtils.equalObjects(attributeName, attribute.getName())) {
+                // Must use explicit attribute name
+                attributeName = DBUtils.getQuotedIdentifier(((DBSObject) attribute).getDataSource(), attributeName);
+            } else {
+                attributeName = DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+            }
         }
-        return attribute.getName();
+        return attributeName;
     }
 
     @NotNull

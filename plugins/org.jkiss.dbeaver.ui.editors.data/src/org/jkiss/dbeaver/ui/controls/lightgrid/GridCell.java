@@ -24,10 +24,10 @@ import org.jkiss.utils.CommonUtils;
  */
 public class GridCell
 {
-    public Object col;
-    public Object row;
+    public IGridColumn col;
+    public IGridRow row;
 
-    public GridCell(Object col, Object row)
+    public GridCell(IGridColumn col, IGridRow row)
     {
         this.col = col;
         this.row = row;

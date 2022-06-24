@@ -157,8 +157,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             ConnectionPageSettings settings = wizard.getPageSettings();
 
             if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
-                connectionNameText.setText(generateConnectionName(settings, ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN)));
-                connectionNameChanged = true;
+                connectionNameText.setText(dataSourceDescriptor.getName());
             } else {
                 if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
                     String newName = generateConnectionName(settings, ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
@@ -291,8 +290,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
             connectionNameText = UIUtils.createLabelText(miscGroup, CoreMessages.dialog_connection_wizard_final_label_connection_name, CommonUtils.toString(connectionName));
             connectionNameText.addModifyListener(e -> {
-                connectionNameChanged = true;
-                ConnectionPageGeneral.this.getContainer().updateButtons();
+                if (dataSourceDescriptor == null || !connectionNameText.getText().equals(connectionName)) {
+                    connectionNameChanged = true;
+                    getContainer().updateButtons();
+                }
             });
             ContentAssistUtils.installContentProposal(
                 connectionNameText,
@@ -562,8 +563,17 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             return;
         }
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
+        final String name;
 
-        String name = connectionNameChanged ? generateConnectionName(getWizard().getPageSettings(), connectionNameText.getText()) : generateConnectionName(getWizard().getPageSettings(), ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+        if (connectionNameChanged) {
+            name = generateConnectionName(getWizard().getPageSettings(), connectionNameText.getText());
+        } else if (dataSourceDescriptor != null) {
+            name = dataSourceDescriptor.getName();
+        } else {
+            name = generateConnectionName(getWizard().getPageSettings(),
+                ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+        }
+
         dataSource.setName(name);
         if (folderSelector.isEmpty()) {
             dataSource.setFolder(curDataSourceFolder);

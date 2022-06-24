@@ -14,32 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.auth;
+
+package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPImage;
-
-import java.util.List;
-import java.util.Set;
+import org.jkiss.code.Nullable;
 
 /**
- * Auth provider descriptor
+ * Namespace source contains several namespaces for different object types.
  */
-public interface SMAuthProviderDescriptor {
+public interface DBSNamespaceContainer {
 
-    String getId();
-
-    String getLabel();
-
-    String getDescription();
-
-    DBPImage getIcon();
-
-    List<SMAuthCredentialsProfile> getCredentialProfiles();
-
-    List<AuthPropertyDescriptor> getCredentialParameters(Set<String> keySet);
+    @Nullable
+    DBSNamespace getNamespaceForObjectType(
+        @NotNull DBSObjectType objectType);
 
     @NotNull
-    SMAuthProvider<?> getInstance();
+    DBSNamespace[] getAllNamespaces();
 
 }

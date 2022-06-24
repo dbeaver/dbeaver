@@ -515,6 +515,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return this;
     }
 
+    @Nullable
+    @Override
+    public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
+        DBSDataType dataType = super.resolveDataType(monitor, typeFullName);
+        if (dataType != null) {
+            return dataType;
+        }
+        return PostgreUtils.resolveTypeFullName(monitor, this, typeFullName);
+    }
+    
     @Override
     public Collection<PostgreDataType> getLocalDataTypes()
     {
@@ -796,5 +806,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public boolean supportReadingAllDataTypes() {
         return CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
+    }
+
+    public boolean supportsReadingKeysWithColumns() {
+        return CommonUtils.toBoolean(
+            getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
     }
 }

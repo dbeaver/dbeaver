@@ -33,6 +33,7 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -154,6 +155,12 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         // do nothing
     }
 
+    @Nullable
+    @Override
+    public int[] getCurrentRowIndexes() {
+        return null;
+    }
+
     @Override
     public Point getCursorLocation() {
         return null;
@@ -176,7 +183,8 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         menuMgr.addMenuListener(manager -> controller.fillContextMenu(
             manager,
             getCurrentAttribute(),
-            controller.getCurrentRow()));
+            controller.getCurrentRow(),
+            null));
         menuMgr.setRemoveAllWhenShown(true);
         getControl().setMenu(menu);
         controller.getSite().registerContextMenu(menuMgr, null);

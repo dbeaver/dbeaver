@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.i.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -40,5 +41,16 @@ public class DB2ISQLDialect extends GenericSQLDialect {
     @Override
     public boolean supportsAliasInSelect() {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
+        return MultiValueInsertMode.GROUP_ROWS;
+    }
+
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
     }
 }

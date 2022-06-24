@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
@@ -595,10 +596,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 }
                 case VARIABLE_TABLE: {
                     if (settings.isUseSingleFile()) {
-                        return "export";
+                        return DTConstants.DEFAULT_TABLE_NAME_EXPORT;
                     }
                     if (dataContainer == null) {
                         return null;
+                    }
+                    if (dataContainer instanceof SQLQueryContainer) {
+                        return DTUtils.getTableNameFromQueryContainer(dataContainer.getDataSource(), (SQLQueryContainer) dataContainer);
                     }
                     String tableName = DTUtils.getTableName(dataContainer.getDataSource(), dataContainer, true);
                     return stripObjectName(tableName);

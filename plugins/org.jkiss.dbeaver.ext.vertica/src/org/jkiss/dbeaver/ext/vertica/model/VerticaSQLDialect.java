@@ -112,4 +112,10 @@ public class VerticaSQLDialect extends GenericSQLDialect {
     public boolean supportsInsertAllDefaultValuesStatement() {
         return true;
     }
+
+    @NotNull
+    @Override
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
+        return MultiValueInsertMode.GROUP_ROWS;
+    }
 }

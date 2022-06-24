@@ -16,55 +16,78 @@
  */
 package org.jkiss.dbeaver.parser.common.grammar;
 
+import org.jkiss.code.NotNull;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ExpressionFactory {
+    private ExpressionFactory() {
+        // prevents instantiation
+    }
 
-    private static RuleExpression makeExpression(Object expr) {
+    @NotNull
+    public static SequenceExpression seq(@NotNull Object... exprs) {
+        return new SequenceExpression(makeCollection(exprs));
+    }
+
+    @NotNull
+    public static RuleExpression call(@NotNull String ruleName) {
+        return new RuleCallExpression(ruleName);
+    }
+
+    @NotNull
+    public static RuleExpression alt(@NotNull Object... exprs) {
+        return new AlternativeExpression(makeCollection(exprs));
+    }
+
+    @NotNull
+    public static RuleExpression num(int min, int max, @NotNull Object... exprs) {
+        return new NumberExpression(seq(exprs), min, max);
+    }
+
+    @NotNull
+    public static RuleExpression optional(@NotNull Object... exprs) {
+        return num(0, 1, exprs);
+    }
+
+    @NotNull
+    public static RuleExpression any(@NotNull Object... exprs) {
+        return num(0, Integer.MAX_VALUE, exprs);
+    }
+
+    @NotNull
+    public static RuleExpression oneOrMore(@NotNull Object... exprs) {
+        return num(1, Integer.MAX_VALUE, exprs);
+    }
+
+    @NotNull
+    public static RegexExpression regex(@NotNull String regex) {
+        return new RegexExpression(regex);
+    }
+
+    private static RuleExpression makeExpression(@NotNull Object expr) {
         if (expr instanceof String) {
             return new CharactersExpression((String) expr);
         } else if (expr instanceof RuleExpression) {
             return (RuleExpression) expr;
         } else {
-            throw new UnsupportedOperationException();
+            throw new IllegalArgumentException("Unsupported expression: " + expr);
         }
     }
 
-    private static List<RuleExpression> makeCollection(Object... exprs) {
-        return Arrays.stream(exprs).filter(e -> e != null).map(e -> makeExpression(e)).collect(Collectors.toList());
+    @NotNull
+    private static List<RuleExpression> makeCollection(@NotNull Object... exprs) {
+        return Arrays.stream(exprs).map(ExpressionFactory::makeExpression).collect(Collectors.toList());
     }
 
-    public static SequenceExpression seq(Object... exprs) {
-        return new SequenceExpression(makeCollection(exprs));
-    }
-
-    public static RuleExpression call(String ruleName) {
-        return new RuleCallExpression(ruleName);
-    }
-
-    public static RuleExpression optional(Object... exprs) {
-        return new NumberExpression(seq(exprs), 0, 1);
-    }
-
-    public static RuleExpression alt(Object... exprs) {
-        return new AlternativeExpression(makeCollection(exprs));
-    }
-
-    public static RuleExpression num(int min, int max, Object... exprs) {
-        return new NumberExpression(seq(exprs), min, max);
-    }
-
-    public static RuleExpression any(Object... exprs) {
-        return new NumberExpression(seq(exprs), 0, Integer.MAX_VALUE);
-    }
-
-    public static RuleExpression oneOrMore(Object... exprs) {
-        return new NumberExpression(seq(exprs), 1, Integer.MAX_VALUE);
-    }
-
-    public static RegexExpression regex(String regex) {
-        return new RegexExpression(regex);
+    /**
+     * A helper class to avoid declaring static imports from the factory
+     */
+    public static class E extends ExpressionFactory {
+        private E() {
+            // prevents instantiation
+        }
     }
 }
