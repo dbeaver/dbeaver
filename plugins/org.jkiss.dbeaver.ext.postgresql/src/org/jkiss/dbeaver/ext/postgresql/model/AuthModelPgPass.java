@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -69,7 +70,10 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
     private void loadPasswordFromPgPass(AuthModelPgPassCredentials credentials, DBPDataSourceContainer dataSource, DBPConnectionConfiguration configuration) throws DBException {
         // Take database name from original config. Because it may change when user switch between databases.
         DBPConnectionConfiguration originalConfiguration = dataSource.getConnectionConfiguration();
-        String conHostName = configuration.getHostName();
+        String conHostName = originalConfiguration.getProviderProperty(PostgreConstants.PG_PASS_HOSTNAME);
+        if (CommonUtils.isEmpty(conHostName)) {
+            conHostName = configuration.getHostName();
+        }
         String conHostPort = originalConfiguration.getHostPort();
         String conDatabaseName = originalConfiguration.getDatabaseName();
         String conUserName = originalConfiguration.getUserName();
