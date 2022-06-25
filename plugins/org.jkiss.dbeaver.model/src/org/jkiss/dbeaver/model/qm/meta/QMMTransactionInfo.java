@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 
 import java.util.LinkedHashMap;
@@ -30,7 +31,7 @@ public class QMMTransactionInfo extends QMMObject {
     private final QMMConnectionInfo connection;
     private final QMMTransactionInfo previous;
     private boolean committed;
-    private QMMTransactionSavepointInfo savepointStack;
+    private final QMMTransactionSavepointInfo savepointStack;
 
     QMMTransactionInfo(QMMConnectionInfo connection, QMMTransactionInfo previous) {
         this.connection = connection;
@@ -84,7 +85,8 @@ public class QMMTransactionInfo extends QMMObject {
     }
 
     public static QMMTransactionInfo fromMap(Map<String, Object> objectMap) {
-        QMMConnectionInfo connectionInfo = QMMConnectionInfo.fromMap((Map<String, Object>) objectMap.get("connection"));
+        QMMConnectionInfo connectionInfo = QMMConnectionInfo.fromMap(
+            JSONUtils.getObject(objectMap, "connection"));
         return builder().setConnection(connectionInfo).build();
     }
 
@@ -120,6 +122,11 @@ public class QMMTransactionInfo extends QMMObject {
     @Override
     public String getText() {
         return connection.getText();
+    }
+
+    @Override
+    public ObjectType getObjectType() {
+        return ObjectType.TransactionInfo;
     }
 
     public static final class Builder {

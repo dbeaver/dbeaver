@@ -17,8 +17,8 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.qm.meta.*;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -56,7 +56,7 @@ public class QMMetaEvent implements QMEvent {
 
     public Map<String, Object> toMap() {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("objectClassName", object.getClass().getName());
+        result.put("type", object.getObjectType().getId());
         result.put("object", object.toMap());
         result.put("action", action.getId());
         result.put("sessionId", sessionId);
@@ -64,22 +64,30 @@ public class QMMetaEvent implements QMEvent {
     }
 
     public static QMMetaEvent fromMap(Map<String, Object> map) {
-        String className = (String) map.get("objectClassName");
-        Map<String, Object> object = (Map<String, Object>) map.get("object");
-        QMMObject eventObject;
-        if (className.equals(QMMConnectionInfo.class.getName())) {
-            eventObject = QMMConnectionInfo.fromMap(object);
-        } else if (className.equals(QMMStatementExecuteInfo.class.getName())) {
-            eventObject = QMMStatementExecuteInfo.fromMap(object);
-        } else if (className.equals(QMMStatementInfo.class.getName())) {
-            eventObject = QMMStatementInfo.fromMap(object);
-        } else if (className.equals(QMMTransactionInfo.class.getName())) {
-            eventObject = QMMTransactionInfo.fromMap(object);
-        } else {
-            eventObject = null;
+        QMMObject.ObjectType objectType = QMMObject.ObjectType.getById(JSONUtils.getString(map, "type"));
+        if (objectType == null) {
+            return null;
         }
-        QMEventAction action = QMEventAction.getById(CommonUtils.toInt(map.get("action")));
-        String sessionId = CommonUtils.toString(map.get("sessionId"));
+        Map<String, Object> object = JSONUtils.getObject(map, "object");
+        QMMObject eventObject;
+        switch (objectType) {
+            case ConnectionInfo:
+                eventObject = QMMConnectionInfo.fromMap(object);
+                break;
+            case StatementExecuteInfo:
+                eventObject = QMMStatementExecuteInfo.fromMap(object);
+                break;
+            case StatementInfo:
+                eventObject = QMMStatementInfo.fromMap(object);
+                break;
+            case TransactionInfo:
+                eventObject = QMMTransactionInfo.fromMap(object);
+                break;
+            default:
+                return null;
+        }
+        QMEventAction action = QMEventAction.getById(JSONUtils.getInteger(map, "action"));
+        String sessionId = JSONUtils.getString(map, "sessionId");
         return new QMMetaEvent(eventObject, action, sessionId);
     }
 

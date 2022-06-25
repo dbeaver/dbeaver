@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.utils.CommonUtils;
@@ -67,6 +68,11 @@ public class QMMStatementInfo extends QMMObject {
         return connection.getText();
     }
 
+    @Override
+    public ObjectType getObjectType() {
+        return ObjectType.StatementInfo;
+    }
+
     DBCStatement getReference() {
         return reference;
     }
@@ -84,7 +90,7 @@ public class QMMStatementInfo extends QMMObject {
     }
 
     public static QMMStatementInfo fromMap(Map<String, Object> objectMap) {
-        QMMConnectionInfo connectionInfo = QMMConnectionInfo.fromMap((Map<String, Object>) objectMap.get("connection"));
+        QMMConnectionInfo connectionInfo = QMMConnectionInfo.fromMap(JSONUtils.getObject(objectMap, "connection"));
         DBCExecutionPurpose purpose = DBCExecutionPurpose.getById(CommonUtils.toInt(objectMap.get("purposeId")));
         return builder()
             .setConnection(connectionInfo)

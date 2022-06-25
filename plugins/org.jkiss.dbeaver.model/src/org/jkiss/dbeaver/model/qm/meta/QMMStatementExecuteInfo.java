@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.CommonUtils;
@@ -30,9 +31,9 @@ import java.util.Map;
 */
 public class QMMStatementExecuteInfo extends QMMObject {
 
-    private QMMStatementInfo statement;
+    private final QMMStatementInfo statement;
     private QMMTransactionSavepointInfo savepoint;
-    private String queryString;
+    private final String queryString;
 
     private long fetchRowCount;
     private long updateRowCount = -1;
@@ -197,6 +198,11 @@ public class QMMStatementExecuteInfo extends QMMObject {
     }
 
     @Override
+    public ObjectType getObjectType() {
+        return ObjectType.StatementExecuteInfo;
+    }
+
+    @Override
     public long getDuration() {
         if (!isClosed()) {
             return -1;
@@ -229,7 +235,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
 
     public static QMMStatementExecuteInfo fromMap(Map<String, Object> objectMap) {
         String query = CommonUtils.toString(objectMap.get("query"));
-        QMMStatementInfo statement = QMMStatementInfo.fromMap((Map<String, Object>) objectMap.get("statement"));
+        QMMStatementInfo statement = QMMStatementInfo.fromMap(JSONUtils.getObject(objectMap, "statement"));
         long updateRowCount = CommonUtils.toLong(objectMap.get("updateRowCount"));
         long fetchRowCount = CommonUtils.toLong(objectMap.get("fetchRowCount"));
         int errorCode = CommonUtils.toInt(objectMap.get("errorCode"));

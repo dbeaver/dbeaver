@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.qm.meta;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.CommonUtils;
@@ -92,7 +93,17 @@ public class QMMConnectionInfo extends QMMObject {
         }
     }
 
-    public QMMConnectionInfo(long openTime, long closeTime, String containerId, String containerName, String driverId, DBPConnectionConfiguration connectionConfiguration, String instanceID, String contextName, boolean transactional) {
+    public QMMConnectionInfo(
+        long openTime,
+        long closeTime,
+        String containerId,
+        String containerName,
+        String driverId,
+        DBPConnectionConfiguration connectionConfiguration,
+        String instanceID,
+        String contextName,
+        boolean transactional)
+    {
         super(openTime, closeTime);
         this.project = null;
         this.containerId = containerId;
@@ -132,6 +143,11 @@ public class QMMConnectionInfo extends QMMObject {
     }
 
     @Override
+    public ObjectType getObjectType() {
+        return ObjectType.ConnectionInfo;
+    }
+
+    @Override
     public QMMConnectionInfo getConnection() {
         return this;
     }
@@ -144,8 +160,10 @@ public class QMMConnectionInfo extends QMMObject {
         serializedConnectionInfo.put("driverId", getDriverId());
         serializedConnectionInfo.put("instanceId", getInstanceId());
         serializedConnectionInfo.put("contextName", getContextName());
-        serializedConnectionInfo.put("connectionUserName", getConnectionConfiguration().getUserName());
-        serializedConnectionInfo.put("connectionURL", getConnectionConfiguration().getUrl());
+        if (connectionConfiguration != null) {
+            serializedConnectionInfo.put("connectionUserName", connectionConfiguration.getUserName());
+            serializedConnectionInfo.put("connectionURL", connectionConfiguration.getUrl());
+        }
         Map<String, Object> project = new LinkedHashMap<>();
         if (getProject() != null) {
             project.put("id", getProject().getProjectID());
@@ -175,7 +193,7 @@ public class QMMConnectionInfo extends QMMObject {
         configuration.setUserName(connectionUserName);
         configuration.setUrl(connectionURL);
         //Project information
-        Map<String, Object> project = (Map<String, Object>) objectMap.get("project");
+        Map<String, Object> project = JSONUtils.getObject(objectMap, "project");
         UUID projectId = project.get("id") == null ? null : UUID.fromString(CommonUtils.toString(project.get("id")));
         String projectName = CommonUtils.toString(project.get("name"));
         String projectPath = CommonUtils.toString(project.get("path"));
@@ -345,6 +363,7 @@ public class QMMConnectionInfo extends QMMObject {
         return driverId;
     }
 
+    @Nullable
     public DBPConnectionConfiguration getConnectionConfiguration() {
         return connectionConfiguration;
     }

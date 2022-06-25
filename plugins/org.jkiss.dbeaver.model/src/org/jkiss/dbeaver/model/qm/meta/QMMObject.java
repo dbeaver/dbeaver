@@ -28,6 +28,33 @@ public abstract class QMMObject {
 
     static final Log log = Log.getLog(QMMObject.class);
 
+    public enum ObjectType {
+        ConnectionInfo("c"),
+        StatementExecuteInfo("x"),
+        StatementInfo("s"),
+        TransactionInfo("t"),
+        TransactionSavepointInfo("ts");
+
+        private final String id;
+
+        ObjectType(String id) {
+            this.id = id;
+        }
+
+        public static ObjectType getById(String id) {
+            for (ObjectType ot : values()) {
+                if (ot.id.equals(id)) {
+                    return ot;
+                }
+            }
+            return null;
+        }
+
+        public String getId() {
+            return id;
+        }
+    }
+
     private static int globalObjectId = 0;
 
     private final long objectId;
@@ -38,8 +65,7 @@ public abstract class QMMObject {
     private boolean synced;
     private boolean updated;
 
-    public QMMObject()
-    {
+    public QMMObject() {
         this.objectId = generateObjectId();
         this.openTime = getTimeStamp();
     }
@@ -50,57 +76,50 @@ public abstract class QMMObject {
         this.closeTime = closeTime;
     }
 
-    protected void close()
-    {
+    protected void close() {
         this.closeTime = getTimeStamp();
         this.update();
     }
 
-    protected void reopen()
-    {
+    protected void reopen() {
         this.closeTime = 0;
         this.update();
     }
 
-    public long getObjectId()
-    {
+    public long getObjectId() {
         return objectId;
     }
 
-    public boolean isSynced()
-    {
+    public boolean isSynced() {
         return synced;
     }
 
-    public boolean isUpdated()
-    {
+    public boolean isUpdated() {
         return updated;
     }
 
-    public long getOpenTime()
-    {
+    public long getOpenTime() {
         return openTime;
     }
 
-    public long getCloseTime()
-    {
+    public long getCloseTime() {
         return closeTime;
     }
 
-    public boolean isClosed()
-    {
+    public boolean isClosed() {
         return closeTime > 0;
     }
 
     public abstract String getText();
 
-    protected synchronized void update()
-    {
+    // fore serialization
+    public abstract ObjectType getObjectType();
+
+    protected synchronized void update() {
         this.updated = true;
     }
 
-    protected synchronized void sync()
-    {
+    protected synchronized void sync() {
         this.synced = true;
         this.updated = false;
     }
