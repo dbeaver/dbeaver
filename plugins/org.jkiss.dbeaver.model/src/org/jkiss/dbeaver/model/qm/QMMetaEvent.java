@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -55,12 +54,12 @@ public class QMMetaEvent implements QMEvent {
         return action + " " + object;
     }
 
-    public static Map<String, Object> toMap(QMMetaEvent event) throws DBException {
+    public Map<String, Object> toMap() {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("objectClassName", event.getObject().getClass().getName());
-        result.put("object", event.getObject().toMap());
-        result.put("action", event.getAction().getId());
-        result.put("sessionId", event.getSessionId());
+        result.put("objectClassName", object.getClass().getName());
+        result.put("object", object.toMap());
+        result.put("action", action.getId());
+        result.put("sessionId", sessionId);
         return result;
     }
 

@@ -17,11 +17,9 @@
 package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.CommonUtils;
 
@@ -139,7 +137,7 @@ public class QMMConnectionInfo extends QMMObject {
     }
 
     @Override
-    public Map<String, Object> toMap() throws DBException {
+    public Map<String, Object> toMap() {
         Map<String, Object> serializedConnectionInfo = new LinkedHashMap<>();
         serializedConnectionInfo.put("containerId", getContainerId());
         serializedConnectionInfo.put("containerName", getContainerName());
@@ -155,7 +153,7 @@ public class QMMConnectionInfo extends QMMObject {
             project.put("path", getProject().getAbsolutePath().toString());
             var projectSession = getProject()
                 .getSessionContext()
-                .getSpaceSession(new LoggingProgressMonitor(), getProject(), false);
+                .findSpaceSession(getProject());
             boolean isAnonymousProject = projectSession == null || projectSession.getSessionPrincipal() == null;
             project.put("isAnonymous", isAnonymousProject);
         }

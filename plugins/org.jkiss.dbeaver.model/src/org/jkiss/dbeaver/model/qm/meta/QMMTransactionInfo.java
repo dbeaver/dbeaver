@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 
 import java.util.LinkedHashMap;
@@ -78,7 +77,7 @@ public class QMMTransactionInfo extends QMMObject {
     }
 
     @Override
-    public Map<String, Object> toMap() throws DBException {
+    public Map<String, Object> toMap() {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("connection", getConnection().toMap());
         return result;

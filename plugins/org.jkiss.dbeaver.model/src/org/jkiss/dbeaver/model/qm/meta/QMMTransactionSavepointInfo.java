@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 
 import java.util.Iterator;
@@ -147,7 +146,7 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     }
 
     @Override
-    public Map<String, Object> toMap() throws DBException {
+    public Map<String, Object> toMap() {
         return null;
     }
 }

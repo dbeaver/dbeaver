@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.utils.CommonUtils;
@@ -77,7 +76,7 @@ public class QMMStatementInfo extends QMMObject {
     }
 
     @Override
-    public Map<String, Object> toMap() throws DBException {
+    public Map<String, Object> toMap() {
         Map<String, Object> serializedInfo = new LinkedHashMap<>();
         serializedInfo.put("connection", connection.toMap());
         serializedInfo.put("purposeId", getPurpose().getId());
