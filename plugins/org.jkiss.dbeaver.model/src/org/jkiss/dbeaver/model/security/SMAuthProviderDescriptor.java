@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.security;
 
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsProfile;
 
 import java.util.List;
@@ -29,7 +28,7 @@ public class SMAuthProviderDescriptor {
     private String id;
     private String label;
     private String description;
-    private DBPImage icon;
+    private String icon;
     private List<SMAuthCredentialsProfile> credentialProfiles;
 
     public SMAuthProviderDescriptor() {
@@ -59,11 +58,11 @@ public class SMAuthProviderDescriptor {
         this.description = description;
     }
 
-    public DBPImage getIcon() {
+    public String getIcon() {
         return icon;
     }
 
-    public void setIcon(DBPImage icon) {
+    public void setIcon(String icon) {
         this.icon = icon;
     }
 
