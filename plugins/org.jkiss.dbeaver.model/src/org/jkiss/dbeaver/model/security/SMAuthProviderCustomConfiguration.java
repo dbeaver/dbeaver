@@ -35,6 +35,16 @@ public class SMAuthProviderCustomConfiguration {
     private SMAuthProviderCustomConfiguration() {
     }
 
+    public SMAuthProviderCustomConfiguration(SMAuthProviderCustomConfiguration src) {
+        this.id = src.id;
+        this.provider = src.provider;
+        this.displayName = src.displayName;
+        this.disabled = src.disabled;
+        this.iconURL = src.iconURL;
+        this.description = src.description;
+        this.parameters = new LinkedHashMap<>(src.parameters);
+    }
+
     public SMAuthProviderCustomConfiguration(String id) {
         this.id = id;
     }
