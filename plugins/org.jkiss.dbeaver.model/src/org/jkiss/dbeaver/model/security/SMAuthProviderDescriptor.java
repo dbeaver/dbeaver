@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.model.security;
 
-import org.jkiss.dbeaver.model.auth.SMAuthCredentialsProfile;
-
 import java.util.List;
 
 /**
@@ -30,6 +28,7 @@ public class SMAuthProviderDescriptor {
     private String description;
     private String icon;
     private List<SMAuthCredentialsProfile> credentialProfiles;
+    private List<SMAuthProviderCustomConfiguration> customConfigurations;
 
     public SMAuthProviderDescriptor() {
     }
@@ -72,6 +71,14 @@ public class SMAuthProviderDescriptor {
 
     public void setCredentialProfiles(List<SMAuthCredentialsProfile> credentialProfiles) {
         this.credentialProfiles = credentialProfiles;
+    }
+
+    public List<SMAuthProviderCustomConfiguration> getCustomConfigurations() {
+        return customConfigurations;
+    }
+
+    public void setCustomConfigurations(List<SMAuthProviderCustomConfiguration> customConfigurations) {
+        this.customConfigurations = customConfigurations;
     }
 
 }
