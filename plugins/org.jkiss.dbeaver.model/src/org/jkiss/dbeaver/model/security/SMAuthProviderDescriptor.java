@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.security;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -79,6 +80,13 @@ public class SMAuthProviderDescriptor {
 
     public void setCustomConfigurations(List<SMAuthProviderCustomConfiguration> customConfigurations) {
         this.customConfigurations = customConfigurations;
+    }
+
+    public void addCustomConfiguration(SMAuthProviderCustomConfiguration customConfiguration) {
+        if (this.customConfigurations == null) {
+            this.customConfigurations = new ArrayList<>();
+        }
+        this.customConfigurations.add(customConfiguration);
     }
 
 }
