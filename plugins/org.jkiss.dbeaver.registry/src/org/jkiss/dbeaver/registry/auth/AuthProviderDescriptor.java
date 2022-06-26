@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.auth;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.auth.AuthPropertyDescriptor;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsProfile;
@@ -37,6 +38,7 @@ import java.util.*;
 public class AuthProviderDescriptor extends AbstractDescriptor {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.auth.provider"; //$NON-NLS-1$
+    private static final Log log = Log.getLog(AuthProviderDescriptor.class);
 
     private final IConfigurationElement cfg;
 
@@ -159,6 +161,11 @@ public class AuthProviderDescriptor extends AbstractDescriptor {
         smInfo.setLabel(this.getLabel());
         smInfo.setDescription(this.getDescription());
         smInfo.setCredentialProfiles(this.getCredentialProfiles());
+
+        if (this.icon != null) {
+            smInfo.setIcon(icon.getLocation());
+        }
+
         return smInfo;
     }
 }

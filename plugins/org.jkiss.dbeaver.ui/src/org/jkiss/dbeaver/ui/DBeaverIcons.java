@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
@@ -77,8 +78,7 @@ public class DBeaverIcons
     private static ImageDescriptor viewMenuImageDescriptor;
 
     @NotNull
-    public static Image getImage(@NotNull DBPImage image)
-    {
+    public static Image getImage(@NotNull DBPImage image) {
         if (image == null) {
             return getImage(DBIcon.TYPE_UNKNOWN);
         }
@@ -95,6 +95,15 @@ public class DBeaverIcons
                 return icon.image;
             }
         }
+    }
+
+    @Nullable
+    public static Image getImageByLocation(@NotNull String iconLocation) {
+        IconDescriptor icon = getIconByLocation(iconLocation);
+        if (icon == null) {
+            return null;
+        }
+        return icon.image;
     }
 
     @NotNull
