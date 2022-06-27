@@ -28,6 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -41,7 +42,6 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
     protected Text usernameText;
     private Text overriddenHostnameText;
     private Button overrideHostname;
-    private Label hostnameLabel;
 
 
     @Override
@@ -55,15 +55,11 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
         overrideHostname = UIUtils.createCheckbox(authPanel, false);
         overrideHostname.setText(UIConnectionMessages.dialog_connection_pgpass_hostname_override);
         overrideHostname.setToolTipText(UIConnectionMessages.dialog_connection_pgpass_hostname_override_tip);
-        UIUtils.createEmptyLabel(authPanel, 1, 1);
-        hostnameLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_pgpass_hostname);
-        hostnameLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         overriddenHostnameText = new Text(authPanel, SWT.BORDER);
         overrideHostname.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 overriddenHostnameText.setEnabled(overrideHostname.getSelection());
-                hostnameLabel.setEnabled(overrideHostname.getSelection());
             }
         });
 
@@ -74,15 +70,32 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
         usernameText.addModifyListener(e -> propertyChangeListener.run());
     }
 
+    private String getSSHHost(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        DBWHandlerConfiguration sshHandler =
+            dataSourceContainer.getActualConnectionConfiguration().getHandler("ssh_tunnel");
+        if (sshHandler != null) {
+            Object host = sshHandler.getProperty(DBPConnectionConfiguration.VARIABLE_HOST);
+            if (host != null) {
+                return (String) host;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         final DBPConnectionConfiguration connectionConfiguration = dataSource.getConnectionConfiguration();
         this.overrideHostname.setSelection(!CommonUtils.isEmpty(connectionConfiguration.getProviderProperty(
             PostgreConstants.PG_PASS_HOSTNAME)));
         overriddenHostnameText.setEnabled(overrideHostname.getSelection());
-        hostnameLabel.setEnabled(overrideHostname.getSelection());
-        if (overrideHostname.getSelection()) {
-            this.overrideHostname.setText(connectionConfiguration.getProviderProperty(PostgreConstants.PG_PASS_HOSTNAME));
+        if (overrideHostname.getSelection()
+            && !CommonUtils.isEmpty(connectionConfiguration.getProviderProperty(PostgreConstants.PG_PASS_HOSTNAME))) {
+            this.overrideHostname.setText(
+                connectionConfiguration.getProviderProperty(PostgreConstants.PG_PASS_HOSTNAME));
+
+        } else if (!CommonUtils.isEmpty(getSSHHost(dataSource)) && "localhost".equals(connectionConfiguration.getHostName())) {
+            overriddenHostnameText.setText(
+                getSSHHost(dataSource));
         }
         this.usernameText.setText(CommonUtils.notEmpty(connectionConfiguration.getUserName()));
     }
