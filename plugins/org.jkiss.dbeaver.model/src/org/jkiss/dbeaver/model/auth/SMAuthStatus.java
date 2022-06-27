@@ -16,30 +16,8 @@
  */
 package org.jkiss.dbeaver.model.auth;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPImage;
-
-import java.util.List;
-import java.util.Set;
-
-/**
- * Auth provider descriptor
- */
-public interface SMAuthProviderDescriptor {
-
-    String getId();
-
-    String getLabel();
-
-    String getDescription();
-
-    DBPImage getIcon();
-
-    List<SMAuthCredentialsProfile> getCredentialProfiles();
-
-    List<AuthPropertyDescriptor> getCredentialParameters(Set<String> keySet);
-
-    @NotNull
-    SMAuthProvider<?> getInstance();
-
+public enum SMAuthStatus {
+    SUCCESS,
+    IN_PROGRESS,
+    ERROR
 }

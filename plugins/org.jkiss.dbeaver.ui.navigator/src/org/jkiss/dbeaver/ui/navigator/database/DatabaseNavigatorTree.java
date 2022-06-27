@@ -174,7 +174,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                         }
                         @Override
                         public IStatus runInUIThread(IProgressMonitor monitor) {
-                            tree.redraw();
+                            if (!tree.isDisposed()) {
+                                tree.redraw();
+                            }
                             return Status.OK_STATUS;
                         }
                     }.schedule(200);

@@ -806,17 +806,25 @@ public final class DBUtils {
             DBDAttributeBinding attr = attribute.getParent(depth - i - 1);
             assert attr != null;
             try {
+                int nestedIndex = 0;
+                if (curValue instanceof DBDCollection) {
+                    nestedIndex = nestedIndexes == null ? 0 : nestedIndexes[indexNumber++];
+                }
                 curValue = attr.extractNestedValue(
                     curValue,
-                    nestedIndexes == null ? 0 : nestedIndexes[indexNumber++]);
+                    nestedIndex);
             } catch (Throwable e) {
                 //log.debug("Error reading nested value of [" + attr.getName() + "]", e);
                 curValue = new DBDValueError(e);
                 break;
             }
             if (nestedIndexes != null && indexNumber < nestedIndexes.length) {
-                if (attr instanceof DBDAttributeBindingElement || attr instanceof DBDAttributeBindingType) {
+                if (attr instanceof DBDAttributeBindingElement) {
                     // Nested value already extracted by element binding
+                } else if (attr instanceof DBDAttributeBindingType) {
+                    if (attr.getDataKind() != DBPDataKind.ARRAY) {
+                        return DBDVoid.INSTANCE;
+                    }
                 } else if (curValue instanceof DBDCollection) {
                     if (((DBDCollection) curValue).getItemCount() <= nestedIndexes[indexNumber]) {
                         // Not an error. This collection is shorter than sibling collection
@@ -1601,7 +1609,7 @@ public final class DBUtils {
     {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
-        } else if (object instanceof DBSObject) {
+        } else if (object instanceof DBSObject && ((DBSObject) object).getDataSource() != null) {
             return getObjectFullName(((DBSObject) object).getDataSource(), object, context);
         } else {
             return object.getName();
