@@ -56,7 +56,7 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
         overrideHostname.setText(UIConnectionMessages.dialog_connection_pgpass_hostname_override);
         overrideHostname.setToolTipText(UIConnectionMessages.dialog_connection_pgpass_hostname_override_tip);
         UIUtils.createEmptyLabel(authPanel, 1, 1);
-        hostnameLabel = UIUtils.createLabel(authPanel, "Hostname");
+        hostnameLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_pgpass_hostname);
         hostnameLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         overriddenHostnameText = new Text(authPanel, SWT.BORDER);
         overrideHostname.addSelectionListener(new SelectionAdapter() {
@@ -72,7 +72,6 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
         overriddenHostnameText.setLayoutData(gd);
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(e -> propertyChangeListener.run());
-        authPanel.layout();
     }
 
     @Override
