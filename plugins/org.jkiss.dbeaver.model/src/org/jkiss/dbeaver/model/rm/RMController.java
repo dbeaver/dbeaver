@@ -31,11 +31,19 @@ public interface RMController {
     @NotNull
     RMProject[] listSharedProjects() throws DBException;
 
-    void createProject(@NotNull RMProject project) throws DBException;
+    RMProject createProject(@NotNull String id, @NotNull String name, @NotNull String description) throws DBException;
 
     void deleteProject(@NotNull String projectId) throws DBException;
 
     RMProject getProject(@NotNull String projectId) throws DBException;
+
+//    String getProjectsDataSourceConfiguration(@NotNull String projectId) throws DBException;
+//
+//    void addProjectDataSource(@NotNull String projectId, @NotNull DBPDataSourceContainer dataSourceContainer);
+//
+//    void updateProjectDataSource(@NotNull String projectId, @NotNull DBPDataSourceContainer dataSourceContainer);
+//
+//    void deleteProjectDataSource(@NotNull String projectId, @NotNull String dsId);
 
     @NotNull
     RMResource[] listResources(
@@ -60,8 +68,9 @@ public interface RMController {
         @NotNull String resourcePath,
         boolean recursive) throws DBException;
 
-    RMResource[] getResourcePath(@NotNull String projectId,
-                                 @NotNull String resourcePath) throws DBException;
+    RMResource[] getResourcePath(
+        @NotNull String projectId,
+        @NotNull String resourcePath) throws DBException;
 
     @NotNull
     byte[] getResourceContents(
@@ -74,7 +83,4 @@ public interface RMController {
         @NotNull String resourcePath,
         @NotNull byte[] data) throws DBException;
 
-    void addRMEventListener(RMEventListener listener);
-
-    void removeRMEventListener(RMEventListener listener);
 }

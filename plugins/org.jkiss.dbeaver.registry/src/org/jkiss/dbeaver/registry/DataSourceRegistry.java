@@ -90,15 +90,27 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         this.project = project;
 
         loadDataSources(true);
-        DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
 
-        addDataSourceListener(modelChangeListener);
+        if (!isVirtual()) {
+            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
+
+            addDataSourceListener(modelChangeListener);
+        }
+    }
+
+    // Virtual registry:
+    // - doesn't register listeners
+    // -
+    private boolean isVirtual() {
+        return project.isVirtual();
     }
 
     @Override
     public void dispose() {
-        removeDataSourceListener(modelChangeListener);
-        DataSourceProviderRegistry.getInstance().fireRegistryChange(this, false);
+        if (!isVirtual()) {
+            removeDataSourceListener(modelChangeListener);
+            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, false);
+        }
         synchronized (dataSourceListeners) {
             if (!this.dataSourceListeners.isEmpty()) {
                 log.warn("Some data source listeners are still registered: " + dataSourceListeners);
