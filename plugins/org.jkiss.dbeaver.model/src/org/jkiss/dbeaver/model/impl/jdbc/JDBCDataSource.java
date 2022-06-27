@@ -659,7 +659,7 @@ public abstract class JDBCDataSource
     }
 
     @NotNull
-    private String getStandardSQLDataTypeName(@NotNull DBPDataKind dataKind) {
+    protected String getStandardSQLDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
             case BOOLEAN: return "BOOLEAN";
             case NUMERIC: return "NUMERIC";
