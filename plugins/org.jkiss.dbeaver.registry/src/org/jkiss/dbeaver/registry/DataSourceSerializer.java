@@ -29,6 +29,7 @@ import java.util.List;
  */
 interface DataSourceSerializer
 {
+
     void saveDataSources(
         DBRProgressMonitor monitor,
         DBPDataSourceConfigurationStorage configurationStorage,

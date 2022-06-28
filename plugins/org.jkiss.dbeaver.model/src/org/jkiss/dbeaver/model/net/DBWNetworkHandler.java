@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -29,7 +28,7 @@ import java.io.IOException;
  */
 public interface DBWNetworkHandler {
 
-    DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException;
 
     void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource)

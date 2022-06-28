@@ -871,7 +871,7 @@ public final class DBUtils {
         // Get handler provider from registry
         // Note: datasource CAN be null. For example when we import data from local files (csv)
         if (dataSource != null) {
-            handlerProvider = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getValueHandlerProvider(
+            handlerProvider = DBWorkbench.getPlatform().getValueHandlerRegistry().getValueHandlerProvider(
                 dataSource, column);
             if (handlerProvider != null) {
                 valueHandler = handlerProvider.getValueHandler(dataSource, preferences, column);

@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
@@ -68,8 +67,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 
-    private final DBPPlatform platform;
     private final DBPProject project;
+    private final DataSourceConfigurationManager configurationManager;
 
     private final Map<Path, DataSourceStorage> storages = new LinkedHashMap<>();
     private final Map<String, DataSourceDescriptor> dataSources = new LinkedHashMap<>();
@@ -85,9 +84,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private DBACredentialsProvider authCredentialsProvider;
     private Throwable lastLoadError;
 
-    public DataSourceRegistry(DBPPlatform platform, DBPProject project) {
-        this.platform = platform;
+    public DataSourceRegistry(DBPProject project) {
+        this(project, new DataSourceConfigurationManagerNIO(project));
+    }
+
+    public DataSourceRegistry(DBPProject project, DataSourceConfigurationManager configurationManager) {
         this.project = project;
+        this.configurationManager = configurationManager;
 
         loadDataSources(true);
 
@@ -179,11 +182,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     private Path getModernConfigFile() {
         return project.getMetadataFolder(false).resolve(MODERN_CONFIG_FILE_NAME);
-    }
-
-    @NotNull
-    public DBPPlatform getPlatform() {
-        return platform;
     }
 
     ////////////////////////////////////////////////////
@@ -586,7 +584,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Override
     @NotNull
     public ISecurePreferences getSecurePreferences() {
-        return platform.getApplication().getSecureStorage().getSecurePreferences().node("datasources");
+        return DBWorkbench.getPlatform().getApplication().getSecureStorage().getSecurePreferences().node("datasources");
     }
 
     @Nullable

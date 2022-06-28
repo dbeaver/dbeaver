@@ -136,7 +136,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     }
 
     private ConnectionNameResolver generateSampleDatasourceResolver() {
-        final DataSourceRegistry dataSourceRegistry = new DataSourceRegistry(DBWorkbench.getPlatform(), DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        final DataSourceRegistry dataSourceRegistry = new DataSourceRegistry(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         DBPDriver driver = DriverUtils.getRecentDrivers(DriverUtils.getAllDrivers(), 1).get(0);
         DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
         conConfig.setHostName("hostname");

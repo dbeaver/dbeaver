@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.net.ssh;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,7 +28,7 @@ import java.io.IOException;
  */
 public interface SSHImplementation {
 
-    DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException;
 
     String getClientVersion();
