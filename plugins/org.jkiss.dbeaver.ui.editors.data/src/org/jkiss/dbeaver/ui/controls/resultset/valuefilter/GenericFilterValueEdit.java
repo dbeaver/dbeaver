@@ -326,6 +326,7 @@ class GenericFilterValueEdit {
                         true,
                         true,
                         caseInsensitiveSearch,
+                        0,
                         MAX_MULTI_VALUES);
                 }
                 return null;
