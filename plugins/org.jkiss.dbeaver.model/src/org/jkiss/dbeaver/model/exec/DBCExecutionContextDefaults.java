@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
  */
 public interface DBCExecutionContextDefaults<CATALOG extends DBSCatalog, SCHEMA extends DBSSchema> {
 
+    @Nullable
     CATALOG getDefaultCatalog();
 
     @Nullable
