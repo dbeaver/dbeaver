@@ -929,19 +929,14 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     private void createControlsBar(Composite sqlEditorPanel) {
-        Composite panelContainer = new Composite(sqlEditorPanel, SWT.LEFT);
-        panelContainer.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-        
-        GridLayout layout = new GridLayout(1, false);
-        layout.marginTop = 3;
-        layout.marginBottom = 1;
-        layout.verticalSpacing = 1;
-        layout.marginLeft = 1;
-        layout.marginHeight = 1;
-        panelContainer.setLayout(layout);
-        
-        leftToolPanel = new Composite(panelContainer, SWT.LEFT);
-        leftToolPanel.setLayout(new GridLayout(1, true));
+        leftToolPanel = new Composite(sqlEditorPanel, SWT.LEFT);
+        GridLayout panelsLayout = new GridLayout(1, true);
+        panelsLayout.marginHeight = 2;
+        panelsLayout.marginWidth = 1;
+        panelsLayout.marginTop = 1;
+        panelsLayout.marginBottom = 7;
+        panelsLayout.verticalSpacing = 1;
+        leftToolPanel.setLayout(panelsLayout);
         leftToolPanel.setLayoutData(new GridData(GridData.FILL_VERTICAL));
         
         topBarMan = new ToolBarManager(SWT.VERTICAL | SWT.FLAT);
