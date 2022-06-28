@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.Map;
 
 /**
- * DataSourceOriginProviderLocal
+ * DataSourceOriginLazy
  */
 class DataSourceOriginLazy implements DBPDataSourceOriginExternal
 {

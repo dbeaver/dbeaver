@@ -257,7 +257,7 @@ public class ProjectMetadata implements DBPProject {
         ensureOpen();
         synchronized (metadataSync) {
             if (dataSourceRegistry == null) {
-                dataSourceRegistry = new DataSourceRegistry(workspace.getPlatform(), this);
+                dataSourceRegistry = new DataSourceRegistry(this);
             }
         }
         return dataSourceRegistry;

@@ -14,31 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.net.ssh;
+package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 /**
- * SSH tunnel implementation
+ * Configuration files manager
  */
-public interface SSHImplementation {
+public interface DataSourceConfigurationManager {
 
-    DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
-        throws DBException, IOException;
+    boolean isReadOnly();
 
-    String getClientVersion();
+    boolean isSecure();
 
-    String getServerVersion();
+    List<DBPDataSourceConfigurationStorage> getConfigurationStorages();
 
-    void invalidateTunnel(DBRProgressMonitor monitor)
-        throws DBException, IOException;
+    InputStream readConfiguration(@NotNull String name) throws DBException, IOException;
 
-    void closeTunnel(DBRProgressMonitor monitor)
-        throws DBException, IOException;
+    void writeConfiguration(@NotNull String name, @NotNull InputStream data) throws DBException, IOException;
 
 }
