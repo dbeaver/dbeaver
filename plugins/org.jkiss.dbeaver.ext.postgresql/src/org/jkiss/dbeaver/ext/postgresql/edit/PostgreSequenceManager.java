@@ -69,7 +69,8 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     @Override
     protected PostgreSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new PostgreSequence((PostgreSchema) container);
+        PostgreSchema schema = (PostgreSchema) container;
+        return schema.getDataSource().getServerType().createSequence(schema);
     }
 
     @Override
