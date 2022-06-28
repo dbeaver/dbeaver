@@ -16,15 +16,10 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
 
 /**
  * DataSourceStorage
@@ -80,7 +75,7 @@ class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
         return sourceFile.getFileName().toString();
     }
 
-    public String getConfigurationFileSuffix() {
+    public String getStorageSubId() {
         return configSuffix;
     }
 
@@ -91,11 +86,6 @@ class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
 
     public Path getSourceFile() {
         return sourceFile;
-    }
-
-    @Override
-    public List<? extends DBPDataSourceContainer> loadDataSources(DBPDataSourceRegistry registry, Map<String, Object> options) throws DBException {
-        throw new DBCFeatureNotSupportedException();
     }
 
     @Override

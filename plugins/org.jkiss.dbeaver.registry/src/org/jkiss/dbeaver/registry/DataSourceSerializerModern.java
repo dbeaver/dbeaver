@@ -322,7 +322,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     }
 
     private void saveSecureCredentialsFile(DBPDataSourceConfigurationStorage storage) {
-        String credFile = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + storage.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
+        String credFile = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + storage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
         try {
             if (secureProperties.isEmpty()) {
                 saveConfigFile(credFile, "", true, true);
@@ -340,10 +340,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
     public void parseDataSources(
         DBPDataSourceConfigurationStorage configurationStorage,
         boolean refresh,
-        DataSourceRegistry.ParseResults parseResults) throws IOException {
+        DataSourceRegistry.ParseResults parseResults) throws DBException, IOException {
         // Read secured creds file
         InputStream secureCredsData = registry.getConfigurationManager().readConfiguration(
-            DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+            DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
         if (secureCredsData != null) {
             try {
                 String credJson = loadConfigFile(secureCredsData, true);
