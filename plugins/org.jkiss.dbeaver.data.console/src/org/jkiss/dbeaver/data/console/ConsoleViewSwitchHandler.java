@@ -66,8 +66,8 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
         SQLConsoleLogViewer viewer = new SQLConsoleLogViewer(editor.getSite(), tabsContainer, SWT.NONE);
         CTabItem item = new CTabItem(tabsContainer, SWT.CLOSE);
         item.setControl(viewer.getControl());
-        item.setText("Console view"); //TODO: localization
-        item.setToolTipText(""); //TODO: localization
+        item.setText(ConsoleMessages.console_view_item_text);
+        item.setToolTipText("");
         item.setImage(DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE).createImage());
         item.setData(viewer);
         item.addDisposeListener(new DisposeListener() {

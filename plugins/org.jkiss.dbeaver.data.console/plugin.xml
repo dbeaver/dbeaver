@@ -18,7 +18,7 @@
   -->
 <plugin>
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.ui.editors.sql.show.consoleView" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.description" categoryId="org.jkiss.dbeaver.core.sql">
+        <command id="org.jkiss.dbeaver.ui.editors.sql.show.consoleView" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.consoleView.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.consoleView.description" categoryId="org.jkiss.dbeaver.core.sql">
             <state class="org.eclipse.jface.commands.ToggleState" id="org.eclipse.ui.commands.toggleState" />
         </command>
     </extension>
