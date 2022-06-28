@@ -21,7 +21,6 @@ import java.util.Map;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
@@ -84,7 +83,7 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
         });
         
         UIUtils.disposeControlOnItemDispose(item);
-        return new Pair<SQLConsoleLogViewer, CTabItem>(viewer, item);
+        return new Pair<>(viewer, item);
     }
     
     @NotNull
@@ -112,7 +111,7 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
     }
     
     @Override
-    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
+    public Object execute(@NotNull ExecutionEvent event) {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor == null) {
             return null;
@@ -137,7 +136,7 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
             editor.getResultTabsContainer().setSelection(obtainLogViewer(editor).getSecond());
         }
 
-        ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
+        ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
         commandService.refreshElements(command.getId(), null);
         return null;
     }

@@ -90,7 +90,6 @@ import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
@@ -196,7 +195,9 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<SQLQuery> runningQueries = new ArrayList<>();
     private QueryResultsContainer curResultsContainer;
     private Image editorImage;
-    private VerticalFolder sideToolBar;
+    Composite leftToolPanel;
+    private ToolBarManager topBarMan;
+    private ToolBarManager bottomBarMan;
 
     private SQLPresentationDescriptor extraPresentationDescriptor;
     private SQLEditorPresentation extraPresentation;
@@ -313,7 +314,7 @@ public class SQLEditor extends SQLEditorBase implements
                         lines.add(k);
                     }
                 } catch (BadLocationException e) {
-                    // ignore - this may happen is SQL was edited after execution start
+                    // ignore - this may happen if SQL was edited after execution start
                 }
             }
             if (lines.isEmpty()) {
@@ -611,7 +612,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
-        sideToolBar.redraw();
+        topBarMan.getControl().redraw();
+        bottomBarMan.getControl().redraw();
     }
 
     private class OpenContextJob extends AbstractJob {
@@ -678,9 +680,9 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private boolean isRestoreActiveSchemaFromScript() {
-        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA) &&
-            getActivePreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
-            !this.getDataSourceContainer().isForceUseSingleConnection();
+        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA)
+            && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION)
+            && this.getDataSourceContainer() != null && !this.getDataSourceContainer().isForceUseSingleConnection();
     }
 
     private static class CloseContextJob extends AbstractJob {
@@ -844,11 +846,6 @@ public class SQLEditor extends SQLEditorBase implements
         getEditorControlWrapper().setLayoutData(new GridData(GridData.FILL_BOTH));
 
         sqlExtraPanelFolder = new CTabFolder(sqlExtraPanelSash, SWT.TOP | SWT.CLOSE | SWT.FLAT);
-//        CTabItem testItem = new CTabItem(sqlExtraPanelPlaceholder, SWT.LEFT);
-//        testItem.setText("Test output");
-//        testItem.setImage(IMG_OUTPUT);
-//        testItem.setShowClose(true);
-//        testItem.setControl(new StyledText(sqlExtraPanelPlaceholder, SWT.NONE));
         sqlExtraPanelFolder.setSelection(0);
         sqlExtraPanelFolder.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -930,65 +927,61 @@ public class SQLEditor extends SQLEditorBase implements
             doScriptAutoSave();
         }
     }
-
+    
     private void createControlsBar(Composite sqlEditorPanel) {
-
-        sideToolBar = new VerticalFolder(sqlEditorPanel, SWT.LEFT);
-        sideToolBar.setCheckCommandEnablement(true);
-        ((GridLayout)sideToolBar.getLayout()).marginTop = 3;
-        ((GridLayout)sideToolBar.getLayout()).marginBottom = 10;
-        ((GridLayout)sideToolBar.getLayout()).verticalSpacing = 3;
-        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT, false);
-        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW, false);
-        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT, false);
-        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXPLAIN_PLAN, false);
-
-        UIUtils.createEmptyLabel(sideToolBar, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
-
-        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.CHECK, new ShowPreferencesAction(), false);
-
-        new Label(sideToolBar, SWT.NONE).setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_H));
-
-        VerticalButton.create(
-            sideToolBar,
-            SWT.LEFT | SWT.CHECK,
-            getSite(),
-            SQLEditorCommands.CMD_SQL_SHOW_OUTPUT,
-            false);
-        VerticalButton.create(
-            sideToolBar,
-            SWT.LEFT | SWT.CHECK,
-            getSite(),
-            SQLEditorCommands.CMD_SQL_SHOW_LOG,
-            false);
-        VerticalButton.create(
-            sideToolBar,
-            SWT.LEFT | SWT.CHECK,
-            getSite(),
-            SQLEditorCommands.CMD_SQL_SHOW_VARIABLES,
-            false);
-
-        // TODO: move Console View to the top and add localization
-        // TODO: move vertical buttons to the toolbar
-        IWorkbenchPartSite site = this.getSite();
-        ToolBarManager sideToolBarManager = new ToolBarManager(SWT.FLAT | SWT.VERTICAL| SWT.LEFT);
+        Composite panelContainer = new Composite(sqlEditorPanel, SWT.LEFT);
+        panelContainer.setLayoutData(new GridData(GridData.FILL_VERTICAL));
         
-        sideToolBarManager.add(new GroupMarker(TOOLBAR_GROUP_ADDITIONS));
+        GridLayout layout = new GridLayout(1, false);
+        layout.marginTop = 3;
+        layout.marginBottom = 1;
+        layout.verticalSpacing = 1;
+        layout.marginLeft = 1;
+        layout.marginHeight = 1;
+        panelContainer.setLayout(layout);
+        
+        leftToolPanel = new Composite(panelContainer, SWT.LEFT);
+        leftToolPanel.setLayout(new GridLayout(1, true));
+        leftToolPanel.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        
+        topBarMan = new ToolBarManager(SWT.VERTICAL | SWT.FLAT);
+        // topBarMan.add(new Separator(TOOLBAR_GROUP_TOP));
+        // topBarMan.add(new GroupMarker(TOOLBAR_GROUP_TOP));
+        topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT));
+        topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW));
+        topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT));
+        topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXPLAIN_PLAN));
+        
+        topBarMan.add(new GroupMarker(TOOLBAR_GROUP_ADDITIONS));
         final IMenuService menuService = getSite().getService(IMenuService.class);
         if (menuService != null) {
-            int prevSize = sideToolBarManager.getSize();
-            menuService.populateContributionManager(sideToolBarManager, SIDE_TOOLBAR_CONTRIBUTION_ID);
-//            if (prevSize != sideToolBarManager.getSize()) {
-//                sideToolBarManager.insertBefore(TOOLBAR_GROUP_ADDITIONS, new ToolbarSeparatorContribution(false));
-//            }
+            int prevSize = topBarMan.getSize();
+            menuService.populateContributionManager(topBarMan, SIDE_TOOLBAR_CONTRIBUTION_ID);
+            if (prevSize != topBarMan.getSize()) {
+                topBarMan.insertBefore(TOOLBAR_GROUP_ADDITIONS, new ToolbarSeparatorContribution(false));
+            }
         }
+        ToolBar topBar = topBarMan.createControl(leftToolPanel);
+        topBar.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, false));
+        CSSUtils.setCSSClass(topBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        topBarMan.update(true);
+        topBar.pack();
+        
+        UIUtils.createEmptyLabel(leftToolPanel, 1, 1).setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true));
 
-        ToolBar editorToolBar = sideToolBarManager.createControl(sideToolBar);
-        CSSUtils.setCSSClass(editorToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        bottomBarMan = new ToolBarManager(SWT.VERTICAL | SWT.FLAT);
+        bottomBarMan.add(ActionUtils.makeActionContribution(new ShowPreferencesAction(), false));
+        bottomBarMan.add(new ToolbarSeparatorContribution(false));
+        bottomBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, CommandContributionItem.STYLE_CHECK));
+        bottomBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_SHOW_LOG, CommandContributionItem.STYLE_CHECK));
+        bottomBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_SHOW_VARIABLES, CommandContributionItem.STYLE_CHECK));
 
-        sideToolBar.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.VERTICAL_ALIGN_BEGINNING));
-        CSSUtils.setCSSClass(sideToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-        sideToolBar.pack();
+        ToolBar bottomBar = bottomBarMan.createControl(leftToolPanel);
+        bottomBar.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, true, false));
+        CSSUtils.setCSSClass(bottomBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+
+        bottomBar.pack();
+        bottomBarMan.update(true);
     }
 
     private void createPresentationSwitchBar(Composite sqlEditorPanel) {
@@ -1433,7 +1426,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void showExtraView(final String commandId, String name, String toolTip, Image image, Control view, IActionContributor actionContributor) {
-        VerticalButton viewItem = getViewToolItem(commandId);
+        ToolItem viewItem = getViewToolItem(commandId);
         if (viewItem == null) {
             log.warn("Tool item for command " + commandId + " not found");
             return;
@@ -1442,8 +1435,7 @@ public class SQLEditor extends SQLEditorBase implements
         CTabItem curItem = getExtraViewTab(view);
         if (curItem != null) {
             // Close tab if it is already open
-            viewItem.setChecked(false);
-            viewItem.redraw();
+            viewItem.setSelection(false);
             curItem.dispose();
             return;
         }
@@ -1465,7 +1457,7 @@ public class SQLEditor extends SQLEditorBase implements
             outputViewer.resetNewOutput();
         }
         // Create new tab
-        viewItem.setChecked(true);
+        viewItem.setSelection(true);
 
         CTabItem item = new CTabItem(tabFolder, SWT.CLOSE);
         item.setControl(view);
@@ -1477,15 +1469,15 @@ public class SQLEditor extends SQLEditorBase implements
         // De-select tool item on tab close
         item.addDisposeListener(e -> {
             if (!viewItem.isDisposed()) {
-                viewItem.setChecked(false);
-                viewItem.redraw();
+                viewItem.setSelection(false);
+                viewItem.getControl().redraw();
             }
             if (tabFolder.getItemCount() == 0) {
                 sqlExtraPanelSash.setMaximizedControl(sqlExtraPanelSash.getChildren()[0]);
             }
         });
         tabFolder.setSelection(item);
-        viewItem.redraw();
+        viewItem.getControl().redraw();
 
         if (isTabsToTheRight) {
             updateExtraViewToolbar(actionContributor);
@@ -1506,12 +1498,28 @@ public class SQLEditor extends SQLEditorBase implements
         sqlExtraPanelToolbar.update(true);
     }
 
-    private VerticalButton getViewToolItem(String commandId) {
-        VerticalButton viewItem = null;
-        for (VerticalButton item : sideToolBar.getItems()) {
-            if (commandId.equals(item.getCommandId())) {
-                viewItem = item;
-                break;
+    private ToolItem getViewToolItem(String commandId) {
+        ToolItem viewItem = null;
+        for (ToolItem item : topBarMan.getControl().getItems()) {
+            Object data = item.getData();
+            if (data instanceof CommandContributionItem) {
+                if (((CommandContributionItem) data).getCommand() != null
+                    && commandId.equals(((CommandContributionItem) data).getCommand().getId())
+                ) {
+                    viewItem = item;
+                    break;
+                }
+            }
+        }
+        for (ToolItem item : bottomBarMan.getControl().getItems()) {
+            Object data = item.getData();
+            if (data instanceof CommandContributionItem) {
+                if (((CommandContributionItem) data).getCommand() != null
+                    && commandId.equals(((CommandContributionItem) data).getCommand().getId())
+                ) {
+                    viewItem = item;
+                    break;
+                }
             }
         }
         return viewItem;
@@ -1581,10 +1589,23 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public SQLEditorPresentationPanel showPresentationPanel(String panelID) {
-        for (VerticalButton cItem : sideToolBar.getItems()) {
-            IAction action = cItem.getAction();
-            if (action != null) {
-                if (action instanceof PresentationPanelToggleAction && ((PresentationPanelToggleAction) action).panel.getId().equals(panelID)) {
+        for (IContributionItem cItem : topBarMan.getItems()) {
+            if (cItem instanceof ActionContributionItem) {
+                IAction action = ((ActionContributionItem) cItem).getAction();
+                if (action instanceof PresentationPanelToggleAction
+                    && ((PresentationPanelToggleAction) action).panel.getId().equals(panelID)
+                ) {
+                    action.run();
+                    return extraPresentationCurrentPanel;
+                }
+            }
+        }
+        for (IContributionItem cItem : bottomBarMan.getItems()) {
+            if (cItem instanceof ActionContributionItem) {
+                IAction action = ((ActionContributionItem) cItem).getAction();
+                if (action instanceof PresentationPanelToggleAction
+                    && ((PresentationPanelToggleAction) action).panel.getId().equals(panelID)
+                ) {
                     action.run();
                     return extraPresentationCurrentPanel;
                 }
@@ -1692,7 +1713,10 @@ public class SQLEditor extends SQLEditorBase implements
             presentationSwitchFolder.redraw();
 
             if (sideBarChanged) {
-                sideToolBar.getParent().layout(true, true);
+                topBarMan.update(true);
+                bottomBarMan.update(true);
+                topBarMan.getControl().getParent().layout(true);
+                bottomBarMan.getControl().getParent().layout(true);
             }
 
             presentationStack.layout(true, true);
@@ -2586,7 +2610,8 @@ public class SQLEditor extends SQLEditorBase implements
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
             resultsSash.setBackground(resultTabs.getBackground());
-            sideToolBar.setBackground(resultTabs.getBackground());
+            topBarMan.getControl().setBackground(resultTabs.getBackground());
+            bottomBarMan.getControl().setBackground(resultTabs.getBackground());
         }
 
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
@@ -4163,6 +4188,10 @@ public class SQLEditor extends SQLEditorBase implements
         if (outputItem != null && outputItem != resultTabs.getSelection()) {
             outputItem.setImage(image);
         } else {
+            ToolItem viewItem = getViewToolItem(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT);
+            if (viewItem != null) {
+                viewItem.setImage(image);
+            }
             // TODO: make icon update. Can't call setImage because this will break contract f VerticalButton
 /*
             VerticalButton viewItem = getViewToolItem(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT);
@@ -4335,7 +4364,7 @@ public class SQLEditor extends SQLEditorBase implements
             UIUtils.asyncExec(() -> {
                 outputViewer.scrollToEnd();
                 if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW)) {
-                    if (!getViewToolItem(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT).isChecked()) {
+                    if (!getViewToolItem(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT).getSelection()) {
                         showOutputPanel();
                     }
                 }
