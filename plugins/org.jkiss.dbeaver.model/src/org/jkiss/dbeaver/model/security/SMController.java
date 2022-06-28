@@ -78,6 +78,7 @@ public interface SMController extends SMAuthCredentialsManager {
 
     SMAuthInfo authenticate(
         @NotNull String appSessionId,
+        @Nullable String previousSmSessionId,
         @NotNull Map<String, Object> sessionParameters,
         @NotNull SMSessionType sessionType,
         @NotNull String authProviderId,
