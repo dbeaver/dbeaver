@@ -198,8 +198,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             if (authProfile.isSavePassword()) {
                                 JSONUtils.field(jsonWriter, RegistryConstants.ATTR_SAVE_PASSWORD, authProfile.isSavePassword());
                             }
-                            // Save all auth properties in secure storage
-                            saveSecuredCredentials(null, authProfile, null, new SecureCredentials(authProfile));
+                            SecureCredentials credentials = new SecureCredentials(authProfile);
+                            if (isSecureStorage()) {
+                                savePlainCredentials(jsonWriter, credentials);
+                            } else {
+                                // Save all auth properties in secure storage
+                                saveSecuredCredentials(null, authProfile, null, credentials);
+                            }
                             jsonWriter.endObject();
                         }
                         jsonWriter.endObject();
@@ -274,7 +279,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         boolean encryptProject = CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBPProject.PROP_SECURE_PROJECT));
         saveConfigFile(configurationStorage.getStorageName(), jsonString, false, encryptProject);
 
-        if (!registry.getConfigurationManager().isSecure()) {
+        if (!isSecureStorage()) {
             saveSecureCredentialsFile(configurationStorage);
         }
     }
@@ -450,7 +455,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 profile.setAuthModelId(JSONUtils.getString(profileMap, RegistryConstants.ATTR_AUTH_MODEL));
                 profile.setSavePassword(JSONUtils.getBoolean(profileMap, RegistryConstants.ATTR_SAVE_PASSWORD));
 
-                SecureCredentials authCreds = readSecuredCredentials(null, profile, null);
+                SecureCredentials authCreds = isSecureStorage() ?
+                    readPlainCredentials(profileMap) :
+                    readSecuredCredentials(null, profile, null);
                 profile.setUserName(authCreds.getUserName());
                 profile.setUserPassword(authCreds.getUserPassword());
                 profile.setProperties(authCreds.getProperties());
@@ -547,7 +554,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     config.setDatabaseName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_DATABASE));
                     config.setUrl(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_URL));
                     if (!passwordReadCanceled) {
-                        final SecureCredentials creds = readSecuredCredentials(dataSource, null, null);
+                        final SecureCredentials creds = isSecureStorage() ?
+                            readPlainCredentials(cfgObject) :
+                            readSecuredCredentials(dataSource, null, null);
                         config.setUserName(creds.getUserName());
                         if (dataSource.isSavePassword()) {
                             config.setUserPassword(creds.getUserPassword());
@@ -719,7 +728,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
             curNetworkHandler.setEnabled(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_ENABLED));
             curNetworkHandler.setSavePassword(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_SAVE_PASSWORD));
             if (!passwordReadCanceled) {
-                final SecureCredentials creds = readSecuredCredentials(dataSource, profile,
+                final SecureCredentials creds = isSecureStorage() ?
+                    readPlainCredentials(handlerCfg) :
+                    readSecuredCredentials(dataSource, profile,
                     "network/" + handlerId + (profile == null ? "" : "/profile/" + profile.getProfileName()));
                 curNetworkHandler.setUserName(creds.getUserName());
                 if (curNetworkHandler.isSavePassword()) {
@@ -833,11 +844,15 @@ class DataSourceSerializerModern implements DataSourceSerializer
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_DATABASE, connectionInfo.getDatabaseName());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_URL, connectionInfo.getUrl());
 
-            saveSecuredCredentials(
-                dataSource,
-                null,
-                null,
-                new SecureCredentials(dataSource));
+            if (isSecureStorage()) {
+                savePlainCredentials(json, new SecureCredentials(dataSource));
+            } else {
+                saveSecuredCredentials(
+                    dataSource,
+                    null,
+                    null,
+                    new SecureCredentials(dataSource));
+            }
 
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
             if (connectionInfo.getConnectionType() != null) {
@@ -990,14 +1005,24 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!CommonUtils.isEmpty(configuration.getUserName()) || !CommonUtils.isEmpty(configuration.getPassword())) {
             final SecureCredentials credentials = new SecureCredentials(configuration);
             credentials.setProperties(configuration.getSecureProperties());
-            saveSecuredCredentials(
-                dataSource,
-                profile,
-                "network/" + configuration.getId() + (profile == null ? "" : "/profile/" + profile.getProfileName()),
-                credentials);
+            if (isSecureStorage()) {
+                savePlainCredentials(
+                    json,
+                    credentials);
+            } else {
+                saveSecuredCredentials(
+                    dataSource,
+                    profile,
+                    "network/" + configuration.getId() + (profile == null ? "" : "/profile/" + profile.getProfileName()),
+                    credentials);
+            }
         }
         JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties());
         json.endObject();
+    }
+
+    private boolean isSecureStorage() {
+        return registry.getConfigurationManager().isSecure();
     }
 
     private static void saveObjectFiler(JsonWriter json, String typeName, String objectID, DBSObjectFilter filter) throws IOException
@@ -1017,7 +1042,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable DataSourceDescriptor dataSource,
         @Nullable DBPConfigurationProfile profile,
         @Nullable String subNode,
-        @NotNull SecureCredentials credentials) {
+        @NotNull SecureCredentials credentials)
+    {
         assert dataSource != null|| profile != null;
         boolean saved = !passwordWriteCanceled && saveCredentialsInSecuredStorage(
             registry.getProject(), dataSource, subNode, credentials);
@@ -1029,15 +1055,25 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
             Map<String, Map<String, String>> nodeMap = secureProperties.computeIfAbsent(topNodeId, s -> new LinkedHashMap<>());
             Map<String, String> propMap = nodeMap.computeIfAbsent(subNode, s -> new LinkedHashMap<>());
-            if (!CommonUtils.isEmpty(credentials.getUserName())) {
-                propMap.put(RegistryConstants.ATTR_USER, credentials.getUserName());
-            }
-            if (!CommonUtils.isEmpty(credentials.getUserPassword())) {
-                propMap.put(RegistryConstants.ATTR_PASSWORD, credentials.getUserPassword());
-            }
-            if (!CommonUtils.isEmpty(credentials.getProperties())) {
-                propMap.putAll(credentials.getProperties());
-            }
+            saveCredentialsToMap(propMap, credentials);
+        }
+    }
+
+    private void savePlainCredentials(JsonWriter jsonWriter, @NotNull SecureCredentials credentials) throws IOException {
+        Map<String, String> propMap = Map.of();
+        saveCredentialsToMap(propMap, credentials);
+        JSONUtils.serializeProperties(jsonWriter, "credentials", propMap);
+    }
+
+    private void saveCredentialsToMap(Map<String, String> propMap, @NotNull SecureCredentials credentials) {
+        if (!CommonUtils.isEmpty(credentials.getUserName())) {
+            propMap.put(RegistryConstants.ATTR_USER, credentials.getUserName());
+        }
+        if (!CommonUtils.isEmpty(credentials.getUserPassword())) {
+            propMap.put(RegistryConstants.ATTR_PASSWORD, credentials.getUserPassword());
+        }
+        if (!CommonUtils.isEmpty(credentials.getProperties())) {
+            propMap.putAll(credentials.getProperties());
         }
     }
 
@@ -1089,6 +1125,28 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
         }
         return false;
+    }
+
+    private SecureCredentials readPlainCredentials(Map<String, Object> propMap) {
+        Map<String, Object> credentialsMap = JSONUtils.getObject(propMap, "credentials");
+        SecureCredentials creds = new SecureCredentials();
+
+        for (Map.Entry<String, Object> entry : credentialsMap.entrySet()) {
+            String value = CommonUtils.toString(entry.getValue(), null);
+            switch (entry.getKey()) {
+                case RegistryConstants.ATTR_USER:
+                    creds.setUserName(value);
+                    break;
+                case RegistryConstants.ATTR_PASSWORD:
+                    creds.setUserPassword(value);
+                    break;
+                default:
+                    creds.setSecureProp(entry.getKey(), value);
+                    break;
+            }
+        }
+
+        return null;
     }
 
     private SecureCredentials readSecuredCredentials(
