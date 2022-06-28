@@ -33,8 +33,7 @@ interface DataSourceSerializer
     void saveDataSources(
         DBRProgressMonitor monitor,
         DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources,
-        Path configPath)
+        List<DataSourceDescriptor> localDataSources)
         throws DBException, IOException;
 
     void parseDataSources(

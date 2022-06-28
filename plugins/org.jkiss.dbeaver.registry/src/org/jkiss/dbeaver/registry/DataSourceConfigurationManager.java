@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Configuration files manager
@@ -27,6 +29,10 @@ import java.io.InputStream;
 public interface DataSourceConfigurationManager {
 
     boolean isReadOnly();
+
+    boolean isSecure();
+
+    List<DBPDataSourceConfigurationStorage> getConfigurationStorages();
 
     InputStream readConfiguration(@NotNull String name) throws IOException;
 

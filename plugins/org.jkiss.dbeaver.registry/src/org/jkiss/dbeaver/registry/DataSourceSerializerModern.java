@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.ContentEncrypter;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -52,7 +51,6 @@ import org.jkiss.utils.IOUtils;
 import javax.crypto.SecretKey;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -87,6 +85,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     private boolean passwordReadCanceled = false;
     private boolean passwordWriteCanceled = false;
 
+    @NotNull
     private final DataSourceRegistry registry;
     // Secure props.
     //  0 level: datasource ID
@@ -94,7 +93,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     //  2 level: map of secured properties
     private final Map<String, Map<String, Map<String, String>>> secureProperties = new LinkedHashMap<>();
 
-    DataSourceSerializerModern(DataSourceRegistry registry) {
+    DataSourceSerializerModern(@NotNull DataSourceRegistry registry) {
         this.registry = registry;
     }
 
@@ -102,8 +101,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
     public void saveDataSources(
         DBRProgressMonitor monitor,
         DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources,
-        Path configPath) throws DBException
+        List<DataSourceDescriptor> localDataSources) throws DBException
     {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
@@ -275,19 +273,17 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
         String jsonString = dsConfigBuffer.toString(StandardCharsets.UTF_8);
         boolean encryptProject = CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBPProject.PROP_SECURE_PROJECT));
-        saveConfigFile(configPath, jsonString, false, encryptProject);
+        saveConfigFile(configurationStorage.getStorageName(), jsonString, false, encryptProject);
 
-        {
-            saveSecureCredentialsFile(
-                configPath.getParent(),
-                configurationStorage);
+        if (!registry.getConfigurationManager().isSecure()) {
+            saveSecureCredentialsFile(configurationStorage);
         }
     }
 
-    private String loadConfigFile(Path file, boolean decrypt) throws IOException {
+    private String loadConfigFile(InputStream stream, boolean decrypt) throws IOException {
         ByteArrayOutputStream credBuffer = new ByteArrayOutputStream();
-        try (InputStream crdStream = Files.newInputStream(file)) {
-            IOUtils.copyStream(crdStream, credBuffer);
+        try {
+            IOUtils.copyStream(stream, credBuffer);
         } catch (Exception e) {
             log.error("Error reading secure credentials file", e);
         }
@@ -307,7 +303,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
     }
 
-    private void saveConfigFile(Path configFile, String contents, boolean teamPrivate, boolean encrypt) {
+    private void saveConfigFile(String name, String contents, boolean teamPrivate, boolean encrypt) {
         try {
             byte[] binaryContents;
             if (encrypt) {
@@ -319,27 +315,18 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
 
             // Save result to file
-            Files.write(configFile, binaryContents);
+            registry.getConfigurationManager().writeConfiguration(
+                name, new ByteArrayInputStream(binaryContents));
         } catch (Exception e) {
-            log.error("Error saving configuration file " + configFile.toAbsolutePath(), e);
+            log.error("Error saving configuration file", e);
         }
     }
 
-    private void saveSecureCredentialsFile(
-        Path parent,
-        DBPDataSourceConfigurationStorage storage)
-    {
-        Path credFile = parent.resolve(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + storage.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+    private void saveSecureCredentialsFile(DBPDataSourceConfigurationStorage storage) {
+        String credFile = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + storage.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
         try {
-            ContentUtils.makeFileBackup(credFile);
             if (secureProperties.isEmpty()) {
-                if (Files.exists(credFile)) {
-                    try {
-                        Files.delete(credFile);
-                    } catch (IOException e) {
-                        log.debug("Error deleting file " + credFile.toAbsolutePath(), e);
-                    }
-                }
+                saveConfigFile(credFile, "", true, true);
             } else {
                 // Serialize and encrypt
                 String jsonString = SECURE_GSON.toJson(secureProperties, Map.class);
@@ -352,29 +339,29 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     @Override
     public void parseDataSources(
-        Path configPath,
+        Path configPath2,
         DBPDataSourceConfigurationStorage configurationStorage,
         boolean refresh,
         DataSourceRegistry.ParseResults parseResults) throws IOException {
         // Read secured creds file
-        Path mdFolder = registry.getProject().getMetadataFolder(false);
-        if (Files.exists(mdFolder)) {
-            Path credFile = mdFolder.resolve(DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
-            if (Files.exists(credFile)) {
-                try {
-                    String credJson = loadConfigFile(credFile, true);
-                    Map<String, Map<String, Map<String, String>>> res = CONFIG_GSON.fromJson(
-                        credJson,
-                        new TypeToken<Map<String, Map<String, Map<String, String>>>>(){}.getType());
-                    secureProperties.putAll(res);
-                } catch (Exception e) {
-                    log.error("Error decrypting secure credentials", e);
-                }
+        InputStream secureCredsData = registry.getConfigurationManager().readConfiguration(
+            DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getConfigurationFileSuffix() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+        if (secureCredsData != null) {
+            try {
+                String credJson = loadConfigFile(secureCredsData, true);
+                Map<String, Map<String, Map<String, String>>> res = CONFIG_GSON.fromJson(
+                    credJson,
+                    new TypeToken<Map<String, Map<String, Map<String, String>>>>(){}.getType());
+                secureProperties.putAll(res);
+            } catch (Exception e) {
+                log.error("Error decrypting secure credentials", e);
             }
         }
 
         boolean decryptProject = CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBPProject.PROP_SECURE_PROJECT));
-        String configJson = loadConfigFile(configPath, decryptProject);
+        InputStream configData = registry.getConfigurationManager().readConfiguration(
+            configurationStorage.getStorageName());
+        String configJson = loadConfigFile(configData, decryptProject);
         {
             Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, new StringReader(configJson));
 

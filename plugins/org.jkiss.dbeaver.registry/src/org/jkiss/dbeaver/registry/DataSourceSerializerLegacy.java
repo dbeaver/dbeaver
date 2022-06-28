@@ -66,12 +66,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     }
 
     @Override
-    public void saveDataSources(
-        DBRProgressMonitor monitor,
-        DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources,
-        Path configPath) throws IOException
-    {
+    public void saveDataSources(DBRProgressMonitor monitor, DBPDataSourceConfigurationStorage configurationStorage, List<DataSourceDescriptor> localDataSources) throws DBException, IOException {
         throw new IOException("Legacy serializer is deprecated, save not possible");
     }
 

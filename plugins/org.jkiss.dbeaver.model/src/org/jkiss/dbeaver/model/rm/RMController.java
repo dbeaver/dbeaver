@@ -37,13 +37,21 @@ public interface RMController {
 
     RMProject getProject(@NotNull String projectId) throws DBException;
 
-//    String getProjectsDataSourceConfiguration(@NotNull String projectId) throws DBException;
-//
-//    void addProjectDataSource(@NotNull String projectId, @NotNull DBPDataSourceContainer dataSourceContainer);
-//
-//    void updateProjectDataSource(@NotNull String projectId, @NotNull DBPDataSourceContainer dataSourceContainer);
-//
-//    void deleteProjectDataSource(@NotNull String projectId, @NotNull String dsId);
+    /**
+     * Returns datasources configuration in modern format
+     */
+    String getProjectsDataSources(@NotNull String projectId) throws DBException;
+
+    /**
+     * Save datasources. Not: it only adds or updates existing datasources.
+     * @param configuration configuration in modern format.
+     */
+    void saveProjectDataSources(@NotNull String projectId, @NotNull String configuration) throws DBException;
+
+    /**
+     * Delete datasource by Ids
+     */
+    void deleteProjectDataSources(@NotNull String projectId, @NotNull String[] dataSourceIds) throws DBException;
 
     @NotNull
     RMResource[] listResources(

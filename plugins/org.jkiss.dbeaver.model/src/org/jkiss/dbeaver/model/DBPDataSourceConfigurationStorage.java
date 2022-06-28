@@ -29,6 +29,10 @@ public interface DBPDataSourceConfigurationStorage {
 
     String getStorageId();
 
+    default String getStorageName() {
+        return getStorageId();
+    }
+
     boolean isValid();
 
     boolean isDefault();

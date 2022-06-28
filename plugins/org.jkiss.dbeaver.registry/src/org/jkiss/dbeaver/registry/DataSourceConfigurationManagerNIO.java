@@ -17,17 +17,26 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Configuration files manager on FS
  */
 public class DataSourceConfigurationManagerNIO implements DataSourceConfigurationManager {
+
+    private static final Log log = Log.getLog(DataSourceConfigurationManagerNIO.class);
 
     @NotNull
     private final DBPProject project;
@@ -46,13 +55,79 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
     }
 
     @Override
+    public boolean isSecure() {
+        return false;
+    }
+
+    @Override
+    public List<DBPDataSourceConfigurationStorage> getConfigurationStorages() {
+        List<DBPDataSourceConfigurationStorage> storages = new ArrayList<>();
+        Path metadataFolder = project.getMetadataFolder(false);
+        boolean modernFormat = false;
+        if (Files.exists(metadataFolder)) {
+            try {
+                List<Path> mdFiles = Files.list(metadataFolder)
+                    .filter(path -> !Files.isDirectory(path) && Files.exists(path))
+                    .collect(Collectors.toList());
+                for (Path res : mdFiles) {
+                    String fileName = res.getFileName().toString();
+                    if (fileName.startsWith(DataSourceRegistry.MODERN_CONFIG_FILE_PREFIX) &&
+                        fileName.endsWith(DataSourceRegistry.MODERN_CONFIG_FILE_EXT))
+                    {
+                        storages.add(new DataSourceFileStorage(res, false, fileName.equals(DataSourceRegistry.MODERN_CONFIG_FILE_NAME)));
+                        modernFormat = true;
+                    }
+                }
+            } catch (IOException e) {
+                log.error("Error during project files read", e);
+            }
+        }
+        if (!modernFormat) {
+            if (Files.exists(project.getAbsolutePath())) {
+                try {
+                    // Logacy way (search config.xml in project folder)
+                    List<Path> mdFiles = Files.list(project.getAbsolutePath())
+                        .filter(path -> !Files.isDirectory(path) && Files.exists(path))
+                        .collect(Collectors.toList());
+                    for (Path res : mdFiles) {
+                        String fileName = res.getFileName().toString();
+                        if (fileName.startsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_PREFIX) && fileName.endsWith(DBPDataSourceRegistry.LEGACY_CONFIG_FILE_EXT)) {
+                            storages.add(new DataSourceFileStorage(res, true, fileName.equals(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME)));
+                        }
+                    }
+                } catch (IOException e) {
+                    log.error("Error during legacy project files read", e);
+                }
+            }
+        }
+        return storages;
+    }
+
+    @Override
     public InputStream readConfiguration(@NotNull String name) throws IOException {
-        return Files.newInputStream(getConfigurationPath(false).resolve(name));
+        Path path = getConfigurationPath(false).resolve(name);
+        if (!Files.exists(path)) {
+            return null;
+        }
+        return Files.newInputStream(path);
     }
 
     @Override
     public void writeConfiguration(@NotNull String name, @NotNull InputStream data) throws IOException {
+        Path configFile = getConfigurationPath(true).resolve(name);
+        ContentUtils.makeFileBackup(configFile);
         byte[] bytes = data.readAllBytes();
-        Files.write(getConfigurationPath(false).resolve(name), bytes);
+
+        if (bytes.length == 0) {
+            if (Files.exists(configFile)) {
+                try {
+                    Files.delete(configFile);
+                } catch (IOException e) {
+                    log.debug("Error deleting file " + configFile.toAbsolutePath(), e);
+                }
+            }
+        } else {
+            Files.write(configFile, bytes);
+        }
     }
 }

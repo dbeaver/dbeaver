@@ -29,14 +29,16 @@ import java.util.Map;
 /**
  * DataSourceStorage
  */
-class DataSourceStorage implements DBPDataSourceConfigurationStorage
+class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
 {
     private final Path sourceFile;
+    private final boolean isLegacy;
     private final boolean isDefault;
     private final String configSuffix;
 
-    DataSourceStorage(Path sourceFile, boolean isDefault) {
+    DataSourceFileStorage(Path sourceFile, boolean isLegacy, boolean isDefault) {
         this.sourceFile = sourceFile;
+        this.isLegacy = isLegacy;
         this.isDefault = isDefault;
 
         if (isDefault) {
@@ -53,6 +55,15 @@ class DataSourceStorage implements DBPDataSourceConfigurationStorage
     @Override
     public String getStorageId() {
         return "file://" + sourceFile.toAbsolutePath();
+    }
+
+    @Override
+    public String getStorageName() {
+        return sourceFile.getFileName().toString();
+    }
+
+    public boolean isLegacy() {
+        return isLegacy;
     }
 
     @Override

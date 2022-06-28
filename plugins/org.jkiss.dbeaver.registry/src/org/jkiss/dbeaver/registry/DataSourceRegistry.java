@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -70,7 +69,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final DBPProject project;
     private final DataSourceConfigurationManager configurationManager;
 
-    private final Map<Path, DataSourceStorage> storages = new LinkedHashMap<>();
+    private final Map<Path, DataSourceFileStorage> storages = new LinkedHashMap<>();
     private final Map<String, DataSourceDescriptor> dataSources = new LinkedHashMap<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
@@ -156,9 +155,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    DataSourceStorage getDefaultStorage() {
+    DataSourceFileStorage getDefaultStorage() {
         synchronized (storages) {
-            for (DataSourceStorage storage : storages.values()) {
+            for (DataSourceFileStorage storage : storages.values()) {
                 if (storage.isDefault()) {
                     return storage;
                 }
@@ -170,7 +169,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                     defFile = legacyFile;
                 }
             }
-            DataSourceStorage storage = new DataSourceStorage(defFile, true);
+            DataSourceFileStorage storage = new DataSourceFileStorage(defFile, false, true);
             storages.put(defFile, storage);
             return storage;
         }
@@ -723,11 +722,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     private void loadDataSources(@NotNull Path path, boolean refresh, boolean modern, @NotNull ParseResults parseResults) {
         boolean extraConfig = !path.getFileName().toString().equalsIgnoreCase(modern ? MODERN_CONFIG_FILE_NAME : LEGACY_CONFIG_FILE_NAME);
-        DataSourceStorage storage;
+        DataSourceFileStorage storage;
         synchronized (storages) {
             storage = storages.get(path);
             if (storage == null) {
-                storage = new DataSourceStorage(path, !extraConfig);
+                storage = new DataSourceFileStorage(path, false, !extraConfig);
                 storages.put(path, storage);
             }
         }
@@ -760,54 +759,19 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         final DBRProgressMonitor monitor = new VoidProgressMonitor();
         saveInProgress = true;
         try {
-            for (DataSourceStorage storage : storages.values()) {
+            for (DataSourceFileStorage storage : storages.values()) {
                 List<DataSourceDescriptor> localDataSources = getDataSources(storage);
 
-                Path configFile = storage.getSourceFile();
-
-                if (storage.isDefault()) {
-                    if (project.isModernProject()) {
-                        configFile = getModernConfigFile();
-                    } else {
-                        configFile = getLegacyConfigFile();
-                    }
-                } else {
-                    String configFileName = configFile.getFileName().toString();
-                    if (configFileName.startsWith(LEGACY_CONFIG_FILE_PREFIX) && configFileName.endsWith(".xml")) {
-                        // Legacy configuration - move to metadata folder as json
-                        String newFileName = MODERN_CONFIG_FILE_PREFIX + configFileName.substring(LEGACY_CONFIG_FILE_PREFIX.length());
-                        int divPos = newFileName.lastIndexOf(".");
-                        newFileName = newFileName.substring(0, divPos) + ".json";
-                        configFile = project.getMetadataFolder(false).resolve(newFileName);
-                    }
-                }
                 try {
-                    ContentUtils.makeFileBackup(configFile);
-
-                    if (localDataSources.isEmpty()) {
-                        if (Files.exists(configFile)) {
-                            try {
-                                Files.delete(configFile);
-                            } catch (IOException e) {
-                                log.error("Error deleting file '" + configFile.toAbsolutePath() + "'", e);
-                            }
-                        }
-                    } else {
-                        DataSourceSerializer serializer;
-                        if (!project.isModernProject()) {
-                            serializer = new DataSourceSerializerLegacy(this);
-                        } else {
-                            serializer = new DataSourceSerializerModern(this);
-                        }
-                        project.getMetadataFolder(true);
-                        serializer.saveDataSources(
-                            monitor,
-                            storage,
-                            localDataSources,
-                            configFile);
-                    }
+                    DataSourceSerializer serializer = new DataSourceSerializerModern(this);
+                    serializer.saveDataSources(
+                        monitor,
+                        storage,
+                        localDataSources);
                     try {
-                        getSecurePreferences().flush();
+                        if (!configurationManager.isSecure()) {
+                            getSecurePreferences().flush();
+                        }
                     } catch (Throwable e) {
                         log.error("Error saving secured preferences", e);
                     }
@@ -820,7 +784,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    private List<DataSourceDescriptor> getDataSources(DataSourceStorage storage) {
+    private List<DataSourceDescriptor> getDataSources(DataSourceFileStorage storage) {
         List<DataSourceDescriptor> result = new ArrayList<>();
         synchronized (dataSources) {
             for (DataSourceDescriptor ds : dataSources.values()) {
@@ -874,6 +838,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Override
     public DBPProject getProject() {
         return project;
+    }
+
+    public DataSourceConfigurationManager getConfigurationManager() {
+        return configurationManager;
     }
 
     @Override
