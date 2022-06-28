@@ -628,21 +628,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             loadDataSources(cfgStorage, false, parseResults);
         }
 
-        {
-            // Call external configurations
-            Map<String, Object> searchOptions = new LinkedHashMap<>();
-            for (DataSourceConfigurationStorageDescriptor cfd : DataSourceProviderRegistry.getInstance().getDataSourceConfigurationStorages()) {
-                try {
-                    List<? extends DBPDataSourceContainer> loadedDS = cfd.getInstance().loadDataSources(this, searchOptions);
-                    if (!loadedDS.isEmpty()) {
-                        parseResults.addedDataSources.addAll(loadedDS);
-                    }
-                } catch (Exception e) {
-                    log.error("Error loading data sources from storage '" + cfd.getName() + "'", e);
-                }
-            }
-        }
-
         // Reflect changes
         if (refresh) {
             for (DBPDataSourceContainer ds : parseResults.updatedDataSources) {
