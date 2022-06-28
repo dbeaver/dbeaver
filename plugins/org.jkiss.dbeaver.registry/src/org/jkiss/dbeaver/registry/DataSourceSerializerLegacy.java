@@ -45,8 +45,6 @@ import org.xml.sax.Attributes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -71,13 +69,15 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(Path configPath, DBPDataSourceConfigurationStorage configurationStorage, boolean refresh, DataSourceRegistry.ParseResults parseResults)
+    public void parseDataSources(DBPDataSourceConfigurationStorage configurationStorage, boolean refresh, DataSourceRegistry.ParseResults parseResults)
         throws DBException
     {
-        try (InputStream is = Files.newInputStream(configPath)){
-            SAXReader parser = new SAXReader(is);
-            final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);
-            parser.parse(dsp);
+        try (InputStream is = registry.getConfigurationManager().readConfiguration(configurationStorage.getStorageName())) {
+            if (is != null) {
+                SAXReader parser = new SAXReader(is);
+                final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);
+                parser.parse(dsp);
+            }
         } catch (Exception ex) {
             throw new DBException("Datasource config parse error", ex);
         }

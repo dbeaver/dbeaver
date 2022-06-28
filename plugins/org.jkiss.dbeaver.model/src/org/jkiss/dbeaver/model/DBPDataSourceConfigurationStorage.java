@@ -44,4 +44,5 @@ public interface DBPDataSourceConfigurationStorage {
 
     // Used for secure credentials save/load (it is a prt of credentials file name)
     String getConfigurationFileSuffix();
+
 }

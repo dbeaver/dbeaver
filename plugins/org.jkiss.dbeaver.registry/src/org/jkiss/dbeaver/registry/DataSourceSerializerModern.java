@@ -51,7 +51,6 @@ import org.jkiss.utils.IOUtils;
 import javax.crypto.SecretKey;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.*;
 
 class DataSourceSerializerModern implements DataSourceSerializer
@@ -339,7 +338,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     @Override
     public void parseDataSources(
-        Path configPath2,
         DBPDataSourceConfigurationStorage configurationStorage,
         boolean refresh,
         DataSourceRegistry.ParseResults parseResults) throws IOException {

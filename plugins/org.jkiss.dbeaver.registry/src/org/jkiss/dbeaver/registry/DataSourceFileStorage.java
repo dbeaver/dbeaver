@@ -99,6 +99,17 @@ class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DataSourceFileStorage &&
+            sourceFile.equals(((DataSourceFileStorage) obj).sourceFile);
+    }
+
+    @Override
+    public int hashCode() {
+        return sourceFile.hashCode();
+    }
+
+    @Override
     public String toString() {
         return sourceFile.toAbsolutePath().toString();
     }

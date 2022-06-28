@@ -100,6 +100,11 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
                 }
             }
         }
+        if (storages.isEmpty()) {
+            storages.add(
+                new DataSourceFileStorage(
+                    metadataFolder.resolve(DataSourceRegistry.MODERN_CONFIG_FILE_NAME), false, true));
+        }
         return storages;
     }
 
