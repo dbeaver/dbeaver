@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -28,6 +29,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Objects;
 
 /**
  * Generic data source info
@@ -45,6 +48,8 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private boolean supportsUpsert;
     private boolean quoteReservedWords;
     private boolean useSearchStringEscape;
+    private DBPIdentifierCase unquotedCase;
+    private DBPIdentifierCase quotedCase;
     private String dualTable;
     private String testSQL;
     private boolean hasDelimiterAfterQuery;
@@ -82,7 +87,14 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         if (this.supportsUpsert) {
             addSQLKeyword("UPSERT");
         }
+        String driverUnquotedCase =
+            CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_STORES_UNQUOTED_CASE));
+        unquotedCase = determineCase(driverUnquotedCase);
+        String driverQuotedCase =
+            CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_STORES_QUOTED_CASE));
+        quotedCase = determineCase(driverQuotedCase);
         this.useSearchStringEscape = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_USE_SEARCH_STRING_ESCAPE), false);
+
         this.quoteReservedWords = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
         this.testSQL = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_PING));
         if (CommonUtils.isEmpty(this.testSQL)) {
@@ -94,6 +106,24 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         }
         this.omitCatalogName = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG_NAME));
         this.supportsMultiInsert = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_MULTI_INSERT));
+    }
+
+    @Nullable
+    private DBPIdentifierCase determineCase(@Nullable String driverCase) {
+        if (!CommonUtils.isEmpty(driverCase)) {
+            switch (DBPIdentifierCase.valueOf(driverCase.toUpperCase())) {
+                case MIXED:
+                    return DBPIdentifierCase.MIXED;
+                case UPPER:
+                    return DBPIdentifierCase.UPPER;
+                case LOWER:
+                    return DBPIdentifierCase.LOWER;
+                default:
+                    return null;
+            }
+        } else {
+            return null;
+        }
     }
 
     @NotNull
@@ -125,6 +155,18 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     @Override
     public boolean isDelimiterAfterBlock() {
         return hasDelimiterAfterBlock;
+    }
+
+    @NotNull
+    @Override
+    public DBPIdentifierCase storesUnquotedCase() {
+        return Objects.requireNonNullElseGet(unquotedCase, super::storesUnquotedCase);
+    }
+
+    @NotNull
+    @Override
+    public DBPIdentifierCase storesQuotedCase() {
+        return Objects.requireNonNullElseGet(quotedCase, super::storesQuotedCase);
     }
 
     @NotNull
