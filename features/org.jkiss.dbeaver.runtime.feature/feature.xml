@@ -24,6 +24,22 @@
         <import plugin="org.eclipse.core.expressions"/>
     </requires>
 
+    <!-- Bouncycastle -->
+    <plugin id="org.bouncycastle.bcpg" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.bouncycastle.bcpkix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.bouncycastle.bcprov" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.bouncycastle.bcutil" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+    <!-- 3rd party -->
+    <plugin id="com.github.jsqlparser" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="com.google.gson" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="com.jcraft.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.apache.commons.logging" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.objectweb.asm" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+    <!-- our plugins -->
+
     <plugin id="org.jkiss.utils" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.model" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.model.sql" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -41,19 +57,6 @@
     <plugin id="org.jkiss.dbeaver.data.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.bundle.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
-    <!-- Bouncycastle -->
-    <plugin id="org.bouncycastle.bcpg" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.bouncycastle.bcpkix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.bouncycastle.bcprov" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.bouncycastle.bcutil" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
-    <!-- 3rd party -->
-    <plugin id="com.github.jsqlparser" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="com.google.gson" download-size="0" install-size="0" version="0.0.0"/>
-    <plugin id="com.jcraft.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.apache.commons.logging" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.objectweb.asm" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.bundle.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>
