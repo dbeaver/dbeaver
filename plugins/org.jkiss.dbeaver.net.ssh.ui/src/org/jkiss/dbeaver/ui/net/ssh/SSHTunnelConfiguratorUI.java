@@ -35,7 +35,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
+import org.jkiss.dbeaver.model.connection.InternalDataSourceVariableResolver;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
@@ -211,7 +211,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 }
             });
             String hint = SSHUIMessages.model_ssh_configurator_variables_hint_label;
-            variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DBPConnectionConfiguration.CONNECT_VARIABLES, false);
+            variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES,
+                false);
 
             UIUtils.createLink(controlGroup, SSHUIMessages.model_ssh_configurator_ssh_documentation_link, new SelectionAdapter() {
                 @Override
@@ -236,7 +237,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         DBPDataSourceContainer dataSource = configuration.getDataSource();
         if (dataSource != null) {
             configuration.resolveDynamicVariables(
-                new DataSourceVariableResolver(
+                new InternalDataSourceVariableResolver(
                     dataSource,
                     dataSource.getConnectionConfiguration()));
         } else {
@@ -352,7 +353,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         DBPDataSourceContainer dataSource = savedConfiguration.getDataSource();
         if (dataSource != null) {
             variablesHintLabel.setResolver(
-                new DataSourceVariableResolver(
+                new InternalDataSourceVariableResolver(
                     dataSource,
                     dataSource.getConnectionConfiguration()));
         }

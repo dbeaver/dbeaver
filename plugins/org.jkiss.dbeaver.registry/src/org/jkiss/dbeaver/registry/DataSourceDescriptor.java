@@ -847,7 +847,7 @@ public class DataSourceDescriptor
                 }
                 // Process variables
                 if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-                    IVariableResolver variableResolver = new DataSourceVariableResolver(
+                    IVariableResolver variableResolver = new InternalDataSourceVariableResolver(
                         this, this.resolvedConnectionInfo);
                     this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
                 }

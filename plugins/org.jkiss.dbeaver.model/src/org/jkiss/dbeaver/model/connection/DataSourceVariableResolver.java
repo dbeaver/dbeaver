@@ -52,8 +52,6 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                     return configuration.getDatabaseName();
                 case DBPConnectionConfiguration.VARIABLE_USER:
                     return configuration.getUserName();
-                case DBPConnectionConfiguration.VARIABLE_PASSWORD:
-                    return configuration.getUserPassword();
                 case DBPConnectionConfiguration.VARIABLE_URL:
                     return configuration.getUrl();
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:

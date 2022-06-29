@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -49,7 +50,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VARIABLE_DATASOURCE = "datasource";
     public static final String VAR_PROJECT_PATH = "project.path";
     public static final String VAR_PROJECT_NAME = "project.name";
-    public static final String VAR_HOST_OR_DATABASE   = "host_or_database";
+    public static final String VAR_HOST_OR_DATABASE = "host_or_database";
 
     public static final String VARIABLE_DATE = "date";
 
@@ -59,14 +60,11 @@ public class DBPConnectionConfiguration implements DBPObject {
         {VARIABLE_SERVER, "target server name"},
         {VARIABLE_DATABASE, "target database name"},
         {VARIABLE_USER, "database user name"},
-        {VARIABLE_PASSWORD, "database password (plain)"},
         {VARIABLE_URL, "connection URL"},
         {VARIABLE_CONN_TYPE, "connection type"},
         {VARIABLE_DATASOURCE, "datasource"},
-
         {VAR_PROJECT_PATH, "project path"},
         {VAR_PROJECT_NAME, "project name"},
-
         {VARIABLE_DATE, "current date"},
 
         {SystemVariablesResolver.VAR_WORKSPACE, "workspace path"},
@@ -77,6 +75,12 @@ public class DBPConnectionConfiguration implements DBPObject {
         {SystemVariablesResolver.VAR_APP_VERSION, "application version"},
         {SystemVariablesResolver.VAR_LOCAL_IP, "local IP address"},
     };
+
+    public static final String[][] INTERNAL_CONNECT_VARIABLES = ArrayUtils.concatArrays(
+        CONNECT_VARIABLES,
+        new String[][]{
+            {VARIABLE_PASSWORD, "database password (plain)"},
+        });
 
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);
 
