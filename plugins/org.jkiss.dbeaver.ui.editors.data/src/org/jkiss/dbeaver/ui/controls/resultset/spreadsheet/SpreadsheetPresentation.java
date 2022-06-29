@@ -1311,7 +1311,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             Object cellValue = controller.getModel().getCellValue(cellLocation);
             toggleBooleanValue(cellLocation, cellValue);
         } if (isCollectionAttribute(attr) && rowElement.getParent() == null) {
-            spreadsheet.toggleRowExpand(rowElement);
+            spreadsheet.toggleRowExpand(rowElement, columnElement);
         }
     }
 
@@ -2036,19 +2036,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @NotNull
         @Override
-        public CellInformation getCellInfo(
-            @Nullable IGridColumn colElement,
-            @Nullable IGridRow rowElement,
-            boolean selected)
-        {
+        public CellInformation getCellInfo(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement, boolean selected) {
             CellInformation info = new CellInformation();
 
             DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
             ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
-            int[] rowNestedIndexes = getRowNestedIndexes(rowElement);
-
-            Object cellValue = row == null || attr == null ? null :
-                controller.getModel().getCellValue(attr, row, rowNestedIndexes);
+            Object cellValue = row == null || attr == null ? null : getCellValue(colElement, rowElement, false);
 
             info.value = cellValue;
             info.text = formatValue(attr, row, info.value);
@@ -2061,14 +2054,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     if (isShowAsCheckbox(attr)) {
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
                     } else if (
-                        (isCollectionAttribute(attr) && rowElement != null && rowElement.getParent() == null) ||
+                        (isCollectionAttribute(attr) && rowElement.getParent() == null) ||
                             !CommonUtils.isEmpty(attr.getReferrers())) {
                         if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
                         }
                     } else {
-                        String strValue = cellValue != null ? cellValue.toString() :
-                            attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
+                        final String strValue = info.text != null
+                            ? info.text.toString()
+                            : attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
                         if (strValue != null && strValue.contains("://")) {
                             try {
                                 new URL(strValue);
@@ -2102,14 +2096,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     }
                 }
                 // Collections
-                if (info.image == null && rowElement != null && rowElement.getParent() == null) {
+                if (info.image == null && rowElement.getParent() == null) {
                     if (!DBUtils.isNullValue(cellValue) && isCollectionAttribute(attr)) {
-                        info.image = spreadsheet.isRowExpanded(rowElement) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
+                        final GridCell cell = new GridCell(colElement, rowElement);
+                        info.image = spreadsheet.isCellExpanded(cell) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
                     }
                 }
             }
 
-            if (rowElement != null) {
+            {
                 // Background
                 info.background = getCellBackground(
                     attr, row, cellValue, rowElement.getVisualPosition(), selected, false);
@@ -2143,6 +2138,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Nullable
         @Override
         public Object getCellValue(IGridColumn gridColumn, IGridRow gridRow, boolean formatString) {
+            if (gridRow.getParent() != null && !spreadsheet.isCellExpanded(new GridCell(gridColumn, gridRow.getParent()))) {
+                // FIXME: Hack for hiding non-expanded column elements. Will break once nested collection support is added.
+                return DBDVoid.INSTANCE;
+            }
             DBDAttributeBinding attr = getAttributeFromGrid(gridColumn, gridRow);
             ResultSetRow row = getResultRowFromGrid(gridColumn, gridRow);
             if (attr == null || row == null) {
