@@ -21,6 +21,9 @@ import java.util.Map;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
@@ -37,8 +40,10 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorListenerDefault;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -49,17 +54,22 @@ import org.jkiss.code.Nullable;
 public class ConsoleViewSwitchHandler extends AbstractHandler implements IElementUpdater {
     
     private static final String CONSOLE_LOG_ENABLED_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.show.consoleView.isEnabled";
+    private static final String CONSOLE_LOG_ENABLED_VALUE_TRUE = "true";
+    private static final String CONSOLE_LOG_ENABLED_VALUE_FALSE = "false";
+    private static final String CONSOLE_LOG_ENABLED_VALUE_DEFAULT = "default";
     
+    private static final QualifiedName FILE_CONSOLE_LOG_ENABLED_PROP_NAME = new QualifiedName(ConsoleViewActivator.BUNDLE_NAME, CONSOLE_LOG_ENABLED_PROPERTY);
+
     @Nullable
     private static Pair<SQLConsoleLogViewer, CTabItem> findExistingLogViewer(@NotNull SQLEditor editor) {
         for (CTabItem tabItem: editor.getResultTabsContainer().getItems()) {
             if (tabItem.getData() instanceof SQLConsoleLogViewer) {
-                return new Pair<SQLConsoleLogViewer, CTabItem>((SQLConsoleLogViewer) tabItem.getData(), tabItem);
+                return new Pair<>((SQLConsoleLogViewer) tabItem.getData(), tabItem);
             }
         }
         return null;
     }
-    
+
     @NotNull
     private static Pair<SQLConsoleLogViewer, CTabItem> createLogViewer(@NotNull SQLEditor editor) {
         CTabFolder tabsContainer = editor.getResultTabsContainer();
@@ -73,11 +83,9 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
         item.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e) {
-                if (tabsContainer.getItemCount() == 0) {
-                    if (!editor.hasMaximizedControl()) {
-                        // Hide results
-                        editor.toggleResultPanel(false, true);
-                    }
+                if (tabsContainer.getItemCount() == 0 && !editor.hasMaximizedControl()) {
+                    // Hide results
+                    editor.toggleResultPanel(false, true);
                 }
             }
         });
@@ -96,15 +104,13 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
         }
     }
     
-    private static void subscribeEditorData(@NotNull SQLEditor editor) {
+    static void subscribeEditorData(@NotNull SQLEditor editor) {
         editor.addListener(new SQLEditorListenerDefault() {
             @Override
             public void onDataReceived(DBPPreferenceStore contextPrefStore, ResultSetModel resultSet, String name) {
-                if (isLogViewerEnabledForEditor(editor)) {
-                    if (CommonUtils.isNotEmpty(name)) {
-                        SQLConsoleLogViewer viewer = obtainLogViewer(editor).getFirst();
-                        viewer.printGrid(contextPrefStore, resultSet, name);
-                    }
+                if (isLogViewerEnabledForEditor(editor) && CommonUtils.isNotEmpty(name)) {
+                    SQLConsoleLogViewer viewer = obtainLogViewer(editor).getFirst();
+                    viewer.printGrid(contextPrefStore, resultSet, name);
                 }
             }
         });
@@ -126,9 +132,6 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
             }
             setLogViewerEnabledForEditor(editor, false);
         } else {
-            if (!isLogViewerEnabledSetForEditor(editor)) {
-                subscribeEditorData(editor);
-            }
             setLogViewerEnabledForEditor(editor, true);
             if (editor.hasMaximizedControl()) {
                 editor.toggleResultPanel(true, false);
@@ -147,25 +150,58 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
         if (activePage != null) {
             IEditorPart activeEditor = activePage.getActiveEditor();
             if (activeEditor instanceof SQLEditor) {
-                element.setChecked(isLogViewerEnabledForEditor((SQLEditor) activeEditor));
+                SQLEditor editor = (SQLEditor) activeEditor;
+                if (!isLogViewerEnabledSetForEditor(editor)) {
+                    setLogViewerEnabledForEditor(editor, null);
+                }
+                element.setChecked(isLogViewerEnabledForEditor(editor));
             }
         }
     }
     
-    private static boolean isLogViewerEnabledSetForEditor(@NotNull SQLEditor editor) {
+    static boolean isLogViewerEnabledSetForEditor(@NotNull SQLEditor editor) {
         return editor.getPartProperty(CONSOLE_LOG_ENABLED_PROPERTY) != null;
     }
     
     private static boolean isLogViewerEnabledForEditor(@NotNull SQLEditor editor) {
         String value = editor.getPartProperty(CONSOLE_LOG_ENABLED_PROPERTY);
-        return value != null && value.length() > 0;
+        switch (value) {
+            case CONSOLE_LOG_ENABLED_VALUE_TRUE: return true;
+            case CONSOLE_LOG_ENABLED_VALUE_FALSE: return false;
+            case CONSOLE_LOG_ENABLED_VALUE_DEFAULT: // fall through
+            default:
+                {
+                    IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
+                    if (activeFile != null) {
+                        try {
+                            String fileValue = activeFile.getPersistentProperty(FILE_CONSOLE_LOG_ENABLED_PROP_NAME);
+                            if (fileValue != null) {
+                                return fileValue.equals(CONSOLE_LOG_ENABLED_VALUE_TRUE);
+                            }
+                        } catch (CoreException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    return editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT);
+                }
+        }
     }
     
-    private static void setLogViewerEnabledForEditor(@NotNull SQLEditor editor, boolean enabled) {
-        if (enabled) {
-            editor.setPartProperty(CONSOLE_LOG_ENABLED_PROPERTY, CONSOLE_LOG_ENABLED_PROPERTY);
+    private static void setLogViewerEnabledForEditor(@NotNull SQLEditor editor, Boolean enabled) {
+        if (enabled == null) {
+            editor.setPartProperty(CONSOLE_LOG_ENABLED_PROPERTY, CONSOLE_LOG_ENABLED_VALUE_DEFAULT);
         } else {
-            editor.setPartProperty(CONSOLE_LOG_ENABLED_PROPERTY, "");
+            String value = enabled ? CONSOLE_LOG_ENABLED_VALUE_TRUE : CONSOLE_LOG_ENABLED_VALUE_FALSE;
+            editor.setPartProperty(CONSOLE_LOG_ENABLED_PROPERTY, value);
+            
+            IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
+            if (activeFile != null) {
+                try {
+                    activeFile.setPersistentProperty(FILE_CONSOLE_LOG_ENABLED_PROP_NAME, value);
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

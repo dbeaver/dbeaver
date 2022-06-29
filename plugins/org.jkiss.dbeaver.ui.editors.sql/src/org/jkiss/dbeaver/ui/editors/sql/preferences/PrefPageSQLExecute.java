@@ -53,6 +53,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Button soundOnQueryEnd;
     private Button updateDefaultAfterExecute;
     private Button clearOutputBeforeExecute;
+    private Button showConsoleViewByDefault;
 
     private Combo commitTypeCombo;
     private Combo errorHandlingCombo;
@@ -108,7 +109,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
             store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
             store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE) ||
-            store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
+            store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE) ||
+            store.contains(SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT)
         ;
     }
 
@@ -125,12 +127,49 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
         // General settings
         {
-            Composite commonGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_common, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite commonGroup = UIUtils.createControlGroup(
+                composite,
+                SQLEditorMessages.pref_page_sql_editor_group_common,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
             {
-                invalidateBeforeExecuteCheck = UIUtils.createCheckbox(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_invalidate_before_execute, null, false, 2);
-                soundOnQueryEnd = UIUtils.createCheckbox(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_sound_on_query_end, null, false, 2);
-                updateDefaultAfterExecute = UIUtils.createCheckbox(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute, SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute_tip, false, 2);
-                clearOutputBeforeExecute = UIUtils.createCheckbox(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute, SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute_tip, false, 2);
+                invalidateBeforeExecuteCheck = UIUtils.createCheckbox(
+                    commonGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_invalidate_before_execute,
+                    null,
+                    false,
+                    2
+                );
+                soundOnQueryEnd = UIUtils.createCheckbox(
+                    commonGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_sound_on_query_end,
+                    null,
+                    false,
+                    2
+                );
+                updateDefaultAfterExecute = UIUtils.createCheckbox(
+                    commonGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute,
+                    SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute_tip,
+                    false,
+                    2
+                );
+                clearOutputBeforeExecute = UIUtils.createCheckbox(
+                    commonGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute,
+                    SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute_tip,
+                    false,
+                    2
+                );
+                showConsoleViewByDefault = UIUtils.createCheckbox(
+                    commonGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_show_output_console_view,
+                    SQLEditorMessages.pref_page_sql_editor_label_show_output_console_view_tip,
+                    false,
+                    2
+                );
 
                 UIUtils.createControlLabel(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_sql_timeout + UIMessages.label_sec);
                 executeTimeoutText = new Spinner(commonGroup, SWT.BORDER);
@@ -236,6 +275,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             soundOnQueryEnd.setSelection(store.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END));
             updateDefaultAfterExecute.setSelection(store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE));
             clearOutputBeforeExecute.setSelection(store.getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE));
+            showConsoleViewByDefault.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT));
 
             commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE)).ordinal());
             errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING)).ordinal());
@@ -270,6 +310,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.BEEP_ON_QUERY_END, soundOnQueryEnd.getSelection());
             store.setValue(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, updateDefaultAfterExecute.getSelection());
             store.setValue(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, clearOutputBeforeExecute.getSelection());
+            store.setValue(SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT, showConsoleViewByDefault.getSelection());
 
             store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE, CommonUtils.fromOrdinal(SQLScriptCommitType.class, commitTypeCombo.getSelectionIndex()).name());
             store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
@@ -326,6 +367,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);
         store.setToDefault(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE);
         store.setToDefault(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE);
+        store.setToDefault(SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT);
     }
 
     @Override

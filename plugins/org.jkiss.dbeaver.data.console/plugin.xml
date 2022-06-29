@@ -38,5 +38,9 @@
     <extension point="org.eclipse.ui.commandImages">
     	<image commandId="org.jkiss.dbeaver.ui.editors.sql.show.consoleView" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png" />
     </extension>
+    
+    <extension point="org.eclipse.ui.startup">
+        <startup class="org.jkiss.dbeaver.data.console.ConsoleViewActivator" />
+    </extension>
 
 </plugin>

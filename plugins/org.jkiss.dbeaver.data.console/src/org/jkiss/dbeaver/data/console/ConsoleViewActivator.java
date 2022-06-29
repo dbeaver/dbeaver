@@ -16,31 +16,39 @@
  */
 package org.jkiss.dbeaver.data.console;
 
-import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.IStartup;
 import org.eclipse.ui.IWindowListener;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.osgi.framework.BundleContext;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleException;
 import org.jkiss.code.NotNull;
 
-public class ConsoleViewActivator extends Plugin {
-
+public class ConsoleViewActivator implements IStartup {
+    
+    public static final String BUNDLE_NAME = "org.jkiss.dbeaver.data.console";
+    
     public ConsoleViewActivator() {
     }
-
+    
     @Override
-    public void start(@NotNull BundleContext context) throws Exception {
-        super.start(context);
+    public void earlyStartup() {
+        Bundle bundle = Platform.getBundle(BUNDLE_NAME);
+        try {
+            bundle.start();
+        } catch (BundleException e) {
+            
+            e.printStackTrace();
+        }
         watchForActiveEditor();
-    }
-
-    @Override
-    public void stop(@NotNull BundleContext context) throws Exception {
-        super.stop(context);
     }
 
     private static void watchForActiveEditor() {
@@ -59,20 +67,40 @@ public class ConsoleViewActivator extends Plugin {
         
         for (IWorkbenchWindow window: PlatformUI.getWorkbench().getWorkbenchWindows()) {
             watchForWindow(window);
+            for (IWorkbenchPage page: window.getPages()) {
+                IWorkbenchPart part = page.getActivePart();
+                if (part instanceof SQLEditor) {
+                    watchForEditor((SQLEditor)part);
+                }
+            }
         }
+        UIUtils.asyncExec(() -> triggerRefreshCommandState());
     }
     
     private static void watchForWindow(@NotNull IWorkbenchWindow window) {
         window.getPartService().addPartListener(new IPartListener2() {
             @Override
+            public void partOpened(IWorkbenchPartReference partRef) {
+                IWorkbenchPart part = partRef.getPart(false);
+                if (part instanceof SQLEditor) {
+                    watchForEditor((SQLEditor)part);
+                }
+            }
+            @Override
             public void partActivated(IWorkbenchPartReference partRef) {
-                if (partRef.getPart(false) instanceof SQLEditor) {
+                IWorkbenchPart part = partRef.getPart(false);
+                if (part instanceof SQLEditor) {
                     triggerRefreshCommandState();
                 }
             }
         });
     }
     
+    private static void watchForEditor(SQLEditor editor) {
+        if (!ConsoleViewSwitchHandler.isLogViewerEnabledSetForEditor(editor)) {
+            ConsoleViewSwitchHandler.subscribeEditorData(editor);
+        }
+    }
 
     public static void triggerRefreshCommandState() {
         ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);

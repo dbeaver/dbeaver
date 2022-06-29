@@ -109,6 +109,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.BEEP_ON_QUERY_END, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, true);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT, false);
 
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB, true);

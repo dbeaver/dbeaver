@@ -22,6 +22,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFileState;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.e4.ui.model.application.commands.MCommand;
+import org.eclipse.e4.ui.model.application.ui.menu.MHandledItem;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -42,6 +44,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.IMenuService;
@@ -66,6 +69,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
+import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -91,6 +95,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -449,6 +454,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         }
+        UIUtils.asyncExec(() -> updateToolBarCommandState());
     }
 
     private void initSeparateConnection(@NotNull DBPDataSource dataSource, Runnable onSuccess) {
@@ -940,8 +946,6 @@ public class SQLEditor extends SQLEditorBase implements
         leftToolPanel.setLayoutData(new GridData(GridData.FILL_VERTICAL));
         
         topBarMan = new ToolBarManager(SWT.VERTICAL | SWT.FLAT);
-        // topBarMan.add(new Separator(TOOLBAR_GROUP_TOP));
-        // topBarMan.add(new GroupMarker(TOOLBAR_GROUP_TOP));
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT));
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW));
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT));
@@ -977,6 +981,21 @@ public class SQLEditor extends SQLEditorBase implements
 
         bottomBar.pack();
         bottomBarMan.update(true);
+    }
+    
+    private void updateToolBarCommandState() {
+        ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
+        if (commandService != null) {
+            for (ToolItem item: topBarMan.getControl().getItems()) {
+                Object data = item.getData("modelElement");
+                if (data instanceof MHandledItem) {
+                    MCommand cmd = ((MHandledItem)data).getCommand();
+                    if (cmd != null) {
+                        commandService.refreshElements(cmd.getElementId(), null);
+                    }
+                }
+            }
+        }
     }
 
     private void createPresentationSwitchBar(Composite sqlEditorPanel) {
@@ -2998,6 +3017,9 @@ public class SQLEditor extends SQLEditorBase implements
             case SQLPreferenceConstants.SCRIPT_TITLE_PATTERN:
                 setPartName(getEditorName());
                 return;
+            case SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT:
+                UIUtils.asyncExec(() -> updateToolBarCommandState());
+                return;
         }
         super.preferenceChange(event);
     }
@@ -3375,7 +3397,7 @@ public class SQLEditor extends SQLEditorBase implements
                 this.viewer = sqlView.getViewer();
             } else {
                 // Embedded results viewer
-                this.viewer = new ResultSetViewer(resultTabs, getSite(), this, rs -> notifyOnDataListeners(this)); // TODO , consoleView);
+                this.viewer = new ResultSetViewer(resultTabs, getSite(), this, rs -> notifyOnDataListeners(this));
                 this.viewer.addListener(this);
                 
                 int tabCount = resultTabs.getItemCount();

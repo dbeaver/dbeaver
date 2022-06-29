@@ -39,14 +39,12 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorOutputConsoleViewer;
 import org.jkiss.utils.CommonUtils;
 
 public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
-    
+
+    private boolean showNulls;
+
     public SQLConsoleLogViewer(@NotNull IWorkbenchPartSite site, @NotNull CTabFolder tabsContainer, int styles) {
         super(site, tabsContainer, new MessageConsole("sql-data-log-output", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)));
     }
-    
-    private boolean showNulls;
-    private boolean rightJustifyNumbers;
-    private boolean rightJustifyDateTime;
 
     public void printGrid(@NotNull DBPPreferenceStore prefs, @NotNull ResultSetModel model, @Nullable String name) {
         int maxColumnSize = prefs.getInt(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
@@ -54,8 +52,8 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
         boolean delimTrailing = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING);
         boolean extraSpaces = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
         showNulls = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS);
-        rightJustifyNumbers = prefs.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
-        rightJustifyDateTime = prefs.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
+        boolean rightJustifyNumbers = prefs.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
+        boolean rightJustifyDateTime = prefs.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
         int tabSize = prefs.getInt(ResultSetPreferences.RESULT_TEXT_TAB_SIZE);
 
         DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT));
@@ -231,6 +229,8 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
                 case '\t':
                     c = ' ';
                     break;
+                default:
+                    continue;
             }
             if (c < ' '/* || (c > 127 && c < 255)*/) {
                 c = ' ';

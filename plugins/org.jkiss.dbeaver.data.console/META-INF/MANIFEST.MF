@@ -6,10 +6,9 @@ Bundle-Version: 1.0.59.qualifier
 Bundle-Release-Date: 20220606
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-ActivationPolicy: lazy
-Bundle-Activator: org.jkiss.dbeaver.data.console.ConsoleViewActivator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.console,
+ org.eclipse.osgi,
  org.jkiss.dbeaver.ui,
  org.eclipse.swt,
  org.jkiss.dbeaver.core,
