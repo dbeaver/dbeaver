@@ -364,8 +364,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
         boolean decryptProject = CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBPProject.PROP_SECURE_PROJECT));
         InputStream configData = registry.getConfigurationManager().readConfiguration(
             configurationStorage.getStorageName());
-        String configJson = loadConfigFile(configData, decryptProject);
-        {
+        if (configData != null) {
+            String configJson = loadConfigFile(configData, decryptProject);
+
             Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, new StringReader(configJson));
 
             // Folders
