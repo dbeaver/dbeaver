@@ -1016,19 +1016,14 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @Override
     protected String getStandardSQLDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
-            case BOOLEAN: return "BOOLEAN";
-            case NUMERIC: return "NUMERIC";
-            case STRING: return "VARCHAR2";
-            case DATETIME: return "TIMESTAMP";
-            case BINARY: return "BLOB";
-            case CONTENT: return "BLOB";
-            case STRUCT: return "VARCHAR2";
-            case ARRAY: return "VARCHAR2";
-            case OBJECT: return "VARCHAR2";
-            case REFERENCE: return "VARCHAR2";
-            case ROWID: return "ROWID";
-            case ANY: return "VARCHAR2";
-            default: return "VARCHAR2";
+            case BOOLEAN: return OracleConstants.TYPE_NAME_BOOLEAN;
+            case NUMERIC: return OracleConstants.TYPE_NAME_NUMERIC;
+            case DATETIME: return OracleConstants.TYPE_NAME_TIMESTAMP;
+            case BINARY:
+            case CONTENT:
+                return OracleConstants.TYPE_NAME_BLOB;
+            case ROWID: return OracleConstants.TYPE_NAME_ROWID;
+            default: return OracleConstants.TYPE_NAME_VARCHAR2;
         }
     }
 }
