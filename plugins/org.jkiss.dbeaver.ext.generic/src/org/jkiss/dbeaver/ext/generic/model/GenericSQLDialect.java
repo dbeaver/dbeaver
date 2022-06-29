@@ -88,11 +88,13 @@ public class GenericSQLDialect extends JDBCSQLDialect {
             addSQLKeyword("UPSERT");
         }
         String driverUnquotedCase =
-            CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_STORES_UNQUOTED_CASE));
-        unquotedCase = determineCase(driverUnquotedCase);
+            CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_STORED_UNQUOTED_CASE));
+        unquotedCase = CommonUtils.valueOf(DBPIdentifierCase.class, driverUnquotedCase.toUpperCase());
+
         String driverQuotedCase =
-            CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_STORES_QUOTED_CASE));
-        quotedCase = determineCase(driverQuotedCase);
+            CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_STORED_QUOTED_CASE));
+        quotedCase = CommonUtils.valueOf(DBPIdentifierCase.class, driverQuotedCase.toUpperCase());
+
         this.useSearchStringEscape = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_USE_SEARCH_STRING_ESCAPE), false);
 
         this.quoteReservedWords = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
@@ -106,24 +108,6 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         }
         this.omitCatalogName = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG_NAME));
         this.supportsMultiInsert = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_MULTI_INSERT));
-    }
-
-    @Nullable
-    private DBPIdentifierCase determineCase(@Nullable String driverCase) {
-        if (!CommonUtils.isEmpty(driverCase)) {
-            switch (DBPIdentifierCase.valueOf(driverCase.toUpperCase())) {
-                case MIXED:
-                    return DBPIdentifierCase.MIXED;
-                case UPPER:
-                    return DBPIdentifierCase.UPPER;
-                case LOWER:
-                    return DBPIdentifierCase.LOWER;
-                default:
-                    return null;
-            }
-        } else {
-            return null;
-        }
     }
 
     @NotNull
