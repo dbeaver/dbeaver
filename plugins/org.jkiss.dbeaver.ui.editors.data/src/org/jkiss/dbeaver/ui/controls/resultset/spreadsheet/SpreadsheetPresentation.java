@@ -2053,9 +2053,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
                     if (isShowAsCheckbox(attr)) {
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
-                    } else if (
-                        (isCollectionAttribute(attr) && rowElement.getParent() == null) ||
-                            !CommonUtils.isEmpty(attr.getReferrers())) {
+                    } else if (isShowAsLink(rowElement, attr)) {
                         if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
                         }
@@ -2096,11 +2094,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     }
                 }
                 // Collections
-                if (info.image == null && rowElement.getParent() == null) {
-                    if (!DBUtils.isNullValue(cellValue) && isCollectionAttribute(attr)) {
-                        final GridCell cell = new GridCell(colElement, rowElement);
-                        info.image = spreadsheet.isCellExpanded(cell) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
-                    }
+                if (info.image == null && isShowAsLink(rowElement, attr) && !DBUtils.isNullValue(cellValue)) {
+                    final GridCell cell = new GridCell(colElement, rowElement);
+                    info.image = spreadsheet.isCellExpanded(cell) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
                 }
             }
 
@@ -2527,6 +2523,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private boolean isShowAsCheckbox(DBDAttributeBinding attr) {
         return showBooleanAsCheckbox && attr.getPresentationAttribute().getDataKind() == DBPDataKind.BOOLEAN;
+    }
+
+    private boolean isShowAsLink(@NotNull IGridRow rowElement, @NotNull DBDAttributeBinding attr) {
+        if (!CommonUtils.isEmpty(attr.getReferrers())) {
+            return true;
+        }
+        return rowElement.getParent() == null && spreadsheet.getColumnCount() > 1 && isCollectionAttribute(attr);
     }
 
     private class GridLabelProvider implements IGridLabelProvider {
