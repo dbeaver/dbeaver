@@ -237,6 +237,9 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
             return IApplication.EXIT_OK;
         }
 
+        // Init platform
+        DBWorkbench.getPlatform();
+        // Debug logger
         initDebugWriter();
         TimezoneRegistry.overrideTimezone();
         updateSplashHandler();
