@@ -87,14 +87,19 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         if (this.supportsUpsert) {
             addSQLKeyword("UPSERT");
         }
-        String driverUnquotedCase =
-            CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_STORED_UNQUOTED_CASE));
-        unquotedCase = CommonUtils.valueOf(DBPIdentifierCase.class, driverUnquotedCase.toUpperCase());
+        String driverUnquotedCase = CommonUtils.toString(
+            driver.getDriverParameter(GenericConstants.PARAM_STORED_UNQUOTED_CASE),
+            null);
+        if (!CommonUtils.isEmpty(driverUnquotedCase)) {
+            unquotedCase = CommonUtils.valueOf(DBPIdentifierCase.class, driverUnquotedCase.toUpperCase());
+        }
 
-        String driverQuotedCase =
-            CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_STORED_QUOTED_CASE));
-        quotedCase = CommonUtils.valueOf(DBPIdentifierCase.class, driverQuotedCase.toUpperCase());
-
+        String driverQuotedCase = CommonUtils.toString(
+            driver.getDriverParameter(GenericConstants.PARAM_STORED_QUOTED_CASE),
+            null);
+        if (!CommonUtils.isEmpty(driverQuotedCase)) {
+            quotedCase = CommonUtils.valueOf(DBPIdentifierCase.class, driverQuotedCase.toUpperCase());
+        }
         this.useSearchStringEscape = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_USE_SEARCH_STRING_ESCAPE), false);
 
         this.quoteReservedWords = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
