@@ -678,7 +678,7 @@ public class SQLEditor extends SQLEditorBase implements
     private boolean isRestoreActiveSchemaFromScript() {
         return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA) &&
             getActivePreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
-            !this.getDataSourceContainer().isForceUseSingleConnection();
+            (this.getDataSourceContainer() == null || !this.getDataSourceContainer().isForceUseSingleConnection());
     }
 
     private static class CloseContextJob extends AbstractJob {
