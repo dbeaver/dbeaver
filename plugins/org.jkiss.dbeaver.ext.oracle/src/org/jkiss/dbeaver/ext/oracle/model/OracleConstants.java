@@ -106,6 +106,7 @@ public class OracleConstants {
     public static final String TYPE_NAME_CFILE = "CFILE";
     public static final String TYPE_CONTENT_POINTER = "CONTENT POINTER";
     public static final String TYPE_NAME_DATE = "DATE";
+    public static final String TYPE_NAME_ROWID = "ROWID";
     public static final String TYPE_NAME_VARCHAR2 = "VARCHAR2";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
     public static final String TYPE_NUMBER = "NUMBER";
@@ -116,6 +117,9 @@ public class OracleConstants {
     public static final String TYPE_OCTET = "OCTET";
     public static final String TYPE_INTERVAL_YEAR_MONTH = "INTERVAL YEAR TO MONTH";
     public static final String TYPE_INTERVAL_DAY_SECOND = "INTERVAL DAY TO SECOND";
+    public static final String TYPE_NAME_BOOLEAN = "BOOLEAN";
+    public static final String TYPE_NAME_BLOB = "BLOB";
+    public static final String TYPE_NAME_NUMERIC = "NUMERIC";
 
     public static final int TIMESTAMP_TYPE_LENGTH = 13;
     public static final int DATE_TYPE_LENGTH = 7;
