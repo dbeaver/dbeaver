@@ -237,13 +237,6 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
             return IApplication.EXIT_OK;
         }
 
-        // Init platform
-        DBWorkbench.getPlatform();
-        // Debug logger
-        initDebugWriter();
-        TimezoneRegistry.overrideTimezone();
-        updateSplashHandler();
-
         final Runtime runtime = Runtime.getRuntime();
 
         // Init Core plugin and mark it as standalone version
@@ -254,6 +247,13 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         log.debug("Install path: '" + SystemVariablesResolver.getInstallPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Memory available " + (runtime.totalMemory() / (1024 * 1024)) + "Mb/" + (runtime.maxMemory() / (1024 * 1024)) + "Mb");
+
+        // Init platform
+        DBWorkbench.getPlatform();
+        // Debug logger
+        initDebugWriter();
+        TimezoneRegistry.overrideTimezone();
+        updateSplashHandler();
 
         // Write version info
         writeWorkspaceInfo();
