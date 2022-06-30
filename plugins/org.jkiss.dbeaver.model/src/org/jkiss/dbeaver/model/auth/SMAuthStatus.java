@@ -19,5 +19,6 @@ package org.jkiss.dbeaver.model.auth;
 public enum SMAuthStatus {
     SUCCESS,
     IN_PROGRESS,
-    ERROR
+    ERROR,
+    EXPIRED
 }

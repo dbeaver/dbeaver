@@ -87,7 +87,6 @@ public interface SMController extends SMAuthCredentialsManager {
 
     SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
 
-
     void updateSession(
         @NotNull String sessionId,
         @Nullable String userId,
