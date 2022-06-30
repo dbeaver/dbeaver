@@ -29,11 +29,9 @@ import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -54,7 +52,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
 
     public static final String DEFAULT_RESOURCES_ROOT = "Resources"; //$NON-NLS-1$
 
-    private static final String PROP_PROJECT_ACTIVE = "project.active";
+    protected static final String PROP_PROJECT_ACTIVE = "project.active";
     private static final String EXT_FILES_PROPS_STORE = "dbeaver-external-files.data";
 
     private static final String WORKSPACE_ID = "workspace-id";
@@ -63,9 +61,10 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
     private final IWorkspace eclipseWorkspace;
     private final SessionContextImpl workspaceAuthContext;
 
-    private final Map<IProject, ProjectMetadata> projects = new LinkedHashMap<>();
+    protected final Map<IProject, ProjectMetadata> projects = new LinkedHashMap<>();
+    protected DBPProject activeProject;
+
     private final ProjectListener projectListener;
-    private ProjectMetadata activeProject;
     private final List<DBPProjectListener> projectListeners = new ArrayList<>();
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<>();
     private final Map<String, Map<String, Object>> externalFileProperties = new HashMap<>();
@@ -84,72 +83,12 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
         loadExternalFileProperties();
     }
 
-    private void loadWorkspaceProjects() {
-        try {
-            this.workspaceAuthContext.addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
-        } catch (DBException e) {
-            log.debug(e);
-            DBWorkbench.getPlatformUI().showMessageBox(
-                "Authentication error",
-                "Error authenticating application user: " +
-                    "\n" + e.getMessage(),
-                true);
-            System.exit(101);
-        }
-
-        String activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
-
-        IWorkspaceRoot root = eclipseWorkspace.getRoot();
-        IProject[] allProjects = root.getProjects();
-        if (ArrayUtils.isEmpty(allProjects)) {
-            try {
-                refreshWorkspaceContents(new LoggingProgressMonitor(log));
-            } catch (Throwable e) {
-                log.error(e);
-            }
-            allProjects = root.getProjects();
-        }
-        for (IProject project : allProjects) {
-            if (project.exists() && !project.isHidden()) {
-                ProjectMetadata projectMetadata = new ProjectMetadata(this, project, this.workspaceAuthContext);
-                this.projects.put(project, projectMetadata);
-
-                if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && project.getName().equals(activeProjectName))) {
-                    activeProject = projectMetadata;
-                }
-            }
-        }
-
-        if (activeProject != null && !activeProject.isOpen()) {
-            try {
-                activeProject.ensureOpen();
-            } catch (IllegalStateException e) {
-                log.error("Error opening active project", e);
-            }
-        }
-    }
-
     @NotNull
     protected SMSession acquireWorkspaceSession(@NotNull DBRProgressMonitor monitor) throws DBException {
         return new BasicWorkspaceSession(this);
     }
 
-    public void initializeProjects() {
-        loadWorkspaceProjects();
-
-        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects)) {
-            try {
-                createDefaultProject(new NullProgressMonitor());
-            } catch (CoreException e) {
-                log.error("Can't create default project", e);
-            }
-        }
-        if (activeProject == null && !projects.isEmpty()) {
-            // Set active project
-            activeProject = projects.values().iterator().next();
-            platform.getPreferenceStore().setValue(PROP_PROJECT_ACTIVE, activeProject.getName());
-        }
-    }
+    public abstract void initializeProjects();
 
     public static Properties readWorkspaceInfo(Path metadataFolder) {
         Properties props = new Properties();
@@ -229,13 +168,15 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
 
     @Override
     public void setActiveProject(DBPProject project) {
-        ProjectMetadata oldActiveProject = this.activeProject;
-        this.activeProject = (ProjectMetadata) project;
+        DBPProject oldActiveProject = this.activeProject;
+        this.activeProject = project;
 
-        platform.getPreferenceStore().setValue(
-            PROP_PROJECT_ACTIVE, project == null ? "" : project.getName());
+        if (!CommonUtils.equalObjects(oldActiveProject, project)) {
+            platform.getPreferenceStore().setValue(
+                PROP_PROJECT_ACTIVE, project == null ? "" : project.getName());
 
-        fireActiveProjectChange(oldActiveProject, this.activeProject);
+            fireActiveProjectChange(oldActiveProject, this.activeProject);
+        }
     }
 
     @Override
@@ -353,26 +294,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
             eclipseWorkspace.save(true, monitor.getNestedMonitor());
         } catch (CoreException e) {
             throw new DBException("Error saving Eclipse workspace", e);
-        }
-    }
-
-    private IProject createDefaultProject(IProgressMonitor monitor) throws CoreException {
-        final String baseProjectName = DBWorkbench.getPlatform().getApplication().getDefaultProjectName();
-        String projectName = baseProjectName;
-        for (int i = 1; ; i++) {
-            final IProject project = eclipseWorkspace.getRoot().getProject(projectName);
-            if (project.exists()) {
-                projectName = baseProjectName + i;
-                continue;
-            }
-            project.create(monitor);
-            project.open(monitor);
-            final IProjectDescription description = eclipseWorkspace.newProjectDescription(project.getName());
-            description.setComment("General DBeaver project");
-            description.setNatureIds(new String[]{DBeaverNature.NATURE_ID});
-            project.setDescription(description, monitor);
-
-            return project;
         }
     }
 
@@ -616,7 +537,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
         }
     }
 
-    private void fireActiveProjectChange(ProjectMetadata oldActiveProject, ProjectMetadata activeProject) {
+    private void fireActiveProjectChange(DBPProject oldActiveProject, DBPProject activeProject) {
         for (DBPProjectListener listener : getListenersCopy()) {
             listener.handleActiveProjectChange(oldActiveProject, activeProject);
         }
