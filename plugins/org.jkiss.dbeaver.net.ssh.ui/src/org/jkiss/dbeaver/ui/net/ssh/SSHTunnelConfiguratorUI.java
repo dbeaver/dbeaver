@@ -35,7 +35,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.InternalDataSourceVariableResolver;
+import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
@@ -236,10 +236,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         saveSettings(configuration);
         DBPDataSourceContainer dataSource = configuration.getDataSource();
         if (dataSource != null) {
-            configuration.resolveDynamicVariables(
-                new InternalDataSourceVariableResolver(
-                    dataSource,
-                    dataSource.getConnectionConfiguration()));
+            configuration.resolveDynamicVariables(new DataSourceVariableResolver(dataSource,
+                dataSource.getConnectionConfiguration()));
         } else {
             configuration.resolveDynamicVariables(SystemVariablesResolver.INSTANCE);
         }
@@ -353,7 +351,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         DBPDataSourceContainer dataSource = savedConfiguration.getDataSource();
         if (dataSource != null) {
             variablesHintLabel.setResolver(
-                new InternalDataSourceVariableResolver(
+                new DataSourceVariableResolver(
                     dataSource,
                     dataSource.getConnectionConfiguration()));
         }

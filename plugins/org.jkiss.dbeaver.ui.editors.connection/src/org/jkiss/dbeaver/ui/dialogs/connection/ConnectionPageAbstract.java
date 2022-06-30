@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.InternalDataSourceVariableResolver;
+import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
@@ -94,7 +94,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
         if (variablesHintLabel != null) {
             if (dataSource != null) {
-                variablesHintLabel.setResolver(new InternalDataSourceVariableResolver(dataSource, dataSource.getConnectionConfiguration()));
+                variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
+                    dataSource.getConnectionConfiguration()));
             } else {
                 variablesHintLabel.setResolver(null);
             }

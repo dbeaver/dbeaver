@@ -25,9 +25,14 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
     private final DBPDataSourceContainer dataSourceContainer;
     private final DBPConnectionConfiguration configuration;
 
-    public DataSourceVariableResolver(@Nullable DBPDataSourceContainer dataSourceContainer, @Nullable DBPConnectionConfiguration configuration) {
+    public DataSourceVariableResolver(
+        @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable DBPConnectionConfiguration configuration) {
         this.dataSourceContainer = dataSourceContainer;
         this.configuration = configuration;
+    }
+
+    public boolean isSecure() {
+        return true;
     }
 
     protected DBPDataSourceContainer getDataSourceContainer() {
@@ -56,6 +61,9 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                     return configuration.getUrl();
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:
                     return configuration.getConnectionType().getId();
+            }
+            if (DBPConnectionConfiguration.VARIABLE_PASSWORD.equals(name) && isSecure()) {
+                return configuration.getUserPassword();
             }
         }
         if (dataSourceContainer != null) {
