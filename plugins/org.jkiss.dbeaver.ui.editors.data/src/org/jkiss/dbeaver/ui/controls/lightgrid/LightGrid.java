@@ -133,6 +133,15 @@ public abstract class LightGrid extends Canvas {
             return state != null && state.expanded;
         }
 
+        public boolean isAnyColumnExpanded() {
+            for (CellExpandState state : columns.values()) {
+                if (state.expanded) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public boolean isAllColumnsExpanded() {
             // FIXME: Doesn't work if the containing row has collection attributes whose values are NULL
             for (CellExpandState state : columns.values()) {
@@ -529,7 +538,7 @@ public abstract class LightGrid extends Canvas {
             return 0;
         }
         final RowExpandState rowState = expandedRows.get(new RowLocation(row));
-        return rowState != null ? rowState.getMaxLength() : 0;
+        return rowState != null && rowState.isAnyColumnExpanded() ? rowState.getMaxLength() : 0;
     }
 
     private int collectNestedRows(List<IGridRow> result, IGridRow parentRow, int index, int colLength) {
@@ -3390,6 +3399,10 @@ public abstract class LightGrid extends Canvas {
             return IGridContentProvider.ElementState.EXPANDED;
         }
 
+        if (getContentProvider().isCollectionElement(row)) {
+            return IGridContentProvider.ElementState.COLLAPSED;
+        }
+
         for (GridColumn column : columns) {
             if (getContentProvider().isCollectionElement(column)) {
                 return IGridContentProvider.ElementState.COLLAPSED;
@@ -3406,6 +3419,10 @@ public abstract class LightGrid extends Canvas {
         if (rowState == null) {
             if (getContentProvider().hasChildren(gridRow.getElement())) {
                 rowState = new RowExpandState(true);
+
+                for (GridColumn column : columns) {
+                    rowState.columns.put(column, new CellExpandState(0));
+                }
             } else {
                 rowState = new RowExpandState(false);
 
