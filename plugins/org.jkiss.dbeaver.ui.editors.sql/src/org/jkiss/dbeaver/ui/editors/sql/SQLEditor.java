@@ -2884,11 +2884,15 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void saveToExternalFile() {
-        saveToExternalFile(getScriptsDirectory());
+        saveToExternalFile(getScriptDirectory());
     }
 
     @Nullable
-    private static String getScriptsDirectory() {
+    private String getScriptDirectory() {
+        final File inputFile = EditorUtils.getLocalFileFromInput(getEditorInput());
+        if (inputFile != null) {
+            return inputFile.getParent();
+        }
         final DBPWorkspaceEclipse workspace = ((DBPWorkspaceEclipse) DBWorkbench.getPlatform().getWorkspace());
         final IFolder root = workspace.getResourceDefaultRoot(workspace.getActiveProject(), ScriptsHandlerImpl.class, false);
         if (root != null) {
