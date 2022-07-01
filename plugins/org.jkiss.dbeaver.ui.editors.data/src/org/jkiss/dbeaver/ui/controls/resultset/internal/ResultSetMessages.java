@@ -446,6 +446,9 @@ public class ResultSetMessages extends NLS {
     public static String filter_panel_filters_history_text;
     public static String filter_panel_expand_panel_text;
 
+    public static String generate_ddl_by_result_set_name;
+    public static String generate_ddl_by_result_set_tip;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ResultSetMessages.class);
