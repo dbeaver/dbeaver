@@ -16,21 +16,8 @@
  */
 package org.jkiss.dbeaver.data.console;
 
-import org.eclipse.osgi.util.NLS;
 
-public class ConsoleMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.data.console.ConsoleMessages"; //$NON-NLS-1$
+public class SQLConsoleViewPreferenceConstants {
+    public final static String SHOW_CONSOLE_VIEW_BY_DEFAULT = "SQLEditor.ConsoleView.showConsoleViewByDefault";
 
-    public static String console_view_item_text;
-    public static String pref_page_console_view_label_show_output_console_view;
-    public static String pref_page_console_view_label_show_output_console_view_tip;
-    public static String console_view_action_tooltip;
-
-    static {
-        // resource bundle initialization
-        NLS.initializeMessages(BUNDLE_NAME, ConsoleMessages.class);
-    }
-
-    private ConsoleMessages() {
-    }
 }

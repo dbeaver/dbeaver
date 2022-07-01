@@ -53,7 +53,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Button soundOnQueryEnd;
     private Button updateDefaultAfterExecute;
     private Button clearOutputBeforeExecute;
-    private Button showConsoleViewByDefault;
 
     private Combo commitTypeCombo;
     private Combo errorHandlingCombo;
@@ -109,8 +108,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
             store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
             store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE) ||
-            store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE) ||
-            store.contains(SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT)
+            store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
         ;
     }
 
@@ -160,13 +158,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
                     commonGroup,
                     SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute,
                     SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute_tip,
-                    false,
-                    2
-                );
-                showConsoleViewByDefault = UIUtils.createCheckbox(
-                    commonGroup,
-                    SQLEditorMessages.pref_page_sql_editor_label_show_output_console_view,
-                    SQLEditorMessages.pref_page_sql_editor_label_show_output_console_view_tip,
                     false,
                     2
                 );
@@ -275,7 +266,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
             soundOnQueryEnd.setSelection(store.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END));
             updateDefaultAfterExecute.setSelection(store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE));
             clearOutputBeforeExecute.setSelection(store.getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE));
-            showConsoleViewByDefault.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT));
 
             commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE)).ordinal());
             errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING)).ordinal());
@@ -310,7 +300,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.BEEP_ON_QUERY_END, soundOnQueryEnd.getSelection());
             store.setValue(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, updateDefaultAfterExecute.getSelection());
             store.setValue(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, clearOutputBeforeExecute.getSelection());
-            store.setValue(SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT, showConsoleViewByDefault.getSelection());
 
             store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE, CommonUtils.fromOrdinal(SQLScriptCommitType.class, commitTypeCombo.getSelectionIndex()).name());
             store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
@@ -367,7 +356,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);
         store.setToDefault(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE);
         store.setToDefault(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE);
-        store.setToDefault(SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT);
     }
 
     @Override

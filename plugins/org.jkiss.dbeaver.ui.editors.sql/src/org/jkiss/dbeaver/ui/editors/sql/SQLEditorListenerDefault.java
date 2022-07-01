@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener.PreferenceChangeEvent;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.code.NotNull;
@@ -58,6 +59,11 @@ public class SQLEditorListenerDefault implements SQLEditorListener
 
     }
 
+    @Override
+    public void onDataSourceChanged(PreferenceChangeEvent event) {
+        
+    }
+    
     @Override
     public void onDataReceived(@NotNull DBPPreferenceStore contextPrefStore, @NotNull ResultSetModel resultSet, @Nullable String name) {
 

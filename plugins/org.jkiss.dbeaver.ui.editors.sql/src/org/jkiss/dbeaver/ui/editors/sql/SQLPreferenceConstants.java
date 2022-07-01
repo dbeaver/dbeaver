@@ -112,7 +112,6 @@ public class SQLPreferenceConstants
     public final static String BEEP_ON_QUERY_END                        = "SQLEditor.beepOnQueryEnd";
     public final static String REFRESH_DEFAULTS_AFTER_EXECUTE           = "SQLEditor.refreshDefaultsAfterExecute";
     public final static String CLEAR_OUTPUT_BEFORE_EXECUTE              = "SQLEditor.clearOutputBeforeExecute";
-    public final static String SHOW_CONSOLE_VIEW_BY_DEFAULT             = "SQLEditor.showConsoleViewByDefault";
 
     public final static String RESULT_SET_CLOSE_ON_ERROR                = "SQLEditor.resultSet.closeOnError";
     public final static String RESULT_SET_REPLACE_CURRENT_TAB           = "SQLEditor.resultSet.replaceCurrentTab"; //$NON-NLS-1$

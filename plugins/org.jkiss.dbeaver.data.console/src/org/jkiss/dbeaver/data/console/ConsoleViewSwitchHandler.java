@@ -16,21 +16,12 @@
  */
 package org.jkiss.dbeaver.data.console;
 
-import java.util.Map;
-
 import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.menus.UIElement;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.DisposeEvent;
@@ -43,7 +34,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorListenerDefault;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -51,14 +41,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 
-public class ConsoleViewSwitchHandler extends AbstractHandler implements IElementUpdater {
+public class ConsoleViewSwitchHandler extends AbstractHandler {
     
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.data.console";
+
     private static final String CONSOLE_LOG_ENABLED_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.show.consoleView.isEnabled";
     private static final String CONSOLE_LOG_ENABLED_VALUE_TRUE = "true";
     private static final String CONSOLE_LOG_ENABLED_VALUE_FALSE = "false";
     private static final String CONSOLE_LOG_ENABLED_VALUE_DEFAULT = "default";
     
-    private static final QualifiedName FILE_CONSOLE_LOG_ENABLED_PROP_NAME = new QualifiedName(ConsoleViewActivator.BUNDLE_NAME, CONSOLE_LOG_ENABLED_PROPERTY);
+    private static final QualifiedName FILE_CONSOLE_LOG_ENABLED_PROP_NAME = new QualifiedName(BUNDLE_NAME, CONSOLE_LOG_ENABLED_PROPERTY);
 
     @Nullable
     private static Pair<SQLConsoleLogViewer, CTabItem> findExistingLogViewer(@NotNull SQLEditor editor) {
@@ -89,7 +81,7 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
                 }
             }
         });
-        
+        editor.getResultTabsContainer().setSelection(item);
         UIUtils.disposeControlOnItemDispose(item);
         return new Pair<>(viewer, item);
     }
@@ -119,12 +111,15 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
-        if (editor == null) {
-            return null;
+        if (editor != null) {
+            toggleConsoleViewForEditor(editor);
         }
+        return null;
+    }
 
-        Command command = event.getCommand();
-        if (isLogViewerEnabledForEditor(editor)) {
+    public static void toggleConsoleViewForEditor(@NotNull SQLEditor editor) {
+        boolean wasEnabled = isLogViewerEnabledForEditor(editor);
+        if (wasEnabled) {
             Pair<SQLConsoleLogViewer, CTabItem> viewerAndTab = findExistingLogViewer(editor);
             if (viewerAndTab != null) {
                 viewerAndTab.getSecond().dispose();
@@ -136,35 +131,20 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
             if (editor.hasMaximizedControl()) {
                 editor.toggleResultPanel(true, false);
             }
-            editor.getResultTabsContainer().setSelection(obtainLogViewer(editor).getSecond());
-        }
+            obtainLogViewer(editor);
+        }        
+        editor.getActivePreferenceStore().firePropertyChangeEvent(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT, wasEnabled, !wasEnabled);
+    }
 
-        ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
-        commandService.refreshElements(command.getId(), null);
-        return null;
-    }
-    
-    @Override
-    public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
-        IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
-        if (activePage != null) {
-            IEditorPart activeEditor = activePage.getActiveEditor();
-            if (activeEditor instanceof SQLEditor) {
-                SQLEditor editor = (SQLEditor) activeEditor;
-                if (!isLogViewerEnabledSetForEditor(editor)) {
-                    setLogViewerEnabledForEditor(editor, null);
-                }
-                element.setChecked(isLogViewerEnabledForEditor(editor));
-            }
-        }
-    }
-    
     static boolean isLogViewerEnabledSetForEditor(@NotNull SQLEditor editor) {
         return editor.getPartProperty(CONSOLE_LOG_ENABLED_PROPERTY) != null;
     }
     
-    private static boolean isLogViewerEnabledForEditor(@NotNull SQLEditor editor) {
+    public static boolean isLogViewerEnabledForEditor(@NotNull SQLEditor editor) {
         String value = editor.getPartProperty(CONSOLE_LOG_ENABLED_PROPERTY);
+        if (value == null) {
+            value = CONSOLE_LOG_ENABLED_VALUE_DEFAULT;
+        }
         switch (value) {
             case CONSOLE_LOG_ENABLED_VALUE_TRUE: return true;
             case CONSOLE_LOG_ENABLED_VALUE_FALSE: return false;
@@ -182,12 +162,12 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
                             e.printStackTrace();
                         }
                     }
-                    return editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT);
+                    return editor.getActivePreferenceStore().getBoolean(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT);
                 }
         }
     }
     
-    private static void setLogViewerEnabledForEditor(@NotNull SQLEditor editor, Boolean enabled) {
+    private static void setLogViewerEnabledForEditor(@NotNull SQLEditor editor, @Nullable Boolean enabled) {
         if (enabled == null) {
             editor.setPartProperty(CONSOLE_LOG_ENABLED_PROPERTY, CONSOLE_LOG_ENABLED_VALUE_DEFAULT);
         } else {
@@ -202,6 +182,13 @@ public class ConsoleViewSwitchHandler extends AbstractHandler implements IElemen
                     e.printStackTrace();
                 }
             }
+        }
+    }
+    
+
+    public static void watchForEditor(@NotNull SQLEditor editor) {
+        if (!ConsoleViewSwitchHandler.isLogViewerEnabledSetForEditor(editor)) {
+            ConsoleViewSwitchHandler.subscribeEditorData(editor);
         }
     }
 }
