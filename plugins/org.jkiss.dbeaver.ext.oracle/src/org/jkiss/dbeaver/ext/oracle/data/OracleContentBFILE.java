@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentLOB;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.BeanUtils;
@@ -136,7 +137,7 @@ public class OracleContentBFILE extends JDBCContentLOB {
             try {
                 openFile();
                 long contentLength = getContentLength();
-                DBPPlatform platform = executionContext.getDataSource().getContainer().getPlatform();
+                DBPPlatform platform = DBWorkbench.getPlatform();
                 if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                     try {
                         try (InputStream bs = getInputStream()) {

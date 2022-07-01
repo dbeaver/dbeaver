@@ -2725,7 +2725,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         List<? extends DBDAttributeTransformerDescriptor> transformers =
-            dataSource.getContainer().getPlatform().getValueHandlerRegistry().findTransformers(
+            DBWorkbench.getPlatform().getValueHandlerRegistry().findTransformers(
                 dataSource, attr, null);
         if (!CommonUtils.isEmpty(transformers)) {
             MenuManager transformersMenu = new MenuManager(NLS.bind(ResultSetMessages.controls_resultset_viewer_action_view_column_type, attr.getName()));

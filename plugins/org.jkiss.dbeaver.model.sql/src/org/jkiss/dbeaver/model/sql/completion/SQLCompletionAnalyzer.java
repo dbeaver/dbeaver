@@ -521,7 +521,17 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         if (dictEntity != null) {
                             DBSEntityAttribute refAttribute = DBUtils.getReferenceAttribute(monitor, (DBSEntityAssociation) enumConstraint, attribute, false);
                             if (refAttribute != null) {
-                                valueEnumeration = ((DBSDictionary) dictEntity).getDictionaryEnumeration(monitor, refAttribute, null, Collections.emptyList(), true, true, false, MAX_ATTRIBUTE_VALUE_PROPOSALS);
+                                valueEnumeration = ((DBSDictionary) dictEntity).getDictionaryEnumeration(
+                                    monitor,
+                                    refAttribute,
+                                    null,
+                                    Collections.emptyList(),
+                                    true,
+                                    true,
+                                    false,
+                                    0,
+                                    MAX_ATTRIBUTE_VALUE_PROPOSALS
+                                );
                             }
                         }
                     }

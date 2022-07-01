@@ -98,11 +98,12 @@ public class EditDictionaryPage extends AttributesSelectorPage {
     {
         Composite group = UIUtils.createComposite(panel, 1);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        UIUtils.createControlLabel(group, "Custom criteria");
+        UIUtils.createControlLabel(group, EditorsMessages.dialog_struct_edit_dictionary_custom_criteria);
         criteriaText = new Text(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 50;
         criteriaText.setLayoutData(gd);
+        criteriaText.setToolTipText(EditorsMessages.dialog_struct_edit_dictionary_custom_criteria_tip);
         if (!CommonUtils.isEmpty(dictionary.getDescriptionColumnNames())) {
             criteriaText.setText(dictionary.getDescriptionColumnNames());
         }
@@ -111,8 +112,9 @@ public class EditDictionaryPage extends AttributesSelectorPage {
         settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         columnDividerText = UIUtils.createLabelText(
             settingsPanel,
-            "Column divider",
+            EditorsMessages.dialog_struct_edit_dictionary_column_delimiter,
             entity.getDataSource().getContainer().getPreferenceStore().getString(ModelPreferences.DICTIONARY_COLUMN_DIVIDER));
+        columnDividerText.setToolTipText(EditorsMessages.dialog_struct_edit_dictionary_column_delimiter_tip);
     }
 
     @Override

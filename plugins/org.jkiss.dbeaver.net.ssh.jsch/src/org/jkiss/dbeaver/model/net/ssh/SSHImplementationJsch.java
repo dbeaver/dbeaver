@@ -194,7 +194,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
         if (!isAlive) {
             closeTunnel(monitor);
-            initTunnel(monitor, DBWorkbench.getPlatform(), savedConfiguration, savedConnectionInfo);
+            initTunnel(monitor, savedConfiguration, savedConnectionInfo);
         }
     }
 

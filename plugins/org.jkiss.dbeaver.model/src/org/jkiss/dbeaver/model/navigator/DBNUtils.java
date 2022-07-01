@@ -38,10 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Navigator helper functions
@@ -151,9 +148,10 @@ public class DBNUtils {
                 // Get default context from default instance - not from active object
                 DBCExecutionContext defaultContext = DBUtils.getDefaultContext(object.getDataSource(), false);
                 if (defaultContext != null) {
-                    DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
+                    DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
                     if (contextDefaults != null) {
-                        return contextDefaults.getDefaultCatalog() == object || contextDefaults.getDefaultSchema() == object;
+                        return Objects.equals(contextDefaults.getDefaultCatalog(), object)
+                            || Objects.equals(contextDefaults.getDefaultSchema(), object);
                     }
                 }
             }
