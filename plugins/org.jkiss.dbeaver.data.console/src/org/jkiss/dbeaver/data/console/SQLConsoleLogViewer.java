@@ -89,8 +89,12 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
             grid.append("|");
         }
         for (int i = 0; i < attrs.size(); i++) {
-            if (i > 0) grid.append("|");
-            if (extraSpaces) grid.append(" ");
+            if (i > 0) {
+                grid.append("|");
+            }
+            if (extraSpaces) {
+                grid.append(" ");
+            }
             DBDAttributeBinding attr = attrs.get(i);
             String attrName = getAttributeName(attr);
             grid.append(attrName);
@@ -112,7 +116,9 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
             grid.append("|");
         }
         for (int i = 0; i < attrs.size(); i++) {
-            if (i > 0) grid.append("|");
+            if (i > 0) {
+                grid.append("|");
+            }
             for (int k = colWidths[i]; k > 0; k--) {
                 grid.append("-");
             }
@@ -176,7 +182,9 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
             grid.append("|");
         }
         for (int i = 0; i < attrs.size(); i++) {
-            if (i > 0) grid.append("|");
+            if (i > 0) {
+                grid.append("|");
+            }
             for (int k = colWidths[i]; k > 0; k--) {
                 grid.append("-");
             }
