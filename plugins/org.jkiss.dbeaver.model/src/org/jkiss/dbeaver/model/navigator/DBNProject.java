@@ -133,7 +133,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
         project.ensureOpen();
 
-        if (!project.getEclipseProject().isOpen()) {
+        if (project.getEclipseProject() != null && !project.getEclipseProject().isOpen()) {
             return new DBNNode[0];
         }
         List<DBNNode> childrenFiltered = new ArrayList<>();

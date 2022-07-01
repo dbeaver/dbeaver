@@ -721,24 +721,26 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private void updateProjectNature() {
         try {
             IProject eclipseProject = project.getEclipseProject();
-            final IProjectDescription description = eclipseProject.getDescription();
-            if (description != null) {
-                String[] natureIds = description.getNatureIds();
-                if (dataSources.isEmpty()) {
-                    // Remove nature
-                    if (ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
-                        description.setNatureIds(ArrayUtils.remove(String.class, natureIds, DBeaverNature.NATURE_ID));
-                        eclipseProject.setDescription(description, new NullProgressMonitor());
-                    }
-
-                } else {
-                    // Add nature
-                    if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
-                        description.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));
-                        try {
+            if (eclipseProject != null) {
+                final IProjectDescription description = eclipseProject.getDescription();
+                if (description != null) {
+                    String[] natureIds = description.getNatureIds();
+                    if (dataSources.isEmpty()) {
+                        // Remove nature
+                        if (ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
+                            description.setNatureIds(ArrayUtils.remove(String.class, natureIds, DBeaverNature.NATURE_ID));
                             eclipseProject.setDescription(description, new NullProgressMonitor());
-                        } catch (CoreException e) {
-                            log.debug("Can't set project nature", e);
+                        }
+
+                    } else {
+                        // Add nature
+                        if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
+                            description.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));
+                            try {
+                                eclipseProject.setDescription(description, new NullProgressMonitor());
+                            } catch (CoreException e) {
+                                log.debug("Can't set project nature", e);
+                            }
                         }
                     }
                 }

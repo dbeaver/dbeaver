@@ -169,9 +169,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException
     {
         if (children == null) {
-            if (resource instanceof IContainer) {
-                this.children = readChildNodes(monitor);
-            }
+            this.children = readChildNodes(monitor);
         }
         return children;
     }
@@ -180,7 +178,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     {
         List<DBNNode> result = new ArrayList<>();
         try {
-            if (resource.exists()) {
+            if (resource instanceof IContainer && resource.exists()) {
                 IResource[] members = ((IContainer) resource).members(false);
                 members = addImplicitMembers(members);
                 for (IResource member : members) {
