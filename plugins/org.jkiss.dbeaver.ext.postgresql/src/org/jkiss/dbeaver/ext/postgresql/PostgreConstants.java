@@ -146,7 +146,6 @@ public class PostgreConstants {
     public static final String PSQL_EXCEPTION_CLASS_NAME = "org.postgresql.util.PSQLException";
     public static final String COLLATION_DEFAULT = "default";
     public static final String DEFAULT_ARRAY_DELIMITER = " ";
-    public static final String PG_PASS_HOSTNAME = "overriddenUsername";
 
     static {
         DATA_TYPE_ALIASES.put("boolean", TYPE_BOOL);

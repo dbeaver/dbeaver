@@ -20,12 +20,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -67,21 +67,27 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
         return super.initAuthentication(monitor, dataSource, credentials, configuration, connectProps);
     }
 
+    private String getSSHHost(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        DBWHandlerConfiguration sshHandler =
+            dataSourceContainer.getActualConnectionConfiguration().getHandler("ssh_tunnel");
+        if (sshHandler != null) {
+            Object host = sshHandler.getProperty(DBPConnectionConfiguration.VARIABLE_HOST);
+            if (host != null) {
+                return (String) host;
+            }
+        }
+        return null;
+    }
+
+
     private void loadPasswordFromPgPass(AuthModelPgPassCredentials credentials, DBPDataSourceContainer dataSource, DBPConnectionConfiguration configuration) throws DBException {
         // Take database name from original config. Because it may change when user switch between databases.
         DBPConnectionConfiguration originalConfiguration = dataSource.getConnectionConfiguration();
-        String conHostName = originalConfiguration.getProviderProperty(PostgreConstants.PG_PASS_HOSTNAME);
-        if (CommonUtils.isEmpty(conHostName)) {
-            conHostName = configuration.getHostName();
+        String conHostName = originalConfiguration.getHostName();
+        String sshHost = null;
+        if (CommonUtils.isEmpty(conHostName) || conHostName.equals("localhost") || conHostName.equals("127.0.0.1")) {
+            sshHost = getSSHHost(dataSource);
         }
-        String conHostPort = originalConfiguration.getHostPort();
-        String conDatabaseName = originalConfiguration.getDatabaseName();
-        String conUserName = originalConfiguration.getUserName();
-
-        if (CommonUtils.isEmpty(conHostPort)) {
-            conHostPort = dataSource.getDriver().getDefaultPort();
-        }
-
         String pgPassPath = System.getenv(PGPASSFILE_ENV_VARIABLE);
         if (CommonUtils.isEmpty(pgPassPath)) {
             if (RuntimeUtils.isWindows()) {
@@ -102,46 +108,70 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
         try (Reader r = new InputStreamReader(new FileInputStream(pgPassFile), GeneralUtils.UTF8_CHARSET)) {
             String passString = IOUtils.readToString(r);
             String[] lines = passString.split("\n");
-            for (String line : lines) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
-                // Escape colons
-                String[] params = splitPassLine(line);
-                if (params == null) {
-                    continue;
-                }
-                String host = params[0];
-                String port = params[1];
-                String database = params[2];
-                String user = params[3];
-                String password = params[4];
-
-                if (matchParam(conHostName, host) &&
-                    matchParam(conHostPort, port) &&
-                    matchParam(conDatabaseName, database)) {
-                    if (CommonUtils.isEmpty(conUserName)) {
-                        // No user name specified. Get the first matched params
-                        //configuration.setUserName(user);
-                        //configuration.setUserPassword(password);
-                        credentials.setUserName(user);
-                        credentials.setUserPassword(password);
-                        return;
-                    } else if (matchParam(conUserName, user)) {
-                        if (!user.equals("*")) {
-                            configuration.setUserName(user);
-                        }
-                        credentials.setUserPassword(password);
-                        return;
-                    }
-                }
+            if (findHostCredentials(credentials, configuration, dataSource, sshHost, lines)) {
+                return;
+            } else if (findHostCredentials(credentials, configuration, dataSource, conHostName, lines)) {
+                return;
             }
         } catch (IOException e) {
             throw new DBException("Error reading pgpass", e);
         }
 
         throw new DBException("No matches in pgpass");
+    }
+
+    private boolean findHostCredentials(
+        @NotNull AuthModelPgPassCredentials credentials,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @Nullable String hostName,
+        @NotNull String[] lines) {
+        if (hostName == null) {
+            return false;
+        }
+        DBPConnectionConfiguration originalConfiguration = dataSourceContainer.getConnectionConfiguration();
+        String conHostPort = originalConfiguration.getHostPort();
+        String conDatabaseName = originalConfiguration.getDatabaseName();
+        String conUserName = originalConfiguration.getUserName();
+        if (CommonUtils.isEmpty(conHostPort)) {
+            conHostPort = dataSourceContainer.getDriver().getDefaultPort();
+        }
+        for (String line : lines) {
+            line = line.trim();
+            if (line.isEmpty() || line.startsWith("#")) {
+                continue;
+            }
+            // Escape colons
+            String[] params = splitPassLine(line);
+            if (params == null) {
+                continue;
+            }
+            String host = params[0];
+            String port = params[1];
+            String database = params[2];
+            String user = params[3];
+            String password = params[4];
+
+            if (matchParam(hostName, host)
+                && matchParam(conHostPort, port)
+                && matchParam(conDatabaseName, database)) {
+                if (CommonUtils.isEmpty(conUserName)) {
+                    // No user name specified. Get the first matched params
+                    //configuration.setUserName(user);
+                    //configuration.setUserPassword(password);
+                    credentials.setUserName(user);
+                    credentials.setUserPassword(password);
+                    return true;
+                } else if (matchParam(conUserName, user)) {
+                    if (!user.equals("*")) {
+                        configuration.setUserName(user);
+                    }
+                    credentials.setUserPassword(password);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Nullable

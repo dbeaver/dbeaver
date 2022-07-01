@@ -17,18 +17,12 @@
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -40,74 +34,29 @@ import org.jkiss.utils.CommonUtils;
 public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurator<Object, DBPDataSourceContainer> {
 
     protected Text usernameText;
-    private Text overriddenHostnameText;
-    private Button overrideHostname;
-
 
     @Override
     public void createControl(@NotNull Composite authPanel, Object object, @NotNull Runnable propertyChangeListener) {
         int fontHeight = UIUtils.getFontHeight(authPanel);
 
         Label usernameLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_auth_label_username);
-        usernameLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         usernameText = new Text(authPanel, SWT.BORDER);
-        overrideHostname = UIUtils.createCheckbox(authPanel, false);
-        overrideHostname.setText(UIConnectionMessages.dialog_connection_pgpass_hostname_override);
-        overrideHostname.setToolTipText(UIConnectionMessages.dialog_connection_pgpass_hostname_override_tip);
-        overriddenHostnameText = new Text(authPanel, SWT.BORDER);
-        overrideHostname.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                overriddenHostnameText.setEnabled(overrideHostname.getSelection());
-            }
-        });
-
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = fontHeight * 20;
-        overriddenHostnameText.setLayoutData(gd);
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(e -> propertyChangeListener.run());
     }
 
-    private String getSSHHost(@NotNull DBPDataSourceContainer dataSourceContainer) {
-        DBWHandlerConfiguration sshHandler =
-            dataSourceContainer.getActualConnectionConfiguration().getHandler("ssh_tunnel");
-        if (sshHandler != null) {
-            Object host = sshHandler.getProperty(DBPConnectionConfiguration.VARIABLE_HOST);
-            if (host != null) {
-                return (String) host;
-            }
-        }
-        return null;
-    }
-
     @Override
     public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
-        final DBPConnectionConfiguration connectionConfiguration = dataSource.getConnectionConfiguration();
-        this.overrideHostname.setSelection(!CommonUtils.isEmpty(connectionConfiguration.getProviderProperty(
-            PostgreConstants.PG_PASS_HOSTNAME)));
-        overriddenHostnameText.setEnabled(overrideHostname.getSelection());
-        if (overrideHostname.getSelection()
-            && !CommonUtils.isEmpty(connectionConfiguration.getProviderProperty(PostgreConstants.PG_PASS_HOSTNAME))) {
-            this.overrideHostname.setText(
-                connectionConfiguration.getProviderProperty(PostgreConstants.PG_PASS_HOSTNAME));
-
-        } else if (!CommonUtils.isEmpty(getSSHHost(dataSource)) && "localhost".equals(connectionConfiguration.getHostName())) {
-            overriddenHostnameText.setText(
-                getSSHHost(dataSource));
-        }
-        this.usernameText.setText(CommonUtils.notEmpty(connectionConfiguration.getUserName()));
+        this.usernameText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserName()));
     }
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         dataSource.getConnectionConfiguration().setUserName(this.usernameText.getText());
-        if (overrideHostname.getSelection()) {
-            dataSource.getConnectionConfiguration().setProviderProperty(
-                PostgreConstants.PG_PASS_HOSTNAME,
-                overriddenHostnameText.getText());
-        }
         dataSource.setSavePassword(true);
     }
 
