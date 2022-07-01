@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.data.console;
 
-import java.util.List;
 
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -37,24 +36,24 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorOutputConsoleViewer;
 import org.jkiss.utils.CommonUtils;
+import java.util.List;
+
 
 public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
-
-    private boolean showNulls;
 
     public SQLConsoleLogViewer(@NotNull IWorkbenchPartSite site, @NotNull CTabFolder tabsContainer, int styles) {
         super(site, tabsContainer, new MessageConsole("sql-data-log-output", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)));
     }
 
     public void printGrid(@NotNull DBPPreferenceStore prefs, @NotNull ResultSetModel model, @Nullable String name) {
-        int maxColumnSize = prefs.getInt(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
-        boolean delimLeading = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING);
-        boolean delimTrailing = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING);
-        boolean extraSpaces = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
-        showNulls = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS);
-        boolean rightJustifyNumbers = prefs.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
-        boolean rightJustifyDateTime = prefs.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
-        int tabSize = prefs.getInt(ResultSetPreferences.RESULT_TEXT_TAB_SIZE);
+        final int maxColumnSize = prefs.getInt(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
+        final boolean delimLeading = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING);
+        final boolean delimTrailing = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING);
+        final boolean extraSpaces = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
+        final boolean showNulls = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS);
+        final boolean rightJustifyNumbers = prefs.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
+        final boolean rightJustifyDateTime = prefs.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
+        final int tabSize = prefs.getInt(ResultSetPreferences.RESULT_TEXT_TAB_SIZE);
 
         DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT));
 
@@ -75,7 +74,7 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
                 colWidths[i] = Math.max(colWidths[i], DBConstants.NULL_VALUE_LABEL.length());
             }
             for (ResultSetRow row : allRows) {
-                String displayString = getCellString(model, attr, row, displayFormat);
+                String displayString = getCellString(model, attr, row, displayFormat, showNulls);
                 colWidths[i] = Math.max(colWidths[i], getStringWidth(displayString, tabSize) + extraSpacesNum);
             }
         }
@@ -86,7 +85,9 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
         }
 
         // Print header
-        if (delimLeading) grid.append("|");
+        if (delimLeading) {
+            grid.append("|");
+        }
         for (int i = 0; i < attrs.size(); i++) {
             if (i > 0) grid.append("|");
             if (extraSpaces) grid.append(" ");
@@ -96,43 +97,56 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
             for (int k = colWidths[i] - attrName.length() - extraSpacesNum; k > 0; k--) {
                 grid.append(" ");
             }
-            if (extraSpaces) grid.append(" ");
+            if (extraSpaces) {
+                grid.append(" ");
+            }
         }
-        if (delimTrailing) grid.append("|");
+        if (delimTrailing) {
+            grid.append("|");
+        }
         grid.append("\n");
 
         // Print divider
         // Print header
-        if (delimLeading) grid.append("|");
+        if (delimLeading) {
+            grid.append("|");
+        }
         for (int i = 0; i < attrs.size(); i++) {
             if (i > 0) grid.append("|");
             for (int k = colWidths[i]; k > 0; k--) {
                 grid.append("-");
             }
         }
-        if (delimTrailing) grid.append("|");
+        if (delimTrailing) {
+            grid.append("|");
+        }
         grid.append("\n");
 
         boolean newLines = false;
         for (int i = 0; i < allRows.size(); i++) {
             newLines = true;
             ResultSetRow row = allRows.get(i);
-            if (delimLeading) grid.append("|");
+            if (delimLeading) {
+                grid.append("|");
+            }
             for (int k = 0; k < attrs.size(); k++) {
-                if (k > 0) grid.append("|");
+                if (k > 0) {
+                    grid.append("|");
+                }
                 DBDAttributeBinding attr = attrs.get(k);
-                String displayString = getCellString(model, attr, row, displayFormat);
+                String displayString = getCellString(model, attr, row, displayFormat, showNulls);
                 if (displayString.length() >= colWidths[k]) {
                     displayString = CommonUtils.truncateString(displayString, colWidths[k]);
                 }
 
                 int stringWidth = getStringWidth(displayString, tabSize);
 
-                if (extraSpaces) grid.append(" ");
+                if (extraSpaces) {
+                    grid.append(" ");
+                }
                 DBPDataKind dataKind = attr.getDataKind();
-                if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
-                    (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime))
-                {
+                if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers)
+                    || (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime)) {
                     // Right justify value
                     for (int j = colWidths[k] - stringWidth - extraSpacesNum; j > 0; j--) {
                         grid.append(" ");
@@ -144,9 +158,13 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
                         grid.append(" ");
                     }
                 }
-                if (extraSpaces) grid.append(" ");
+                if (extraSpaces) {
+                    grid.append(" ");
+                }
             }
-            if (delimTrailing) grid.append("|");
+            if (delimTrailing) {
+                grid.append("|");
+            }
             grid.append("\n");
         }
         grid.setLength(grid.length() - 1); // cut last line feed
@@ -154,19 +172,23 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
 
         // Print divider
         // Print header
-        if (delimLeading) grid.append("|");
+        if (delimLeading) {
+            grid.append("|");
+        }
         for (int i = 0; i < attrs.size(); i++) {
             if (i > 0) grid.append("|");
             for (int k = colWidths[i]; k > 0; k--) {
                 grid.append("-");
             }
         }
-        if (delimTrailing) grid.append("|");
+        if (delimTrailing) {
+            grid.append("|");
+        }
         grid.append("\n\n");
 
         if (newLines) {
             this.getOutputWriter().append(grid.toString());
-            this.getOutputWriter().append(allRows.size() +" row(s) fetched.\n\n");
+            this.getOutputWriter().append(allRows.size() + " row(s) fetched.\n\n");
             this.getOutputWriter().flush();
             this.scrollToEnd();
         }
@@ -202,7 +224,8 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
         @NotNull ResultSetModel model, 
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
-        @NotNull DBDDisplayFormat displayFormat
+        @NotNull DBDDisplayFormat displayFormat, 
+        boolean showNulls
     ) {
         Object cellValue = model.getCellValue(attr, row);
         if (cellValue instanceof DBDValueError) {
@@ -230,7 +253,8 @@ public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
                     c = ' ';
                     break;
                 default:
-                    continue;
+                    // do nothing
+                    break;
             }
             if (c < ' '/* || (c > 127 && c < 255)*/) {
                 c = ' ';

@@ -196,7 +196,7 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<SQLQuery> runningQueries = new ArrayList<>();
     private QueryResultsContainer curResultsContainer;
     private Image editorImage;
-    Composite leftToolPanel;
+    private Composite leftToolPanel;
     private ToolBarManager topBarMan;
     private ToolBarManager bottomBarMan;
 
@@ -539,7 +539,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         try {
-
             int totalLines = document.getNumberOfLines();
             IRegion region = null;
             if (totalLines > 0) {
@@ -572,7 +571,6 @@ public class SQLEditor extends SQLEditorBase implements
                     document.replace(0, 0, assocSpecLine.toString());
                 }
             }
-
         } catch (Throwable e) {
             log.debug("Error extracting datasource info from script's content", e);
         }
@@ -623,6 +621,9 @@ public class SQLEditor extends SQLEditorBase implements
         bottomBarMan.getControl().redraw();
     }
 
+    
+    
+    
     private class OpenContextJob extends AbstractJob {
         private final DBSInstance instance;
         private final Runnable onSuccess;
@@ -973,9 +974,21 @@ public class SQLEditor extends SQLEditorBase implements
         bottomBarMan = new ToolBarManager(SWT.VERTICAL | SWT.FLAT);
         bottomBarMan.add(ActionUtils.makeActionContribution(new ShowPreferencesAction(), false));
         bottomBarMan.add(new ToolbarSeparatorContribution(false));
-        bottomBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, CommandContributionItem.STYLE_CHECK));
-        bottomBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_SHOW_LOG, CommandContributionItem.STYLE_CHECK));
-        bottomBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_SHOW_VARIABLES, CommandContributionItem.STYLE_CHECK));
+        bottomBarMan.add(ActionUtils.makeCommandContribution(
+            getSite(), 
+            SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, 
+            CommandContributionItem.STYLE_CHECK
+        ));
+        bottomBarMan.add(ActionUtils.makeCommandContribution(
+            getSite(), 
+            SQLEditorCommands.CMD_SQL_SHOW_LOG, 
+            CommandContributionItem.STYLE_CHECK
+        ));
+        bottomBarMan.add(ActionUtils.makeCommandContribution(
+            getSite(),
+            SQLEditorCommands.CMD_SQL_SHOW_VARIABLES,
+            CommandContributionItem.STYLE_CHECK
+        ));
 
         ToolBar bottomBar = bottomBarMan.createControl(leftToolPanel);
         bottomBar.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, true, false));
@@ -1471,14 +1484,12 @@ public class SQLEditor extends SQLEditorBase implements
         item.addDisposeListener(e -> {
             if (!viewItem.isDisposed()) {
                 viewItem.setSelection(false);
-                viewItem.getControl().redraw();
             }
             if (tabFolder.getItemCount() == 0) {
                 sqlExtraPanelSash.setMaximizedControl(sqlExtraPanelSash.getChildren()[0]);
             }
         });
         tabFolder.setSelection(item);
-        viewItem.getControl().redraw();
 
         if (isTabsToTheRight) {
             updateExtraViewToolbar(actionContributor);
@@ -1596,9 +1607,9 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public SQLEditorPresentationPanel showPresentationPanel(String panelID) {
-        for (IContributionItem cItem : topBarMan.getItems()) {
-            if (cItem instanceof ActionContributionItem) {
-                IAction action = ((ActionContributionItem) cItem).getAction();
+        for (IContributionItem contributionItem : topBarMan.getItems()) {
+            if (contributionItem instanceof ActionContributionItem) {
+                IAction action = ((ActionContributionItem) contributionItem).getAction();
                 if (action instanceof PresentationPanelToggleAction
                     && ((PresentationPanelToggleAction) action).panel.getId().equals(panelID)
                 ) {
@@ -1607,9 +1618,9 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         }
-        for (IContributionItem cItem : bottomBarMan.getItems()) {
-            if (cItem instanceof ActionContributionItem) {
-                IAction action = ((ActionContributionItem) cItem).getAction();
+        for (IContributionItem contributionItem : bottomBarMan.getItems()) {
+            if (contributionItem instanceof ActionContributionItem) {
+                IAction action = ((ActionContributionItem) contributionItem).getAction();
                 if (action instanceof PresentationPanelToggleAction
                     && ((PresentationPanelToggleAction) action).panel.getId().equals(panelID)
                 ) {

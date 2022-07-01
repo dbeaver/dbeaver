@@ -53,23 +53,21 @@ public class PrefPageConsoleView extends TargetPrefPage {
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
-
-        {
-            Composite commonGroup = UIUtils.createControlGroup(
-                composite,
-                SQLEditorMessages.pref_page_sql_editor_group_common,
-                2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
-            showConsoleViewByDefault = UIUtils.createCheckbox(
-                commonGroup,
-                ConsoleMessages.pref_page_console_view_label_show_output_console_view,
-                ConsoleMessages.pref_page_console_view_label_show_output_console_view_tip,
-                false,
-                2
-            );
-        }
+        
+        Composite commonGroup = UIUtils.createControlGroup(
+            composite,
+            SQLEditorMessages.pref_page_sql_editor_group_common,
+            2,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+            0
+        );
+        showConsoleViewByDefault = UIUtils.createCheckbox(
+            commonGroup,
+            ConsoleMessages.pref_page_console_view_label_show_output_console_view,
+            ConsoleMessages.pref_page_console_view_label_show_output_console_view_tip,
+            false,
+            2
+        );
 
         return composite;
     }

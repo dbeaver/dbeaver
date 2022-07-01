@@ -54,7 +54,7 @@ public class ConsoleViewSwitchHandler extends AbstractHandler {
 
     @Nullable
     private static Pair<SQLConsoleLogViewer, CTabItem> findExistingLogViewer(@NotNull SQLEditor editor) {
-        for (CTabItem tabItem: editor.getResultTabsContainer().getItems()) {
+        for (CTabItem tabItem : editor.getResultTabsContainer().getItems()) {
             if (tabItem.getData() instanceof SQLConsoleLogViewer) {
                 return new Pair<>((SQLConsoleLogViewer) tabItem.getData(), tabItem);
             }
@@ -133,7 +133,10 @@ public class ConsoleViewSwitchHandler extends AbstractHandler {
             }
             obtainLogViewer(editor);
         }        
-        editor.getActivePreferenceStore().firePropertyChangeEvent(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT, wasEnabled, !wasEnabled);
+        editor.getActivePreferenceStore().firePropertyChangeEvent(
+            SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT,
+            wasEnabled, !wasEnabled
+        );
     }
 
     static boolean isLogViewerEnabledSetForEditor(@NotNull SQLEditor editor) {
@@ -149,21 +152,20 @@ public class ConsoleViewSwitchHandler extends AbstractHandler {
             case CONSOLE_LOG_ENABLED_VALUE_TRUE: return true;
             case CONSOLE_LOG_ENABLED_VALUE_FALSE: return false;
             case CONSOLE_LOG_ENABLED_VALUE_DEFAULT: // fall through
-            default:
-                {
-                    IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
-                    if (activeFile != null) {
-                        try {
-                            String fileValue = activeFile.getPersistentProperty(FILE_CONSOLE_LOG_ENABLED_PROP_NAME);
-                            if (fileValue != null) {
-                                return fileValue.equals(CONSOLE_LOG_ENABLED_VALUE_TRUE);
-                            }
-                        } catch (CoreException e) {
-                            e.printStackTrace();
+            default: {
+                IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
+                if (activeFile != null) {
+                    try {
+                        String fileValue = activeFile.getPersistentProperty(FILE_CONSOLE_LOG_ENABLED_PROP_NAME);
+                        if (fileValue != null) {
+                            return fileValue.equals(CONSOLE_LOG_ENABLED_VALUE_TRUE);
                         }
+                    } catch (CoreException e) {
+                        e.printStackTrace();
                     }
-                    return editor.getActivePreferenceStore().getBoolean(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT);
                 }
+                return editor.getActivePreferenceStore().getBoolean(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT);
+            }
         }
     }
     
