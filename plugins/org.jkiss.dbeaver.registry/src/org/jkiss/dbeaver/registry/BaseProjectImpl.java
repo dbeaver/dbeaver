@@ -20,18 +20,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import org.eclipse.core.internal.localstore.Bucket;
-import org.eclipse.core.internal.localstore.BucketTree;
-import org.eclipse.core.internal.properties.PropertyBucket;
-import org.eclipse.core.internal.resources.Workspace;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.app.DBASecureStorage;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -40,10 +39,8 @@ import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -51,24 +48,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class ProjectMetadata implements DBPProject {
+public abstract class BaseProjectImpl implements DBPProject {
 
-    private static final Log log = Log.getLog(ProjectMetadata.class);
+    private static final Log log = Log.getLog(BaseProjectImpl.class);
 
     public static final String SETTINGS_STORAGE_FILE = "project-settings.json";
     public static final String METADATA_STORAGE_FILE = "project-metadata.json";
     public static final String PROP_PROJECT_ID = "id";
-    private static final String EMPTY_PROJECT_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<projectDescription>\n" +
-        "<name>${project-name}</name>\n" +
-        "<comment></comment>\n" +
-        "<projects>\n" +
-        "</projects>\n" +
-        "<buildSpec>\n" +
-        "</buildSpec>\n" +
-        "<natures>\n" +
-        "</natures>\n" +
-        "</projectDescription>";
 
     public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted
@@ -81,14 +67,10 @@ public class ProjectMetadata implements DBPProject {
         .serializeNulls()
         .create();
 
-    private final AbstractJob metadataSyncJob;
-
+    @NotNull
     private final DBPWorkspace workspace;
-    private final IProject project;
+    @NotNull
     private final SMSessionContext sessionContext;
-
-    private String projectName;
-    private Path projectPath;
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
     private volatile DataSourceRegistry dataSourceRegistry;
@@ -97,20 +79,15 @@ public class ProjectMetadata implements DBPProject {
     private volatile Map<String, Map<String, Object>> resourceProperties;
     private DBASecureStorage secureStorage;
     private UUID projectID;
-    private final Object metadataSync = new Object();
+
+    protected final Object metadataSync = new Object();
+    private ProjectSyncJob metadataSyncJob;
+
     private boolean inMemory;
 
-    public ProjectMetadata(DBPWorkspace workspace, IProject project, SMSessionContext sessionContext) {
+    public BaseProjectImpl(@NotNull DBPWorkspace workspace, @Nullable SMSessionContext sessionContext) {
         this.workspace = workspace;
-        this.project = project;
-        this.metadataSyncJob = new ProjectSyncJob();
         this.sessionContext = sessionContext == null ? workspace.getAuthContext() : sessionContext;
-    }
-
-    public ProjectMetadata(DBPWorkspace workspace, String name, Path path, SMSessionContext sessionContext) {
-        this(workspace, workspace.getActiveProject() == null ? null : workspace.getActiveProject().getEclipseProject(), sessionContext);
-        this.projectName = name;
-        this.projectPath = path;
     }
 
     public void setInMemory(boolean inMemory) {
@@ -127,17 +104,7 @@ public class ProjectMetadata implements DBPProject {
         return workspace;
     }
 
-    @Override
-    public boolean isVirtual() {
-        return projectName != null;
-    }
-
     @NotNull
-    @Override
-    public String getName() {
-        return projectName != null ? projectName : project.getName();
-    }
-
     @Override
     public UUID getProjectID() {
         if (projectID == null) {
@@ -150,18 +117,6 @@ public class ProjectMetadata implements DBPProject {
             }
         }
         return projectID;
-    }
-
-    @NotNull
-    @Override
-    public Path getAbsolutePath() {
-        return projectPath != null ? projectPath : project.getLocation().toFile().toPath();
-    }
-
-    @NotNull
-    @Override
-    public IProject getEclipseProject() {
-        return project;
     }
 
     @NotNull
@@ -180,65 +135,8 @@ public class ProjectMetadata implements DBPProject {
     }
 
     @NotNull
-    private Path getMetadataPath() {
+    protected Path getMetadataPath() {
         return getAbsolutePath().resolve(METADATA_FOLDER);
-    }
-
-    @Override
-    public boolean isOpen() {
-        return project == null || project.isOpen();
-    }
-
-    @Override
-    public void ensureOpen() throws IllegalStateException {
-        if (format != ProjectFormat.UNKNOWN) {
-            return;
-        }
-        if (project != null && !project.isOpen()) {
-            NullProgressMonitor monitor = new NullProgressMonitor();
-            try {
-                project.open(monitor);
-                project.refreshLocal(IFile.DEPTH_ONE, monitor);
-            } catch (CoreException e) {
-                if (workspace.getPlatform().getApplication().isStandalone() &&
-                    e.getMessage().contains(IProjectDescription.DESCRIPTION_FILE_NAME)) {
-                    try {
-                        recoverProjectDescription();
-                        project.open(monitor);
-                        project.refreshLocal(IFile.DEPTH_ONE, monitor);
-                    } catch (Exception e2) {
-                        log.error("Error opening project", e2);
-                        return;
-                    }
-                }
-            }
-        }
-        if (inMemory) {
-            format = ProjectFormat.MODERN;
-            return;
-        }
-
-        Path mdFolder = getMetadataFolder(false);
-
-        Path dsConfig = getAbsolutePath().resolve(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
-        if (!Files.exists(mdFolder) && Files.exists(dsConfig)) {
-            format = ProjectFormat.LEGACY;
-        } else {
-            format = ProjectFormat.MODERN;
-        }
-
-        // Check project structure and migrate
-        checkAndUpdateProjectStructure();
-    }
-
-    public void recoverProjectDescription() throws IOException {
-        // .project file missing. Let's try to create an empty project config
-        Path mdFile = getAbsolutePath().resolve(IProjectDescription.DESCRIPTION_FILE_NAME);
-        log.debug("Recovering project '" + project.getName() + "' metadata " + mdFile.toAbsolutePath());
-
-        IOUtils.writeFileFromString(
-            mdFile.toFile(),
-            EMPTY_PROJECT_TEMPLATE.replace("${project-name}", project.getName()));
     }
 
     @Override
@@ -310,7 +208,7 @@ public class ProjectMetadata implements DBPProject {
 
     @Override
     public void setProjectProperty(String propName, Object propValue) {
-        synchronized (this) {
+        synchronized (metadataSync) {
             loadProperties();
             if (propValue == null) {
                 properties.remove(propName);
@@ -356,9 +254,7 @@ public class ProjectMetadata implements DBPProject {
                 Files.createDirectories(configFolder);
             }
 
-            try (Writer settingsWriter = new OutputStreamWriter(Files.newOutputStream(settingsFile), StandardCharsets.UTF_8)) {
-                settingsWriter.write(settingsString);
-            }
+            Files.writeString(settingsFile, settingsString);
         } catch (Exception e) {
             log.error("Error writing project '" + getName() + "' setting to "  + settingsFile.toAbsolutePath(), e);
         }
@@ -461,6 +357,10 @@ public class ProjectMetadata implements DBPProject {
         flushMetadata();
     }
 
+    protected void setResourceProperties(Map<String, Map<String, Object>> resourceProperties) {
+        this.resourceProperties = resourceProperties;
+    }
+
     public void dispose() {
         if (dataSourceRegistry != null) {
             dataSourceRegistry.dispose();
@@ -469,6 +369,10 @@ public class ProjectMetadata implements DBPProject {
 
     public ProjectFormat getFormat() {
         return format;
+    }
+
+    protected void setFormat(ProjectFormat format) {
+        this.format = format;
     }
 
     private void loadMetadata() {
@@ -539,82 +443,14 @@ public class ProjectMetadata implements DBPProject {
         }
     }
 
-    /**
-     * Validates project files structure.
-     * If project was created in older DBeaver version then converts it to newer format
-     */
-    private void checkAndUpdateProjectStructure() {
-        if (format == ProjectFormat.UNKNOWN || format == ProjectFormat.MODERN) {
-            return;
-        }
-
-        Path mdConfig = getMetadataPath().resolve(METADATA_STORAGE_FILE);
-        if (!Files.exists(mdConfig)) {
-            // Migrate
-            log.debug("Migrate Eclipse resource properties to the project metadata (" + mdConfig.toAbsolutePath() + ")");
-            Map<String, Map<String, Object>> projectResourceProperties = extractProjectResourceProperties();
-            synchronized (metadataSync) {
-                this.resourceProperties = projectResourceProperties;
-            }
-            flushMetadata();
-        }
-
-        // Now project is in modern format
-        format = ProjectFormat.MODERN;
-    }
-
-    private Map<String, Map<String, Object>> extractProjectResourceProperties() {
-        Map<String, Map<String, Object>> result = new LinkedHashMap<>();
-
-        DBPWorkspaceEclipse workspaceEclipse;
-        if (workspace instanceof DBPWorkspaceEclipse) {
-            workspaceEclipse = (DBPWorkspaceEclipse) workspace;
-        } else {
-            return result;
-        }
-        try {
-            BucketTree bucketTree = new BucketTree((Workspace) workspaceEclipse.getEclipseWorkspace(), new PropertyBucket());
-            try {
-                final IPath projectPath = project.getFullPath();
-                bucketTree.accept(new Bucket.Visitor() {
-                    @Override
-                    public int visit(Bucket.Entry entry) {
-                        Object value = entry.getValue();
-                        if (value instanceof String[][]) {
-                            String[][] bucketProps = (String[][]) value;
-                            for (String[] resProps : bucketProps) {
-                                if (resProps.length == 3) {
-                                    if ("org.jkiss.dbeaver".equals(resProps[0])) {
-                                        if ("sql-editor-project-id".equals(resProps[1])) {
-                                            continue;
-                                        }
-                                        Map<String, Object> propsMap = result.computeIfAbsent(
-                                            entry.getPath().makeRelativeTo(projectPath).toString(), s -> new LinkedHashMap<>());
-                                        propsMap.put(resProps[1], resProps[2]);
-                                    }
-                                }
-                            }
-                        }
-                        return CONTINUE;
-                    }
-                },
-                    projectPath,
-                    BucketTree.DEPTH_INFINITE);
-            } catch (CoreException e) {
-                log.error(e);
-            }
-        } catch (Throwable e) {
-            log.error("Error extracting project metadata", e);
-        }
-
-        return result;
-    }
-
-    private void flushMetadata() {
+    protected void flushMetadata() {
         if (inMemory) {
             return;
         }
         synchronized (metadataSync) {
+            if (metadataSyncJob == null) {
+                metadataSyncJob = new ProjectSyncJob();
+            }
             metadataSyncJob.schedule(100);
         }
     }
@@ -659,7 +495,7 @@ public class ProjectMetadata implements DBPProject {
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
-            setName("Project '" + ProjectMetadata.this.getName() + "' sync job");
+            setName("Project '" + BaseProjectImpl.this.getName() + "' sync job");
 
             ContentUtils.makeFileBackup(getMetadataFolder(false).resolve(METADATA_STORAGE_FILE));
 

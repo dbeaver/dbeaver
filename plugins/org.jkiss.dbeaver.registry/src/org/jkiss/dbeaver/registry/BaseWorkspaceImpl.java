@@ -61,10 +61,9 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
     private final IWorkspace eclipseWorkspace;
     private final SessionContextImpl workspaceAuthContext;
 
-    protected final Map<IProject, ProjectMetadata> projects = new LinkedHashMap<>();
+    protected final Map<IProject, LocalProjectImpl> projects = new LinkedHashMap<>();
     protected DBPProject activeProject;
 
-    private final ProjectListener projectListener;
     private final List<DBPProjectListener> projectListeners = new ArrayList<>();
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<>();
     private final Map<String, Map<String, Object>> externalFileProperties = new HashMap<>();
@@ -75,9 +74,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
         this.platform = platform;
         this.eclipseWorkspace = eclipseWorkspace;
         this.workspaceAuthContext = new SessionContextImpl(null);
-
-        this.projectListener = new ProjectListener();
-        this.eclipseWorkspace.addResourceChangeListener(projectListener);
 
         loadExtensions(Platform.getExtensionRegistry());
         loadExternalFileProperties();
@@ -126,11 +122,9 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
 
     @Override
     public void dispose() {
-        this.eclipseWorkspace.removeResourceChangeListener(projectListener);
-
         synchronized (projects) {
             // Dispose all DS registries
-            for (ProjectMetadata project : this.projects.values()) {
+            for (LocalProjectImpl project : this.projects.values()) {
                 project.dispose();
             }
             this.projects.clear();
@@ -537,19 +531,19 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
         }
     }
 
-    private void fireActiveProjectChange(DBPProject oldActiveProject, DBPProject activeProject) {
+    protected void fireActiveProjectChange(DBPProject oldActiveProject, DBPProject activeProject) {
         for (DBPProjectListener listener : getListenersCopy()) {
             listener.handleActiveProjectChange(oldActiveProject, activeProject);
         }
     }
 
-    private void fireProjectAdd(ProjectMetadata project) {
+    protected void fireProjectAdd(LocalProjectImpl project) {
         for (DBPProjectListener listener : getListenersCopy()) {
             listener.handleProjectAdd(project);
         }
     }
 
-    private void fireProjectRemove(ProjectMetadata project) {
+    protected void fireProjectRemove(LocalProjectImpl project) {
         for (DBPProjectListener listener : getListenersCopy()) {
             listener.handleProjectRemove(project);
         }
@@ -562,69 +556,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
             listeners = projectListeners.toArray(new DBPProjectListener[0]);
         }
         return listeners;
-    }
-
-    private class ProjectListener implements IResourceChangeListener {
-        @Override
-        public void resourceChanged(IResourceChangeEvent event) {
-            if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-                // Process removed projects first and added projects afterwards to properly update current active project
-                // Higher delta kind is processed first. See IResourceDelta constants
-                Arrays.stream(event.getDelta().getAffectedChildren())
-                    .filter(delta -> delta.getResource() instanceof IProject)
-                    .sorted(Comparator.comparingInt(IResourceDelta::getKind).reversed())
-                    .forEach(delta -> {
-                        IProject project = (IProject) delta.getResource();
-                        if (!projects.containsKey(project)) {
-                            if (delta.getKind() == IResourceDelta.ADDED) {
-                                ProjectMetadata projectMetadata = new ProjectMetadata(BaseWorkspaceImpl.this, project, BaseWorkspaceImpl.this.workspaceAuthContext);
-                                projects.put(project, projectMetadata);
-                                fireProjectAdd(projectMetadata);
-                                if (activeProject == null) {
-                                    activeProject = projectMetadata;
-                                    fireActiveProjectChange(null, activeProject);
-                                }
-                            } else {
-                                // Project not found - report an error
-                                log.error("Project '" + delta.getResource().getName() + "' not found in workspace");
-                            }
-                        } else {
-                            if (delta.getKind() == IResourceDelta.REMOVED) {
-                                // Project deleted
-                                ProjectMetadata projectMetadata = projects.remove(project);
-                                fireProjectRemove(projectMetadata);
-                                if (projectMetadata == activeProject) {
-                                    activeProject = null;
-                                    fireActiveProjectChange(projectMetadata, null);
-                                }
-                            } else {
-                                // Some changes within project - reflect them in metadata cache
-                                ProjectMetadata projectMetadata = projects.get(project);
-                                if (projectMetadata != null) {
-                                    handleResourceChange(projectMetadata, delta);
-                                }
-                            }
-                        }
-                    });
-            }
-        }
-    }
-
-    private void handleResourceChange(ProjectMetadata projectMetadata, IResourceDelta delta) {
-        if (delta.getKind() == IResourceDelta.REMOVED) {
-            IPath movedToPath = delta.getMovedToPath();
-            if (movedToPath != null) {
-                IPath oldPath = delta.getProjectRelativePath();
-                IPath newPath = movedToPath.makeRelativeTo(projectMetadata.getEclipseProject().getFullPath());
-                projectMetadata.updateResourceCache(oldPath, newPath);
-            } else {
-                projectMetadata.removeResourceFromCache(delta.getProjectRelativePath());
-            }
-        } else {
-            for (IResourceDelta childDelta : delta.getAffectedChildren(IResourceDelta.ALL_WITH_PHANTOMS, IContainer.INCLUDE_HIDDEN)) {
-                handleResourceChange(projectMetadata, childDelta);
-            }
-        }
     }
 
     public static String readWorkspaceId() {
