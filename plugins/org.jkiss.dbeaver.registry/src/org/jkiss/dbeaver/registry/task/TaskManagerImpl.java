@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.task.*;
-import org.jkiss.dbeaver.registry.ProjectMetadata;
+import org.jkiss.dbeaver.registry.BaseProjectImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -51,7 +51,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     private static final Log log = Log.getLog(TaskManagerImpl.class);
 
-    private static Gson CONFIG_GSON = new GsonBuilder()
+    private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
         .setPrettyPrinting()
@@ -59,12 +59,12 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     static final SimpleDateFormat systemDateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
 
-    private final ProjectMetadata projectMetadata;
+    private final BaseProjectImpl projectMetadata;
     private final List<TaskImpl> tasks = new ArrayList<>();
     private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
     private final Path statisticsFolder;
 
-    public TaskManagerImpl(ProjectMetadata projectMetadata) {
+    public TaskManagerImpl(BaseProjectImpl projectMetadata) {
         this.projectMetadata = projectMetadata;
         this.statisticsFolder = projectMetadata.getWorkspace().getMetadataFolder().resolve(TaskConstants.TASK_STATS_FOLDER);
 

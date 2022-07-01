@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.GroupMarker;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -165,16 +162,17 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
     private void refreshValue(boolean force) {
         DBDAttributeBinding attr = presentation.getCurrentAttribute();
         ResultSetRow row = presentation.getController().getCurrentRow();
+
         if (attr == null || row == null) {
             clearValue();
             return;
         }
+        int[] rowIndexes = presentation.getCurrentRowIndexes();
         boolean updateActions;
         if (previewController == null) {
             previewController = new ResultSetValueController(
                 presentation.getController(),
-                attr,
-                row,
+                new ResultSetCellLocation(attr, row, rowIndexes),
                 IValueController.EditType.PANEL,
                 viewPlaceholder)
             {
@@ -192,9 +190,11 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             updateActions = true;
             force = true;
         } else {
-            updateActions = force = (force || previewController.getBinding() != attr);
-            previewController.setCurRow(row);
-            previewController.setBinding(attr);
+            updateActions = force = (
+                force ||
+                previewController.getBinding() != attr ||
+                !CommonUtils.equalObjects(rowIndexes, previewController.getRowIndexes()));
+            previewController.setCellLocation(new ResultSetCellLocation(attr, row, rowIndexes));
         }
         if (!force && (valueManager == null || valueEditor == null)) {
             force = true;
@@ -357,9 +357,12 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
                 log.error("Can't contribute value manager actions", e);
             }
         }
-
         contributionManager.add(new GroupMarker(IValueManager.GROUP_ACTIONS_ADDITIONAL));
-
+        if (referenceValueEditor != null && referenceValueEditor.isReferenceValue()) {
+            for (ContributionItem contributionItem : referenceValueEditor.getContributionItems()) {
+                contributionManager.add(contributionItem);
+            }
+        }
         if (valueEditor != null && !valueEditor.isReadOnly()) {
             contributionManager.add(
                 ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
@@ -398,4 +401,6 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
 
         return null;
     }
+
+
 }

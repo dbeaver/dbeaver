@@ -461,7 +461,7 @@ class ResultSetPersister {
                     // If new value and old value are the same - do not release it
                     if (curValue != changedValue.getValue()) {
                         DBUtils.releaseValue(curValue);
-                        model.updateCellValue(changedValue.getKey(), row, changedValue.getValue(), false);
+                        model.updateCellValue(changedValue.getKey(), row, null, changedValue.getValue(), false);
                     }
                 }
                 row.changes = null;

@@ -14,32 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.model.security.user;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPImage;
+
+import org.jkiss.code.Nullable;
 
 import java.util.List;
-import java.util.Set;
 
-/**
- * Auth provider descriptor
- */
-public interface SMAuthProviderDescriptor {
+public class SMProjectPermissions {
+    @Nullable
+    private final String projectId;
+    private final List<SMProjectPermission> permissions;
 
-    String getId();
+    public SMProjectPermissions(@Nullable String projectId, List<SMProjectPermission> permissions) {
+        this.projectId = projectId;
+        this.permissions = permissions;
+    }
 
-    String getLabel();
+    @Nullable
+    public String getProjectId() {
+        return projectId;
+    }
 
-    String getDescription();
-
-    DBPImage getIcon();
-
-    List<SMAuthCredentialsProfile> getCredentialProfiles();
-
-    List<AuthPropertyDescriptor> getCredentialParameters(Set<String> keySet);
-
-    @NotNull
-    SMAuthProvider<?> getInstance();
-
+    public List<SMProjectPermission> getPermissions() {
+        return permissions;
+    }
 }

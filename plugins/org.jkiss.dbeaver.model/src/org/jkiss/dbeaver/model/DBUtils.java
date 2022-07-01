@@ -750,10 +750,25 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static Object getAttributeValue(@NotNull DBDAttributeBinding attribute, DBDAttributeBinding[] allAttributes, Object[] row) {
+    public static Object getAttributeValue(
+        @NotNull DBDAttributeBinding attribute,
+        DBDAttributeBinding[] allAttributes,
+        Object[] row)
+    {
+        return getAttributeValue(attribute, allAttributes, row, null);
+    }
+
+    @Nullable
+    public static Object getAttributeValue(
+        @NotNull DBDAttributeBinding attribute,
+        DBDAttributeBinding[] allAttributes,
+        Object[] row,
+        int[] nestedIndexes)
+    {
         if (attribute.isCustom()) {
             return DBVUtils.executeExpression(((DBDAttributeBindingCustom)attribute).getEntityAttribute(), allAttributes, row);
         }
+
         int depth = attribute.getLevel();
         if (depth == 0) {
             final int index = attribute.getOrdinalPosition();
@@ -761,10 +776,28 @@ public final class DBUtils {
                 log.debug("Bad attribute '" + attribute.getName() + "' index: " + index + " is out of row values' bounds (" + row.length + ")");
                 return null;
             } else {
-                return row[index];
+                if (nestedIndexes == null) {
+                    return row[index];
+                } else {
+                    if (attribute.getDataKind() != DBPDataKind.ARRAY) {
+                        // Sibling non-array attribute
+                        return DBDVoid.INSTANCE;
+                    }
+                    Object colValue = row[index];
+                    if (colValue instanceof DBDCollection) {
+                        if (((DBDCollection) colValue).getItemCount() <= nestedIndexes[0]) {
+                            // Not an error. This collection is shorter than sibling collection
+                            return DBDVoid.INSTANCE;
+                        }
+                        return ((DBDCollection) colValue).getItem(nestedIndexes[0]);
+                    } else {
+                        log.debug("Index specified for non-collection attribute");
+                    }
+                }
             }
         }
         Object curValue = row[attribute.getTopParent().getOrdinalPosition()];
+        int indexNumber = 0;
 
         for (int i = 0; i < depth; i++) {
             if (curValue == null) {
@@ -773,11 +806,38 @@ public final class DBUtils {
             DBDAttributeBinding attr = attribute.getParent(depth - i - 1);
             assert attr != null;
             try {
-                curValue = attr.extractNestedValue(curValue);
+                int nestedIndex = 0;
+                if (curValue instanceof DBDCollection) {
+                    nestedIndex = nestedIndexes == null ? 0 : nestedIndexes[indexNumber++];
+                }
+                curValue = attr.extractNestedValue(
+                    curValue,
+                    nestedIndex);
             } catch (Throwable e) {
                 //log.debug("Error reading nested value of [" + attr.getName() + "]", e);
                 curValue = new DBDValueError(e);
                 break;
+            }
+            if (nestedIndexes != null && indexNumber < nestedIndexes.length) {
+                if (attr instanceof DBDAttributeBindingElement) {
+                    // Nested value already extracted by element binding
+                } else if (attr instanceof DBDAttributeBindingType) {
+                    if (attr.getDataKind() != DBPDataKind.ARRAY) {
+                        return DBDVoid.INSTANCE;
+                    }
+                } else if (curValue instanceof DBDCollection) {
+                    if (((DBDCollection) curValue).getItemCount() <= nestedIndexes[indexNumber]) {
+                        // Not an error. This collection is shorter than sibling collection
+                        return DBDVoid.INSTANCE;
+                    }
+                    curValue = ((DBDCollection) curValue).getItem(nestedIndexes[indexNumber]);
+                    indexNumber++;
+                } else {
+                    if (i == depth - 1) {
+                        // Sibling non-collection attribute
+                        return DBDVoid.INSTANCE;
+                    }
+                }
             }
         }
 
@@ -811,7 +871,7 @@ public final class DBUtils {
         // Get handler provider from registry
         // Note: datasource CAN be null. For example when we import data from local files (csv)
         if (dataSource != null) {
-            handlerProvider = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getValueHandlerProvider(
+            handlerProvider = DBWorkbench.getPlatform().getValueHandlerRegistry().getValueHandlerProvider(
                 dataSource, column);
             if (handlerProvider != null) {
                 valueHandler = handlerProvider.getValueHandler(dataSource, preferences, column);
@@ -1549,7 +1609,7 @@ public final class DBUtils {
     {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
-        } else if (object instanceof DBSObject) {
+        } else if (object instanceof DBSObject && ((DBSObject) object).getDataSource() != null) {
             return getObjectFullName(((DBSObject) object).getDataSource(), object, context);
         } else {
             return object.getName();

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -123,7 +124,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
 
     protected void addExtraDDLCommands(DBRProgressMonitor monitor, SQLServerTableBase table, Map<String, Object> options, SQLStructEditor.StructCreateCommand createCommand) {
         SQLObjectEditor<SQLServerTableCheckConstraint, SQLServerTableBase> ccm = getObjectEditor(
-            table.getDataSource().getContainer().getPlatform().getEditorsRegistry(),
+            DBWorkbench.getPlatform().getEditorsRegistry(),
             SQLServerTableCheckConstraint.class);
         if (ccm != null) {
             try {

@@ -353,4 +353,9 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
     public boolean supportsInsertAllDefaultValuesStatement() {
         return isSqlServer; // Sybase throws a syntax error on "DEFAULT" keyword
     }
+
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
+    }
 }

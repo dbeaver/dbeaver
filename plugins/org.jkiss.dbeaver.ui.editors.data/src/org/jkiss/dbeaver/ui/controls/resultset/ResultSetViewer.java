@@ -153,7 +153,6 @@ public class ResultSetViewer extends Viewer
     private final Composite mainPanel;
     private final Composite viewerPanel;
     private final IResultSetDecorator decorator;
-    private final ResultSetLabelProviderDefault labelProviderDefault;
     @Nullable
     private ResultSetFilterPanel filtersPanel;
     private final SashForm viewerSash;
@@ -241,7 +240,6 @@ public class ResultSetViewer extends Viewer
         this.site = site;
         this.recordMode = false;
         this.container = container;
-        this.labelProviderDefault = new ResultSetLabelProviderDefault(this);
         this.decorator = container.createResultSetDecorator();
         this.dataReceiver = new ResultSetDataReceiver(this, onDataConsumer);
         this.dataPropertyListener = event -> {
@@ -416,11 +414,7 @@ public class ResultSetViewer extends Viewer
                 }
                 lastThemeUpdateTime = System.currentTimeMillis();
                 UIUtils.asyncExec(() -> {
-                    ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-                    labelProviderDefault.applyThemeSettings(currentTheme);
-                    if (activePresentation instanceof AbstractPresentation) {
-                        ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
-                    }
+                    applyCurrentPresentationThemeSettings();
                 });
             }
         };
@@ -428,6 +422,13 @@ public class ResultSetViewer extends Viewer
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(dataPropertyListener);
         DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().addPropertyChangeListener(dataPropertyListener);
+    }
+
+    private void applyCurrentPresentationThemeSettings() {
+        if (activePresentation instanceof AbstractPresentation) {
+            ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+            ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
+        }
     }
 
     private void handleDataPropertyChange(@Nullable DBPDataSourceContainer dataSource, @NotNull String property, @Nullable Object oldValue, @Nullable Object newValue) {
@@ -438,7 +439,10 @@ public class ResultSetViewer extends Viewer
         lastPropertyUpdateTime = System.currentTimeMillis();
         UIUtils.asyncExec(() -> {
             if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
-                labelProviderDefault.applyThemeSettings();
+                if (activePresentation instanceof AbstractPresentation) {
+                    ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+                    ((AbstractPresentation) activePresentation).applyThemeSettings(currentTheme);
+                }
             }
             redrawData(false, false);
         });
@@ -454,18 +458,6 @@ public class ResultSetViewer extends Viewer
     @Override
     public IResultSetDecorator getDecorator() {
         return decorator;
-    }
-
-    @NotNull
-    @Override
-    public IResultSetLabelProvider getLabelProvider() {
-        IResultSetLabelProvider labelProvider = decorator.getDataLabelProvider();
-        return labelProvider == null ? labelProviderDefault : labelProvider;
-    }
-
-    @NotNull
-    public IResultSetLabelProvider getDefaultLabelProvider() {
-        return labelProviderDefault;
     }
 
     AutoRefreshControl getAutoRefresh() {
@@ -2573,14 +2565,13 @@ public class ResultSetViewer extends Viewer
     // Context menus
 
     @Override
-    public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row) {
+    public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row, int[] rowIndexes) {
         // Custom oldValue items
         final ResultSetValueController valueController;
         if (attr != null && row != null) {
             valueController = new ResultSetValueController(
                 this,
-                attr,
-                row,
+                new ResultSetCellLocation(attr, row, rowIndexes),
                 IValueController.EditType.NONE,
                 null);
         } else {
@@ -2742,7 +2733,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         List<? extends DBDAttributeTransformerDescriptor> transformers =
-            dataSource.getContainer().getPlatform().getValueHandlerRegistry().findTransformers(
+            DBWorkbench.getPlatform().getValueHandlerRegistry().findTransformers(
                 dataSource, attr, null);
         if (!CommonUtils.isEmpty(transformers)) {
             MenuManager transformersMenu = new MenuManager(NLS.bind(ResultSetMessages.controls_resultset_viewer_action_view_column_type, attr.getName()));
@@ -3306,7 +3297,7 @@ public class ResultSetViewer extends Viewer
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
             DBDAttributeBinding ownBinding = bindingsModel.getAttributeBinding(ownAttr.getAttribute());
             if (ownBinding == null) {
-                DBWorkbench.getPlatformUI().showError("Can't navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
+                DBWorkbench.getPlatformUI().showError("Cannot navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
                 return;
             }
 
@@ -3392,13 +3383,13 @@ public class ResultSetViewer extends Viewer
 
     private void createFilterConstraint(@NotNull List<ResultSetRow> rows, DBDAttributeBinding attrBinding, DBDAttributeConstraint constraint) {
         if (rows.size() == 1) {
-            Object keyValue = model.getCellValue(attrBinding, rows.get(0));
+            Object keyValue = model.getCellValue(new ResultSetCellLocation(attrBinding, rows.get(0)));
             constraint.setOperator(DBCLogicalOperator.EQUALS);
             constraint.setValue(keyValue);
         } else {
             Object[] keyValues = new Object[rows.size()];
             for (int k = 0; k < rows.size(); k++) {
-                keyValues[k] = model.getCellValue(attrBinding, rows.get(k));
+                keyValues[k] = model.getCellValue(new ResultSetCellLocation(attrBinding, rows.get(k)));
             }
             constraint.setOperator(DBCLogicalOperator.IN);
             constraint.setValue(keyValues);
@@ -3758,7 +3749,7 @@ public class ResultSetViewer extends Viewer
         }
         nextSegmentReadingBlocked = true;
         UIUtils.asyncExec(() -> {
-            if (!checkForChanges()) {
+            if (isRefreshInProgress() || !checkForChanges()) {
                 nextSegmentReadingBlocked = false;
                 return;
             }
@@ -4356,8 +4347,14 @@ public class ResultSetViewer extends Viewer
 
                     if (docAttribute != null) {
                         try {
-                            final Object sourceValue = docAttribute.getValueHandler().getValueFromObject(session, docAttribute, model.getCellValue(docAttribute, sourceRow), true, false);
-                            final ResultSetValueController controller = new ResultSetValueController(this, docAttribute, targetRow, IValueController.EditType.NONE, null);
+                            Object cellValue = model.getCellValue(new ResultSetCellLocation(docAttribute, sourceRow));
+                            final Object sourceValue = docAttribute.getValueHandler().getValueFromObject(
+                                session, docAttribute, cellValue, true, false);
+                            final ResultSetValueController controller = new ResultSetValueController(
+                                this,
+                                new ResultSetCellLocation(docAttribute, targetRow, null),
+                                IValueController.EditType.NONE,
+                                null);
                             controller.updateValue(sourceValue, false);
                         } catch (DBCException e) {
                             log.error("Can't extract document value", e);
@@ -4367,8 +4364,13 @@ public class ResultSetViewer extends Viewer
                             if (!metaAttr.isPseudoAttribute() && !metaAttr.isAutoGenerated()) {
                                 final DBSAttributeBase attribute = metaAttr.getAttribute();
                                 try {
-                                    final Object sourceValue = metaAttr.getValueHandler().getValueFromObject(session, attribute, model.getCellValue(metaAttr, sourceRow), true, false);
-                                    final ResultSetValueController controller = new ResultSetValueController(this, metaAttr, targetRow, IValueController.EditType.NONE, null);
+                                    Object cellValue = model.getCellValue(new ResultSetCellLocation(metaAttr, sourceRow));
+                                    final Object sourceValue = metaAttr.getValueHandler().getValueFromObject(session, attribute, cellValue, true, false);
+                                    final ResultSetValueController controller = new ResultSetValueController(
+                                        this,
+                                        new ResultSetCellLocation(metaAttr, sourceRow),
+                                        IValueController.EditType.NONE,
+                                        null);
                                     controller.updateValue(sourceValue, false);
                                 } catch (DBCException e) {
                                     log.error("Can't extract cell value", e);
@@ -4518,7 +4520,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void fireResultSetLoad() {
-        labelProviderDefault.applyThemeSettings();
+        applyCurrentPresentationThemeSettings();
         for (IResultSetListener listener : getListenersCopy()) {
             listener.handleResultSetLoad();
         }
@@ -4589,6 +4591,7 @@ public class ResultSetViewer extends Viewer
         public ResultSetRow getElementRow(Object element) {
             return null;
         }
+
     }
 
     public static class PanelsMenuContributor extends CompoundContributionItem

@@ -14,6 +14,7 @@ jobs:
         uses: gsactions/commit-message-checker@v1
         with:
           pattern: '^(#\d{3,6}|((Merge|dbeaver|cloudbeaver).+?#\d{3,6})|((DB-|CB-|DVO-)\d+))\s.*$'
+          excludeDescription: 'true'
           error: |
             Each commit message must begin with GitHub or Jira ticket reference. Like:
             *  #<issue_nember>

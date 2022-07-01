@@ -136,15 +136,16 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
 
     @Nullable
     @Override
-    public Object extractNestedValue(@NotNull Object ownerValue) throws DBCException {
+    public Object extractNestedValue(@NotNull Object ownerValue, int itemIndex) throws DBCException {
         assert parent != null;
         if (parent.getDataKind() == DBPDataKind.ARRAY) {
             // If we have a collection then use first element
             if (ownerValue instanceof DBDCollection) {
                 DBDCollection collection = (DBDCollection) ownerValue;
-                if (collection.getItemCount() > 0) {
-                    ownerValue = collection.getItem(0);
+                if (collection.getItemCount() > itemIndex) {
+                    ownerValue = collection.getItem(itemIndex);
                 } else {
+                    log.debug("Collection index out of bounds: " + itemIndex);
                     return null;
                 }
             }

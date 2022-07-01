@@ -876,7 +876,7 @@ public class DBExecUtils {
         return tableColumn.getDataKind().isComplex() == resultSetAttributeMeta.getDataKind().isComplex();
     }
 
-    public static boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute) {
+    public static boolean isAttributeReadOnly(@Nullable DBDAttributeBinding attribute) {
         if (attribute == null || attribute.getMetaAttribute() == null || attribute.getMetaAttribute().isReadOnly()) {
             return true;
         }

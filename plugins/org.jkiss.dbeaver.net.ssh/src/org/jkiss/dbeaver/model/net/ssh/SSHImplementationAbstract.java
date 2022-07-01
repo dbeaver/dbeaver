@@ -23,7 +23,6 @@ import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
@@ -57,7 +56,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
     protected AgentProxy agentProxy = null;
 
     @Override
-    public DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    public DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
     {
     	String dbPortString = connectionInfo.getHostPort();
@@ -77,8 +76,8 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         if (sshLocalPort == 0) {
             if (savedLocalPort != 0) {
                 sshLocalPort = savedLocalPort;
-            } else if (platform != null) {
-                sshLocalPort = SSHUtils.findFreePort(platform);
+            } else {
+                sshLocalPort = SSHUtils.findFreePort();
             }
         }
         if (CommonUtils.isEmpty(sshRemoteHost)) {

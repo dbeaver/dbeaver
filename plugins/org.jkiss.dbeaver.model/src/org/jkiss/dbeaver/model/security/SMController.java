@@ -78,10 +78,14 @@ public interface SMController extends SMAuthCredentialsManager {
 
     SMAuthInfo authenticate(
         @NotNull String appSessionId,
+        @Nullable String previousSmSessionId,
         @NotNull Map<String, Object> sessionParameters,
         @NotNull SMSessionType sessionType,
         @NotNull String authProviderId,
+        @Nullable String authProviderConfigurationId,
         @NotNull Map<String, Object> userCredentials) throws DBException;
+
+    SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
 
     void updateSession(
         @NotNull String sessionId,
@@ -103,4 +107,11 @@ public interface SMController extends SMAuthCredentialsManager {
         @Nullable String grantorId) throws DBException;
 
     SMAuthPermissions getTokenPermissions(String token) throws DBException;
+
+    ///////////////////////////////////////////
+    // Auth providers
+
+    SMAuthProviderDescriptor[] getAvailableAuthProviders() throws DBException;
+
+
 }

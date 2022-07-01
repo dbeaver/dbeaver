@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -89,12 +88,6 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public DBPDataSourceOrigin getOrigin() {
         throw new IllegalStateException("Stream datasource doesn't have origin");
-    }
-
-    @NotNull
-    @Override
-    public DBPPlatform getPlatform() {
-        return DBWorkbench.getPlatform();
     }
 
     @NotNull
