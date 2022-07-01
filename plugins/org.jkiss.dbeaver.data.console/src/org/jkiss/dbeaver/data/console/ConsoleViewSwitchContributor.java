@@ -65,6 +65,7 @@ public class ConsoleViewSwitchContributor extends WorkbenchWindowControlContribu
             {
                 setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE));
             }
+            
             @Override
             public void run() {
                 ConsoleViewSwitchHandler.toggleConsoleViewForEditor(editor);
