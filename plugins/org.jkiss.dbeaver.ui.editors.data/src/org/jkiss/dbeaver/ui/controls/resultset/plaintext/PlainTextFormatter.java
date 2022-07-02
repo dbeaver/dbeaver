@@ -143,7 +143,7 @@ public class PlainTextFormatter {
                 grid.append(" ");
             }
         }
-        if (delimTrailing){
+        if (delimTrailing) {
             grid.append("|");
         }
         grid.append("\n");
@@ -170,7 +170,7 @@ public class PlainTextFormatter {
                 }
             }
             for (int k = 0; k < attrs.size(); k++) {
-                if (k > 0 || startOffset != 0){
+                if (k > 0 || startOffset != 0) {
                     grid.append("|");
                 }
                 DBDAttributeBinding attr = attrs.get(k);
@@ -185,9 +185,8 @@ public class PlainTextFormatter {
                     grid.append(" ");
                 }
                 DBPDataKind dataKind = attr.getDataKind();
-                if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
-                    (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime))
-                {
+                if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers)
+                    || (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime)) {
                     // Right justify value
                     grid.append(" ".repeat(Math.max(0, colWidths[k] - stringWidth - extraSpacesNum))).append(displayString);
                 } else {
@@ -262,7 +261,8 @@ public class PlainTextFormatter {
         String[] values = new String[attrs.size()];
 
         // Calculate column widths
-        int nameWidth = 4, valueWidth = 5;
+        int nameWidth = 4;
+        int valueWidth = 5;
         for (int i = 0; i < attrs.size(); i++) {
             DBDAttributeBinding attr = attrs.get(i);
             nameWidth = Math.max(nameWidth, getAttributeName(attr).length());
