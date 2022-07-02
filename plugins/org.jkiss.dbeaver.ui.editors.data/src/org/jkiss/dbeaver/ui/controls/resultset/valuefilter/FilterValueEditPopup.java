@@ -68,7 +68,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
 
     public FilterValueEditPopup(Shell parentShell, @NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow[] rows) {
         super(parentShell, NLS.bind(ResultSetMessages.dialog_filter_value_edit_title, attr.getFullyQualifiedName(DBPEvaluationContext.UI)));
-        setShellStyle(SWT.SHELL_TRIM);
+        setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.MAX | SWT.RESIZE);
         filter = new GenericFilterValueEdit(viewer, attr, rows, DBCLogicalOperator.IN);
     }
 
