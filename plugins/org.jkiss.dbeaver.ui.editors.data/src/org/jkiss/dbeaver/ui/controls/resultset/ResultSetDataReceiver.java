@@ -63,11 +63,8 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
     private int focusRow;
     private DBSDataContainer targetDataContainer;
     
-    private final Consumer<ResultSetViewer> onDataConsumer;
-
-    ResultSetDataReceiver(@NotNull ResultSetViewer resultSetViewer, @Nullable Consumer<ResultSetViewer> onDataConsumer) {
+    ResultSetDataReceiver(@NotNull ResultSetViewer resultSetViewer) {
         this.resultSetViewer = resultSetViewer;
-        this.onDataConsumer = onDataConsumer;
     }
 
     boolean isHasMoreData() {
@@ -199,9 +196,6 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
                 resultSetViewer.updatePresentation(resultSet, metadataChanged);
                 resultSetViewer.getActivePresentation().refreshData(true, false, !metadataChanged);
                 resultSetViewer.updateStatusMessage();
-                if (onDataConsumer != null) {
-                    onDataConsumer.accept(resultSetViewer);
-                }
             } else {
                 resultSetViewer.getActivePresentation().refreshData(false, true, true);
             }

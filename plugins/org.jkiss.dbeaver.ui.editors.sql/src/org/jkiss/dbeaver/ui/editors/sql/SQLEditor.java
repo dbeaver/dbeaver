@@ -3413,7 +3413,7 @@ public class SQLEditor extends SQLEditorBase implements
                 this.viewer = sqlView.getViewer();
             } else {
                 // Embedded results viewer
-                this.viewer = new ResultSetViewer(resultTabs, getSite(), this, rs -> notifyOnDataListeners(this));
+                this.viewer = new ResultSetViewer(resultTabs, getSite(), this);
                 this.viewer.addListener(this);
                 
                 int tabCount = resultTabs.getItemCount();
@@ -3771,6 +3771,11 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void handleResultSetSelectionChange(SelectionChangedEvent event) {
 
+        }
+
+        @Override
+        public void onModelPrepared() {
+            notifyOnDataListeners(this);
         }
 
         @Override
@@ -4437,9 +4442,9 @@ public class SQLEditor extends SQLEditorBase implements
     
     private void notifyOnDataListeners(QueryResultsContainer container) {
         DBCExecutionContext context = container.getExecutionContext();
-        DBPPreferenceStore contextPrefStore = context != null 
-                ? context.getDataSource().getContainer().getPreferenceStore()
-                : DBWorkbench.getPlatform().getPreferenceStore();
+        DBPPreferenceStore contextPrefStore = context != null
+            ? context.getDataSource().getContainer().getPreferenceStore()
+            : DBWorkbench.getPlatform().getPreferenceStore();
 
         // Notify listeners
         synchronized (listeners) {
