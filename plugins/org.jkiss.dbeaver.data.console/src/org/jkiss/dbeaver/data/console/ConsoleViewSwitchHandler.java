@@ -26,6 +26,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -42,7 +43,8 @@ import org.jkiss.code.Nullable;
 
 
 public class ConsoleViewSwitchHandler extends AbstractHandler {
-    
+    private static final Log log = Log.getLog(ConsoleViewSwitchHandler.class);
+
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.data.console";
 
     private static final String CONSOLE_VIEW_ENABLED_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.show.consoleView.isEnabled";
@@ -102,12 +104,13 @@ public class ConsoleViewSwitchHandler extends AbstractHandler {
             public void onDataReceived(DBPPreferenceStore contextPrefStore, ResultSetModel resultSet, String name) {
                 if (isConsoleViewEnabledForEditor(editor) && CommonUtils.isNotEmpty(name)) {
                     SQLConsoleView viewer = obtainConsoleView(editor).getFirst();
-                    viewer.printGrid(contextPrefStore, resultSet, name);
+                    viewer.printQueryData(contextPrefStore, resultSet, name);
                 }
             }
         });
     }
-    
+
+    @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
@@ -161,7 +164,7 @@ public class ConsoleViewSwitchHandler extends AbstractHandler {
                             return fileValue.equals(CONSOLE_VIEW_ENABLED_VALUE_TRUE);
                         }
                     } catch (CoreException e) {
-                        e.printStackTrace();
+                        log.debug(e.getMessage(), e);
                     }
                 }
                 return editor.getActivePreferenceStore().getBoolean(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT);
@@ -181,7 +184,7 @@ public class ConsoleViewSwitchHandler extends AbstractHandler {
                 try {
                     activeFile.setPersistentProperty(FILE_CONSOLE_VIEW_ENABLED_PROP_NAME, value);
                 } catch (CoreException e) {
-                    e.printStackTrace();
+                    log.debug(e.getMessage(), e);
                 }
             }
         }
