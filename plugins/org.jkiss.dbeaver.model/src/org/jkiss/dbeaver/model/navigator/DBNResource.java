@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -258,7 +255,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         try {
             resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
 
-            if (!resource.getLocation().toFile().exists()) {
+            IPath resourceLocation = resource.getLocation();
+            if (resourceLocation != null && !resourceLocation.toFile().exists()) {
                 log.debug("Resource '" + resource.getName() + "' doesn't exists on file system");
                 //resource.delete(true, monitor.getNestedMonitor());
             }

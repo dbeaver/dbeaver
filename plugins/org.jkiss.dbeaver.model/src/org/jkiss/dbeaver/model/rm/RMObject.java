@@ -14,31 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.rm;
 
-package org.jkiss.dbeaver.model.fs;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.nio.file.Path;
 
 /**
- * Virtual file system root
+ * Abstract resource
  */
-public interface DBFVirtualFileSystemRoot extends DBPNamedObject {
+public interface RMObject extends DBPNamedObject {
 
-    @NotNull
-    DBFVirtualFileSystem getFileSystem();
+    String getPath();
 
-    @NotNull
-    String getRootId();
-
-    DBPImage getRootIcon();
-
-    @NotNull
-    Path getRootPath(DBRProgressMonitor monitor) throws DBException;
+    boolean isFolder();
 
 }

@@ -719,6 +719,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     private void updateProjectNature() {
+        if (isVirtual()) {
+            return;
+        }
         try {
             IProject eclipseProject = project.getEclipseProject();
             if (eclipseProject != null) {

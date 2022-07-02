@@ -60,6 +60,9 @@ public interface DBPProject extends DBPObject, SMAuthSpace
     @Nullable
     IProject getEclipseProject();
 
+    @Nullable
+    IResource getRootResource();
+
     @NotNull
     Path getMetadataFolder(boolean create);
 

@@ -46,7 +46,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     private final List<DBNNode> extraNodes = new ArrayList<>();
 
     public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
-        super(parentNode, project.getEclipseProject(), handler);
+        super(parentNode, project.getRootResource(), handler);
         this.project = project;
         DBNRegistry.getInstance().extendNode(this, false);
     }

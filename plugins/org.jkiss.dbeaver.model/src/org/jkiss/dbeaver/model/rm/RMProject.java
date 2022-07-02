@@ -16,15 +16,15 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.utils.CommonUtils;
 
 import java.time.OffsetDateTime;
 
 /**
  * Resource manager API
  */
-public class RMProject implements DBPObject {
+public class RMProject implements RMObject {
     private String id;
     private String name;
     private String description;
@@ -34,6 +34,19 @@ public class RMProject implements DBPObject {
     private String creator;
 
     public RMProject() {
+    }
+
+    public RMProject(String id, String name, String description, boolean shared, OffsetDateTime createTime, String creator) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.shared = shared;
+        this.createTime = createTime;
+        this.creator = creator;
+    }
+
+    public RMProject(String name) {
+        this.name = name;
     }
 
     @Property
@@ -51,6 +64,16 @@ public class RMProject implements DBPObject {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public String getPath() {
+        return "/";
+    }
+
+    @Override
+    public boolean isFolder() {
+        return true;
     }
 
     public String getDescription() {
@@ -85,4 +108,20 @@ public class RMProject implements DBPObject {
     public void setCreator(String creator) {
         this.creator = creator;
     }
+
+    @Override
+    public String toString() {
+        return id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id == null ? 0 : id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof RMProject && CommonUtils.equalObjects(id, ((RMProject) obj).id);
+    }
+
 }

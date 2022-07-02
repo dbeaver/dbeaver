@@ -59,30 +59,8 @@ public class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements DBPWorksp
     }
 
     @Override
-    public void initializeProjects() {
-        loadWorkspaceProjects();
-
-        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects)) {
-            try {
-                createDefaultProject();
-            } catch (CoreException e) {
-                log.error("Can't create default project", e);
-            }
-        }
-        if (getActiveProject() == null && !projects.isEmpty()) {
-            // Set active project
-            setActiveProject(projects.values().iterator().next());
-        }
-    }
-
-    @Override
-    public void dispose() {
-        this.getEclipseWorkspace().removeResourceChangeListener(projectListener);
-
-        super.dispose();
-    }
-
-    private void loadWorkspaceProjects() {
+    public final void initializeProjects() {
+        // Acquire workspace session
         try {
             this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
         } catch (DBException e) {
@@ -95,6 +73,43 @@ public class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements DBPWorksp
             System.exit(101);
         }
 
+        loadWorkspaceProjects();
+
+        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects) &&
+            isDefaultProjectNeeded())
+        {
+            try {
+                createDefaultProject();
+            } catch (CoreException e) {
+                log.error("Can't create default project", e);
+            }
+        }
+        if (getActiveProject() == null && !projects.isEmpty()) {
+            // Set active project
+            setActiveProject(projects.values().iterator().next());
+        }
+
+        if (activeProject != null && !activeProject.isOpen()) {
+            try {
+                activeProject.ensureOpen();
+            } catch (IllegalStateException e) {
+                log.error("Error opening active project", e);
+            }
+        }
+    }
+
+    protected boolean isDefaultProjectNeeded() {
+        return true;
+    }
+
+    @Override
+    public void dispose() {
+        this.getEclipseWorkspace().removeResourceChangeListener(projectListener);
+
+        super.dispose();
+    }
+
+    protected void loadWorkspaceProjects() {
         String activeProjectName = getPlatform().getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
         IWorkspaceRoot root = getEclipseWorkspace().getRoot();
@@ -108,7 +123,7 @@ public class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements DBPWorksp
             allProjects = root.getProjects();
         }
         for (IProject project : allProjects) {
-            if (project.exists() && !project.isHidden()) {
+            if (project.exists() && !project.isHidden() && isProjectAccessible(project)) {
                 LocalProjectImpl projectMetadata = createProjectFrom(project);
                 this.projects.put(project, projectMetadata);
 
@@ -117,14 +132,10 @@ public class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements DBPWorksp
                 }
             }
         }
+    }
 
-        if (activeProject != null && !activeProject.isOpen()) {
-            try {
-                activeProject.ensureOpen();
-            } catch (IllegalStateException e) {
-                log.error("Error opening active project", e);
-            }
-        }
+    protected boolean isProjectAccessible(IProject project) {
+        return true;
     }
 
     protected LocalProjectImpl createProjectFrom(IProject project) {

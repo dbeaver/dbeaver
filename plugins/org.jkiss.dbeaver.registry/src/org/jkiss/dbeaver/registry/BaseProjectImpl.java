@@ -119,6 +119,12 @@ public abstract class BaseProjectImpl implements DBPProject {
         return projectID;
     }
 
+    @Nullable
+    @Override
+    public IResource getRootResource() {
+        return getEclipseProject();
+    }
+
     @NotNull
     @Override
     public Path getMetadataFolder(boolean create) {
