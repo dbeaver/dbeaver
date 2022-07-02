@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.util.List;
@@ -32,6 +33,8 @@ public class RMResource implements RMObject {
     private List<RMResourceChange> changes;
     private Map<String, Object> properties;
 
+    private RMResource[] children;
+
     public RMResource() {
 
     }
@@ -40,12 +43,13 @@ public class RMResource implements RMObject {
         this.name = name;
     }
 
-    public RMResource(String name, boolean folder, long length) {
+    public RMResource(@NotNull String name, boolean folder, long length) {
         this.name = name;
         this.folder = folder;
         this.length = length;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
@@ -94,4 +98,11 @@ public class RMResource implements RMObject {
         this.properties = properties;
     }
 
+    public RMResource[] getChildren() {
+        return children;
+    }
+
+    public void setChildren(RMResource[] children) {
+        this.children = children;
+    }
 }

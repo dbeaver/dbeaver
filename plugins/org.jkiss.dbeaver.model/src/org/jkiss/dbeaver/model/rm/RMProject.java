@@ -25,10 +25,30 @@ import java.time.OffsetDateTime;
  * Resource manager API
  */
 public class RMProject implements RMObject {
+
+    public static final String PREFIX_GLOBAL = "g";
+    public static final String PREFIX_SHARED = "s";
+    public static final String PREFIX_USER = "u";
+
+    public enum Type {
+        GLOBAL(PREFIX_GLOBAL),
+        SHARED(PREFIX_SHARED),
+        USER(PREFIX_USER);
+
+        private final String prefix;
+
+        Type(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+    }
     private String id;
     private String name;
     private String description;
-    private boolean shared;
+    private Type type;
 
     private OffsetDateTime createTime;
     private String creator;
@@ -36,11 +56,11 @@ public class RMProject implements RMObject {
     public RMProject() {
     }
 
-    public RMProject(String id, String name, String description, boolean shared, OffsetDateTime createTime, String creator) {
+    public RMProject(String id, String name, String description, Type type, OffsetDateTime createTime, String creator) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.shared = shared;
+        this.type = type;
         this.createTime = createTime;
         this.creator = creator;
     }
@@ -85,12 +105,12 @@ public class RMProject implements RMObject {
     }
 
     @Property
-    public boolean isShared() {
-        return shared;
+    public Type getType() {
+        return type;
     }
 
-    public void setShared(boolean shared) {
-        this.shared = shared;
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public OffsetDateTime getCreateTime() {

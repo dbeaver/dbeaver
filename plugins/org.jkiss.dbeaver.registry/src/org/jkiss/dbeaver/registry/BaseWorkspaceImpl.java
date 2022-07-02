@@ -29,10 +29,8 @@ import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -326,9 +324,9 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
             return null;
         }
         // Check resource is synced
-        if (resource instanceof IFile && !resource.isSynchronized(IResource.DEPTH_ZERO)) {
-            ContentUtils.syncFile(new VoidProgressMonitor(), resource);
-        }
+//        if (resource instanceof IFile && !resource.isSynchronized(IResource.DEPTH_ZERO)) {
+//            ContentUtils.syncFile(new VoidProgressMonitor(), resource);
+//        }
 
         // Find handler
         DBPResourceHandler handler = null;

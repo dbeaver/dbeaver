@@ -59,7 +59,8 @@ public interface RMController {
         @Nullable String folder,
         @Nullable String nameMask,
         boolean readProperties,
-        boolean readHistory) throws DBException;
+        boolean readHistory,
+        boolean recursive) throws DBException;
 
     String createResource(
         @NotNull String projectId,
