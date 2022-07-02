@@ -39,9 +39,9 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 
 
-public class SQLConsoleLogViewer extends SQLEditorOutputConsoleViewer {
+public class SQLConsoleView extends SQLEditorOutputConsoleViewer {
 
-    public SQLConsoleLogViewer(@NotNull IWorkbenchPartSite site, @NotNull CTabFolder tabsContainer, int styles) {
+    public SQLConsoleView(@NotNull IWorkbenchPartSite site, @NotNull CTabFolder tabsContainer, int styles) {
         super(site, tabsContainer, new MessageConsole("sql-data-log-output", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)));
     }
 

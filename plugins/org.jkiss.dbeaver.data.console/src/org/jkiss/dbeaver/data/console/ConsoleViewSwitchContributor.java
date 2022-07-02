@@ -75,7 +75,7 @@ public class ConsoleViewSwitchContributor extends WorkbenchWindowControlContribu
             @Override
             public void onDataSourceChanged(PreferenceChangeEvent event) {
                 if (event == null || event.getProperty().equals(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT)) {
-                    boolean isConsoleViewEnabled = ConsoleViewSwitchHandler.isLogViewerEnabledForEditor(editor);
+                    boolean isConsoleViewEnabled = ConsoleViewSwitchHandler.isConsoleViewEnabledForEditor(editor);
                     action.setChecked(isConsoleViewEnabled);
                     editor.setConsoleViewOutputEnabled(isConsoleViewEnabled);
                 }
