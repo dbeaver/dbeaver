@@ -16,15 +16,53 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
  * Abstract resource
  */
-public interface RMObject extends DBPNamedObject {
+public abstract class RMObject implements DBPNamedObject {
 
-    String getPath();
+    private RMResource[] children;
+    private String name;
 
-    boolean isFolder();
+    public RMObject() {
+    }
+
+    public RMObject(String name) {
+        this.name = name;
+    }
+
+    public abstract boolean isFolder();
+
+    @NotNull
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Nullable
+    public RMResource[] getChildren() {
+        return children;
+    }
+
+    public void setChildren(@NotNull RMResource[] resources) {
+        this.children = resources;
+    }
+
+    @Nullable
+    public RMResource getChild(@NotNull String name) {
+        for (RMResource child : children) {
+            if (child.getName().equals(name)) {
+                return child;
+            }
+        }
+        return null;
+    }
 
 }

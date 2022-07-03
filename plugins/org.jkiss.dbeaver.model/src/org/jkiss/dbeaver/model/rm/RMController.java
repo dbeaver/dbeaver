@@ -35,7 +35,7 @@ public interface RMController {
 
     void deleteProject(@NotNull String projectId) throws DBException;
 
-    RMProject getProject(@NotNull String projectId) throws DBException;
+    RMProject getProject(@NotNull String projectId, boolean readResources) throws DBException;
 
     /**
      * Returns datasources configuration in modern format

@@ -24,7 +24,7 @@ import java.time.OffsetDateTime;
 /**
  * Resource manager API
  */
-public class RMProject implements RMObject {
+public class RMProject extends RMObject {
 
     public static final String PREFIX_GLOBAL = "g";
     public static final String PREFIX_SHARED = "s";
@@ -46,7 +46,6 @@ public class RMProject implements RMObject {
         }
     }
     private String id;
-    private String name;
     private String description;
     private Type type;
 
@@ -57,8 +56,8 @@ public class RMProject implements RMObject {
     }
 
     public RMProject(String id, String name, String description, Type type, OffsetDateTime createTime, String creator) {
+        super(name);
         this.id = id;
-        this.name = name;
         this.description = description;
         this.type = type;
         this.createTime = createTime;
@@ -66,7 +65,7 @@ public class RMProject implements RMObject {
     }
 
     public RMProject(String name) {
-        this.name = name;
+        super(name);
     }
 
     @Property
@@ -76,19 +75,6 @@ public class RMProject implements RMObject {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getPath() {
-        return "/";
     }
 
     @Override

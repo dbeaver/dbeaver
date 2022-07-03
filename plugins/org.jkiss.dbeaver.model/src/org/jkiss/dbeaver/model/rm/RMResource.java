@@ -25,42 +25,26 @@ import java.util.Map;
 /**
  * Resource manager API
  */
-public class RMResource implements RMObject {
-    private String name;
+public class RMResource extends RMObject {
     private boolean folder;
     private long length;
+    private Long lastModified;
 
     private List<RMResourceChange> changes;
     private Map<String, Object> properties;
-
-    private RMResource[] children;
 
     public RMResource() {
 
     }
 
     public RMResource(String name) {
-        this.name = name;
+        super(name);
     }
 
     public RMResource(@NotNull String name, boolean folder, long length) {
-        this.name = name;
+        super(name);
         this.folder = folder;
         this.length = length;
-    }
-
-    @NotNull
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String getPath() {
-        return name;
     }
 
     @Override
@@ -82,6 +66,15 @@ public class RMResource implements RMObject {
         this.length = length;
     }
 
+    @Property
+    public Long getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Long lastModified) {
+        this.lastModified = lastModified;
+    }
+
     public List<RMResourceChange> getChanges() {
         return changes;
     }
@@ -98,11 +91,4 @@ public class RMResource implements RMObject {
         this.properties = properties;
     }
 
-    public RMResource[] getChildren() {
-        return children;
-    }
-
-    public void setChildren(RMResource[] children) {
-        this.children = children;
-    }
 }

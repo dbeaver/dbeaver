@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
@@ -529,18 +532,31 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     @Property(viewable = false, order = 11)
     public String getResourceLocation() {
-        return resource == null ? "" : resource.getLocation().toOSString();
+        if (resource == null) {
+            return null;
+        }
+        IPath location = resource.getLocation();
+        return location == null ? null : location.toString();
     }
 
     @Property(viewable = true, order = 11)
-    public String getResourceSize() {
-        long size = resource == null ? 0 : resource.getLocation().toFile().length();
-        return numberFormat.format(size);
+    public String getResourceSize() throws CoreException {
+        if (resource instanceof IFile) {
+            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
+            IFileInfo iFileInfo = fileStore.fetchInfo();
+            return numberFormat.format(iFileInfo.getLength());
+        }
+        return null;
     }
 
     @Property(viewable = true, order = 11)
-    public String getResourceLastModified() {
-        return resource == null ? null : DATE_FORMAT.format(resource.getLocation().toFile().lastModified());
+    public String getResourceLastModified() throws CoreException {
+        if (resource instanceof IFile) {
+            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
+            IFileInfo iFileInfo = fileStore.fetchInfo();
+            return DATE_FORMAT.format(iFileInfo.getLastModified());
+        }
+        return null;
     }
 
     protected boolean isResourceExists() {

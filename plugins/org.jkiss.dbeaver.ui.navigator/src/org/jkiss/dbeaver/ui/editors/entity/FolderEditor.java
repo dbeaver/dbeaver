@@ -31,6 +31,7 @@ import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -200,6 +201,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                     items = nodesWithParent;
                 }
             }
+            items.removeIf(DBUtils::isHiddenObject);
             super.setListData(items, append, forUpdate);
         }
 
