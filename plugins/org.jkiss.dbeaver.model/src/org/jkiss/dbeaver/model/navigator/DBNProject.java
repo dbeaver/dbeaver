@@ -46,7 +46,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     private final List<DBNNode> extraNodes = new ArrayList<>();
 
     public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
-        super(parentNode, project.getRootResource(), handler);
+        super(parentNode, project.getEclipseProject(), handler);
         this.project = project;
         DBNRegistry.getInstance().extendNode(this, false);
     }
@@ -259,6 +259,11 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         if (extraNodes.remove(node)) {
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, node));
         }
+    }
+
+    @Override
+    protected IResource getContentLocationResource() {
+        return project.getRootResource();
     }
 
     @Override

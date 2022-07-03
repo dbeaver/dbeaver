@@ -71,6 +71,13 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         this.handler = handler;
     }
 
+    /**
+     * Actual content location can be changed
+     */
+    protected IResource getContentLocationResource() {
+        return resource;
+    }
+
     @Override
     public boolean isDisposed() {
         return resource == null || super.isDisposed();
@@ -178,8 +185,9 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     {
         List<DBNNode> result = new ArrayList<>();
         try {
-            if (resource instanceof IContainer && resource.exists()) {
-                IResource[] members = ((IContainer) resource).members(false);
+            IResource contentLocation = getContentLocationResource();
+            if (contentLocation instanceof IContainer && contentLocation.exists()) {
+                IResource[] members = ((IContainer) contentLocation).members(false);
                 members = addImplicitMembers(members);
                 for (IResource member : members) {
                     DBNNode newChild = makeNode(member);
