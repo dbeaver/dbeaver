@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -121,7 +122,7 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @Nullable
     @Override
-    public IResource getRootResource() {
+    public IContainer getRootResource() {
         return getEclipseProject();
     }
 

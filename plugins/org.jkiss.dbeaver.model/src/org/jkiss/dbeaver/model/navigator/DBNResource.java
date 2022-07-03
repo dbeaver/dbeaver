@@ -127,8 +127,11 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     @Override
 //    @Property(viewable = false, order = 100)
-    public String getNodeDescription()
-    {
+    public String getNodeDescription() {
+        if (getOwnerProject().isVirtual()) {
+            // Do not read descriptions for virtual (remote) projects
+            return null;
+        }
         return handler == null || resource == null ? null : handler.getResourceDescription(resource);
     }
 
@@ -226,17 +229,16 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         return null;
     }
 
-    private DBNNode makeNode(IResource resource)
-    {
-//        if (resource.isHidden()) {
-//            return null;
-//        }
-        if (resource.getParent() instanceof IProject && resource.getName().startsWith(".")) {
+    private DBNNode makeNode(IResource resource) {
+        boolean isRootResource =
+            CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getRootResource()) ||
+                CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getEclipseProject());
+        if (isRootResource && resource.getName().startsWith(".")) {
             // Skip project config
             return null;
         }
         try {
-            if (resource instanceof IFolder && resource.getParent() instanceof IFolder) {
+            if (resource instanceof IFolder && !isRootResource) {
                 // Sub folder
                 return handler.makeNavigatorNode(this, resource);
             }

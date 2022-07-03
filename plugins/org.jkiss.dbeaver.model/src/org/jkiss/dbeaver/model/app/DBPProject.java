@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
@@ -61,7 +62,7 @@ public interface DBPProject extends DBPObject, SMAuthSpace
     IProject getEclipseProject();
 
     @Nullable
-    IResource getRootResource();
+    IContainer getRootResource();
 
     @NotNull
     Path getMetadataFolder(boolean create);
