@@ -527,7 +527,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     @Override
     public Throwable getLastLoadError() {
-        return lastLoadError;
+        Throwable error = this.lastLoadError;
+        this.lastLoadError = null;
+        return error;
     }
 
     @Override

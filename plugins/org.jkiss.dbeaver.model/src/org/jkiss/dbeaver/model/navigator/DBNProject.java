@@ -112,6 +112,11 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     @Override
+    public Throwable getLastLoadError() {
+        return getProject().getDataSourceRegistry().getLastLoadError();
+    }
+
+    @Override
     public boolean supportsRename() {
         return !project.isVirtual();
     }

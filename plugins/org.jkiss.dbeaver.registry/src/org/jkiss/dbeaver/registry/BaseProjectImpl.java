@@ -162,10 +162,15 @@ public abstract class BaseProjectImpl implements DBPProject {
         ensureOpen();
         synchronized (metadataSync) {
             if (dataSourceRegistry == null) {
-                dataSourceRegistry = new DataSourceRegistry(this);
+                dataSourceRegistry = createDataSourceRegistry();
             }
         }
         return dataSourceRegistry;
+    }
+
+    @NotNull
+    protected DataSourceRegistry createDataSourceRegistry() {
+        return new DataSourceRegistry(this);
     }
 
     @NotNull
