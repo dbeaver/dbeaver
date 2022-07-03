@@ -118,12 +118,11 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
     }
 
     @Override
-    public void writeConfiguration(@NotNull String name, @NotNull InputStream data) throws IOException {
+    public void writeConfiguration(@NotNull String name, @NotNull byte[] data) throws IOException {
         Path configFile = getConfigurationPath(true).resolve(name);
         ContentUtils.makeFileBackup(configFile);
-        byte[] bytes = data.readAllBytes();
 
-        if (bytes.length == 0) {
+        if (data.length == 0) {
             if (Files.exists(configFile)) {
                 try {
                     Files.delete(configFile);
@@ -132,7 +131,7 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
                 }
             }
         } else {
-            Files.write(configFile, bytes);
+            Files.write(configFile, data);
         }
     }
 }

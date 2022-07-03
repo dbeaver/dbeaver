@@ -47,6 +47,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DataSourceRegistry implements DBPDataSourceRegistry {
@@ -591,18 +592,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         this.authCredentialsProvider = authCredentialsProvider;
     }
 
-    /**
-     * @return true if there is at least one project which was initialized.
-     */
-    public static boolean isProjectsInitialized() {
-        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
-            if (project.isRegistryLoaded()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 
     public static List<DBPDataSourceContainer> getAllDataSources() {
         List<DBPDataSourceContainer> result = new ArrayList<>();
@@ -689,6 +678,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                     DataSourceSerializer serializer = new DataSourceSerializerModern(this);
                     serializer.saveDataSources(
                         monitor,
+                        configurationManager,
                         storage,
                         localDataSources);
                     try {
@@ -775,6 +765,36 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     @Override
     public String toString() {
         return project.getName() + " (" + getClass().getSimpleName() + ")";
+    }
+
+    public void saveConfigurationToManager(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @Nullable Function<DBPDataSourceContainer, Boolean> filter)
+    {
+        List<DataSourceDescriptor> localDataSources = getDataSources();
+        if (filter != null) {
+            localDataSources.removeIf(ds -> !filter.apply(ds));
+        }
+
+        try {
+            DataSourceSerializer serializer = new DataSourceSerializerModern(this);
+            serializer.saveDataSources(
+                monitor,
+                configurationManager,
+                getDefaultStorage(),
+                localDataSources);
+            try {
+                if (!configurationManager.isSecure()) {
+                    getSecurePreferences().flush();
+                }
+            } catch (Throwable e) {
+                log.error("Error saving secured preferences", e);
+            }
+        } catch (Exception ex) {
+            log.error("Error saving datasources configuration", ex);
+        }
+
     }
 
     static class ParseResults {
