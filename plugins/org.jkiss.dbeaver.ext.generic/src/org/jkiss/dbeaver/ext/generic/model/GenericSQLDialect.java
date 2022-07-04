@@ -52,6 +52,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private boolean callableQueryInBrackets;
     private boolean omitCatalogName;
     private boolean supportsMultiInsert;
+    private boolean supportDelimiterInViews;
 
     public GenericSQLDialect() {
         super("Generic", "generic");
@@ -82,6 +83,8 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         if (this.supportsUpsert) {
             addSQLKeyword("UPSERT");
         }
+        this.supportDelimiterInViews =
+            CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_DELIMITER_IN_VIEWS));
         this.useSearchStringEscape = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_USE_SEARCH_STRING_ESCAPE), false);
         this.quoteReservedWords = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
         this.testSQL = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_PING));
@@ -125,6 +128,10 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     @Override
     public boolean isDelimiterAfterBlock() {
         return hasDelimiterAfterBlock;
+    }
+
+    public boolean supportsDelimiterAfterViews() {
+        return supportDelimiterInViews;
     }
 
     @NotNull
