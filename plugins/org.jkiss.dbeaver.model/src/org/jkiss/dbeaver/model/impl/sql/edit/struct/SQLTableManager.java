@@ -49,6 +49,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     public static final String BASE_VIEW_NAME = "NewView"; //$NON-NLS-1$
     public static final String BASE_MATERIALIZED_VIEW_NAME = "NewMView"; //$NON-NLS-1$
 
+    private final List<String> skipIndexNames = new ArrayList<>();
+
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
         long options = FEATURE_EDITOR_ON_CREATE;
@@ -244,6 +246,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 for (DBSEntityConstraint constraint : CommonUtils.safeCollection(table.getConstraints(monitor))) {
                     if (skipObject(constraint)) {
                         continue;
+                    } else if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
+                        skipIndexNames.add(constraint.getName());
                     }
                     command.aggregateCommand(pkm.makeCreateCommand(constraint, options));
                 }
@@ -270,9 +274,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (fkm != null && !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS)) {
             try {
                 for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
-                    if (!(foreignKey instanceof DBSTableForeignKey) ||
-                        skipObject(foreignKey))
-                    {
+                    if (!(foreignKey instanceof DBSTableForeignKey) || skipObject(foreignKey)) {
                         continue;
                     }
                     command.aggregateCommand(fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options));
@@ -285,7 +287,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (im != null && table instanceof DBSTable) {
             try {
                 for (DBSTableIndex index : CommonUtils.safeCollection(((DBSTable)table).getIndexes(monitor))) {
-                    if (!isIncludeIndexInDDL(monitor, index)) {
+                    if (!isIncludeIndexInDDL(monitor, index) || (index.isUnique() && skipIndexNames.contains(index.getName()))) {
                         continue;
                     }
                     command.aggregateCommand(im.makeCreateCommand(index, options));
