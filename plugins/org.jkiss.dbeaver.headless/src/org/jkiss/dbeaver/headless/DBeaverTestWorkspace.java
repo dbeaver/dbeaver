@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.headless;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
+import org.jkiss.dbeaver.registry.EclipseWorkspaceImpl;
 
 /**
  * DBeaver test workspace.
  */
-public class DBeaverTestWorkspace extends BaseWorkspaceImpl {
+public class DBeaverTestWorkspace extends EclipseWorkspaceImpl {
 
     DBeaverTestWorkspace(DBPPlatform platform, IWorkspace eclipseWorkspace) {
         super(platform, eclipseWorkspace);

@@ -383,7 +383,7 @@ public class DatabaseTransferUtils {
     }
 
     static void createTargetDynamicTable(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull DBSObjectContainer schema, @NotNull DatabaseMappingContainer containerMapping, boolean recreate) throws DBException {
-        final DBERegistry editorsRegistry = executionContext.getDataSource().getContainer().getPlatform().getEditorsRegistry();
+        final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
 
         Class<? extends DBSObject> tableClass = schema.getPrimaryChildType(monitor);
         if (!DBSEntity.class.isAssignableFrom(tableClass)) {

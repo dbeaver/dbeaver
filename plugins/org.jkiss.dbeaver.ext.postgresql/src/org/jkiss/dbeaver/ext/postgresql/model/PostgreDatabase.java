@@ -747,6 +747,16 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return null;
     }
 
+    @Nullable
+    public PostgreSchema getSchema(long oid) {
+        for (PostgreSchema schema : schemaCache.getCachedObjects()) {
+            if (schema.getObjectId() == oid) {
+                return schema;
+            }
+        }
+        return null;
+    }
+
     public PostgreSchema createSchemaImpl(@NotNull PostgreDatabase owner, @NotNull String name, @NotNull JDBCResultSet resultSet) throws SQLException {
         return new PostgreSchema(owner, name, resultSet);
     }

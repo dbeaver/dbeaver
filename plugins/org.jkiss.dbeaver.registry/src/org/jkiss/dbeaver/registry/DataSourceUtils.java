@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -24,7 +23,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPInformationProvider;
-import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -361,56 +359,6 @@ public class DataSourceUtils {
         //ds.set
         dsRegistry.addDataSource(newDS);
         return newDS;
-    }
-
-    /**
-     * Save secure config in protected storage.
-     * @return true on success (if protected storage is available and configured)
-     */
-    static boolean saveCredentialsInSecuredStorage(
-        @NotNull DBPProject project,
-        @Nullable DataSourceDescriptor dataSource,
-        @Nullable String subNode,
-        @NotNull SecureCredentials credentials)
-    {
-        final DBASecureStorage secureStorage = project.getSecureStorage();
-        {
-            try {
-                ISecurePreferences prefNode = dataSource == null ?
-                    project.getSecureStorage().getSecurePreferences() :
-                    dataSource.getSecurePreferences();
-                if (!secureStorage.useSecurePreferences()) {
-                    prefNode.removeNode();
-                } else {
-                    if (subNode != null) {
-                        for (String nodeName : subNode.split("/")) {
-                            prefNode = prefNode.node(nodeName);
-                        }
-                    }
-                    prefNode.put("name", dataSource != null ? dataSource.getName() : project.getName(), false);
-
-                    if (!CommonUtils.isEmpty(credentials.getUserName())) {
-                        prefNode.put(RegistryConstants.ATTR_USER, credentials.getUserName(), true);
-                    } else {
-                        prefNode.remove(RegistryConstants.ATTR_USER);
-                    }
-                    if (!CommonUtils.isEmpty(credentials.getUserPassword())) {
-                        prefNode.put(RegistryConstants.ATTR_PASSWORD, credentials.getUserPassword(), true);
-                    } else {
-                        prefNode.remove(RegistryConstants.ATTR_PASSWORD);
-                    }
-                    if (!CommonUtils.isEmpty(credentials.getProperties())) {
-                        for (Map.Entry<String, String> prop : credentials.getProperties().entrySet()) {
-                            prefNode.put(prop.getKey(), prop.getValue(), true);
-                        }
-                    }
-                    return true;
-                }
-            } catch (Throwable e) {
-                log.error("Can't save credentials in secure storage", e);
-            }
-        }
-        return false;
     }
 
     @NotNull

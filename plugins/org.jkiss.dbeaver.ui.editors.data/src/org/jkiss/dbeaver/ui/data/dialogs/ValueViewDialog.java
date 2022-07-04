@@ -70,7 +70,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
 
     protected ValueViewDialog(IValueController valueController) {
         super(valueController.getValueSite().getShell());
-        setShellStyle(SWT.SHELL_TRIM);
+        setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.MAX | SWT.RESIZE);
         this.valueController = valueController;
         dialogSettings = UIUtils.getDialogSettings(SETTINGS_SECTION_DI);
         if (dialogSettings.get(getInfoVisiblePrefId()) != null) {

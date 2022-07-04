@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model.impls;
+package org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -42,6 +43,28 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     @Override
     public String getServerTypeName() {
         return "CockroachDB";
+    }
+
+    @Override
+    public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
+        if (kind == PostgreClass.RelKind.S) {
+            return new CockroachSequence(schema, dbResult);
+        }
+        return super.createRelationOfClass(schema, kind, dbResult);
+    }
+
+    @Override
+    public PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom)
+        throws DBException {
+        if (kind == PostgreClass.RelKind.S) {
+            return new CockroachSequence(schema);
+        }
+        return super.createNewRelation(monitor, schema, kind, copyFrom);
+    }
+
+    @Override
+    public PostgreSequence createSequence(@NotNull PostgreSchema schema) {
+        return new CockroachSequence(schema);
     }
 
     @Override
@@ -101,7 +124,7 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsSequences() {
-        return false;
+        return true;
     }
 
     @Override

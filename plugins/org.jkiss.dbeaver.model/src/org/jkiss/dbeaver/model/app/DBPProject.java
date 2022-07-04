@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.app;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
@@ -41,7 +42,7 @@ public interface DBPProject extends DBPObject, SMAuthSpace
     @NotNull
     DBPWorkspace getWorkspace();
 
-    // In multi-use environment virtual project is a project owned by user
+    // In multi-user environment virtual project is a project owned by user
     boolean isVirtual();
 
     // Project with no persistent state
@@ -50,12 +51,13 @@ public interface DBPProject extends DBPObject, SMAuthSpace
     @NotNull
     String getName();
 
+    @NotNull
     UUID getProjectID();
 
     @NotNull
     Path getAbsolutePath();
 
-    @NotNull
+    @Nullable
     IProject getEclipseProject();
 
     @NotNull

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
@@ -84,7 +85,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     {
         if (storage == null && clob != null) {
             long contentLength = getContentLength();
-            DBPPlatform platform = executionContext.getDataSource().getContainer().getPlatform();
+            DBPPlatform platform = DBWorkbench.getPlatform();
             if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
                     String subString = clob.getSubString(1, (int) contentLength);

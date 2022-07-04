@@ -67,7 +67,6 @@ public class OracleAlterTableColumnTest {
     public void setUp() throws DBException {
         DBPPlatform dbpPlatform = DBWorkbench.getPlatform();
         Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(dbpPlatform.getDataSourceProviderRegistry().findDriver("oracle"));
-        Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(dbpPlatform);
 
         testDataSource = new OracleDataSource(mockDataSourceContainer);
 

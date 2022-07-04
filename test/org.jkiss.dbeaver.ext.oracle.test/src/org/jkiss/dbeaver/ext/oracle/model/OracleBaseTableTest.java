@@ -63,7 +63,6 @@ public class OracleBaseTableTest {
     @Before
     public void setUp() throws DBException {
         Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("oracle"));
-        Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(DBWorkbench.getPlatform());
 
         testDataSource = new OracleDataSource(mockDataSourceContainer);
 
