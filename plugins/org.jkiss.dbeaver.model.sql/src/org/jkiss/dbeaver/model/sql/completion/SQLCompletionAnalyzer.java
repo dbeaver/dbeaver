@@ -1289,14 +1289,16 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
                             if (sqlStatement != null) {
                                 TablesNamesFinder namesFinder = new TablesNamesFinder() {
+                                    @Override
                                     public void visit(@Nullable Table table) {
                                         if (table != null && table.getAlias() != null && table.getAlias().getName() != null) {
                                             aliases.add(table.getAlias().getName().toLowerCase(Locale.ENGLISH));
                                         }
                                     }
-                                    
+
+                                    @Override
                                     public void visit(@Nullable CreateView createView) {
-                                        if (createView != null && createView.getView().getAlias() != null 
+                                        if (createView != null && createView.getView().getAlias() != null
                                             && createView.getView().getName() != null
                                         ) {
                                             aliases.add(createView.getView().getAlias().getName().toLowerCase(Locale.ENGLISH));
