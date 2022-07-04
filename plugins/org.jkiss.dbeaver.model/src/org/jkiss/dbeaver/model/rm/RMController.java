@@ -31,11 +31,27 @@ public interface RMController {
     @NotNull
     RMProject[] listSharedProjects() throws DBException;
 
-    void createProject(@NotNull RMProject project) throws DBException;
+    RMProject createProject(@NotNull String id, @NotNull String name, @NotNull String description) throws DBException;
 
     void deleteProject(@NotNull String projectId) throws DBException;
 
     RMProject getProject(@NotNull String projectId) throws DBException;
+
+    /**
+     * Returns datasources configuration in modern format
+     */
+    String getProjectsDataSources(@NotNull String projectId) throws DBException;
+
+    /**
+     * Save datasources. Not: it only adds or updates existing datasources.
+     * @param configuration configuration in modern format.
+     */
+    void saveProjectDataSources(@NotNull String projectId, @NotNull String configuration) throws DBException;
+
+    /**
+     * Delete datasource by Ids
+     */
+    void deleteProjectDataSources(@NotNull String projectId, @NotNull String[] dataSourceIds) throws DBException;
 
     @NotNull
     RMResource[] listResources(
@@ -60,8 +76,9 @@ public interface RMController {
         @NotNull String resourcePath,
         boolean recursive) throws DBException;
 
-    RMResource[] getResourcePath(@NotNull String projectId,
-                                 @NotNull String resourcePath) throws DBException;
+    RMResource[] getResourcePath(
+        @NotNull String projectId,
+        @NotNull String resourcePath) throws DBException;
 
     @NotNull
     byte[] getResourceContents(
@@ -74,7 +91,4 @@ public interface RMController {
         @NotNull String resourcePath,
         @NotNull byte[] data) throws DBException;
 
-    void addRMEventListener(RMEventListener listener);
-
-    void removeRMEventListener(RMEventListener listener);
 }

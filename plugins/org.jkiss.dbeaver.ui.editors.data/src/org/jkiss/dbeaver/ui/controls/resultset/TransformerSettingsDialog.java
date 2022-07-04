@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
@@ -190,7 +190,7 @@ class TransformerSettingsDialog extends BaseDialog {
         DBVTransformSettings settings = vAttr == null ? null : DBVUtils.getTransformSettings(vAttr, false);
 
         if (dataSource != null && settings != null && !CommonUtils.isEmpty(settings.getCustomTransformer())) {
-            transformer = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getTransformer(settings.getCustomTransformer());
+            transformer = DBWorkbench.getPlatform().getValueHandlerRegistry().getTransformer(settings.getCustomTransformer());
         } else {
             transformer = null;
         }

@@ -59,6 +59,13 @@ public class SMAuthInfo {
         this.authPermissions = authPermissions;
     }
 
+    public static SMAuthInfo expired(@NotNull String authAttemptId) {
+        return new Builder()
+            .setAuthStatus(SMAuthStatus.EXPIRED)
+            .setAuthAttemptId(authAttemptId)
+            .setAuthData(Map.of())
+            .build();
+    }
 
     public static SMAuthInfo error(@NotNull String authAttemptId, @NotNull String error) {
         return new Builder()

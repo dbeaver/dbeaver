@@ -474,31 +474,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return true;
     }
 
-    /**
-     * Returns prepared statements for enumeration fetch
-     * @param monitor execution context
-     * @param keyColumn enumeration column.
-     * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
-     * @param preceedingKeys other constrain key values. May be null.
-     * @param sortByValue sort results by eky value. If false then sort by description
-     * @param sortAsc sort ascending/descending
-     * @param caseInsensitiveSearch use case-insensitive search for {@code keyPattern}
-     * @param maxResults maximum enumeration values in result set     @return  @throws DBException
-     */
     @NotNull
     @Override
     public List<DBDLabelValuePair> getDictionaryEnumeration(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAttribute keyColumn,
         Object keyPattern,
-        List<DBDAttributeValue> preceedingKeys,
-        boolean sortByValue,
-        boolean sortAsc,
+        @Nullable List<DBDAttributeValue> preceedingKeys,
         boolean caseInsensitiveSearch,
-        int maxResults)
-        throws DBException
-    {
-        // Use default one
+        boolean sortAsc,
+        boolean sortByValue,
+        int offset,
+        int maxResults
+    ) throws DBException {
         return readKeyEnumeration(
             monitor,
             keyColumn,
@@ -507,7 +495,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             sortByValue,
             sortAsc,
             caseInsensitiveSearch,
-            maxResults);
+            maxResults,
+            offset
+        );
     }
 
     @NotNull
@@ -590,7 +580,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         boolean sortByValue,
         boolean sortAsc,
         boolean caseInsensitiveSearch,
-        int maxResults)
+        int maxResults,
+        int offset)
         throws DBException
     {
         if (keyColumn.getParentObject() != this) {
@@ -603,9 +594,17 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         if (keyPattern != null) {
             if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
-                if (keyPattern instanceof Number) {
-                    // Subtract gap value to see some values before specified
-                    int gapSize = maxResults / 2;
+                if (keyPattern instanceof Number && maxResults > 0) {
+                    int gapSize;
+                    if (maxResults == 1) {
+                        if (offset == 0) {
+                            gapSize = 0;
+                        } else {
+                            gapSize = offset >= 0 ? -1 : 1;
+                        }
+                    } else {
+                        gapSize = Math.max(Math.round((float) maxResults / 2), 1) - offset;
+                    }
                     boolean allowNegative = ((Number) keyPattern).longValue() < 0;
                     if (keyPattern instanceof Integer) {
                         int intValue = (Integer) keyPattern;

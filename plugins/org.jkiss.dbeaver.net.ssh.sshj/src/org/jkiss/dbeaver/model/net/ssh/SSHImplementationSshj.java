@@ -163,7 +163,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
         }
         if (!isAlive) {
             closeTunnel(monitor);
-            initTunnel(monitor, null, savedConfiguration, savedConnectionInfo);
+            initTunnel(monitor, savedConfiguration, savedConnectionInfo);
         }
     }
 

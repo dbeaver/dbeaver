@@ -124,7 +124,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         if (isModalWizard() || UIUtils.isInDialog()) {
             return SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL;
         }
-        return SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
+        return SWT.CLOSE | SWT.MAX | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
     }
 
     protected boolean isModalWizard() {

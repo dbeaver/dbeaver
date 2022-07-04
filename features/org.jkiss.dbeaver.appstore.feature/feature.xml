@@ -22,23 +22,11 @@
         <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
     </url>
 
-    <includes id="org.jkiss.dbeaver.rcp.feature" version="0.0.0"/>
-
-    <includes id="org.jkiss.dbeaver.runtime.feature" version="0.0.0"/>
-    <includes id="org.jkiss.dbeaver.ui.feature" version="0.0.0"/>
-    <includes id="org.jkiss.dbeaver.ui.extra.feature" version="0.0.0"/>
-    <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
-    <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.app.base.feature" version="0.0.0"/>
 
     <!-- Additional plugins for standalone version -->
 
     <plugin id="org.jkiss.dbeaver.ext.sample.database" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.ui.tipoftheday" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
-    <plugin id="org.eclipse.ui.ide.application" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
-    <!-- Custom stuff -->
-    <plugin id="org.apache.commons.cli" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <plugin id="org.jkiss.dbeaver.ui.app.winstore" os="win32" arch="x86_64" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 

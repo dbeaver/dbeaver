@@ -123,6 +123,8 @@
                     <property id="supports-indexes" label="Driver supports indexes" description="Driver supports table indexes" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-table-constraints" label="Driver supports constraints" description="Driver supports table constraints (primary keys)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-stored-code" label="Driver supports stored code" description="Whether this driver supports stored code (procedures, functions, packages, etc)" type="boolean" required="false" defaultValue="true"/>
+                    <property id="stored-quoted-case" label="Quoted string case" description="Letter capitalization of quoted strings (mixed/upper/lower)" type="string" required="false" defaultValue=""/>
+                    <property id="stored-unquoted-case" label="Unquoted string case" description="Letter capitalization of unquoted strings (mixed/upper/lower)" type="string" required="false" defaultValue=""/>
                     <property id="supports-references" label="Driver supports references" description="Driver supports table references (foreign keys)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-delimiter-in-views" label="Delimiter in source view" description="Driver supports delimiter in view ddl" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-select-count" label="Driver supports SELECT count(*) clause" description="Driver supports SELECT count(*) clause" type="boolean" required="false" defaultValue="true"/>
@@ -1221,7 +1223,7 @@
                     categories="sql">
                     <file type="jar" path="maven:/org.apache.kylin:kylin-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/javax.xml.bind:jaxb-api:RELEASE"/>
-
+                    <parameter name="stored-unquoted-case" value="mixed"/>
                     <parameter name="omit-catalog-name" value="true"/>
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-references" value="false"/>

@@ -35,7 +35,9 @@ import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectWithDependencies;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -136,7 +138,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                         DBSObject dbsObject = ((DBNDatabaseItem) obj).getObject();
                         if (dbsObject instanceof DBSEntityAttribute) {
                             DBSEntityAttribute attribute = (DBSEntityAttribute) dbsObject;
-                            DBEObjectManager<?> objectManager = attribute.getDataSource().getContainer().getPlatform().getEditorsRegistry().getObjectManager(attribute.getClass());
+                            DBEObjectManager<?> objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(attribute.getClass());
                             if (objectManager instanceof DBEObjectWithDependencies) {
                                 try {
                                     List<? extends DBSObject> dependentObjectsList = ((DBEObjectWithDependencies) objectManager).getDependentObjectsList(monitor, attribute);

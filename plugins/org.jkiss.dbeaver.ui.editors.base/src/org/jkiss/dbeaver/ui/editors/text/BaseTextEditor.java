@@ -264,11 +264,18 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 
     }
 
-    public void saveToExternalFile()
-    {
+    public void saveToExternalFile() {
+        saveToExternalFile(null);
+    }
+
+    public void saveToExternalFile(@Nullable String currentDirectory) {
         IEditorInput editorInput = getEditorInput();
         IFile curFile = EditorUtils.getFileFromInput(editorInput);
         String fileName = curFile == null ? null : curFile.getName();
+
+        if (CommonUtils.isNotEmpty(currentDirectory)) {
+            DialogUtils.setCurDialogFolder(currentDirectory);
+        }
 
         final IDocument document = getDocument();
         final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), EditorsMessages.file_dialog_save_as_file, new String[]{"*.sql", "*.txt", "*", "*.*"}, fileName);

@@ -78,6 +78,7 @@ public interface SMController extends SMAuthCredentialsManager {
 
     SMAuthInfo authenticate(
         @NotNull String appSessionId,
+        @Nullable String previousSmSessionId,
         @NotNull Map<String, Object> sessionParameters,
         @NotNull SMSessionType sessionType,
         @NotNull String authProviderId,
@@ -85,7 +86,6 @@ public interface SMController extends SMAuthCredentialsManager {
         @NotNull Map<String, Object> userCredentials) throws DBException;
 
     SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
-
 
     void updateSession(
         @NotNull String sessionId,

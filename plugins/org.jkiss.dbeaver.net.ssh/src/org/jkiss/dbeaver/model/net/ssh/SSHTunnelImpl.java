@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
@@ -49,7 +48,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     @Override
-    public DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    public DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
     {
         this.configuration = configuration;
@@ -73,7 +72,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         } catch (Throwable e) {
             throw new DBException("Can't create SSH tunnel implementation '" + implId + "'", e);
         }
-        return implementation.initTunnel(monitor, platform, configuration, connectionInfo);
+        return implementation.initTunnel(monitor, configuration, connectionInfo);
     }
 
     @Override

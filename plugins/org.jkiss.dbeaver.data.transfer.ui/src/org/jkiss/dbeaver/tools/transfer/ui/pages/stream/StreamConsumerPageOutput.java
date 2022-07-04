@@ -408,8 +408,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                     }
                 });
             }
-
-            UIUtils.asyncExec(() -> setProcessorEnabled(settings.hasEventProcessor(descriptor.getId())));
         }
 
         public void loadSettings(@NotNull Map<String, Object> settings) {

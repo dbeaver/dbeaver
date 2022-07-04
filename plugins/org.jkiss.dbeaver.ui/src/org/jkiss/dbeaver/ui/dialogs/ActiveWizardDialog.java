@@ -79,7 +79,7 @@ public class ActiveWizardDialog extends WizardDialog
         if (isModalWizard() || UIUtils.isInDialog()) {
             return super.getShellStyle();
         }
-        return SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
+        return SWT.CLOSE | SWT.MAX | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
     }
 
     protected boolean isModalWizard() {

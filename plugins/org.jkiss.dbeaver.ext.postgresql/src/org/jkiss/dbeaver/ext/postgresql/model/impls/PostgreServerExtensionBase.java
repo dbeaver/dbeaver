@@ -130,6 +130,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public PostgreSequence createSequence(@NotNull PostgreSchema schema) {
+        return new PostgreSequence(schema);
+    }
+
+    @Override
     public boolean supportsRoles() {
         return dataSource.isServerVersionAtLeast(8, 1);
     }

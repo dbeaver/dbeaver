@@ -151,7 +151,10 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
                 execJob.addJobChangeListener(new JobChangeAdapter() {
                     @Override
                     public void done(IJobChangeEvent event) {
-                        UIUtils.syncExec(() -> editor.processSQL(false, false));
+                        UIUtils.syncExec(() -> editor.processSQL(
+                            false,
+                            NavigatorUtils.getSelectedObjects(currentSelection).size() > 1
+                        ));
                     }
                 });
             }
