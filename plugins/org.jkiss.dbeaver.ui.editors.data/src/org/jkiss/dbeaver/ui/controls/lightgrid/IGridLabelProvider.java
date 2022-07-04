@@ -28,7 +28,7 @@ public interface IGridLabelProvider {
     String OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC = "OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC";
 
     @NotNull
-    String getText(IGridItem element);
+    String getText(@NotNull IGridItem element);
 
     @Nullable
     String getDescription(IGridItem element);
