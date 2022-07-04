@@ -18,13 +18,20 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.stream.Collectors;
 
 /**
  * JDBC abstract index
@@ -83,6 +90,20 @@ public abstract class JDBCTableIndex<CONTAINER extends DBSObjectContainer, TABLE
 
     public void setName(String indexName) {
         this.name = indexName;
+    }
+
+    /**
+     * This method provides display name for all columns of an index without the need to expand it in the UI.
+     * <p>
+     * Its name must match the {@link DBSTableIndexColumn#getTableColumn()}.
+     *
+     * @deprecated This method is not a part of the public API
+     */
+    @Property(viewable = true, order = 1)
+    public String getTableColumn(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return CommonUtils.safeList(getAttributeReferences(monitor)).stream()
+            .map(DBPNamedObject::getName)
+            .collect(Collectors.joining(", "));
     }
 
     @Override
