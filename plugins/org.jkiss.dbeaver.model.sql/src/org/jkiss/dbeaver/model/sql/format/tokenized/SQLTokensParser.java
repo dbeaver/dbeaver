@@ -156,7 +156,7 @@ class SQLTokensParser {
                 fChar = fBefore.charAt(fPos);
             }
             if (isLetter(fChar) 
-                && configuration.getSyntaxManager().getDialect().canIdentifierStartWith(fBefore.charAt(startPosition))
+                && configuration.getSyntaxManager().getDialect().validIdentifierStart(fBefore.charAt(startPosition))
             ) {
                 return parseNameStartWithDigit(startPosition);
             }

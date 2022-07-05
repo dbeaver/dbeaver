@@ -128,8 +128,6 @@ public interface SQLDialect {
 
     boolean isKeywordStart(@NotNull String word);
 
-    boolean canIdentifierStartWith(char letter);
-
     boolean isEntityQueryWord(@NotNull String word);
 
     boolean isAttributeQueryWord(@NotNull String word);

@@ -261,7 +261,7 @@ class MySQLDialect extends JDBCSQLDialect {
     }
 
     @Override
-    public boolean canIdentifierStartWith(char character) {
-        return Character.isLetterOrDigit(character);
+    public boolean validIdentifierStart(char c) {
+        return Character.isLetterOrDigit(c);
     }
 }
