@@ -5,8 +5,8 @@
 
     <extension point="org.jkiss.dbeaver.dataManager">
         <manager class="org.jkiss.dbeaver.ext.clickhouse.ui.ClickhouseEnumValueManager" id="org.jkiss.dbeaver.ext.clickhouse.ui.ClickhouseEnumValueManager">
-            <supports dataSource="clickhouse" name="ENUM8"/>
-            <supports dataSource="clickhouse" name="ENUM16"/>
+            <supports dataSource="clickhouse" typeName="ENUM8"/>
+            <supports dataSource="clickhouse" typeName="ENUM16"/>
         </manager>
     </extension>
 
