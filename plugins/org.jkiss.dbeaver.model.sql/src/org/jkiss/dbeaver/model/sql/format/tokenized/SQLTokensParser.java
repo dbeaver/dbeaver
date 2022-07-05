@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.text.parser.rules.NumberRule;
@@ -282,6 +283,7 @@ class SQLTokensParser {
         }
     }
     
+    @NotNull
     private FormatterToken parseNameStartWithDigit(int startPosition) {
         StringBuilder s = new StringBuilder();
         fPos = readWord(s, startPosition);
@@ -289,7 +291,7 @@ class SQLTokensParser {
         return new FormatterToken(TokenType.NAME, word, startPosition);
     }
 
-    private int readWord(StringBuilder s, int startPosition) {
+    private int readWord(@NotNull StringBuilder s, int startPosition) {
         char firstChar = fBefore.charAt(startPosition);
         int position = startPosition;
         while (isLetter(firstChar) || isDigit(firstChar)
