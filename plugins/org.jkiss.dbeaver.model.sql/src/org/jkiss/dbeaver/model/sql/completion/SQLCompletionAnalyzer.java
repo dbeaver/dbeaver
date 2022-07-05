@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.completion;
 
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -1288,9 +1289,19 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
                             if (sqlStatement != null) {
                                 TablesNamesFinder namesFinder = new TablesNamesFinder() {
-                                    public void visit(Table table) {
+                                    @Override
+                                    public void visit(@Nullable Table table) {
                                         if (table != null && table.getAlias() != null && table.getAlias().getName() != null) {
                                             aliases.add(table.getAlias().getName().toLowerCase(Locale.ENGLISH));
+                                        }
+                                    }
+
+                                    @Override
+                                    public void visit(@Nullable CreateView createView) {
+                                        if (createView != null && createView.getView().getAlias() != null
+                                            && createView.getView().getName() != null
+                                        ) {
+                                            aliases.add(createView.getView().getAlias().getName().toLowerCase(Locale.ENGLISH));
                                         }
                                     }
                                 };
