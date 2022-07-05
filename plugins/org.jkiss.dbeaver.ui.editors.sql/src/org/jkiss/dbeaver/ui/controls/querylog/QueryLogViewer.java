@@ -1124,6 +1124,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     );
                 }
             }
+            createCopyButton(leftCell);
         }
 
         @Override
