@@ -471,7 +471,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         synchronized (dataSources) {
             this.dataSources.put(descriptor.getId(), descriptor);
             DBPDataSourceConfigurationStorage storage = descriptor.getStorage();
-            if (!storages.contains(storage)) {
+            if (!storages.contains(storage) && !descriptor.isDetached()) {
                 storages.add(storage);
             }
         }
