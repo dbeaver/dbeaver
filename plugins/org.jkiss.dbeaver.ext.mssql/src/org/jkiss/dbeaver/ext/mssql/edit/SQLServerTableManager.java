@@ -124,7 +124,8 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
         Collection<? extends DBSEntityConstraint> constraints = index.getTable().getConstraints(monitor);
         if (constraints.size() > 0 && index.isUnique()) {
             for (DBSEntityConstraint constraint : constraints) {
-                if (constraint instanceof SQLServerTableUniqueKey && constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY
+                if (constraint instanceof SQLServerTableUniqueKey
+                    && constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY
                     && ((SQLServerTableUniqueKey) constraint).getIndex() == index
                 ) {
                    return false;
