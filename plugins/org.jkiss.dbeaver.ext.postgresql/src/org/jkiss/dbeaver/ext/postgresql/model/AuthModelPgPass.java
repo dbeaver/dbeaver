@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -87,6 +88,11 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
         String sshHost = null;
         if (CommonUtils.isEmpty(conHostName) || conHostName.equals("localhost") || conHostName.equals("127.0.0.1")) {
             sshHost = getSSHHost(dataSource);
+        }
+        final String providerProperty = dataSource.getConnectionConfiguration()
+            .getProviderProperty(PostgreConstants.PG_PASS_HOSTNAME);
+        if (!CommonUtils.isEmpty(providerProperty)) {
+            sshHost = providerProperty;
         }
         String pgPassPath = System.getenv(PGPASSFILE_ENV_VARIABLE);
         if (CommonUtils.isEmpty(pgPassPath)) {
