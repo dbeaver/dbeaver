@@ -259,4 +259,9 @@ class MySQLDialect extends JDBCSQLDialect {
         }
         return super.escapeScriptValue(attribute, value, strValue);
     }
+
+    @Override
+    public boolean isNameStart(char character) {
+        return Character.isLetterOrDigit(character);
+    }
 }

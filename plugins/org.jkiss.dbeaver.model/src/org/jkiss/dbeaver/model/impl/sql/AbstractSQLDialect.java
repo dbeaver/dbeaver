@@ -221,6 +221,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean isNameStart(char character) {
+        return Character.isLetter(character);
+    }
+
+    @Override
     public boolean isEntityQueryWord(@NotNull String word) {
         return tableQueryWords.contains(word.toUpperCase(Locale.ENGLISH));
     }
