@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -118,7 +120,19 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
     }
 
     @Override
-    protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
+    protected boolean isIncludeIndexInDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSTableIndex index) throws DBException {
+        Collection<? extends DBSEntityConstraint> constraints = index.getTable().getConstraints(monitor);
+        if (constraints.size() > 0 && index.isUnique()) {
+            for (DBSEntityConstraint constraint : constraints) {
+                if (constraint instanceof SQLServerTableUniqueKey
+                    && constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY
+                    && ((SQLServerTableUniqueKey) constraint).getIndex() == index
+                ) {
+                   return false;
+                }
+            }
+        }
+        
         return !index.isPrimary() && super.isIncludeIndexInDDL(monitor, index);
     }
 
