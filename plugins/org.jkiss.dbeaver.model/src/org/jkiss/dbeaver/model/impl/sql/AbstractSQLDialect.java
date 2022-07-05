@@ -221,7 +221,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean isNameStart(char character) {
+    public boolean canIdentifierStartWith(char character) {
         return Character.isLetter(character);
     }
 

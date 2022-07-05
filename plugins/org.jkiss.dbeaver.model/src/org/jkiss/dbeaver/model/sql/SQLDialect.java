@@ -128,7 +128,7 @@ public interface SQLDialect {
 
     boolean isKeywordStart(@NotNull String word);
 
-    boolean isNameStart(char letter);
+    boolean canIdentifierStartWith(char letter);
 
     boolean isEntityQueryWord(@NotNull String word);
 
