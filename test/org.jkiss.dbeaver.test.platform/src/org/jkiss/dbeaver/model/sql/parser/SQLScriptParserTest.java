@@ -496,14 +496,6 @@ public class SQLScriptParserTest {
     	Assert.assertEquals("@set col1 = '1'", element.getText());
     }
     
-    @Test
-    public void parseBeginTransactionStatement() throws DBException {
-        assertParse("snowflake",
-            "begin transaction;\nselect 1 from dual;",
-            new String[]{"begin transaction", "select 1 from dual"}
-        );
-    }
-    
    
     private void assertParse(String dialectName, String[] expected) throws DBException {
     	String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
