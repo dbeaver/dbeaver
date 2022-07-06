@@ -100,6 +100,7 @@ public abstract class DBVObject implements DBSObject {
         }
     }
 
+    @Nullable
     public DBPDataSourceContainer getDataSourceContainer() {
         DBVContainer parentObject = getParentObject();
         return parentObject == null ? null : parentObject.getDataSourceContainer();
