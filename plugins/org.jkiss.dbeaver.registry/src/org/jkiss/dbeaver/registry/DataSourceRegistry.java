@@ -604,6 +604,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return result;
     }
 
+    public Set<DBPDataSourceFolder> getTemporaryFolders() {
+        return getDataSources().stream()
+            .filter(DBPDataSourceContainer::isTemporary)
+            .map(DBPDataSourceContainer::getFolder)
+            .collect(Collectors.toSet());
+    }
+
     private void loadDataSources(boolean refresh) {
         if (!project.isOpen() || project.isInMemory()) {
             return;
