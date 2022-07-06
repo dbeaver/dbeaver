@@ -2515,7 +2515,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Nullable
         @Override
         public Image getImage(IGridItem element) {
-            if (element.getParent() != null) {
+            if (element instanceof IGridRow && element.getParent() != null) {
                 return null;
             }
             if (element.getElement() instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
