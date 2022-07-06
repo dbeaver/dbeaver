@@ -2683,7 +2683,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING) {
             return;
         }
-        File osFile = sqlFile.getLocation().toFile();
+        IPath location = sqlFile.getLocation();
+        if (location == null) {
+            return;
+        }
+        File osFile = location.toFile();
         if (!osFile.exists() || osFile.length() != 0) {
             // Not empty
             return;

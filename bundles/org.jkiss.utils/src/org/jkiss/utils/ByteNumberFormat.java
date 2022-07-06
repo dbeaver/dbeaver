@@ -96,6 +96,9 @@ public class ByteNumberFormat extends NumberFormat {
             str = fpFormat.format(intBytes);
         }
         final Unit unit = UNITS[index];
+        if (unit == Unit.BYTE) {
+            return str;
+        }
         return str + (binaryPrefix == BinaryPrefix.ISO ? unit.isoPrefix : unit.jedecPrefix);
     }
 
