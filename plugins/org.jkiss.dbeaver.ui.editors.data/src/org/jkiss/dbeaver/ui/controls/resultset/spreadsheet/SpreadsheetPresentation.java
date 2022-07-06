@@ -2569,21 +2569,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @NotNull
         @Override
         public String getText(@NotNull IGridItem item) {
-            if (item.getElement() instanceof DBDAttributeBinding && item.getParent() == null) {
-                DBDAttributeBinding attributeBinding = (DBDAttributeBinding) item.getElement();
-                if (CommonUtils.isEmpty(attributeBinding.getLabel())) {
-                    return attributeBinding.getName();
-                } else {
-                    return attributeBinding.getLabel();
-                }
-            }
-
-            if (item.getElement() instanceof ResultSetRow && controller.isRecordMode()) {
+            if (item instanceof IGridColumn && controller.isRecordMode()) {
                 final ResultSetRow rsr = (ResultSetRow) item.getElement();
                 return ResultSetMessages.controls_resultset_viewer_status_row + " #" + rsr.getVisualNumber();
             }
 
-            if (item instanceof IGridRow) {
+            if (item instanceof IGridRow && !(controller.isRecordMode() && item.getParent() == null)) {
                 final IGridRow row = (IGridRow) item;
                 final StringJoiner rowNumber = new StringJoiner(".");
 
@@ -2599,7 +2590,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return rowNumber.toString();
             }
 
-            return "N/A";
+            final DBDAttributeBinding binding = (DBDAttributeBinding) item.getElement();
+            if (CommonUtils.isEmpty(binding.getLabel())) {
+                return binding.getName();
+            } else {
+                return binding.getLabel();
+            }
         }
 
         @Nullable

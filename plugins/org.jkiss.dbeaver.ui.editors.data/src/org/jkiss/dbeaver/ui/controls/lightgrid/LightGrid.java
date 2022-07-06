@@ -511,8 +511,8 @@ public abstract class LightGrid extends Canvas {
     }
 
     public boolean hasExpandableRows() {
-        for (GridColumn c : columns) {
-            if (getContentProvider().hasChildren(c)) {
+        for (IGridRow row : gridRows) {
+            if (getRowState(row) != IGridContentProvider.ElementState.NONE) {
                 return true;
             }
         }
