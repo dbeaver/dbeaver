@@ -495,6 +495,7 @@ public class SQLScriptParserTest {
     	SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 15, false, false);
     	Assert.assertEquals("@set col1 = '1'", element.getText());
     }
+    
    
     private void assertParse(String dialectName, String[] expected) throws DBException {
     	String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
@@ -507,7 +508,7 @@ public class SQLScriptParserTest {
     			expectedParts.add(expected[i]);
     		}
     	}
-        assertParse(dialectName, source, expectedParts.toArray(new String[0]));    
+        assertParse(dialectName, source, expectedParts.toArray(new String[0]));
     }
 
     private void assertParse(String dialectName, String query, String[] expected) throws DBException {

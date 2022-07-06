@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
@@ -64,6 +66,16 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
         // DateTimeFormatter pattern for nanoseconds is "n" but old "f" (ExtendedDateFormat)
         String java8DatePattern = pattern.replaceAll("f+", "n");
         dateTimeFormatter = DateTimeFormatter.ofPattern(java8DatePattern);
+    }
+
+    @Nullable
+    public ZoneId getZone() {
+        return zone;
+    }
+
+    @NotNull
+    public DateFormat getDateFormat() {
+        return dateFormat;
     }
 
     @Override
