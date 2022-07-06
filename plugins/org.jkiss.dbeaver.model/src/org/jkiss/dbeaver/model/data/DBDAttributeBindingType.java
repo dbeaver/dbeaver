@@ -145,7 +145,8 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
                 if (collection.getItemCount() > itemIndex) {
                     ownerValue = collection.getItem(itemIndex);
                 } else {
-                    log.debug("Collection index out of bounds: " + itemIndex);
+                    // FIXME: Is always caused by arrays of structures. They are not supported now
+                    log.trace("Collection index out of bounds: " + itemIndex);
                     return null;
                 }
             }
