@@ -601,10 +601,19 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     if (dataContainer == null) {
                         return null;
                     }
+                    String tableName;
                     if (dataContainer instanceof SQLQueryContainer) {
-                        return DTUtils.getTableNameFromQueryContainer(dataContainer.getDataSource(), (SQLQueryContainer) dataContainer);
+                        tableName = DTUtils.getTableNameFromQueryContainer(dataContainer.getDataSource(), (SQLQueryContainer) dataContainer);
+                    } else {
+                        tableName = DTUtils.getTableName(dataContainer.getDataSource(), dataContainer, true);
                     }
-                    String tableName = DTUtils.getTableName(dataContainer.getDataSource(), dataContainer, true);
+                    if (CommonUtils.isEmpty(tableName)) {
+                        if (parameters.orderNumber > 0) {
+                            tableName = DTConstants.DEFAULT_TABLE_NAME_EXPORT + "_" + parameters.orderNumber;
+                        } else {
+                            tableName = DTConstants.DEFAULT_TABLE_NAME_EXPORT;
+                        }
+                    }
                     return stripObjectName(tableName);
                 }
                 case VARIABLE_TIMESTAMP:
