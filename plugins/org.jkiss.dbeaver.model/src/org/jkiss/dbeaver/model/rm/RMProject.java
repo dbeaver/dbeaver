@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.rm;
 
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.OffsetDateTime;
@@ -30,6 +31,7 @@ public class RMProject extends RMObject {
     public static final String PREFIX_SHARED = "s";
     public static final String PREFIX_USER = "u";
 
+    public static Type[] SHARED_PROJECTS = {Type.GLOBAL, Type.SHARED};
     public enum Type {
         GLOBAL(PREFIX_GLOBAL),
         SHARED(PREFIX_SHARED),
@@ -80,6 +82,11 @@ public class RMProject extends RMObject {
     @Override
     public boolean isFolder() {
         return true;
+    }
+
+    @Property
+    public boolean isShared() {
+        return ArrayUtils.contains(SHARED_PROJECTS, getType());
     }
 
     public String getDescription() {
