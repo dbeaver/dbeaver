@@ -1229,14 +1229,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             if (!lazyLoadCanceled) {
                                 addLazyObject(object, objectColumn);
                             }
-                        } else if (cellValue != null) {
-                            ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
-                            if (prop != null) {
-                                if (itemsViewer.isCellEditorActive() && isFocusCell) {
-                                    // Do not paint over active editor
-                                    return;
-                                }
+                        } else {
+                            final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
+                            if (itemsViewer.isCellEditorActive() && isFocusCell) {
+                                // Do not paint over active editor
+                                return;
+                            }
+                            if (cellValue != null && prop != null) {
                                 renderer.paintCell(e, object, cellValue, e.item, prop.getDataType(), e.index, prop.isEditable(objectValue), (e.detail & SWT.SELECTED) == SWT.SELECTED);
+                            } else if (prop == null) {
+                                renderer.paintInvalidCell(e, e.item, e.index);
                             }
                         }
                         break;

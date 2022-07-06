@@ -74,7 +74,7 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implemen
         return index;
     }
 
-    //@Property(name = "Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     @NotNull
     @Override
     public String getName()
