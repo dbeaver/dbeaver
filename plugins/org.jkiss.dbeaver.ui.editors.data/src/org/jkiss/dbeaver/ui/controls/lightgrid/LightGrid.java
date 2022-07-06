@@ -4040,7 +4040,9 @@ public abstract class LightGrid extends Canvas {
             x += rowHeaderWidth;
         }
 
-        x -= getHScrollSelectionInPixels();
+        if (!column.isPinned()) {
+            x -= getHScrollSelectionInPixels();
+        }
 
         for (int i = 0; i < columns.size(); i++) {
             GridColumn colIter = columns.get(i);

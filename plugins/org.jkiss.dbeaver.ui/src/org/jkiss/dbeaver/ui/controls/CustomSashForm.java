@@ -148,6 +148,7 @@ public class CustomSashForm extends SashForm {
             }
         });
 
+        sashBorders = new boolean[]{true, true};
         noHideUp = ((customStyle & NO_HIDE_UP) != 0);
         noHideDown = ((customStyle & NO_HIDE_DOWN) != 0);
 
@@ -345,13 +346,6 @@ public class CustomSashForm extends SashForm {
                     boolean isTwoArrows = currentSashInfo.sashLocs.length > 1;
                     drawArrow(gc, currentSashInfo.sashLocs[0], currentSashInfo.cursorOver == 0, isTwoArrows);    // Draw first arrow
                     if (isTwoArrows) {
-                        gc.setForeground(borderColor);
-                        Point bounds = currentSashInfo.sash.getSize();
-                        if (getOrientation() == SWT.VERTICAL) {
-                            gc.drawRectangle(-1, 0, bounds.x + 2, bounds.y - 1);
-                        } else {
-                            gc.drawRectangle(0, -1, bounds.x - 1, bounds.y + 2);
-                        }
                         drawArrow(gc, currentSashInfo.sashLocs[1], currentSashInfo.cursorOver == 1, isTwoArrows);    // Draw second arrow
                     }
 

@@ -7,7 +7,7 @@ Bundle-Release-Date: 20220627
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.parser.common,
- org.jkiss.dbeaver.ext.generic
+ org.jkiss.dbeaver.ext.generic;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.clickhouse,
  org.jkiss.dbeaver.ext.clickhouse.model
 Bundle-ActivationPolicy: lazy

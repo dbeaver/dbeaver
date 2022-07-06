@@ -56,9 +56,9 @@ public class GenericTableIndexColumn extends AbstractTableIndexColumn
         return index;
     }
 
-    //@Property(name = "Name", viewable = true, order = 1)
     @NotNull
     @Override
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return tableColumn.getName();
@@ -66,7 +66,7 @@ public class GenericTableIndexColumn extends AbstractTableIndexColumn
 
     @Nullable
     @Override
-    @Property(id = "name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public GenericTableColumn getTableColumn()
     {
         return tableColumn;
