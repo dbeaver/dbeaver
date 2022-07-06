@@ -110,6 +110,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
     private boolean reuseWorkspace = false;
     private boolean primaryInstance = true;
     private boolean headlessMode = false;
+    private boolean ignoreRecentWorkspaces = false;
 
     private IInstanceController instanceServer;
 
@@ -123,10 +124,10 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
     private long lastUserActivityTime = -1;
 
     public DBeaverApplication() {
-        this(DEFAULT_WORKSPACE_FOLDER);
+        this(DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER);
     }
 
-    protected DBeaverApplication(String defaultAppWorkspaceName) {
+    protected DBeaverApplication(String defaultWorkspaceLocation, String defaultAppWorkspaceName) {
 
         // Explicitly set UTF-8 as default file encoding
         // In some places Eclipse reads this property directly.
@@ -144,17 +145,17 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
             if (appData == null) {
                 appData = System.getProperty("user.home");
             }
-            workingDirectory = appData + "\\" + DBEAVER_DATA_DIR;
+            workingDirectory = appData + "\\" + defaultWorkspaceLocation;
         } else if (osName.contains("MAC")) {
-            workingDirectory = System.getProperty("user.home") + "/Library/" + DBEAVER_DATA_DIR;
+            workingDirectory = System.getProperty("user.home") + "/Library/" + defaultWorkspaceLocation;
         } else {
             // Linux
             String dataHome = System.getProperty("XDG_DATA_HOME");
             if (dataHome == null) {
                 dataHome = System.getProperty("user.home") + "/.local/share";
             }
-            String badWorkingDir = dataHome + "/." + DBEAVER_DATA_DIR;
-            String goodWorkingDir = dataHome + "/" + DBEAVER_DATA_DIR;
+            String badWorkingDir = dataHome + "/." + defaultWorkspaceLocation;
+            String goodWorkingDir = dataHome + "/" + defaultWorkspaceLocation;
             if (!new File(goodWorkingDir).exists() && new File(badWorkingDir).exists()) {
                 // Let's use bad working dir if it exists (#6316)
                 workingDirectory = badWorkingDir;
@@ -330,6 +331,9 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
 
     private boolean setIDEWorkspace(@NotNull Location instanceLoc) {
         if (instanceLoc.isSet()) {
+            return false;
+        }
+        if (ignoreRecentWorkspaces) {
             return false;
         }
         Collection<String> recentWorkspaces = getRecentWorkspaces(instanceLoc);
@@ -783,6 +787,10 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
 
     public void setResetWorkspaceOnRestart(boolean resetWorkspaceOnRestart) {
         this.resetWorkspaceOnRestart = resetWorkspaceOnRestart;
+    }
+
+    protected void setIgnoreRecentWorkspaces(boolean ignoreRecentWorkspaces) {
+        this.ignoreRecentWorkspaces = ignoreRecentWorkspaces;
     }
 
     private class ProxyPrintStream extends OutputStream {
