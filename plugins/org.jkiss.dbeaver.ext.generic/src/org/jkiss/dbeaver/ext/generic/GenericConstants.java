@@ -28,6 +28,7 @@ public class GenericConstants {
     public static final String PARAM_QUERY_SET_ACTIVE_DB = "query-set-active-db";
     public static final String PARAM_ACTIVE_ENTITY_TYPE = "active-entity-type";
     public static final String PARAM_SUPPORTS_REFERENCES = "supports-references";
+    public static final String PARAM_SUPPORTS_DELIMITER_IN_VIEWS = "supports-delimiter-in-views";
     public static final String PARAM_SUPPORTS_INDEXES = "supports-indexes";
     public static final String PARAM_SUPPORTS_CONSTRAINTS = "supports-table-constraints";
     public static final String PARAM_SUPPORTS_VIEWS = "supports-views";
@@ -105,4 +106,5 @@ public class GenericConstants {
     public static final String TABLE_TYPE_TABLE = "TABLE";
 
     public static final String BASE_CONSTRAINT_NAME = "new_key";
+
 }
