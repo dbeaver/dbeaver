@@ -46,6 +46,8 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
     private Button showUnavailable;
     private Button showDatabaseStatistics;
     private Button readAllDataTypes;
+    private Button readKeysWithColumns;
+
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
 
@@ -109,6 +111,12 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
                     PostgreMessages.dialog_setting_connection_read_all_data_types_tip,
                     globalPrefs.getBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES),
                     2);
+
+            readKeysWithColumns = UIUtils.createCheckbox(secureGroup,
+                PostgreMessages.dialog_setting_connection_read_keys_with_columns,
+                PostgreMessages.dialog_setting_connection_read_keys_with_columns_tip,
+                globalPrefs.getBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS),
+                2);
         }
 
         {
@@ -149,6 +157,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB, String.valueOf(showUnavailable.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS, String.valueOf(showDatabaseStatistics.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_READ_ALL_DATA_TYPES, String.valueOf(readAllDataTypes.getSelection()));
+        preferenceStore.setValue(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS, String.valueOf(readKeysWithColumns.getSelection()));
 
         preferenceStore.setValue(PostgreConstants.PROP_DD_PLAIN_STRING, ddPlainBehaviorCombo.getSelectionIndex() == 0);
         preferenceStore.setValue(PostgreConstants.PROP_DD_TAG_STRING, ddTagBehaviorCombo.getSelectionIndex() == 0);

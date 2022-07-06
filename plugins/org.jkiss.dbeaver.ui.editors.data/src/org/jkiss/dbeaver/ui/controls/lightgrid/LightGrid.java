@@ -3130,7 +3130,13 @@ public abstract class LightGrid extends Canvas {
         // and therefore the grid has a child. The solution is to
         // forceFocus()
         if ((getStyle() & SWT.NO_FOCUS) != SWT.NO_FOCUS) {
-            forceFocus();
+            GridPos cell = getCell(new Point(e.x, e.y));
+            if (cell == null || !cell.equalsTo(getFocusPos())) {
+                // We don't want to call this event if the selected cell equals active one
+                // this is related to bug with wayland handling of force focus, which led to editors
+                // loosing focus on double click see #16705
+                forceFocus();
+            }
         }
 
         //if populated will be fired at end of method.
@@ -4034,7 +4040,9 @@ public abstract class LightGrid extends Canvas {
             x += rowHeaderWidth;
         }
 
-        x -= getHScrollSelectionInPixels();
+        if (!column.isPinned()) {
+            x -= getHScrollSelectionInPixels();
+        }
 
         for (int i = 0; i < columns.size(); i++) {
             GridColumn colIter = columns.get(i);

@@ -34,11 +34,11 @@ public interface DBFVirtualFileSystemRoot extends DBPNamedObject {
     DBFVirtualFileSystem getFileSystem();
 
     @NotNull
-    String getId();
+    String getRootId();
 
-    DBPImage getIcon();
+    DBPImage getRootIcon();
 
     @NotNull
-    Path getPath(DBRProgressMonitor monitor) throws DBException;
+    Path getRootPath(DBRProgressMonitor monitor) throws DBException;
 
 }

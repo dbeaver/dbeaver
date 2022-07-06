@@ -41,7 +41,7 @@ import java.util.Map;
  * Virtual database model
  */
 public class DBVModel extends DBVContainer {
-
+    @Nullable
     private DBPDataSourceContainer dataSourceContainer;
     @NotNull
     private String id;
@@ -76,26 +76,30 @@ public class DBVModel extends DBVContainer {
         this.id = id;
     }
 
+    @Nullable
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
     }
 
-    public void setDataSourceContainer(DBPDataSourceContainer dataSourceContainer) {
+    public void setDataSourceContainer(@Nullable DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
     }
 
+    @Nullable
     @Override
     public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException {
-        DBPDataSource dataSource = dataSourceContainer.getDataSource();
-        if (dataSource == null) {
-            dataSourceContainer.connect(monitor, true, true);
-            dataSource = dataSourceContainer.getDataSource();
+        if (dataSourceContainer != null) {
+            DBPDataSource dataSource = dataSourceContainer.getDataSource();
+            if (dataSource == null) {
+                dataSourceContainer.connect(monitor, true, true);
+                dataSource = dataSourceContainer.getDataSource();
+            }
+            if (dataSource instanceof DBSObjectContainer) {
+                return (DBSObjectContainer) dataSource;
+            }
+            log.warn("Datasource '" + dataSource + "' is not an object container");
         }
-        if (dataSource instanceof DBSObjectContainer) {
-            return (DBSObjectContainer) dataSource;
-        }
-        log.warn("Datasource '" + dataSource + "' is not an object container");
         return null;
     }
 
@@ -124,7 +128,8 @@ public class DBVModel extends DBVContainer {
             return null;
         }
         if (path[0] != dataSourceContainer) {
-            log.warn("Entity's root must be datasource container '" + dataSourceContainer.getName() + "'");
+            String dataSourceName = dataSourceContainer != null ? dataSourceContainer.getName() : null;
+            log.warn("Entity's root must be datasource container '" + dataSourceName + "'");
             return null;
         }
         DBVContainer container = this;
@@ -145,7 +150,8 @@ public class DBVModel extends DBVContainer {
             return null;
         }
         if (path[0] != dataSourceContainer) {
-            log.warn("Entity's root must be datasource container '" + dataSourceContainer.getName() + "'");
+            String dataSourceName = dataSourceContainer != null ? dataSourceContainer.getName() : null;
+            log.warn("Entity's root must be datasource container '" + dataSourceName + "'");
             return null;
         }
         DBVContainer container = this;

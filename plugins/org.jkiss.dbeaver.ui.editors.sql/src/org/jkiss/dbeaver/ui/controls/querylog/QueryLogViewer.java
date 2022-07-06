@@ -1033,7 +1033,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         EventViewDialog(QMEvent object) {
             super(QueryLogViewer.this.getControl().getShell(), QueryLogViewer.this.site, "Event", null); //$NON-NLS-1$
-            setShellStyle(SWT.SHELL_TRIM);
+            setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.MAX | SWT.RESIZE);
             this.object = object;
         }
 
@@ -1124,6 +1124,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     );
                 }
             }
+            createCopyButton(leftCell);
         }
 
         @Override

@@ -112,6 +112,11 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     @Override
+    public Throwable getLastLoadError() {
+        return getProject().getDataSourceRegistry().getLastLoadError();
+    }
+
+    @Override
     public boolean supportsRename() {
         return !project.isVirtual();
     }
@@ -133,7 +138,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
         project.ensureOpen();
 
-        if (!project.getEclipseProject().isOpen()) {
+        if (project.getEclipseProject() != null && !project.getEclipseProject().isOpen()) {
             return new DBNNode[0];
         }
         List<DBNNode> childrenFiltered = new ArrayList<>();
@@ -259,6 +264,11 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         if (extraNodes.remove(node)) {
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, node));
         }
+    }
+
+    @Override
+    protected IResource getContentLocationResource() {
+        return project.getRootResource();
     }
 
     @Override

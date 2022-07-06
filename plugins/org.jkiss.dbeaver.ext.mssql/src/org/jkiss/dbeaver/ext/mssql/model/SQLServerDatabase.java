@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -146,7 +147,9 @@ public class SQLServerDatabase
 
     @Override
     public boolean isSystem() {
-        return ArrayUtils.contains(SQLServerConstants.SYSTEM_DATABASES, name);
+        SQLServerDatabase defaultDatabase = dataSource.getDefaultDatabase(new VoidProgressMonitor());
+        return ArrayUtils.contains(SQLServerConstants.SYSTEM_DATABASES, name)
+            && !CommonUtils.equalObjects(this, defaultDatabase);
     }
 
     public DataTypeCache getDataTypesCache() {

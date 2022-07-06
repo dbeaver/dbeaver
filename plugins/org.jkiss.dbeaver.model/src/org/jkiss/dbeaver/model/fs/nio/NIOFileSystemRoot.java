@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.model.fs.nio;
 import org.eclipse.core.resources.IProject;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
 
-import java.nio.file.Path;
-
 /**
  * NIOFileSystemRoot
  */
@@ -29,13 +27,11 @@ public class NIOFileSystemRoot {
     private final IProject project;
     private final DBFVirtualFileSystemRoot fsRoot;
     private final String fsPrefix;
-    private final Path rootPath;
 
-    public NIOFileSystemRoot(IProject project, DBFVirtualFileSystemRoot fsRoot, String fsPrefix, Path rootPath) {
+    public NIOFileSystemRoot(IProject project, DBFVirtualFileSystemRoot fsRoot, String fsPrefix) {
         this.project = project;
         this.fsRoot = fsRoot;
         this.fsPrefix = fsPrefix;
-        this.rootPath = rootPath;
     }
 
     public IProject getProject() {
@@ -50,7 +46,4 @@ public class NIOFileSystemRoot {
         return fsPrefix;
     }
 
-    public Path getRootPath() {
-        return rootPath;
-    }
 }

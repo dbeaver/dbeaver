@@ -59,6 +59,10 @@ public class EditorsMessages extends NLS {
 	public static String dialog_struct_edit_index_label_type;
 
 	public static String dialog_struct_edit_dictionary_tip;
+	public static String dialog_struct_edit_dictionary_custom_criteria;
+	public static String dialog_struct_edit_dictionary_custom_criteria_tip;
+	public static String dialog_struct_edit_dictionary_column_delimiter;
+	public static String dialog_struct_edit_dictionary_column_delimiter_tip;
 
 	public static String dialog_struct_columns_select_column;
 	public static String dialog_struct_columns_type;

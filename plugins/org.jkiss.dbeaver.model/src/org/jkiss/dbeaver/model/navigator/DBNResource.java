@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -69,6 +69,13 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         super(parentNode);
         this.resource = resource;
         this.handler = handler;
+    }
+
+    /**
+     * Actual content location can be changed
+     */
+    protected IResource getContentLocationResource() {
+        return resource;
     }
 
     @Override
@@ -120,8 +127,11 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     @Override
 //    @Property(viewable = false, order = 100)
-    public String getNodeDescription()
-    {
+    public String getNodeDescription() {
+        if (getOwnerProject().isVirtual()) {
+            // Do not read descriptions for virtual (remote) projects
+            return null;
+        }
         return handler == null || resource == null ? null : handler.getResourceDescription(resource);
     }
 
@@ -169,9 +179,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException
     {
         if (children == null) {
-            if (resource instanceof IContainer) {
-                this.children = readChildNodes(monitor);
-            }
+            this.children = readChildNodes(monitor);
         }
         return children;
     }
@@ -180,8 +188,9 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     {
         List<DBNNode> result = new ArrayList<>();
         try {
-            if (resource.exists()) {
-                IResource[] members = ((IContainer) resource).members(false);
+            IResource contentLocation = getContentLocationResource();
+            if (contentLocation instanceof IContainer && contentLocation.exists()) {
+                IResource[] members = ((IContainer) contentLocation).members(false);
                 members = addImplicitMembers(members);
                 for (IResource member : members) {
                     DBNNode newChild = makeNode(member);
@@ -220,17 +229,16 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         return null;
     }
 
-    private DBNNode makeNode(IResource resource)
-    {
-//        if (resource.isHidden()) {
-//            return null;
-//        }
-        if (resource.getParent() instanceof IProject && resource.getName().startsWith(".")) {
+    private DBNNode makeNode(IResource resource) {
+        boolean isRootResource =
+            CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getRootResource()) ||
+                CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getEclipseProject());
+        if (isRootResource && resource.getName().startsWith(".")) {
             // Skip project config
             return null;
         }
         try {
-            if (resource instanceof IFolder && resource.getParent() instanceof IFolder) {
+            if (resource instanceof IFolder && !isRootResource) {
                 // Sub folder
                 return handler.makeNavigatorNode(this, resource);
             }
@@ -260,7 +268,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         try {
             resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
 
-            if (!resource.getLocation().toFile().exists()) {
+            IPath resourceLocation = resource.getLocation();
+            if (resourceLocation != null && !resourceLocation.toFile().exists()) {
                 log.debug("Resource '" + resource.getName() + "' doesn't exists on file system");
                 //resource.delete(true, monitor.getNestedMonitor());
             }
@@ -533,18 +542,31 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     @Property(viewable = false, order = 11)
     public String getResourceLocation() {
-        return resource == null ? "" : resource.getLocation().toOSString();
+        if (resource == null) {
+            return null;
+        }
+        IPath location = resource.getLocation();
+        return location == null ? null : location.toString();
     }
 
     @Property(viewable = true, order = 11)
-    public String getResourceSize() {
-        long size = resource == null ? 0 : resource.getLocation().toFile().length();
-        return numberFormat.format(size);
+    public String getResourceSize() throws CoreException {
+        if (resource instanceof IFile) {
+            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
+            IFileInfo iFileInfo = fileStore.fetchInfo();
+            return numberFormat.format(iFileInfo.getLength());
+        }
+        return null;
     }
 
     @Property(viewable = true, order = 11)
-    public String getResourceLastModified() {
-        return resource == null ? null : DATE_FORMAT.format(resource.getLocation().toFile().lastModified());
+    public String getResourceLastModified() throws CoreException {
+        if (resource instanceof IFile) {
+            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
+            IFileInfo iFileInfo = fileStore.fetchInfo();
+            return DATE_FORMAT.format(iFileInfo.getLastModified());
+        }
+        return null;
     }
 
     protected boolean isResourceExists() {

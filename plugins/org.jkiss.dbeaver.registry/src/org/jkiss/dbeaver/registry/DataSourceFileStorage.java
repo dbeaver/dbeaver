@@ -16,27 +16,24 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
 
 /**
  * DataSourceStorage
  */
-class DataSourceStorage implements DBPDataSourceConfigurationStorage
+class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
 {
     private final Path sourceFile;
+    private final boolean isLegacy;
     private final boolean isDefault;
     private final String configSuffix;
 
-    DataSourceStorage(Path sourceFile, boolean isDefault) {
+    DataSourceFileStorage(Path sourceFile, boolean isLegacy, boolean isDefault) {
         this.sourceFile = sourceFile;
+        this.isLegacy = isLegacy;
         this.isDefault = isDefault;
 
         if (isDefault) {
@@ -56,6 +53,15 @@ class DataSourceStorage implements DBPDataSourceConfigurationStorage
     }
 
     @Override
+    public String getStorageName() {
+        return sourceFile.getFileName().toString();
+    }
+
+    public boolean isLegacy() {
+        return isLegacy;
+    }
+
+    @Override
     public boolean isValid() {
         return true;
     }
@@ -69,7 +75,7 @@ class DataSourceStorage implements DBPDataSourceConfigurationStorage
         return sourceFile.getFileName().toString();
     }
 
-    public String getConfigurationFileSuffix() {
+    public String getStorageSubId() {
         return configSuffix;
     }
 
@@ -83,8 +89,14 @@ class DataSourceStorage implements DBPDataSourceConfigurationStorage
     }
 
     @Override
-    public List<? extends DBPDataSourceContainer> loadDataSources(DBPDataSourceRegistry registry, Map<String, Object> options) throws DBException {
-        throw new DBCFeatureNotSupportedException();
+    public boolean equals(Object obj) {
+        return obj instanceof DataSourceFileStorage &&
+            sourceFile.equals(((DataSourceFileStorage) obj).sourceFile);
+    }
+
+    @Override
+    public int hashCode() {
+        return sourceFile.hashCode();
     }
 
     @Override

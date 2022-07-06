@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.qm.QMEventAction;
-import org.jkiss.dbeaver.model.qm.QMMCollector;
-import org.jkiss.dbeaver.model.qm.QMMetaEvent;
-import org.jkiss.dbeaver.model.qm.QMMetaListener;
+import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -152,7 +149,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 return;
             }
 
-            eventPool.add(new QMMetaEvent(object, action, sessionPersistent));
+            eventPool.add(new QMMetaEvent(object, action, sessionPersistent.getAttribute(QMConstants.QM_SESSION_ID_ATTR)));
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }

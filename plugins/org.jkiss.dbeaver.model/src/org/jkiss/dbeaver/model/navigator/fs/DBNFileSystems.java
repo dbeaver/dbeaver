@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemDescriptor;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
@@ -44,7 +41,7 @@ import java.util.List;
 /**
  * DBNFileSystems
  */
-public class DBNFileSystems extends DBNNode implements NIOListener {
+public class DBNFileSystems extends DBNNode implements DBPHiddenObject, NIOListener {
 
     private static final Log log = Log.getLog(DBNFileSystems.class);
 
@@ -231,6 +228,11 @@ public class DBNFileSystems extends DBNNode implements NIOListener {
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean isHidden() {
+        return true;
     }
 
     @Override

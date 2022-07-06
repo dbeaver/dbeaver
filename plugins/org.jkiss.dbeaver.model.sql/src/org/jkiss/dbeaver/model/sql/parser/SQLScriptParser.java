@@ -676,7 +676,7 @@ public class SQLScriptParser {
             if (tokenType == SQLTokenType.T_PARAMETER && tokenLength > 0) {
                 try {
                     String paramName = document.get(tokenOffset, tokenLength);
-                    if (!supportParamsInEmbeddedCode && ddlQuery || insideDollarQuote) {
+                    if (!supportParamsInEmbeddedCode && (ddlQuery || insideDollarQuote)) {
                         continue;
                     }
                     if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {

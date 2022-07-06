@@ -283,10 +283,15 @@ public class PostgreSchema implements
     @Association
     public List<? extends PostgreTable> getTables(DBRProgressMonitor monitor)
         throws DBException {
-        return getTableCache().getTypedObjects(monitor, this, PostgreTable.class)
+        final ArrayList<? extends PostgreTable> tables = getTableCache().getTypedObjects(monitor, this, PostgreTable.class)
             .stream()
             .filter(table -> !table.isPartition())
             .collect(Collectors.toCollection(ArrayList::new));
+        if (getDataSource().supportsReadingKeysWithColumns()) {
+            // Read constraints with columns
+            constraintCache.getAllObjects(monitor, this);
+        }
+        return tables;
     }
 
     @Association

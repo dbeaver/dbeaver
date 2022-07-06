@@ -110,6 +110,7 @@ public class DBeaverStackRenderer extends StackRenderer {
         {
             if (workbenchPart instanceof SQLEditor) {
                 addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
+                addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SAVE_FILE);
             }
 
             if (inputFile != null) {

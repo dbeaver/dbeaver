@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.qm.meta;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
@@ -86,16 +87,16 @@ public class QMMTransactionSavepointInfo extends QMMObject {
 
     public Iterator<QMMStatementExecuteInfo> getExecutions()
     {
-        return new Iterator<QMMStatementExecuteInfo>() {
+        return new Iterator<>() {
             private QMMStatementExecuteInfo curExec = lastExecute;
+
             @Override
-            public boolean hasNext()
-            {
+            public boolean hasNext() {
                 return curExec != null && curExec.getSavepoint() == QMMTransactionSavepointInfo.this;
             }
+
             @Override
-            public QMMStatementExecuteInfo next()
-            {
+            public QMMStatementExecuteInfo next() {
                 if (curExec == null || curExec.getSavepoint() != QMMTransactionSavepointInfo.this) {
                     throw new NoSuchElementException();
                 }
@@ -103,9 +104,9 @@ public class QMMTransactionSavepointInfo extends QMMObject {
                 curExec = curExec.getPrevious();
                 return n;
             }
+
             @Override
-            public void remove()
-            {
+            public void remove() {
                 throw new UnsupportedOperationException();
             }
         };
@@ -140,7 +141,17 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     }
 
     @Override
+    public ObjectType getObjectType() {
+        return ObjectType.TransactionSavepointInfo;
+    }
+
+    @Override
     public QMMConnectionInfo getConnection() {
         return getTransaction().getConnection();
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        return null;
     }
 }

@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.core;
 
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -118,13 +116,6 @@ public class DBeaverActivator extends AbstractUIPlugin {
 
     public DBPPreferenceStore getPreferences() {
         return preferences;
-    }
-
-    /**
-     * Returns the workspace instance.
-     */
-    public static IWorkspace getWorkspace() {
-        return ResourcesPlugin.getWorkspace();
     }
 
     private void shutdownCore() {

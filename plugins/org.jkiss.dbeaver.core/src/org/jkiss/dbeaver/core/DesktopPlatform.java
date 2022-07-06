@@ -183,7 +183,10 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 
         super.dispose();
 
-        workspace.dispose();
+        if (workspace != null) {
+            workspace.dispose();
+            workspace = null;
+        }
 
         if (this.qmLogWriter != null) {
             this.queryManager.unregisterMetaListener(qmLogWriter);

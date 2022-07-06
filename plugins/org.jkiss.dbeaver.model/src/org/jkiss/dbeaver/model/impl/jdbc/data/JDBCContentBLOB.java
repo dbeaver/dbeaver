@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
@@ -83,7 +84,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     {
         if (storage == null && blob != null) {
             long contentLength = getContentLength();
-            DBPPlatform platform = executionContext.getDataSource().getContainer().getPlatform();
+            DBPPlatform platform = DBWorkbench.getPlatform();
             if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
                     try (InputStream bs = blob.getBinaryStream()) {

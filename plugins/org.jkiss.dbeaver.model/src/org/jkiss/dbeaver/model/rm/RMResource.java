@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.util.List;
@@ -25,22 +25,29 @@ import java.util.Map;
 /**
  * Resource manager API
  */
-public class RMResource implements DBPObject {
-    private String name;
+public class RMResource extends RMObject {
     private boolean folder;
     private long length;
+    private Long lastModified;
 
     private List<RMResourceChange> changes;
     private Map<String, Object> properties;
 
-    public String getName() {
-        return name;
+    public RMResource() {
+
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public RMResource(String name) {
+        super(name);
     }
 
+    public RMResource(@NotNull String name, boolean folder, long length) {
+        super(name);
+        this.folder = folder;
+        this.length = length;
+    }
+
+    @Override
     @Property
     public boolean isFolder() {
         return folder;
@@ -59,6 +66,15 @@ public class RMResource implements DBPObject {
         this.length = length;
     }
 
+    @Property
+    public Long getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Long lastModified) {
+        this.lastModified = lastModified;
+    }
+
     public List<RMResourceChange> getChanges() {
         return changes;
     }
@@ -74,4 +90,5 @@ public class RMResource implements DBPObject {
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }
+
 }

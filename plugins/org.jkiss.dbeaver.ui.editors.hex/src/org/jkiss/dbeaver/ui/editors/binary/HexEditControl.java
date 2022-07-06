@@ -2030,6 +2030,9 @@ public class HexEditControl extends Composite {
         int width = getClientArea().width - linesText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         int displayedNumberWidth = fontCharWidth * 4;  // hexText and previewText
         int commonWidth = width / displayedNumberWidth;
+        if (commonWidth <= 0) {
+            return;
+        }
         bytesPerLine = commonWidth;
         
         textGridData.widthHint = hexText.computeTrim(0, 0, bytesPerLine * 3 * fontCharWidth, 100).width;

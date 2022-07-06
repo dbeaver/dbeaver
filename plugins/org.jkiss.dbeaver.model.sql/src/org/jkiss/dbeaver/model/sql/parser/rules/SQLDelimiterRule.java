@@ -66,7 +66,7 @@ public class SQLDelimiterRule implements TPRule {
                             if (Character.isLetterOrDigit(c)) {
                                 int cn = scanner.read();
                                 scanner.unread();
-                                if (Character.isLetterOrDigit(cn)) {
+                                if (Character.isUnicodeIdentifierPart(cn)) {
                                     matches = false;
                                     continue;
                                 }

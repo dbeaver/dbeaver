@@ -17,16 +17,16 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.equinox.security.storage.ISecurePreferences;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.*;
-import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
+import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -36,25 +36,17 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
-import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
-import org.jkiss.utils.xml.XMLBuilder;
 import org.xml.sax.Attributes;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Legacy datasource serialization (xml)
@@ -72,320 +64,23 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     }
 
     @Override
-    public void saveDataSources(
-        DBRProgressMonitor monitor,
-        DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources,
-        Path configPath) throws IOException
-    {
-        // Save in temp memory to be safe (any error during direct write will corrupt configuration)
-        ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
-        try {
-            XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.UTF8_ENCODING);
-            xml.setButify(true);
-            try (XMLBuilder.Element el1 = xml.startElement("data-sources")) {
-                if (configurationStorage.isDefault()) {
-                    // Folders (only for default storage)
-                    for (DataSourceFolder folder : registry.getAllFolders()) {
-                        saveFolder(xml, folder);
-                    }
-                }
-
-                // Datasources
-                for (DataSourceDescriptor dataSource : localDataSources) {
-                    // Skip temporary
-                    if (!dataSource.isDetached()) {
-                        saveDataSource(xml, dataSource);
-                    }
-                }
-
-                // Filters
-                if (configurationStorage.isDefault()) {
-                    try (XMLBuilder.Element ignored = xml.startElement(RegistryConstants.TAG_FILTERS)) {
-                        for (DBSObjectFilter cf : registry.getSavedFilters()) {
-                            if (!cf.isEmpty()) {
-                                saveObjectFiler(xml, null, null, cf);
-                            }
-                        }
-                    }
-                }
-
-            }
-            xml.flush();
-        } catch (IOException ex) {
-            log.error("IO error while saving datasources xml", ex);
-        }
-        Files.write(configPath, tempStream.toByteArray());
+    public void saveDataSources(DBRProgressMonitor monitor, DataSourceConfigurationManager configurationManager, DBPDataSourceConfigurationStorage configurationStorage, List<DataSourceDescriptor> localDataSources) throws DBException, IOException {
+        throw new IOException("Legacy serializer is deprecated, save not possible");
     }
 
     @Override
-    public void parseDataSources(Path configPath, DBPDataSourceConfigurationStorage configurationStorage, boolean refresh, DataSourceRegistry.ParseResults parseResults)
+    public void parseDataSources(DBPDataSourceConfigurationStorage configurationStorage, boolean refresh, DataSourceRegistry.ParseResults parseResults)
         throws DBException
     {
-        try (InputStream is = Files.newInputStream(configPath)){
-            SAXReader parser = new SAXReader(is);
-            final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);
-            parser.parse(dsp);
+        try (InputStream is = registry.getConfigurationManager().readConfiguration(configurationStorage.getStorageName())) {
+            if (is != null) {
+                SAXReader parser = new SAXReader(is);
+                final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);
+                parser.parse(dsp);
+            }
         } catch (Exception ex) {
             throw new DBException("Datasource config parse error", ex);
         }
-    }
-
-    private static void saveFolder(XMLBuilder xml, DataSourceFolder folder)
-        throws IOException
-    {
-        xml.startElement(RegistryConstants.TAG_FOLDER);
-        if (folder.getParent() != null) {
-            xml.addAttribute(RegistryConstants.ATTR_PARENT, folder.getParent().getFolderPath());
-        }
-        xml.addAttribute(RegistryConstants.ATTR_NAME, folder.getName());
-        if (!CommonUtils.isEmpty(folder.getDescription())) {
-            xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, folder.getDescription());
-        }
-        xml.endElement();
-    }
-
-    private static void saveDataSource(XMLBuilder xml, DataSourceDescriptor dataSource)
-        throws IOException
-    {
-        xml.startElement(RegistryConstants.TAG_DATA_SOURCE);
-        xml.addAttribute(RegistryConstants.ATTR_ID, dataSource.getId());
-        xml.addAttribute(RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
-        xml.addAttribute(RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
-        xml.addAttribute(RegistryConstants.ATTR_NAME, dataSource.getName());
-        xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());
-
-        DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
-        if (navSettings.isShowSystemObjects()) xml.addAttribute(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, navSettings.isShowSystemObjects());
-        if (navSettings.isShowUtilityObjects()) xml.addAttribute(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, navSettings.isShowUtilityObjects());
-
-        xml.addAttribute(RegistryConstants.ATTR_READ_ONLY, dataSource.isConnectionReadOnly());
-        if (dataSource.getFolder() != null) {
-            xml.addAttribute(RegistryConstants.ATTR_FOLDER, dataSource.getFolder().getFolderPath());
-        }
-        final String lockPasswordHash = dataSource.getLockPasswordHash();
-        if (!CommonUtils.isEmpty(lockPasswordHash)) {
-            xml.addAttribute(RegistryConstants.ATTR_LOCK_PASSWORD, lockPasswordHash);
-        }
-
-        {
-            // Connection info
-            DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-            xml.startElement(RegistryConstants.TAG_CONNECTION);
-            if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                xml.addAttribute(RegistryConstants.ATTR_HOST, connectionInfo.getHostName());
-            }
-            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                xml.addAttribute(RegistryConstants.ATTR_PORT, connectionInfo.getHostPort());
-            }
-            xml.addAttribute(RegistryConstants.ATTR_SERVER, CommonUtils.notEmpty(connectionInfo.getServerName()));
-            xml.addAttribute(RegistryConstants.ATTR_DATABASE, CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
-            xml.addAttribute(RegistryConstants.ATTR_URL, CommonUtils.notEmpty(connectionInfo.getUrl()));
-
-            saveSecuredCredentials(xml,
-                dataSource.getRegistry().getProject(),
-                dataSource,
-                null,
-                new SecureCredentials(dataSource));
-
-            if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
-                xml.addAttribute(RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
-            }
-            if (connectionInfo.getConnectionType() != null) {
-                xml.addAttribute(RegistryConstants.ATTR_TYPE, connectionInfo.getConnectionType().getId());
-            }
-            if (connectionInfo.getConnectionColor() != null) {
-                xml.addAttribute(RegistryConstants.ATTR_COLOR, connectionInfo.getConnectionColor());
-            }
-            // Save other
-            if (connectionInfo.getKeepAliveInterval() > 0) {
-                xml.addAttribute(RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
-            }
-
-            for (Map.Entry<String, String> entry : connectionInfo.getProperties().entrySet()) {
-                xml.startElement(RegistryConstants.TAG_PROPERTY);
-                xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(entry.getKey()));
-                xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(entry.getValue()));
-                xml.endElement();
-            }
-            for (Map.Entry<String, String> entry : connectionInfo.getProviderProperties().entrySet()) {
-                xml.startElement(RegistryConstants.TAG_PROVIDER_PROPERTY);
-                xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(entry.getKey()));
-                xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(entry.getValue()));
-                xml.endElement();
-            }
-
-            // Save events
-            for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
-                DBRShellCommand command = connectionInfo.getEvent(eventType);
-                xml.startElement(RegistryConstants.TAG_EVENT);
-                xml.addAttribute(RegistryConstants.ATTR_TYPE, eventType.name());
-                xml.addAttribute(RegistryConstants.ATTR_ENABLED, command.isEnabled());
-                xml.addAttribute(RegistryConstants.ATTR_SHOW_PANEL, command.isShowProcessPanel());
-                xml.addAttribute(RegistryConstants.ATTR_WAIT_PROCESS, command.isWaitProcessFinish());
-                if (command.isWaitProcessFinish()) {
-                    xml.addAttribute(RegistryConstants.ATTR_WAIT_PROCESS_TIMEOUT, command.getWaitProcessTimeoutMs());
-                }
-                xml.addAttribute(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT, command.isTerminateAtDisconnect());
-                xml.addAttribute(RegistryConstants.ATTR_PAUSE_AFTER_EXECUTE, command.getPauseAfterExecute());
-                if (!CommonUtils.isEmpty(command.getWorkingDirectory())) {
-                    xml.addAttribute(RegistryConstants.ATTR_WORKING_DIRECTORY, command.getWorkingDirectory());
-                }
-                xml.addText(command.getCommand());
-                xml.endElement();
-            }
-            // Save network handlers' configurations
-            for (DBWHandlerConfiguration configuration : connectionInfo.getHandlers()) {
-                xml.startElement(RegistryConstants.TAG_NETWORK_HANDLER);
-                xml.addAttribute(RegistryConstants.ATTR_TYPE, configuration.getType().name());
-                xml.addAttribute(RegistryConstants.ATTR_ID, CommonUtils.notEmpty(configuration.getId()));
-                xml.addAttribute(RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
-                xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
-                if (!CommonUtils.isEmpty(configuration.getUserName())) {
-                    saveSecuredCredentials(
-                        xml,
-                        dataSource.getRegistry().getProject(),
-                        dataSource,
-                        "network/" + configuration.getId(),
-                        new SecureCredentials(configuration));
-                }
-                for (Map.Entry<String, Object> entry : configuration.getProperties().entrySet()) {
-                    if (entry.getValue() == null) {
-                        continue;
-                    }
-                    xml.startElement(RegistryConstants.TAG_PROPERTY);
-                    xml.addAttribute(RegistryConstants.ATTR_NAME, entry.getKey());
-                    xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.notEmpty(entry.getValue().toString()));
-                    xml.endElement();
-                }
-                xml.endElement();
-            }
-
-            // Save bootstrap info
-            {
-                DBPConnectionBootstrap bootstrap = connectionInfo.getBootstrap();
-                if (bootstrap.hasData()) {
-                    xml.startElement(RegistryConstants.TAG_BOOTSTRAP);
-                    if (bootstrap.getDefaultAutoCommit() != null) {
-                        xml.addAttribute(RegistryConstants.ATTR_AUTOCOMMIT, bootstrap.getDefaultAutoCommit());
-                    }
-                    if (bootstrap.getDefaultTransactionIsolation() != null) {
-                        xml.addAttribute(RegistryConstants.ATTR_TXN_ISOLATION, bootstrap.getDefaultTransactionIsolation());
-                    }
-                    if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName())) {
-                        xml.addAttribute(RegistryConstants.ATTR_DEFAULT_OBJECT, bootstrap.getDefaultCatalogName());
-                    }
-                    if (bootstrap.isIgnoreErrors()) {
-                        xml.addAttribute(RegistryConstants.ATTR_IGNORE_ERRORS, true);
-                    }
-                    for (String query : bootstrap.getInitQueries()) {
-                        xml.startElement(RegistryConstants.TAG_QUERY);
-                        xml.addText(query);
-                        xml.endElement();
-                    }
-                    xml.endElement();
-                }
-            }
-
-            xml.endElement();
-        }
-
-        {
-            // Filters
-            Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
-            if (!CommonUtils.isEmpty(filterMappings)) {
-                xml.startElement(RegistryConstants.TAG_FILTERS);
-                for (FilterMapping filter : filterMappings) {
-                    if (filter.defaultFilter != null && !filter.defaultFilter.isEmpty()) {
-                        saveObjectFiler(xml, filter.typeName, null, filter.defaultFilter);
-                    }
-                    for (Map.Entry<String,DBSObjectFilter> cf : filter.customFilters.entrySet()) {
-                        if (!cf.getValue().isEmpty()) {
-                            saveObjectFiler(xml, filter.typeName, cf.getKey(), cf.getValue());
-                        }
-                    }
-                }
-                xml.endElement();
-            }
-        }
-
-        // Virtual model
-        if (dataSource.getVirtualModel().hasValuableData()) {
-            xml.startElement(RegistryConstants.TAG_VIRTUAL_META_DATA);
-            dataSource.getVirtualModel().serialize(xml);
-            xml.endElement();
-        }
-
-        // Preferences
-        {
-            // Save only properties who are differs from default values
-            SimplePreferenceStore prefStore = dataSource.getPreferenceStore();
-            for (String propName : prefStore.preferenceNames()) {
-                String propValue = prefStore.getString(propName);
-                String defValue = prefStore.getDefaultString(propName);
-                if (propValue == null || CommonUtils.equalObjects(propValue, defValue)) {
-                    continue;
-                }
-                xml.startElement(RegistryConstants.TAG_CUSTOM_PROPERTY);
-                xml.addAttribute(RegistryConstants.ATTR_NAME, propName);
-                xml.addAttribute(RegistryConstants.ATTR_VALUE, propValue);
-                xml.endElement();
-            }
-        }
-
-        if (!CommonUtils.isEmpty(dataSource.getDescription())) {
-            xml.startElement(RegistryConstants.TAG_DESCRIPTION);
-            xml.addText(dataSource.getDescription());
-            xml.endElement();
-        }
-        xml.endElement();
-    }
-
-    private static void saveSecuredCredentials(@NotNull XMLBuilder xml, @NotNull DBPProject project, @Nullable DataSourceDescriptor dataSource, String subNode, SecureCredentials creds) throws IOException {
-        boolean saved = DataSourceUtils.saveCredentialsInSecuredStorage(project, dataSource, subNode, creds);
-        if (!saved) {
-            try {
-                if (!CommonUtils.isEmpty(creds.getUserName())) {
-                    xml.addAttribute(RegistryConstants.ATTR_USER, creds.getUserName());
-                }
-                if (!CommonUtils.isEmpty(creds.getUserPassword())) {
-                    xml.addAttribute(RegistryConstants.ATTR_PASSWORD, ENCRYPTOR.encrypt(creds.getUserPassword()));
-                }
-            } catch (EncryptionException e) {
-                log.error("Error encrypting password", e);
-            }
-        }
-    }
-
-    private static void saveObjectFiler(XMLBuilder xml, String typeName, String objectID, DBSObjectFilter filter) throws IOException
-    {
-        xml.startElement(RegistryConstants.TAG_FILTER);
-        if (typeName != null) {
-            xml.addAttribute(RegistryConstants.ATTR_TYPE, typeName);
-        }
-        if (objectID != null) {
-            xml.addAttribute(RegistryConstants.ATTR_ID, objectID);
-        }
-        if (!CommonUtils.isEmpty(filter.getName())) {
-            xml.addAttribute(RegistryConstants.ATTR_NAME, filter.getName());
-        }
-        if (!CommonUtils.isEmpty(filter.getDescription())) {
-            xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, filter.getDescription());
-        }
-        if (!filter.isEnabled()) {
-            xml.addAttribute(RegistryConstants.ATTR_ENABLED, false);
-        }
-        for (String include : CommonUtils.safeCollection(filter.getInclude())) {
-            xml.startElement(RegistryConstants.TAG_INCLUDE);
-            xml.addAttribute(RegistryConstants.ATTR_NAME, include);
-            xml.endElement();
-        }
-        for (String exclude : CommonUtils.safeCollection(filter.getExclude())) {
-            xml.startElement(RegistryConstants.TAG_EXCLUDE);
-            xml.addAttribute(RegistryConstants.ATTR_NAME, exclude);
-            xml.endElement();
-        }
-        xml.endElement();
     }
 
     @Nullable
