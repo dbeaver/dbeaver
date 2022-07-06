@@ -111,6 +111,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -225,10 +226,8 @@ public class ResultSetViewer extends Viewer
 
     private volatile boolean nextSegmentReadingBlocked;
 
-    public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
-    {
+    public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container) {
         super();
-
         this.site = site;
         this.recordMode = false;
         this.container = container;
@@ -273,7 +272,7 @@ public class ResultSetViewer extends Viewer
             this.presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
             CSSUtils.setCSSClass(this.presentationSwitchFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
         } else {
-            this. presentationSwitchFolder = null;
+            this.presentationSwitchFolder = null;
         }
 
         this.viewerPanel = UIUtils.createPlaceholder(mainPanel, 1);
@@ -748,6 +747,7 @@ public class ResultSetViewer extends Viewer
                     if (activePresentationDescriptor != null && (!metadataChanged || activePresentationDescriptor.getPresentationType().isPersistent())) {
                         if (this.availablePresentations.contains(activePresentationDescriptor)) {
                             // Keep the same presentation
+                            fireResultSetModelPrepared();
                             return;
                         }
                     }
@@ -773,10 +773,10 @@ public class ResultSetViewer extends Viewer
                         DBWorkbench.getPlatformUI().showError("Presentation activate", "Can't instantiate data view '" + newPresentation.getLabel() + "'", e);
                     }
                 } else {
-                    // No presentation for this resulset
                     log.debug("No presentations for result set [" + resultSet.getClass().getSimpleName() + "]");
                     showEmptyPresentation();
                 }
+                fireResultSetModelPrepared();
             }
         } finally {
             if (changed && presentationSwitchFolder != null) {
@@ -4521,6 +4521,12 @@ public class ResultSetViewer extends Viewer
     private void fireResultSetSelectionChange(SelectionChangedEvent event) {
         for (IResultSetListener listener : getListenersCopy()) {
             listener.handleResultSetSelectionChange(event);
+        }
+    }
+
+    private void fireResultSetModelPrepared() {
+        for (IResultSetListener listener : getListenersCopy()) {
+            listener.onModelPrepared();
         }
     }
 

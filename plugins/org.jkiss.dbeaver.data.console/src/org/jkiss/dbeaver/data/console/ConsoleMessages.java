@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.data.console;
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+import org.eclipse.osgi.util.NLS;
 
-import org.eclipse.jface.viewers.SelectionChangedEvent;
+public class ConsoleMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.data.console.ConsoleMessages"; //$NON-NLS-1$
 
-/**
- * Result set provider
- */
-public interface IResultSetListener {
+    public static String console_view_item_text;
+    public static String pref_page_console_view_label_show_output_console_view;
+    public static String pref_page_console_view_label_show_output_console_view_tip;
+    public static String console_view_action_tooltip;
 
-    void handleResultSetLoad();
+    static {
+        // resource bundle initialization
+        NLS.initializeMessages(BUNDLE_NAME, ConsoleMessages.class);
+    }
 
-    void handleResultSetChange();
-
-    void handleResultSetSelectionChange(SelectionChangedEvent event);
-
-    default void onModelPrepared() {
-        // do nothing
+    private ConsoleMessages() {
     }
 }

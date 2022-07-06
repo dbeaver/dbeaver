@@ -113,6 +113,13 @@
          version="0.0.0"
          unpack="false"/>
 
+    <plugin
+         id="org.jkiss.dbeaver.data.console"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
    <plugin
          id="org.jkiss.dbeaver.ui.editors.session"
          download-size="0"
