@@ -14,23 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.data.console;
 
-package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.viewers.SelectionChangedEvent;
+public class SQLConsoleViewPreferenceConstants {
+    public final static String SHOW_CONSOLE_VIEW_BY_DEFAULT = "SQLEditor.ConsoleView.showConsoleViewByDefault"; //$NON-NLS-1$
 
-/**
- * Result set provider
- */
-public interface IResultSetListener {
-
-    void handleResultSetLoad();
-
-    void handleResultSetChange();
-
-    void handleResultSetSelectionChange(SelectionChangedEvent event);
-
-    default void onModelPrepared() {
-        // do nothing
-    }
 }

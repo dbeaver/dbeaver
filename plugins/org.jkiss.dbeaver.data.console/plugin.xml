@@ -17,17 +17,40 @@
  * limitations under the License.
   -->
 <plugin>
-    <extension point="org.jkiss.dbeaver.resultset.presentation">
-        <presentation
-                id="plaintext"
-                label="%presentation.scriptconsole.label"
-                description="%presentation.scriptconsole.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png"
-                class="org.jkiss.dbeaver.data.console.ConsoleTextPresentation"
-                type="columns"
-                supportsRecordMode="true"
-                order="200">
-            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
-        </presentation>
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.ui.editors.sql.show.consoleView" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.consoleView.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.consoleView.description" categoryId="org.jkiss.dbeaver.core.sql">
+            <state class="org.eclipse.jface.commands.ToggleState" id="org.eclipse.ui.commands.toggleState" />
+        </command>
     </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.show.consoleView" class="org.jkiss.dbeaver.data.console.ConsoleViewSwitchHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
+        </handler>
+    </extension>
+    
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side" >
+            <dynamic id="org.jkiss.dbeaver.ui.editors.sql.show.consoleView.contributor" class="org.jkiss.dbeaver.data.console.ConsoleViewSwitchContributor" />
+        </menuContribution>
+    </extension>
+    
+    <extension point="org.eclipse.ui.commandImages">
+    	<image commandId="org.jkiss.dbeaver.ui.editors.sql.show.consoleView" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png" />
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.data.console.ConsoleViewPreferencesInitializer"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.propertyPages">
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.data.console.PrefPageConsoleView" id="org.jkiss.dbeaver.preferences.main.sqleditor.consoleview" name="%console_view_item_text">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource" /></enabledWhen>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.data.console.PrefPageConsoleView"  id="org.jkiss.dbeaver.preferences.main.sql.consoleview" name="%console_view_item_text" />
+    </extension>
+
 </plugin>
