@@ -45,6 +45,7 @@ public interface DBPDataSourceRegistry extends DBPObject {
     String MODERN_CONFIG_FILE_NAME = MODERN_CONFIG_FILE_PREFIX + MODERN_CONFIG_FILE_EXT;
     String CREDENTIALS_CONFIG_FILE_PREFIX = "credentials-config"; //$NON-NLS-1$
     String CREDENTIALS_CONFIG_FILE_EXT = ".json"; //$NON-NLS-1$
+    String CREDENTIALS_CONFIG_FILE_NAME = CREDENTIALS_CONFIG_FILE_PREFIX + CREDENTIALS_CONFIG_FILE_EXT;
 
     /**
      * Owner project.

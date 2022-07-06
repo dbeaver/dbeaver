@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
@@ -119,6 +120,12 @@ public abstract class BaseProjectImpl implements DBPProject {
         return projectID;
     }
 
+    @Nullable
+    @Override
+    public IContainer getRootResource() {
+        return getEclipseProject();
+    }
+
     @NotNull
     @Override
     public Path getMetadataFolder(boolean create) {
@@ -155,10 +162,15 @@ public abstract class BaseProjectImpl implements DBPProject {
         ensureOpen();
         synchronized (metadataSync) {
             if (dataSourceRegistry == null) {
-                dataSourceRegistry = new DataSourceRegistry(this);
+                dataSourceRegistry = createDataSourceRegistry();
             }
         }
         return dataSourceRegistry;
+    }
+
+    @NotNull
+    protected DataSourceRegistry createDataSourceRegistry() {
+        return new DataSourceRegistry(this);
     }
 
     @NotNull

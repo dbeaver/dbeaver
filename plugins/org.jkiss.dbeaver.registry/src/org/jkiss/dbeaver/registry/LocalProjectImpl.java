@@ -29,7 +29,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.utils.IOUtils;
@@ -59,7 +58,7 @@ public class LocalProjectImpl extends BaseProjectImpl {
     @NotNull
     private final IProject project;
 
-    public LocalProjectImpl(@NotNull DBPWorkspace workspace, @Nullable IProject project, @Nullable SMSessionContext sessionContext) {
+    public LocalProjectImpl(@NotNull BaseWorkspaceImpl workspace, @NotNull IProject project, @Nullable SMSessionContext sessionContext) {
         super(workspace, sessionContext);
         this.project = project;
     }
@@ -94,9 +93,6 @@ public class LocalProjectImpl extends BaseProjectImpl {
 
     @Override
     public void ensureOpen() throws IllegalStateException {
-        if (getFormat() != ProjectFormat.UNKNOWN) {
-            return;
-        }
         if (!project.isOpen()) {
             NullProgressMonitor monitor = new NullProgressMonitor();
             try {

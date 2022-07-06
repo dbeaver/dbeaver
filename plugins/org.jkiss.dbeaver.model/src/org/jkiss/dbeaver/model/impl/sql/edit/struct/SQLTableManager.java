@@ -270,9 +270,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (fkm != null && !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS)) {
             try {
                 for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
-                    if (!(foreignKey instanceof DBSTableForeignKey) ||
-                        skipObject(foreignKey))
-                    {
+                    if (!(foreignKey instanceof DBSTableForeignKey) || skipObject(foreignKey)) {
                         continue;
                     }
                     command.aggregateCommand(fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options));

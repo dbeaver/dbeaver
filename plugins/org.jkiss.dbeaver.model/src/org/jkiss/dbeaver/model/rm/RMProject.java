@@ -16,24 +16,56 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.utils.CommonUtils;
 
 import java.time.OffsetDateTime;
 
 /**
  * Resource manager API
  */
-public class RMProject implements DBPObject {
+public class RMProject extends RMObject {
+
+    public static final String PREFIX_GLOBAL = "g";
+    public static final String PREFIX_SHARED = "s";
+    public static final String PREFIX_USER = "u";
+
+    public enum Type {
+        GLOBAL(PREFIX_GLOBAL),
+        SHARED(PREFIX_SHARED),
+        USER(PREFIX_USER);
+
+        private final String prefix;
+
+        Type(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+    }
     private String id;
-    private String name;
     private String description;
-    private boolean shared;
+    private Type type;
 
     private OffsetDateTime createTime;
     private String creator;
 
     public RMProject() {
+    }
+
+    public RMProject(String id, String name, String description, Type type, OffsetDateTime createTime, String creator) {
+        super(name);
+        this.id = id;
+        this.description = description;
+        this.type = type;
+        this.createTime = createTime;
+        this.creator = creator;
+    }
+
+    public RMProject(String name) {
+        super(name);
     }
 
     @Property
@@ -45,12 +77,9 @@ public class RMProject implements DBPObject {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public boolean isFolder() {
+        return true;
     }
 
     public String getDescription() {
@@ -62,12 +91,12 @@ public class RMProject implements DBPObject {
     }
 
     @Property
-    public boolean isShared() {
-        return shared;
+    public Type getType() {
+        return type;
     }
 
-    public void setShared(boolean shared) {
-        this.shared = shared;
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public OffsetDateTime getCreateTime() {
@@ -85,4 +114,20 @@ public class RMProject implements DBPObject {
     public void setCreator(String creator) {
         this.creator = creator;
     }
+
+    @Override
+    public String toString() {
+        return id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id == null ? 0 : id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof RMProject && CommonUtils.equalObjects(id, ((RMProject) obj).id);
+    }
+
 }

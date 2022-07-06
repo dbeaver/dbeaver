@@ -378,8 +378,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
             NIOFileSystemRoot root = new NIOFileSystemRoot(
                 getOwnerProject().getEclipseProject(),
                 fsRoot,
-                fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getId(),
-                rootPath
+                fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
             );
             Path path = getPath();
             IResource resource;

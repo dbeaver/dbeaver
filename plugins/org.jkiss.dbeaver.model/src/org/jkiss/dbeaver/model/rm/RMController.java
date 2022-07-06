@@ -35,7 +35,7 @@ public interface RMController {
 
     void deleteProject(@NotNull String projectId) throws DBException;
 
-    RMProject getProject(@NotNull String projectId) throws DBException;
+    RMProject getProject(@NotNull String projectId, boolean readResources) throws DBException;
 
     /**
      * Returns datasources configuration in modern format
@@ -59,7 +59,8 @@ public interface RMController {
         @Nullable String folder,
         @Nullable String nameMask,
         boolean readProperties,
-        boolean readHistory) throws DBException;
+        boolean readHistory,
+        boolean recursive) throws DBException;
 
     String createResource(
         @NotNull String projectId,

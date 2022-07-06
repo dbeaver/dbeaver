@@ -106,7 +106,7 @@ public class SQLEditorUtils {
                 Map<String, Object> props = rp.getValue();
                 Object dsId = props.get(EditorUtils.PROP_SQL_DATA_SOURCE_ID);
                 if (CommonUtils.equalObjects(container.getId(), dsId)) {
-                    IResource resource = project.getEclipseProject().findMember(rp.getKey());
+                    IResource resource = project.getRootResource().findMember(rp.getKey());
                     if (resource instanceof IFile) {
                         result.add(new ResourceInfo((IFile) resource, container));
                     }

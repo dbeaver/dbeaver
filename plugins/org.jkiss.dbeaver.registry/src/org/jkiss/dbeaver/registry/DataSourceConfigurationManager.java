@@ -37,6 +37,6 @@ public interface DataSourceConfigurationManager {
 
     InputStream readConfiguration(@NotNull String name) throws DBException, IOException;
 
-    void writeConfiguration(@NotNull String name, @NotNull InputStream data) throws DBException, IOException;
+    void writeConfiguration(@NotNull String name, @NotNull byte[] data) throws DBException, IOException;
 
 }

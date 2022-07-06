@@ -92,7 +92,7 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     public Path getPath() {
         if (path == null) {
             try {
-                path = root.getPath(new VoidProgressMonitor());
+                path = root.getRootPath(new VoidProgressMonitor());
             } catch (DBException e) {
                 log.error(e);
                 return Path.of(".nonexistentfolder");
