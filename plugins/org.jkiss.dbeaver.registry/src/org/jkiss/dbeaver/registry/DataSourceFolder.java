@@ -34,6 +34,7 @@ public class DataSourceFolder implements DBPDataSourceFolder
     private List<DataSourceFolder> children = new ArrayList<>();
     private String name;
     private String description;
+    private boolean temporary;
 
     public DataSourceFolder(DataSourceRegistry registry, DataSourceFolder parent, String name, String description) {
         this.registry = registry;
@@ -117,6 +118,14 @@ public class DataSourceFolder implements DBPDataSourceFolder
             path = path == null ? folder.getName() : folder.getName() + "/" + path;
         }
         return path;
+    }
+
+    public boolean isTemporary() {
+        return temporary;
+    }
+
+    public void setTemporary(boolean temporary) {
+        this.temporary = temporary;
     }
 
     @Override

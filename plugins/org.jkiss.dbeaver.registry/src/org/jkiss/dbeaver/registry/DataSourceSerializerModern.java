@@ -115,7 +115,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     jsonWriter.beginObject();
                     // Folders (only for default storage)
                     for (DataSourceFolder folder : registry.getAllFolders()) {
-                        saveFolder(jsonWriter, folder);
+                        if (!folder.isTemporary()) {
+                            saveFolder(jsonWriter, folder);
+                        }
                     }
                     jsonWriter.endObject();
                 }
