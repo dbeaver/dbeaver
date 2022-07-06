@@ -150,6 +150,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         gd = new GridData(GridData.FILL_BOTH);
         otherPrivilegesTable.setLayoutData(gd);
 
+        sash.setSashBorders(new boolean[]{false, false});
+
         catalogsTable.setSelection(0);
         showCatalogTables();
 
