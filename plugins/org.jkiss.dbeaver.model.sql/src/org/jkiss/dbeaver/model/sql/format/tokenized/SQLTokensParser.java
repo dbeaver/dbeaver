@@ -17,8 +17,8 @@
 
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPKeywordType;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.text.parser.rules.NumberRule;
 import org.jkiss.utils.ArrayUtils;
@@ -133,6 +133,7 @@ class SQLTokensParser {
             fPos++;
             return new FormatterToken(TokenType.SYMBOL, ";", start_pos);
         } else if (isDigit(fChar)) {
+            int startPosition = fPos;
             StringBuilder s = new StringBuilder();
             int radix = NumberRule.RADIX_DECIMAL;
             while (CommonUtils.isDigit(fChar, radix) || (radix == NumberRule.RADIX_DECIMAL && (fChar == '.' || fChar == 'e' || fChar == 'E'))) {
@@ -153,6 +154,11 @@ class SQLTokensParser {
                 }
 
                 fChar = fBefore.charAt(fPos);
+            }
+            if (isLetter(fChar) 
+                && configuration.getSyntaxManager().getDialect().validIdentifierStart(fBefore.charAt(startPosition))
+            ) {
+                return parseNameStartWithDigit(startPosition);
             }
             return new FormatterToken(TokenType.VALUE, s.toString(), start_pos);
         }
@@ -181,15 +187,7 @@ class SQLTokensParser {
         }
         else if (isLetter(fChar)) {
             StringBuilder s = new StringBuilder();
-            while (isLetter(fChar) || isDigit(fChar) || (fChar == '*' && fPos > 0 && fBefore.charAt(fPos - 1) == structSeparator)
-                || structSeparator == fChar || catalogSeparator.indexOf(fChar) != -1) {
-                s.append(fChar);
-                fPos++;
-                if (fPos >= fBefore.length()) {
-                    break;
-                }
-                fChar = fBefore.charAt(fPos);
-            }
+            fPos = readWord(s, fPos);
             String word = s.toString();
             if (commands.contains(word.toUpperCase(Locale.ENGLISH))) {
                 s.setLength(0);
@@ -283,6 +281,31 @@ class SQLTokensParser {
                 return new FormatterToken(TokenType.UNKNOWN, String.valueOf(fChar), start_pos);
             }
         }
+    }
+    
+    @NotNull
+    private FormatterToken parseNameStartWithDigit(int startPosition) {
+        StringBuilder s = new StringBuilder();
+        fPos = readWord(s, startPosition);
+        String word = s.toString();
+        return new FormatterToken(TokenType.NAME, word, startPosition);
+    }
+
+    private int readWord(@NotNull StringBuilder s, int startPosition) {
+        char firstChar = fBefore.charAt(startPosition);
+        int position = startPosition;
+        while (isLetter(firstChar) || isDigit(firstChar)
+            || (firstChar == '*' && position > 0 && fBefore.charAt(position - 1) == structSeparator)
+            || structSeparator == firstChar || catalogSeparator.indexOf(firstChar) != -1
+        ) {
+            s.append(firstChar);
+            position++;
+            if (position >= fBefore.length()) {
+                break;
+            }
+            firstChar = fBefore.charAt(position);
+        }
+        return position;
     }
 
     private boolean isQuoteChar(char fChar) {
