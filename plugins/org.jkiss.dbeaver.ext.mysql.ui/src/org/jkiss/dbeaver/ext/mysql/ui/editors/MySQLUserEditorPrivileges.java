@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.editors;
 
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -73,13 +75,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
         pageControl = new PageControl(parent);
 
-        Composite container = UIUtils.createPlaceholder(pageControl, 2, 5);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        container.setLayoutData(gd);
+        CustomSashForm sash = new CustomSashForm(pageControl, SWT.HORIZONTAL);
+        sash.setLayoutData(gd);
 
-        Composite leftPane = UIUtils.createPlaceholder(container, 2);
+        Composite leftPane = UIUtils.createPlaceholder(sash, 2);
         leftPane.setLayoutData(new GridData(GridData.FILL_BOTH));
-        leftPane.setLayout(new GridLayout(2, true));
+        leftPane.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
         {
             Composite catalogGroup = UIUtils.createControlGroup(leftPane, MySQLUIMessages.editors_user_editor_privileges_group_catalogs, 1, GridData.FILL_BOTH, 0);
 
@@ -137,7 +139,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             UIUtils.createTableColumn(tablesTable, SWT.LEFT, MySQLUIMessages.editors_user_editor_privileges_column_table);
             UIUtils.packColumns(tablesTable);
         }
-        Composite ph = UIUtils.createPlaceholder(container, 1);
+        Composite ph = UIUtils.createPlaceholder(sash, 1);
         ph.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         tablePrivilegesTable = new PrivilegeTableControl(ph, MySQLUIMessages.editors_user_editor_privileges_control_table_privileges, false);
