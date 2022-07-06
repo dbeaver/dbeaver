@@ -1846,12 +1846,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (item.getElement() instanceof DBDAttributeBinding) {
                 switch (((DBDAttributeBinding) item.getElement()).getDataKind()) {
                     case ARRAY:
+                        return true;
                     case STRUCT:
                     case DOCUMENT:
                     case ANY:
-                        return true;
+                        return !controller.isRecordMode();
                     default:
-                        return isCollectionAttribute((DBDAttributeBinding) item.getElement());
+                        return false;
                 }
             }
             return false;
