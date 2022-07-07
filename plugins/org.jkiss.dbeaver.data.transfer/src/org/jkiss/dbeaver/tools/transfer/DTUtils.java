@@ -106,16 +106,17 @@ public class DTUtils {
      *
      * @param dataSource dataSource
      * @param queryContainer not nullable query container
-     * @return table name founded in the query or default name
+     * @return table name founded in the query or {@code null}
      */
+    @Nullable
     public static String getTableNameFromQueryContainer(DBPDataSource dataSource, @NotNull SQLQueryContainer queryContainer) {
         if (dataSource == null) {
-            return DTConstants.DEFAULT_TABLE_NAME_EXPORT;
+            return null;
         }
         String nameFromQuery = DTUtils.getTableNameFromQuery(dataSource, queryContainer, true);
         if (CommonUtils.isEmpty(nameFromQuery)) {
             // Use default pattern name for this case, not the all statement
-            return DTConstants.DEFAULT_TABLE_NAME_EXPORT;
+            return null;
         }
         return nameFromQuery;
     }
