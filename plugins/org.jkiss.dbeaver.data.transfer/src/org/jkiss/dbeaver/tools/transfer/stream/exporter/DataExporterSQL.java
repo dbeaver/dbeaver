@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
@@ -190,6 +191,9 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
             tableName = DTUtils.getTableNameFromQueryContainer(session.getDataSource(), (SQLQueryContainer) source);
         } else {
             tableName = DTUtils.getTableName(session.getDataSource(), source, omitSchema);
+        }
+        if (CommonUtils.isEmpty(tableName)) {
+            tableName = DTConstants.DEFAULT_TABLE_NAME_EXPORT;
         }
 
         rowCount = 0;
