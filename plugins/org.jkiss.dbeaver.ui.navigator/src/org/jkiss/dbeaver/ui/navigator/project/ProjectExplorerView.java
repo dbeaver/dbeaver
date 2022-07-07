@@ -16,9 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.navigator.project;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -35,9 +39,9 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
-import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -52,7 +56,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
     private ViewerColumnController columnController;
-    private final NumberFormat sizeFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
+    private final NumberFormat sizeFormat = new DecimalFormat();
 
     public ProjectExplorerView() {
         DBPPlatformEclipse.getInstance().getWorkspace().addProjectListener(this);
@@ -213,7 +217,13 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
                             if (resource instanceof IFile) {
-                                return sizeFormat.format(resource.getLocation().toFile().length());
+                                try {
+                                    IFileStore fileStore = EFS.getStore(resource.getLocationURI());
+                                    IFileInfo iFileInfo = fileStore.fetchInfo();
+                                    return sizeFormat.format(iFileInfo.getLength());
+                                } catch (CoreException e) {
+                                    return e.getMessage();
+                                }
                             }
                         }
                         return "";
