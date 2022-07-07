@@ -269,6 +269,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     public DataSourceFolder addFolder(DBPDataSourceFolder parent, String name) {
         DataSourceFolder folder = new DataSourceFolder(this, (DataSourceFolder) parent, name, null);
         dataSourceFolders.add(folder);
+        if (storages.isEmpty()) {
+            getDefaultStorage();
+        }
         return folder;
     }
 
