@@ -394,7 +394,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Override
     public void setTypeName(String typeName) throws DBException {
-        final PostgreDataType dataType = PostgreUtils.resolveTypeFullName(new VoidProgressMonitor(), getSchema(), typeName);
+        PostgreDataType dataType = PostgreUtils.resolveTypeFullName(new VoidProgressMonitor(), getSchema(), typeName);
+        if (dataType == null) {
+            // retry search in local schema types and create some data type on failure
+            dataType = findDataType(getSchema(), typeName);
+        }
         this.typeName = typeName;
         this.typeId = dataType.getTypeID();
         this.dataType = dataType;
@@ -419,7 +423,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         final String typeName = type.getFirst();
         final String[] typeMods = type.getSecond();
 
-        final PostgreDataType dataType = PostgreUtils.resolveTypeFullName(new VoidProgressMonitor(), getSchema(), typeName);
+        PostgreDataType dataType = PostgreUtils.resolveTypeFullName(new VoidProgressMonitor(), getSchema(), typeName);
+        if (dataType == null) {
+            // retry search in local schema types and create some data type on failure
+            dataType = findDataType(getSchema(), typeName);
+        }
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
             this.typeMod = handler.getTypeModifiers(dataType, typeName, typeMods);
