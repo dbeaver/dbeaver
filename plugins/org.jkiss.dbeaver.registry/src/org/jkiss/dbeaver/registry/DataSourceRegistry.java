@@ -612,11 +612,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             .collect(Collectors.toSet());
         for (DBPDataSourceFolder folder : folders) {
             while (folder != null) {
-                folder = folder.getParent();
-                if (folder == null) {
-                    break;
-                }
                 result.add(folder);
+                folder = folder.getParent();
             }
         }
         return result;
