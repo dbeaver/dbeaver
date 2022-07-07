@@ -78,7 +78,7 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
         overriddenHostnameText.setEnabled(overrideHostname.getSelection());
         if (overrideHostname.getSelection()
             && !CommonUtils.isEmpty(connectionConfiguration.getProviderProperty(PostgreConstants.PG_PASS_HOSTNAME))) {
-            this.overrideHostname.setText(
+            this.overriddenHostnameText.setText(
                 connectionConfiguration.getProviderProperty(PostgreConstants.PG_PASS_HOSTNAME));
 
         }
