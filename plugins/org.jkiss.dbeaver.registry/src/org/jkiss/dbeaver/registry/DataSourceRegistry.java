@@ -605,10 +605,22 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     public Set<DBPDataSourceFolder> getTemporaryFolders() {
-        return getDataSources().stream()
+        Set<DBPDataSourceFolder> result = new HashSet<>(Collections.emptySet());
+        Set<DBPDataSourceFolder> folders = getDataSources().stream()
             .filter(DBPDataSourceContainer::isTemporary)
             .map(DBPDataSourceContainer::getFolder)
+            .filter(Objects::nonNull)
             .collect(Collectors.toSet());
+        for (DBPDataSourceFolder folder : folders) {
+            while (true) {
+                folder = folder.getParent();
+                if (folder == null) {
+                    break;
+                }
+                result.add(folder);
+            }
+        }
+        return result;
     }
 
     private void loadDataSources(boolean refresh) {
