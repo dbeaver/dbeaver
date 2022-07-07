@@ -609,10 +609,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         Set<DBPDataSourceFolder> folders = getDataSources().stream()
             .filter(DBPDataSourceContainer::isTemporary)
             .map(DBPDataSourceContainer::getFolder)
-            .filter(Objects::nonNull)
             .collect(Collectors.toSet());
         for (DBPDataSourceFolder folder : folders) {
-            while (true) {
+            while (folder != null) {
                 folder = folder.getParent();
                 if (folder == null) {
                     break;
