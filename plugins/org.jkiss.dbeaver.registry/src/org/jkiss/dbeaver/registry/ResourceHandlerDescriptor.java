@@ -138,17 +138,23 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
     }
 
     public boolean canHandle(IResource resource) {
+        return canHandle(resource, false);
+    }
+
+    public boolean canHandle(IResource resource, boolean testContent) {
         if (!contentTypes.isEmpty() && resource instanceof IFile) {
-            try {
-                IContentDescription contentDescription = ((IFile) resource).getContentDescription();
-                if (contentDescription != null) {
-                    IContentType fileContentType = contentDescription.getContentType();
-                    if (fileContentType != null && contentTypes.contains(fileContentType)) {
-                        return true;
+            if (testContent) {
+                try {
+                    IContentDescription contentDescription = ((IFile) resource).getContentDescription();
+                    if (contentDescription != null) {
+                        IContentType fileContentType = contentDescription.getContentType();
+                        if (fileContentType != null && contentTypes.contains(fileContentType)) {
+                            return true;
+                        }
                     }
+                } catch (CoreException e) {
+                    log.debug("Can't obtain content description for '" + resource.getName() + "'", e);
                 }
-            } catch (CoreException e) {
-                log.debug("Can't obtain content description for '" + resource.getName() + "'", e);
             }
             // Check for file extension
             String fileExtension = resource.getFileExtension();
