@@ -231,6 +231,11 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
     }
 
     @Override
+    public void dispose() {
+        // nothing
+    }
+
+    @Override
     public final int open()
     {
         try {
