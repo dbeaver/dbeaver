@@ -99,7 +99,6 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         StyledText editorControl = editor.getEditorControl();
         assert editorControl != null;
         initEditorSettings(editorControl);
-        editorControl.addDisposeListener(e -> editor.releaseEditorInput());
 
         editor.addContextMenuContributor(manager -> contributeTextEditorActions(manager, editorControl));
 
@@ -185,6 +184,14 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
                     }
                 }
             });
+        }
+    }
+
+    @Override
+    public void disposeEditor() {
+        if (editor != null) {
+            editor.dispose();
+            editor = null;
         }
     }
 
