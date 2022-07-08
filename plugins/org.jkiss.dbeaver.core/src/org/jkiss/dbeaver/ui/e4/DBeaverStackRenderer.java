@@ -27,10 +27,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -72,6 +69,12 @@ public class DBeaverStackRenderer extends StackRenderer {
             File localFile = EditorUtils.getLocalFileFromInput(editorInput);
             if (localFile != null) {
                 populateFileMenu(menu, workbenchPart, EditorUtils.getFileFromInput(editorInput), localFile);
+                return;
+            }
+
+            if (workbenchPart instanceof SQLEditor) {
+                new MenuItem(menu, SWT.SEPARATOR);
+                addActionItem(workbenchPart, menu, IWorkbenchCommandConstants.FILE_SAVE_AS);
             }
         }
     }
@@ -110,7 +113,6 @@ public class DBeaverStackRenderer extends StackRenderer {
         {
             if (workbenchPart instanceof SQLEditor) {
                 addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
-                addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SAVE_FILE);
             }
 
             if (inputFile != null) {
