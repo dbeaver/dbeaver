@@ -96,9 +96,11 @@ public class DBeaverPartList extends BasicPartList {
 
     private class CellLabelProvider extends SearchCellLabelProvider {
         private final Font italicFont;
+        private final Font italicBoldFont;
 
         public CellLabelProvider() {
             this.italicFont = UIUtils.modifyFont(Display.getDefault().getSystemFont(), SWT.ITALIC);
+            this.italicBoldFont = UIUtils.modifyFont(Display.getDefault().getSystemFont(), SWT.BOLD | SWT.ITALIC);
         }
 
         @Nullable
@@ -125,11 +127,20 @@ public class DBeaverPartList extends BasicPartList {
         @Nullable
         @Override
         public Font getFont(Object element) {
-            final CTabItem item = renderer.findItemForPart((MPart) element);
-            if (item != null && !item.isShowing()) {
-                return italicFont;
-            } else {
+            if (isShowing(element)) {
                 return null;
+            } else {
+                return italicFont;
+            }
+        }
+
+        @NotNull
+        @Override
+        public Font getMatchFont(@NotNull Object element) {
+            if (isShowing(element)) {
+                return boldFont;
+            } else {
+                return italicBoldFont;
             }
         }
 
@@ -147,6 +158,13 @@ public class DBeaverPartList extends BasicPartList {
         @Override
         public void dispose() {
             italicFont.dispose();
+            italicBoldFont.dispose();
+            super.dispose();
+        }
+
+        private boolean isShowing(@NotNull Object element) {
+            final CTabItem item = renderer.findItemForPart((MPart) element);
+            return item != null && item.isShowing();
         }
     }
 }

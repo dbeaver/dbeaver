@@ -31,11 +31,11 @@ import java.util.List;
  * A label provider that highlights matching parts of a label against the supplied pattern.
  */
 public abstract class SearchCellLabelProvider extends StyledCellLabelProvider implements ILabelProvider, IFontProvider {
+    protected final Font boldFont;
+
     public static boolean matches(@NotNull String pattern, @NotNull String value) {
         return match(pattern, value) != null;
     }
-
-    private final Font boldFont;
 
     public SearchCellLabelProvider() {
         this.boldFont = UIUtils.makeBoldFont(Display.getCurrent().getSystemFont());
@@ -62,7 +62,7 @@ public abstract class SearchCellLabelProvider extends StyledCellLabelProvider im
         if (CommonUtils.isEmpty(ranges)) {
             cell.setStyleRanges(null);
         } else {
-            final StyledString.Styler styler = new BoldStylerProvider(boldFont).getBoldStyler();
+            final StyledString.Styler styler = new BoldStylerProvider(getMatchFont(element)).getBoldStyler();
             final StyledString ss = new StyledString(text);
             for (int[] range : ranges) {
                 ss.setStyle(range[0], range[1], styler);
@@ -77,6 +77,11 @@ public abstract class SearchCellLabelProvider extends StyledCellLabelProvider im
     @Override
     public Font getFont(Object element) {
         return null;
+    }
+
+    @NotNull
+    public Font getMatchFont(@NotNull Object element) {
+        return boldFont;
     }
 
     @Nullable
