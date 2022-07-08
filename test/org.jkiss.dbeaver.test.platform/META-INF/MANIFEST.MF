@@ -19,4 +19,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.postgresql,
- org.jkiss.dbeaver.ext.oracle
+ org.jkiss.dbeaver.ext.oracle,
+ org.jkiss.dbeaver.ext.snowflake.core,
+ org.jkiss.dbeaver.ext.mssql
