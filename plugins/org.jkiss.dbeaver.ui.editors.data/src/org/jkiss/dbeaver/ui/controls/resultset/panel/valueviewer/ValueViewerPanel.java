@@ -99,6 +99,8 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             }
         });
 
+        viewPlaceholder.addDisposeListener(e -> disposeValueEditor());
+
 /*
         addTraverseListener(new TraverseListener() {
             @Override
@@ -343,8 +345,16 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
 
     private void cleanupPanel()
     {
+        disposeValueEditor();
         // Cleanup previous viewer
         UIUtils.disposeChildControls(viewPlaceholder);
+    }
+
+    private void disposeValueEditor() {
+        if (valueEditor != null) {
+            valueEditor.dispose();
+            valueEditor = null;
+        }
     }
 
     private void fillToolBar(final IContributionManager contributionManager)
