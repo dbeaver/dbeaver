@@ -2032,7 +2032,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
                     if (isShowAsCheckbox(attr)) {
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
-                    } else if (isShowAsLink(rowElement, attr)) {
+                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) || isShowAsExpander(rowElement, attr)) {
                         if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
                         }
@@ -2073,7 +2073,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     }
                 }
                 // Collections
-                if (info.image == null && isShowAsLink(rowElement, attr) && !DBUtils.isNullValue(cellValue)) {
+                if (info.image == null && isShowAsExpander(rowElement, attr) && !DBUtils.isNullValue(cellValue)) {
                     final GridCell cell = new GridCell(colElement, rowElement);
                     info.image = spreadsheet.isCellExpanded(cell) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
                 }
@@ -2504,10 +2504,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         return showBooleanAsCheckbox && attr.getPresentationAttribute().getDataKind() == DBPDataKind.BOOLEAN;
     }
 
-    private boolean isShowAsLink(@NotNull IGridRow rowElement, @NotNull DBDAttributeBinding attr) {
-        if (!CommonUtils.isEmpty(attr.getReferrers())) {
-            return true;
-        }
+    private boolean isShowAsExpander(@NotNull IGridRow rowElement, @NotNull DBDAttributeBinding attr) {
         return rowElement.getParent() == null && spreadsheet.getColumnCount() > 1 && isCollectionAttribute(attr);
     }
 
