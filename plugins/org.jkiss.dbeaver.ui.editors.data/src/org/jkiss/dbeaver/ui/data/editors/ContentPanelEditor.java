@@ -95,6 +95,15 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
     }
 
     @Override
+    public void dispose() {
+        if (streamEditor != null) {
+            streamEditor.disposeEditor();
+            streamEditor = null;
+        }
+        super.dispose();
+    }
+
+    @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
         manager.add(new ContentTypeSwitchAction());
         if (streamEditor != null) {
