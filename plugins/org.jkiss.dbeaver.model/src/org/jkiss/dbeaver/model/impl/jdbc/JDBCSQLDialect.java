@@ -117,7 +117,11 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
         }
 
         try {
-            supportsSubqueries = metaData.supportsCorrelatedSubqueries();
+            supportsSubqueries = metaData.supportsCorrelatedSubqueries() ||
+                metaData.supportsSubqueriesInComparisons() ||
+                metaData.supportsSubqueriesInExists() ||
+                metaData.supportsSubqueriesInIns() ||
+                metaData.supportsSubqueriesInQuantifieds();
         } catch (Throwable e) {
             log.debug("Error getting supportsSubqueries: " + e.getMessage());
         }
