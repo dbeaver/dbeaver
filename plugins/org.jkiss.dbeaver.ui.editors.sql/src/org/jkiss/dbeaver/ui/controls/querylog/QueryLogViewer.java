@@ -1096,7 +1096,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         protected void createButtonsForButtonBar(Composite parent) {
             parent.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            parent.setLayout(new GridLayout(2, false));
+            GridLayout gridLayout = new GridLayout(2, false);
+            gridLayout.marginBottom = 3;
+            gridLayout.marginLeft = 3;
+            gridLayout.marginRight = 3;
+            gridLayout.marginTop = 3;
+            parent.setLayout(gridLayout);
             
             Composite leftCell = UIUtils.createComposite(parent, 1);
             leftCell.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -1109,7 +1114,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object.getObject() instanceof QMMStatementExecuteInfo) {
                 execInfo = (QMMStatementExecuteInfo) object.getObject();
                 if (isQueryLinkedWithEditor(execInfo) && SQLEditorUtils.isOpenSeparateConnection(getDataSourceContainer(execInfo))) {
-                    UIUtils.createPushButton(leftCell, SQLEditorMessages.editor_query_log_viewer_reexecute_query_button_text, null,
+                    Button button = UIUtils.createPushButton(
+                        leftCell,
+                        SQLEditorMessages.editor_query_log_viewer_reexecute_query_button_text,
+                        null,
                         new SelectionAdapter() {
                             @Override
                             public void widgetSelected(SelectionEvent e) {
@@ -1122,6 +1130,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                             }
                         }
                     );
+                    setButtonLayoutData(button);
                 }
             }
             createCopyButton(leftCell);
