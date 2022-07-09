@@ -69,6 +69,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     private Button automaticUpdateCheck;
     private Combo workspaceLanguage;
+
+    @Nullable
     private Combo clientTimezone;
 
     private Button longOperationsCheck;
@@ -192,11 +194,13 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         notificationsEnabled.setSelection(store.getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
         notificationsCloseDelay.setSelection(store.getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
-        final String string = store.getString(ModelPreferences.CLIENT_TIMEZONE);
-        if (string.equals(DBConstants.DEFAULT_TIMEZONE)) {
-            clientTimezone.setText(DBConstants.DEFAULT_TIMEZONE);
-        } else {
-            clientTimezone.setText(TimezoneRegistry.getGMTString(string));
+        final String timezone = store.getString(ModelPreferences.CLIENT_TIMEZONE);
+        if (clientTimezone != null) {
+            if (DBConstants.DEFAULT_TIMEZONE.equals(timezone)) {
+                clientTimezone.setText(DBConstants.DEFAULT_TIMEZONE);
+            } else {
+                clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
+            }
         }
 
         longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
@@ -226,10 +230,13 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
 
         PrefUtils.savePreferenceStore(store);
-        if (clientTimezone.getText().equals(DBConstants.DEFAULT_TIMEZONE)) {
-            TimezoneRegistry.setDefaultZone(null);
-        } else {
-            TimezoneRegistry.setDefaultZone(ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())));
+        if (clientTimezone != null) {
+            if (DBConstants.DEFAULT_TIMEZONE.equals(clientTimezone.getText())) {
+                TimezoneRegistry.setDefaultZone(null);
+            } else {
+                TimezoneRegistry.setDefaultZone(
+                    ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())));
+            }
         }
         if (workspaceLanguage.getSelectionIndex() >= 0) {
             PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
