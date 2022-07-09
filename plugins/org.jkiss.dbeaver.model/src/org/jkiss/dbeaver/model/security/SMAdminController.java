@@ -70,16 +70,18 @@ public interface SMAdminController extends SMController {
     // Permissions
     void setSubjectPermissions(String subjectId, List<String> permissionIds, String grantorId) throws DBException;
 
-    void setSubjectConnectionAccess(@NotNull String subjectId, @NotNull List<String> connectionIds, String grantor) throws DBException;
-
     void setObjectPermissions(
-        @NotNull String objectId,
+        @NotNull Set<String> objectIds,
         @NotNull SMObjectType objectType,
         @NotNull Set<String> subjectIds,
         @NotNull Set<String> permissions,
         @NotNull String grantor
     ) throws DBException;
 
+    void deleteAllObjectPermissions(
+        @NotNull String objectId,
+        @NotNull SMObjectType objectType
+    ) throws DBException;
 
     @NotNull
     SMObjectPermissions getObjectPermissions(
@@ -89,8 +91,13 @@ public interface SMAdminController extends SMController {
     ) throws DBException;
 
     @NotNull
-    List<SMObjectPermissionsGrant> getGrantedObjectPermissions(
+    List<SMObjectPermissionsGrant> getObjectPermissionGrants(
         @NotNull String objectId,
+        @NotNull SMObjectType smObjectType
+    ) throws DBException;
+
+    List<SMObjectPermissionsGrant> getSubjectObjectPermissionGrants(
+        @NotNull String subjectId,
         @NotNull SMObjectType smObjectType
     ) throws DBException;
 }

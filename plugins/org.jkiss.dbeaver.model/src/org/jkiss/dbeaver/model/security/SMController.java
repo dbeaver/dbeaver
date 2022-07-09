@@ -98,17 +98,6 @@ public interface SMController extends SMAuthCredentialsManager {
     ///////////////////////////////////////////
     // Permissions
 
-    @NotNull
-    SMDataSourceGrant[] getSubjectConnectionAccess(@NotNull String[] subjectId) throws DBException;
-
-    @NotNull
-    SMDataSourceGrant[] getConnectionSubjectAccess(String connectionId) throws DBException;
-
-    void setConnectionSubjectAccess(
-        @NotNull String connectionId,
-        @Nullable String[] subjects,
-        @Nullable String grantorId) throws DBException;
-
     SMAuthPermissions getTokenPermissions(String token) throws DBException;
 
     ///////////////////////////////////////////
@@ -116,9 +105,8 @@ public interface SMController extends SMAuthCredentialsManager {
 
     SMAuthProviderDescriptor[] getAvailableAuthProviders() throws DBException;
 
-
     @NotNull
-    List<SMObjectPermissions> getAvailableObjectsPermissions(
+    List<SMObjectPermissions> getAllAvailableObjectsPermissions(
         @NotNull String subjectId,
         @NotNull SMObjectType objectType
     ) throws DBException;
