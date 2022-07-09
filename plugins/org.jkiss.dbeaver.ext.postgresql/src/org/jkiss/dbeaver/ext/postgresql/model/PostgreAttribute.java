@@ -394,11 +394,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Override
     public void setTypeName(String typeName) throws DBException {
-        PostgreDataType dataType = PostgreUtils.resolveTypeFullName(new VoidProgressMonitor(), getSchema(), typeName);
-        if (dataType == null) {
-            // retry search in local schema types and create some data type on failure
-            dataType = findDataType(getSchema(), typeName);
-        }
+        final PostgreDataType dataType = resolveOrCreateDataType(typeName);
         this.typeName = typeName;
         this.typeId = dataType.getTypeID();
         this.dataType = dataType;
@@ -423,11 +419,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         final String typeName = type.getFirst();
         final String[] typeMods = type.getSecond();
 
-        PostgreDataType dataType = PostgreUtils.resolveTypeFullName(new VoidProgressMonitor(), getSchema(), typeName);
-        if (dataType == null) {
-            // retry search in local schema types and create some data type on failure
-            dataType = findDataType(getSchema(), typeName);
-        }
+        final PostgreDataType dataType = resolveOrCreateDataType(typeName);
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
         if (handler != null) {
             this.typeMod = handler.getTypeModifiers(dataType, typeName, typeMods);
@@ -446,6 +438,16 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @NotNull
     public abstract PostgreSchema getSchema();
 
+    @NotNull
+    private PostgreDataType resolveOrCreateDataType(@NotNull String typeName) throws DBException {
+        PostgreDataType dataType = PostgreUtils.resolveTypeFullName(new VoidProgressMonitor(), getSchema(), typeName);
+        if (dataType == null) {
+            // retry search in local schema types and create some data type on failure
+            dataType = findDataType(getSchema(), typeName);
+        }
+        return dataType;
+    }
+    
     @NotNull
     private static PostgreDataType findDataType(@NotNull PostgreSchema schema, @NotNull String typeName) throws DBException {
         PostgreDataType dataType = schema.getDataSource().getLocalDataType(typeName);
