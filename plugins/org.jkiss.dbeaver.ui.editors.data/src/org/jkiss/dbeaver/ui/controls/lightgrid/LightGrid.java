@@ -45,7 +45,7 @@ import java.util.*;
  * LightGrid
  * initially based on Nebula grid. Refactored and mostly redone.
  *
- * @author serge@jkiss.org
+ * @author serge@dbeaver.com
  * @author chris.gross@us.ibm.com
  */
 public abstract class LightGrid extends Canvas {

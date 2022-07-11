@@ -37,7 +37,7 @@ import java.sql.SQLException;
  * functions
  *
  * @author Erwan Bocher, CNRS
- * @author Serge Rider (serge@jkiss.org)
+ * @author Serge Rider (serge@dbeaver.com)
  */
 public class H2GISDataSource extends H2DataSource {
 
