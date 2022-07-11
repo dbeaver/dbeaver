@@ -411,15 +411,15 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 }
             }
             if (dataSource.getContainer().getPreferenceStore().getBoolean(ENABLE_HIPPIE)) {
-                makeProposalFromHippie();
+                makeProposalFromHippie(wordDetector);
             }
         }
         filterProposals(dataSource);
     }
 
-    private void makeProposalFromHippie() {
-        HippieProposalProcessor hippieProposalProcessor = new HippieProposalProcessor();
-        String[] DisplayNames = hippieProposalProcessor.computeCompletionStrings(request.getDocument(), request.getDocumentOffset());
+    private void makeProposalFromHippie(@NotNull SQLWordPartDetector wordPartDetector) {
+        HippieProposalProcessor hippieProposalProcessor = new HippieProposalProcessor(wordPartDetector);
+        String[] DisplayNames = hippieProposalProcessor.computeCompletionStrings(request.getDocument(), request.getDocumentOffset() - 1);
         for (String word : DisplayNames) {
             if (!hasProposal(proposals, word)) {
                 proposals.add(request.getContext().createProposal(

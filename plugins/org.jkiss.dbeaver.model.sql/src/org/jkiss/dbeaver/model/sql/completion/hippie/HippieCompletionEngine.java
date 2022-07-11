@@ -35,6 +35,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.jkiss.code.NotNull;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -637,8 +638,7 @@ public final class HippieCompletionEngine {
                 fHasNext = false;
                 IRegion reg = fSearcher.find(fNextPos, fSearchPattern, true, CASE_SENSITIVE, false, true);
                 while (reg != null) {
-                    IRegion word = checkRegion(reg);
-                    fNextPos = word.getOffset() + word.getLength();
+                    fNextPos = consumeWordAt(reg);
                     if (fNextPos >= fDocument.getLength()) {
                         fCurrentState = 2;
                         if (fHasNext) {
@@ -672,28 +672,33 @@ public final class HippieCompletionEngine {
         /**
          * Checks the given region for a word to be returned in this iterator.
          *
-         * @param reg the region to check
+         * @param wordHead the region to check
          * @return the word region.
          * @throws BadLocationException if we're at an invalid position in the document.
          */
-        private IRegion checkRegion(IRegion reg) throws BadLocationException {
+        private int consumeWordAt(@NotNull IRegion wordHead) throws BadLocationException {
             // since the boundary may be of nonzero length
-            int wordSearchPos = reg.getOffset() + reg.getLength() - fPrefix.length();
+            int wordSearchPos = wordHead.getOffset() + wordHead.getLength();
             // try to complete to a word. case is irrelevant here.
-            IRegion word = fSearcher.find(wordSearchPos, COMPLETION_WORD_REGEX, true, true, false, true);
-            if (word.getLength() > fPrefix.length()) { // empty suggestion will be added later
-                String wholeWord = fDocument.get(word.getOffset(), word.getLength());
-                String completion = wholeWord.substring(fPrefix.length());
-                if (fCurrentWordLast && reg.getOffset() == fFirstPosition) { // we got the word at caret as completion
-                    if (fCurrentWordCompletion == null) {
-                        fCurrentWordCompletion = completion; // add it as the last word.
+            IRegion wordTail = fSearcher.find(wordSearchPos, COMPLETION_WORD_REGEX, true, true, false, true);
+            if (wordTail != null && wordTail.getOffset() == wordSearchPos 
+                && wordTail.getLength() > 0 // empty suggestion will be added later
+            ) {
+                String completion = fDocument.get(wordTail.getOffset(), wordTail.getLength());
+                if (completion.length() > 0) {// empty suggestion will be added later
+                    if (fCurrentWordLast && wordHead.getOffset() == fFirstPosition) { // we got the word at caret as completion
+                        if (fCurrentWordCompletion == null) {
+                            fCurrentWordCompletion = completion; // add it as the last word.
+                        }
+                    } else {
+                        fNext = completion;
+                        fHasNext = true;
                     }
-                } else {
-                    fNext = completion;
-                    fHasNext = true;
                 }
+                return wordTail.getOffset() + wordTail.getLength();
+            } else {
+                return wordSearchPos;
             }
-            return word;
         }
     }
 
@@ -748,25 +753,25 @@ public final class HippieCompletionEngine {
                 Assert.isTrue(fLastSearchPos != fNextPos, "Position did not change in loop (this would lead to recursion -- and should never happen)."); //$NON-NLS-1$
 
                 fLastSearchPos = fNextPos;
-                IRegion reg = fSearcher.find(fNextPos, fSearchPattern, false, CASE_SENSITIVE, false, true);
-                if (reg == null) {
+                IRegion wordHead = fSearcher.find(fNextPos, fSearchPattern, false, CASE_SENSITIVE, false, true);
+                if (wordHead == null) {
                     this.fNext = null;
                     this.fHasNext = false;
                     return;
                 }
 
                 // since the boundary may be of nonzero length
-                int wordSearchPos = reg.getOffset() + reg.getLength() - fPrefix.length();
+                int wordSearchPos = wordHead.getOffset() + wordHead.getLength();
                 // try to complete to a word. case is of no matter here
-                IRegion word = fSearcher.find(wordSearchPos, COMPLETION_WORD_REGEX, true, true, false, true);
-                fNextPos = word.getOffset() - 1;
-                if (word.getOffset() + word.getLength() > fFirstPosition) {
+                IRegion wordTail = fSearcher.find(wordSearchPos, COMPLETION_WORD_REGEX, true, true, false, true);
+                fNextPos = wordHead.getOffset() - 1;
+                if (wordTail == null || wordTail.getOffset() != wordSearchPos || wordTail.getOffset() + wordTail.getLength() > fFirstPosition) {
                     continue;
                 }
-                if (word.getLength() > fPrefix.length()) { // empty suggestion will be added later
-                    String found = fDocument.get(word.getOffset(), word.getLength());
+                if (wordTail.getLength() > 0) { // empty suggestion will be added later
+                    String found = fDocument.get(wordTail.getOffset(), wordTail.getLength());
                     this.fHasNext = true;
-                    this.fNext = found.substring(fPrefix.length());
+                    this.fNext = found;
                     return;
                 }
             }

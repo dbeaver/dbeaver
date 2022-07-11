@@ -18,7 +18,8 @@
 package org.jkiss.dbeaver.model.sql.completion.hippie;
 
 import org.eclipse.jface.text.*;
-import org.eclipse.jface.text.contentassist.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
 
 
 import java.util.ArrayList;
@@ -36,11 +37,16 @@ public final class HippieProposalProcessor {
 
     private static final String[] NO_PROPOSALS = new String[0];
     private final HippieCompletionEngine fEngine = new HippieCompletionEngine();
+    private TPWordDetector wordDetector;
 
     /**
      * Creates a new hippie completion proposal computer.
      */
     public HippieProposalProcessor() {
+    }
+
+    public HippieProposalProcessor(@NotNull TPWordDetector wordDetector) {
+        this.wordDetector = wordDetector;
     }
 
     public String[] computeCompletionStrings(IDocument document, int offset) {
@@ -64,13 +70,20 @@ public final class HippieProposalProcessor {
     }
 
     private String getPrefix(IDocument document, int offset) throws BadLocationException {
-        if (document == null || offset > document.getLength())
+        if (document == null || offset >= document.getLength())
             return null;
 
         int length = 0;
         int localOffset = offset;
-        while (--localOffset >= 0 && Character.isJavaIdentifierPart(document.getChar(localOffset)))
+        char nextChar = document.getChar(localOffset);
+        while (Character.isJavaIdentifierPart(nextChar) || (wordDetector != null && wordDetector.isWordPart(nextChar))) {
             length++;
+            localOffset--;
+            if (localOffset < 0) {
+                break;
+            }
+            nextChar = document.getChar(localOffset);
+        }
 
         return document.get(localOffset + 1, length);
     }
