@@ -49,16 +49,24 @@ public final class HippieProposalProcessor {
         this.wordDetector = wordDetector;
     }
 
+    /**
+     * Get completion proposals for the specified offset in the given document
+     * @param document
+     * @param offset of the symbol to the left of the cursor
+     * @return proposals
+     */
     public String[] computeCompletionStrings(IDocument document, int offset) {
         try {
             String prefix = getPrefix(document, offset);
-            if (prefix == null || prefix.isEmpty())
+            if (prefix == null || prefix.isEmpty()) {
                 return NO_PROPOSALS;
+            }
 
             List<String> result = new ArrayList<>();
             for (String string : getSuggestions(document, offset, prefix)) {
-                if (!string.isEmpty())
+                if (!string.isEmpty()) {
                     result.add(prefix + string);
+                }
             }
 
             return result.toArray(new String[0]);
@@ -70,8 +78,9 @@ public final class HippieProposalProcessor {
     }
 
     private String getPrefix(IDocument document, int offset) throws BadLocationException {
-        if (document == null || offset >= document.getLength())
+        if (document == null || offset > document.getLength()) {
             return null;
+        }
 
         int length = 0;
         int localOffset = offset;

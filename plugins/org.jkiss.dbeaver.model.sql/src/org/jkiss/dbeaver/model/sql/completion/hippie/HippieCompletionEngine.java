@@ -685,7 +685,7 @@ public final class HippieCompletionEngine {
                 && wordTail.getLength() > 0 // empty suggestion will be added later
             ) {
                 String completion = fDocument.get(wordTail.getOffset(), wordTail.getLength());
-                if (completion.length() > 0) {// empty suggestion will be added later
+                if (completion.length() > 0) { // empty suggestion will be added later
                     if (fCurrentWordLast && wordHead.getOffset() == fFirstPosition) { // we got the word at caret as completion
                         if (fCurrentWordCompletion == null) {
                             fCurrentWordCompletion = completion; // add it as the last word.
@@ -765,7 +765,10 @@ public final class HippieCompletionEngine {
                 // try to complete to a word. case is of no matter here
                 IRegion wordTail = fSearcher.find(wordSearchPos, COMPLETION_WORD_REGEX, true, true, false, true);
                 fNextPos = wordHead.getOffset() - 1;
-                if (wordTail == null || wordTail.getOffset() != wordSearchPos || wordTail.getOffset() + wordTail.getLength() > fFirstPosition) {
+                if (wordTail == null 
+                    || wordTail.getOffset() != wordSearchPos 
+                    || wordTail.getOffset() + wordTail.getLength() > fFirstPosition
+                ) {
                     continue;
                 }
                 if (wordTail.getLength() > 0) { // empty suggestion will be added later
