@@ -1096,12 +1096,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         protected void createButtonsForButtonBar(Composite parent) {
             parent.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            GridLayout gridLayout = new GridLayout(2, false);
-            gridLayout.marginBottom = 3;
-            gridLayout.marginLeft = 0;
-            gridLayout.marginRight = -6;
-            gridLayout.marginTop = 3;
-            parent.setLayout(gridLayout);
+            parent.setLayout(new GridLayout(2, false));
             
             Composite leftCell = UIUtils.createComposite(parent, 1);
             leftCell.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
