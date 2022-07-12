@@ -255,14 +255,14 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Memory available " + (runtime.totalMemory() / (1024 * 1024)) + "Mb/" + (runtime.maxMemory() / (1024 * 1024)) + "Mb");
 
-        // Init platform
-        updateSplashHandler();
-
         // Write version info
         writeWorkspaceInfo();
 
         // Initialize platform
         DBWorkbench.getPlatform();
+
+        // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
+        updateSplashHandler();
 
         initializeApplication();
 
