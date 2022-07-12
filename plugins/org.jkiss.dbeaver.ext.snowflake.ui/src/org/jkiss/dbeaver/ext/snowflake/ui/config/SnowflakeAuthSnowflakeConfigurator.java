@@ -59,7 +59,7 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
 
         userRoleCombo = new Combo(parent, SWT.DROP_DOWN);
         GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = UIUtils.getFontHeight(userRoleCombo) * 10;
+        gd.widthHint = UIUtils.getFontHeight(userRoleCombo) * 20;
         userRoleCombo.setLayoutData(gd);
         userRoleCombo.select(0);
         userRoleCombo.addModifyListener(textListener);
