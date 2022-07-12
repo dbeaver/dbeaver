@@ -33,4 +33,14 @@ public class ClickhouseView extends GenericView
         super(container, tableName, tableType, dbResult);
     }
 
+    @Override
+    public String generateTableUpdateBegin(String tableName) {
+        return "ALTER TABLE " + tableName + " UPDATE ";
+    }
+    
+    @Override
+    public String generateTableUpdateSet() {
+        return "";
+    }
+
 }
