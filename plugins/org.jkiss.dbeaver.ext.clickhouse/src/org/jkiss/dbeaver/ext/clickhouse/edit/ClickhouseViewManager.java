@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.edit;
 
-import java.util.*;
-
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseView;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.edit.GenericViewManager;
@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.*;
+
 /**
  * Clickhouse table manager
  */
@@ -43,24 +45,33 @@ public class ClickhouseViewManager extends GenericViewManager {
         return "TABLE";
     }
     
+    @NotNull
     @Override
     protected GenericTableBase createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom, 
+        @Nullable Map<String, Object> options
     ) {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_VIEW_NAME);
         GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel()
             .createTableImpl(structContainer, tableName, GenericConstants.TABLE_TYPE_VIEW, null);
         if (viewImpl instanceof GenericView) {
-            ((GenericView) viewImpl).setObjectDefinitionText("CREATE OR REPLACE VIEW " + viewImpl.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS SELECT 1 as A\n");
+            ((GenericView) viewImpl).setObjectDefinitionText(
+                "CREATE OR REPLACE VIEW " + viewImpl.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS SELECT 1 as A\n");
         }
         return viewImpl;
     }
 
     @Override
     protected void addObjectModifyActions(
-        DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, SQLObjectEditor<GenericTableBase,
-        GenericStructContainer>.ObjectChangeCommand command, Map<String, Object> options
+        @Nullable DBRProgressMonitor monitor,
+        @Nullable DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList, 
+        @NotNull SQLObjectEditor<GenericTableBase, GenericStructContainer>.ObjectChangeCommand command,
+        @Nullable Map<String, Object> options
     ) {
         final ClickhouseView view = (ClickhouseView) command.getObject();
         String sql = view.getDDL();
