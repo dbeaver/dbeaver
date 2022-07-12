@@ -746,7 +746,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      * Gets property descriptor by column and object value (NB! not OBJECT_TYPE but real object value).
      */
     @Nullable
-    private static ObjectPropertyDescriptor getPropertyByObject(ObjectColumn column, Object objectValue) {
+    private static ObjectPropertyDescriptor getPropertyByObject(@NotNull ObjectColumn column, @Nullable Object objectValue) {
+        if (objectValue == null) {
+            return null;
+        }
         ObjectPropertyDescriptor prop = null;
         for (Class<?> valueClass = objectValue.getClass(); prop == null && valueClass != Object.class; valueClass = valueClass.getSuperclass()) {
             prop = column.propMap.get(valueClass);
