@@ -690,7 +690,8 @@
                     webURL="http://phoenix.apache.org/"
                     description="Thin driver for Apache Phoenix HBase Database"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
                     <parameter name="omit-type-cache" value="true"/>
                     <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE[4.14.1-HBase-1.4]" ignore-dependencies="true"/>
                 </driver>
@@ -705,7 +706,8 @@
                     description="Pivotal GemfireXD"
                     webURL="http://blog.pivotal.io/tag/gemfire-xd"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
                     <file type="jar" path="maven:/io.snappydata:gemfirexd-client:RELEASE"/>
                 </driver>
                 <driver
@@ -719,7 +721,8 @@
                     description="Pivotal GemfireXD"
                     webURL="https://snappydatainc.github.io/snappydata/"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
                     <file type="jar" path="maven:/io.snappydata:snappydata-store-client:RELEASE"/>
                     <!--<file type="jar" path="https://github.com/SnappyDataInc/snappydata/releases/download/v0.8/snappydata-client-1.5.4.jar"/>-->
                 </driver>
@@ -735,7 +738,8 @@
                     description="Apache Hive JDBC"
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
 
                     <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar" bundle="!drivers.hive"/>
                     <file type="jar" path="drivers/hive" bundle="drivers.hive"/>
@@ -754,7 +758,8 @@
                     description="Spark Thrift Server connector"
                     webURL="https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-sql-thrift-server.html"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
                     <file type="jar" path="maven:/org.spark-project.hive:hive-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
 
@@ -772,7 +777,8 @@
                     description="Kyuubi Thrift Server connector"
                     webURL="https://kyuubi.apache.org/"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
                     <file type="jar" path="maven:/org.apache.kyuubi:kyuubi-hive-jdbc-shaded:RELEASE" bundle="!drivers.kyuubi"/>
                     <file type="jar" path="drivers/kyuubi" bundle="drivers.kyuubi"/>
 
@@ -789,7 +795,8 @@
                     description="Apache Drill JDBC"
                     webURL="http://drill.apache.org/docs/using-the-jdbc-driver/"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
                     <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
 
                     <parameter name="supports-truncate" value="false"/>

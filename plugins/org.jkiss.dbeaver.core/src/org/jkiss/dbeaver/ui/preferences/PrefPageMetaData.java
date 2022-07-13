@@ -73,6 +73,9 @@ public class PrefPageMetaData extends TargetPrefPage
             Group metadataGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_metadata, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             separateMetaConnectionCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_separate_meta_connection, CoreMessages.pref_page_database_general_separate_meta_connection_tip, false, 1);
+            if (getDataSourceContainer()!= null && getDataSourceContainer().isForceUseSingleConnection()) {
+                separateMetaConnectionCheck.setEnabled(false);
+            }
             caseSensitiveNamesCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names_tip, false, 1);
             readExpensiveCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, CoreMessages.pref_page_database_general_checkbox_show_row_count_tip, false, 1);
             serverSideFiltersCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_server_side_object_filters, CoreMessages.pref_page_database_general_server_side_object_filters_tip, false, 1);

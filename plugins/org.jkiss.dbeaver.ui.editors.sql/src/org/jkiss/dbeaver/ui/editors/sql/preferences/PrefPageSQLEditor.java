@@ -96,7 +96,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
             Group connectionsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
             ((GridData)connectionsGroup.getLayoutData()).horizontalSpan = 2;
             editorSeparateConnectionCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor, false);
-
+            if (getDataSourceContainer()!= null && getDataSourceContainer().isForceUseSingleConnection()) {
+                editorSeparateConnectionCheck.setEnabled(false);
+            }
             connectOnActivationCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_editor_activation, false);
             connectOnExecuteCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_query_execute, false);
         }
