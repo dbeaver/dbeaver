@@ -42,7 +42,7 @@ import java.util.List;
  */
 public class ClickhouseSchema extends GenericSchema implements DBPObjectStatisticsCollector
 {
-    private boolean hasStatistics;
+    private boolean hasStatistics = true;
 
     public ClickhouseSchema(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName) {
         super(dataSource, catalog, schemaName);
