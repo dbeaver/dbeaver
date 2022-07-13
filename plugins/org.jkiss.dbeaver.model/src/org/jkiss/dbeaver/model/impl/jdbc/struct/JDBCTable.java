@@ -474,6 +474,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return true;
     }
 
+    /**
+     * Returns prepared statements for enumeration fetch
+     *
+     * @param monitor execution context
+     * @param keyColumn enumeration column.
+     * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
+     * @param preceedingKeys other constrain key values. May be null.
+     * @param caseInsensitiveSearch use case-insensitive search for {@code keyPattern}
+     * @param sortAsc sort ascending/descending
+     * @param sortByValue sort results by eky value. If false then sort by description
+     * @param offset enumeration values offset in result set
+     * @param maxResults maximum enumeration values in result set
+     */
     @NotNull
     @Override
     public List<DBDLabelValuePair> getDictionaryEnumeration(
