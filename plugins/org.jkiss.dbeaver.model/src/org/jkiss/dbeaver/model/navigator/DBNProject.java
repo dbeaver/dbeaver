@@ -279,4 +279,14 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         extraNodes.clear();
         super.dispose(reflect);
     }
+
+    @Override
+    public String getNodeItemPath() {
+        return NodePathType.resource.getPrefix() + getNodeName();
+    }
+
+    @Override
+    public boolean hasChildren(boolean navigableOnly) {
+        return true;
+    }
 }

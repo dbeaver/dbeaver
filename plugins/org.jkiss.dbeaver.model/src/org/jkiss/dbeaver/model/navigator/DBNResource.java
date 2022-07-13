@@ -270,6 +270,9 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
     {
         children = null;
+        if (resource == null) {
+            return this;
+        }
         try {
             resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
 

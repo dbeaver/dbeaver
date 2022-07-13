@@ -31,6 +31,9 @@ public class VirtualProjectImpl extends BaseProjectImpl {
     @NotNull
     private final Path projectPath;
 
+    @Nullable
+    private DataSourceConfigurationManager configurationManager;
+
     public VirtualProjectImpl(@NotNull DBPWorkspace workspace, @NotNull String projectName, @NotNull Path projectPath, @Nullable SMSessionContext sessionContext) {
         super(workspace, sessionContext);
         this.projectName = projectName;
@@ -68,5 +71,18 @@ public class VirtualProjectImpl extends BaseProjectImpl {
     @Override
     public void ensureOpen() {
 
+    }
+
+    public void setConfigurationManager(DataSourceConfigurationManager configurationManager) {
+        this.configurationManager = configurationManager;
+    }
+
+    @NotNull
+    @Override
+    public DataSourceRegistry createDataSourceRegistry() {
+        if (configurationManager == null) {
+            return new DataSourceRegistry(this);
+        }
+        return new DataSourceRegistry(this, configurationManager);
     }
 }
