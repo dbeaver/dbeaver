@@ -55,6 +55,8 @@ public interface PostgreServerExtension {
 
     boolean supportsRules();
 
+    boolean supportsRowLevelSecurity();
+
     boolean supportsExtensions();
 
     boolean supportsEncodings();

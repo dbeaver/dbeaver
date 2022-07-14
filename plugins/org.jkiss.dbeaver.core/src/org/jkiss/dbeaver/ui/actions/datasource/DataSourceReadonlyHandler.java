@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import java.util.Map;
-
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
@@ -30,6 +28,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -39,10 +38,12 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
+import java.util.Map;
+
 public class DataSourceReadonlyHandler extends AbstractDataSourceHandler implements IElementUpdater {
 
     private DataSourceDescriptor currentDescriptor = null;
-    
+
     @Override
     @Nullable
     public Object execute(@Nullable ExecutionEvent event) throws ExecutionException {
@@ -64,7 +65,7 @@ public class DataSourceReadonlyHandler extends AbstractDataSourceHandler impleme
     @Override
     public void updateElement(@NotNull UIElement element, @Nullable Map parameters) {
         DBPDataSourceContainer container = getActiveDataSourceContainer(element.getServiceLocator().getService(IWorkbenchWindow.class));
-        DataSourceDescriptor descriptor = container instanceof DataSourceDescriptor ? (DataSourceDescriptor)container : null;   
+        DataSourceDescriptor descriptor = container instanceof DataSourceDescriptor ? (DataSourceDescriptor) container : null;
         if (descriptor != currentDescriptor) {
             currentDescriptor = descriptor;
         }
@@ -75,17 +76,17 @@ public class DataSourceReadonlyHandler extends AbstractDataSourceHandler impleme
                 element.setIcon(DBeaverIcons.getImageDescriptor(UIIcon.SQL_READONLY));
             } else {
                 element.setTooltip(NLS.bind(CoreMessages.toolbar_checkbox_connection_readonly_tooltip, currentDescriptor.getName()));
-                element.setIcon(DBeaverIcons.getImageDescriptor(UIIcon.SQL_UNLOCKED));
+                element.setIcon(DBeaverIcons.getImageDescriptor(DBIcon.TREE_UNLOCKED));
             }
             element.setChecked(isReadonly);
         } else {
             element.setChecked(false);
             element.setTooltip(CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly);
-            element.setIcon(DBeaverIcons.getImageDescriptor(UIIcon.SQL_UNLOCKED));
+            element.setIcon(DBeaverIcons.getImageDescriptor(DBIcon.TREE_UNLOCKED));
         }
     }
 
-    
+
     @Nullable
     private static DBPDataSourceContainer getActiveDataSourceContainer(@NotNull IWorkbenchWindow window) {
         if (window != null) {
@@ -97,7 +98,7 @@ public class DataSourceReadonlyHandler extends AbstractDataSourceHandler impleme
                     return container;
                 }
             }
-            
+
             ISelection selection = window.getSelectionService().getSelection();
             if (selection != null) {
                 DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
