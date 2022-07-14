@@ -2358,7 +2358,9 @@ public final class DBUtils {
                 Collection<? extends DBSObject> children = container.getChildren(monitor);
                 if (!CommonUtils.isEmpty(children)) {
                     for (DBSObject child : children) {
-                        result.add((DBSDataContainer) child);
+                        if (child instanceof DBSDataContainer) {
+                            result.add((DBSDataContainer) child);
+                        }
                     }
                 }
             } else if (DBSObjectContainer.class.isAssignableFrom(primaryChildType)) {
