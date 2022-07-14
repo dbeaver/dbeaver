@@ -43,4 +43,8 @@ public interface DBEObjectReorderer<OBJECT_TYPE extends DBSObject> extends DBEOb
     void setObjectOrdinalPosition(DBECommandContext commandContext, OBJECT_TYPE object, List<OBJECT_TYPE> siblingObjects, int newPosition)
         throws DBException;
 
+    default boolean canMove(OBJECT_TYPE object, List<OBJECT_TYPE> siblingObjects) {
+        return true;
+    }
+
 }
