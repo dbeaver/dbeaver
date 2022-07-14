@@ -141,6 +141,9 @@
                                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRule" label="%tree.rules.node.name" icon="#rules" description="%tree.rules.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsRules()">
                                             <items label="%tree.rule.node.name" path="rule" property="rules" icon="#rule"/>
                                         </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePolicy" label="%tree.policies.node.name" description="%tree.policies.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsRowLevelSecurity()">
+                                            <items label="%tree.policy.node.name" path="policy" property="policies" icon="#locked"/>
+                                        </folder>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreView" label="%tree.tviews.node.name" icon="#folder_view" description="%tree.tviews.node.tip">
@@ -575,6 +578,7 @@
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgrePartitionManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTablePolicyManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePolicy"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignKeyManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey"/>

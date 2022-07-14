@@ -142,7 +142,9 @@
         <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreTablespaceConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace"/>
         </configurator>
-
+        <configurator class="org.jkiss.dbeaver.ui.editors.object.config.PropertyObjectConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePolicy"/>
+        </configurator>
         <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreExplainPlanConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner"/>
         </configurator>

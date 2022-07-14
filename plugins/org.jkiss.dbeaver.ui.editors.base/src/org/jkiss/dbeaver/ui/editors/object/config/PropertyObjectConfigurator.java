@@ -19,24 +19,24 @@ package org.jkiss.dbeaver.ui.editors.object.config;
 
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
+import org.jkiss.dbeaver.ui.editors.object.struct.PropertyObjectEditPage;
 
 import java.util.Map;
 
 /**
- * Base table column configurator
+ * Property object configurator
  */
-public class BaseTableColumnConfigurator implements DBEObjectConfigurator<DBSEntityAttribute> {
+public class PropertyObjectConfigurator implements DBEObjectConfigurator<DBSObject> {
     @Override
-    public DBSEntityAttribute configureObject(DBRProgressMonitor monitor, Object table, DBSEntityAttribute column, Map<String, Object> options) {
+    public DBSObject configureObject(DBRProgressMonitor monitor, Object table, DBSObject object, Map<String, Object> options) {
         return UITask.run(() -> {
-            AttributeEditPage page = new AttributeEditPage(null, column);
+            final PropertyObjectEditPage page = new PropertyObjectEditPage(null, object);
             if (!page.edit()) {
                 return null;
             }
-            return column;
+            return object;
         });
     }
 

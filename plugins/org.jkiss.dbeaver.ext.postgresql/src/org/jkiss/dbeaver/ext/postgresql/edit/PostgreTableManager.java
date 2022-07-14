@@ -50,6 +50,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         PostgreTableColumn.class,
         PostgreTableConstraint.class,
         PostgreTableForeignKey.class,
+        PostgreTablePolicy.class,
         PostgreIndex.class
     );
 
@@ -160,6 +161,11 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         }
         if (command.hasProperty("hasOids") && table.getDataSource().getServerType().supportsHasOidsColumn()) {//$NON-NLS-1$
             actionList.add(new SQLDatabasePersistAction(alterPrefix + (table.isHasOids() ? "SET WITH OIDS" : "SET WITHOUT OIDS")));//$NON-NLS-1$ //$NON-NLS-2$
+        }
+        if (command.hasProperty("hasRowLevelSecurity") && table.getDataSource().getServerType().supportsRowLevelSecurity()) {
+            actionList.add(new SQLDatabasePersistAction(
+                alterPrefix + (table.isHasRowLevelSecurity() ? "ENABLE" : "DISABLE") + " ROW LEVEL SECURITY"
+            ));
         }
         if (command.hasProperty("tablespace")) {//$NON-NLS-1$
             actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET TABLESPACE " + table.getTablespace(monitor).getName()));//$NON-NLS-1$
