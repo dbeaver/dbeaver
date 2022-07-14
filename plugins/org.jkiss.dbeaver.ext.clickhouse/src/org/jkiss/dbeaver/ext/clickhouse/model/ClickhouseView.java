@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -31,6 +32,18 @@ public class ClickhouseView extends GenericView
 
     public ClickhouseView(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+    }
+
+    @NotNull
+    @Override
+    public String generateTableUpdateBegin(@NotNull String tableName) {
+        return "ALTER TABLE " + tableName + " UPDATE ";
+    }
+    
+    @NotNull
+    @Override
+    public String generateTableUpdateSet() {
+        return "";
     }
 
 }
