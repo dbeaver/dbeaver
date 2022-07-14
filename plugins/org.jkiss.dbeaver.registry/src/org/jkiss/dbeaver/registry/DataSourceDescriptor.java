@@ -89,8 +89,6 @@ public class DataSourceDescriptor
     public static final String CATEGORY_DRIVER = "Driver";
     public static final String CATEGORY_DRIVER_FILES = "Driver Files";
 
-    private static final String EDITOR_SEPARATE_CONNECTION = "database.editor.separate.connection";
-
     @NotNull
     private final DBPDataSourceRegistry registry;
     @NotNull
@@ -1492,8 +1490,6 @@ public class DataSourceDescriptor
 
     @Override
     public boolean isForceUseSingleConnection() {
-        getPreferenceStore().setDefault(ModelPreferences.META_SEPARATE_CONNECTION, false);
-        getPreferenceStore().setDefault(EDITOR_SEPARATE_CONNECTION, false);
         return this.forceUseSingleConnection;
     }
 

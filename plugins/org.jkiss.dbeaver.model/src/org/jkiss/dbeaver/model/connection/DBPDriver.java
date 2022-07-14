@@ -108,7 +108,6 @@ public interface DBPDriver extends DBPNamedObject
     boolean supportsDriverProperties();
 
     boolean isEmbedded();
-    boolean isSingleConnection();
     boolean isAnonymousAccess();
     boolean isAllowsEmptyPassword();
     boolean isLicenseRequired();
@@ -116,6 +115,8 @@ public interface DBPDriver extends DBPNamedObject
     boolean isSampleURLApplicable();
     boolean isCustomEndpointInformation();
 
+    boolean isSingleConnection();
+    
     // Can be created
     boolean isInstantiable();
     // Driver shipped along with JDK/DBeaver, doesn't need any additional libraries. Basically it is ODBC driver.
