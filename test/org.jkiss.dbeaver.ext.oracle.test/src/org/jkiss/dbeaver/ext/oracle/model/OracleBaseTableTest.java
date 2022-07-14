@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.utils.StandardConstants;
@@ -97,9 +98,45 @@ public class OracleBaseTableTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "CREATE TABLE TEST_SCHEMA.\"NewTable\" (" + lineBreak +
-                "\tCOLUMN1 INTEGER," + lineBreak +
-                "\tCOLUMN2 INTEGER" + lineBreak +
+                "\tCOLUMN1 INTEGER NULL," + lineBreak +
+                "\tCOLUMN2 INTEGER NULL" + lineBreak +
                 ");" + lineBreak;
+
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateCreateTableWithTwoColumnsOneNullableStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        OracleTable newObject = objectMaker.createNewObject(
+            monitor,
+            commandContext,
+            testSchema,
+            null,
+            Collections.emptyMap());
+        DBEObjectMaker objectManager = OracleTestUtils.getManagerForClass(OracleTableColumn.class);
+        objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
+        final DBSObject newColumn =
+            objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
+        if (newColumn instanceof OracleTableColumn) {
+            ((OracleTableColumn) newColumn).setRequired(true);
+        }
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
+            monitor,
+            commandContext,
+            executionContext,
+            Collections.emptyMap(),
+            null);
+        String script = SQLUtils.generateScript(
+            testDataSource,
+            actions.toArray(new DBEPersistAction[0]),
+            false);
+
+        String expectedDDL = "CREATE TABLE TEST_SCHEMA.\"NewTable\" (" + lineBreak +
+            "\tCOLUMN1 INTEGER NULL," + lineBreak +
+            "\tCOLUMN2 INTEGER NOT NULL" + lineBreak +
+            ");" + lineBreak;
 
         Assert.assertEquals(script, expectedDDL);
     }
@@ -123,8 +160,8 @@ public class OracleBaseTableTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "CREATE TABLE TEST_SCHEMA.\"NewTable\" (" + lineBreak +
-                "\tCOLUMN1 INTEGER," + lineBreak +
-                "\tCOLUMN2 INTEGER," + lineBreak +
+                "\tCOLUMN1 INTEGER NULL," + lineBreak +
+                "\tCOLUMN2 INTEGER NULL," + lineBreak +
                 "\tCONSTRAINT NEWTABLE_PK PRIMARY KEY (COLUMN1)" + lineBreak +
                 ");" + lineBreak;
 
@@ -146,8 +183,8 @@ public class OracleBaseTableTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "CREATE TABLE TEST_SCHEMA.\"NewTable\" (" + lineBreak +
-                "\tCOLUMN1 INTEGER," + lineBreak +
-                "\tCOLUMN2 INTEGER" + lineBreak +
+                "\tCOLUMN1 INTEGER NULL," + lineBreak +
+                "\tCOLUMN2 INTEGER NULL" + lineBreak +
                 ");" + lineBreak +
                 "COMMENT ON COLUMN TEST_SCHEMA.\"NewTable\".COLUMN1 IS 'Test comment 1';" + lineBreak +
                 "COMMENT ON COLUMN TEST_SCHEMA.\"NewTable\".COLUMN2 IS 'Test comment 2';" + lineBreak;

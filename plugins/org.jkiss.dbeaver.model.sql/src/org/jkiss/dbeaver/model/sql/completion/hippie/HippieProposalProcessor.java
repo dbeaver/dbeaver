@@ -18,7 +18,8 @@
 package org.jkiss.dbeaver.model.sql.completion.hippie;
 
 import org.eclipse.jface.text.*;
-import org.eclipse.jface.text.contentassist.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
 
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public final class HippieProposalProcessor {
 
     private static final String[] NO_PROPOSALS = new String[0];
     private final HippieCompletionEngine fEngine = new HippieCompletionEngine();
+    private TPWordDetector wordDetector;
 
     /**
      * Creates a new hippie completion proposal computer.
@@ -43,16 +45,28 @@ public final class HippieProposalProcessor {
     public HippieProposalProcessor() {
     }
 
+    public HippieProposalProcessor(@NotNull TPWordDetector wordDetector) {
+        this.wordDetector = wordDetector;
+    }
+
+    /**
+     * Get completion proposals for the specified offset in the given document
+     * @param document
+     * @param offset of the symbol to the left of the cursor
+     * @return proposals
+     */
     public String[] computeCompletionStrings(IDocument document, int offset) {
         try {
             String prefix = getPrefix(document, offset);
-            if (prefix == null || prefix.isEmpty())
+            if (prefix == null || prefix.isEmpty()) {
                 return NO_PROPOSALS;
+            }
 
             List<String> result = new ArrayList<>();
             for (String string : getSuggestions(document, offset, prefix)) {
-                if (!string.isEmpty())
+                if (!string.isEmpty()) {
                     result.add(prefix + string);
+                }
             }
 
             return result.toArray(new String[0]);
@@ -64,13 +78,21 @@ public final class HippieProposalProcessor {
     }
 
     private String getPrefix(IDocument document, int offset) throws BadLocationException {
-        if (document == null || offset > document.getLength())
+        if (document == null || offset > document.getLength()) {
             return null;
+        }
 
         int length = 0;
         int localOffset = offset;
-        while (--localOffset >= 0 && Character.isJavaIdentifierPart(document.getChar(localOffset)))
+        char nextChar = document.getChar(localOffset);
+        while (Character.isJavaIdentifierPart(nextChar) || (wordDetector != null && wordDetector.isWordPart(nextChar))) {
             length++;
+            localOffset--;
+            if (localOffset < 0) {
+                break;
+            }
+            nextChar = document.getChar(localOffset);
+        }
 
         return document.get(localOffset + 1, length);
     }

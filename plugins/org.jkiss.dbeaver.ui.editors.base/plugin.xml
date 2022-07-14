@@ -43,7 +43,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
-        <configurator class="org.jkiss.dbeaver.ui.editors.object.config.BaseTableColumnConfigurator">
+        <configurator class="org.jkiss.dbeaver.ui.editors.object.config.PropertyObjectConfigurator">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityAttribute"/>
         </configurator>
     </extension>

@@ -71,8 +71,13 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         "formatRow"
     };
     private static final String[] CLICKHOUSE_NONKEYWORDS = {
-            "DEFAULT",
-            "SYSTEM"
+        "DEFAULT",
+        "SYSTEM"
+    };
+
+    private static final String[] CLICKHOUSE_KEYWORDS = {
+        "COMMENT",
+        "REPLACE"
     };
 
     public ClickhouseSQLDialect() {
@@ -90,6 +95,7 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
             removeSQLKeyword(word);
         }
         addFunctions(Arrays.asList(CLICKHOUSE_FUNCTIONS));
+        addSQLKeywords(Arrays.asList(CLICKHOUSE_KEYWORDS));
 
         setIdentifierQuoteString(new String[][]{
             { "`", "`" },

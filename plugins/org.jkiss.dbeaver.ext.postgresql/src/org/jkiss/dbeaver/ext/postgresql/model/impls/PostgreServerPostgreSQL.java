@@ -51,6 +51,11 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsRowLevelSecurity() {
+        return dataSource.isServerVersionAtLeast(10, 0);
+    }
+
+    @Override
     public boolean supportsDatabaseSize() {
         return true;
     }
