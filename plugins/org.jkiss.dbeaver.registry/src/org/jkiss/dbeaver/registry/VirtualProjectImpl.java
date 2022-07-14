@@ -28,14 +28,16 @@ public class VirtualProjectImpl extends BaseProjectImpl {
 
     @NotNull
     private final String projectName;
+    private final String projectId;
     @NotNull
     private final Path projectPath;
 
     @Nullable
     private DataSourceConfigurationManager configurationManager;
 
-    public VirtualProjectImpl(@NotNull DBPWorkspace workspace, @NotNull String projectName, @NotNull Path projectPath, @Nullable SMSessionContext sessionContext) {
+    public VirtualProjectImpl(@NotNull DBPWorkspace workspace, @NotNull String projectId, @NotNull String projectName, @NotNull Path projectPath, @Nullable SMSessionContext sessionContext) {
         super(workspace, sessionContext);
+        this.projectId = projectId;
         this.projectName = projectName;
         this.projectPath = projectPath;
     }
@@ -49,6 +51,12 @@ public class VirtualProjectImpl extends BaseProjectImpl {
     @Override
     public String getName() {
         return projectName;
+    }
+
+    @NotNull
+    @Override
+    public String getId() {
+        return projectId;
     }
 
     @NotNull

@@ -320,9 +320,12 @@ public class DBNModel implements IResourceChangeListener {
             if (ArrayUtils.isEmpty(projects)) {
                 throw new DBException("No projects in workspace");
             }
-//            if (projects.length > 1) {
-//                throw new DBException("Multi-project workspace. Extension nodes not supported");
-//            }
+            if (projects.length > 1) {
+                boolean multiNode = Arrays.stream(projects).anyMatch(pr -> pr.getProject().isVirtual());
+                if (!multiNode) {
+                    throw new DBException("Multi-project workspace. Extension nodes not supported");
+                }
+            }
             return findNodeByPath(monitor, nodePath,
                 projects[0], 0);
         } else if (nodePath.type == DBNNode.NodePathType.other) {
@@ -418,7 +421,7 @@ public class DBNModel implements IResourceChangeListener {
                                 }
                             }
                         }
-                        if (child.getNodeName().equals(item)) {
+                        if (child.getName().equals(item)) {
                             nextChild = child;
                         }
                     }

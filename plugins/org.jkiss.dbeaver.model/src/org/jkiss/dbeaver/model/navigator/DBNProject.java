@@ -88,6 +88,17 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         }
     }
 
+    @NotNull
+    @Override
+    public String getName() {
+        return project.getId();
+    }
+
+    @Override
+    public String getLocalizedName(String locale) {
+        return getNodeName();
+    }
+
     @Override
     public DBPImage getNodeIcon() {
         return DBIcon.PROJECT;
@@ -282,7 +293,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public String getNodeItemPath() {
-        return NodePathType.resource.getPrefix() + getNodeName();
+        return NodePathType.resource.getPrefix() + project.getId();
     }
 
     @Override
