@@ -1094,37 +1094,25 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent) {
-            parent.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            parent.setLayout(new GridLayout(2, false));
-            
-            Composite leftCell = UIUtils.createComposite(parent, 1);
-            leftCell.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Composite rightCell = UIUtils.createComposite(parent, 1);
-            rightCell.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            
-            createButton(rightCell, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-            
-            QMMStatementExecuteInfo execInfo = null;
-            if (object.getObject() instanceof QMMStatementExecuteInfo) {
-                execInfo = (QMMStatementExecuteInfo) object.getObject();
-                if (isQueryLinkedWithEditor(execInfo) && SQLEditorUtils.isOpenSeparateConnection(getDataSourceContainer(execInfo))) {
-                    UIUtils.createPushButton(leftCell, SQLEditorMessages.editor_query_log_viewer_reexecute_query_button_text, null,
-                        new SelectionAdapter() {
-                            @Override
-                            public void widgetSelected(SelectionEvent e) {
-                                if (object.getObject() instanceof QMMStatementExecuteInfo) {
-                                    QMMStatementExecuteInfo execInfo = (QMMStatementExecuteInfo) object.getObject();
-                                    SQLEditor editor = ((SQLLogFilter) filter).getEditor();
-                                    SQLQuery query = new SQLQuery(editor.getDataSource(), execInfo.getQueryString());
-                                    editor.processQueries(List.of(query), false, true, false, true, null, null);
-                                }
-                            }
-                        }
-                    );
-                }
+        protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
+            if (alignment == SWT.LEAD) {
+                createCopyButton(parent);
+                createExecuteButton(parent);
+            } else {
+                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
             }
-            createCopyButton(leftCell);
+        }
+
+        @Override
+        protected void buttonPressed(int buttonId) {
+            if (buttonId == IDialogConstants.PROCEED_ID && object.getObject() instanceof QMMStatementExecuteInfo) {
+                final QMMStatementExecuteInfo info = (QMMStatementExecuteInfo) object.getObject();
+                final SQLEditor editor = ((SQLLogFilter) filter).getEditor();
+                final SQLQuery query = new SQLQuery(editor.getDataSource(), info.getQueryString());
+                editor.processQueries(List.of(query), false, true, false, true, null, null);
+            } else {
+                super.buttonPressed(buttonId);
+            }
         }
 
         @Override
@@ -1158,6 +1146,15 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return (purpose == DBCExecutionPurpose.USER_SCRIPT || purpose == DBCExecutionPurpose.USER)
                 && object.getObject() instanceof QMMStatementExecuteInfo && filter != null && filter instanceof SQLLogFilter
                 && ((SQLLogFilter) filter).getEditor() != null;
+        }
+
+        private void createExecuteButton(@NotNull Composite parent) {
+            if (object.getObject() instanceof QMMStatementExecuteInfo) {
+                final QMMStatementExecuteInfo info = (QMMStatementExecuteInfo) object.getObject();
+                if (isQueryLinkedWithEditor(info) && SQLEditorUtils.isOpenSeparateConnection(getDataSourceContainer(info))) {
+                    createButton(parent, IDialogConstants.PROCEED_ID, SQLEditorMessages.editor_query_log_viewer_reexecute_query_button_text, false);
+                }
+            }
         }
     }
 
