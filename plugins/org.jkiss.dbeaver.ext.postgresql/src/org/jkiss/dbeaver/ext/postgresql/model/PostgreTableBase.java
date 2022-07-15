@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -194,10 +195,15 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
      * @param monitor progress monitor
      */
     @Override
-    public List<? extends PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return getContainer().getSchema().getTableCache().getChildren(monitor, getContainer(), this);
+    public List<? extends PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<PostgreTableColumn> childColumns = getContainer().getSchema().getTableCache().getChildren(monitor, getContainer(), this);
+        if (childColumns == null) {
+            return Collections.emptyList();
+        }
+        List<PostgreTableColumn> columns = new ArrayList<>(childColumns);
+        columns.sort(DBUtils.orderComparator());
+        return columns;
+
     }
 
     protected PostgreTableColumn getAttributeByPos(DBRProgressMonitor monitor, int position) throws DBException {

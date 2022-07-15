@@ -103,7 +103,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
 
                     switch (commandId) {
                         case NavigatorCommands.CMD_OBJECT_MOVE_TOP:
-                            shift = -min + 1;
+                            shift = objectReorderer.getMinimumOrdinalPosition(object) - min;
                             break;
                         case NavigatorCommands.CMD_OBJECT_MOVE_UP:
                             shift = -1;

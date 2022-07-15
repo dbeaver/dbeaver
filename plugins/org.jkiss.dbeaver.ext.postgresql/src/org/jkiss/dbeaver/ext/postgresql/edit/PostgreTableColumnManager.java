@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Postgre table column manager
@@ -161,7 +162,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             column.setName(getNewColumnName(monitor, context, table));
             final PostgreDataType dataType = table.getDatabase().getDataType(monitor, PostgreOid.VARCHAR);
             column.setDataType(dataType); //$NON-NLS-1$
-            column.setOrdinalPosition(-1);
+            
+            int maxExistingPos = table.getCachedAttributes().stream().mapToInt(c -> c.getOrdinalPosition()).max().orElse(0);
+            column.setOrdinalPosition(maxExistingPos + 1);
         }
         return column;
     }
@@ -247,50 +250,29 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
     }
     
-    @Override
-    protected void addObjectReorderActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectReorderCommand command, Map<String, Object> options) {
-        final PostgreTableColumn column = command.getObject();
-        String order = "FIRST";
-        if (column.getOrdinalPosition() > 0) {
-            for (PostgreTableColumn col : command.getObject().getTable().getCachedAttributes()) {
-                if (col.getOrdinalPosition() == column.getOrdinalPosition() - 1) {
-                    order = "AFTER " + DBUtils.getQuotedIdentifier(col);
-                    break;
-                }
-            }
-        }
-        actions.add(
-            new SQLDatabasePersistAction(
-                "Reorder column",
-                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " CHANGE " +
-                    DBUtils.getQuotedIdentifier(command.getObject()) + " " +
-                    getNestedDeclaration(monitor, column.getTable(), command, options) + " " + order));
-    }
-    
     ///////////////////////////////////////////////
     // Reorder
 
     @Override
     public int getMinimumOrdinalPosition(PostgreTableColumn object) {
-	// TODO: get visual position of the first not persisted objects
-        return 1;
+        return object.isPersisted()
+            ? Integer.MAX_VALUE 
+            : (int) getNotPersistedSiblings(object).mapToInt(c -> c.getOrdinalPosition()).min().orElse(Integer.MAX_VALUE);
     }
 
     @Override
     public int getMaximumOrdinalPosition(PostgreTableColumn object) {
-	// TODO: get visual position of the last not persisted objects
-        return object.getTable().getCachedAttributes().size();
+        return object.isPersisted()
+            ? Integer.MIN_VALUE 
+            : (int) getNotPersistedSiblings(object).mapToInt(c -> c.getOrdinalPosition()).max().orElse(Integer.MIN_VALUE);
     }
 
     @Override
     public void setObjectOrdinalPosition(DBECommandContext commandContext, PostgreTableColumn object, List<PostgreTableColumn> siblingObjects, int newPosition) throws DBException {
-        // TODO: change visual position, maybe needs change persistent actions order
         processObjectReorder(commandContext, object, siblingObjects, newPosition);
     }
 
-    @Override
-    public boolean canMove(PostgreTableColumn object, List<PostgreTableColumn> siblingObjects) {
-        // TODO: check that there is 2 or more non-persistent siblings
-        return !object.isPersisted();
+    private Stream<? extends PostgreTableColumn> getNotPersistedSiblings(PostgreTableColumn object) {
+        return object.getTable().getCachedAttributes().stream().filter(c -> !c.isHidden() && !c.isPersisted());
     }
 }

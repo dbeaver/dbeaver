@@ -21,7 +21,6 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -29,7 +28,6 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
@@ -38,7 +36,6 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -182,27 +179,7 @@ public class ObjectPropertyTester extends PropertyTester
                     DBSObject object = ((DBNDatabaseNode) node).getObject();
                     if (object instanceof DBPOrderedObject) {
                         DBEObjectReorderer objectReorderer = getObjectManager(object.getClass(), DBEObjectReorderer.class);
-
-                        // Sibling objects - they are involved in reordering process
-                        List<DBSObject> siblingObjects = new ArrayList<>();
-                        try {
-                            for (DBNNode siblingNode : node.getParentNode().getChildren(new VoidProgressMonitor())) {
-                                if (siblingNode instanceof DBNDatabaseNode) {
-                                    DBSObject siblingObject = ((DBNDatabaseNode) siblingNode).getObject();
-                                    if (siblingObject.getClass() != object.getClass()) {
-                                        //log.warn("Sibling object class " + siblingObject.getClass() + " differs from moving object class " + object.getClass().getName());
-                                    } else {
-                                        siblingObjects.add(siblingObject);
-                                    }
-                                } else {
-                                    //log.warn("Wrong sibling node type: " + siblingNode);
-                                }
-                            }
-                        } catch (DBException e) {
-                            e.printStackTrace();
-                        }
-
-                        if (objectReorderer != null && objectReorderer.canMove(object, siblingObjects)) {
+                        if (objectReorderer != null) {
                             final int position = ((DBPOrderedObject) object).getOrdinalPosition();
                             if (property.equals(PROP_CAN_MOVE_UP)) {
                                 return position > objectReorderer.getMinimumOrdinalPosition(object);
