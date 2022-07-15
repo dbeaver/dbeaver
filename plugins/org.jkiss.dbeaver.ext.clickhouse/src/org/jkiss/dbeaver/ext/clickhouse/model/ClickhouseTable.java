@@ -71,16 +71,14 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
             metadataPath = JDBCUtils.safeGetString(dbResult, "metadata_path");
         } else {
             setDefaultEngine();
+            engineMessage = "()";
         }
     }
 
     @Nullable
     private ClickhouseTableEngine searchEngine(String engineName) {
         if (CommonUtils.isNotEmpty(engineName)) {
-            final List<ClickhouseTableEngine> tableEngines = getDataSource().getTableEngines();
-            if (!CommonUtils.isEmpty(tableEngines)) {
-                return tableEngines.stream().filter(e -> e.getName().equals(engineName)).findFirst().orElse(null);
-            }
+            return getDataSource().getEngineByName(engineName);
         }
         return null;
     }
@@ -132,13 +130,21 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
     }
 
     @Property(viewable = true, order = 25, editable = true, listProvider = EngineListProvider.class)
-    public ClickhouseTableEngine getEngine(DBRProgressMonitor monitor) {
+    public ClickhouseTableEngine getEngine() {
         return engine;
     }
 
-    @Property(viewable = true, order = 26, editableExpr = "!object.persisted", length = PropertyLength.MULTILINE)
+    public void setEngine(ClickhouseTableEngine engine) {
+        this.engine = engine;
+    }
+
+    @Property(viewable = true, order = 26, editable = true, length = PropertyLength.MULTILINE)
     public String getEngineMessage() {
         return engineMessage;
+    }
+
+    public void setEngineMessage(String engineMessage) {
+        this.engineMessage = engineMessage;
     }
 
     @Property(category = DBConstants.CAT_STATISTICS, viewable = true, order = 27)
@@ -164,8 +170,7 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
                     "sum(rows) as table_rows, " +
                     "max(modification_time) as latest_modification," +
                     "min(min_date) AS min_date," +
-                    "max(max_date) AS max_date," +
-                    "any(engine) as engine\n" +
+                    "max(max_date) AS max_date " +
                     "FROM system.parts\n" +
                     "WHERE active AND database=? AND table=?\n" +
                     "GROUP BY table"))
@@ -189,7 +194,6 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
         lastModifyTime = JDBCUtils.safeGetTimestamp(dbResult, "latest_modification");
         maxDate = JDBCUtils.safeGetString(dbResult, "max_date");
         minDate = JDBCUtils.safeGetString(dbResult, "min_date");
-        engine = searchEngine(JDBCUtils.safeGetString(dbResult, "engine"));
     }
 
     @Override

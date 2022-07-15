@@ -26,18 +26,17 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +47,7 @@ public class ClickhouseDataSource extends GenericDataSource {
     private static final Log log = Log.getLog(ClickhouseDataSource.class);
 
     private static Map<String, String> dataTypeMap = new HashMap<>();
+    private final TableEnginesCache engineCache = new TableEnginesCache();
 
     static {
         dataTypeMap.put(String.class.getName(), "String");
@@ -61,43 +61,19 @@ public class ClickhouseDataSource extends GenericDataSource {
 
     }
 
-    private List<ClickhouseTableEngine> tableEngines = new ArrayList<>();
-
     public ClickhouseDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
     {
         super(monitor, container, metaModel, new ClickhouseSQLDialect());
-    }
-
-    @Override
-    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        super.initialize(monitor);
-
-        try (JDBCSession session = DBUtils.openMetaSession(
-            monitor,
-            this,
-            "Load basic datasource metadata")) {
-
-            // Read ClickHouse table engines list
-            try (JDBCPreparedStatement dbStat =
-                     session.prepareStatement("SELECT name FROM system.table_engines")) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        final String engineName = JDBCUtils.safeGetString(dbResult, 1);
-                        if (CommonUtils.isNotEmpty(engineName)) {
-                            tableEngines.add(new ClickhouseTableEngine(engineName, this));
-                        }
-                    }
-                }
-            } catch (SQLException e) {
-                log.error("Error reading table engines", e);
-            }
-        }
-
+        engineCache.getAllObjects(monitor, this);
     }
 
     List<ClickhouseTableEngine> getTableEngines() {
-        return tableEngines;
+        return engineCache.getCachedObjects();
+    }
+
+    ClickhouseTableEngine getEngineByName(@NotNull String engineName) {
+        return engineCache.getCachedObject(engineName);
     }
 
     @Nullable
@@ -119,5 +95,29 @@ public class ClickhouseDataSource extends GenericDataSource {
         info.setSupportsIndexes(false);
         this.getContainer().getPreferenceStore().setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, true);
         return info;
+    }
+
+    static class TableEnginesCache extends JDBCObjectCache<ClickhouseDataSource, ClickhouseTableEngine> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull ClickhouseDataSource clickhouseDataSource) throws SQLException {
+            return session.prepareStatement("SELECT name FROM system.table_engines");
+        }
+
+        @Nullable
+        @Override
+        protected ClickhouseTableEngine fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull ClickhouseDataSource clickhouseDataSource,
+            @NotNull JDBCResultSet dbResult) {
+
+            final String engineName = JDBCUtils.safeGetString(dbResult, 1);
+            if (CommonUtils.isNotEmpty(engineName)) {
+                return new ClickhouseTableEngine(engineName, clickhouseDataSource);
+            }
+            return null;
+        }
     }
 }

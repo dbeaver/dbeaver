@@ -109,6 +109,8 @@ public class DTMessages extends NLS {
 	public static String data_transfer_db_consumer_existing_table_description;
 	public static String data_transfer_db_consumer_new_table;
 	public static String data_transfer_db_consumer_new_table_description;
+	public static String data_transfer_db_consumer_button_configure;
+	public static String data_transfer_db_consumer_button_configure_description;
 	public static String data_transfer_db_consumer_column_mappings;
 	public static String data_transfer_db_consumer_column_mappings_description;
 	public static String data_transfer_db_consumer_ddl;

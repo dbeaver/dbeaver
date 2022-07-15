@@ -44,6 +44,16 @@ public class ClickhouseTableManager extends GenericTableManager {
     @Override
     protected void appendTableModifiers(DBRProgressMonitor monitor, GenericTableBase table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
         if (table instanceof ClickhouseTable) {
+            ClickhouseTable clickhouseTable = (ClickhouseTable) table;
+            if (clickhouseTable.getEngine() != null) {
+                ddl.append(" ENGINE = ").append(clickhouseTable.getEngine().getName());
+                if (CommonUtils.isNotEmpty(clickhouseTable.getEngineMessage())) {
+                    ddl.append("\n").append(clickhouseTable.getEngineMessage());
+                } else {
+                    ddl.append("()");
+                }
+                return;
+            }
             try {
                 List<? extends GenericTableColumn> attributes = table.getAttributes(monitor);
                 if (!CommonUtils.isEmpty(attributes)) {

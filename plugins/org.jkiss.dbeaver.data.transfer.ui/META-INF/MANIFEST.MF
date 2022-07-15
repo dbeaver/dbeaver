@@ -28,6 +28,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.data.transfer;visibility:=reexport,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.navigator,
+ org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.connection
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.data.transfer.ui
