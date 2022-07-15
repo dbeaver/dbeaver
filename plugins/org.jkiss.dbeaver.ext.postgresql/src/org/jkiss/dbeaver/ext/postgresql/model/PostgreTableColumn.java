@@ -41,7 +41,9 @@ import java.util.Map;
 /**
  * PostgreTableColumn
  */
-public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> implements PostgrePrivilegeOwner, PostgreScriptObject, GisAttribute, JDBCColumnKeyType, DBPOrderedObject {
+public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> 
+    implements PostgrePrivilegeOwner, PostgreScriptObject, GisAttribute, JDBCColumnKeyType, DBPOrderedObject {
+    
     private static final Log log = Log.getLog(PostgreTableColumn.class);
 
     public PostgreTableColumn(DBRProgressMonitor monitor, PostgreTableBase table, PostgreTableColumn source) throws DBException {

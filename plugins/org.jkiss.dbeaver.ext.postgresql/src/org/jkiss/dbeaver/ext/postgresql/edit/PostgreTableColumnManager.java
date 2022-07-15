@@ -268,7 +268,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    public void setObjectOrdinalPosition(DBECommandContext commandContext, PostgreTableColumn object, List<PostgreTableColumn> siblingObjects, int newPosition) throws DBException {
+    public void setObjectOrdinalPosition(
+        DBECommandContext commandContext, PostgreTableColumn object, List<PostgreTableColumn> siblingObjects, int newPosition
+    ) throws DBException {
         processObjectReorder(commandContext, object, siblingObjects, newPosition);
     }
 
