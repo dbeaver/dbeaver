@@ -140,7 +140,9 @@ public class DatabaseTransferUtils {
         monitor.subTask("Validate table structure table '" + containerMapping.getTargetName() + "'");
         if (USE_STRUCT_DDL) {
             try {
-                return generateStructTableDDL(monitor, executionContext, schema, containerMapping);
+                final List<DBEPersistAction> actions = new ArrayList<>();
+                generateStructTableDDL(monitor, executionContext, schema, containerMapping, actions, copyFromTable);
+                return actions.toArray(DBEPersistAction[]::new);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Can't create or update target table", null, e);
                 if (!DBWorkbench.getPlatformUI().confirmAction(
@@ -250,7 +252,15 @@ public class DatabaseTransferUtils {
         return tableClass;
     }
 
-    private static DBEPersistAction[] generateStructTableDDL(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
+    @NotNull
+    public static DBSEntity generateStructTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer schema,
+        @NotNull DatabaseMappingContainer containerMapping,
+        @NotNull List<DBEPersistAction> actions,
+        @Nullable DBSObject copyFromTable
+    ) throws DBException {
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
 
         try {
@@ -365,8 +375,16 @@ public class DatabaseTransferUtils {
                 }
             }
 
-            List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, options, null);
-            return actions.toArray(new DBEPersistAction[0]);
+            containerMapping.setTargetName(tableFinalName);
+
+            actions.addAll(
+                DBExecUtils.getActionsListFromCommandContext(
+                    monitor,
+                    commandContext,
+                    executionContext,
+                    options,
+                    null));
+            return table;
         } catch (DBException e) {
             throw new DBException("Can't create or modify target table", e);
         }
