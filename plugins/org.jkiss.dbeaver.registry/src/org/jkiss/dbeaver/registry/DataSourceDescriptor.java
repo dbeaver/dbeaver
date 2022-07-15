@@ -733,7 +733,7 @@ public class DataSourceDescriptor
 
     @Override
     public void persistConfiguration() {
-        registry.flushConfig();
+        registry.updateDataSource(this);
     }
 
     @Override

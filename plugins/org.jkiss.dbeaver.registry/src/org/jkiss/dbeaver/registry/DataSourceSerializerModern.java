@@ -347,10 +347,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     @Override
     public void parseDataSources(
-        DBPDataSourceConfigurationStorage configurationStorage,
-        boolean refresh,
-        DataSourceRegistry.ParseResults parseResults) throws DBException, IOException {
-        DataSourceConfigurationManager configurationManager = registry.getConfigurationManager();
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DataSourceRegistry.ParseResults parseResults,
+        boolean refresh
+    ) throws DBException, IOException {
         if (!configurationManager.isSecure()) {
             // Read secured creds file
             InputStream secureCredsData = configurationManager.readConfiguration(
@@ -370,8 +371,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
 
         boolean decryptProject = CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBPProject.PROP_SECURE_PROJECT));
-        InputStream configData = configurationManager.readConfiguration(
-            configurationStorage.getStorageName());
+        InputStream configData;
+        if (configurationStorage instanceof DataSourceMemoryStorage) {
+            configData = ((DataSourceMemoryStorage) configurationStorage).getInputStream();
+        } else {
+            configData = configurationManager.readConfiguration(configurationStorage.getStorageName());
+        }
         if (configData != null) {
             String configJson = loadConfigFile(configData, decryptProject);
 
@@ -521,7 +526,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
                     dataSource = new DataSourceDescriptor(
                         registry,
-                        configurationStorage,
+                        registry.getDefaultStorage(),
                         origin,
                         id,
                         driver,
@@ -680,7 +685,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 // Add to the list
                 if (newDataSource) {
-                    registry.addDataSourceToList(dataSource);
                     parseResults.addedDataSources.add(dataSource);
                 } else {
                     parseResults.updatedDataSources.add(dataSource);
