@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>22.1.2</dbeaver-version>
+        <dbeaver-version>22.1.3</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>2.7.2</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
