@@ -41,7 +41,7 @@
         <editorContribution editorId="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolServerSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
             <supports dataSource="exasol"/>
         </editorContribution>
-        <editorContribution editorId="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="#locked">
             <supports dataSource="exasol"/>
         </editorContribution>
     </extension>
