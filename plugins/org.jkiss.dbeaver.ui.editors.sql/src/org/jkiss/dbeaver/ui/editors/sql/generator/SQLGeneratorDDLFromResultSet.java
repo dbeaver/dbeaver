@@ -80,7 +80,7 @@ public class SQLGeneratorDDLFromResultSet extends SQLGenerator<IResultSetControl
         }
         
         DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
-        DBEPersistAction[] ddl = DatabaseTransferUtils.generateTargetTableDDL(monitor, executionContext, objContainer, mapping);
+        DBEPersistAction[] ddl = DatabaseTransferUtils.generateTargetTableDDL(monitor, executionContext, objContainer, mapping, null);
 
         if (ArrayUtils.isEmpty(ddl)) {
             sql.append(SQLEditorMessages.sql_generator_no_ddl_text);

@@ -665,7 +665,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
             return true;
         } else {
-            DBEPersistAction[] actions = DatabaseTransferUtils.generateTargetTableDDL(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
+            DBEPersistAction[] actions = DatabaseTransferUtils.generateTargetTableDDL(
+                session.getProgressMonitor(),
+                session.getExecutionContext(),
+                schema,
+                containerMapping,
+                null);
             try {
                 DatabaseTransferUtils.executeDDL(session, actions);
             } catch (DBCException e) {

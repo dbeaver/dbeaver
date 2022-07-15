@@ -114,7 +114,12 @@ public class DatabaseTransferUtils {
         }
     }
 
-    public static DBEPersistAction[] generateTargetTableDDL(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
+    public static DBEPersistAction[] generateTargetTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        DBSObjectContainer schema,
+        DatabaseMappingContainer containerMapping,
+        @Nullable DBSObject copyFromTable) throws DBException {
         if (containerMapping.getMappingType() == DatabaseMappingType.skip) {
             return new DBEPersistAction[0];
         }
@@ -226,53 +231,6 @@ public class DatabaseTransferUtils {
         }
     }
 
-    public static DBSObject generateStructTable(
-        @NotNull DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        DBSObjectContainer schema,
-        @NotNull DatabaseMappingContainer containerMapping) throws DBException {
-        final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
-
-        try {
-            Class<? extends DBSObject> tableClass = getTableClass(monitor, schema);
-            SQLObjectEditor<DBSEntity, ?> tableManager = getTableManager(editorsRegistry, tableClass);
-            if (!tableManager.canCreateObject(schema)) {
-                throw new DBException("Table create is not supported by driver "
-                    + schema.getDataSource().getContainer().getDriver().getName());
-            }
-
-            Map<String, Object> options = new HashMap<>();
-            options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
-
-            DBECommandContext commandContext = new TargetCommandContext(executionContext);
-
-            String tableFinalName;
-            DBSEntity table;
-            if (containerMapping.getMappingType() == DatabaseMappingType.create ||
-                (containerMapping.getMappingType() == DatabaseMappingType.recreate && containerMapping.getTarget() == null))
-            {
-                table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
-                tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
-            } else {
-                table = (DBSEntity) containerMapping.getTarget();
-                if (table == null) {
-                    throw new DBException("Internal error - target table not set");
-                }
-                if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
-                    tableManager.deleteObject(commandContext, table, options);
-                    table = tableManager.createNewObject(monitor, commandContext, table.getParentObject(), null, options);
-                    tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
-                } else {
-                    tableFinalName = table.getName();
-                }
-            }
-            containerMapping.setTargetName(tableFinalName);
-            return table;
-        } catch (DBException e) {
-            throw new DBException("Can't create or modify target table", e);
-        }
-    }
-
     @NotNull
     private static SQLObjectEditor<DBSEntity, ?> getTableManager(DBERegistry editorsRegistry, Class<? extends DBSObject> tableClass)
         throws DBException {
@@ -296,8 +254,16 @@ public class DatabaseTransferUtils {
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
 
         try {
-            Class<? extends DBSObject> tableClass = getTableClass(monitor, schema);
-            SQLObjectEditor<DBSEntity, ?> tableManager = getTableManager(editorsRegistry, tableClass);
+            Class<? extends DBSObject> tableClass = schema.getPrimaryChildType(monitor);
+            if (!DBSEntity.class.isAssignableFrom(tableClass)) {
+                throw new DBException("Wrong table container child type: " + tableClass.getName());
+            }
+            SQLObjectEditor<DBSEntity, ?> tableManager = editorsRegistry.getObjectManager(
+                tableClass,
+                SQLObjectEditor.class);
+            if (tableManager == null) {
+                throw new DBException("Table manager not found for '" + tableClass.getName() + "'");
+            }
             if (!tableManager.canCreateObject(schema)) {
                 throw new DBException("Table create is not supported by driver " + schema.getDataSource().getContainer().getDriver().getName());
             }
@@ -323,11 +289,35 @@ public class DatabaseTransferUtils {
 
             DBECommandContext commandContext = new TargetCommandContext(executionContext);
 
-            DBSEntity table = (DBSEntity) generateStructTable(monitor, executionContext, schema, containerMapping);
+            String tableFinalName;
+
+            DBSEntity table;
             DBECommand createCommand = null;
             if (containerMapping.getMappingType() == DatabaseMappingType.create ||
-                containerMapping.getMappingType() == DatabaseMappingType.recreate) {
+                (containerMapping.getMappingType() == DatabaseMappingType.recreate
+                    && containerMapping.getTarget() == null))
+            {
+                table = tableManager.createNewObject(monitor, commandContext, schema, copyFromTable, options);
+                tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
                 createCommand = tableManager.makeCreateCommand(table, options);
+            } else {
+                table = (DBSEntity) containerMapping.getTarget();
+                if (table == null) {
+                    throw new DBException("Internal error - target table not set");
+                }
+                if (containerMapping.getMappingType() == DatabaseMappingType.recreate) {
+                    tableManager.deleteObject(commandContext, table, options);
+                    table = tableManager.createNewObject(
+                        monitor,
+                        commandContext,
+                        table.getParentObject(),
+                        copyFromTable,
+                        options);
+                    tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
+                    createCommand = tableManager.makeCreateCommand(table, options);
+                } else {
+                    tableFinalName = table.getName();
+                }
             }
 
             if (attributeManager != null) {

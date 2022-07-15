@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -69,7 +70,11 @@ public class ClickhouseDataSource extends GenericDataSource {
     }
 
     List<ClickhouseTableEngine> getTableEngines() {
-        return engineCache.getCachedObjects();
+        final List<ClickhouseTableEngine> cachedObjects = engineCache.getCachedObjects();
+        if (!CommonUtils.isEmpty(cachedObjects)) {
+            cachedObjects.sort(DBUtils.nameComparator());
+        }
+        return cachedObjects;
     }
 
     ClickhouseTableEngine getEngineByName(@NotNull String engineName) {
