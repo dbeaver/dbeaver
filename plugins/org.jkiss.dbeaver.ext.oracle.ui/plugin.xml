@@ -118,7 +118,7 @@
         </editor>
         <editor
                 name="Lock Manager"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png"
+                icon="#locked"
                 class="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleLockEditor"
                 id="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleLockEditor">
         </editor>
@@ -133,7 +133,7 @@
         <editorContribution editorId="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
             <supports dataSource="oracle"/>
         </editorContribution>
-        <editorContribution editorId="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="#locked">
             <supports dataSource="oracle"/>
         </editorContribution>
     </extension>
