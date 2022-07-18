@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -57,6 +58,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     private String targetName;
     private DatabaseMappingType mappingType;
     private final List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
+    private List<DBPPropertyDescriptor> changedPropertiesList;
 
     public DatabaseMappingContainer(DatabaseConsumerSettings consumerSettings, DBSDataContainer source) {
         this.consumerSettings = consumerSettings;
@@ -143,6 +145,14 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     @Override
     public DBSDataContainer getSource() {
         return source;
+    }
+
+    public List<DBPPropertyDescriptor> getChangedPropertiesList() {
+        return changedPropertiesList;
+    }
+
+    public void setChangedPropertiesList(List<DBPPropertyDescriptor> changedPropertiesList) {
+        this.changedPropertiesList = changedPropertiesList;
     }
 
     @Override

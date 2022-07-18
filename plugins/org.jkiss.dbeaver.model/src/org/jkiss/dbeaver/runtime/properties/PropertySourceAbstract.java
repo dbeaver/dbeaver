@@ -48,6 +48,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     private Object object;
     private boolean loadLazyProps;
     private final List<DBPPropertyDescriptor> props = new ArrayList<>();
+    private final List<DBPPropertyDescriptor> changedProperties = new ArrayList<>();
     private final Map<Object, Object> propValues = new HashMap<>();
     private final Map<Object, Object> lazyValues = new HashMap<>();
     private final List<ObjectPropertyDescriptor> lazyProps = new ArrayList<>();
@@ -344,6 +345,14 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 
     public boolean getEnableFilters() {
         return enableFilters;
+    }
+
+    public void addChangedProperties(DBPPropertyDescriptor descriptor) {
+        changedProperties.add(descriptor);
+    }
+
+    public List<DBPPropertyDescriptor> getChangedProperties() {
+        return changedProperties;
     }
 
     private class PropertyValueLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
