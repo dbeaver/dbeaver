@@ -80,6 +80,8 @@ public interface IGridContentProvider extends IContentProvider {
 
     boolean isElementReadOnly(IGridColumn element);
 
+    boolean isElementExpandable(@NotNull IGridItem item);
+
     boolean isGridReadOnly();
 
     /**
