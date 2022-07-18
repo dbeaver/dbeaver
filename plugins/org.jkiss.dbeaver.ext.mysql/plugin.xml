@@ -268,9 +268,11 @@
 
             <nativeClients>
                 <client id="mysql_client" label="MySQL Binaries">
-                    <dist os="win32" targetPath="clients/mysql/win" remotePath="repo:/drivers/mysql/client/win" resourcePath="clients/mysql/win">
+                    <dist os="win32" targetPath="clients/mysql_8/win" remotePath="repo:/drivers/mysql_8/client/win" resourcePath="clients/mysql_8/win">
                         <file type="exec" name="mysql.exe"/>
                         <file type="exec" name="mysqldump.exe"/>
+                        <file type="lib" name="libcrypto-1_1-x64.dll"/>
+                        <file type="lib" name="libssl-1_1-x64.dll"/>
                     </dist>
                 </client>
             </nativeClients>
