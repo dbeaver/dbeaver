@@ -47,9 +47,16 @@ public class DBeaverPartList extends BasicPartList {
     private static final Log log = Log.getLog(DBeaverPartList.class);
 
     private final StackRenderer renderer;
-    private String pattern;
 
-    public DBeaverPartList(Shell parent, int shellStyle, int treeStyler, EPartService partService, MElementContainer<?> input, StackRenderer renderer, boolean mru) {
+    public DBeaverPartList(
+        @Nullable Shell parent,
+        int shellStyle,
+        int treeStyler,
+        @NotNull EPartService partService,
+        @NotNull MElementContainer<?> input,
+        @NotNull StackRenderer renderer,
+        boolean mru
+    ) {
         super(parent, shellStyle, treeStyler, partService, input, renderer, mru);
         this.renderer = renderer;
     }
