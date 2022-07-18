@@ -17,13 +17,20 @@
 package org.jkiss.dbeaver.ui.e4;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.ui.model.application.ui.MElementContainer;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.renderers.swt.StackRenderer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
@@ -49,6 +56,53 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
 import java.io.File;
 
 public class DBeaverStackRenderer extends StackRenderer {
+
+    @Override
+    public void showAvailableItems(MElementContainer<?> stack, CTabFolder folder, boolean forceCenter) {
+        final IEclipseContext ctx = getContext(stack);
+        final DBeaverPartList list = new DBeaverPartList(
+            folder.getShell(),
+            SWT.ON_TOP,
+            SWT.V_SCROLL | SWT.H_SCROLL,
+            ctx.get(EPartService.class),
+            stack,
+            this,
+            true
+        );
+
+        list.setInput();
+
+        final Point size = list.computeSizeHint();
+        final Point location;
+
+        if (forceCenter) {
+            // placed to the center
+            final Rectangle area = folder.getClientArea();
+            location = folder.toDisplay(area.x, area.y);
+            location.x = Math.max(0, location.x + (area.width - size.x) / 2);
+            location.y = Math.max(0, location.y + (area.height - size.y) / 3);
+        } else {
+            // placed at chevron location
+            location = folder.toDisplay(getChevronLocation(folder));
+            final Rectangle area = folder.getMonitor().getClientArea();
+            if (location.x + size.x > area.x + area.width) {
+                location.x = area.x + area.width - size.x;
+            }
+            if (location.y + size.y > area.y + area.height) {
+                location.y = area.y + area.height - size.y;
+            }
+        }
+
+        list.setSize(size.x, size.y);
+        list.setLocation(location);
+        list.setVisible(true);
+        list.setFocus();
+        list.getShell().addListener(SWT.Deactivate, e -> UIUtils.asyncExec(() -> {
+            if (!list.hasFocus()) {
+                list.dispose();
+            }
+        }));
+    }
 
     @Override
     protected void populateTabMenu(Menu menu, MPart part) {
@@ -182,4 +236,22 @@ public class DBeaverStackRenderer extends StackRenderer {
         return null;
     }
 
+    @NotNull
+    private static Point getChevronLocation(@NotNull CTabFolder folder) {
+        CTabItem item = null;
+
+        for (int i = 0; i < folder.getItemCount(); i++) {
+            final CTabItem tmpItem = folder.getItem(i);
+            if (tmpItem.isShowing()) {
+                item = tmpItem;
+            }
+        }
+
+        if (item != null) {
+            final Rectangle bounds = item.getBounds();
+            return new Point(bounds.x + bounds.width, bounds.y + bounds.height);
+        } else {
+            return new Point(0, 0);
+        }
+    }
 }
