@@ -628,10 +628,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     private void loadDataSources(boolean refresh) {
-        loadDataSources(configurationManager.getConfigurationStorages(), refresh, true);
+        loadDataSources(configurationManager.getConfigurationStorages(), configurationManager, refresh, true);
     }
 
-    public void loadDataSources(@NotNull List<DBPDataSourceConfigurationStorage> storages, boolean refresh, boolean purgeUntouched) {
+    public void loadDataSources(
+        @NotNull List<DBPDataSourceConfigurationStorage> storages,
+        @NotNull DataSourceConfigurationManager manager,
+        boolean refresh,
+        boolean purgeUntouched
+    ) {
         if (!project.isOpen() || project.isInMemory()) {
             return;
         }
@@ -643,7 +648,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
         // Modern way - search json configs in metadata folder
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
-            loadDataSources(cfgStorage, false, parseResults);
+            loadDataSources(cfgStorage, manager, false, parseResults);
         }
 
         // Reflect changes
@@ -674,7 +679,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    private void loadDataSources(@NotNull DBPDataSourceConfigurationStorage storage, boolean refresh, @NotNull ParseResults parseResults) {
+    private void loadDataSources(
+        @NotNull DBPDataSourceConfigurationStorage storage,
+        @NotNull DataSourceConfigurationManager manager,
+        boolean refresh,
+        @NotNull ParseResults parseResults
+    ) {
         try {
             DataSourceSerializer serializer;
             if (storage instanceof DataSourceFileStorage && ((DataSourceFileStorage) storage).isLegacy()) {
@@ -682,7 +692,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             } else {
                 serializer = new DataSourceSerializerModern(this);
             }
-            serializer.parseDataSources(storage, configurationManager, parseResults, refresh);
+            serializer.parseDataSources(storage, manager, parseResults, refresh);
             updateProjectNature();
 
             lastLoadError = null;
