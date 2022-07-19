@@ -168,8 +168,9 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 detailsGroup,
                 CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label,
                 CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title,
-                DBPConnectionConfiguration.CONNECT_VARIABLES);
-            variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource, dataSource.getConnectionConfiguration()));
+                DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES);
+            variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
+                dataSource.getConnectionConfiguration()));
         }
 
         selectEventType(null);

@@ -211,7 +211,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 }
             });
             String hint = SSHUIMessages.model_ssh_configurator_variables_hint_label;
-            variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DBPConnectionConfiguration.CONNECT_VARIABLES, false);
+            variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES,
+                false);
 
             UIUtils.createLink(controlGroup, SSHUIMessages.model_ssh_configurator_ssh_documentation_link, new SelectionAdapter() {
                 @Override
@@ -235,10 +236,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         saveSettings(configuration);
         DBPDataSourceContainer dataSource = configuration.getDataSource();
         if (dataSource != null) {
-            configuration.resolveDynamicVariables(
-                new DataSourceVariableResolver(
-                    dataSource,
-                    dataSource.getConnectionConfiguration()));
+            configuration.resolveDynamicVariables(new DataSourceVariableResolver(dataSource,
+                dataSource.getConnectionConfiguration()));
         } else {
             configuration.resolveDynamicVariables(SystemVariablesResolver.INSTANCE);
         }
