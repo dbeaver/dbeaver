@@ -39,7 +39,6 @@ public class ConnectionNameResolver implements IVariableResolver {
         DBPConnectionConfiguration.VARIABLE_SERVER,
         DBPConnectionConfiguration.VARIABLE_DATABASE,
         DBPConnectionConfiguration.VARIABLE_USER,
-        DBPConnectionConfiguration.VARIABLE_PASSWORD,
         DBPConnectionConfiguration.VARIABLE_URL,
         DBPConnectionConfiguration.VARIABLE_CONN_TYPE,
         DBPConnectionConfiguration.VAR_PROJECT_NAME,
@@ -53,10 +52,8 @@ public class ConnectionNameResolver implements IVariableResolver {
         {DBPConnectionConfiguration.VARIABLE_SERVER, "target server name"},
         {DBPConnectionConfiguration.VARIABLE_DATABASE, "target database name"},
         {DBPConnectionConfiguration.VARIABLE_USER, "database user name"},
-        {DBPConnectionConfiguration.VARIABLE_PASSWORD, "database password (plain)"},
         {DBPConnectionConfiguration.VARIABLE_URL, "connection URL"},
         {DBPConnectionConfiguration.VARIABLE_CONN_TYPE, "connection type"},
-        {DBPConnectionConfiguration.VAR_PROJECT_PATH, "project path"},
         {DBPConnectionConfiguration.VAR_PROJECT_NAME, "project name"},
         {DBPConnectionConfiguration.VARIABLE_DATE, "current date"},
         {DBPConnectionConfiguration.VAR_HOST_OR_DATABASE, "Legacy configuration for the connection name"}
@@ -132,8 +129,6 @@ public class ConnectionNameResolver implements IVariableResolver {
                     return configuration.getUserName();
                 case DBPConnectionConfiguration.VAR_HOST_OR_DATABASE:
                     return generateLegacyConnectionName();
-                case DBPConnectionConfiguration.VARIABLE_PASSWORD:
-                    return configuration.getUserPassword();
                 case DBPConnectionConfiguration.VARIABLE_URL:
                     return configuration.getUrl();
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:

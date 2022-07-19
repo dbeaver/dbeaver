@@ -39,6 +39,11 @@ public class SQLNewScriptTemplateVariablesResolver extends DataSourceVariableRes
         }
     );
 
+    @Override
+    public boolean isSecure() {
+        return false;
+    }
+
     public SQLNewScriptTemplateVariablesResolver(DBPDataSourceContainer dataSourceContainer, DBPConnectionConfiguration configuration) {
         super(dataSourceContainer, configuration);
     }
