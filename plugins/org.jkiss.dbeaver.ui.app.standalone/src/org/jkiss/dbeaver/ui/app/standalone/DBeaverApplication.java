@@ -37,6 +37,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
@@ -244,7 +245,8 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
 
         final Runtime runtime = Runtime.getRuntime();
 
-        // Init Core plugin and mark it as standalone version
+        // Debug logger
+        initDebugWriter();
 
         log.debug(GeneralUtils.getProductName() + " " + GeneralUtils.getProductVersion() + " is starting"); //$NON-NLS-1$
         log.debug("OS: " + System.getProperty(StandardConstants.ENV_OS_NAME) + " " + System.getProperty(StandardConstants.ENV_OS_VERSION) + " (" + System.getProperty(StandardConstants.ENV_OS_ARCH) + ")");
@@ -253,20 +255,21 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Memory available " + (runtime.totalMemory() / (1024 * 1024)) + "Mb/" + (runtime.maxMemory() / (1024 * 1024)) + "Mb");
 
-        // Init platform
-        DBWorkbench.getPlatform();
-        // Debug logger
-        initDebugWriter();
-        TimezoneRegistry.overrideTimezone();
-        updateSplashHandler();
-
         // Write version info
         writeWorkspaceInfo();
+
+        // Initialize platform
+        DBWorkbench.getPlatform();
+
+        // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
+        updateSplashHandler();
 
         initializeApplication();
 
         // Run instance server
         instanceServer = DBeaverInstanceServer.startInstanceServer(commandLine, createInstanceController());
+
+        TimezoneRegistry.overrideTimezone();
 
         // Prefs default
         PlatformUI.getPreferenceStore().setDefault(
@@ -656,7 +659,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
     }
 
     private void initDebugWriter() {
-        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        DBPPreferenceStore preferenceStore = DBeaverActivator.getInstance().getPreferences();
         if (!preferenceStore.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED)) {
             return;
         }

@@ -142,4 +142,9 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
 
     }
 
+    @Override
+    public void disposeEditor() {
+
+    }
+
 }

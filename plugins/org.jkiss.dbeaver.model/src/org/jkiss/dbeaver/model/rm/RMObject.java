@@ -65,4 +65,9 @@ public abstract class RMObject implements DBPNamedObject {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
+
 }

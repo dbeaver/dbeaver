@@ -226,6 +226,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         }
                         String[] line = csvReader.readNext();
                         if (line == null) {
+                            if (csvReader.getParser().isPending()) {
+                                throw new IOException("Un-terminated quote sequence was detected");
+                            }
                             break;
                         }
                         if (line.length == 0) {

@@ -87,4 +87,9 @@ public class ImagePanelEditor implements IStreamValueEditor<ImageViewer> {
 
     }
 
+    @Override
+    public void disposeEditor() {
+
+    }
+
 }

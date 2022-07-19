@@ -154,9 +154,10 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
             composite,
             CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_label,
             CoreMessages.dialog_connection_edit_wizard_shell_cmd_variables_hint_title,
-            DBPConnectionConfiguration.CONNECT_VARIABLES);
+            DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES);
         if (dataSourceDescriptor != null) {
-            variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSourceDescriptor, dataSourceDescriptor.getConnectionConfiguration()));
+            variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSourceDescriptor,
+                dataSourceDescriptor.getConnectionConfiguration()));
         }
 
         UIUtils.asyncExec(() -> UIUtils.packColumns(queriesTable, true));

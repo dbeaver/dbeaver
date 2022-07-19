@@ -37,10 +37,11 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,7 +59,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
-    private final ByteNumberFormat numberFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
+    private static final NumberFormat numberFormat = new DecimalFormat();
+
     private IResource resource;
     private DBPResourceHandler handler;
     private DBNNode[] children;
@@ -161,9 +163,12 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     public String getNodeTargetName() {
         IResource resource = getResource();
         if (resource != null) {
-            File localFile = resource.getLocation().toFile();
-            if (localFile != null) {
-                return localFile.getAbsolutePath();
+            IPath location = resource.getLocation();
+            if (location != null) {
+                File localFile = location.toFile();
+                if (localFile != null) {
+                    return localFile.getAbsolutePath();
+                }
             }
         }
         return super.getNodeTargetName();

@@ -79,4 +79,6 @@ public interface IValueEditor
     void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller)
         throws DBCException;
 
+    void dispose();
+
 }

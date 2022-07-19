@@ -16,20 +16,16 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.jface.viewers.*;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.internal.EditorReference;
-import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.WorkbookEditorsHandler;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     private String pattern;
@@ -39,64 +35,37 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
         return new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
-                if (pattern == null || !(viewer instanceof TableViewer)) {
-                    return true;
-                }
-                String name = null;
-                if (element instanceof EditorReference) {
-                    name = ((EditorReference) element).getTitle();
-                }
-                if (name == null) {
-                    return false;
-                }
-                return match(pattern, name) != null;
+                return element instanceof EditorReference
+                    && pattern != null
+                    && SearchCellLabelProvider.matches(pattern, ((EditorReference) element).getTitle());
             }
         };
     }
 
     @Override
     protected void setLabelProvider(TableViewerColumn column) {
-        column.setLabelProvider(new StyledCellLabelProvider() {
+        column.setLabelProvider(new SearchCellLabelProvider() {
+            @NotNull
             @Override
-            public void update(ViewerCell cell) {
-                if (cell.getElement() instanceof WorkbenchPartReference) {
-                    final WorkbenchPartReference ref = (WorkbenchPartReference) cell.getElement();
-                    final String text = getWorkbenchPartReferenceText(ref);
+            public String getText(@NotNull Object element) {
+                return getWorkbenchPartReferenceText((WorkbenchPartReference) element);
+            }
 
-                    cell.setText(text);
-                    cell.setImage(ref.getTitleImage());
-
-                    final List<int[]> ranges;
-
-                    if (CommonUtils.isEmpty(pattern)) {
-                        ranges = Collections.emptyList();
-                    } else {
-                        ranges = match(pattern, text);
-                    }
-
-                    if (CommonUtils.isEmpty(ranges)) {
-                        cell.setStyleRanges(null);
-                    } else {
-                        final Font font = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry().getItalic(IWorkbenchThemeConstants.TAB_TEXT_FONT);
-                        final StyledString.Styler styler = new BoldStylerProvider(font).getBoldStyler();
-                        final StyledString ss = new StyledString(text);
-                        for (int[] range : ranges) {
-                            ss.setStyle(range[0], range[1], styler);
-                        }
-                        cell.setStyleRanges(ss.getStyleRanges());
-                    }
-
-                    cell.getControl().redraw();
-                }
+            @NotNull
+            @Override
+            public Image getImage(@NotNull Object element) {
+                return ((WorkbenchPartReference) element).getTitleImage();
             }
 
             @Override
-            public String getToolTipText(Object element) {
-                if (element instanceof WorkbenchPartReference) {
-                    return ((WorkbenchPartReference) element).getTitleToolTip();
-                } else {
-                    return super.getToolTipText(element);
-                }
+            public String getToolTipText(@NotNull Object element) {
+                return ((WorkbenchPartReference) element).getTitleToolTip();
+            }
+
+            @Nullable
+            @Override
+            public String getPattern() {
+                return pattern;
             }
         });
 
@@ -106,25 +75,6 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     @Override
     protected void setMatcherString(String pattern) {
         this.pattern = pattern;
-    }
 
-    @Nullable
-    private static List<int[]> match(@NotNull String pattern, @NotNull String value) {
-        final List<int[]> ranges = new ArrayList<>();
-        for (int p = 0, v = 0, start = -1; p <= pattern.length() && v <= value.length(); v++) {
-            if (p != pattern.length() && v == value.length()) {
-                return null;
-            }
-            if (p < pattern.length() && Character.toLowerCase(pattern.charAt(p)) == Character.toLowerCase(value.charAt(v))) {
-                if (start < 0) {
-                    start = v;
-                }
-                p++;
-            } else if (start >= 0) {
-                ranges.add(new int[]{start, v - start});
-                start = -1;
-            }
-        }
-        return ranges;
     }
 }

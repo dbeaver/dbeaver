@@ -57,7 +57,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNNodeWithResource
 
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
 
-    private final ByteNumberFormat numberFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
+    private final ByteNumberFormat numberFormat = new ByteNumberFormat();
 
     private DBNNode[] children;
     private DBPImage resImage;

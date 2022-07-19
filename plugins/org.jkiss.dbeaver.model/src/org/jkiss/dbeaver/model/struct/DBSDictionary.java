@@ -46,9 +46,9 @@ public interface DBSDictionary
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
      * @param caseInsensitiveSearch use case-insensitive search for {@code keyPattern}
-     * @param sortAsc ascending sorting (irrelevant is @sortByValue is false)
+     * @param sortAsc ascending sorting (irrelevant is {@code sortByValue} is false)
      * @param sortByValue sort results by value
-     * @param offset offset, if it equals Integer.MIN then it counts as if we have none.
+     * @param offset enumeration values offset in result set
      * @param maxResults maximum enumeration values in result set
      * @return statement with result set which contains valid enumeration values.
      */

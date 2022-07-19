@@ -1656,20 +1656,18 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
     }
 
-    private static boolean isCollectionAttribute(DBDAttributeBinding attr) {
+    private static boolean isCollectionAttribute(@NotNull DBDAttributeBinding attr) {
         return getCollectionAttribute(attr) != null;
     }
 
-    private static DBDAttributeBinding getCollectionAttribute(DBDAttributeBinding attr) {
-        if (attr == null) {
-            return null;
+    @Nullable
+    private static DBDAttributeBinding getCollectionAttribute(@NotNull DBDAttributeBinding attr) {
+        for (DBDAttributeBinding cur = attr; cur != null; cur = cur.getParentObject()) {
+            if (cur.getDataKind() == DBPDataKind.ARRAY) {
+                return cur;
+            }
         }
-        if (attr.getDataKind() == DBPDataKind.ARRAY) {
-            return attr;
-        }
-        if (attr.getParentObject() != null) {
-            return getCollectionAttribute(attr.getParentObject());
-        }
+
         return null;
     }
 
@@ -1844,15 +1842,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public boolean hasChildren(@NotNull IGridItem item) {
             if (item.getElement() instanceof DBDAttributeBinding) {
-                switch (((DBDAttributeBinding) item.getElement()).getDataKind()) {
-                    case ARRAY:
-                        return true;
+                final DBDAttributeBinding attr = (DBDAttributeBinding) item.getElement();
+                switch (attr.getDataKind()) {
                     case STRUCT:
                     case DOCUMENT:
                     case ANY:
                         return !controller.isRecordMode();
                     default:
-                        return false;
+                        return isCollectionAttribute(attr);
                 }
             }
             return false;
@@ -1886,7 +1883,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return 0;
             }
 
-            final DBDAttributeBinding attr = getAttributeFromGrid(colElement, rowElement);
+            final DBDAttributeBinding attr = getCollectionAttribute(getAttributeFromGrid(colElement, rowElement));
             final ResultSetRow row = getResultRowFromGrid(colElement, rowElement);
 
             final ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, getRowNestedIndexes(rowElement));
@@ -2032,7 +2029,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
                     if (isShowAsCheckbox(attr)) {
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
-                    } else if (isShowAsLink(rowElement, attr)) {
+                    } else if (!CommonUtils.isEmpty(attr.getReferrers()) || isShowAsExpander(rowElement, attr)) {
                         if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
                         }
@@ -2073,7 +2070,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     }
                 }
                 // Collections
-                if (info.image == null && isShowAsLink(rowElement, attr) && !DBUtils.isNullValue(cellValue)) {
+                if (info.image == null && isShowAsExpander(rowElement, attr) && !DBUtils.isNullValue(cellValue)) {
                     final GridCell cell = new GridCell(colElement, rowElement);
                     info.image = spreadsheet.isCellExpanded(cell) ? UIIcon.TREE_COLLAPSE : UIIcon.TREE_EXPAND;
                 }
@@ -2504,10 +2501,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         return showBooleanAsCheckbox && attr.getPresentationAttribute().getDataKind() == DBPDataKind.BOOLEAN;
     }
 
-    private boolean isShowAsLink(@NotNull IGridRow rowElement, @NotNull DBDAttributeBinding attr) {
-        if (!CommonUtils.isEmpty(attr.getReferrers())) {
-            return true;
-        }
+    private boolean isShowAsExpander(@NotNull IGridRow rowElement, @NotNull DBDAttributeBinding attr) {
         return rowElement.getParent() == null && spreadsheet.getColumnCount() > 1 && isCollectionAttribute(attr);
     }
 

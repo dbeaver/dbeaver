@@ -45,7 +45,7 @@ import java.util.*;
  * LightGrid
  * initially based on Nebula grid. Refactored and mostly redone.
  *
- * @author serge@jkiss.org
+ * @author serge@dbeaver.com
  * @author chris.gross@us.ibm.com
  */
 public abstract class LightGrid extends Canvas {
@@ -3383,6 +3383,8 @@ public abstract class LightGrid extends Canvas {
     }
 
     public void toggleRowExpand(@NotNull IGridRow gridRow, @Nullable IGridColumn gridColumn) {
+        final IGridContentProvider provider = getContentProvider();
+
         RowLocation gridPos = new RowLocation(gridRow);
         RowExpandState rowState = expandedRows.get(gridPos);
 
@@ -3390,8 +3392,8 @@ public abstract class LightGrid extends Canvas {
             rowState = new RowExpandState();
 
             for (GridColumn column : columns) {
-                if (getContentProvider().hasChildren(gridRow) || getContentProvider().hasChildren(column)) {
-                    final int size = getContentProvider().getCollectionSize(column, gridRow);
+                if (provider.hasChildren(gridRow) || provider.hasChildren(column)) {
+                    final int size = provider.getCollectionSize(column, gridRow);
                     rowState.columns.put(column, new CellExpandState(size));
                 }
             }
@@ -3405,7 +3407,10 @@ public abstract class LightGrid extends Canvas {
                 state.expanded = !wasExpanded;
             }
         } else {
-            final CellExpandState state = rowState.columns.get(gridColumn);
+            final CellExpandState state = rowState.columns.computeIfAbsent(
+                gridColumn,
+                col -> new CellExpandState(provider.getCollectionSize(col, gridRow))
+            );
             state.expanded = !state.expanded;
         }
 

@@ -32,7 +32,7 @@
         </editor>
         <editor
             name="%editor.lock_manager.name"
-            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png"
+            icon="#locked"
             class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor"
             id="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor">
         </editor>
@@ -45,7 +45,7 @@
             <supports dataSource="redshift"/>
             <supports dataSource="enterprisedb"/>
         </editorContribution>
-        <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png" visibleIf="connected &amp;&amp; dataSource.serverType.supportsLocks()">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="#locked" visibleIf="connected &amp;&amp; dataSource.serverType.supportsLocks()">
             <supports dataSource="postgresql"/>
             <supports dataSource="greenplum"/>
             <supports dataSource="enterprisedb"/>
@@ -142,7 +142,9 @@
         <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreTablespaceConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace"/>
         </configurator>
-
+        <configurator class="org.jkiss.dbeaver.ui.editors.object.config.PropertyObjectConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePolicy"/>
+        </configurator>
         <configurator class="org.jkiss.dbeaver.ext.postgresql.ui.config.PostgreExplainPlanConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner"/>
         </configurator>
