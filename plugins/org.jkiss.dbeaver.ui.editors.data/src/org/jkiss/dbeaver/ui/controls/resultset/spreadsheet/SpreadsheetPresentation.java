@@ -2172,10 +2172,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     final DBDCollection collection = (DBDCollection) value;
                     final StringJoiner buffer = new StringJoiner(",", "{", "}");
                     for (int i = 0; i < Math.min(collection.size(), MAX_INLINE_COLLECTION_ELEMENTS); i++) {
-                        final Object item = collection.get(i);
-                        final DBDValueHandler componentHandler = collection.getComponentValueHandler();
-                        final DBSDataType componentType = collection.getComponentType();
-                        buffer.add(componentHandler.getValueDisplayString(componentType, item, DBDDisplayFormat.UI));
+                        buffer.add(collection.getComponentValueHandler().getValueDisplayString(
+                            collection.getComponentType(),
+                            collection.get(i),
+                            DBDDisplayFormat.UI
+                        ));
                     }
                     if (collection.size() > MAX_INLINE_COLLECTION_ELEMENTS) {
                         buffer.add(" ... [" + collection.getItemCount() + "]");
