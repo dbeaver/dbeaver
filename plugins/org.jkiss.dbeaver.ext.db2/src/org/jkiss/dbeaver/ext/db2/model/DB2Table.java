@@ -208,9 +208,9 @@ public class DB2Table extends DB2TableBase
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
-    {
-        return DB2Utils.generateDDLforTable(monitor, LINE_SEPARATOR, getDataSource(), this);
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        boolean includeViews = CommonUtils.getOption(options, OPTION_SCRIPT_INCLUDE_VIEWS);
+        return DB2Utils.generateDDLforTable(monitor, LINE_SEPARATOR, getDataSource(), this, includeViews);
     }
 
     // -----------------
