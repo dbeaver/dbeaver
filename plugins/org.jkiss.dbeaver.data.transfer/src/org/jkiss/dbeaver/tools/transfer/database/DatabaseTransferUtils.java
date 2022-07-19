@@ -27,12 +27,15 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -116,10 +119,10 @@ public class DatabaseTransferUtils {
 
     public static DBEPersistAction[] generateTargetTableDDL(
         @NotNull DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
+        @NotNull DBCExecutionContext executionContext,
         DBSObjectContainer schema,
-        DatabaseMappingContainer containerMapping,
-        @Nullable DBSObject copyFromTable) throws DBException {
+        @NotNull DatabaseMappingContainer containerMapping,
+        @Nullable Map<DBPPropertyDescriptor, Object> changedProperties) throws DBException {
         if (containerMapping.getMappingType() == DatabaseMappingType.skip) {
             return new DBEPersistAction[0];
         }
@@ -141,7 +144,7 @@ public class DatabaseTransferUtils {
         if (USE_STRUCT_DDL) {
             try {
                 final List<DBEPersistAction> actions = new ArrayList<>();
-                generateStructTableDDL(monitor, executionContext, schema, containerMapping, actions, copyFromTable);
+                generateStructTableDDL(monitor, executionContext, schema, containerMapping, actions, changedProperties);
                 return actions.toArray(DBEPersistAction[]::new);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Can't create or update target table", null, e);
@@ -259,7 +262,7 @@ public class DatabaseTransferUtils {
         @NotNull DBSObjectContainer schema,
         @NotNull DatabaseMappingContainer containerMapping,
         @NotNull List<DBEPersistAction> actions,
-        @Nullable DBSObject copyFromTable
+        @Nullable Map<DBPPropertyDescriptor, Object> changedProperties
     ) throws DBException {
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
 
@@ -307,7 +310,8 @@ public class DatabaseTransferUtils {
                 (containerMapping.getMappingType() == DatabaseMappingType.recreate
                     && containerMapping.getTarget() == null))
             {
-                table = tableManager.createNewObject(monitor, commandContext, schema, copyFromTable, options);
+                table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
+                implementPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
                 tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
                 createCommand = tableManager.makeCreateCommand(table, options);
             } else {
@@ -321,8 +325,9 @@ public class DatabaseTransferUtils {
                         monitor,
                         commandContext,
                         table.getParentObject(),
-                        copyFromTable,
+                        null,
                         options);
+                    implementPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
                     tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
                     createCommand = tableManager.makeCreateCommand(table, options);
                 } else {
@@ -387,6 +392,35 @@ public class DatabaseTransferUtils {
             return table;
         } catch (DBException e) {
             throw new DBException("Can't create or modify target table", e);
+        }
+    }
+
+    public static void implementPropertyChanges(
+        DBRProgressMonitor monitor,
+        Map<DBPPropertyDescriptor, Object> changedProperties,
+        DBECommandContext commandContext,
+        DatabaseMappingContainer containerMapping,
+        DBSEntity table) {
+        PropertySourceEditable propertySource = new PropertySourceEditable(commandContext, table, table);
+        if (CommonUtils.isEmpty(changedProperties) && containerMapping != null
+            && !CommonUtils.isEmpty(containerMapping.getRawChangedPropertiesMap())) {
+            // Probably it is the task with saved properties map
+            // But this map has only the id of ObjectPropertyDescriptor
+            // So we should find the correct properties and bound them
+            propertySource.collectProperties();
+            Map<String, Object> rawChangedPropertiesMap = containerMapping.getRawChangedPropertiesMap();
+            for (Map.Entry<String, Object> entry : rawChangedPropertiesMap.entrySet()) {
+                DBPPropertyDescriptor property = propertySource.getProperty(entry.getKey());
+                if (property != null) {
+                    propertySource.addChangedProperties(property, entry.getValue());
+                }
+            }
+            changedProperties = propertySource.getChangedPropertiesValues();
+        }
+        if (!CommonUtils.isEmpty(changedProperties)) {
+            for (Map.Entry<DBPPropertyDescriptor, Object> entry : changedProperties.entrySet()) {
+                propertySource.setPropertyValue(monitor, table, (ObjectPropertyDescriptor) entry.getKey(), entry.getValue());
+            }
         }
     }
 

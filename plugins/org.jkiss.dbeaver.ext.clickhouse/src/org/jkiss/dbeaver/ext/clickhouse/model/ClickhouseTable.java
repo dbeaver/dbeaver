@@ -71,7 +71,6 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
             metadataPath = JDBCUtils.safeGetString(dbResult, "metadata_path");
         } else {
             setDefaultEngine();
-            engineMessage = "()";
         }
     }
 
@@ -86,6 +85,7 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
     private void setDefaultEngine() {
         final List<ClickhouseTableEngine> tableEngines = getDataSource().getTableEngines();
         if (!CommonUtils.isEmpty(tableEngines)) {
+            // Log is one of the simplest ClickHouse engines. It doesn't need special engine parameters
             engine = tableEngines.stream().filter(e -> e.getName().equals("Log")).findFirst().orElse(tableEngines.get(0));
         }
     }

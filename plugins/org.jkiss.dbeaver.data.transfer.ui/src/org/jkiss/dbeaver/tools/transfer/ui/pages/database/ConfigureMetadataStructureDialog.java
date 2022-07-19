@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -58,7 +59,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 /**
  *  Dialog with tabs to change target table properties and table columns mapping
@@ -81,7 +82,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                                             @NotNull DatabaseConsumerSettings settings,
                                             @NotNull DatabaseMappingContainer mapping,
                                             @NotNull DatabaseConsumerPageMapping pageMapping) {
-        super(wizard.getShell(), "Configure metadata structure", null);
+        super(wizard.getShell(), DTUIMessages.page_configure_metadata_title, null);
         this.wizard = wizard;
         this.settings = settings;
         this.mapping = mapping;
@@ -98,7 +99,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         configTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         TabItem columnsMappingTab = new TabItem(configTabs, SWT.NONE);
-        columnsMappingTab.setText(DTUIMessages.columns_mapping_dialog_shell_text + mapping.getTargetName());
+        columnsMappingTab.setText(DTUIMessages.columns_mapping_dialog_shell_text);
         ColumnsMappingDialog columnsMappingDialog = new ColumnsMappingDialog(wizard, settings, mapping);
         columnsMappingDialog.createControl(configTabs);
         columnsMappingTab.setData(columnsMappingDialog);
@@ -114,7 +115,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
             && (mapping.getMappingType() == DatabaseMappingType.create
                 || mapping.getMappingType() == DatabaseMappingType.recreate)) {
             TabItem tablePropertiesTab = new TabItem(configTabs, SWT.NONE);
-            tablePropertiesTab.setText("Table properties");
+            tablePropertiesTab.setText(DTUIMessages.page_configure_table_properties_tab_title);
             DBPDataSource dataSource = container.getDataSource();
             DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
             try {
@@ -127,7 +128,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                             container,
                             mapping,
                             new ArrayList<>(),
-                            null);
+                            mapping.getChangedPropertiesMap());
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -148,10 +149,34 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                 for (DBPPropertyDescriptor prop : propertySource.getProperties()) {
                     if (prop instanceof ObjectPropertyDescriptor) {
                         final ObjectPropertyDescriptor obj = (ObjectPropertyDescriptor) prop;
-                        if (!obj.isEditPossible(tableObject) || obj.isNameProperty() || obj.isDescriptionProperty()) {
+                        if (!obj.isEditPossible(tableObject) || obj.isNameProperty() /*|| obj.isDescriptionProperty()*/) {
                             propertySource.removeProperty(prop);
                         }
                     }
+                }
+
+                if (!CommonUtils.isEmpty(mapping.getChangedPropertiesMap())) {
+                    // First check properties that could already be applied to this object
+                    // (this means that this dialogue was already opened by the user, and the changes have been applied to the target)
+                    propertySource.setChangedPropertiesMap(mapping.getChangedPropertiesMap());
+                } else if (!CommonUtils.isEmpty(mapping.getRawChangedPropertiesMap())) {
+                    // Or maybe we have task with saved properties map
+                    // But this map has only the id of ObjectPropertyDescriptor
+                    // So we should find the correct properties and bound them
+                    Map<String, Object> rawChangedPropertiesMap = mapping.getRawChangedPropertiesMap();
+                    for (Map.Entry<String, Object> entry : rawChangedPropertiesMap.entrySet()) {
+                        DBPPropertyDescriptor property = propertySource.getProperty(entry.getKey());
+                        if (property != null) {
+                            propertySource.addChangedProperties(property, entry.getValue());
+                        }
+                    }
+                    // Update table properties
+                    DatabaseTransferUtils.implementPropertyChanges(
+                        null,
+                        propertySource.getChangedPropertiesValues(),
+                        null,
+                        null,
+                        (DBSEntity) tableObject);
                 }
 
                 PropertyTreeViewer propertyViewer = new PropertyTreeViewer(configTabs, SWT.BORDER);
@@ -162,10 +187,12 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
             } else {
                 Composite compositeEmpty = new Composite(configTabs, SWT.NONE);
                 compositeEmpty.setLayout(new GridLayout(1, false));
-                compositeEmpty.setLayoutData(new GridData(GridData.FILL_BOTH));
-                Text messageText = new Text(compositeEmpty, SWT.READ_ONLY | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-                messageText.setLayoutData(new GridData(GridData.FILL_BOTH));
-                messageText.setText("Can't create target table properties info");
+                compositeEmpty.setLayoutData(gd);
+                Composite panel = UIUtils.createPlaceholder(compositeEmpty, 1);
+                panel.setLayoutData(gd);
+                Text messageText = new Text(panel, SWT.READ_ONLY | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+                messageText.setLayoutData(gd);
+                messageText.setText(DTUIMessages.page_configure_table_properties_info_text);
                 tablePropertiesTab.setControl(compositeEmpty);
             }
         }
@@ -217,20 +244,15 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         DBPDataSource dataSource = container.getDataSource();
 
         persistActions = generateTablePersistActions(container, dataSource);
-        if (ArrayUtils.isEmpty(persistActions)) {
-            UIUtils.showMessageBox(
-                getShell(),
-                DTUIMessages.database_consumer_page_mapping_error_no_schema_changes_title,
-                DTUIMessages.database_consumer_page_mapping_error_no_schema_changes_info,
-                SWT.ICON_INFORMATION);
-            return;
-        }
         serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         boolean showSaveButton;
         if (serviceSQL != null) {
             String dialogText;
             if (dataSource.getInfo().isDynamicMetadata()) {
                 dialogText = DTUIMessages.database_consumer_page_mapping_sqlviewer_nonsql_tables_message;
+                showSaveButton = false;
+            } else if (ArrayUtils.isEmpty(persistActions)) {
+                dialogText = DTUIMessages.database_consumer_page_mapping_error_no_schema_changes_info;
                 showSaveButton = false;
             } else {
                 dialogText = SQLUtils.generateScript(dataSource, persistActions, false);
@@ -261,7 +283,10 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
             gridData.minimumHeight = 25;
             gridData.minimumWidth = 100;
             if (showSaveButton) {
-                final Button persistButton = UIUtils.createPushButton(buttonsBar, "Persist", null);
+                final Button persistButton = UIUtils.createPushButton(
+                    buttonsBar,
+                    DTUIMessages.page_configure_table_DDL_button_persist,
+                    null);
                 persistButton.setLayoutData(gridData);
                 persistButton.addSelectionListener(new SelectionAdapter() {
                         @Override
@@ -280,7 +305,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                         }
                     });
             }
-            final Button copyButton = UIUtils.createPushButton(buttonsBar, "Copy", null);
+            final Button copyButton = UIUtils.createPushButton(buttonsBar, DTUIMessages.page_configure_table_DDL_button_copy, null);
             copyButton.setLayoutData(gridData);
             copyButton.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -305,7 +330,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                         executionContext,
                         container,
                         mapping,
-                        tableObject);
+                        propertySource != null ? propertySource.getChangedPropertiesValues() : mapping.getChangedPropertiesMap());
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -356,7 +381,12 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
 
     private void setNewTextToDDLTab(DBSObjectContainer container, DBPDataSource dataSource) {
         persistActions = generateTablePersistActions(container, dataSource);
-        String dialogText = SQLUtils.generateScript(dataSource, persistActions, false);
+        String dialogText;
+        if (ArrayUtils.isEmpty(persistActions)) {
+            dialogText = DTUIMessages.database_consumer_page_mapping_error_no_schema_changes_info;
+        } else {
+            dialogText = SQLUtils.generateScript(dataSource, persistActions, false);
+        }
         if (serviceSQL != null) {
             serviceSQL.setSQLPanelText(sqlPanel, dialogText);
         }
@@ -369,9 +399,10 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
-        List<DBPPropertyDescriptor> changedProperties = propertySource.getChangedProperties();
-        if (!CommonUtils.isEmpty(changedProperties)) {
-            mapping.setChangedPropertiesList(changedProperties);
+        // Save changes from the new created table if we have it
+        Map<DBPPropertyDescriptor, Object> changedPropertiesValues = propertySource.getChangedPropertiesValues();
+        if (!CommonUtils.isEmpty(changedPropertiesValues)) {
+            mapping.setChangedPropertiesMap(changedPropertiesValues);
         }
         super.okPressed();
     }

@@ -66,4 +66,9 @@ public class ClickhouseTableEngine implements DBSObject {
     public boolean isPersisted() {
         return true;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

@@ -49,8 +49,6 @@ public class ClickhouseTableManager extends GenericTableManager {
                 ddl.append(" ENGINE = ").append(clickhouseTable.getEngine().getName());
                 if (CommonUtils.isNotEmpty(clickhouseTable.getEngineMessage())) {
                     ddl.append("\n").append(clickhouseTable.getEngineMessage());
-                } else {
-                    ddl.append("()");
                 }
                 return;
             }

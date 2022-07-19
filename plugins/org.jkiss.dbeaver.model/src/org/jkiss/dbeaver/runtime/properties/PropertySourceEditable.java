@@ -179,7 +179,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             if (editableValue instanceof DBSObject) {
                 DBUtils.fireObjectUpdate((DBSObject) editableValue, prop);
             }
-            addChangedProperties(prop);
+            addChangedProperties(prop, value);
             return true;
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {

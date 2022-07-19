@@ -58,7 +58,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     private String targetName;
     private DatabaseMappingType mappingType;
     private final List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
-    private List<DBPPropertyDescriptor> changedPropertiesList;
+    private Map<DBPPropertyDescriptor, Object> changedPropertiesMap;
+    private Map<String, Object> rawChangedPropertiesMap; // For tasks with empty container
 
     public DatabaseMappingContainer(DatabaseConsumerSettings consumerSettings, DBSDataContainer source) {
         this.consumerSettings = consumerSettings;
@@ -147,12 +148,16 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return source;
     }
 
-    public List<DBPPropertyDescriptor> getChangedPropertiesList() {
-        return changedPropertiesList;
+    public Map<DBPPropertyDescriptor, Object> getChangedPropertiesMap() {
+        return changedPropertiesMap;
     }
 
-    public void setChangedPropertiesList(List<DBPPropertyDescriptor> changedPropertiesList) {
-        this.changedPropertiesList = changedPropertiesList;
+    public void setChangedPropertiesMap(Map<DBPPropertyDescriptor, Object> changedPropertiesMap) {
+        this.changedPropertiesMap = changedPropertiesMap;
+    }
+
+    public Map<String, Object> getRawChangedPropertiesMap() {
+        return rawChangedPropertiesMap;
     }
 
     @Override
@@ -273,6 +278,14 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 }
             }
         }
+        if (!CommonUtils.isEmpty(changedPropertiesMap)) {
+            Map<String, Object> propertiesMap = new LinkedHashMap<>();
+            settings.put("changedProperties", propertiesMap);
+            for (Map.Entry<DBPPropertyDescriptor, Object> entry : changedPropertiesMap.entrySet()) {
+                Object value = entry.getValue();
+                propertiesMap.put(entry.getKey().getId(), value.toString());
+            }
+        }
     }
 
     public void loadSettings(DBRRunnableContext context, Map<String, Object> settings) {
@@ -315,6 +328,10 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                     }
                 }
             }
+        }
+        Object changedProperties = settings.get("changedProperties");
+        if (changedProperties != null) {
+            rawChangedPropertiesMap = (Map<String, Object>) settings.get("changedProperties");
         }
     }
 

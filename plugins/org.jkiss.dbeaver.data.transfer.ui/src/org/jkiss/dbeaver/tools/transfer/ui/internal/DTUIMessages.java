@@ -66,7 +66,7 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_wizard_on_duplicate_key_insert_method_text;
 	public static String database_consumer_wizard_link_label_replace_method_wiki;
 	public static String database_consumer_wizard_label_replace_method_not_supported;
-	
+
 	public static String columns_mapping_dialog_shell_text;
 	public static String columns_mapping_dialog_composite_label_text_source_container;
 	public static String columns_mapping_dialog_composite_label_text_source_entity;
@@ -195,6 +195,12 @@ public class DTUIMessages extends NLS {
 	public static String database_consumer_page_mapping_create_target_object_confirmation_question;
 	public static String sql_script_task_page_settings_error_message_you_must_select_script_execute;
 	public static String sql_script_task_page_settings_error_message_you_must_select_connection;
+
+	public static String page_configure_metadata_title;
+	public static String page_configure_table_properties_tab_title;
+	public static String page_configure_table_DDL_button_persist;
+	public static String page_configure_table_DDL_button_copy;
+	public static String page_configure_table_properties_info_text;
 
 	public static String value_format_selector_value;
 	public static String value_format_selector_display;

@@ -53,10 +53,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Stream transfer consumer
@@ -670,7 +667,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 session.getExecutionContext(),
                 schema,
                 containerMapping,
-                null);
+                containerMapping.getChangedPropertiesMap());
             try {
                 DatabaseTransferUtils.executeDDL(session, actions);
             } catch (DBCException e) {
