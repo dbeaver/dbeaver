@@ -18,7 +18,9 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -44,6 +46,8 @@ import java.util.List;
  */
 public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements DBSTableForeignKey {
 
+    private static final Log log = Log.getLog(DB2TableForeignKey.class);
+
     private DB2Table refTable;
 
     private DB2DeleteUpdateRule db2DeleteRule;
@@ -65,7 +69,11 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         String refTableName = JDBCUtils.safeGetString(dbResult, "REFTABNAME");
         String constName = JDBCUtils.safeGetString(dbResult, "REFKEYNAME");
         refTable = DB2Utils.findTableBySchemaNameAndName(monitor, db2Table.getDataSource(), refSchemaName, refTableName);
-        referencedKey = refTable.getConstraint(monitor, constName);
+        if (refTable != null) {
+            referencedKey = refTable.getConstraint(monitor, constName);
+        } else {
+            log.warn("Referenced table '" + DBUtils.getSimpleQualifiedName(refSchemaName, refTableName) + "' not found");
+        }
 
         db2DeleteRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "DELETERULE"));
         db2UpdateRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "UPDATERULE"));
@@ -142,7 +150,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         return refTable;
     }
 
-    @NotNull
+    @Nullable
     @Override
     @Property(id = "reference", viewable = false)
     public DB2TableUniqueKey getReferencedConstraint()

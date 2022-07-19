@@ -94,7 +94,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
         if (variablesHintLabel != null) {
             if (dataSource != null) {
-                variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource, dataSource.getConnectionConfiguration()));
+                variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
+                    dataSource.getConnectionConfiguration()));
             } else {
                 variablesHintLabel.setResolver(null);
             }
@@ -136,7 +137,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             variablesHintLabel = new VariablesHintLabel(panel,
                 UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
                 UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
-                DBPConnectionConfiguration.CONNECT_VARIABLES,
+                DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES,
                 false);
             ((GridData)variablesHintLabel.getInfoLabel().getLayoutData()).horizontalSpan = site.isNew() ? 3 : 4;
         } else {
