@@ -107,6 +107,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     public static final String ATTR_OPTION_PINNED = "pinned";
 
+    private static final int MAX_INLINE_COLLECTION_ELEMENTS = 3;
+
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
     private Spreadsheet spreadsheet;
@@ -2167,7 +2169,18 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
             if (!showCollectionsInline || controller.isRecordMode()) {
                 if (isCollectionAttribute(attr) && value instanceof DBDCollection && !DBUtils.isNullValue(value)) {
-                    return "[" + ((DBDCollection) value).getItemCount() + "]";
+                    final DBDCollection collection = (DBDCollection) value;
+                    final StringJoiner buffer = new StringJoiner(",", "{", "}");
+                    for (int i = 0; i < Math.min(collection.size(), MAX_INLINE_COLLECTION_ELEMENTS); i++) {
+                        final Object item = collection.get(i);
+                        final DBDValueHandler componentHandler = collection.getComponentValueHandler();
+                        final DBSDataType componentType = collection.getComponentType();
+                        buffer.add(componentHandler.getValueDisplayString(componentType, item, DBDDisplayFormat.UI));
+                    }
+                    if (collection.size() > MAX_INLINE_COLLECTION_ELEMENTS) {
+                        buffer.add(" ... [" + collection.getItemCount() + "]");
+                    }
+                    return buffer.toString();
                 } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite && !DBUtils.isNullValue(value)) {
                     return "[" + ((DBDComposite) value).getDataType().getName() + "]";
                 }
