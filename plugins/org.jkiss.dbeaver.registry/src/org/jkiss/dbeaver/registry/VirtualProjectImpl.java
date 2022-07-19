@@ -19,24 +19,20 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.rm.RMProject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.nio.file.Path;
 
 public class VirtualProjectImpl extends BaseProjectImpl {
 
     @NotNull
-    private final String projectName;
-    private final String projectId;
-    @NotNull
-    private final Path projectPath;
+    private final RMProject project;
 
-    public VirtualProjectImpl(@NotNull DBPWorkspace workspace, @NotNull String projectId, @NotNull String projectName, @NotNull Path projectPath, @Nullable SMSessionContext sessionContext) {
-        super(workspace, sessionContext);
-        this.projectId = projectId;
-        this.projectName = projectName;
-        this.projectPath = projectPath;
+    public VirtualProjectImpl(@NotNull RMProject project, @Nullable SMSessionContext sessionContext) {
+        super(DBWorkbench.getPlatform().getWorkspace(), sessionContext);
+        this.project = project;
     }
 
     @Override
@@ -47,19 +43,19 @@ public class VirtualProjectImpl extends BaseProjectImpl {
     @NotNull
     @Override
     public String getName() {
-        return projectName;
+        return project.getName();
     }
 
     @NotNull
     @Override
     public String getId() {
-        return projectId;
+        return project.getId();
     }
 
     @NotNull
     @Override
     public Path getAbsolutePath() {
-        return projectPath;
+        return Path.of(project.getPath());
     }
 
     @Nullable
