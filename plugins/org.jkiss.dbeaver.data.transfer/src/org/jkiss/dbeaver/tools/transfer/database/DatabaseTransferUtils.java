@@ -267,16 +267,8 @@ public class DatabaseTransferUtils {
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
 
         try {
-            Class<? extends DBSObject> tableClass = schema.getPrimaryChildType(monitor);
-            if (!DBSEntity.class.isAssignableFrom(tableClass)) {
-                throw new DBException("Wrong table container child type: " + tableClass.getName());
-            }
-            SQLObjectEditor<DBSEntity, ?> tableManager = editorsRegistry.getObjectManager(
-                tableClass,
-                SQLObjectEditor.class);
-            if (tableManager == null) {
-                throw new DBException("Table manager not found for '" + tableClass.getName() + "'");
-            }
+            Class<? extends DBSObject> tableClass = getTableClass(monitor, schema);
+            SQLObjectEditor<DBSEntity, ?> tableManager = getTableManager(editorsRegistry, tableClass);
             if (!tableManager.canCreateObject(schema)) {
                 throw new DBException("Table create is not supported by driver " + schema.getDataSource().getContainer().getDriver().getName());
             }

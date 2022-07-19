@@ -215,9 +215,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     {
                         DatabaseMappingObject selectedMapping = getSelectedMapping();
                         mapColumnsAndTable(
-                            selectedMapping instanceof DatabaseMappingContainer ?
-                            (DatabaseMappingContainer) selectedMapping :
-                            ((DatabaseMappingAttribute)selectedMapping).getParent());
+                            selectedMapping instanceof DatabaseMappingContainer
+                                ? (DatabaseMappingContainer) selectedMapping : ((DatabaseMappingAttribute) selectedMapping).getParent());
                     }
                 });
             configureButton.setEnabled(false);

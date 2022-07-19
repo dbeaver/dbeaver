@@ -75,6 +75,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
     private UIServiceSQL serviceSQL;
     private Object sqlPanel;
     private DBEPersistAction[] persistActions;
+    private boolean ddlTabNeedRefresh = true;
 
     private PropertySourceEditable propertySource;
 
@@ -149,51 +150,47 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                 for (DBPPropertyDescriptor prop : propertySource.getProperties()) {
                     if (prop instanceof ObjectPropertyDescriptor) {
                         final ObjectPropertyDescriptor obj = (ObjectPropertyDescriptor) prop;
-                        if (!obj.isEditPossible(tableObject) || obj.isNameProperty() /*|| obj.isDescriptionProperty()*/) {
+                        if (!obj.isEditPossible(tableObject) || obj.isNameProperty()) {
                             propertySource.removeProperty(prop);
                         }
                     }
                 }
 
-                if (!CommonUtils.isEmpty(mapping.getChangedPropertiesMap())) {
-                    // First check properties that could already be applied to this object
-                    // (this means that this dialogue was already opened by the user, and the changes have been applied to the target)
-                    propertySource.setChangedPropertiesMap(mapping.getChangedPropertiesMap());
-                } else if (!CommonUtils.isEmpty(mapping.getRawChangedPropertiesMap())) {
-                    // Or maybe we have task with saved properties map
-                    // But this map has only the id of ObjectPropertyDescriptor
-                    // So we should find the correct properties and bound them
-                    Map<String, Object> rawChangedPropertiesMap = mapping.getRawChangedPropertiesMap();
-                    for (Map.Entry<String, Object> entry : rawChangedPropertiesMap.entrySet()) {
-                        DBPPropertyDescriptor property = propertySource.getProperty(entry.getKey());
-                        if (property != null) {
-                            propertySource.addChangedProperties(property, entry.getValue());
+                if (!ArrayUtils.isEmpty(propertySource.getProperties())) {
+                    if (!CommonUtils.isEmpty(mapping.getChangedPropertiesMap())) {
+                        // First check properties that could already be applied to this object
+                        // (this means that this dialogue was already opened by the user, and the changes have been applied to the target)
+                        propertySource.setChangedPropertiesMap(mapping.getChangedPropertiesMap());
+                    } else if (!CommonUtils.isEmpty(mapping.getRawChangedPropertiesMap())) {
+                        // Or maybe we have task with saved properties map
+                        // But this map has only the id of ObjectPropertyDescriptor
+                        // So we should find the correct properties and bound them
+                        Map<String, Object> rawChangedPropertiesMap = mapping.getRawChangedPropertiesMap();
+                        for (Map.Entry<String, Object> entry : rawChangedPropertiesMap.entrySet()) {
+                            DBPPropertyDescriptor property = propertySource.getProperty(entry.getKey());
+                            if (property != null) {
+                                propertySource.addChangedProperties(property, entry.getValue());
+                            }
                         }
+                        // Update table properties
+                        DatabaseTransferUtils.implementPropertyChanges(
+                            null,
+                            propertySource.getChangedPropertiesValues(),
+                            null,
+                            null,
+                            (DBSEntity) tableObject);
                     }
-                    // Update table properties
-                    DatabaseTransferUtils.implementPropertyChanges(
-                        null,
-                        propertySource.getChangedPropertiesValues(),
-                        null,
-                        null,
-                        (DBSEntity) tableObject);
+
+                    PropertyTreeViewer propertyViewer = new PropertyTreeViewer(configTabs, SWT.BORDER);
+                    propertyViewer.getControl().setLayoutData(GridDataFactory.fillDefaults().hint(400, SWT.DEFAULT).create());
+                    propertyViewer.loadProperties(propertySource);
+
+                    tablePropertiesTab.setControl(propertyViewer.getControl());
+                } else {
+                    createCompositeWithMessage(gd, tablePropertiesTab, DTUIMessages.page_configure_table_properties_no_properties);
                 }
-
-                PropertyTreeViewer propertyViewer = new PropertyTreeViewer(configTabs, SWT.BORDER);
-                propertyViewer.getControl().setLayoutData(GridDataFactory.fillDefaults().hint(400, SWT.DEFAULT).create());
-                propertyViewer.loadProperties(propertySource);
-
-                tablePropertiesTab.setControl(propertyViewer.getControl());
             } else {
-                Composite compositeEmpty = new Composite(configTabs, SWT.NONE);
-                compositeEmpty.setLayout(new GridLayout(1, false));
-                compositeEmpty.setLayoutData(gd);
-                Composite panel = UIUtils.createPlaceholder(compositeEmpty, 1);
-                panel.setLayoutData(gd);
-                Text messageText = new Text(panel, SWT.READ_ONLY | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-                messageText.setLayoutData(gd);
-                messageText.setText(DTUIMessages.page_configure_table_properties_info_text);
-                tablePropertiesTab.setControl(compositeEmpty);
+                createCompositeWithMessage(gd, tablePropertiesTab, DTUIMessages.page_configure_table_properties_info_text);
             }
         }
 
@@ -205,21 +202,35 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         configTabs.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                final int selectionIndex = configTabs.getSelectionIndex();
-                final Control[] tabList = configTabs.getTabList();
-                if (tabList.length > 0 && selectionIndex == tabList.length - 1) {
-                    // Refresh DDL tab - it is the last
-                    final DBSObjectContainer container = settings.getContainer();
-                    if (container == null) {
-                        return;
+                if (ddlTabNeedRefresh) {
+                    final int selectionIndex = configTabs.getSelectionIndex();
+                    final Control[] tabList = configTabs.getTabList();
+                    if (tabList.length > 0 && selectionIndex == tabList.length - 1) {
+                        // Refresh DDL tab - it is the last
+                        final DBSObjectContainer container = settings.getContainer();
+                        if (container == null) {
+                            return;
+                        }
+                        DBPDataSource dataSource = container.getDataSource();
+                        setNewTextToDDLTab(container, dataSource);
                     }
-                    DBPDataSource dataSource = container.getDataSource();
-                    setNewTextToDDLTab(container, dataSource);
                 }
             }
         });
 
         return composite;
+    }
+
+    private void createCompositeWithMessage(GridData gd, TabItem tablePropertiesTab, String message) {
+        Composite compositeEmpty = new Composite(configTabs, SWT.NONE);
+        compositeEmpty.setLayout(new GridLayout(1, false));
+        compositeEmpty.setLayoutData(gd);
+        Composite panel = UIUtils.createPlaceholder(compositeEmpty, 1);
+        panel.setLayoutData(gd);
+        Text messageText = new Text(panel, SWT.READ_ONLY | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+        messageText.setLayoutData(gd);
+        messageText.setText(message);
+        tablePropertiesTab.setControl(compositeEmpty);
     }
 
     private void showDDL(@NotNull TabItem showDDLTab) {
@@ -248,15 +259,16 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         boolean showSaveButton;
         if (serviceSQL != null) {
             String dialogText;
-            if (dataSource.getInfo().isDynamicMetadata()) {
+            if (dataSource != null && dataSource.getInfo().isDynamicMetadata()) {
                 dialogText = DTUIMessages.database_consumer_page_mapping_sqlviewer_nonsql_tables_message;
                 showSaveButton = false;
+                ddlTabNeedRefresh = false;
             } else if (ArrayUtils.isEmpty(persistActions)) {
                 dialogText = DTUIMessages.database_consumer_page_mapping_error_no_schema_changes_info;
                 showSaveButton = false;
             } else {
                 dialogText = SQLUtils.generateScript(dataSource, persistActions, false);
-                showSaveButton = dataSource.getContainer().hasModifyPermission(
+                showSaveButton = dataSource != null && dataSource.getContainer().hasModifyPermission(
                     DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
             }
             try {
@@ -294,8 +306,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                             if (UIUtils.confirmAction(
                                 getShell(),
                                 DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_title,
-                                DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_question))
-                            {
+                                DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_question)) {
                                 // Create target objects
                                 if (applySchemaChanges(container, mapping)) {
                                     pageMapping.autoAssignMappings();
