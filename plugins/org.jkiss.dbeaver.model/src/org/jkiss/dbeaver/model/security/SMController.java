@@ -118,4 +118,10 @@ public interface SMController extends SMAuthCredentialsManager {
         @NotNull Set<String> permissions,
         @NotNull String grantor
     ) throws DBException;
+
+    @NotNull
+    List<SMObjectPermissionsGrant> getObjectPermissionGrants(
+        @NotNull String objectId,
+        @NotNull SMObjectType smObjectType
+    ) throws DBException;
 }
