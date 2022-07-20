@@ -42,6 +42,9 @@ public class NumberDataFormatter implements DBDDataFormatter {
     private StringBuffer buffer;
     private FieldPosition position;
 
+    public NumberDataFormatter() {
+    }
+
     @Override
     public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
     {

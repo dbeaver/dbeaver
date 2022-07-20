@@ -56,7 +56,7 @@
         </editor>
 
         <editor id="source.ddl"
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                class="org.jkiss.dbeaver.ext.db2.ui.editors.DB2TableDDLEditor"
                 label="%editor.source.ddl.name"
                 description="%editor.source.ddl.description"
                 icon="#sql_text"
