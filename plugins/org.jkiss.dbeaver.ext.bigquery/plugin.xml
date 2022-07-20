@@ -30,7 +30,8 @@
                         description="Google BigQuery driver"
                         webURL="https://cloud.google.com/bigquery/partners/simba-drivers/"
                         propertiesURL="https://cdn.simba.com/products/BigQuery/doc/JDBC_InstallGuide/"
-                        categories="bigdata">
+                        categories="bigdata"
+                        singleConnection="true">
                     <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.2.21.1025.zip" bundle="!drivers.bigquery"/>/>
                     <file type="jar" path="drivers/bigquery" bundle="drivers.bigquery"/>/>
 
