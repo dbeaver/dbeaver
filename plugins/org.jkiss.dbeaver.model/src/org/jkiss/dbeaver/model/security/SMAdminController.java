@@ -70,14 +70,6 @@ public interface SMAdminController extends SMController {
     // Permissions
     void setSubjectPermissions(String subjectId, List<String> permissionIds, String grantorId) throws DBException;
 
-    void setObjectPermissions(
-        @NotNull Set<String> objectIds,
-        @NotNull SMObjectType objectType,
-        @NotNull Set<String> subjectIds,
-        @NotNull Set<String> permissions,
-        @NotNull String grantor
-    ) throws DBException;
-
     void deleteAllObjectPermissions(
         @NotNull String objectId,
         @NotNull SMObjectType objectType
