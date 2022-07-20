@@ -43,6 +43,7 @@ public class SQLServerAuthModelMFA extends SQLServerAuthModelAbstract {
     @Override
     public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         connProperties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_INTERACTIVE);
+        dataSource.getContainer().setForceUseSingleConnection(true);
         return credentials;
     }
 

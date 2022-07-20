@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -64,7 +65,7 @@ public enum OracleDDLFormat {
         return showTablespace;
     }
 
-    public static OracleDDLFormat getCurrentFormat(OracleDataSource dataSource) {
+    public static OracleDDLFormat getCurrentFormat(DBPDataSource dataSource) {
         String ddlFormatString = dataSource.getContainer().getPreferenceStore().getString(OracleConstants.PREF_KEY_DDL_FORMAT);
         if (!CommonUtils.isEmpty(ddlFormatString)) {
             try {

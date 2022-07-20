@@ -13,4 +13,6 @@ Require-Bundle: org.junit,
  org.mockito.mockito-all,
  org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.registry
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.ext.postgresql,
+ org.jkiss.dbeaver.ext.greenplum
