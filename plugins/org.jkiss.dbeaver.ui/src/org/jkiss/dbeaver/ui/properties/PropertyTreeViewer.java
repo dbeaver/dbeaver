@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIElementAlignment;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.AdvancedTextCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleDecorator;
@@ -420,6 +421,10 @@ public class PropertyTreeViewer extends TreeViewer {
                     showEditor(item, isMouseEventOnMacos);
                     isMouseEventOnMacos = false;
                     return;
+                }
+                if (curCellEditor instanceof AdvancedTextCellEditor) {
+                    // Save values before dispose
+                    ((AdvancedTextCellEditor) curCellEditor).lostFocus();
                 }
                 showEditor(item, (e.stateMask & SWT.BUTTON_MASK) != 0);
             }

@@ -150,4 +150,8 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
 //        }
         super.deactivate();
     }
+
+    public void lostFocus() {
+        focusLost();
+    }
 }
