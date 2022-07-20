@@ -39,8 +39,7 @@ public class OracleObjectDDLEditor extends SQLSourceViewer<OracleTable> implemen
     protected void contributeEditorCommands(IContributionManager contributionManager)
     {
         super.contributeEditorCommands(contributionManager);
-        OracleTable sourceObject = getSourceObject();
-        OracleEditorUtils.addDDLControl(contributionManager, sourceObject, this);
+        OracleEditorUtils.addDDLControl(contributionManager, getSourceObject(), this);
     }
 
     public void putDDLOptions(String name, Object value) {

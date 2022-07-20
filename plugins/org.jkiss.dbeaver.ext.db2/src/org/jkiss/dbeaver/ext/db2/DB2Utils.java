@@ -127,7 +127,7 @@ public class DB2Utils {
     //
     // TODO DF: Tables in SYSTOOLS tables must exist first
     public static String generateDDLforTable(DBRProgressMonitor monitor, String statementDelimiter, DB2DataSource dataSource,
-        DB2Table db2Table) throws DBException
+        DB2Table db2Table, boolean includeViews) throws DBException
     {
         LOG.debug("Generate DDL for " + db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
 
@@ -152,7 +152,10 @@ public class DB2Utils {
 
         int token;
         StringBuilder sb = new StringBuilder(2048);
-        String command = String.format(DB2LK_COMMAND, statementDelimiter, db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        String command = String.format(
+            (includeViews ? "" : "-noview ") + DB2LK_COMMAND,
+            statementDelimiter,
+            db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Generate DDL")) {
             LOG.debug("Calling DB2LK_GENERATE_DDL with command : " + command);
@@ -178,8 +181,10 @@ public class DB2Utils {
                         ddlStmt = dbResult.getClob(1);
                         try {
                             ddlLength = ddlStmt.length() + 1L;
-                            sb.append(ddlStmt.getSubString(ddlStart, ddlLength.intValue()));
-                            sb.append(LINE_SEP);
+                            String stmtSubString = ddlStmt.getSubString(ddlStart, ddlLength.intValue());
+                            if (CommonUtils.isNotEmpty(stmtSubString)) {
+                                sb.append(stmtSubString.trim()).append(LINE_SEP).append("\n");
+                            }
                         } finally {
                             try {
                                 ddlStmt.free();

@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPScriptObjectExt;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -35,21 +35,26 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  * Oracle scheduler job
  */
-public class OracleSchedulerJob extends OracleSchemaObject implements OracleStatefulObject, DBPScriptObjectExt {
+public class OracleSchedulerJob extends OracleSchemaObject implements OracleStatefulObject, DBPScriptObject {
 
     private static final String CAT_SETTINGS = "Settings";
     private static final String CAT_EVENTS = "Events";
     private static final String CAT_ADVANCED = "Advanced";
+
+    private static final String DEFAULT_JOB_CLASS = "DEFAULT_JOB_CLASS";
 
     private String owner;
     private String jobSubName;
@@ -78,7 +83,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
     private String endDate;
 
     private String jobClass;
-    private String enabled;
+    private boolean enabled;
     private String autoDrop;
     private String restartable;
     private String state;
@@ -154,7 +159,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         fileWatcherName = JDBCUtils.safeGetString(dbResult, "FILE_WATCHER_NAME");
         endDate = JDBCUtils.safeGetString(dbResult, "END_DATE");
         jobClass = JDBCUtils.safeGetString(dbResult, "JOB_CLASS");
-        enabled = JDBCUtils.safeGetString(dbResult, "ENABLED");
+        enabled = JDBCUtils.safeGetBoolean(dbResult, "ENABLED");
         autoDrop = JDBCUtils.safeGetString(dbResult, "AUTO_DROP");
         restartable = JDBCUtils.safeGetString(dbResult, "RESTARTABLE");
         state = JDBCUtils.safeGetString(dbResult, "STATE");
@@ -314,7 +319,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
     }
 
     @Property(category = CAT_SETTINGS, viewable = false, order = 34)
-    public String getEnabled() {
+    public boolean getEnabled() {
         return enabled;
     }
 
@@ -616,13 +621,36 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
                 monitor.done();
             }
         }
-        return jobAction;
-	}
 
-	@Override
-	public String getExtendedDefinitionText(DBRProgressMonitor monitor) throws DBException {
-		// TODO Complete this so that Generate DDL includes the entire job definition, not just the action block
-		return null;
-	}
+        final StringJoiner args = new StringJoiner(",\n\t");
+        args.add("job_name => " + SQLUtils.quoteString(this, name));
+        args.add("job_type => " + SQLUtils.quoteString(this, jobType));
+        args.add("job_action => " + SQLUtils.quoteString(this, CommonUtils.escapeDisplayString(jobAction)));
 
+        if (!DEFAULT_JOB_CLASS.equals(jobClass)) {
+            args.add("job_class => " + SQLUtils.quoteString(this, jobClass));
+        }
+
+        if (startDate != null) {
+            args.add("start_date => TO_TIMESTAMP_TZ(" + SQLUtils.quoteString(this, startDate) + ", 'yyyy-mm-dd hh24:mi:ss.ff tzr')");
+        }
+
+        if (endDate != null) {
+            args.add("end_date => TO_TIMESTAMP_TZ(" + SQLUtils.quoteString(this, endDate) + ", 'yyyy-mm-dd hh24:mi:ss.ff tzr')");
+        }
+
+        if (repeatInterval != null) {
+            args.add("repeat_interval => " + SQLUtils.quoteString(this, repeatInterval));
+        }
+
+        if (comments != null) {
+            args.add("comments => " + SQLUtils.quoteString(this, comments));
+        }
+
+        if (enabled) {
+            args.add("enabled => TRUE");
+        }
+
+        return "DBMS_SCHEDULER.CREATE_JOB(\n\t" + args + "\n)";
+    }
 }

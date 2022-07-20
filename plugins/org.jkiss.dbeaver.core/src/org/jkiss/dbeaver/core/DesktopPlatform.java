@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
@@ -201,7 +201,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 
         if (isStandalone() && workspace != null && !application.isExclusiveMode()) {
             try {
-                workspace.save(new VoidProgressMonitor());
+                workspace.save(new LoggingProgressMonitor(log));
             } catch (DBException ex) {
                 log.error("Can't save workspace", ex); //$NON-NLS-1$
             }

@@ -271,7 +271,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
             }
             UIUtils.asyncExec(() -> {
 
-                if (textViewer != null) {
+                if (textViewer != null && editor != null) {
                     StyledText textWidget = textViewer.getTextWidget();
                     if (textWidget != null && longContent) {
                         GC gc = new GC(textWidget);

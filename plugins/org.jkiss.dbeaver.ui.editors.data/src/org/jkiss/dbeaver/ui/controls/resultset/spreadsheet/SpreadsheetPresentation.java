@@ -1990,6 +1990,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
+        public boolean isElementExpandable(@NotNull IGridItem item) {
+            return item.getElement() instanceof DBDAttributeBinding
+                && isCollectionAttribute((DBDAttributeBinding) item.getElement());
+        }
+
+        @Override
         public boolean isGridReadOnly() {
             return controller.isAllAttributesReadOnly();
         }
