@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
-import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingType;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferUtils;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
@@ -82,7 +81,8 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
     public ConfigureMetadataStructureDialog(@NotNull DataTransferWizard wizard,
                                             @NotNull DatabaseConsumerSettings settings,
                                             @NotNull DatabaseMappingContainer mapping,
-                                            @NotNull DatabaseConsumerPageMapping pageMapping) {
+                                            @NotNull DatabaseConsumerPageMapping pageMapping)
+    {
         super(wizard.getShell(), DTUIMessages.page_configure_metadata_title, null);
         this.wizard = wizard;
         this.settings = settings;
@@ -107,14 +107,11 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         Control pageControl = columnsMappingDialog.getControl();
         columnsMappingTab.setControl(pageControl);
 
-        if (mapping.getMappingType() != DatabaseMappingType.create
-            && mapping.getMappingType() != DatabaseMappingType.recreate) {
+        if (!mapping.hasNewTargetObject()) {
             tableObject = mapping.getTarget();
         }
         final DBSObjectContainer container = settings.getContainer();
-        if (container != null
-            && (mapping.getMappingType() == DatabaseMappingType.create
-                || mapping.getMappingType() == DatabaseMappingType.recreate)) {
+        if (container != null && mapping.hasNewTargetObject()) {
             TabItem tablePropertiesTab = new TabItem(configTabs, SWT.NONE);
             tablePropertiesTab.setText(DTUIMessages.page_configure_table_properties_tab_title);
             DBPDataSource dataSource = container.getDataSource();
@@ -173,7 +170,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                             }
                         }
                         // Update table properties
-                        DatabaseTransferUtils.implementPropertyChanges(
+                        DatabaseTransferUtils.applyPropertyChanges(
                             null,
                             propertySource.getChangedPropertiesValues(),
                             null,
@@ -208,11 +205,10 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                     if (tabList.length > 0 && selectionIndex == tabList.length - 1) {
                         // Refresh DDL tab - it is the last
                         final DBSObjectContainer container = settings.getContainer();
-                        if (container == null) {
-                            return;
+                        if (container != null) {
+                            DBPDataSource dataSource = container.getDataSource();
+                            setNewTextToDDLTab(container, dataSource);
                         }
-                        DBPDataSource dataSource = container.getDataSource();
-                        setNewTextToDDLTab(container, dataSource);
                     }
                 }
             }

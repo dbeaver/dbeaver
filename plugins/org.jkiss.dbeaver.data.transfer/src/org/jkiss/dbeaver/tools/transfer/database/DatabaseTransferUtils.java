@@ -117,12 +117,25 @@ public class DatabaseTransferUtils {
         }
     }
 
+    /**
+     * Method generates array of actions for table creation for containers with correct mapping type.
+     * Has old code inside with the simple table creations.
+     *
+     * @param monitor progress monitor
+     * @param executionContext execution context for DDL generation
+     * @param schema table container
+     * @param containerMapping mapping container can not be null
+     * @param changedProperties list of properties what feature table must have
+     * @return array of persist actions table creation
+     * @throws DBException on any DB error
+     */
     public static DBEPersistAction[] generateTargetTableDDL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
-        DBSObjectContainer schema,
+        @NotNull DBSObjectContainer schema,
         @NotNull DatabaseMappingContainer containerMapping,
-        @Nullable Map<DBPPropertyDescriptor, Object> changedProperties) throws DBException {
+        @Nullable Map<DBPPropertyDescriptor, Object> changedProperties) throws DBException
+    {
         if (containerMapping.getMappingType() == DatabaseMappingType.skip) {
             return new DBEPersistAction[0];
         }
@@ -178,7 +191,7 @@ public class DatabaseTransferUtils {
             sql.append(dataSource.getSQLDialect().getScriptDelimiters()[0]);
         }
 
-        if (containerMapping.getMappingType() == DatabaseMappingType.create || containerMapping.getMappingType() == DatabaseMappingType.recreate) {
+        if (containerMapping.hasNewTargetObject()) {
             sql.append("CREATE TABLE ");
             getTableFullName(schema, dataSource, sql, tableName);
             sql.append("(\n");
@@ -255,6 +268,18 @@ public class DatabaseTransferUtils {
         return tableClass;
     }
 
+    /**
+     * This method returns object of the feature new created table and fill the table creating actions list
+     *
+     * @param monitor progress monitor
+     * @param executionContext not null execution context to get datasource etc.
+     * @param schema feature table container
+     * @param containerMapping mapping container
+     * @param actions will be filled by persist actions
+     * @param changedProperties list of properties what feature table must have
+     * @return DBSEntity table object that can be used as temporary to work with its properties, for example
+     * @throws DBException on any DB error
+     */
     @NotNull
     public static DBSEntity generateStructTableDDL(
         @NotNull DBRProgressMonitor monitor,
@@ -303,7 +328,7 @@ public class DatabaseTransferUtils {
                     && containerMapping.getTarget() == null))
             {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
-                implementPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
+                applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
                 tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
                 createCommand = tableManager.makeCreateCommand(table, options);
             } else {
@@ -319,7 +344,7 @@ public class DatabaseTransferUtils {
                         table.getParentObject(),
                         null,
                         options);
-                    implementPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
+                    applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
                     tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
                     createCommand = tableManager.makeCreateCommand(table, options);
                 } else {
@@ -387,12 +412,13 @@ public class DatabaseTransferUtils {
         }
     }
 
-    public static void implementPropertyChanges(
-        DBRProgressMonitor monitor,
-        Map<DBPPropertyDescriptor, Object> changedProperties,
-        DBECommandContext commandContext,
-        DatabaseMappingContainer containerMapping,
-        DBSEntity table) {
+    public static void applyPropertyChanges(
+        @Nullable DBRProgressMonitor monitor,
+        @Nullable Map<DBPPropertyDescriptor, Object> changedProperties,
+        @Nullable DBECommandContext commandContext,
+        @Nullable DatabaseMappingContainer containerMapping,
+        @NotNull DBSEntity table)
+    {
         PropertySourceEditable propertySource = new PropertySourceEditable(commandContext, table, table);
         if (CommonUtils.isEmpty(changedProperties) && containerMapping != null
             && !CommonUtils.isEmpty(containerMapping.getRawChangedPropertiesMap())) {

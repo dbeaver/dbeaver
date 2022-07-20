@@ -70,11 +70,7 @@ public class ClickhouseDataSource extends GenericDataSource {
     }
 
     List<ClickhouseTableEngine> getTableEngines() {
-        final List<ClickhouseTableEngine> cachedObjects = engineCache.getCachedObjects();
-        if (!CommonUtils.isEmpty(cachedObjects)) {
-            cachedObjects.sort(DBUtils.nameComparator());
-        }
-        return cachedObjects;
+        return engineCache.getCachedObjects();
     }
 
     ClickhouseTableEngine getEngineByName(@NotNull String engineName) {
@@ -103,6 +99,11 @@ public class ClickhouseDataSource extends GenericDataSource {
     }
 
     static class TableEnginesCache extends JDBCObjectCache<ClickhouseDataSource, ClickhouseTableEngine> {
+
+        TableEnginesCache() {
+            setListOrderComparator(DBUtils.nameComparator());
+        }
+
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(

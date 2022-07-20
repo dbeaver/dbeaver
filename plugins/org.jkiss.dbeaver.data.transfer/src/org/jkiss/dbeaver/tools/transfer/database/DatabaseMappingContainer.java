@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -329,10 +330,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 }
             }
         }
-        Object changedProperties = settings.get("changedProperties");
-        if (changedProperties != null) {
-            rawChangedPropertiesMap = (Map<String, Object>) settings.get("changedProperties");
-        }
+        rawChangedPropertiesMap = JSONUtils.getObject(settings, "changedProperties");
     }
 
     public boolean isSameMapping(DatabaseMappingContainer mapping) {
@@ -348,6 +346,10 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             }
         }
         return true;
+    }
+
+    public boolean hasNewTargetObject() {
+        return mappingType == DatabaseMappingType.create || mappingType == DatabaseMappingType.recreate;
     }
 
     public String getTargetFullName() {

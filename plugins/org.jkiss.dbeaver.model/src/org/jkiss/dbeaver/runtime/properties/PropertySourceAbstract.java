@@ -355,6 +355,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         this.changedPropertiesValues = newMap;
     }
 
+    @Nullable
     public Map<DBPPropertyDescriptor, Object> getChangedPropertiesValues() {
         return changedPropertiesValues;
     }
