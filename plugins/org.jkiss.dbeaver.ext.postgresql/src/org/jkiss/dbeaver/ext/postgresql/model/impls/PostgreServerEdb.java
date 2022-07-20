@@ -53,5 +53,10 @@ public class PostgreServerEdb extends PostgreServerExtensionBase {
     public boolean supportsPGConstraintExpressionColumn() {
         return !dataSource.isServerVersionAtLeast(12, 0);
     }
+
+    @Override
+    public boolean supportsRowLevelSecurity() {
+        return dataSource.isServerVersionAtLeast(10, 0);
+    }
 }
 
