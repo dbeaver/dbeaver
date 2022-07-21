@@ -22,9 +22,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
 import org.jkiss.dbeaver.model.auth.SMAuthInfo;
 import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
+import org.jkiss.dbeaver.model.security.user.SMObjectPermissions;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -74,7 +76,8 @@ public interface SMController extends SMAuthCredentialsManager {
     SMAuthInfo authenticateAnonymousUser(
         @NotNull String appSessionId,
         @NotNull Map<String, Object> sessionParameters,
-        @NotNull SMSessionType sessionType) throws DBException;
+        @NotNull SMSessionType sessionType
+    ) throws DBException;
 
     SMAuthInfo authenticate(
         @NotNull String appSessionId,
@@ -95,17 +98,6 @@ public interface SMController extends SMAuthCredentialsManager {
     ///////////////////////////////////////////
     // Permissions
 
-    @NotNull
-    SMDataSourceGrant[] getSubjectConnectionAccess(@NotNull String[] subjectId) throws DBException;
-
-    @NotNull
-    SMDataSourceGrant[] getConnectionSubjectAccess(String connectionId) throws DBException;
-
-    void setConnectionSubjectAccess(
-        @NotNull String connectionId,
-        @Nullable String[] subjects,
-        @Nullable String grantorId) throws DBException;
-
     SMAuthPermissions getTokenPermissions(String token) throws DBException;
 
     ///////////////////////////////////////////
@@ -113,5 +105,23 @@ public interface SMController extends SMAuthCredentialsManager {
 
     SMAuthProviderDescriptor[] getAvailableAuthProviders() throws DBException;
 
+    @NotNull
+    List<SMObjectPermissions> getAllAvailableObjectsPermissions(
+        @NotNull String subjectId,
+        @NotNull SMObjectType objectType
+    ) throws DBException;
 
+    void setObjectPermissions(
+        @NotNull Set<String> objectIds,
+        @NotNull SMObjectType objectType,
+        @NotNull Set<String> subjectIds,
+        @NotNull Set<String> permissions,
+        @NotNull String grantor
+    ) throws DBException;
+
+    @NotNull
+    List<SMObjectPermissionsGrant> getObjectPermissionGrants(
+        @NotNull String objectId,
+        @NotNull SMObjectType smObjectType
+    ) throws DBException;
 }

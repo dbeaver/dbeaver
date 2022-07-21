@@ -16,12 +16,7 @@
  */
 package org.jkiss.dbeaver.model.security;
 
-public interface SMConstants {
-    String SESSION_PARAM_LAST_REMOTE_ADDRESS = "lastRemoteAddr";
-    String SESSION_PARAM_LAST_REMOTE_USER_AGENT = "lastRemoteUserAgent";
-    String SESSION_PARAM_TRUSTED_USER_ROLES = "trustedUserRoles";
-
-    String SUBJECT_PERMISSION_SCOPE = "subject";
-
-    String DATA_SOURCE_ACCESS_PERMISSION = "access";
+public interface SMObjects {
+    SMObjectType DATASOURCE = new SMObjectType("datasource");
+    SMObjectType PROJECT = new SMObjectType("project");
 }

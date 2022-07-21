@@ -14,14 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security;
+package org.jkiss.dbeaver.model.security.user;
 
-public interface SMConstants {
-    String SESSION_PARAM_LAST_REMOTE_ADDRESS = "lastRemoteAddr";
-    String SESSION_PARAM_LAST_REMOTE_USER_AGENT = "lastRemoteUserAgent";
-    String SESSION_PARAM_TRUSTED_USER_ROLES = "trustedUserRoles";
+import org.jkiss.code.NotNull;
 
-    String SUBJECT_PERMISSION_SCOPE = "subject";
+import java.util.Set;
 
-    String DATA_SOURCE_ACCESS_PERMISSION = "access";
+public class SMObjectPermissions {
+    @NotNull
+    private final String objectId;
+    @NotNull
+    private final Set<String> permissions;
+
+    public SMObjectPermissions(@NotNull String objectId, @NotNull Set<String> permissions) {
+        this.objectId = objectId;
+        this.permissions = permissions;
+    }
+
+    @NotNull
+    public String getObjectId() {
+        return objectId;
+    }
+
+    @NotNull
+    public Set<String> getPermissions() {
+        return permissions;
+    }
 }
