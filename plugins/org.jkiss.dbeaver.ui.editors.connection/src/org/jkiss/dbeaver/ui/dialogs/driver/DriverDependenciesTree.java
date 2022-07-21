@@ -192,6 +192,9 @@ class DriverDependenciesTree {
     }
 
     public void resizeTree() {
+        if (filesTree.isDisposed()) {
+            return;
+        }
         Shell shell = filesTree.getShell();
         Point curSize = shell.getSize();
         int itemHeight = filesTree.getItemHeight();

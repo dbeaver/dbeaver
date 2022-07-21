@@ -53,10 +53,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Stream transfer consumer
@@ -660,12 +657,17 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             throw new DBException("No target container selected");
         }
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
-            if (containerMapping.getMappingType() == DatabaseMappingType.recreate || containerMapping.getMappingType() == DatabaseMappingType.create) {
+            if (containerMapping.hasNewTargetObject()) {
                 DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, containerMapping.getTarget() != null);
             }
             return true;
         } else {
-            DBEPersistAction[] actions = DatabaseTransferUtils.generateTargetTableDDL(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
+            DBEPersistAction[] actions = DatabaseTransferUtils.generateTargetTableDDL(
+                session.getProgressMonitor(),
+                session.getExecutionContext(),
+                schema,
+                containerMapping,
+                containerMapping.getChangedPropertiesMap());
             try {
                 DatabaseTransferUtils.executeDDL(session, actions);
             } catch (DBCException e) {

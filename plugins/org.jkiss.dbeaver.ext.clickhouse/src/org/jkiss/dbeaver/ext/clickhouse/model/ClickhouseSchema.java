@@ -42,7 +42,7 @@ import java.util.List;
  */
 public class ClickhouseSchema extends GenericSchema implements DBPObjectStatisticsCollector
 {
-    private boolean hasStatistics;
+    private boolean hasStatistics = true;
 
     public ClickhouseSchema(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName) {
         super(dataSource, catalog, schemaName);
@@ -85,8 +85,7 @@ public class ClickhouseSchema extends GenericSchema implements DBPObjectStatisti
                         "sum(rows) as table_rows, " +
                         "max(modification_time) as latest_modification," +
                         "min(min_date) AS min_date," +
-                        "max(max_date) AS max_date," +
-                        "any(engine) as engine\n" +
+                        "max(max_date) AS max_date " +
                     "FROM system.parts\n" +
                     "WHERE database=? AND active\n" +
                     "GROUP BY table"))
