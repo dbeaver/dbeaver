@@ -50,7 +50,6 @@ public class RMProject extends RMObject {
     private String id;
     private String description;
     private Type type;
-    private transient String path;
     private OffsetDateTime createTime;
     private String creator;
 
@@ -104,15 +103,6 @@ public class RMProject extends RMObject {
 
     public void setType(Type type) {
         this.type = type;
-    }
-
-    @Property
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
     }
 
     public OffsetDateTime getCreateTime() {
