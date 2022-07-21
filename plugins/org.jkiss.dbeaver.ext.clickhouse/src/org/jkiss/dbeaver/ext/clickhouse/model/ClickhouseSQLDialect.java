@@ -77,7 +77,9 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
 
     private static final String[] CLICKHOUSE_KEYWORDS = {
         "COMMENT",
-        "REPLACE"
+        "REPLACE",
+        "ENGINE",
+        "SHOW"
     };
 
     public ClickhouseSQLDialect() {

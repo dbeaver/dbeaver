@@ -155,6 +155,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private DBPImage iconError;
     private DBPImage iconBig;
     private boolean embedded, origEmbedded;
+    private boolean singleConnection;
     private boolean clientRequired;
     private boolean supportsDriverProperties;
     private boolean anonymousAccess, origAnonymousAccess;
@@ -262,6 +263,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.webURL = copyFrom.webURL;
             this.propertiesWebURL = copyFrom.webURL;
             this.embedded = copyFrom.embedded;
+            this.singleConnection = copyFrom.singleConnection;
             this.clientRequired = copyFrom.clientRequired;
             this.supportsDriverProperties = copyFrom.supportsDriverProperties;
             this.anonymousAccess = copyFrom.anonymousAccess;
@@ -323,6 +325,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
         this.origInstantiable = this.instantiable = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INSTANTIABLE), true);
         this.origEmbedded = this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
+        this.singleConnection = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SINGLE_CONNECTION));
         this.origAnonymousAccess = this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.origAllowsEmptyPassword = this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
@@ -768,6 +771,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public void setEmbedded(boolean embedded) {
         this.embedded = embedded;
+    }
+
+    @Override
+    public boolean isSingleConnection() {
+        return singleConnection;
+    }
+
+    public void setSingleConnection(boolean singleConnection) {
+        this.singleConnection = embedded;
     }
 
     @Override
