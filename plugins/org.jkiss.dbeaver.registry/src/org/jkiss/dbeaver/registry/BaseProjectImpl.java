@@ -242,21 +242,24 @@ public abstract class BaseProjectImpl implements DBPProject {
         }
 
         synchronized (metadataSync) {
-            Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
-            if (Files.exists(settingsFile) && settingsFile.toFile().length() > 0) {
-                // Parse metadata
-                try (Reader settingsReader = Files.newBufferedReader(settingsFile, StandardCharsets.UTF_8)) {
-                    properties = JSONUtils.parseMap(METADATA_GSON, settingsReader);
-                } catch (Throwable e) {
-                    log.error("Error reading project '" + getName() + "' setting from "  + settingsFile.toAbsolutePath(), e);
-                }
-            }
-            if (properties == null) {
-                properties = new LinkedHashMap<>();
-            }
+            getProjectProperties();
         }
     }
 
+    protected void getProjectProperties() {
+        Path settingsFile = getMetadataPath().resolve(SETTINGS_STORAGE_FILE);
+        if (Files.exists(settingsFile) && settingsFile.toFile().length() > 0) {
+            // Parse metadata
+            try (Reader settingsReader = Files.newBufferedReader(settingsFile, StandardCharsets.UTF_8)) {
+                properties = JSONUtils.parseMap(METADATA_GSON, settingsReader);
+            } catch (Throwable e) {
+                log.error("Error reading project '" + getName() + "' setting from "  + settingsFile.toAbsolutePath(), e);
+            }
+        }
+        if (properties == null) {
+            properties = new LinkedHashMap<>();
+        }
+    }
     private void saveProperties() {
         if (isInMemory()) {
             return;
