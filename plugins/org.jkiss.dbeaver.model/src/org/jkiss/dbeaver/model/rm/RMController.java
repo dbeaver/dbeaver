@@ -96,4 +96,13 @@ public interface RMController {
         @NotNull String resourcePath,
         @NotNull byte[] data) throws DBException;
 
+    @Nullable
+    Map<String, Object> getResourceProperties(
+        @NotNull String projectId,
+        @NotNull String resourcePath) throws DBException;
+
+    void setResourceProperties(
+        @NotNull String projectId,
+        @NotNull String resourcePath,
+        @NotNull Map<String, Object> properties) throws DBException;
 }

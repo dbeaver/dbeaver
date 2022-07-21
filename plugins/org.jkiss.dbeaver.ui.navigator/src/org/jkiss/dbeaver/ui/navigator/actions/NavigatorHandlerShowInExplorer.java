@@ -31,7 +31,7 @@ public class NavigatorHandlerShowInExplorer extends NavigatorHandlerObjectBase {
         final Object element = structSelection.getFirstElement();
         if (element instanceof DBNResource) {
             final IResource resource = ((DBNResource) element).getResource();
-            if (resource != null) {
+            if (resource != null && resource.getLocation() != null) {
                 ShellUtils.showInSystemExplorer(resource.getLocation().toString());
             }
         }
