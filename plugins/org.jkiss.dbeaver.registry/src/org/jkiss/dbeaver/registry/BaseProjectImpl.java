@@ -99,6 +99,11 @@ public abstract class BaseProjectImpl implements DBPProject {
         return inMemory;
     }
 
+    @Override
+    public String getId() {
+        return getName();
+    }
+
     @NotNull
     @Override
     public DBPWorkspace getWorkspace() {

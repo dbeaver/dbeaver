@@ -50,7 +50,6 @@ public class RMProject extends RMObject {
     private String id;
     private String description;
     private Type type;
-
     private OffsetDateTime createTime;
     private String creator;
 

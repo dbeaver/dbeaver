@@ -49,6 +49,9 @@ public interface DBPProject extends DBPObject, SMAuthSpace
     // Project with no persistent state
     boolean isInMemory();
 
+
+    String getId();
+
     @NotNull
     String getName();
 

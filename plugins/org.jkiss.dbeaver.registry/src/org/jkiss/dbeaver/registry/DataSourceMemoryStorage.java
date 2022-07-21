@@ -17,30 +17,48 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.io.IOException;
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 /**
- * Legacy datasource serialization (xml)
+ * DataSourceStorage
  */
-interface DataSourceSerializer
-{
+public class DataSourceMemoryStorage implements DBPDataSourceConfigurationStorage {
+    private final byte[] data;
 
-    void saveDataSources(
-        DBRProgressMonitor monitor,
-        DataSourceConfigurationManager configurationManager,
-        DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources)
-        throws DBException, IOException;
+    public DataSourceMemoryStorage(@NotNull byte[] data) {
+        this.data = data;
+    }
 
-    void parseDataSources(
-        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
-        @NotNull DataSourceConfigurationManager configurationManager,
-        @NotNull DataSourceRegistry.ParseResults parseResults,
-        boolean refresh
-    ) throws DBException, IOException;
+    @NotNull
+    public InputStream getInputStream() {
+        return new ByteArrayInputStream(data);
+    }
+
+    @Override
+    public String getStorageId() {
+        return "memory";
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
+    public boolean isDefault() {
+        return false;
+    }
+
+    @Override
+    public String getStatus() {
+        return null;
+    }
+
+    @Override
+    public String getStorageSubId() {
+        return null;
+    }
 }
