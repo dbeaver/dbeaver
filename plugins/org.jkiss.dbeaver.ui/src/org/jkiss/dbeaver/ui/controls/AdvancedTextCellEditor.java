@@ -40,8 +40,6 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
     private Text textEditor;
     private FocusAdapter textFocusListener;
 
-    private String savedValue;
-
     public AdvancedTextCellEditor(Composite parent)
     {
         super(parent);
@@ -100,7 +98,6 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
                 focusLost();
             }
         });
-        textEditor.addDisposeListener(e -> savedValue = textEditor.getText());
         textFocusListener = new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
