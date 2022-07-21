@@ -47,7 +47,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class DataSourceRegistry implements DBPDataSourceRegistry {
@@ -85,7 +85,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         this(project, new DataSourceConfigurationManagerNIO(project));
     }
 
-    public DataSourceRegistry(DBPProject project, DataSourceConfigurationManager configurationManager) {
+    public DataSourceRegistry(@NotNull DBPProject project, DataSourceConfigurationManager configurationManager) {
         this.project = project;
         this.configurationManager = configurationManager;
 
@@ -463,7 +463,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         addDataSourceToList(descriptor);
         if (!descriptor.isDetached()) {
-            this.saveDataSources();
+            persistDataSourceUpdate(dataSource);
         }
         notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
     }
@@ -484,7 +484,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             this.dataSources.remove(descriptor.getId());
         }
         if (!descriptor.isDetached()) {
-            this.saveDataSources();
+            persistDataSourceDelete(dataSource);
         }
         try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
@@ -501,10 +501,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             addDataSource(dataSource);
         } else {
             if (!((DataSourceDescriptor) dataSource).isDetached()) {
-                this.saveDataSources();
+                persistDataSourceUpdate(dataSource);
             }
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
+    }
+
+    protected void persistDataSourceUpdate(@NotNull DBPDataSourceContainer container) {
+        saveDataSources();
+    }
+
+    protected void persistDataSourceDelete(@NotNull DBPDataSourceContainer container) {
+        saveDataSources();
     }
 
     @Override
@@ -620,6 +628,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     private void loadDataSources(boolean refresh) {
+        loadDataSources(configurationManager.getConfigurationStorages(), configurationManager, refresh, true);
+    }
+
+    public void loadDataSources(
+        @NotNull List<DBPDataSourceConfigurationStorage> storages,
+        @NotNull DataSourceConfigurationManager manager,
+        boolean refresh,
+        boolean purgeUntouched
+    ) {
         if (!project.isOpen() || project.isInMemory()) {
             return;
         }
@@ -630,8 +647,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         ParseResults parseResults = new ParseResults();
 
         // Modern way - search json configs in metadata folder
-        for (DBPDataSourceConfigurationStorage cfgStorage : configurationManager.getConfigurationStorages()) {
-            loadDataSources(cfgStorage, false, parseResults);
+        for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
+            loadDataSources(cfgStorage, manager, false, parseResults);
         }
 
         // Reflect changes
@@ -640,26 +657,34 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, ds);
             }
             for (DBPDataSourceContainer ds : parseResults.addedDataSources) {
+                addDataSourceToList((DataSourceDescriptor) ds);
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, ds);
             }
 
-            List<DataSourceDescriptor> removedDataSource = new ArrayList<>();
-            for (DataSourceDescriptor ds : dataSources.values()) {
-                if (!parseResults.addedDataSources.contains(ds) && !parseResults.updatedDataSources.contains(ds) &&
-                    !ds.isProvided() && !ds.isExternallyProvided() && !ds.isDetached())
-                {
-                    removedDataSource.add(ds);
+            if (purgeUntouched) {
+                List<DataSourceDescriptor> removedDataSource = new ArrayList<>();
+                for (DataSourceDescriptor ds : dataSources.values()) {
+                    if (!parseResults.addedDataSources.contains(ds) && !parseResults.updatedDataSources.contains(ds) &&
+                        !ds.isProvided() && !ds.isExternallyProvided() && !ds.isDetached())
+                    {
+                        removedDataSource.add(ds);
+                    }
                 }
-            }
-            for (DataSourceDescriptor ds : removedDataSource) {
-                this.dataSources.remove(ds.getId());
-                this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, ds);
-                ds.dispose();
+                for (DataSourceDescriptor ds : removedDataSource) {
+                    this.dataSources.remove(ds.getId());
+                    this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, ds);
+                    ds.dispose();
+                }
             }
         }
     }
 
-    private void loadDataSources(@NotNull DBPDataSourceConfigurationStorage storage, boolean refresh, @NotNull ParseResults parseResults) {
+    private void loadDataSources(
+        @NotNull DBPDataSourceConfigurationStorage storage,
+        @NotNull DataSourceConfigurationManager manager,
+        boolean refresh,
+        @NotNull ParseResults parseResults
+    ) {
         try {
             DataSourceSerializer serializer;
             if (storage instanceof DataSourceFileStorage && ((DataSourceFileStorage) storage).isLegacy()) {
@@ -667,7 +692,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             } else {
                 serializer = new DataSourceSerializerModern(this);
             }
-            serializer.parseDataSources(storage, refresh, parseResults);
+            serializer.parseDataSources(storage, manager, parseResults, refresh);
             updateProjectNature();
 
             lastLoadError = null;
@@ -677,7 +702,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    private void saveDataSources() {
+    public void saveDataSources() {
         if (project.isInMemory()) {
             return;
         }
@@ -785,11 +810,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     public void saveConfigurationToManager(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DataSourceConfigurationManager configurationManager,
-        @Nullable Function<DBPDataSourceContainer, Boolean> filter)
-    {
+        @Nullable Predicate<DBPDataSourceContainer> filter
+    ) {
         List<DataSourceDescriptor> localDataSources = getDataSources();
         if (filter != null) {
-            localDataSources.removeIf(ds -> !filter.apply(ds));
+            localDataSources.removeIf(filter.negate());
         }
 
         try {
