@@ -81,7 +81,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private final DBPPlatform platform;
-    private final List<DBPProject> modelProjects;
+    private final List<? extends DBPProject> modelProjects;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<>();
     private transient INavigatorListener[] listenersCopy = null;
@@ -96,7 +96,7 @@ public class DBNModel implements IResourceChangeListener {
      *
      * @param modelProjects Model projects. If null then this is global navigator model. Otherwise it points to a session-like object.
      */
-    public DBNModel(DBPPlatform platform, @Nullable List<DBPProject> modelProjects) {
+    public DBNModel(DBPPlatform platform, @Nullable List<? extends DBPProject> modelProjects) {
         this.platform = platform;
         this.modelProjects = modelProjects;
     }
@@ -106,7 +106,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @Nullable
-    public List<DBPProject> getModelProjects() {
+    public List<? extends DBPProject> getModelProjects() {
         return modelProjects;
     }
 
