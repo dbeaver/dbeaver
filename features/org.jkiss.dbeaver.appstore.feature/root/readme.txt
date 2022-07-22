@@ -10,4 +10,4 @@ Contacts
 ==========
   Main web site: https://dbeaver.io
   Source code: https://github.com/dbeaver/dbeaver
-  Technical support, sales: dbeaver@jkiss.org
+  Technical support, sales: support@dbeaver.com
