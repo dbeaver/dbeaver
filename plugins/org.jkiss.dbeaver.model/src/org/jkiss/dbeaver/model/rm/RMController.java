@@ -33,7 +33,7 @@ public interface RMController {
     @NotNull
     RMProject[] listSharedProjects() throws DBException;
 
-    RMProject createProject(@NotNull String id, @NotNull String name, @NotNull String description) throws DBException;
+    RMProject createProject(@NotNull String name, @Nullable String description) throws DBException;
 
     void deleteProject(@NotNull String projectId) throws DBException;
 
