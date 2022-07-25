@@ -78,7 +78,8 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
         @Nullable String tableName) throws SQLException {
         // engine can be View or MaterializedView, we can read this field instead table_type
         String sql =
-            "SELECT name as TABLE_NAME, engine as TABLE_TYPE, database as TABLE_SCHEM, comment as REMARKS, * " +
+            "SELECT name as TABLE_NAME, engine as TABLE_TYPE, database as TABLE_SCHEM," +
+                (((ClickhouseDataSource) owner.getDataSource()).isSupportTableComments() ? "comment as REMARKS," : "") + " * " +
             "FROM system.tables\n" +
             "WHERE database = ?" + (table != null || CommonUtils.isNotEmpty(tableName) ? " and name=?" : "");
         JDBCPreparedStatement dbStat = session.prepareStatement(sql);
