@@ -124,7 +124,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public Throwable getLastLoadError() {
-        return getProject().getDataSourceRegistry().getLastLoadError();
+        return getProject().getDataSourceRegistry().getLastError();
     }
 
     @Override

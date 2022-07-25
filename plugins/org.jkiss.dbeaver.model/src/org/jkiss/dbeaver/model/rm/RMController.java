@@ -20,8 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
-import java.util.Map;
-
 /**
  * Resource manager API.
  */
