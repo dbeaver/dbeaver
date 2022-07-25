@@ -66,7 +66,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 
     static DesktopPlatform instance;
 
-    @NotNull
     private static volatile boolean isClosing = false;
 
     private File tempFolder;
@@ -144,7 +143,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 
     protected void initialize() {
         long startTime = System.currentTimeMillis();
-        log.debug("Initialize Core...");
+        log.debug("Initialize desktop platform...");
 
         if (getPreferenceStore().getBoolean(DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE)) {
             // Register BC security provider
@@ -167,12 +166,12 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 
         super.initialize();
 
-        log.debug("Core initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
+        log.debug("Platform initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
     }
 
     public synchronized void dispose() {
         long startTime = System.currentTimeMillis();
-        log.debug("Shutdown Core...");
+        log.debug("Shutdown desktop platform...");
 
         DesktopPlatform.setClosing(true);
         DBPApplication application = getApplication();
@@ -203,7 +202,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
             try {
                 workspace.save(new LoggingProgressMonitor(log));
             } catch (DBException ex) {
-                log.error("Can't save workspace", ex); //$NON-NLS-1$
+                log.error("Can not save workspace", ex); //$NON-NLS-1$
             }
         }
 
@@ -211,7 +210,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
         if (tempFolder != null) {
 
             if (!ContentUtils.deleteFileRecursive(tempFolder)) {
-                log.warn("Can't delete temp folder '" + tempFolder.getAbsolutePath() + "'");
+                log.warn("Can not delete temp folder '" + tempFolder.getAbsolutePath() + "'");
             }
             tempFolder = null;
         }
@@ -219,7 +218,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
         DesktopPlatform.instance = null;
         DesktopPlatform.disposed = true;
         System.gc();
-        log.debug("Shutdown completed in " + (System.currentTimeMillis() - startTime) + "ms");
+        log.debug("Platform shutdown completed (" + (System.currentTimeMillis() - startTime) + "ms)");
     }
 
     @NotNull
