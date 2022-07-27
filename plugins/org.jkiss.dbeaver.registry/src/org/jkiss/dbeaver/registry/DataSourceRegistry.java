@@ -843,6 +843,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     }
 
+    @Override
+    public void checkForErrors() throws DBException {
+        Throwable lastError = getLastError();
+        if (lastError != null) {
+            throw new DBException(lastError.getMessage(), lastError.getCause());
+        }
+    }
+
     static class ParseResults {
         Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
         Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
