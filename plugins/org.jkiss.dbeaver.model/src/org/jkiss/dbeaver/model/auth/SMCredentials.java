@@ -20,15 +20,20 @@ package org.jkiss.dbeaver.model.auth;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.util.Set;
+
 public class SMCredentials {
     @NotNull
     private final String smToken;
     @Nullable
     private final String userId;
+    @NotNull
+    private final Set<String> permissions;
 
-    public SMCredentials(@NotNull String smToken, @Nullable String userId) {
+    public SMCredentials(@NotNull String smToken, @Nullable String userId, @NotNull Set<String> permissions) {
         this.smToken = smToken;
         this.userId = userId;
+        this.permissions = permissions;
     }
 
     @NotNull
@@ -39,5 +44,9 @@ public class SMCredentials {
     @Nullable
     public String getUserId() {
         return userId;
+    }
+
+    public boolean hasPermission(String permission) {
+        return permissions.contains(permission);
     }
 }

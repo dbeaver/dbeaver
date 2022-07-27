@@ -124,4 +124,11 @@ public interface SMController extends SMAuthCredentialsManager {
         @NotNull String objectId,
         @NotNull SMObjectType smObjectType
     ) throws DBException;
+
+    @NotNull
+    SMObjectPermissions getObjectPermissions(
+        @NotNull String subjectId,
+        @NotNull String objectId,
+        @NotNull SMObjectType objectType
+    ) throws DBException;
 }

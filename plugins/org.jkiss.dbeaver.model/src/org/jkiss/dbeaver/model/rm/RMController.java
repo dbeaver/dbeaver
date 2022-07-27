@@ -20,8 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
-import java.util.Map;
-
 /**
  * Resource manager API.
  */
@@ -31,7 +29,7 @@ public interface RMController {
     RMProject[] listAccessibleProjects() throws DBException;
 
     @NotNull
-    RMProject[] listSharedProjects() throws DBException;
+    RMProject[] listAllSharedProjects() throws DBException;
 
     RMProject createProject(@NotNull String name, @Nullable String description) throws DBException;
 

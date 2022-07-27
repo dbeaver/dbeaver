@@ -27,4 +27,9 @@ public interface SMCredentialsProvider {
      */
     @Nullable
     SMCredentials getActiveUserCredentials();
+
+    default boolean hasPermission(String permission) {
+        var activeUserCredentials = getActiveUserCredentials();
+        return activeUserCredentials != null && activeUserCredentials.hasPermission(permission);
+    }
 }
