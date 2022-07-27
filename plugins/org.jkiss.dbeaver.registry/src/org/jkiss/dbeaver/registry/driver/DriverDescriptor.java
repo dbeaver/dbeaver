@@ -170,6 +170,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean disabled;
     private boolean temporary;
     private int promoted;
+
+    private final Set<ConfigurationType> configurationTypes = new HashSet<>(Collections.singleton(ConfigurationType.EXTENDED));
     private final List<DBPNativeClientLocation> nativeClientHomes = new ArrayList<>();
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
@@ -292,6 +294,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
             this.defaultConnectionProperties.putAll(copyFrom.defaultConnectionProperties);
             this.customConnectionProperties.putAll(copyFrom.customConnectionProperties);
+            this.configurationTypes.addAll(copyFrom.configurationTypes);
         } else {
             this.categories = new ArrayList<>();
             this.name = "";
@@ -339,6 +342,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
         this.origFiles.addAll(this.libraries);
+
+        List<String> additionalConfigurationTypes = List.of(
+            CommonUtils.split(config.getAttribute(RegistryConstants.ATTR_ADDITIONAL_CONFIGURATION_TYPES), ","));
+        for (String type : additionalConfigurationTypes) {
+            this.configurationTypes.add(ConfigurationType.valueOf(type));
+        }
 
         for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE_SOURCE)) {
             this.fileSources.add(new DriverFileSource(lib));
@@ -1461,6 +1470,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public List<DBPDriverLibrary> getOrigFiles() {
         return origFiles;
+    }
+
+    public Set<ConfigurationType> getConfigurationTypes() {
+        return configurationTypes;
     }
 
     public static File getDriversContribFolder() throws IOException {
