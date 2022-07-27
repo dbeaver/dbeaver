@@ -207,10 +207,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         }
     }
 
-    public boolean supportsRefresh() {
-        return true;
-    }
-
     public boolean allowsOpen() {
         return true;
     }
