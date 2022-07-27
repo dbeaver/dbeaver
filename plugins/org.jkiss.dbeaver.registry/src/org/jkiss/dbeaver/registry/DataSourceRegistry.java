@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
@@ -79,7 +80,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
     private volatile ConfigSaver configSaver;
     private DBACredentialsProvider authCredentialsProvider;
-    private Throwable lastLoadError;
+    protected Throwable lastError;
 
     public DataSourceRegistry(DBPProject project) {
         this(project, new DataSourceConfigurationManagerNIO(project));
@@ -535,9 +536,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     @Override
-    public Throwable getLastLoadError() {
-        Throwable error = this.lastLoadError;
-        this.lastLoadError = null;
+    public Throwable getLastError() {
+        Throwable error = this.lastError;
+        this.lastError = null;
         return error;
     }
 
@@ -694,10 +695,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             }
             serializer.parseDataSources(storage, manager, parseResults, refresh);
             updateProjectNature();
-
-            lastLoadError = null;
+            lastError = null;
         } catch (Exception ex) {
-            lastLoadError = ex;
+            lastError = ex;
             log.error("Error loading datasource config from " + storage.getStorageId(), ex);
         }
     }
@@ -725,11 +725,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                         if (!configurationManager.isSecure()) {
                             getSecurePreferences().flush();
                         }
+                        lastError = null;
                     } catch (Throwable e) {
                         log.error("Error saving secured preferences", e);
+                        lastError = e;
                     }
                 } catch (Exception ex) {
                     log.error("Error saving datasources configuration", ex);
+                    lastError = ex;
                 }
             }
         } finally {
@@ -828,13 +831,24 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                 if (!configurationManager.isSecure()) {
                     getSecurePreferences().flush();
                 }
+                lastError = null;
             } catch (Throwable e) {
+                lastError = e;
                 log.error("Error saving secured preferences", e);
             }
         } catch (Exception ex) {
+            lastError = ex;
             log.error("Error saving datasources configuration", ex);
         }
 
+    }
+
+    @Override
+    public void checkForErrors() throws DBException {
+        Throwable lastError = getLastError();
+        if (lastError != null) {
+            throw new DBException(lastError.getMessage(), lastError.getCause());
+        }
     }
 
     static class ParseResults {
