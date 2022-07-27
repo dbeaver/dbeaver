@@ -35,7 +35,7 @@ public interface RMController {
 
     void deleteProject(@NotNull String projectId) throws DBException;
 
-    RMProject getProject(@NotNull String projectId, boolean readResources) throws DBException;
+    RMProject getProject(@NotNull String projectId, boolean readResources, boolean readProperties) throws DBException;
 
     Object getProjectProperty(@NotNull String projectId, @NotNull String propName) throws DBException;
 
@@ -94,4 +94,10 @@ public interface RMController {
         @NotNull String resourcePath,
         @NotNull byte[] data) throws DBException;
 
+    @NotNull
+    String setResourceProperty(
+        @NotNull String projectId,
+        @NotNull String resourcePath,
+        @NotNull String propertyName,
+        @Nullable Object propertyValue) throws DBException;
 }

@@ -102,14 +102,10 @@ public class SQLEditorUtils {
             return;
         }
         try {
-            for (Map.Entry<String, Map<String, Object>> rp : project.getResourceProperties().entrySet()) {
-                Map<String, Object> props = rp.getValue();
-                Object dsId = props.get(EditorUtils.PROP_SQL_DATA_SOURCE_ID);
-                if (CommonUtils.equalObjects(container.getId(), dsId)) {
-                    IResource resource = project.getRootResource().findMember(rp.getKey());
-                    if (resource instanceof IFile) {
-                        result.add(new ResourceInfo((IFile) resource, container));
-                    }
+            for (String path : project.findResources(Map.of(EditorUtils.PROP_CONTEXT_DEFAULT_DATASOURCE, container.getId()))) {
+                final IResource resource = project.getRootResource().findMember(path);
+                if (resource instanceof IFile) {
+                    result.add(new ResourceInfo((IFile) resource, container));
                 }
             }
 
