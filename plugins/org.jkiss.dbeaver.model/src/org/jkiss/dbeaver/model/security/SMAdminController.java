@@ -79,4 +79,6 @@ public interface SMAdminController extends SMController {
         @NotNull String subjectId,
         @NotNull SMObjectType smObjectType
     ) throws DBException;
+
+    int countActiveUsers() throws DBException;
 }
