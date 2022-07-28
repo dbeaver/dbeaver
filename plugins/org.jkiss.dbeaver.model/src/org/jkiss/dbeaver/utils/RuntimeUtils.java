@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -300,6 +301,19 @@ public final class RuntimeUtils {
 
     public static boolean isWindows() {
         return IS_WINDOWS;
+    }
+
+
+    /**
+     * Checks if current application is shipped from Windows store
+     * @return true if shipped from Windows store, false if not.
+     */
+    public static boolean isWindowsStoreApplication() {
+        if (!IS_WINDOWS) {
+            return false;
+        }
+        final String property = System.getProperty(DBConstants.IS_WINDOWS_STORE_APP);
+        return property != null && property.equalsIgnoreCase("true");
     }
 
     public static boolean isMacOS() {
