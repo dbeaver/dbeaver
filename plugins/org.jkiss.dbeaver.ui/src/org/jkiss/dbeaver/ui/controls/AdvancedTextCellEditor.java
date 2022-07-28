@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
@@ -101,7 +102,12 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
         textFocusListener = new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                AdvancedTextCellEditor.this.focusLost();
+                doSetValue(textEditor.getText());
+                UIUtils.asyncExec(() -> {
+                    if (!UIUtils.hasFocus(cell)) {
+                        AdvancedTextCellEditor.this.fireApplyEditorValue();
+                    }
+                });
             }
         };
         textEditor.addFocusListener(textFocusListener);
