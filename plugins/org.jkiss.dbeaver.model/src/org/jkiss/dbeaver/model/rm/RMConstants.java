@@ -14,14 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security;
+package org.jkiss.dbeaver.model.rm;
 
-public interface SMConstants {
-    String SESSION_PARAM_LAST_REMOTE_ADDRESS = "lastRemoteAddr";
-    String SESSION_PARAM_LAST_REMOTE_USER_AGENT = "lastRemoteUserAgent";
-    String SESSION_PARAM_TRUSTED_USER_ROLES = "trustedUserRoles";
+/**
+ * RM constants
+ */
+public interface RMConstants  {
+    String PERMISSION_PROJECT_CONNECTIONS_EDIT = "project-connection-edit";
+    String PERMISSION_PROJECT_CONNECTIONS_VIEW = "project-connection-view";
 
-    String SUBJECT_PERMISSION_SCOPE = "subject";
+    String PERMISSION_PROJECT_RESOURCE_VIEW = "project-resource-view";
+    String PERMISSION_PROJECT_RESOURCE_EDIT = "project-resource-edit";
 
-    String DATA_SOURCE_ACCESS_PERMISSION = "access";
+    String PERMISSION_PROJECT_ADMIN = "project-admin";
+
+    // RM admin can create/delete projects. It also can assign project permissions.
+    String PERMISSION_RM_ADMIN = "rm-admin";
 }

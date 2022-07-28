@@ -21,6 +21,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * Resource manager API
@@ -50,20 +51,29 @@ public class RMProject extends RMObject {
     private String id;
     private String description;
     private Type type;
-
     private OffsetDateTime createTime;
     private String creator;
+    private Set<String> projectPermissions;
 
     public RMProject() {
     }
 
-    public RMProject(String id, String name, String description, Type type, OffsetDateTime createTime, String creator) {
+    public RMProject(
+        String id,
+        String name,
+        String description,
+        Type type,
+        OffsetDateTime createTime,
+        String creator,
+        Set<String> projectPermissions
+    ) {
         super(name);
         this.id = id;
         this.description = description;
         this.type = type;
         this.createTime = createTime;
         this.creator = creator;
+        this.projectPermissions = projectPermissions;
     }
 
     public RMProject(String name) {
@@ -137,4 +147,11 @@ public class RMProject extends RMObject {
         return obj instanceof RMProject && CommonUtils.equalObjects(id, ((RMProject) obj).id);
     }
 
+    public void setProjectPermissions(Set<String> projectPermissions) {
+        this.projectPermissions = projectPermissions;
+    }
+
+    public Set<String> getProjectPermissions() {
+        return projectPermissions;
+    }
 }

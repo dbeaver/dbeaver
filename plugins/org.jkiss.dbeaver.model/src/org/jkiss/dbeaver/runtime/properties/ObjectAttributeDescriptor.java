@@ -123,6 +123,10 @@ public abstract class ObjectAttributeDescriptor {
         return id.equals(DBConstants.PROP_ID_NAME) || orderNumber == 1;
     }
 
+    public boolean isDescriptionProperty() {
+        return id.equals(DBConstants.PROP_ID_DESCRIPTION);
+    }
+
     public boolean isRemote()
     {
         return isLazy || parent != null && parent.isRemote();

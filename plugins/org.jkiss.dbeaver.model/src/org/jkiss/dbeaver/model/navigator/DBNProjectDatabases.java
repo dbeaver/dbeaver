@@ -58,6 +58,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
+    public boolean isDisposed() {
+        return dataSourceRegistry == null;
+    }
+
+    @Override
     protected void dispose(boolean reflect)
     {
         for (DBNDataSource dataSource : dataSources) {
@@ -224,7 +229,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     @Override
     public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath();
+        return getParentNode().getNodeItemPath() + "/" + getNodeName();
     }
 
     public DBNLocalFolder getFolderNode(DBPDataSourceFolder folder)
@@ -428,6 +433,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean hasChildren(boolean navigableOnly) {
+        return true;
     }
 
 }

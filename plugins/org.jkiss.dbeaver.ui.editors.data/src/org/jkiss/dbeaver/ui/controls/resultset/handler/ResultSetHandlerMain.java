@@ -122,7 +122,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
     public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart != null) {
             IWorkbenchPartSite site = activePart.getSite();
-            if (site != null && !Workbench.getInstance().isClosing()) {
+            if (site != null && site.getPart() != null && !Workbench.getInstance().isClosing()) {
                 Shell shell = site.getShell();
                 if (shell != null) {
                     for (Control focusControl = shell.getDisplay().getFocusControl(); focusControl != null; focusControl = focusControl.getParent()) {

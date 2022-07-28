@@ -29,13 +29,15 @@ public interface RMController {
     RMProject[] listAccessibleProjects() throws DBException;
 
     @NotNull
-    RMProject[] listSharedProjects() throws DBException;
+    RMProject[] listAllSharedProjects() throws DBException;
 
-    RMProject createProject(@NotNull String id, @NotNull String name, @NotNull String description) throws DBException;
+    RMProject createProject(@NotNull String name, @Nullable String description) throws DBException;
 
     void deleteProject(@NotNull String projectId) throws DBException;
 
-    RMProject getProject(@NotNull String projectId, boolean readResources) throws DBException;
+    RMProject getProject(@NotNull String projectId, boolean readResources, boolean readProperties) throws DBException;
+
+    Object getProjectProperty(@NotNull String projectId, @NotNull String propName) throws DBException;
 
     /**
      * Returns datasources configuration in modern format
@@ -92,4 +94,10 @@ public interface RMController {
         @NotNull String resourcePath,
         @NotNull byte[] data) throws DBException;
 
+    @NotNull
+    String setResourceProperty(
+        @NotNull String projectId,
+        @NotNull String resourcePath,
+        @NotNull String propertyName,
+        @Nullable Object propertyValue) throws DBException;
 }
