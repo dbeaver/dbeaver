@@ -107,6 +107,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     private final List<DBWHandlerConfiguration> handlers;
     private final DBPConnectionBootstrap bootstrap;
     private DBPConnectionType connectionType;
+    private DBPDriver.ConfigurationType configurationType;
     private String connectionColor;
     private int keepAliveInterval;
     private int closeIdleInterval;
@@ -352,6 +353,14 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     public void setConnectionType(DBPConnectionType connectionType) {
         this.connectionType = connectionType;
+    }
+
+    public DBPDriver.ConfigurationType getConfigurationType() {
+        return configurationType;
+    }
+
+    public void setConfigurationType(DBPDriver.ConfigurationType configurationType) {
+        this.configurationType = configurationType;
     }
 
     /**

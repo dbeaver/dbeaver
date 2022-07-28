@@ -218,5 +218,6 @@ public class RegistryConstants {
     public static final String ATTR_WORKING_DIRECTORY = "workingDirectory";
     public static final String ATTR_COMMAND = "command";
     public static final String ATTR_ADDITIONAL_CONFIGURATION_TYPES = "additionalConfigurationTypes";
+    public static final String ATTR_CONFIGURATION_TYPE = "configurationType";
 
 }
