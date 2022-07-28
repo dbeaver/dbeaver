@@ -91,4 +91,5 @@
 	<tip>To securely pass external variables into DBeaver you can use <b>-vars</b> command-line parameter to specify the file containing variables.
 		<br/>Read more about this feature on our <a href="https://github.com/dbeaver/dbeaver/wiki/Admin-Variables#declare-external-variables-in-a-file">wiki page</a>.
 	</tip>
+	<tip>You can improve data import performance by enabling <b>Use multi-row value insert</b> in the data transfer settings. Additionally, you can increase the rows count in the multi-insert batch.</tip>
 </tips>
