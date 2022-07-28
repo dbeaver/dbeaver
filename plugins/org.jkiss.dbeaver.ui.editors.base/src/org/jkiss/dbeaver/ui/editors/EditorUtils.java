@@ -62,7 +62,8 @@ public class EditorUtils {
 
     public static final String PROP_SQL_DATA_SOURCE_ID = "sql-editor-data-source-id";
     private static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id";
-    private static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource";
+
+    public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource";
     private static final String PROP_CONTEXT_DEFAULT_CATALOG = "default-catalog";
     private static final String PROP_CONTEXT_DEFAULT_SCHEMA = "default-schema";
 
@@ -242,7 +243,7 @@ public class EditorUtils {
         }
         DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
-            Object dataSourceId = projectMeta.getResourceProperty(file, PROP_SQL_DATA_SOURCE_ID);
+            Object dataSourceId = projectMeta.getResourceProperty(file, PROP_CONTEXT_DEFAULT_DATASOURCE);
             if (dataSourceId != null) {
                 DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
                 if (dataSource == null) {
@@ -324,17 +325,13 @@ public class EditorUtils {
             return;
         }
         DBPDataSourceContainer dataSourceContainer = context.getDataSourceContainer();
-        Map<String, Object> fileProps = new LinkedHashMap<>();
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
-        fileProps.put(PROP_SQL_DATA_SOURCE_ID, dataSourceId);
+
+        projectMeta.setResourceProperty(file, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
         if (!isDefaultContextSettings(context)) {
-            fileProps.put(PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
-            String catalogName = getDefaultCatalogName(context);
-            if (catalogName != null) fileProps.put(PROP_CONTEXT_DEFAULT_CATALOG, catalogName);
-            String schemaName = getDefaultSchemaName(context);
-            if (catalogName != null || schemaName != null) fileProps.put(PROP_CONTEXT_DEFAULT_SCHEMA, schemaName);
+            projectMeta.setResourceProperty(file, PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
+            projectMeta.setResourceProperty(file, PROP_CONTEXT_DEFAULT_SCHEMA, getDefaultSchemaName(context));
         }
-        projectMeta.setResourceProperties(file, fileProps);
     }
 
     private static boolean isDefaultContextSettings(DatabaseEditorContext context) {

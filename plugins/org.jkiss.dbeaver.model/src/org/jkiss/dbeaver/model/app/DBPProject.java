@@ -97,13 +97,19 @@ public interface DBPProject extends DBPObject, SMAuthSpace
 
     void setProjectProperty(String propName, Object propValue);
 
-    Object getResourceProperty(IResource resource, String propName);
+    /**
+     * Finds resources that match the supplied {@code properties} map.
+     */
+    @NotNull
+    String[] findResources(@NotNull Map<String, ?> properties);
 
-    Map<String, Object> getResourceProperties(IResource resource);
+    @Nullable
+    Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName);
 
-    Map<String, Map<String, Object>> getResourceProperties();
+    @Nullable
+    Object getResourceProperty(@NotNull IResource resource, @NotNull String propName);
 
-    void setResourceProperty(IResource resource, String propName, Object propValue);
+    void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue);
 
-    void setResourceProperties(IResource resource, Map<String, Object> props);
+    void setResourceProperty(@NotNull IResource resource, @NotNull String propName, @Nullable Object propValue);
 }
