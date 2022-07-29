@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -203,7 +204,10 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     public DBNResource findResource(IResource resource) {
         List<IResource> path = new ArrayList<>();
-        for (IResource parent = resource; !(parent instanceof IProject); parent = parent.getParent()) {
+        for (IResource parent = resource;
+             !(parent instanceof IProject) && !CommonUtils.equalObjects(parent, project.getRootResource());
+             parent = parent.getParent())
+        {
             path.add(0, parent);
         }
 
