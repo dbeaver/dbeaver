@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
@@ -106,7 +107,7 @@ public interface DBPProject extends DBPObject, SMAuthSpace
      * Finds resources that match the supplied {@code properties} map.
      */
     @NotNull
-    String[] findResources(@NotNull Map<String, ?> properties);
+    String[] findResources(@NotNull Map<String, ?> properties) throws DBException;
 
     @Nullable
     Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName);

@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -586,9 +587,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     @Property(viewable = true, order = 11)
     public String getResourceLastModified() throws CoreException {
         if (resource instanceof IFile) {
-            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
-            IFileInfo iFileInfo = fileStore.fetchInfo();
-            return DATE_FORMAT.format(iFileInfo.getLastModified());
+            long lastModified = ContentUtils.getResourceLastModified(resource);
+            return lastModified <= 0 ? "" : DATE_FORMAT.format(lastModified);
         }
         return null;
     }

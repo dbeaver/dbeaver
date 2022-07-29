@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -279,7 +280,7 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @NotNull
     @Override
-    public String[] findResources(@NotNull Map<String, ?> properties) {
+    public String[] findResources(@NotNull Map<String, ?> properties) throws DBException {
         loadMetadata();
 
         synchronized (metadataSync) {
