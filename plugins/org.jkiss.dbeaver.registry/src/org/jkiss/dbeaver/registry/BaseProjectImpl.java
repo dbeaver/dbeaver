@@ -364,13 +364,20 @@ public abstract class BaseProjectImpl implements DBPProject {
         flushMetadata();
     }
 
-    @Override
-    public void setResourceProperty(@NotNull IResource resource, @NotNull String propName, @Nullable Object propValue) {
-        setResourceProperty(getResourcePath(resource), propName, propValue);
+    public boolean resetResourceProperties(@NotNull String resourcePath) {
+        boolean hadProperties;
+        synchronized (metadataSync) {
+            hadProperties = resourceProperties.remove(resourcePath) != null;
+        }
+        if (hadProperties) {
+            flushMetadata();
+        }
+        return hadProperties;
     }
 
+    @Override
     @NotNull
-    protected String getResourcePath(@NotNull IResource resource) {
+    public String getResourcePath(@NotNull IResource resource) {
         return resource.getProjectRelativePath().toString();
     }
 

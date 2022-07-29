@@ -98,6 +98,11 @@ public interface DBPProject extends DBPObject, SMAuthSpace
     void setProjectProperty(String propName, Object propValue);
 
     /**
+     * Returns logical resource path
+     */
+    String getResourcePath(@NotNull IResource resource);
+
+    /**
      * Finds resources that match the supplied {@code properties} map.
      */
     @NotNull
@@ -111,5 +116,4 @@ public interface DBPProject extends DBPObject, SMAuthSpace
 
     void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue);
 
-    void setResourceProperty(@NotNull IResource resource, @NotNull String propName, @Nullable Object propValue);
 }
