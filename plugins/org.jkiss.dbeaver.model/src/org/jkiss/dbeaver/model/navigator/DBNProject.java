@@ -228,6 +228,13 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     protected void handleChildResourceChange(IResourceDelta delta) {
+        if (CommonUtils.equalObjects(delta.getResource(), project.getRootResource())) {
+            // Go inside root resource
+            for (IResourceDelta cChild : delta.getAffectedChildren()) {
+                handleChildResourceChange(cChild);
+            }
+            return;
+        }
         final String name = delta.getResource().getName();
         if (name.equals(DBPProject.METADATA_FOLDER)) {
             // Metadata configuration changed

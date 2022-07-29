@@ -115,17 +115,23 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
-    public String getNodeName()
-    {
+    public String getNodeName() {
         if (resource == null || handler == null) {
             return null;
         }
-        return handler.getResourceNodeName(resource);
-//        if (resource instanceof IFile) {
-//
-//        }
-//        return resource.getFullPath().lastSegment();
+        return resource.getName();
     }
+
+/*
+    @Override
+    protected String getSortName() {
+        if (resource == null || handler == null) {
+            return null;
+        }
+        return resource.getFullPath().removeFileExtension().lastSegment();
+    }
+*/
+
 
     @Override
 //    @Property(viewable = false, order = 100)
@@ -270,9 +276,9 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
     {
         if (children != null) {
-            for (DBNNode child : children) {
-                child.dispose(false);
-            }
+//            for (DBNNode child : children) {
+//                child.dispose(false);
+//            }
             children = null;
         }
         refreshThisResource(monitor);
@@ -441,7 +447,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
                         return 1;
                     }
                 }
-                return o1.getNodeName().compareToIgnoreCase(o2.getNodeName());
+                return o1.getSortName().compareToIgnoreCase(o2.getSortName());
             }
         });
     }
