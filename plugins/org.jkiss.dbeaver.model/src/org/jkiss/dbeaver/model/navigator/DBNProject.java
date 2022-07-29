@@ -182,7 +182,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @Override
     protected IResource[] addImplicitMembers(IResource[] members) {
         DBPWorkspace workspace = project.getWorkspace();
-        if (workspace instanceof DBPWorkspaceEclipse) {
+        if (!project.isVirtual() && workspace instanceof DBPWorkspaceEclipse) {
             for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceEclipse)workspace).getAllResourceHandlers()) {
                 IFolder rhDefaultRoot = ((DBPWorkspaceEclipse)workspace).getResourceDefaultRoot(getProject(), rh, false);
                 if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
@@ -197,7 +197,8 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
         project.getDataSourceRegistry().refreshConfig();
-        return super.refreshNode(monitor, source);
+        super.refreshThisResource(monitor);
+        return this;
     }
 
     public DBNResource findResource(IResource resource) {

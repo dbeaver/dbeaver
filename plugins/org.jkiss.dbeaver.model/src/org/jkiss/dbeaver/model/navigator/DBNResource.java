@@ -269,9 +269,20 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
     {
-        children = null;
+        if (children != null) {
+            for (DBNNode child : children) {
+                child.dispose(false);
+            }
+            children = null;
+        }
+        refreshThisResource(monitor);
+        return this;
+    }
+
+    @NotNull
+    protected void refreshThisResource(DBRProgressMonitor monitor) throws DBException {
         if (resource == null) {
-            return this;
+            return;
         }
         try {
             resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
@@ -284,7 +295,6 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         } catch (CoreException e) {
             throw new DBException("Can't refresh resource", e);
         }
-        return this;
     }
 
     @Override

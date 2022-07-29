@@ -53,6 +53,10 @@ public enum RMProjectPermission {
         return null;
     }
 
+    public String getPermissionId() {
+        return permission;
+    }
+
     public Set<String> getAllPermissions() {
         var allPermissions = new HashSet<String>();
         allPermissions.add(permission);

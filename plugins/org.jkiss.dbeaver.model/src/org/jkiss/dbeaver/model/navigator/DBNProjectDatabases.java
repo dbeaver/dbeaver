@@ -58,6 +58,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
+    public boolean isDisposed() {
+        return dataSourceRegistry == null;
+    }
+
+    @Override
     protected void dispose(boolean reflect)
     {
         for (DBNDataSource dataSource : dataSources) {
