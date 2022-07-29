@@ -40,6 +40,7 @@
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="alter-table-add-column" value="true"/>
+                    <parameter name="supports-multi-insert" value="true"/>
                 </driver>
 
                 <driver
@@ -59,6 +60,7 @@
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="alter-table-add-column" value="true"/>
+                    <parameter name="supports-multi-insert" value="true"/>
                 </driver>
             </drivers>
 
