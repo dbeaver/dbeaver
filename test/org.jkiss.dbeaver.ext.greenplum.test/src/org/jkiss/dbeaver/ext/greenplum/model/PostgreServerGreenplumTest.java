@@ -27,11 +27,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.SQLException;
 
@@ -55,7 +55,7 @@ public class PostgreServerGreenplumTest {
     @Before
     public void setup() throws SQLException {
         Mockito.when(mockSchema.getDataSource()).thenReturn(mockDataSource);
-        Mockito.when(mockDataSource.isServerVersionAtLeast(Matchers.anyInt(), Matchers.anyInt())).thenReturn(false);
+        Mockito.when(mockDataSource.isServerVersionAtLeast(ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt())).thenReturn(false);
         Mockito.when(mockDataSource.getServerType()).thenReturn(server);
         Mockito.when(mockResults.getString("fmttype")).thenReturn("c");
         Mockito.when(mockResults.getString("urilocation")).thenReturn("gpfdist://filehost:8081/*.txt");

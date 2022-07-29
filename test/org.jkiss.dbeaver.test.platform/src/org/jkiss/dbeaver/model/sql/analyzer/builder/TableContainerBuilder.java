@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -39,7 +39,7 @@ public class TableContainerBuilder extends Builder<DBSObjectContainer, DBSEntity
         when(container.getName()).thenReturn(name);
         when(container.getPrimaryChildType(any())).thenReturn(null);
         when(container.getChildren(any())).then(x -> children);
-        when(container.getChild(any(), any())).then(x -> DBUtils.findObject(children, x.getArgumentAt(1, String.class)));
+        when(container.getChild(any(), any())).then(x -> DBUtils.findObject(children, x.getArgument(1, String.class)));
     }
 
     public TableContainerBuilder(@NotNull DBPDataSource dataSource, @NotNull String name) throws DBException {
