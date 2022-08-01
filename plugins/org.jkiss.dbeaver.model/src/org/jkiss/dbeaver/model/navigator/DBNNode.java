@@ -47,7 +47,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         folder,
         database,
         ext,
-        project,
         other;
 
         public String getPrefix() {

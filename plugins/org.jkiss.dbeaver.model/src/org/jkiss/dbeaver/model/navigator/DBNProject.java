@@ -76,6 +76,12 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     @Override
+    public String getNodeType()
+    {
+        return "project";
+    }
+
+    @Override
     public String getNodeDescription() {
         if (project.isVirtual()) {
             return null;
@@ -305,7 +311,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public String getNodeItemPath() {
-        return NodePathType.project.getPrefix() + project.getId();
+        return NodePathType.resource.getPrefix() + project.getId();
     }
 
     @Override
