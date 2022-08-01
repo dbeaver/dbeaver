@@ -75,6 +75,10 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         return project.getName();
     }
 
+    protected String getResourceNodeType() {
+        return "project";
+    }
+
     @Override
     public String getNodeDescription() {
         if (project.isVirtual()) {
