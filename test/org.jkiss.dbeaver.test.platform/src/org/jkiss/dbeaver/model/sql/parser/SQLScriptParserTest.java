@@ -38,7 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,10 +65,10 @@ public class SQLScriptParserTest {
         DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         Mockito.when(dataSource.getContainer()).thenReturn(dataSourceContainer);
-        Mockito.when(dataSourceContainer.getConnectionConfiguration()).thenReturn(connectionConfiguration);
+        Mockito.lenient().when(dataSourceContainer.getConnectionConfiguration()).thenReturn(connectionConfiguration);
         Mockito.when(dataSourceContainer.getActualConnectionConfiguration()).thenReturn(connectionConfiguration);
         Mockito.when(dataSourceContainer.getPreferenceStore()).thenReturn(preferenceStore);
-        Mockito.when(executionContext.getDataSource()).thenReturn(dataSource);
+        Mockito.lenient().when(executionContext.getDataSource()).thenReturn(dataSource);
         Mockito.when(dataSourceContainer.getDriver()).thenReturn(driver);
     }
 

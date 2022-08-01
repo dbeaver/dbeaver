@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DataTypeConverterTest {
@@ -43,7 +43,7 @@ public class DataTypeConverterTest {
     @Before
     public void setUp() throws Exception {
         dialect = new JDBCSQLDialect("testName", "testID");
-        Mockito.when(mockDataSource.getSQLDialect()).thenReturn(dialect);
+        Mockito.lenient().when(mockDataSource.getSQLDialect()).thenReturn(dialect);
     }
 
     @Test

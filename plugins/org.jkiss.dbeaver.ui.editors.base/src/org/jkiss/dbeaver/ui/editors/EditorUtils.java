@@ -52,8 +52,6 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * EditorUtils
@@ -327,10 +325,11 @@ public class EditorUtils {
         DBPDataSourceContainer dataSourceContainer = context.getDataSourceContainer();
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
 
-        projectMeta.setResourceProperty(file, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
+        String resourcePath = projectMeta.getResourcePath(file);
+        projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
         if (!isDefaultContextSettings(context)) {
-            projectMeta.setResourceProperty(file, PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
-            projectMeta.setResourceProperty(file, PROP_CONTEXT_DEFAULT_SCHEMA, getDefaultSchemaName(context));
+            projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
+            projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_SCHEMA, getDefaultSchemaName(context));
         }
     }
 

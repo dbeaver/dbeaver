@@ -10,7 +10,7 @@ Bundle-ClassPath: .
 Fragment-Host: org.jkiss.dbeaver.ext.greenplum
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.junit,
- org.mockito.mockito-all,
+ org.mockito.mockito-core,
  org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.registry,

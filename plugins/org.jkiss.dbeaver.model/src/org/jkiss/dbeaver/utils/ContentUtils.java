@@ -17,6 +17,9 @@
 
 package org.jkiss.dbeaver.utils;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -523,4 +526,13 @@ public class ContentUtils {
         }
     }
 
+    public static long getResourceLastModified(IResource resource) {
+        try {
+            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
+            IFileInfo iFileInfo = fileStore.fetchInfo();
+            return iFileInfo.getLastModified();
+        } catch (CoreException e) {
+            return 0;
+        }
+    }
 }

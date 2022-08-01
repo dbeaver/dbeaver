@@ -110,7 +110,7 @@
             class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             namespace="org.jkiss.dbeaver.core.global"
-            properties="standalone,hasActiveProject,hasMultipleProjects"
+            properties="standalone,canCreateProject,hasActiveProject,hasMultipleProjects"
             type="java.lang.Object"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
@@ -649,7 +649,13 @@
             </activeWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.project.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectCreate"/>
+        <handler commandId="org.jkiss.dbeaver.core.project.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectCreate">
+            <enabledWhen>
+                <with variable="selection">
+                    <test property="org.jkiss.dbeaver.core.global.canCreateProject"/>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.project.refresh" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectRefresh"/>
         <handler commandId="org.jkiss.dbeaver.core.project.select" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSelect">
             <enabledWhen>

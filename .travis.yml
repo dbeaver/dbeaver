@@ -10,7 +10,7 @@ cache:
 
 notifications:
   email:
-    - serge@jkiss.org
+    - serge@dbeaver.com
     
 before_install: echo "MAVEN_OPTS='-Xmx2048m -XX:MaxPermSize=512m'" > ~/.mavenrc
 

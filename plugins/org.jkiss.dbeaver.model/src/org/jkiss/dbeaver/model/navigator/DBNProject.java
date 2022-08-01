@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,6 +73,10 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @Override
     public String getNodeName() {
         return project.getName();
+    }
+
+    protected String getResourceNodeType() {
+        return "project";
     }
 
     @Override
@@ -182,7 +187,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @Override
     protected IResource[] addImplicitMembers(IResource[] members) {
         DBPWorkspace workspace = project.getWorkspace();
-        if (!project.isVirtual() && workspace instanceof DBPWorkspaceEclipse) {
+        if (workspace instanceof DBPWorkspaceEclipse) {
             for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceEclipse)workspace).getAllResourceHandlers()) {
                 IFolder rhDefaultRoot = ((DBPWorkspaceEclipse)workspace).getResourceDefaultRoot(getProject(), rh, false);
                 if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
@@ -203,7 +208,10 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     public DBNResource findResource(IResource resource) {
         List<IResource> path = new ArrayList<>();
-        for (IResource parent = resource; !(parent instanceof IProject); parent = parent.getParent()) {
+        for (IResource parent = resource;
+             !(parent instanceof IProject) && !CommonUtils.equalObjects(parent, project.getRootResource());
+             parent = parent.getParent())
+        {
             path.add(0, parent);
         }
 
@@ -224,6 +232,13 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     protected void handleChildResourceChange(IResourceDelta delta) {
+        if (CommonUtils.equalObjects(delta.getResource(), project.getRootResource())) {
+            // Go inside root resource
+            for (IResourceDelta cChild : delta.getAffectedChildren()) {
+                handleChildResourceChange(cChild);
+            }
+            return;
+        }
         final String name = delta.getResource().getName();
         if (name.equals(DBPProject.METADATA_FOLDER)) {
             // Metadata configuration changed
