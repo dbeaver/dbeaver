@@ -109,9 +109,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     }
 
     @Override
-    public String getNodeType()
-    {
-        return handler == null ? getResourceNodeType() :handler.getTypeName(resource);
+    public String getNodeType() {
+        return handler == null ? getResourceNodeType() : handler.getTypeName(resource);
     }
 
     protected String getResourceNodeType() {
