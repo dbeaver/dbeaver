@@ -20,7 +20,6 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.*;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.text.DecimalFormat;
@@ -216,7 +216,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                     public String getText(Object element) {
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
-                            if (resource instanceof IFile) {
+                            if (resource instanceof IFile && resource.exists()) {
                                 try {
                                     IFileStore fileStore = EFS.getStore(resource.getLocationURI());
                                     IFileInfo iFileInfo = fileStore.fetchInfo();
@@ -239,8 +239,8 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                     public String getText(Object element) {
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
-                            if (resource instanceof IFile || resource instanceof IFolder) {
-                                long lastModified = resource.getLocation().toFile().lastModified();
+                            if (resource != null && resource.exists()) {
+                                long lastModified = ContentUtils.getResourceLastModified(resource);
                                 if (lastModified <= 0) {
                                     return "";
                                 }
@@ -258,9 +258,11 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                     public String getText(Object element) {
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
-                            ProgramInfo program = ProgramInfo.getProgram(resource);
-                            if (program != null) {
-                                return program.getProgram().getName();
+                            if (resource.exists()) {
+                                ProgramInfo program = ProgramInfo.getProgram(resource);
+                                if (program != null) {
+                                    return program.getProgram().getName();
+                                }
                             }
                         }
                         return "";

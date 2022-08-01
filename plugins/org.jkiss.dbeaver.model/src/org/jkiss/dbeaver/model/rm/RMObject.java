@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.rm;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.utils.ArrayUtils;
 
 /**
  * Abstract resource
@@ -57,12 +58,30 @@ public abstract class RMObject implements DBPNamedObject {
 
     @Nullable
     public RMResource getChild(@NotNull String name) {
-        for (RMResource child : children) {
-            if (child.getName().equals(name)) {
-                return child;
+        if (children != null) {
+            for (RMResource child : children) {
+                if (child.getName().equals(name)) {
+                    return child;
+                }
             }
         }
         return null;
+    }
+
+    public void addChild(RMResource child) {
+        if (children == null) {
+            children = new RMResource[] { child };
+        } else {
+            children = ArrayUtils.add(RMResource.class, children, child);
+        }
+    }
+
+    public void removeChild(RMResource child) {
+        if (children.length == 1 && children[0] == child) {
+            children = null;
+        } else {
+            children = ArrayUtils.remove(RMResource.class, children, child);
+        }
     }
 
     @Override

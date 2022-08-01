@@ -30,9 +30,14 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.SaveableHelper;
 import org.eclipse.ui.internal.WorkbenchImages;
+import org.eclipse.ui.internal.WorkbenchPlugin;
+import org.eclipse.ui.internal.dialogs.WorkbenchWizardElement;
 import org.eclipse.ui.internal.ide.IDEInternalWorkbenchImages;
 import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
+import org.eclipse.ui.internal.wizards.AbstractExtensionWizardRegistry;
+import org.eclipse.ui.wizards.IWizardCategory;
+import org.eclipse.ui.wizards.IWizardDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -40,6 +45,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -55,6 +61,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -109,9 +116,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     };
 
     //processor must be created before we start event loop
+    protected final DBPApplication application;
     private final DelayedEventsProcessor processor;
 
-    protected ApplicationWorkbenchAdvisor() {
+    protected ApplicationWorkbenchAdvisor(DBPApplication application) {
+        this.application = application;
         this.processor = new DelayedEventsProcessor(Display.getCurrent());
     }
 
@@ -170,6 +179,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         super.postStartup();
 
         filterPreferencePages();
+        filterWizards();
 
         startVersionChecker();
     }
@@ -210,6 +220,30 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                 pm.addTo(preferencePageId, uiPage);
             }
         }
+    }
+
+    protected boolean isWizardAllowed(String wizardId) {
+        return !(application.isStandalone() && "org.eclipse.ui.wizards.new.project".equals(wizardId));
+    }
+
+    private void filterWizards() {
+        AbstractExtensionWizardRegistry wizardRegistry = (AbstractExtensionWizardRegistry) WorkbenchPlugin.getDefault().getNewWizardRegistry();
+        IWizardCategory[] categories = WorkbenchPlugin.getDefault().getNewWizardRegistry().getRootCategory().getCategories();
+        for (IWizardDescriptor wizard : getAllWizards(categories)) {
+            WorkbenchWizardElement wizardElement = (WorkbenchWizardElement) wizard;
+            if (!isWizardAllowed(wizardElement.getId())) {
+                wizardRegistry.removeExtension(wizardElement.getConfigurationElement().getDeclaringExtension(), new Object[]{wizardElement});
+            }
+        }
+    }
+
+    private IWizardDescriptor[] getAllWizards(IWizardCategory... categories) {
+        List<IWizardDescriptor> results = new ArrayList<>();
+        for(IWizardCategory wizardCategory : categories){
+            Collections.addAll(results, wizardCategory.getWizards());
+            Collections.addAll(results, getAllWizards(wizardCategory.getCategories()));
+        }
+        return results.toArray(new IWizardDescriptor[0]);
     }
 
     private void startVersionChecker() {

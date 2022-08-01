@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -279,7 +280,7 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @NotNull
     @Override
-    public String[] findResources(@NotNull Map<String, ?> properties) {
+    public String[] findResources(@NotNull Map<String, ?> properties) throws DBException {
         loadMetadata();
 
         synchronized (metadataSync) {
@@ -364,13 +365,21 @@ public abstract class BaseProjectImpl implements DBPProject {
         flushMetadata();
     }
 
-    @Override
-    public void setResourceProperty(@NotNull IResource resource, @NotNull String propName, @Nullable Object propValue) {
-        setResourceProperty(getResourcePath(resource), propName, propValue);
+    public boolean resetResourceProperties(@NotNull String resourcePath) {
+        loadMetadata();
+        boolean hadProperties;
+        synchronized (metadataSync) {
+            hadProperties = resourceProperties.remove(resourcePath) != null;
+        }
+        if (hadProperties) {
+            flushMetadata();
+        }
+        return hadProperties;
     }
 
+    @Override
     @NotNull
-    protected String getResourcePath(@NotNull IResource resource) {
+    public String getResourcePath(@NotNull IResource resource) {
         return resource.getProjectRelativePath().toString();
     }
 

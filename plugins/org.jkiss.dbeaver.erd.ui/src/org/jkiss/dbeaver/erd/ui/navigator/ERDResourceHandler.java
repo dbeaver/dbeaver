@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.erd.ui.navigator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.part.FileEditorInput;
@@ -87,16 +86,6 @@ public class ERDResourceHandler extends AbstractResourceHandler {
             return "diagram folder";
         } else {
             return "diagram";
-        }
-    }
-
-    @NotNull
-    @Override
-    public String getResourceNodeName(@NotNull IResource resource) {
-        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProject()))) {
-            return "ER Diagrams";
-        } else {
-            return super.getResourceNodeName(resource);
         }
     }
 
@@ -182,13 +171,17 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
         if (resource.getResource() instanceof IFile) {
             try {
+                IResource iResource = resource.getResource();
                 DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(
-                    resource.getResource().getProject());
+                    iResource.getProject());
                 if (projectMeta == null) {
                     return Collections.emptyList();
                 }
-                return ERDPersistedState.extractContainers(projectMeta,
-                    resource.getResource().getRawLocation().toFile().toPath());
+                if (iResource instanceof IFile) {
+                    try (InputStream is = ((IFile) iResource).getContents()) {
+                        return ERDPersistedState.extractContainers(projectMeta, is);
+                    }
+                }
             } catch (Exception e) {
                 log.error(e);
                 return null;

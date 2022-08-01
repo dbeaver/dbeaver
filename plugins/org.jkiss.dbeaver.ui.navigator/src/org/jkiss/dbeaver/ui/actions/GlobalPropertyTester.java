@@ -32,6 +32,7 @@ public class GlobalPropertyTester extends PropertyTester {
     public static final String PROP_STANDALONE = "standalone";
     public static final String PROP_HAS_ACTIVE_PROJECT = "hasActiveProject";
     public static final String PROP_HAS_MULTI_PROJECTS = "hasMultipleProjects";
+    public static final String PROP_CAN_CREATE_PROJECT = "canCreateProject";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -42,6 +43,8 @@ public class GlobalPropertyTester extends PropertyTester {
                 return DBWorkbench.getPlatform().getWorkspace().getActiveProject() != null;
             case PROP_STANDALONE:
                 return DBWorkbench.getPlatform().getApplication().isStandalone();
+            case PROP_CAN_CREATE_PROJECT:
+                return !DBWorkbench.getPlatform().getApplication().isDistributed();
         }
         return false;
     }

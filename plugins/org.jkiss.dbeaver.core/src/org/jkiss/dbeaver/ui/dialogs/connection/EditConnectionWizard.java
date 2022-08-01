@@ -28,7 +28,6 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -52,7 +51,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.security.MessageDigest;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -207,7 +205,8 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     @Override
     public boolean performFinish() {
-        DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, originalDataSource.getRegistry());
+        DBPDataSourceRegistry registry = originalDataSource.getRegistry();
+        DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, registry);
         DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
         saveSettings(dsChanged);
 
@@ -242,10 +241,7 @@ public class EditConnectionWizard extends ConnectionWizard {
 
         // Save
         saveSettings(originalDataSource);
-        originalDataSource.getRegistry().updateDataSource(originalDataSource);
-
-
-        return true;
+        return originalDataSource.persistConfiguration();
     }
 
     private boolean isOnlyUserCredentialChanged(DataSourceDescriptor dsCopy, DataSourceDescriptor dsChanged) {

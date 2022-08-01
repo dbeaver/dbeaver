@@ -89,9 +89,12 @@ public class SQLEditorUtils {
         long recentTimestamp = 0L;
         ResourceInfo recentFile = null;
         for (ResourceInfo file : scripts) {
-            if (file.localFile.lastModified() > recentTimestamp) {
-                recentTimestamp = file.localFile.lastModified();
-                recentFile = file;
+            if (file.resource != null) {
+                long lastModified = ContentUtils.getResourceLastModified(file.resource);
+                if (lastModified > recentTimestamp) {
+                    recentTimestamp = lastModified;
+                    recentFile = file;
+                }
             }
         }
         return recentFile;
@@ -275,6 +278,7 @@ public class SQLEditorUtils {
 
     public static class ResourceInfo {
         private final IResource resource;
+        @Deprecated
         private final File localFile;
         private final DBPDataSourceContainer dataSource;
         private final List<ResourceInfo> children;
@@ -282,13 +286,15 @@ public class SQLEditorUtils {
 
         ResourceInfo(IFile file, DBPDataSourceContainer dataSource) {
             this.resource = file;
-            this.localFile = file.getLocation().toFile();
+            IPath location = file.getLocation();
+            this.localFile = location == null ? null : location.toFile();
             this.dataSource = dataSource;
             this.children = null;
         }
         public ResourceInfo(IFolder folder) {
             this.resource = folder;
-            this.localFile = folder.getLocation().toFile();
+            IPath location = folder.getLocation();
+            this.localFile = location == null ? null : location.toFile();
             this.dataSource = null;
             this.children = new ArrayList<>();
         }
