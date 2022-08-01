@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Admin interface
+ * User interface
  */
 public interface SMController extends SMAuthCredentialsManager {
 

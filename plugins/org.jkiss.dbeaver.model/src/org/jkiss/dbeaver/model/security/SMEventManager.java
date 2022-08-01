@@ -21,6 +21,9 @@ import org.jkiss.dbeaver.DBException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Security manager event manager
+ */
 public class SMEventManager {
     public enum SMEvent {
         BEFORE_USER_ACTIVATED
@@ -36,6 +39,9 @@ public class SMEventManager {
         listeners.remove(listener);
     }
 
+    /**
+     * Fire security manager event
+     */
     public static void fireEvent(SMEvent event) throws DBException {
         switch (event) {
             case BEFORE_USER_ACTIVATED:

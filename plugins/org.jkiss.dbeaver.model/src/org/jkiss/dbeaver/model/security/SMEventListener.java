@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.dbeaver.DBException;
 
+/**
+ * Security manager event listener
+ */
 public interface SMEventListener {
     void beforeUserActivated() throws DBException;
 }
