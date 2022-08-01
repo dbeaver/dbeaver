@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener.PreferenceChangeEvent;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -46,4 +47,11 @@ public interface SQLEditorListener
     void onDataSourceChanged(PreferenceChangeEvent event);
     
     void onDataReceived(@NotNull DBPPreferenceStore contextPrefStore, @NotNull ResultSetModel resultSet, @Nullable String name);
+
+    void onQueryExecuted(
+        @NotNull DBPPreferenceStore contextPrefStore, 
+        @NotNull String query, 
+        @Nullable StatResultSet statistics, 
+        @NotNull String error
+    );
 }

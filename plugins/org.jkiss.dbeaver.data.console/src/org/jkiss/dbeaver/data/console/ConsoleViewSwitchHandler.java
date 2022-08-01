@@ -27,6 +27,7 @@ import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -105,6 +106,19 @@ public class ConsoleViewSwitchHandler extends AbstractHandler {
                 if (isConsoleViewEnabledForEditor(editor) && CommonUtils.isNotEmpty(name)) {
                     SQLConsoleView viewer = obtainConsoleView(editor).getFirst();
                     viewer.printQueryData(contextPrefStore, resultSet, name);
+                }
+            }
+
+            @Override
+            public void onQueryExecuted(
+                @NotNull DBPPreferenceStore contextPrefStore,
+                @NotNull String query, 
+                @Nullable StatResultSet statistics, 
+                @NotNull String errorMessage
+            ) {
+                if (isConsoleViewEnabledForEditor(editor) && CommonUtils.isNotEmpty(query)) {
+                    SQLConsoleView viewer = obtainConsoleView(editor).getFirst();
+                    viewer.printQueryResult(contextPrefStore, query, statistics, errorMessage);
                 }
             }
         });

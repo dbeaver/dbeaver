@@ -22,6 +22,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.console.MessageConsole;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -40,8 +41,10 @@ public class SQLConsoleView extends SQLEditorOutputConsoleViewer {
         PlainTextFormatter formatter = new PlainTextFormatter(prefs);
         StringBuilder grid = new StringBuilder();
         formatter.printQueryName(grid, name);
+        
+        grid.append("\n");
+        
         int totalRows = formatter.printGrid(grid, model);
-
         if (totalRows > 0) {
             this.getOutputWriter().append(grid.toString()).append("\n\n");
             this.getOutputWriter().append(String.valueOf(totalRows)).append(" row(s) fetched.\n\n");
@@ -50,4 +53,24 @@ public class SQLConsoleView extends SQLEditorOutputConsoleViewer {
         }
     }
 
+    public void printQueryResult(
+        @NotNull DBPPreferenceStore prefs, 
+        @NotNull String query, 
+        @Nullable StatResultSet statistics,
+        @Nullable String errorMessage
+    ) {
+        PlainTextFormatter formatter = new PlainTextFormatter(prefs);
+        StringBuilder grid = new StringBuilder();
+        formatter.printQueryName(grid, query);
+
+        grid.append("\n");
+
+        if (errorMessage != null) {
+            grid.append(errorMessage);
+        }
+        
+        this.getOutputWriter().append(grid.toString()).append("\n\n");
+        this.getOutputWriter().flush();
+        this.scrollToEnd();
+    }
 }

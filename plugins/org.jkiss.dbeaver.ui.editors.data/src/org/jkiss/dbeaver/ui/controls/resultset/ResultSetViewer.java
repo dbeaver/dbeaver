@@ -111,7 +111,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -702,6 +701,7 @@ public class ResultSetViewer extends Viewer
                 sqlText,
                 GeneralUtils.makeErrorStatus(message, error), container instanceof IResultSetContainerExt ? (IResultSetContainerExt) container : null));
         updatePresentationInToolbar();
+        fireQueryExecuted(sqlText, null, error.getMessage());
     }
 
     void updatePresentation(final DBCResultSet resultSet, boolean metadataChanged) {
@@ -720,6 +720,8 @@ public class ResultSetViewer extends Viewer
                 setActivePresentation(new StatisticsPresentation());
                 activePresentationDescriptor = null;
                 changed = true;
+
+                fireQueryExecuted(resultSet.getSourceStatement().toString(), (StatResultSet) resultSet, null);
             } else {
                 // Regular results
                 if (filtersPanel != null) {
@@ -2015,6 +2017,10 @@ public class ResultSetViewer extends Viewer
 
     ///////////////////////////////////////
     // Status
+
+    public String getStatus() {
+        return statusLabel.getMessage();
+    }
 
     public void setStatus(String status)
     {
@@ -4527,6 +4533,12 @@ public class ResultSetViewer extends Viewer
     private void fireResultSetModelPrepared() {
         for (IResultSetListener listener : getListenersCopy()) {
             listener.onModelPrepared();
+        }
+    }
+    
+    private void fireQueryExecuted(String query, StatResultSet statistics, String errorMessage) {
+        for (IResultSetListener listener : getListenersCopy()) {
+            listener.onQueryExecuted(query, statistics, errorMessage);
         }
     }
 

@@ -68,6 +68,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
+import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -3804,6 +3805,11 @@ public class SQLEditor extends SQLEditorBase implements
         public void onModelPrepared() {
             notifyOnDataListeners(this);
         }
+        
+        @Override
+        public void onQueryExecuted(@NotNull String query, @Nullable StatResultSet statistics, @Nullable String errorMessage) {
+            notifyOnQueryListeners(this, query, statistics, errorMessage);
+        }
 
         @Override
         public SQLScriptContext getScriptContext() {
@@ -4467,21 +4473,47 @@ public class SQLEditor extends SQLEditorBase implements
 
     }
     
-    private void notifyOnDataListeners(QueryResultsContainer container) {
-        DBCExecutionContext context = container.getExecutionContext();
-        DBPPreferenceStore contextPrefStore = context != null
-            ? context.getDataSource().getContainer().getPreferenceStore()
-            : DBWorkbench.getPlatform().getPreferenceStore();
-
+    private void notifyOnDataListeners(@NotNull QueryResultsContainer container) {
         // Notify listeners
         synchronized (listeners) {
             for (SQLEditorListener listener : listeners) {
                 try {
-                    listener.onDataReceived(contextPrefStore, container.getResultSetController().getModel(), container.getName());
+                    listener.onDataReceived(
+                        getContextPrefStore(container), 
+                        container.getResultSetController().getModel(), 
+                        container.getQuery().getOriginalText()
+                    );
                 } catch (Throwable ex) {
                     ex.printStackTrace();
                 }
             }
         }
+    }
+
+
+    private void notifyOnQueryListeners(
+        @NotNull QueryResultsContainer container, 
+        @NotNull String query, 
+        @Nullable StatResultSet statistics, 
+        @Nullable String errorMessage
+    ) {
+        // Notify listeners
+        synchronized (listeners) {
+            for (SQLEditorListener listener : listeners) {
+                try {
+                    listener.onQueryExecuted(getContextPrefStore(container), query, statistics, errorMessage);
+                } catch (Throwable ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private DBPPreferenceStore getContextPrefStore(@NotNull QueryResultsContainer container) {
+        DBCExecutionContext context = container.getExecutionContext();
+        DBPPreferenceStore contextPrefStore = context != null
+                ? context.getDataSource().getContainer().getPreferenceStore()
+                : DBWorkbench.getPlatform().getPreferenceStore();
+        return contextPrefStore;
     }
 }
