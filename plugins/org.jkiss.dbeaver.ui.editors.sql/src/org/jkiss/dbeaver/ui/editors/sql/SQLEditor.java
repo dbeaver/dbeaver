@@ -4147,13 +4147,7 @@ public class SQLEditor extends SQLEditorBase implements
             TextViewer textViewer = getTextViewer();
             boolean focusInEditor = textViewer != null && textViewer.getTextWidget() != null && textViewer.getTextWidget().isFocusControl();
 
-            CTabItem activeResultsTab = getActiveResultsTab();
-            if (activeResultsTab != null && activeResultsTab.getData() instanceof StyledText) {
-                StyledText styledText = (StyledText) activeResultsTab.getData();
-                if (!focusInEditor) {
-                    return new StyledTextFindReplaceTarget(styledText);
-                }
-            }
+
 
             if (!focusInEditor) {
                 if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
