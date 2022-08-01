@@ -543,6 +543,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     @Override
+    public boolean hasError() {
+        return this.lastError != null;
+    }
+
+    @Override
     public void addDataSourceListener(@NotNull DBPEventListener listener) {
         synchronized (dataSourceListeners) {
             dataSourceListeners.add(listener);
@@ -847,6 +852,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     public void checkForErrors() throws DBException {
         Throwable lastError = getLastError();
         if (lastError != null) {
+            if (lastError instanceof DBException) {
+                throw (DBException) lastError;
+            }
             throw new DBException(lastError.getMessage(), lastError.getCause());
         }
     }
