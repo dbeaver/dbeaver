@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -115,17 +116,23 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
-    public String getNodeName()
-    {
+    public String getNodeName() {
         if (resource == null || handler == null) {
             return null;
         }
-        return handler.getResourceNodeName(resource);
-//        if (resource instanceof IFile) {
-//
-//        }
-//        return resource.getFullPath().lastSegment();
+        return resource.getName();
     }
+
+/*
+    @Override
+    protected String getSortName() {
+        if (resource == null || handler == null) {
+            return null;
+        }
+        return resource.getFullPath().removeFileExtension().lastSegment();
+    }
+*/
+
 
     @Override
 //    @Property(viewable = false, order = 100)
@@ -269,9 +276,20 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
     {
-        children = null;
+        if (children != null) {
+//            for (DBNNode child : children) {
+//                child.dispose(false);
+//            }
+            children = null;
+        }
+        refreshThisResource(monitor);
+        return this;
+    }
+
+    @NotNull
+    protected void refreshThisResource(DBRProgressMonitor monitor) throws DBException {
         if (resource == null) {
-            return this;
+            return;
         }
         try {
             resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
@@ -284,7 +302,6 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         } catch (CoreException e) {
             throw new DBException("Can't refresh resource", e);
         }
-        return this;
     }
 
     @Override
@@ -431,7 +448,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
                         return 1;
                     }
                 }
-                return o1.getNodeName().compareToIgnoreCase(o2.getNodeName());
+                return o1.getSortName().compareToIgnoreCase(o2.getSortName());
             }
         });
     }
@@ -570,9 +587,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     @Property(viewable = true, order = 11)
     public String getResourceLastModified() throws CoreException {
         if (resource instanceof IFile) {
-            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
-            IFileInfo iFileInfo = fileStore.fetchInfo();
-            return DATE_FORMAT.format(iFileInfo.getLastModified());
+            long lastModified = ContentUtils.getResourceLastModified(resource);
+            return lastModified <= 0 ? "" : DATE_FORMAT.format(lastModified);
         }
         return null;
     }

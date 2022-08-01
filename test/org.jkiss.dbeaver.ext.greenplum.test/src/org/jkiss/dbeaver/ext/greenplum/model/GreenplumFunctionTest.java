@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.SQLException;
 
@@ -69,19 +69,19 @@ public class GreenplumFunctionTest {
 
     @Before
     public void setUp() throws Exception {
-        Mockito.when(mockSchema.getDatabase()).thenReturn(mockDatabase);
+//        Mockito.when(mockSchema.getDatabase()).thenReturn(mockDatabase);
         Mockito.when(mockSchema.getDataSource()).thenReturn(mockDataSource);
         Mockito.when(mockSchema.getName()).thenReturn(exampleSchemaName);
-        Mockito.when(mockSchema.getTableCache()).thenReturn(mockTableCache);
-        Mockito.when(mockSchema.getConstraintCache()).thenReturn(mockConstraintCache);
+//        Mockito.when(mockSchema.getTableCache()).thenReturn(mockTableCache);
+//        Mockito.when(mockSchema.getConstraintCache()).thenReturn(mockConstraintCache);
 
         Mockito.when(mockDataSource.getServerType()).thenReturn(new PostgreServerGreenplum(mockDataSource));
         Mockito.when(mockDataSource.getSQLDialect()).thenReturn(new PostgreDialect());
         Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(false);
-        Mockito.when(mockDataSource.getDefaultInstance()).thenReturn(mockDatabase);
+//        Mockito.when(mockDataSource.getDefaultInstance()).thenReturn(mockDatabase);
 
-        Mockito.when(mockDatabase.getName()).thenReturn(exampleDatabaseName);
-        Mockito.when(mockDatabase.getDefaultContext(Mockito.anyObject(), Mockito.anyBoolean())).thenReturn(mockContext);
+//        Mockito.when(mockDatabase.getName()).thenReturn(exampleDatabaseName);
+//        Mockito.when(mockDatabase.getDefaultContext(Mockito.any(), Mockito.anyBoolean())).thenReturn(mockContext);
 
         Mockito.when(mockResults.getString("proname")).thenReturn("sampleFunction");
         postgreLanguage = new PostgreLanguage(mockDatabase, mockResults);

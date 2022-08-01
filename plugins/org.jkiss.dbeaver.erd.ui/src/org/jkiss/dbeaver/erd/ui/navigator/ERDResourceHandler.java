@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.erd.ui.navigator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.part.FileEditorInput;
@@ -87,16 +86,6 @@ public class ERDResourceHandler extends AbstractResourceHandler {
             return "diagram folder";
         } else {
             return "diagram";
-        }
-    }
-
-    @NotNull
-    @Override
-    public String getResourceNodeName(@NotNull IResource resource) {
-        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProject()))) {
-            return "ER Diagrams";
-        } else {
-            return super.getResourceNodeName(resource);
         }
     }
 

@@ -217,23 +217,23 @@
                value="Record component name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="ClassTypeParameterName">
-      <property name="format" value="^[A-Z][A-Z0-9_].*$"/>
+      <property name="format" value="^[A-Z][A-Z0-9_]*$"/>
       <message key="name.invalidPattern" value="Class type name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="RecordTypeParameterName">
-      <property name="format" value="^[A-Z][A-Z0-9_].*$"/>
+      <property name="format" value="^[A-Z][A-Z0-9_]*$"/>
       <message key="name.invalidPattern" value="Record type name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="MethodTypeParameterName">
-      <property name="format" value="^[A-Z][A-Z0-9_].*$"/>
+      <property name="format" value="^[A-Z][A-Z0-9_]*$"/>
       <message key="name.invalidPattern" value="Method type name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="InterfaceTypeParameterName">
-      <property name="format" value="^[A-Z][A-Z0-9_].*$"/>
+      <property name="format" value="^[A-Z][A-Z0-9_]*$"/>
       <message key="name.invalidPattern" value="Interface type name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="IllegalIdentifierName">
-      <property name="format" value="^[A-Z][A-Z0-9_].*$"/>
+      <property name="format" value="^[A-Z][A-Z0-9_]*$"/>
       <property name="tokens" value="ENUM_CONSTANT_DEF"/>
       <message key="name.invalidPattern" value="Enum constant name ''{0}'' must match pattern ''{1}''."/>
     </module>
@@ -291,13 +291,13 @@
                     METHOD_DEF, QUESTION, RESOURCE_SPECIFICATION, SUPER_CTOR_CALL, LAMBDA,
                     RECORD_DEF"/>
     </module>
-    <module name="OperatorWrap">
+    <!--<module name="OperatorWrap">
       <property name="option" value="NL"/>
       <property name="tokens"
                value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR,
                     LT, MINUS, MOD, NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR, METHOD_REF,
                     TYPE_EXTENSION_AND "/>
-    </module>
+    </module>-->
     <module name="AnnotationLocation">
       <property name="id" value="AnnotationLocationMostCases"/>
       <property name="tokens"
@@ -327,15 +327,14 @@
       <property name="accessModifiers" value="public"/>
       <property name="allowMissingParamTags" value="true"/>
       <property name="allowMissingReturnTag" value="true"/>
-      <property name="allowedAnnotations" value="Override, Test"/>
-      <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF, COMPACT_CTOR_DEF"/>
+      <property name="allowedAnnotations" value="Override, Test, Property"/>
+      <property name="tokens" value="METHOD_DEF, ANNOTATION_FIELD_DEF"/>
     </module>
     <module name="MissingJavadocMethod">
       <property name="scope" value="public"/>
       <property name="minLineCount" value="2"/>
-      <property name="allowedAnnotations" value="Override, Test"/>
-      <property name="tokens" value="METHOD_DEF, CTOR_DEF, ANNOTATION_FIELD_DEF,
-                                   COMPACT_CTOR_DEF"/>
+      <property name="allowedAnnotations" value="Override, Test, Property"/>
+      <property name="tokens" value="METHOD_DEF, ANNOTATION_FIELD_DEF"/>
     </module>
     <module name="MissingJavadocType">
       <property name="scope" value="protected"/>

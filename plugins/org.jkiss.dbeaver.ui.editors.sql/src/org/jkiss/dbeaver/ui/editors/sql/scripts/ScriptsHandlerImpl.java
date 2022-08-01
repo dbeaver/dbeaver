@@ -130,17 +130,6 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
         return null;
     }
 
-    @NotNull
-    @Override
-    public String getResourceNodeName(@NotNull IResource resource) {
-//        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProjectNode()))) {
-//            return "SQL Scripts";
-//        } else {
-            return super.getResourceNodeName(resource);
-//        }
-    }
-
-
     @Override
     public IResource createResource(IFolder folder) throws CoreException, DBException {
         return SQLEditorHandlerOpenEditor.openNewEditor(

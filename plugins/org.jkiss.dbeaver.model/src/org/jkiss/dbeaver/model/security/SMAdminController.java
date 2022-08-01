@@ -75,13 +75,6 @@ public interface SMAdminController extends SMController {
         @NotNull SMObjectType objectType
     ) throws DBException;
 
-    @NotNull
-    SMObjectPermissions getObjectPermissions(
-        @NotNull String subjectId,
-        @NotNull String objectId,
-        @NotNull SMObjectType objectType
-    ) throws DBException;
-
     List<SMObjectPermissionsGrant> getSubjectObjectPermissionGrants(
         @NotNull String subjectId,
         @NotNull SMObjectType smObjectType

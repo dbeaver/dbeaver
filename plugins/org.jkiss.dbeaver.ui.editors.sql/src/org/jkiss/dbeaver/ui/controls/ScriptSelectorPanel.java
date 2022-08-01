@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -261,12 +262,14 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
 
             @Override
             public String getText(Object element) {
-                final File localFile = ((ResourceInfo) element).getLocalFile();
-                if (localFile.isDirectory()) {
-                    return null;
-                } else {
-                    return sdf.format(new Date(localFile.lastModified()));
+                IResource resource = ((ResourceInfo) element).getResource();
+                if (resource instanceof IFile) {
+                    long lastModified = ContentUtils.getResourceLastModified(resource);
+                    if (lastModified > 0) {
+                        return sdf.format(new Date(lastModified));
+                    }
                 }
+                return null;
             }
         });
 
@@ -291,6 +294,9 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             public String getText(Object element) {
                 final ResourceInfo ri = (ResourceInfo) element;
                 IFolder resourceDefaultRoot = DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(navigatorContext.getProject(), ScriptsHandlerImpl.class, false);
+                if (ri.getLocalFile() == null) {
+                    return null;
+                }
                 String path = ri.getLocalFile().getParentFile().getPath();
                 if (resourceDefaultRoot == null){
                     return "";
@@ -304,7 +310,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             @Override
             public String getToolTipText(Object element) {
                 final ResourceInfo ri = (ResourceInfo) element;
-                return ri.getLocalFile().getPath();
+                return ri.getLocalFile() == null ? null : ri.getLocalFile().getPath();
             }
         });
         columnController.autoSizeColumns();

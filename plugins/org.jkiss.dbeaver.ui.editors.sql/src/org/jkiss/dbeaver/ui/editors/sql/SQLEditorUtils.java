@@ -89,9 +89,12 @@ public class SQLEditorUtils {
         long recentTimestamp = 0L;
         ResourceInfo recentFile = null;
         for (ResourceInfo file : scripts) {
-            if (file.localFile.lastModified() > recentTimestamp) {
-                recentTimestamp = file.localFile.lastModified();
-                recentFile = file;
+            if (file.resource != null) {
+                long lastModified = ContentUtils.getResourceLastModified(file.resource);
+                if (lastModified > recentTimestamp) {
+                    recentTimestamp = lastModified;
+                    recentFile = file;
+                }
             }
         }
         return recentFile;
@@ -102,14 +105,10 @@ public class SQLEditorUtils {
             return;
         }
         try {
-            for (Map.Entry<String, Map<String, Object>> rp : project.getResourceProperties().entrySet()) {
-                Map<String, Object> props = rp.getValue();
-                Object dsId = props.get(EditorUtils.PROP_SQL_DATA_SOURCE_ID);
-                if (CommonUtils.equalObjects(container.getId(), dsId)) {
-                    IResource resource = project.getRootResource().findMember(rp.getKey());
-                    if (resource instanceof IFile) {
-                        result.add(new ResourceInfo((IFile) resource, container));
-                    }
+            for (String path : project.findResources(Map.of(EditorUtils.PROP_CONTEXT_DEFAULT_DATASOURCE, container.getId()))) {
+                final IResource resource = project.getRootResource().findMember(path);
+                if (resource instanceof IFile) {
+                    result.add(new ResourceInfo((IFile) resource, container));
                 }
             }
 
@@ -286,13 +285,15 @@ public class SQLEditorUtils {
 
         ResourceInfo(IFile file, DBPDataSourceContainer dataSource) {
             this.resource = file;
-            this.localFile = file.getLocation().toFile();
+            IPath location = file.getLocation();
+            this.localFile = location == null ? null : location.toFile();
             this.dataSource = dataSource;
             this.children = null;
         }
         public ResourceInfo(IFolder folder) {
             this.resource = folder;
-            this.localFile = folder.getLocation().toFile();
+            IPath location = folder.getLocation();
+            this.localFile = location == null ? null : location.toFile();
             this.dataSource = null;
             this.children = new ArrayList<>();
         }

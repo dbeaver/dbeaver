@@ -286,6 +286,9 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 Object value = entry.getValue();
                 propertiesMap.put(entry.getKey().getId(), value.toString());
             }
+        } else if (!CommonUtils.isEmpty(rawChangedPropertiesMap)) {
+            // In case then we have only the raw map of changed container properties
+            settings.put("changedProperties", rawChangedPropertiesMap);
         }
     }
 

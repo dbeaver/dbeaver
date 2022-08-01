@@ -396,13 +396,21 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
                     // No root
                     return null;
                 }
-                final IFolder realFolder = project.getEclipseProject().getFolder(defaultRoot);
+                org.eclipse.core.runtime.Path defaultRootPath = new org.eclipse.core.runtime.Path(defaultRoot);
+                IContainer rootResource = project.getRootResource();
+                if (rootResource == null) {
+                    rootResource = project.getEclipseProject();
+                }
+                if (rootResource == null) {
+                    throw new IllegalStateException("Project " + project.getName() + " doesn't have resource root");
+                }
+                final IFolder realFolder = rootResource.getFolder(defaultRootPath);
 
                 if (forceCreate && !realFolder.exists()) {
                     try {
                         realFolder.create(true, true, new NullProgressMonitor());
                     } catch (CoreException e) {
-                        log.error("Can't create '" + rhd.getName() + "' root folder '" + realFolder.getName() + "'", e);
+                        log.error("Can not create '" + rhd.getName() + "' root folder '" + realFolder.getName() + "'", e);
                         return realFolder;
                     }
                 }

@@ -14,11 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security;
+package org.jkiss.dbeaver.model.rm;
 
-public interface SMObjects {
-    String PROJECT_OBJECT_TYPE_ID = "project";
+/**
+ * RM constants
+ */
+public interface RMConstants  {
+    String PERMISSION_PROJECT_CONNECTIONS_EDIT = "project-connection-edit";
+    String PERMISSION_PROJECT_CONNECTIONS_VIEW = "project-connection-view";
 
-    SMObjectType DATASOURCE = new SMObjectType("datasource");
-    SMObjectType PROJECT = new SMObjectType(PROJECT_OBJECT_TYPE_ID);
+    String PERMISSION_PROJECT_RESOURCE_VIEW = "project-resource-view";
+    String PERMISSION_PROJECT_RESOURCE_EDIT = "project-resource-edit";
+
+    String PERMISSION_PROJECT_ADMIN = "project-admin";
+
+    // RM admin can create/delete projects. It also can assign project permissions.
+    String PERMISSION_RM_ADMIN = "rm-admin";
 }

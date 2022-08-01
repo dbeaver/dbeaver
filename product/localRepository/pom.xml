@@ -34,7 +34,7 @@
 						<id>default-cli</id>
 						<configuration>
 							<artifacts>
-								<artifact><id>com.github.jsqlparser:jsqlparser:4.3</id></artifact>
+								<artifact><id>com.github.jsqlparser:jsqlparser:4.5</id></artifact>
 <!--								<artifact><id>com.manticore-projects.jsqlformatter:jsqlformatter:0.1.7</id></artifact>-->
 
 								<artifact><id>org.apache.commons:commons-jexl3:3.1</id></artifact>
@@ -67,7 +67,7 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.dbcp:LATEST</id></artifact>
 
 								<!-- Tests -->
-								<artifact><id>org.mockito:mockito-all:1.10.19</id></artifact>
+								<artifact><id>org.mockito:mockito-core:4.6.1</id></artifact>
 							</artifacts>
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 
