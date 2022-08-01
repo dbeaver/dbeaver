@@ -58,20 +58,30 @@ public abstract class RMObject implements DBPNamedObject {
 
     @Nullable
     public RMResource getChild(@NotNull String name) {
-        for (RMResource child : children) {
-            if (child.getName().equals(name)) {
-                return child;
+        if (children != null) {
+            for (RMResource child : children) {
+                if (child.getName().equals(name)) {
+                    return child;
+                }
             }
         }
         return null;
     }
 
     public void addChild(RMResource child) {
-        children = ArrayUtils.add(RMResource.class, children, child);
+        if (children == null) {
+            children = new RMResource[] { child };
+        } else {
+            children = ArrayUtils.add(RMResource.class, children, child);
+        }
     }
 
     public void removeChild(RMResource child) {
-        children = ArrayUtils.remove(RMResource.class, children, child);
+        if (children.length == 1 && children[0] == child) {
+            children = null;
+        } else {
+            children = ArrayUtils.remove(RMResource.class, children, child);
+        }
     }
 
     @Override
