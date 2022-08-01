@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.jkiss.dbeaver.ext.greenplum.model.GreenplumWithClauseBuilder.generateWithClause;
 import static org.junit.Assert.assertEquals;

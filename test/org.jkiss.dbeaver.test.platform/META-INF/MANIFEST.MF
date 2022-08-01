@@ -10,7 +10,7 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.junit,
- org.mockito.mockito-all,
+ org.mockito.mockito-core,
  org.apache.felix.scr,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,

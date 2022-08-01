@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.resources.bookmarks;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -78,16 +77,6 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             return "bookmark folder"; //$NON-NLS-1$
         } else {
             return "bookmark"; //$NON-NLS-1$
-        }
-    }
-
-    @NotNull
-    @Override
-    public String getResourceNodeName(@NotNull IResource resource) {
-        if (resource.getParent() instanceof IProject) {
-            return "Bookmarks";
-        } else {
-            return super.getResourceNodeName(resource);
         }
     }
 
