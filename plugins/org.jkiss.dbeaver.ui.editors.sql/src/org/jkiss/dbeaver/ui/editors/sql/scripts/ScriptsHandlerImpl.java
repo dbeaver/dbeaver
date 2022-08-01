@@ -94,8 +94,10 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
     @Override
     public void updateNavigatorNodeFromResource(@NotNull DBNNodeWithResource node, @NotNull IResource resource) {
         super.updateNavigatorNodeFromResource(node, resource);
-        if (resource instanceof IFolder && node instanceof DBNResource && ((DBNResource)node).isRootResource(resource)) {
-            node.setResourceImage(UIIcon.SCRIPTS);
+        if (resource instanceof IFolder) {
+            if (node instanceof DBNResource && ((DBNResource)node).isRootResource(resource)) {
+                node.setResourceImage(UIIcon.SCRIPTS);
+            }
         } else {
             node.setResourceImage(UIIcon.SQL_SCRIPT);
         }
