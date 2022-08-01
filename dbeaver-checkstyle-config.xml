@@ -327,14 +327,13 @@
       <property name="accessModifiers" value="public"/>
       <property name="allowMissingParamTags" value="true"/>
       <property name="allowMissingReturnTag" value="true"/>
-      <property name="allowedAnnotations" value="Override, Test, Property"/>
+      <property name="allowedAnnotations" value="Override, Test, BeforeClass, Before, AfterClass, After, Property"/>
       <property name="tokens" value="METHOD_DEF, ANNOTATION_FIELD_DEF"/>
     </module>
     <module name="MissingJavadocMethod">
-      <property name="scope" value="public"/>
-      <property name="minLineCount" value="2"/>
-      <property name="allowedAnnotations" value="Override, Test, Property"/>
+      <property name="allowedAnnotations" value="Override, Test, BeforeClass, Before, AfterClass, After, Property"/>
       <property name="tokens" value="METHOD_DEF, ANNOTATION_FIELD_DEF"/>
+      <property name="allowMissingPropertyJavadoc" value="true"/>
     </module>
     <module name="MissingJavadocType">
       <property name="scope" value="protected"/>
