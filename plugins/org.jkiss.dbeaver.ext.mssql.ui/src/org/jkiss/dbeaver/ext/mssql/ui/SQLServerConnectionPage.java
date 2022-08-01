@@ -136,7 +136,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             if (!isSqlServer) {
                 encryptPassword = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_encrypt_password, SQLServerUIMessages.dialog_setting_encrypt_password_tip, false, 2);
             }
-            if (isDriverAzure) {
+            if (isDriverAzure || isDriverBabelfish()) {
                 showAllDatabases = UIUtils.createCheckbox(
                     secureGroup,
                     SQLServerUIMessages.dialog_setting_show_all_databases,

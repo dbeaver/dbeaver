@@ -544,21 +544,17 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             StringBuilder sql = new StringBuilder("SELECT db.* FROM sys.databases db");
             DBPDataSourceContainer container = owner.getContainer();
             DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
-            boolean showSpecifiedDatabaseForAzure = SQLServerUtils.isDriverAzure(container.getDriver())
-                && !CommonUtils.getBoolean(configuration.getProviderProperty(
+            boolean showSpecifiedDatabase = !CommonUtils.getBoolean(configuration.getProviderProperty(
                     SQLServerConstants.PROP_SHOW_ALL_DATABASES), false);
             String databaseName = configuration.getDatabaseName();
-            boolean useCurrentDatabaseName = owner.isBabelfish
-                || (showSpecifiedDatabaseForAzure && CommonUtils.isEmpty(databaseName));
-            boolean noFiltersAndOrderNeeded = owner.isBabelfish || showSpecifiedDatabaseForAzure;
+            boolean useCurrentDatabaseName = showSpecifiedDatabase && CommonUtils.isEmpty(databaseName);
             if (useCurrentDatabaseName) {
                 sql.append("\nWHERE db.name = db_name()");
-                showSpecifiedDatabaseForAzure = false;
-            } else if (showSpecifiedDatabaseForAzure) {
+            } else if (showSpecifiedDatabase) {
                 sql.append("\nWHERE db.name = ?");
             }
             JDBCPreparedStatement dbStat;
-            if (!noFiltersAndOrderNeeded) {
+            if (!showSpecifiedDatabase) {
                 DBSObjectFilter databaseFilters = container.getObjectFilter(
                     SQLServerDatabase.class,
                     null,
@@ -578,7 +574,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
                 }
             } else {
                 dbStat = session.prepareStatement(sql.toString());
-                if (showSpecifiedDatabaseForAzure) {
+                if (!useCurrentDatabaseName) {
                     dbStat.setString(1, databaseName);
                 }
             }
