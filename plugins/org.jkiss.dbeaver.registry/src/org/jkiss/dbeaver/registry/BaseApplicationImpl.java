@@ -89,6 +89,11 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
         return false;
     }
 
+    @Override
+    public boolean isDistributed() {
+        return false;
+    }
+
     @NotNull
     @Override
     public DBASecureStorage getSecureStorage() {
