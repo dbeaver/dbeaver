@@ -339,7 +339,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
         if (handler == null && resource instanceof IFolder) {
             final IProject eclipseProject = resource.getProject();
             DBPProject project = projects.get(eclipseProject);
-            IPath relativePath = resource.getFullPath().makeRelativeTo(eclipseProject.getFullPath());
+            IPath relativePath = resource.getFullPath().makeRelativeTo(project.getRootResource().getFullPath());
             while (relativePath.segmentCount() > 0) {
                 String folderPath = relativePath.toString();
                 ResourceHandlerDescriptor handlerDescriptor = getHandlerDescriptorByRootPath(project, folderPath);
@@ -362,7 +362,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
 
     @Override
     public IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor rhd, boolean forceCreate) {
-        if (project == null) {
+        if (project == null || project.getRootResource() == null) {
             return null;
         }
         String defaultRoot = rhd.getDefaultRoot(project);
@@ -370,7 +370,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
             // No root
             return null;
         }
-        final IFolder realFolder = project.getEclipseProject().getFolder(defaultRoot);
+        final IFolder realFolder = project.getRootResource().getFolder(new org.eclipse.core.runtime.Path(defaultRoot));
 
         if (forceCreate && !realFolder.exists()) {
             try {

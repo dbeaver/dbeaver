@@ -46,7 +46,10 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ResourceBundle;
 
 /**
@@ -184,8 +187,10 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     private EntityDiagram loadContentFromFile(DBRProgressMonitor progressMonitor)
         throws DBException
     {
-        final IProject project = getDiagramProject().getEclipseProject();
-        final File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
+        final IFile localFile = EditorUtils.getFileFromInput(getEditorInput());
+        if (localFile == null) {
+            throw new DBException("Can not get file from editor input " + getEditorInput());
+        }
 
         final DiagramPart diagramPart = getDiagramPart();
         EntityDiagram entityDiagram = new EntityDiagram(null, localFile.getName(), getContentProvider(), getDecorator());
@@ -194,8 +199,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         entityDiagram.setLayoutManualDesired(true);
         diagramPart.setModel(entityDiagram);
 
-        try (final InputStreamReader isr = new InputStreamReader(new FileInputStream(localFile), GeneralUtils.UTF8_CHARSET)) {
-            DiagramLoader.load(progressMonitor, project, diagramPart, isr);
+        try (final InputStreamReader isr = new InputStreamReader(localFile.getContents(), GeneralUtils.UTF8_CHARSET)) {
+            DiagramLoader.load(progressMonitor, getDiagramProject(), diagramPart, isr);
         } catch (Exception e) {
             log.error("Error loading ER diagram from '" + localFile.getName() + "'", e);
         }
