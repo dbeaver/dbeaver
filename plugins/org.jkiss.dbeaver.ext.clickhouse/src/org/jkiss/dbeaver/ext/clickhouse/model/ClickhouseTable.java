@@ -154,6 +154,16 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
 
     @Nullable
     @Override
+    @Property(viewable = true,
+        editableExpr = "object.dataSource.isServerVersionAtLeast(21, 6)",
+        updatableExpr = "object.dataSource.isServerVersionAtLeast(21, 6)",
+        length = PropertyLength.MULTILINE, order = 100)
+    public String getDescription() {
+        return super.getDescription();
+    }
+
+    @Nullable
+    @Override
     public DBPPropertySource getStatProperties() {
         return null;
     }

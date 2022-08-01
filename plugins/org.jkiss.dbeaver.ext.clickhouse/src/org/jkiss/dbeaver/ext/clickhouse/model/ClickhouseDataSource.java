@@ -98,6 +98,10 @@ public class ClickhouseDataSource extends GenericDataSource {
         return info;
     }
 
+    boolean isSupportTableComments() {
+        return isServerVersionAtLeast(21, 6);
+    }
+
     static class TableEnginesCache extends JDBCObjectCache<ClickhouseDataSource, ClickhouseTableEngine> {
 
         TableEnginesCache() {

@@ -956,7 +956,7 @@ public class ComplexObjectEditor extends TreeViewer {
             @NotNull
             @Override
             public String getName() {
-                return "<root>";
+                return DataEditorsMessages.complex_object_editor_root_element_name;
             }
         }
     }
