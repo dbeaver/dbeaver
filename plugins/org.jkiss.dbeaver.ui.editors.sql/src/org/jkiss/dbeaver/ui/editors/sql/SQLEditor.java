@@ -195,7 +195,7 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile DBPContextProvider executionContextProvider;
     private SQLScriptContext globalScriptContext;
     private volatile boolean syntaxLoaded = false;
-    private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
+    private FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<>();
     private QueryResultsContainer curResultsContainer;
     private Image editorImage;
@@ -4146,19 +4146,21 @@ public class SQLEditor extends SQLEditorBase implements
             ResultSetViewer rsv = getActiveResultSetViewer();
             TextViewer textViewer = getTextViewer();
             boolean focusInEditor = textViewer != null && textViewer.getTextWidget() != null && textViewer.getTextWidget().isFocusControl();
-
-
-
             if (!focusInEditor) {
-                if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
-                    focusInEditor = false;
-                } else {
+                if (rsv == null || (!rsv.getActivePresentation().getControl().isFocusControl()
+                    && !outputViewer.getText()
+                    .isFocusControl())) {
                     focusInEditor = lastFocusInEditor;
                 }
             }
             lastFocusInEditor = focusInEditor;
-            if (!focusInEditor && rsv != null) {
-                return rsv.getAdapter(IFindReplaceTarget.class);
+            if (!focusInEditor && (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()
+                || outputViewer.getControl().isFocusControl())) {
+                if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
+                    return rsv.getAdapter(IFindReplaceTarget.class);
+                } else {
+                    return new StyledTextFindReplaceTarget(outputViewer.getText());
+                }
             } else if (textViewer != null) {
                 return textViewer.getFindReplaceTarget();
             }
