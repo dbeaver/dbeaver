@@ -110,6 +110,10 @@ public class PostgrePrivilegeGrant {
         return objectName;
     }
 
+    public void setObjectName(String objectName) {
+        this.objectName = objectName;
+    }
+
     public PostgrePrivilegeType getPrivilegeType() {
         return privilegeType;
     }
