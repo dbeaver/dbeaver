@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OracleDialectFunctionsTest {
@@ -59,7 +59,7 @@ public class OracleDialectFunctionsTest {
     public void generateCorrectDataTypeNameFromNUMERICDataTypeWithModifiers() {
         Mockito.when(mockTypedObject.getTypeName()).thenReturn("numeric");
         Mockito.when(mockTypedObject.getPrecision()).thenReturn(null);
-        Mockito.when(mockTypedObject.getScale()).thenReturn(null);
+//        Mockito.when(mockTypedObject.getScale()).thenReturn(null);
         String actualDataType = dialect.convertExternalDataType(dialect, mockTypedObject, dataSource);
         Assert.assertEquals("NUMBER", actualDataType);
     }

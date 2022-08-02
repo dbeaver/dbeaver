@@ -90,9 +90,9 @@ class GridRowRenderer extends AbstractRenderer {
             Image expandImage = state == IGridContentProvider.ElementState.EXPANDED ? IMG_COLLAPSE : IMG_EXPAND;
             gc.drawImage(expandImage, x, bounds.y + (bounds.height - EXPANDED_BOUNDS.height) / 2);
             x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
-        }/* else if (grid.hasExpandableRows()) {
+        } else if (grid.hasExpandableRows() && level == 0) {
             x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
-        }*/
+        }
 
         Image image = grid.getLabelProvider().getImage(element);
 

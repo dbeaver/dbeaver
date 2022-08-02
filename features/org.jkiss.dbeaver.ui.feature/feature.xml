@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ui.feature"
       label="%featureName"
-      version="22.1.1.qualifier"
+      version="22.1.4.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -108,6 +108,13 @@
 
    <plugin
          id="org.jkiss.dbeaver.ui.editors.sql"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+    <plugin
+         id="org.jkiss.dbeaver.data.console"
          download-size="0"
          install-size="0"
          version="0.0.0"

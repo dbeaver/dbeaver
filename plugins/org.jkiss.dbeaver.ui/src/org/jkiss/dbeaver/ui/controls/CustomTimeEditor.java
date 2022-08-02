@@ -136,7 +136,7 @@ public class CustomTimeEditor {
         timeEditor = null;
         disposeEditor(dateEditor, dateLabel);
         dateEditor = null;
-        textEditor = new Text(basePart, isPanel && !isInline ? style : style | SWT.BORDER);
+        textEditor = new Text(basePart, isPanel && !isInline ? style : SWT.BORDER);
         final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         textEditor.setLayoutData(gridData);
         if (warningLabel != null) {

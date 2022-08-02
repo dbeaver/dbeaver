@@ -198,8 +198,8 @@ public class DBNUtils {
         static NodeFolderComparator INSTANCE = new NodeFolderComparator();
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            int first = node1.allowsChildren() ? -1 : 1;
-            int second = node2.allowsChildren() ? -1 : 1;
+            int first = node1 instanceof DBNContainer || node1.allowsChildren() ? -1 : 1;
+            int second = node2 instanceof DBNContainer || node2.allowsChildren() ? -1 : 1;
             return first - second;
         }
     }

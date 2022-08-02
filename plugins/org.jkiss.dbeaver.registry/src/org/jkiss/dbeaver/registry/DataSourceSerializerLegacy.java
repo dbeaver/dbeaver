@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -64,15 +65,18 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     }
 
     @Override
-    public void saveDataSources(DBRProgressMonitor monitor, DBPDataSourceConfigurationStorage configurationStorage, List<DataSourceDescriptor> localDataSources) throws DBException, IOException {
+    public void saveDataSources(DBRProgressMonitor monitor, DataSourceConfigurationManager configurationManager, DBPDataSourceConfigurationStorage configurationStorage, List<DataSourceDescriptor> localDataSources) throws DBException, IOException {
         throw new IOException("Legacy serializer is deprecated, save not possible");
     }
 
     @Override
-    public void parseDataSources(DBPDataSourceConfigurationStorage configurationStorage, boolean refresh, DataSourceRegistry.ParseResults parseResults)
-        throws DBException
-    {
-        try (InputStream is = registry.getConfigurationManager().readConfiguration(configurationStorage.getStorageName())) {
+    public void parseDataSources(
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DataSourceRegistry.ParseResults parseResults,
+        boolean refresh
+    ) throws DBException, IOException {
+        try (InputStream is = configurationManager.readConfiguration(configurationStorage.getStorageName())) {
             if (is != null) {
                 SAXReader parser = new SAXReader(is);
                 final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);
@@ -203,7 +207,6 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                         }
                     }
                     if (newDataSource) {
-                        registry.addDataSourceToList(curDataSource);
                         parseResults.addedDataSources.add(curDataSource);
                     } else {
                         parseResults.updatedDataSources.add(curDataSource);

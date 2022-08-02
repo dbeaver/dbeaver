@@ -20,12 +20,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -98,6 +100,11 @@ public abstract class BaseProjectImpl implements DBPProject {
         return inMemory;
     }
 
+    @Override
+    public String getId() {
+        return getName();
+    }
+
     @NotNull
     @Override
     public DBPWorkspace getWorkspace() {
@@ -117,6 +124,12 @@ public abstract class BaseProjectImpl implements DBPProject {
             }
         }
         return projectID;
+    }
+
+    @Nullable
+    @Override
+    public IContainer getRootResource() {
+        return getEclipseProject();
     }
 
     @NotNull
@@ -155,10 +168,15 @@ public abstract class BaseProjectImpl implements DBPProject {
         ensureOpen();
         synchronized (metadataSync) {
             if (dataSourceRegistry == null) {
-                dataSourceRegistry = new DataSourceRegistry(this);
+                dataSourceRegistry = createDataSourceRegistry();
             }
         }
         return dataSourceRegistry;
+    }
+
+    @NotNull
+    protected DataSourceRegistry createDataSourceRegistry() {
+        return new DataSourceRegistry(this);
     }
 
     @NotNull
@@ -260,11 +278,39 @@ public abstract class BaseProjectImpl implements DBPProject {
         }
     }
 
+    @NotNull
     @Override
-    public Object getResourceProperty(IResource resource, String propName) {
+    public String[] findResources(@NotNull Map<String, ?> properties) throws DBException {
+        loadMetadata();
+
+        synchronized (metadataSync) {
+            final List<String> resources = new ArrayList<>();
+
+            for (var resource : resourceProperties.entrySet()) {
+                final Map<String, Object> props = resource.getValue();
+
+                for (var property : properties.entrySet()) {
+                    final String propName = property.getKey();
+                    final Object propValue = property.getValue();
+
+                    if (!props.containsKey(propName) || !Objects.equals(props.get(propName), propValue)) {
+                        break;
+                    }
+                }
+
+                resources.add(resource.getKey());
+            }
+
+            return resources.toArray(String[]::new);
+        }
+    }
+
+    @Nullable
+    @Override
+    public Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName) {
         loadMetadata();
         synchronized (metadataSync) {
-            Map<String, Object> resProps = resourceProperties.get(resource.getProjectRelativePath().toString());
+            Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps != null) {
                 return resProps.get(propName);
             }
@@ -272,40 +318,37 @@ public abstract class BaseProjectImpl implements DBPProject {
         return null;
     }
 
+    @Nullable
     @Override
-    public Map<String, Object> getResourceProperties(IResource resource) {
+    public Object getResourceProperty(@NotNull IResource resource, @NotNull String propName) {
+        return getResourceProperty(getResourcePath(resource), propName);
+    }
+
+    @Nullable
+    public Map<String, Object> getResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
         synchronized (metadataSync) {
-            return resourceProperties.get(resource.getProjectRelativePath().toString());
+            return resourceProperties.get(resourcePath);
         }
     }
 
     @Override
-    public Map<String, Map<String, Object>> getResourceProperties() {
+    public void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue) {
         loadMetadata();
         synchronized (metadataSync) {
-            return new LinkedHashMap<>(resourceProperties);
-        }
-    }
-
-    @Override
-    public void setResourceProperty(IResource resource, String propName, Object propValue) {
-        loadMetadata();
-        synchronized (metadataSync) {
-            String filePath = resource.getProjectRelativePath().toString();
-            Map<String, Object> resProps = resourceProperties.get(filePath);
+            Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps == null) {
                 if (propValue == null) {
                     // No props + no new value - ignore
                     return;
                 }
                 resProps = new LinkedHashMap<>();
-                resourceProperties.put(filePath, resProps);
+                resourceProperties.put(resourcePath, resProps);
             }
             if (propValue == null) {
                 if (resProps.remove(propName) == null) {
                     if (resProps.isEmpty()) {
-                        resourceProperties.remove(filePath);
+                        resourceProperties.remove(resourcePath);
                     } else {
                         // No changes
                         return;
@@ -322,39 +365,22 @@ public abstract class BaseProjectImpl implements DBPProject {
         flushMetadata();
     }
 
-    @Override
-    public void setResourceProperties(IResource resource, Map<String, Object> props) {
+    public boolean resetResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
+        boolean hadProperties;
         synchronized (metadataSync) {
-            String filePath = resource.getProjectRelativePath().toString();
-            Map<String, Object> resProps = resourceProperties.get(filePath);
-            if (resProps == null) {
-                if (props.isEmpty()) {
-                    // No props + no new value - ignore
-                    return;
-                }
-                resProps = new LinkedHashMap<>();
-                resourceProperties.put(filePath, resProps);
-            }
-            boolean hasChanges = false;
-            for (Map.Entry<String, Object> pe : props.entrySet()) {
-                if (pe.getValue() == null) {
-                    if (resProps.remove(pe.getKey()) != null) {
-                        hasChanges = true;
-                    }
-                } else {
-                    Object oldValue = resProps.get(pe.getKey());
-                    if (!CommonUtils.equalObjects(oldValue, pe.getValue())) {
-                        resProps.put(pe.getKey(), pe.getValue());
-                        hasChanges = true;
-                    }
-                }
-            }
-            if (!hasChanges) {
-                return;
-            }
+            hadProperties = resourceProperties.remove(resourcePath) != null;
         }
-        flushMetadata();
+        if (hadProperties) {
+            flushMetadata();
+        }
+        return hadProperties;
+    }
+
+    @Override
+    @NotNull
+    public String getResourcePath(@NotNull IResource resource) {
+        return resource.getProjectRelativePath().toString();
     }
 
     protected void setResourceProperties(Map<String, Map<String, Object>> resourceProperties) {

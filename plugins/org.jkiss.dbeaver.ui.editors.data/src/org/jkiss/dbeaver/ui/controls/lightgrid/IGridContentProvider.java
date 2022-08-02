@@ -57,18 +57,16 @@ public interface IGridContentProvider extends IContentProvider {
     @NotNull
     Object[] getElements(boolean horizontal);
 
-    boolean hasChildren(Object element);
+    boolean hasChildren(@NotNull IGridItem item);
 
     @Nullable
-    Object[] getChildren(Object element);
-
-    boolean isCollectionElement(@NotNull IGridItem item);
+    Object[] getChildren(@NotNull IGridItem item);
 
     /**
      * Return for collection cell values returns size of collection.
      * Called for all cells of columns for which isCollectionElement() returns true.
      */
-    int getCollectionSize(IGridColumn column, IGridRow row);
+    int getCollectionSize(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement);
 
     int getSortOrder(@Nullable IGridColumn element);
 
@@ -81,6 +79,8 @@ public interface IGridContentProvider extends IContentProvider {
     boolean isElementSupportsSort(@Nullable IGridColumn element);
 
     boolean isElementReadOnly(IGridColumn element);
+
+    boolean isElementExpandable(@NotNull IGridItem item);
 
     boolean isGridReadOnly();
 

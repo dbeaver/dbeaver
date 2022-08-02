@@ -29,4 +29,8 @@ public interface IResultSetListener {
     void handleResultSetChange();
 
     void handleResultSetSelectionChange(SelectionChangedEvent event);
+
+    default void onModelPrepared() {
+        // do nothing
+    }
 }

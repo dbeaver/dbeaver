@@ -56,6 +56,6 @@ class GridRowNested implements IGridRow {
 
     @Override
     public String toString() {
-        return String.valueOf(position) + ":" + getRelativeIndex();
+        return position + ":" + getRelativeIndex();
     }
 }

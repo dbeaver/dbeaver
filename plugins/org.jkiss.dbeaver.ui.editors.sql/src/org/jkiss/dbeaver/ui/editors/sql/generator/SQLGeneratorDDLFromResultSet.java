@@ -39,6 +39,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDataContainerOptions;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.utils.ArrayUtils;
 
+import java.util.Collections;
+
 public class SQLGeneratorDDLFromResultSet extends SQLGenerator<IResultSetController> {
 
     @Override
@@ -80,7 +82,12 @@ public class SQLGeneratorDDLFromResultSet extends SQLGenerator<IResultSetControl
         }
         
         DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
-        DBEPersistAction[] ddl = DatabaseTransferUtils.generateTargetTableDDL(monitor, executionContext, objContainer, mapping);
+        DBEPersistAction[] ddl = DatabaseTransferUtils.generateTargetTableDDL(
+            monitor,
+            executionContext,
+            objContainer,
+            mapping,
+            Collections.emptyMap());
 
         if (ArrayUtils.isEmpty(ddl)) {
             sql.append(SQLEditorMessages.sql_generator_no_ddl_text);

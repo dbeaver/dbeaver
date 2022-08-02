@@ -99,7 +99,6 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         StyledText editorControl = editor.getEditorControl();
         assert editorControl != null;
         initEditorSettings(editorControl);
-        editorControl.addDisposeListener(e -> editor.releaseEditorInput());
 
         editor.addContextMenuContributor(manager -> contributeTextEditorActions(manager, editorControl));
 
@@ -188,6 +187,14 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         }
     }
 
+    @Override
+    public void disposeEditor() {
+        if (editor != null) {
+            editor.dispose();
+            editor = null;
+        }
+    }
+
     protected EDITOR getTextEditor() {
         return editor;
     }
@@ -264,7 +271,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
             }
             UIUtils.asyncExec(() -> {
 
-                if (textViewer != null) {
+                if (textViewer != null && editor != null) {
                     StyledText textWidget = textViewer.getTextWidget();
                     if (textWidget != null && longContent) {
                         GC gc = new GC(textWidget);

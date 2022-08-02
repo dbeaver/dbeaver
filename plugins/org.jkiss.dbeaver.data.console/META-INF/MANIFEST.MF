@@ -2,14 +2,17 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.data.console;singleton:=true
-Bundle-Version: 1.0.60.qualifier
-Bundle-Release-Date: 20220627
+Bundle-Version: 1.0.63.qualifier
+Bundle-Release-Date: 20220808
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.console,
+ org.eclipse.osgi,
  org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.core
+ org.eclipse.swt,
+ org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.ui.editors.data,
+ org.jkiss.dbeaver.ui.editors.sql
 Export-Package: org.jkiss.dbeaver.data.console
 Automatic-Module-Name: org.jkiss.dbeaver.data.console

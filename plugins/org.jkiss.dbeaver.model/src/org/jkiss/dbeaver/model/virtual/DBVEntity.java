@@ -683,7 +683,22 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         int offset,
         int maxResults
     ) throws DBException {
-        return Collections.emptyList();
+        final DBSEntity realEntity = getRealEntity(monitor);
+        if (realEntity instanceof DBSDictionary) {
+            return ((DBSDictionary) realEntity).getDictionaryEnumeration(
+                monitor,
+                keyColumn,
+                keyPattern,
+                preceedingKeys,
+                caseInsensitiveSearch,
+                sortAsc,
+                sortByValue,
+                offset,
+                maxResults
+            );
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @NotNull

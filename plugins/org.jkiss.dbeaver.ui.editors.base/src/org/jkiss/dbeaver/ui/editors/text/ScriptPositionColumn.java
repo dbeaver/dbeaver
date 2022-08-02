@@ -101,11 +101,11 @@ public class ScriptPositionColumn extends AbstractRulerColumn implements IContri
                     }
                 }
                 if (visible) {
-                    schedule(100);
+                    schedule(200);
                 }
                 return Status.OK_STATUS;
             }
-        }.schedule(100);
+        }.schedule(200);
     }
 
     @Override

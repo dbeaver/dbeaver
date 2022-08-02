@@ -32,7 +32,7 @@ import java.util.List;
  * Grid column info.
  * Holds information about column width and other UI properties
  *
- * @author serge@jkiss.org
+ * @author serge@dbeaver.com
  */
 class GridColumn implements IGridColumn {
 

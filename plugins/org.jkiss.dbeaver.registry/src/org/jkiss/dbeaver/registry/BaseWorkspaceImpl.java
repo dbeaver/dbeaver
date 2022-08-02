@@ -29,10 +29,8 @@ import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -326,9 +324,9 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
             return null;
         }
         // Check resource is synced
-        if (resource instanceof IFile && !resource.isSynchronized(IResource.DEPTH_ZERO)) {
-            ContentUtils.syncFile(new VoidProgressMonitor(), resource);
-        }
+//        if (resource instanceof IFile && !resource.isSynchronized(IResource.DEPTH_ZERO)) {
+//            ContentUtils.syncFile(new VoidProgressMonitor(), resource);
+//        }
 
         // Find handler
         DBPResourceHandler handler = null;
@@ -341,7 +339,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
         if (handler == null && resource instanceof IFolder) {
             final IProject eclipseProject = resource.getProject();
             DBPProject project = projects.get(eclipseProject);
-            IPath relativePath = resource.getFullPath().makeRelativeTo(eclipseProject.getFullPath());
+            IPath relativePath = resource.getFullPath().makeRelativeTo(project.getRootResource().getFullPath());
             while (relativePath.segmentCount() > 0) {
                 String folderPath = relativePath.toString();
                 ResourceHandlerDescriptor handlerDescriptor = getHandlerDescriptorByRootPath(project, folderPath);
@@ -364,7 +362,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
 
     @Override
     public IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor rhd, boolean forceCreate) {
-        if (project == null) {
+        if (project == null || project.getRootResource() == null) {
             return null;
         }
         String defaultRoot = rhd.getDefaultRoot(project);
@@ -372,7 +370,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
             // No root
             return null;
         }
-        final IFolder realFolder = project.getEclipseProject().getFolder(defaultRoot);
+        final IFolder realFolder = project.getRootResource().getFolder(new org.eclipse.core.runtime.Path(defaultRoot));
 
         if (forceCreate && !realFolder.exists()) {
             try {
@@ -398,13 +396,21 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
                     // No root
                     return null;
                 }
-                final IFolder realFolder = project.getEclipseProject().getFolder(defaultRoot);
+                org.eclipse.core.runtime.Path defaultRootPath = new org.eclipse.core.runtime.Path(defaultRoot);
+                IContainer rootResource = project.getRootResource();
+                if (rootResource == null) {
+                    rootResource = project.getEclipseProject();
+                }
+                if (rootResource == null) {
+                    throw new IllegalStateException("Project " + project.getName() + " doesn't have resource root");
+                }
+                final IFolder realFolder = rootResource.getFolder(defaultRootPath);
 
                 if (forceCreate && !realFolder.exists()) {
                     try {
                         realFolder.create(true, true, new NullProgressMonitor());
                     } catch (CoreException e) {
-                        log.error("Can't create '" + rhd.getName() + "' root folder '" + realFolder.getName() + "'", e);
+                        log.error("Can not create '" + rhd.getName() + "' root folder '" + realFolder.getName() + "'", e);
                         return realFolder;
                     }
                 }

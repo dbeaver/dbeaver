@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +41,7 @@ public class TableAttributeContainerBuilder extends Builder<DBSEntity, DBSEntity
         when(entity.getName()).thenReturn(name);
         when(entity.getEntityType()).thenReturn(DBSEntityType.TABLE);
         when(entity.getAttributes(any())).then(x -> children);
-        when(entity.getAttribute(any(), any())).then(x -> DBUtils.findObject(children, x.getArgumentAt(1, String.class)));
+        when(entity.getAttribute(any(), any())).then(x -> DBUtils.findObject(children, x.getArgument(1, String.class)));
     }
 
     public TableAttributeContainerBuilder(@NotNull DBPDataSource dataSource, @NotNull String name) throws DBException {

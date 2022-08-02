@@ -209,7 +209,10 @@ public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DB
     @NotNull
     DBPProject getProject();
 
-    void persistConfiguration();
+    /**
+     * @return false on any error. Actual error can be read in registry.
+     */
+    boolean persistConfiguration();
 
     @NotNull
     ISecurePreferences getSecurePreferences();

@@ -732,8 +732,15 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void persistConfiguration() {
-        registry.flushConfig();
+    public boolean persistConfiguration() {
+        registry.updateDataSource(this);
+        Throwable lastError = registry.getLastError();
+        if (lastError != null) {
+            DBWorkbench.getPlatformUI().showError("Save error", "Error saving datasource info", lastError);
+            return false;
+        }
+
+        return true;
     }
 
     @Override
@@ -940,6 +947,9 @@ public class DataSourceDescriptor
     }
 
     public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
+        if (this.getDriver().isSingleConnection()) {
+            this.setForceUseSingleConnection(true);
+        }
         this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
         this.connectTime = new Date();
         monitor.worked(1);

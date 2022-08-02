@@ -464,6 +464,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             } else {
                 if (argType == Boolean.TYPE || argType == Boolean.class && !(value instanceof Boolean)) {
                     value = CommonUtils.toBoolean(value);
+                } else if (argType == Long.TYPE) {
+                    value = CommonUtils.toLong(value);
+                } else if (argType == Integer.TYPE) {
+                    value = CommonUtils.toInt(value);
                 }
             }
             setter.invoke(object, value);

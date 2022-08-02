@@ -17,31 +17,22 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
-import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
-import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 
 /**
  * PrefPageSQLCodeEditing
  */
-public class PrefPageSQLCodeEditing extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
-{
-    private static final Log log = Log.getLog(PrefPageSQLCodeEditing.class);
-
+public class PrefPageSQLCodeEditing extends TargetPrefPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.codeeditor"; //$NON-NLS-1$
 
     // Folding
@@ -59,8 +50,7 @@ public class PrefPageSQLCodeEditing extends AbstractPrefPage implements IWorkben
     private Button afExtractFromSource;
 
 
-    public PrefPageSQLCodeEditing()
-    {
+    public PrefPageSQLCodeEditing() {
         super();
     }
 
@@ -108,65 +98,71 @@ public class PrefPageSQLCodeEditing extends AbstractPrefPage implements IWorkben
     }
 
     @Override
-    protected void performDefaults()
-    {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        try {
-            csFoldingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
-            csMarkOccurrencesUnderCursor.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR));
-            csMarkOccurrencesForSelection.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
-            csProblemMarkersEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED));
+    protected void loadPreferences(DBPPreferenceStore store) {
+        csFoldingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
+        csMarkOccurrencesUnderCursor.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR));
+        csMarkOccurrencesForSelection.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
+        csProblemMarkersEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED));
 
-            acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
-            acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
-            acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
+        acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
+        acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
+        acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
 
-            afKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO));
-            afExtractFromSource.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE));
-        } catch (Exception e) {
-            log.warn(e);
-        }
+        afKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO));
+        afExtractFromSource.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE));
     }
 
     @Override
-    public boolean performOk()
-    {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        try {
-            store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csFoldingEnabled.getSelection());
-            store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR, csMarkOccurrencesUnderCursor.getSelection());
-            store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, csMarkOccurrencesForSelection.getSelection());
-            store.setValue(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED, csProblemMarkersEnabled.getSelection());
+    protected void savePreferences(DBPPreferenceStore store) {
+        store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csFoldingEnabled.getSelection());
+        store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR, csMarkOccurrencesUnderCursor.getSelection());
+        store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, csMarkOccurrencesForSelection.getSelection());
+        store.setValue(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED, csProblemMarkersEnabled.getSelection());
 
-            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
-            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
-            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
+        store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
+        store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
+        store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
 
-            store.setValue(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, afKeywordCase.getSelection());
-            store.setValue(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, afExtractFromSource.getSelection());
-        } catch (Exception e) {
-            log.warn(e);
-        }
-        PrefUtils.savePreferenceStore(store);
-
-        PrefUtils.savePreferenceStore(store);
-
-        return super.performOk();
+        store.setValue(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, afKeywordCase.getSelection());
+        store.setValue(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, afExtractFromSource.getSelection());
     }
 
     @Override
-    public void init(IWorkbench workbench) {
+    protected void clearPreferences(DBPPreferenceStore store) {
+        store.setToDefault(SQLPreferenceConstants.FOLDING_ENABLED);
+        store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
+        store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
+        store.setToDefault(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED);
 
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
+
+        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO);
+        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE);
     }
 
     @Override
-    public IAdaptable getElement() {
-        return null;
+    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer container) {
+        final DBPPreferenceStore store = container.getPreferenceStore();
+        return store.contains(SQLPreferenceConstants.FOLDING_ENABLED)
+            || store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR)
+            || store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION)
+            || store.contains(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)
+            || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES)
+            || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES)
+            || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS)
+            || store.contains(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO)
+            || store.contains(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE);
     }
 
     @Override
-    public void setElement(IAdaptable element) {
-
+    protected boolean supportsDataSourceSpecificOptions() {
+        return true;
     }
 
+    @Override
+    protected String getPropertyPageID() {
+        return PrefPageSQLCodeEditing.PAGE_ID;
+    }
 }

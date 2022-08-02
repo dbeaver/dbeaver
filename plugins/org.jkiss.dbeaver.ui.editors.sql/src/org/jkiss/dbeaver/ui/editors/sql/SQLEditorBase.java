@@ -60,10 +60,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
-import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
-import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
-import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
-import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.sql.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
@@ -863,7 +860,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             if (pos.position >= 0) {
                                 // Only position
                                 errorOffset = queryStartOffset + pos.position;
-                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(errorOffset, queryLength - pos.position))) {
+                                final SQLWordPartDetector detector = new SQLWordPartDetector(getDocument(), getSyntaxManager(), errorOffset);
+                                final int length = detector.getLength() > 0
+                                    ? detector.getLength()
+                                    : queryLength - pos.position;
+                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(errorOffset, length))) {
                                     scrolled = true;
                                 } else if (index == 0) {
                                     getSelectionProvider().setSelection(new TextSelection(errorOffset, 0));
@@ -975,7 +976,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (query == null) {
             final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
 
-            if (resource != null) {
+            if (resource != null && resource.exists()) {
                 try {
                     resource.deleteMarkers(SQLProblemAnnotation.MARKER_TYPE, false, IResource.DEPTH_ONE);
                 } catch (CoreException e) {

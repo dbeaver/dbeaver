@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,13 +32,15 @@ interface DataSourceSerializer
 
     void saveDataSources(
         DBRProgressMonitor monitor,
+        DataSourceConfigurationManager configurationManager,
         DBPDataSourceConfigurationStorage configurationStorage,
         List<DataSourceDescriptor> localDataSources)
         throws DBException, IOException;
 
     void parseDataSources(
-        DBPDataSourceConfigurationStorage configurationStorage,
-        boolean refresh,
-        DataSourceRegistry.ParseResults parseResults)
-        throws DBException, IOException;
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DataSourceRegistry.ParseResults parseResults,
+        boolean refresh
+    ) throws DBException, IOException;
 }

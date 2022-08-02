@@ -38,6 +38,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -124,7 +125,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         if (isModalWizard() || UIUtils.isInDialog()) {
             return SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL;
         }
-        return SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
+        return SWT.CLOSE | SWT.MAX | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation();
     }
 
     protected boolean isModalWizard() {
@@ -135,15 +136,17 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
 
-        // Select first page
-        pagesTree.select(pagesTree.getItem(0));
-        changePage();
+        // Show the first page first - it may initialize state required later
+        showPage((IWizardPage) pagesTree.getItem(0).getData());
 
         // Set title and image from first page
-        IDialogPage firstPage = (IDialogPage) pagesTree.getItem(0).getData();
+        IWizardPage firstPage = getStartingPage();
         setTitle(firstPage.getTitle());
         setTitleImage(firstPage.getImage());
         setMessage(firstPage.getDescription());
+
+        // Afterwards show the starting page
+        showPage(firstPage);
 
         updateButtons();
 
@@ -618,6 +621,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     @Override
     public Object getSelectedPage() {
         return getCurrentPage();
+    }
+
+    @NotNull
+    protected IWizardPage getStartingPage() {
+        return (IWizardPage) pagesTree.getItem(0).getData();
     }
 
     protected void finishPressed() {

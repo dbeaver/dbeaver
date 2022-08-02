@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  * eclipse extension point, see plugin.xml
  *
  * @author Erwan Bocher, CNRS
- * @author Serge Rider (serge@jkiss.org)
+ * @author Serge Rider (serge@dbeaver.com)
  */
 public class H2GISDataSourceProvider extends GenericDataSourceProvider {
 
