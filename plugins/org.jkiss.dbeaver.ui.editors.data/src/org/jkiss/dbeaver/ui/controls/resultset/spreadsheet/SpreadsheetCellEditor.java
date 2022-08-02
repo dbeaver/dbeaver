@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 /**
  * Spreadsheet cell editor
  *
- * @author serge@jkiss.org
+ * @author serge@dbeaver.com
  */
 public class SpreadsheetCellEditor extends ControlEditor
 {

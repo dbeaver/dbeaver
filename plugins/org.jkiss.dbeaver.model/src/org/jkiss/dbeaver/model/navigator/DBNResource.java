@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -35,12 +35,14 @@ import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,7 +60,8 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
-    private final ByteNumberFormat numberFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
+    private static final NumberFormat numberFormat = new DecimalFormat();
+
     private IResource resource;
     private DBPResourceHandler handler;
     private DBNNode[] children;
@@ -69,6 +72,13 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         super(parentNode);
         this.resource = resource;
         this.handler = handler;
+    }
+
+    /**
+     * Actual content location can be changed
+     */
+    protected IResource getContentLocationResource() {
+        return resource;
     }
 
     @Override
@@ -99,29 +109,41 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     }
 
     @Override
-    public String getNodeType()
-    {
-        return handler == null ? null :handler.getTypeName(resource);
+    public String getNodeType() {
+        return handler == null ? getResourceNodeType() : handler.getTypeName(resource);
+    }
+
+    protected String getResourceNodeType() {
+        return "resource";
     }
 
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
-    public String getNodeName()
-    {
+    public String getNodeName() {
         if (resource == null || handler == null) {
             return null;
         }
-        return handler.getResourceNodeName(resource);
-//        if (resource instanceof IFile) {
-//
-//        }
-//        return resource.getFullPath().lastSegment();
+        return resource.getName();
     }
+
+/*
+    @Override
+    protected String getSortName() {
+        if (resource == null || handler == null) {
+            return null;
+        }
+        return resource.getFullPath().removeFileExtension().lastSegment();
+    }
+*/
+
 
     @Override
 //    @Property(viewable = false, order = 100)
-    public String getNodeDescription()
-    {
+    public String getNodeDescription() {
+        if (getOwnerProject().isVirtual()) {
+            // Do not read descriptions for virtual (remote) projects
+            return null;
+        }
         return handler == null || resource == null ? null : handler.getResourceDescription(resource);
     }
 
@@ -151,9 +173,12 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     public String getNodeTargetName() {
         IResource resource = getResource();
         if (resource != null) {
-            File localFile = resource.getLocation().toFile();
-            if (localFile != null) {
-                return localFile.getAbsolutePath();
+            IPath location = resource.getLocation();
+            if (location != null) {
+                File localFile = location.toFile();
+                if (localFile != null) {
+                    return localFile.getAbsolutePath();
+                }
             }
         }
         return super.getNodeTargetName();
@@ -169,9 +194,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException
     {
         if (children == null) {
-            if (resource instanceof IContainer) {
-                this.children = readChildNodes(monitor);
-            }
+            this.children = readChildNodes(monitor);
         }
         return children;
     }
@@ -180,8 +203,9 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     {
         List<DBNNode> result = new ArrayList<>();
         try {
-            if (resource.exists()) {
-                IResource[] members = ((IContainer) resource).members(false);
+            IResource contentLocation = getContentLocationResource();
+            if (contentLocation instanceof IContainer && contentLocation.exists()) {
+                IResource[] members = ((IContainer) contentLocation).members(false);
                 members = addImplicitMembers(members);
                 for (IResource member : members) {
                     DBNNode newChild = makeNode(member);
@@ -220,17 +244,14 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         return null;
     }
 
-    private DBNNode makeNode(IResource resource)
-    {
-//        if (resource.isHidden()) {
-//            return null;
-//        }
-        if (resource.getParent() instanceof IProject && resource.getName().startsWith(".")) {
+    private DBNNode makeNode(IResource resource) {
+        boolean isRootResource = isRootResource(resource);
+        if (isRootResource && resource.getName().startsWith(".")) {
             // Skip project config
             return null;
         }
         try {
-            if (resource instanceof IFolder && resource.getParent() instanceof IFolder) {
+            if (resource instanceof IFolder && !isRootResource) {
                 // Sub folder
                 return handler.makeNavigatorNode(this, resource);
             }
@@ -247,6 +268,11 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         }
     }
 
+    public boolean isRootResource(IResource resource) {
+        return CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getRootResource()) ||
+                CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getEclipseProject());
+    }
+
     @Override
     public boolean isManagable()
     {
@@ -256,18 +282,32 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
     {
-        children = null;
+        if (children != null) {
+//            for (DBNNode child : children) {
+//                child.dispose(false);
+//            }
+            children = null;
+        }
+        refreshThisResource(monitor);
+        return this;
+    }
+
+    @NotNull
+    protected void refreshThisResource(DBRProgressMonitor monitor) throws DBException {
+        if (resource == null) {
+            return;
+        }
         try {
             resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
 
-            if (!resource.getLocation().toFile().exists()) {
+            IPath resourceLocation = resource.getLocation();
+            if (resourceLocation != null && !resourceLocation.toFile().exists()) {
                 log.debug("Resource '" + resource.getName() + "' doesn't exists on file system");
                 //resource.delete(true, monitor.getNestedMonitor());
             }
         } catch (CoreException e) {
             throw new DBException("Can't refresh resource", e);
         }
-        return this;
     }
 
     @Override
@@ -414,7 +454,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
                         return 1;
                     }
                 }
-                return o1.getNodeName().compareToIgnoreCase(o2.getNodeName());
+                return o1.getSortName().compareToIgnoreCase(o2.getSortName());
             }
         });
     }
@@ -533,18 +573,30 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
 
     @Property(viewable = false, order = 11)
     public String getResourceLocation() {
-        return resource == null ? "" : resource.getLocation().toOSString();
+        if (resource == null) {
+            return null;
+        }
+        IPath location = resource.getLocation();
+        return location == null ? null : location.toString();
     }
 
     @Property(viewable = true, order = 11)
-    public String getResourceSize() {
-        long size = resource == null ? 0 : resource.getLocation().toFile().length();
-        return numberFormat.format(size);
+    public String getResourceSize() throws CoreException {
+        if (resource instanceof IFile) {
+            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
+            IFileInfo iFileInfo = fileStore.fetchInfo();
+            return numberFormat.format(iFileInfo.getLength());
+        }
+        return null;
     }
 
     @Property(viewable = true, order = 11)
-    public String getResourceLastModified() {
-        return resource == null ? null : DATE_FORMAT.format(resource.getLocation().toFile().lastModified());
+    public String getResourceLastModified() throws CoreException {
+        if (resource instanceof IFile) {
+            long lastModified = ContentUtils.getResourceLastModified(resource);
+            return lastModified <= 0 ? "" : DATE_FORMAT.format(lastModified);
+        }
+        return null;
     }
 
     protected boolean isResourceExists() {

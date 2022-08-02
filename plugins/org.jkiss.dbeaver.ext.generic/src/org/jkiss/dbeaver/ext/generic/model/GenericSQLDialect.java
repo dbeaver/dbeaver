@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -28,6 +29,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Objects;
 
 /**
  * Generic data source info
@@ -45,12 +48,16 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private boolean supportsUpsert;
     private boolean quoteReservedWords;
     private boolean useSearchStringEscape;
+    private DBPIdentifierCase unquotedCase;
+    private DBPIdentifierCase quotedCase;
     private String dualTable;
     private String testSQL;
     private boolean hasDelimiterAfterQuery;
     private boolean hasDelimiterAfterBlock;
     private boolean callableQueryInBrackets;
     private boolean omitCatalogName;
+    private boolean supportsMultiInsert;
+    private boolean supportDelimiterInViews;
 
     public GenericSQLDialect() {
         super("Generic", "generic");
@@ -81,7 +88,26 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         if (this.supportsUpsert) {
             addSQLKeyword("UPSERT");
         }
+
+        this.supportDelimiterInViews =
+            CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_DELIMITER_IN_VIEWS));
+
+        String driverUnquotedCase = CommonUtils.toString(
+            driver.getDriverParameter(GenericConstants.PARAM_STORED_UNQUOTED_CASE),
+            null);
+        if (!CommonUtils.isEmpty(driverUnquotedCase)) {
+            unquotedCase = CommonUtils.valueOf(DBPIdentifierCase.class, driverUnquotedCase.toUpperCase());
+        }
+
+        String driverQuotedCase = CommonUtils.toString(
+            driver.getDriverParameter(GenericConstants.PARAM_STORED_QUOTED_CASE),
+            null);
+        if (!CommonUtils.isEmpty(driverQuotedCase)) {
+            quotedCase = CommonUtils.valueOf(DBPIdentifierCase.class, driverQuotedCase.toUpperCase());
+        }
+
         this.useSearchStringEscape = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_USE_SEARCH_STRING_ESCAPE), false);
+
         this.quoteReservedWords = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
         this.testSQL = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_PING));
         if (CommonUtils.isEmpty(this.testSQL)) {
@@ -92,6 +118,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
             this.dualTable = null;
         }
         this.omitCatalogName = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG_NAME));
+        this.supportsMultiInsert = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_MULTI_INSERT));
     }
 
     @NotNull
@@ -123,6 +150,22 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     @Override
     public boolean isDelimiterAfterBlock() {
         return hasDelimiterAfterBlock;
+    }
+
+    public boolean supportsDelimiterAfterViews() {
+        return supportDelimiterInViews;
+    }
+
+    @NotNull
+    @Override
+    public DBPIdentifierCase storesUnquotedCase() {
+        return Objects.requireNonNullElseGet(unquotedCase, super::storesUnquotedCase);
+    }
+
+    @NotNull
+    @Override
+    public DBPIdentifierCase storesQuotedCase() {
+        return Objects.requireNonNullElseGet(quotedCase, super::storesQuotedCase);
     }
 
     @NotNull
@@ -182,5 +225,14 @@ public class GenericSQLDialect extends JDBCSQLDialect {
             return USAGE_NONE;
         }
         return super.getCatalogUsage();
+    }
+
+    @NotNull
+    @Override
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
+        if (supportsMultiInsert) {
+            return MultiValueInsertMode.GROUP_ROWS;
+        }
+        return super.getDefaultMultiValueInsertMode();
     }
 }

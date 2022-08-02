@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.code.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,8 +60,8 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
     private List<Throwable> errorList = new ArrayList<>();
     private int focusRow;
     private DBSDataContainer targetDataContainer;
-
-    ResultSetDataReceiver(ResultSetViewer resultSetViewer) {
+    
+    ResultSetDataReceiver(@NotNull ResultSetViewer resultSetViewer) {
         this.resultSetViewer = resultSetViewer;
     }
 

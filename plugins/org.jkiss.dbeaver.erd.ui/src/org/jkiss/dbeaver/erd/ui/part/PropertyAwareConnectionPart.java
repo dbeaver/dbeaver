@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.erd.ui.part;
 
 import org.eclipse.gef3.EditPart;
 import org.eclipse.gef3.GraphicalEditPart;
+import org.eclipse.gef3.RootEditPart;
 import org.eclipse.gef3.editparts.AbstractConnectionEditPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.erd.model.ERDObject;
@@ -35,7 +36,11 @@ import java.beans.PropertyChangeListener;
 public abstract class PropertyAwareConnectionPart extends AbstractConnectionEditPart implements PropertyChangeListener, DBPNamedObject {
     @NotNull
     public DiagramPart getDiagramPart() {
-        EditPart contents = getRoot().getContents();
+        RootEditPart root = getRoot();
+        if (root == null) {
+            throw new IllegalStateException("Diagram part is null. Disposed part?");
+        }
+        EditPart contents = root.getContents();
         if (contents instanceof DiagramPart) {
             return (DiagramPart) contents;
         }

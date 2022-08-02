@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -163,7 +164,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     private void initSSL(DBRProgressMonitor monitor, Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
         monitor.subTask("Install SSL certificates");
-        final DBACertificateStorage securityManager = getContainer().getPlatform().getCertificateStorage();
+        final DBACertificateStorage securityManager = DBWorkbench.getPlatform().getCertificateStorage();
 
         props.put("useSSL", "true");
         if (isMariaDB()) {

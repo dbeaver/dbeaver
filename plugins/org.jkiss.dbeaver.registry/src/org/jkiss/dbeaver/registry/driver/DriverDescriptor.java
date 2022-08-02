@@ -129,7 +129,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final DataSourceProviderDescriptor providerDescriptor;
     private final String id;
     private String category;
-    private List<String> categories;
+    private final List<String> categories;
     private String name;
     private String description;
     private String driverClassName;
@@ -155,6 +155,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private DBPImage iconError;
     private DBPImage iconBig;
     private boolean embedded, origEmbedded;
+    private boolean singleConnection;
     private boolean clientRequired;
     private boolean supportsDriverProperties;
     private boolean anonymousAccess, origAnonymousAccess;
@@ -187,7 +188,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private final Map<DBPDriverLibrary, List<DriverFileInfo>> resolvedFiles = new HashMap<>();
 
-    private Class driverClass;
+    private Class<?> driverClass;
     private boolean isLoaded;
     private Object driverInstance;
     private DriverClassLoader classLoader;
@@ -196,7 +197,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     static {
         Path driversHome = DriverDescriptor.getCustomDriversHome();
-        System.setProperty(PROP_DRIVERS_LOCATION, driversHome.toAbsolutePath().toString());
+        if (driversHome != null) {
+            System.setProperty(PROP_DRIVERS_LOCATION, driversHome.toAbsolutePath().toString());
+        }
     }
 
     private DriverDescriptor(String id) {
@@ -260,6 +263,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.webURL = copyFrom.webURL;
             this.propertiesWebURL = copyFrom.webURL;
             this.embedded = copyFrom.embedded;
+            this.singleConnection = copyFrom.singleConnection;
             this.clientRequired = copyFrom.clientRequired;
             this.supportsDriverProperties = copyFrom.supportsDriverProperties;
             this.anonymousAccess = copyFrom.anonymousAccess;
@@ -321,6 +325,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
         this.origInstantiable = this.instantiable = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INSTANTIABLE), true);
         this.origEmbedded = this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
+        this.singleConnection = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SINGLE_CONNECTION));
         this.origAnonymousAccess = this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.origAllowsEmptyPassword = this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
@@ -650,7 +655,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private Object createDriverInstance()
             throws DBException {
         try {
-            return driverClass.newInstance();
+            return driverClass.getConstructor().newInstance();
         } catch (InstantiationException ex) {
             throw new DBException("Can't instantiate driver class", ex);
         } catch (IllegalAccessException ex) {
@@ -766,6 +771,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public void setEmbedded(boolean embedded) {
         this.embedded = embedded;
+    }
+
+    @Override
+    public boolean isSingleConnection() {
+        return singleConnection;
+    }
+
+    public void setSingleConnection(boolean singleConnection) {
+        this.singleConnection = embedded;
     }
 
     @Override
@@ -1204,6 +1218,19 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         validateFilesPresence(true);
     }
 
+    @Override
+    public boolean needsExternalDependencies() {
+        for (DBPDriverLibrary library : libraries) {
+            if (library.isDisabled() || library.isOptional() || !library.matchesCurrentPlatform()) {
+                continue;
+            }
+            if (library.getLocalFile() == null || !library.getLocalFile().exists()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @NotNull
     private List<File> validateFilesPresence(boolean resetVersions) {
         boolean localLibsExists = false;
@@ -1241,14 +1268,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 localLibsExists = true;
             }
         }
-//        if (!CommonUtils.isEmpty(fileSources)) {
-//            for (DriverFileSource source : fileSources) {
-//                for (DriverFileSource.FileInfo fileInfo : source.getFiles()) {
-//                    DriverLibraryLocal libraryLocal = new DriverLibraryLocal(this, DBPDriverLibrary.FileType.jar, fileInfo.getName());
-//                    final File localFile = libraryLocal.getLocalFile();
-//                }
-//            }
-//        }
 
         boolean downloaded = false;
         if (!downloadCandidates.isEmpty() || (!localLibsExists && !fileSources.isEmpty())) {

@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.editors.sql.scripts;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -94,10 +93,8 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
     @Override
     public void updateNavigatorNodeFromResource(@NotNull DBNNodeWithResource node, @NotNull IResource resource) {
         super.updateNavigatorNodeFromResource(node, resource);
-        if (resource instanceof IFolder) {
-            if (resource.getParent() instanceof IProject) {
-                node.setResourceImage(UIIcon.SCRIPTS);
-            }
+        if (resource instanceof IFolder && node instanceof DBNResource && ((DBNResource)node).isRootResource(resource)) {
+            node.setResourceImage(UIIcon.SCRIPTS);
         } else {
             node.setResourceImage(UIIcon.SQL_SCRIPT);
         }
@@ -129,17 +126,6 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
         }
         return null;
     }
-
-    @NotNull
-    @Override
-    public String getResourceNodeName(@NotNull IResource resource) {
-//        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProjectNode()))) {
-//            return "SQL Scripts";
-//        } else {
-            return super.getResourceNodeName(resource);
-//        }
-    }
-
 
     @Override
     public IResource createResource(IFolder folder) throws CoreException, DBException {

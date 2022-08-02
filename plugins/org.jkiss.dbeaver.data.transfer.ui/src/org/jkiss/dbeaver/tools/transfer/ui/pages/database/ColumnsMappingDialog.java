@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 
+import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
@@ -49,7 +50,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ import java.util.TreeSet;
 /**
  * ColumnsMappingDialog
  */
-class ColumnsMappingDialog extends BaseDialog {
+class ColumnsMappingDialog extends DialogPage {
 
     private final DatabaseConsumerSettings settings;
     private final DatabaseMappingContainer mapping;
@@ -69,19 +69,13 @@ class ColumnsMappingDialog extends BaseDialog {
     private Font boldFont;
 
     ColumnsMappingDialog(DataTransferWizard wizard, DatabaseConsumerSettings settings, DatabaseMappingContainer mapping) {
-        super(wizard.getShell(), DTUIMessages.columns_mapping_dialog_shell_text + mapping.getTargetName(), null);
         this.settings = settings;
         this.mapping = mapping;
         attributeMappings = mapping.getAttributeMappings(wizard.getRunnableContext());
     }
 
     @Override
-    protected boolean isResizable() {
-        return true;
-    }
-
-    @Override
-    protected Composite createDialogArea(Composite parent) {
+    public void createControl(Composite parent) {
         DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);
 
         boldFont = UIUtils.makeBoldFont(parent.getFont());
@@ -321,17 +315,7 @@ class ColumnsMappingDialog extends BaseDialog {
 
         mappingViewer.setInput(attributeMappings);
 
-        return parent;
+        setControl(composite);
     }
 
-    @Override
-    protected void okPressed() {
-        super.okPressed();
-    }
-
-    @Override
-    public boolean close() {
-        UIUtils.dispose(boldFont);
-        return super.close();
-    }
 }

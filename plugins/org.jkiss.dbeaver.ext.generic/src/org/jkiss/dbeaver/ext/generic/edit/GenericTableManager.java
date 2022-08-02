@@ -51,12 +51,12 @@ import java.util.Map;
  */
 public class GenericTableManager extends SQLTableManager<GenericTableBase, GenericStructContainer> {
 
-    private static final Class<?>[] CHILD_TYPES = {
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         GenericTableColumn.class,
         GenericUniqueKey.class,
         GenericTableForeignKey.class,
         GenericTableIndex.class
-    };
+    );
 
     @Nullable
     @Override
@@ -67,7 +67,7 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes()
+    public Class<? extends DBSObject>[] getChildTypes()
     {
         return CHILD_TYPES;
     }

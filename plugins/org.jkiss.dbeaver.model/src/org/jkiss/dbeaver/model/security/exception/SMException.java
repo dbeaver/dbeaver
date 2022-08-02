@@ -16,11 +16,8 @@
  */
 package org.jkiss.dbeaver.model.security.exception;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-
-import java.sql.SQLException;
 
 public class SMException extends DBCException {
     public SMException(String message) {
@@ -39,18 +36,4 @@ public class SMException extends DBCException {
         super(message, cause, executionContext);
     }
 
-    @Deprecated
-    public SMException(SQLException ex, DBPDataSource dataSource) {
-        super(ex, dataSource);
-    }
-
-    @Deprecated
-    public SMException(Throwable cause, DBPDataSource dataSource) {
-        super(cause, dataSource);
-    }
-
-    @Deprecated
-    public SMException(String message, Throwable cause, DBPDataSource dataSource) {
-        super(message, cause, dataSource);
-    }
 }

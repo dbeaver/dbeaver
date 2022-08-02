@@ -41,4 +41,8 @@ public interface IResultSetSelection extends IStructuredSelection {
 
     ResultSetRow getElementRow(Object element);
 
+    default int[] getElementRowIndexes(Object element) {
+        return null;
+    }
+
 }

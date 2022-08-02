@@ -52,7 +52,8 @@ class MySQLDialect extends JDBCSQLDialect {
         "DATABASES",
         "COLUMNS",
         "ALGORITHM",
-        "REPAIR"
+        "REPAIR",
+        "ENGINE"
     };
 
     public static final String[][] MYSQL_QUOTE_STRINGS = {
@@ -258,5 +259,10 @@ class MySQLDialect extends JDBCSQLDialect {
             return '\'' + escapeString(strValue) + '\'';
         }
         return super.escapeScriptValue(attribute, value, strValue);
+    }
+
+    @Override
+    public boolean validIdentifierStart(char c) {
+        return Character.isLetterOrDigit(c);
     }
 }

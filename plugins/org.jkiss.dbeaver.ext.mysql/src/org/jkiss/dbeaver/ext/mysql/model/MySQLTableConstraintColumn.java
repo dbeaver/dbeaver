@@ -38,7 +38,7 @@ public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
         this.ordinalPosition = ordinalPosition;
     }
 
-    //@Property(name = "Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     @NotNull
     @Override
     public String getName()
@@ -48,7 +48,7 @@ public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
 
     @NotNull
     @Override
-    @Property(id = "name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public MySQLTableColumn getAttribute()
     {
         return tableColumn;

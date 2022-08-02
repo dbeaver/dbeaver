@@ -102,9 +102,10 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
         textFocusListener = new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
+                doSetValue(textEditor.getText());
                 UIUtils.asyncExec(() -> {
                     if (!UIUtils.hasFocus(cell)) {
-                        AdvancedTextCellEditor.this.focusLost();
+                        AdvancedTextCellEditor.this.fireApplyEditorValue();
                     }
                 });
             }

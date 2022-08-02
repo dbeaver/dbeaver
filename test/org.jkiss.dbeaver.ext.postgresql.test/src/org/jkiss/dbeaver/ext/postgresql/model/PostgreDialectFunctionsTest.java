@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Types;
 
@@ -106,7 +106,7 @@ public class PostgreDialectFunctionsTest {
         Mockito.when(mockAttributeBinding.getName()).thenReturn(column.getName());
         Mockito.when(mockAttributeBinding.getFullyQualifiedName(DBPEvaluationContext.DML)).thenReturn(column.getName());
 
-        String typeCastClause = postgreDialect.getCastedAttributeName(mockAttributeBinding);
+        String typeCastClause = postgreDialect.getCastedAttributeName(mockAttributeBinding, mockAttributeBinding.getName());
         String expectedTypeCast = "column1::text"; // We use this method only for column names in condition. JSON column name must be casted to text as in getTypeCastClause will be casted column data
         Assert.assertEquals(expectedTypeCast, typeCastClause);
     }
@@ -142,7 +142,7 @@ public class PostgreDialectFunctionsTest {
         Mockito.when(mockAttributeBinding.getName()).thenReturn(column.getName());
         Mockito.when(mockAttributeBinding.getFullyQualifiedName(DBPEvaluationContext.DML)).thenReturn(column.getName());
 
-        String typeCastClause = postgreDialect.getCastedAttributeName(mockAttributeBinding);
+        String typeCastClause = postgreDialect.getCastedAttributeName(mockAttributeBinding, mockAttributeBinding.getName());
         String expectedTypeCast = "column1::text"; // We use this method only for column names in condition. JSON column name must be casted to text as in getTypeCastClause will be casted column data
         Assert.assertEquals(expectedTypeCast, typeCastClause);
     }
@@ -220,7 +220,7 @@ public class PostgreDialectFunctionsTest {
     public void generateCorrectDataTypeNameWithModifiersFromNUMBERWithoutModifiers() {
         Mockito.when(mockTypedObject.getTypeName()).thenReturn("number");
         Mockito.when(mockTypedObject.getPrecision()).thenReturn(null);
-        Mockito.when(mockTypedObject.getScale()).thenReturn(null);
+//        Mockito.when(mockTypedObject.getScale()).thenReturn(null);
         String actualDataType = postgreDialect.convertExternalDataType(postgreDialect, mockTypedObject, testDataSource);
         Assert.assertEquals("numeric", actualDataType);
     }

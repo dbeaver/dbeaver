@@ -54,6 +54,7 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_SHOW_SEL_CELLS = "resultset.show.selected.cells"; //$NON-NLS-1$
 
     public static final String RESULT_SET_USE_SMOOTH_SCROLLING = "resultset.hScroll.smooth"; //$NON-NLS-1$
+    public static final String RESULT_SET_SHOW_COLLECTIONS_INLINE = "resultset.show.collections.inline"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX = "resultset.show.boolean.checkbox"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_WHITESPACE_CHARACTERS = "resultset.show.whitespace.characters"; //$NON-NLS-1$
     public static final String RESULT_SET_CLICK_TOGGLE_BOOLEAN = "resultset.show.boolean.toggleOnClick"; //$NON-NLS-1$
@@ -64,6 +65,7 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_RIGHT_JUSTIFY_DATETIME = "resultset.show.rightJustifyDateTime"; //$NON-NLS-1$
     public static final String RESULT_SET_AUTO_SWITCH_MODE = "resultset.behavior.autoSwitchMode"; //$NON-NLS-1$
     public static final String RESULT_SET_DOUBLE_CLICK = "resultset.behavior.doubleClick"; //$NON-NLS-1$
+    public static final String RESULT_SET_INLINE_ENTER = "resultset.behavior.inlineEnter";
     public static final String RESULT_SET_ROW_BATCH_SIZE = "resultset.show.row.batch.size"; //$NON-NLS-1$
     public static final String RESULT_SET_MAX_COLUMN_DEF_WIDTH = "resultset.max.column.def.width"; //$NON-NLS-1$
     

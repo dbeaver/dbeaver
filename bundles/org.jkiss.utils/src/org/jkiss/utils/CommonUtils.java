@@ -20,6 +20,8 @@ package org.jkiss.utils;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -1048,5 +1050,17 @@ public class CommonUtils {
             }
         }
         return null;
+    }
+
+    public static void deleteDirectory(@NotNull Path path) throws IOException {
+        Files.walk(path)
+            .sorted(Comparator.reverseOrder())
+            .map(Path::toFile)
+            .forEach(File::delete);
+    }
+
+    @SafeVarargs
+    public static <T> T[] array(T ... elems) {
+        return elems;
     }
 }

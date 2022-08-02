@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
@@ -66,7 +66,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 
     static DesktopPlatform instance;
 
-    @NotNull
     private static volatile boolean isClosing = false;
 
     private File tempFolder;
@@ -144,7 +143,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 
     protected void initialize() {
         long startTime = System.currentTimeMillis();
-        log.debug("Initialize Core...");
+        log.debug("Initialize desktop platform...");
 
         if (getPreferenceStore().getBoolean(DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE)) {
             // Register BC security provider
@@ -167,12 +166,12 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 
         super.initialize();
 
-        log.debug("Core initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
+        log.debug("Platform initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
     }
 
     public synchronized void dispose() {
         long startTime = System.currentTimeMillis();
-        log.debug("Shutdown Core...");
+        log.debug("Shutdown desktop platform...");
 
         DesktopPlatform.setClosing(true);
         DBPApplication application = getApplication();
@@ -183,7 +182,10 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 
         super.dispose();
 
-        workspace.dispose();
+        if (workspace != null) {
+            workspace.dispose();
+            workspace = null;
+        }
 
         if (this.qmLogWriter != null) {
             this.queryManager.unregisterMetaListener(qmLogWriter);
@@ -198,9 +200,9 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 
         if (isStandalone() && workspace != null && !application.isExclusiveMode()) {
             try {
-                workspace.save(new VoidProgressMonitor());
+                workspace.save(new LoggingProgressMonitor(log));
             } catch (DBException ex) {
-                log.error("Can't save workspace", ex); //$NON-NLS-1$
+                log.error("Can not save workspace", ex); //$NON-NLS-1$
             }
         }
 
@@ -208,7 +210,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
         if (tempFolder != null) {
 
             if (!ContentUtils.deleteFileRecursive(tempFolder)) {
-                log.warn("Can't delete temp folder '" + tempFolder.getAbsolutePath() + "'");
+                log.warn("Can not delete temp folder '" + tempFolder.getAbsolutePath() + "'");
             }
             tempFolder = null;
         }
@@ -216,7 +218,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
         DesktopPlatform.instance = null;
         DesktopPlatform.disposed = true;
         System.gc();
-        log.debug("Shutdown completed in " + (System.currentTimeMillis() - startTime) + "ms");
+        log.debug("Platform shutdown completed (" + (System.currentTimeMillis() - startTime) + "ms)");
     }
 
     @NotNull

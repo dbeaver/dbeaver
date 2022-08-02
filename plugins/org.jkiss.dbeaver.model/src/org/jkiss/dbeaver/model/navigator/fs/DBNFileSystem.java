@@ -59,7 +59,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
             return null;
         }
         for (DBNFileSystemRoot root : children) {
-            if (root.getRoot().getId().equals(path)) {
+            if (root.getRoot().getRootId().equals(path)) {
                 return root;
             }
         }

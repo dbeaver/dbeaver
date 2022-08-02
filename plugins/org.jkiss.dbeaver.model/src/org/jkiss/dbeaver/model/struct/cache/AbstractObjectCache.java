@@ -76,7 +76,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     public List<OBJECT> getCachedObjects()
     {
         synchronized (cacheSync) {
-            return objectList == null ? Collections.<OBJECT>emptyList() : objectList;
+            return objectList == null ? Collections.emptyList() : objectList;
         }
     }
 
@@ -335,11 +335,11 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                     final Object dstValue = field.get(dstObject);
                     if (DBSObjectCache.class.isAssignableFrom(field.getType())) {
                         if (dstValue != null) {
-                            ((DBSObjectCache) dstValue).clearCache();
+                            ((DBSObjectCache<?,?>) dstValue).clearCache();
                         }
                     } else if (Collection.class.isAssignableFrom(field.getType())) {
                         if (Modifier.isTransient(modifiers) && dstValue != null) {
-                            ((Collection) dstValue).clear();
+                            ((Collection<?>) dstValue).clear();
                         }
                     } else {
                         if (isPropertyGroupField(field)) {
@@ -350,6 +350,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                             }
                         } else if (Modifier.isFinal(modifiers)) {
                             // Ignore final fields
+                            continue;
                         } else {
                             // Just copy value
                             field.set(dstObject, srcValue);
@@ -363,7 +364,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     }
 
     protected class CacheIterator implements Iterator<OBJECT> {
-        private Iterator<OBJECT> listIterator = objectList.iterator();
+        private final Iterator<OBJECT> listIterator = objectList.iterator();
         private OBJECT curObject;
         public CacheIterator()
         {

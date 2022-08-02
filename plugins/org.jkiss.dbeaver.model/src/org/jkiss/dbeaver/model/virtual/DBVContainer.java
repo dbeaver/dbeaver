@@ -81,6 +81,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         containers.clear();
     }
 
+    @Nullable
     public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException {
         DBSObjectContainer realParent = parent.getRealContainer(monitor);
         if (realParent == null) {
@@ -99,7 +100,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         return parent;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPDataSource getDataSource() {
         return parent.getDataSource();

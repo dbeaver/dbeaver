@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.SQLException;
 import java.util.Collections;
@@ -74,7 +74,6 @@ public class GreenplumTableTest {
 
     @Before
     public void setUp() throws Exception {
-        Mockito.when(mockSchema.getDatabase()).thenReturn(mockDatabase);
         Mockito.when(mockSchema.getSchema()).thenReturn(mockSchema);
         Mockito.when(mockSchema.getDataSource()).thenReturn(mockDataSource);
         Mockito.when(mockSchema.getName()).thenReturn(exampleSchemaName);
@@ -86,8 +85,7 @@ public class GreenplumTableTest {
         Mockito.when(mockDataSource.getDefaultInstance()).thenReturn(mockDatabase);
         Mockito.when(mockDataSource.getServerType()).thenReturn(mockServerGreenplum);
 
-        Mockito.when(mockDatabase.getName()).thenReturn(exampleDatabaseName);
-        Mockito.when(mockDatabase.getDefaultContext(Mockito.anyObject(), Mockito.anyBoolean())).thenReturn(mockContext);
+        Mockito.when(mockDatabase.getDefaultContext(Mockito.any(), Mockito.anyBoolean())).thenReturn(mockContext);
         Mockito.when(mockDatabase.isInstanceConnected()).thenReturn(true);
 
         Mockito.when(mockResults.getString("relname")).thenReturn(exampleTableName);

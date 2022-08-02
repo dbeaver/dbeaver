@@ -17,9 +17,12 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
@@ -41,22 +44,29 @@ public interface DBPProject extends DBPObject, SMAuthSpace
     @NotNull
     DBPWorkspace getWorkspace();
 
-    // In multi-use environment virtual project is a project owned by user
+    // In multi-user environment virtual project is a project owned by user
     boolean isVirtual();
 
     // Project with no persistent state
     boolean isInMemory();
 
+
+    String getId();
+
     @NotNull
     String getName();
 
+    @NotNull
     UUID getProjectID();
 
     @NotNull
     Path getAbsolutePath();
 
-    @NotNull
+    @Nullable
     IProject getEclipseProject();
+
+    @Nullable
+    IContainer getRootResource();
 
     @NotNull
     Path getMetadataFolder(boolean create);
@@ -88,13 +98,23 @@ public interface DBPProject extends DBPObject, SMAuthSpace
 
     void setProjectProperty(String propName, Object propValue);
 
-    Object getResourceProperty(IResource resource, String propName);
+    /**
+     * Returns logical resource path
+     */
+    String getResourcePath(@NotNull IResource resource);
 
-    Map<String, Object> getResourceProperties(IResource resource);
+    /**
+     * Finds resources that match the supplied {@code properties} map.
+     */
+    @NotNull
+    String[] findResources(@NotNull Map<String, ?> properties) throws DBException;
 
-    Map<String, Map<String, Object>> getResourceProperties();
+    @Nullable
+    Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName);
 
-    void setResourceProperty(IResource resource, String propName, Object propValue);
+    @Nullable
+    Object getResourceProperty(@NotNull IResource resource, @NotNull String propName);
 
-    void setResourceProperties(IResource resource, Map<String, Object> props);
+    void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue);
+
 }

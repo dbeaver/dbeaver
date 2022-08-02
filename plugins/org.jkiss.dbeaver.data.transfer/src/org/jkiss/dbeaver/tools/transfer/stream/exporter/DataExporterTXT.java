@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -50,11 +49,12 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
     private static final String PROP_DELIM_HEADER = "delimHeader";
     private static final String PROP_DELIM_TRAILING = "delimTrailing";
     private static final String PROP_DELIM_BETWEEN = "delimBetween";
+    private static final String PROP_SHOW_HEADER = "showHeader";
 
     private int batchSize = 200;
     private int maxColumnSize = 0;
     private int minColumnSize = 1;
-    private boolean showHeader = true;
+    private boolean showHeader;
     private boolean showNulls;
     private boolean delimLeading, delimHeader, delimTrailing, delimBetween;
     private Deque<String[]> batchQueue;
@@ -74,6 +74,7 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
         this.delimHeader = CommonUtils.getBoolean(properties.get(PROP_DELIM_HEADER), true);
         this.delimTrailing = CommonUtils.getBoolean(properties.get(PROP_DELIM_TRAILING), true);
         this.delimBetween = CommonUtils.getBoolean(properties.get(PROP_DELIM_BETWEEN), true);
+        this.showHeader = CommonUtils.getBoolean(properties.get(PROP_SHOW_HEADER), true);
         this.batchQueue = new ArrayDeque<>(this.batchSize);
         if (this.maxColumnSize > 0) {
             this.maxColumnSize = Math.max(this.maxColumnSize, this.minColumnSize);
@@ -115,12 +116,7 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
 
     @Override
     public void importData(@NotNull IStreamDataExporterSite site) {
-        final File file = site.getOutputFile();
-        if (file == null || !file.exists()) {
-            return;
-        }
-        // FIXME: Sources may be different and thus may have a different set of attributes
-        showHeader = false;
+        // No pre-initialization process is needed.
     }
 
     @Override
@@ -154,11 +150,17 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
         }
 
         while (!batchQueue.isEmpty()) {
-            writeRow(batchQueue.poll(), ' ');
+            if (showHeader) {
+                writeRow(batchQueue.poll(), ' ');
+            }
 
             if (delimHeader) {
                 delimHeader = false;
                 writeRow(null, '-');
+            }
+
+            if (!showHeader) {
+                writeRow(batchQueue.poll(), ' ');
             }
         }
 

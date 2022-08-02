@@ -105,6 +105,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsRowLevelSecurity() {
+        return false;
+    }
+
+    @Override
     public boolean supportsExtensions() {
         return dataSource.isServerVersionAtLeast(9, 1);
     }
@@ -127,6 +132,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsSequences() {
         return true;//dataSource.isServerVersionAtLeast(10, 0);
+    }
+
+    @Override
+    public PostgreSequence createSequence(@NotNull PostgreSchema schema) {
+        return new PostgreSequence(schema);
     }
 
     @Override

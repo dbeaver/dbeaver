@@ -56,6 +56,9 @@ import java.util.function.Function;
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
 public class DBNModel implements IResourceChangeListener {
+
+    public static final String SLASH_ESCAPE_TOKEN = "%2F";
+
     private static final Log log = Log.getLog(DBNModel.class);
 
     private static class NodePath {
@@ -78,7 +81,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private final DBPPlatform platform;
-    private final DBPProject modelProject;
+    private final List<? extends DBPProject> modelProjects;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<>();
     private transient INavigatorListener[] listenersCopy = null;
@@ -86,13 +89,16 @@ public class DBNModel implements IResourceChangeListener {
     private final Map<DBSObject, Object> nodeMap = new HashMap<>();
     private final List<Function<DBNNode, Boolean>> nodeFilters = new ArrayList<>();
 
+    private SMSessionContext modelAuthContext;
+
     /**
      * Creates navigator model.
-     * @param modelProject Model project. If null then this is global navigator model. Otherwise it points to a session-like object.
+     *
+     * @param modelProjects Model projects. If null then this is global navigator model. Otherwise it points to a session-like object.
      */
-    public DBNModel(DBPPlatform platform, @Nullable DBPProject modelProject) {
+    public DBNModel(DBPPlatform platform, @Nullable List<? extends DBPProject> modelProjects) {
         this.platform = platform;
-        this.modelProject = modelProject;
+        this.modelProjects = modelProjects;
     }
 
     public DBPPlatform getPlatform() {
@@ -100,16 +106,20 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @Nullable
-    public DBPProject getModelProject() {
-        return modelProject;
+    public List<? extends DBPProject> getModelProjects() {
+        return modelProjects;
     }
 
     public SMSessionContext getModelAuthContext() {
-        return modelProject != null ? modelProject.getSessionContext() : platform.getWorkspace().getAuthContext();
+        return modelAuthContext;
+    }
+
+    public void setModelAuthContext(SMSessionContext modelAuthContext) {
+        this.modelAuthContext = modelAuthContext;
     }
 
     public boolean isGlobal() {
-        return modelProject == null;
+        return modelProjects == null;
     }
 
     public void initialize()
@@ -203,7 +213,7 @@ public class DBNModel implements IResourceChangeListener {
             return nodeList.get(0);
         } else {
             // Never be here
-           throw new IllegalStateException();
+            throw new IllegalStateException();
         }
 /*
         if (node == null) {
@@ -311,7 +321,10 @@ public class DBNModel implements IResourceChangeListener {
                 throw new DBException("No projects in workspace");
             }
             if (projects.length > 1) {
-                throw new DBException("Multi-project workspace. Extension nodes not supported");
+                boolean multiNode = Arrays.stream(projects).anyMatch(pr -> pr.getProject().isVirtual());
+                if (!multiNode) {
+                    throw new DBException("Multi-project workspace. Extension nodes not supported");
+                }
             }
             return findNodeByPath(monitor, nodePath,
                 projects[0], 0);
@@ -330,8 +343,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @Nullable
-    public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull DBPProject project, @NotNull String path) throws DBException
-    {
+    public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull DBPProject project, @NotNull String path) throws DBException {
         DBNProject projectNode = getRoot().getProjectNode(project);
         if (projectNode == null) {
             log.debug("Project node not found");
@@ -383,13 +395,16 @@ public class DBNModel implements IResourceChangeListener {
         //log.debug("findNodeByPath '" + nodePath + "' in '" + curNode.getNodeItemPath() + "'/" + firstItem);
 
         for (int i = firstItem, itemsSize = nodePath.pathItems.size(); i < itemsSize; i++) {
-            String item = nodePath.pathItems.get(i);
+            String item = nodePath.pathItems.get(i).replace(SLASH_ESCAPE_TOKEN, "/");
+
             DBNNode[] children = curNode.getChildren(monitor);
             DBNNode nextChild = null;
             if (children != null && children.length > 0) {
                 for (DBNNode child : children) {
                     if (nodePath.type == DBNNode.NodePathType.resource) {
                         if (child instanceof DBNResource && ((DBNResource) child).getResource().getName().equals(item)) {
+                            nextChild = child;
+                        } else if (child instanceof DBNProjectDatabases && child.getName().equals(item)) {
                             nextChild = child;
                         }
                     } else if (nodePath.type == DBNNode.NodePathType.folder) {
@@ -406,7 +421,7 @@ public class DBNModel implements IResourceChangeListener {
                                 }
                             }
                         }
-                        if (child.getNodeName().equals(item)) {
+                        if (child.getName().equals(item)) {
                             nextChild = child;
                         }
                     }

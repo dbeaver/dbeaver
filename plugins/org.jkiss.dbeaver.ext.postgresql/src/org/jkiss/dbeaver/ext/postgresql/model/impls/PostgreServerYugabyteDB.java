@@ -73,6 +73,11 @@ public class PostgreServerYugabyteDB extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsRowLevelSecurity() {
+        return true;
+    }
+
+    @Override
     public boolean supportsExtensions() {
         return true;
     }

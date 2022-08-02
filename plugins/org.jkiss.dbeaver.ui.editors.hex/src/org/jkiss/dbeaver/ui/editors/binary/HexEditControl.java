@@ -135,8 +135,6 @@ public class HexEditControl extends Composite {
     private Font fontDefault = null;  // disposed internally
     private GridData textGridData = null;
     private GridData previewGridData = null;
-    private GC styledText1GC = null;
-    private GC styledText2GC = null;
     private Text linesTextSeparator = null;
     private StyledText linesText = null;
 
@@ -677,7 +675,6 @@ public class HexEditControl extends Composite {
             if (readOnly) {
                 hexText.setEditable(false);
             }
-            styledText1GC = new GC(hexText);
             int width = bytesPerLine * 3 * fontCharWidth;
             textGridData = new GridData();
             textGridData.horizontalIndent = 1;
@@ -752,7 +749,6 @@ public class HexEditControl extends Composite {
             nonDefaultCaret = new Caret(defaultCaret.getParent(), defaultCaret.getStyle());
             nonDefaultCaret.setBounds(defaultCaret.getBounds());
             previewText.setCaret(nonDefaultCaret);
-            styledText2GC = new GC(previewText);
             setCharset(null);
 
             UIUtils.addFocusTracker(UIUtils.getActiveWorkbenchWindow(), CONTROL_ID, previewText);
@@ -1047,29 +1043,35 @@ public class HexEditControl extends Composite {
     }
 
 
-    void drawUnfocusedCaret(boolean visible)
-    {
+    void drawUnfocusedCaret(boolean visible) {
         if (hexText.isDisposed()) return;
 
-        GC unfocusedGC;
+        GC unfocusedGC = null;
         Caret unfocusedCaret;
         int chars = 0;
         int shift = 0;
-        if (lastFocusedTextArea == 1) {
-            unfocusedCaret = previewText.getCaret();
-            unfocusedGC = styledText2GC;
-        } else {
-            unfocusedCaret = hexText.getCaret();
-            unfocusedGC = styledText1GC;
-            chars = 1;
-            if (hexText.getCaretOffset() % 3 == 1)
-                shift = -1;
-        }
-        if (unfocusedCaret.getVisible()) {
-            Rectangle unfocused = unfocusedCaret.getBounds();
-            unfocusedGC.setForeground(visible ? COLOR_NORMAL_SHADOW : colorCaretLine);
-            unfocusedGC.drawRectangle(unfocused.x + shift * unfocused.width, unfocused.y,
-                unfocused.width << chars, unfocused.height - 1);
+        try {
+            if (lastFocusedTextArea == 1) {
+                unfocusedCaret = previewText.getCaret();
+                unfocusedGC = new GC(previewText);
+            } else {
+                unfocusedCaret = hexText.getCaret();
+                unfocusedGC = new GC(hexText);
+                chars = 1;
+                if (hexText.getCaretOffset() % 3 == 1) shift = -1;
+            }
+            if (unfocusedCaret.getVisible()) {
+                Rectangle unfocused = unfocusedCaret.getBounds();
+                unfocusedGC.setForeground(visible ? COLOR_NORMAL_SHADOW : colorCaretLine);
+                unfocusedGC.drawRectangle(unfocused.x + shift * unfocused.width,
+                    unfocused.y,
+                    unfocused.width << chars,
+                    unfocused.height - 1);
+            }
+        } finally {
+            if (unfocusedGC != null) {
+                unfocusedGC.dispose();
+            }
         }
     }
 
@@ -2030,6 +2032,9 @@ public class HexEditControl extends Composite {
         int width = getClientArea().width - linesText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         int displayedNumberWidth = fontCharWidth * 4;  // hexText and previewText
         int commonWidth = width / displayedNumberWidth;
+        if (commonWidth <= 0) {
+            return;
+        }
         bytesPerLine = commonWidth;
         
         textGridData.widthHint = hexText.computeTrim(0, 0, bytesPerLine * 3 * fontCharWidth, 100).width;

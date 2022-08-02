@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
@@ -81,13 +81,12 @@ public class PostgreTableBaseTest {
         testDatabase = testDataSource.createDatabaseImpl(monitor, "testdb", testUser, null, null, null);
         testSchema = new PostgreSchema(testDatabase, "testSchema", testUser);
 
-        Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(DBWorkbench.getPlatform());
         Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
 
-        Mockito.when(mockResults.getString("relname")).thenReturn("sampleTable");
-        long sampleId = 111111;
-        Mockito.when(mockResults.getLong("oid")).thenReturn(sampleId);
-        Mockito.when(mockResults.getLong("relowner")).thenReturn(sampleId);
+//        Mockito.when(mockResults.getString("relname")).thenReturn("sampleTable");
+//        long sampleId = 111111;
+//        Mockito.when(mockResults.getLong("oid")).thenReturn(sampleId);
+//        Mockito.when(mockResults.getLong("relowner")).thenReturn(sampleId);
 
         postgreExecutionContext = new PostgreExecutionContext(testDatabase, "Test");
 

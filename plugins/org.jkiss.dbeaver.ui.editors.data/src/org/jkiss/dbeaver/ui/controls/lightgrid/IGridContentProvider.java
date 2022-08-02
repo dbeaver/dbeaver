@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package  org.jkiss.dbeaver.ui.controls.lightgrid;
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.swt.graphics.Color;
@@ -32,65 +32,76 @@ public interface IGridContentProvider extends IContentProvider {
         COLLAPSED
     }
 
-    int STATE_NONE          = 0;
-    int STATE_LINK          = 1;
-    int STATE_HYPER_LINK    = 1 << 1;
-    int STATE_TRANSFORMED   = 1 << 2;
-    int STATE_TOGGLE        = 1 << 3;
-    int STATE_DECORATED     = 1 << 4;
+    int STATE_NONE = 0;
+    int STATE_LINK = 1;
+    int STATE_HYPER_LINK = 1 << 1;
+    int STATE_TRANSFORMED = 1 << 2;
+    int STATE_TOGGLE = 1 << 3;
+    int STATE_DECORATED = 1 << 4;
 
-    int ALIGN_LEFT          = 0;
-    int ALIGN_CENTER        = 1;
-    int ALIGN_RIGHT         = 2;
+    int ALIGN_LEFT = 0;
+    int ALIGN_CENTER = 1;
+    int ALIGN_RIGHT = 2;
+
+    class CellInformation {
+        public int state;
+        public int align;
+        public Font font;
+        public DBPImage image;
+        public Color foreground;
+        public Color background;
+        public Object value;
+        public Object text;
+    }
 
     @NotNull
     Object[] getElements(boolean horizontal);
 
+    boolean hasChildren(@NotNull IGridItem item);
+
     @Nullable
-    Object[] getChildren(Object element);
+    Object[] getChildren(@NotNull IGridItem item);
 
-    int getSortOrder(@Nullable Object element);
+    /**
+     * Return for collection cell values returns size of collection.
+     * Called for all cells of columns for which isCollectionElement() returns true.
+     */
+    int getCollectionSize(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement);
 
-    ElementState getDefaultState(@NotNull Object element);
+    int getSortOrder(@Nullable IGridColumn element);
 
-    int getColumnPinIndex(@NotNull Object element);
+    ElementState getDefaultState(@NotNull IGridColumn element);
 
-    boolean isElementSupportsFilter(@Nullable Object element);
+    int getColumnPinIndex(@NotNull IGridColumn element);
 
-    boolean isElementSupportsSort(@Nullable Object element);
+    boolean isElementSupportsFilter(@Nullable IGridColumn element);
 
-    boolean isElementReadOnly(Object element);
+    boolean isElementSupportsSort(@Nullable IGridColumn element);
+
+    boolean isElementReadOnly(IGridColumn element);
+
+    boolean isElementExpandable(@NotNull IGridItem item);
 
     boolean isGridReadOnly();
 
     /**
-     *
-     * @param cellText    pre-rendered cell text. Used for cache purposes.
+     * Checks for additional data read according to the specified cell/row
      */
-    int getCellState(Object colElement, Object rowElement, @Nullable String cellText);
-
-    int getCellAlign(@Nullable Object colElement, Object rowElement);
-
-    @Nullable
-    Font getCellFont(@Nullable Object colElement, Object rowElement);
+    void validateDataPresence(IGridColumn colElement, IGridRow rowElement);
 
     /**
-     * @param formatString  Format string values or return raw values
-     * @param lockData     Block any automatic data fetch/refresh
+     * Returns cell information.
+     * TODO: add returnColors parameter for optimization
      */
-    Object getCellValue(Object colElement, Object rowElement, boolean formatString, boolean lockData);
+    CellInformation getCellInfo(IGridColumn colElement, IGridRow rowElement, boolean selected);
 
-    @NotNull
-    String getCellText(Object colElement, Object rowElement);
+    boolean isVoidCell(IGridColumn gridColumn, IGridRow gridRow);
 
-    @Nullable
-    DBPImage getCellImage(Object colElement, Object rowElement);
-
-    @Nullable
-    Color getCellForeground(Object colElement, Object rowElement, boolean selected);
-
-    @Nullable
-    Color getCellBackground(Object colElement, Object rowElement, boolean selected);
+    /**
+     * @param formatString Format string values or return raw values
+     *
+     */
+    Object getCellValue(IGridColumn colElement, IGridRow rowElement, boolean formatString);
 
     @Nullable
     Color getCellHeaderForeground(Object element);
@@ -102,7 +113,10 @@ public interface IGridContentProvider extends IContentProvider {
     Color getCellHeaderSelectionBackground(Object element);
 
     @NotNull
-    String getCellLinkText(Object colElement, Object rowElement);
+    Color getCellHeaderBorder(@Nullable Object element);
+
+    @NotNull
+    String getCellLinkText(IGridColumn colElement, IGridRow rowElement);
 
     // Resets all cached colors
     void resetColors();

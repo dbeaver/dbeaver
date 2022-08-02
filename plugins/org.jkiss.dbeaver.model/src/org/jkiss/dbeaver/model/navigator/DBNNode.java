@@ -98,6 +98,10 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return getNodeName();
     }
 
+    protected String getSortName() {
+        return getNodeName();
+    }
+
     @Override
     public String getLocalizedName(String locale) {
         return getName();
@@ -258,6 +262,10 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return null;
     }
 
+    public Throwable getLastLoadError() {
+        return null;
+    }
+
     static void sortNodes(List<? extends DBNNode> nodes) {
         nodes.sort((Comparator<DBNNode>) (o1, o2) -> {
             boolean isFolder1 = o1 instanceof DBNLocalFolder;
@@ -267,7 +275,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             } else if (!isFolder1 && isFolder2) {
                 return 1;
             }
-            return o1.getName().compareToIgnoreCase(o2.getName());
+            return o1.getSortName().compareToIgnoreCase(o2.getSortName());
         });
     }
 

@@ -59,16 +59,20 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogFilter;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -878,14 +882,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo stmtExec = (QMMStatementExecuteInfo) object;
                 if (dsContainer == null) {
-                    QMMConnectionInfo session = stmtExec.getStatement().getConnection();
-                    DBPProject project = session.getProject();
-                    String containerId = session.getContainerId();
-                    if (project != null) {
-                        dsContainer = project.getDataSourceRegistry().getDataSource(containerId);
-                    } else {
-                        dsContainer = DBUtils.findDataSource(containerId);
-                    }
+                    dsContainer = getDataSourceContainer(stmtExec);
                 }
                 String queryString = stmtExec.getQueryString();
                 if (!CommonUtils.isEmptyTrimmed(queryString)) {
@@ -1015,6 +1012,18 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
     }
 
+    private DBPDataSourceContainer getDataSourceContainer(QMMStatementExecuteInfo stmtExec) {
+        DBPDataSourceContainer dsContainer = null;
+        QMMConnectionInfo session = stmtExec.getStatement().getConnection();
+        DBPProject project = session.getProject();
+        String containerId = session.getContainerId();
+        if (project != null) {
+            dsContainer = project.getDataSourceRegistry().getDataSource(containerId);
+        } else {
+            dsContainer = DBUtils.findDataSource(containerId);
+        }
+        return dsContainer;
+    }
 
     private class EventViewDialog extends BaseSQLDialog {
 
@@ -1024,7 +1033,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         EventViewDialog(QMEvent object) {
             super(QueryLogViewer.this.getControl().getShell(), QueryLogViewer.this.site, "Event", null); //$NON-NLS-1$
-            setShellStyle(SWT.SHELL_TRIM);
+            setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.MAX | SWT.RESIZE);
             this.object = object;
         }
 
@@ -1085,8 +1094,25 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent) {
-            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+        protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
+            if (alignment == SWT.LEAD) {
+                createCopyButton(parent);
+                createExecuteButton(parent);
+            } else {
+                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+            }
+        }
+
+        @Override
+        protected void buttonPressed(int buttonId) {
+            if (buttonId == IDialogConstants.PROCEED_ID && object.getObject() instanceof QMMStatementExecuteInfo) {
+                final QMMStatementExecuteInfo info = (QMMStatementExecuteInfo) object.getObject();
+                final SQLEditor editor = ((SQLLogFilter) filter).getEditor();
+                final SQLQuery query = new SQLQuery(editor.getDataSource(), info.getQueryString());
+                editor.processQueries(List.of(query), false, true, false, true, null, null);
+            } else {
+                super.buttonPressed(buttonId);
+            }
         }
 
         @Override
@@ -1113,6 +1139,22 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         protected boolean isLabelVisible() {
             return false;
+        }
+        
+        private boolean isQueryLinkedWithEditor(QMMStatementExecuteInfo execInfo) {
+            DBCExecutionPurpose purpose = execInfo.getStatement().getPurpose();
+            return (purpose == DBCExecutionPurpose.USER_SCRIPT || purpose == DBCExecutionPurpose.USER)
+                && object.getObject() instanceof QMMStatementExecuteInfo && filter != null && filter instanceof SQLLogFilter
+                && ((SQLLogFilter) filter).getEditor() != null;
+        }
+
+        private void createExecuteButton(@NotNull Composite parent) {
+            if (object.getObject() instanceof QMMStatementExecuteInfo) {
+                final QMMStatementExecuteInfo info = (QMMStatementExecuteInfo) object.getObject();
+                if (isQueryLinkedWithEditor(info) && SQLEditorUtils.isOpenSeparateConnection(getDataSourceContainer(info))) {
+                    createButton(parent, IDialogConstants.PROCEED_ID, SQLEditorMessages.editor_query_log_viewer_reexecute_query_button_text, false);
+                }
+            }
         }
     }
 

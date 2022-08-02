@@ -17,20 +17,24 @@
 package org.jkiss.dbeaver.ui.data.managers;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Listener;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -115,13 +119,24 @@ public abstract class EnumValueManager extends BaseValueManager {
             if (editor.getSelectionIndex() < 0) {
                 editor.select(0);
             }
-            editor.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    saveValue();
-                }
-            });
+            editPlaceholder.setFocus();
             return editor;
+        }
+
+        @Override
+        protected void addInlineListeners(@NotNull Control inlineControl, @NotNull Listener listener) {
+            super.addInlineListeners(inlineControl, listener);
+            if (RuntimeUtils.isMacOS()) {
+                // READ_ONLY Combo can't have a focus on macOS due to bug in SWT. So we place a focus listener on its
+                // placeholder instead
+                inlineControl.getParent().addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        saveValue();
+                        ((IMultiController) controller).closeInlineEditor();
+                    }
+                });
+            }
         }
     }
 

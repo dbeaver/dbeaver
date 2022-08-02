@@ -37,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Database native auth model config
  */
-public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfigurator<DBAAuthModel, DBPDataSourceContainer> {
+public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfigurator<DBAAuthModel<?>, DBPDataSourceContainer> {
 
     protected Label usernameLabel;
     protected Text usernameText;
@@ -51,7 +51,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     protected DBPDataSourceContainer dataSource;
 
-    public void createControl(Composite authPanel, DBAAuthModel object, Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
         boolean userNameApplicable = true;
         boolean userPasswordApplicable = true;
         if (object instanceof AuthModelDatabaseNative) {
@@ -88,7 +88,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     }
 
     @Override
-    public void loadSettings(DBPDataSourceContainer dataSource) {
+    public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         this.dataSource = dataSource;
 
         if (this.usernameText != null) {
@@ -102,7 +102,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         if (this.usernameText != null) {
             dataSource.getConnectionConfiguration().setUserName(this.usernameText.getText());
         }
@@ -117,7 +117,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     }
 
     @Override
-    public void resetSettings(DBPDataSourceContainer dataSource) {
+    public void resetSettings(@NotNull DBPDataSourceContainer dataSource) {
         loadSettings(dataSource);
     }
 

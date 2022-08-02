@@ -115,6 +115,8 @@ public interface DBPDriver extends DBPNamedObject
     boolean isSampleURLApplicable();
     boolean isCustomEndpointInformation();
 
+    boolean isSingleConnection();
+    
     // Can be created
     boolean isInstantiable();
     // Driver shipped along with JDK/DBeaver, doesn't need any additional libraries. Basically it is ODBC driver.
@@ -167,6 +169,8 @@ public interface DBPDriver extends DBPNamedObject
     List<? extends DBPDriverLibrary> getDriverLibraries();
 
     List<? extends DBPDriverFileSource> getDriverFileSources();
+
+    boolean needsExternalDependencies();
 
     @NotNull
     <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;

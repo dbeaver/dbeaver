@@ -9,5 +9,5 @@ Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.parser.common.test
 Require-Bundle: org.jkiss.dbeaver.parser.common,
- org.mockito.mockito-all,
+ org.mockito.mockito-core,
  org.junit

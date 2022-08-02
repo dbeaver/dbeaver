@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.spanner.ui.config;
 
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.spanner.model.SpannerConstants;
 import org.jkiss.dbeaver.ext.spanner.ui.internal.SpannerMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -33,7 +34,7 @@ public class SpannerAuthConfigurator extends DatabaseNativeAuthModelConfigurator
     private TextWithOpenFile privateKeyFile;
 
     @Override
-    public void createControl(Composite authPanel, DBAAuthModel object, Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
         UIUtils.createControlLabel(authPanel, SpannerMessages.label_private_key_path);
         privateKeyFile = new TextWithOpenFile(authPanel, SpannerMessages.label_private_key_path, new String[] { "*", "*.json" } ); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
@@ -41,7 +42,7 @@ public class SpannerAuthConfigurator extends DatabaseNativeAuthModelConfigurator
     }
 
     @Override
-    public void loadSettings(DBPDataSourceContainer dataSource) {
+    public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.loadSettings(dataSource);
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (privateKeyFile != null) {
@@ -50,7 +51,7 @@ public class SpannerAuthConfigurator extends DatabaseNativeAuthModelConfigurator
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (privateKeyFile != null) {
             connectionInfo.setProviderProperty(SpannerConstants.DRIVER_PROP_PVTKEYPATH, privateKeyFile.getText().trim());

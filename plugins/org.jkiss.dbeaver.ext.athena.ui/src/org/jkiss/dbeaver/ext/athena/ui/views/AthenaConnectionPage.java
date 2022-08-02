@@ -241,7 +241,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
 
     @NotNull
     private String[] getAvailableVariables() {
-        return Arrays.stream(DBPConnectionConfiguration.CONNECT_VARIABLES).map(x -> x[0]).toArray(String[]::new);
+        return Arrays.stream(DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES).map(x -> x[0]).toArray(String[]::new);
     }
 
 }

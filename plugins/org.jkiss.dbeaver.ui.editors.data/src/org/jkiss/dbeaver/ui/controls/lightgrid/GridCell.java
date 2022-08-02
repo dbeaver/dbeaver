@@ -17,46 +17,46 @@
 
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.code.NotNull;
+
+import java.util.Objects;
 
 /**
  * GridCell
  */
-public class GridCell
-{
-    public Object col;
-    public Object row;
+public class GridCell implements IGridCell {
+    public final IGridColumn col;
+    public final IGridRow row;
 
-    public GridCell(Object col, Object row)
-    {
+    public GridCell(@NotNull IGridColumn col, @NotNull IGridRow row) {
         this.col = col;
         this.row = row;
     }
 
-    public GridCell(GridCell copy)
-    {
-        this.col = copy.col;
-        this.row = copy.row;
+    @Override
+    public IGridRow getRow() {
+        return row;
     }
 
-    public boolean equals(Object object)
-    {
-        return object instanceof GridCell && equalsTo((GridCell) object);
+    @Override
+    public IGridColumn getColumn() {
+        return col;
     }
 
-    public boolean equalsTo(GridCell pos)
-    {
-        return CommonUtils.equalObjects(this.col, pos.col) &&
-            CommonUtils.equalObjects(this.row, pos.row);
-    }
-
-    public String toString()
-    {
+    public String toString() {
         return col + ":" + row;
     }
 
-    public int hashCode()
-    {
-        return col.hashCode() ^ row.hashCode();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GridCell gridCell = (GridCell) o;
+        return col.equals(gridCell.col) && row.equals(gridCell.row);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(col, row);
     }
 }

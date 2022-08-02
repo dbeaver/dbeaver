@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -45,23 +44,21 @@ import java.util.Map;
  */
 public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchema> implements DBEObjectRenamer<OracleTable> {
 
-    private static final Class<?>[] CHILD_TYPES = {
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         OracleTableColumn.class,
         OracleTableConstraint.class,
         OracleTableForeignKey.class,
         OracleTableIndex.class
-    };
+    );
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, OracleTable> getObjectsCache(OracleTable object)
-    {
+    public DBSObjectCache<? extends DBSObject, OracleTable> getObjectsCache(OracleTable object) {
         return (DBSObjectCache) object.getSchema().tableCache;
     }
 
     @Override
-    protected OracleTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
-    {
+    protected OracleTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
         OracleSchema schema = (OracleSchema) container;
 
         OracleTable table = new OracleTable(schema, ""); //$NON-NLS-1$
@@ -70,8 +67,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         if (command.getProperties().size() > 1 || command.getProperty("comment") == null) { //$NON-NLS-1$
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
@@ -101,8 +97,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
-    {
+    protected void appendTableModifiers(DBRProgressMonitor monitor, OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
         // ALTER
         if (tableProps.getProperty("tablespace") != null) { //$NON-NLS-1$
             Object tablespace = table.getTablespace();
@@ -117,8 +112,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
@@ -128,8 +122,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
+    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         OracleTable object = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
@@ -143,14 +136,12 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes()
-    {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES;
     }
 
     @Override
-    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull OracleTable object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
-    {
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull OracleTable object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 

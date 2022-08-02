@@ -532,11 +532,13 @@ public class UIUtils {
         return modifyFont(normalFont, SWT.BOLD);
     }
 
-    public static Font modifyFont(Font normalFont, int style)
-    {
-        FontData[] fontData = normalFont.getFontData();
-        fontData[0].setStyle(fontData[0].getStyle() | style);
-        return new Font(normalFont.getDevice(), fontData[0]);
+    @NotNull
+    public static Font modifyFont(@NotNull Font normalFont, int style) {
+        final FontData[] data = normalFont.getFontData();
+        for (FontData fd : data) {
+            fd.setStyle(fd.getStyle() | style);
+        }
+        return new Font(normalFont.getDevice(), data);
     }
 
     public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint)

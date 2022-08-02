@@ -22,11 +22,18 @@ import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTable;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Clickhouse table manager
@@ -44,17 +51,47 @@ public class ClickhouseTableManager extends GenericTableManager {
     @Override
     protected void appendTableModifiers(DBRProgressMonitor monitor, GenericTableBase table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
         if (table instanceof ClickhouseTable) {
-            try {
-                List<? extends GenericTableColumn> attributes = table.getAttributes(monitor);
-                if (!CommonUtils.isEmpty(attributes)) {
-                    ddl.append(" ENGINE = MergeTree()\n" +
-                            "ORDER BY ").append(DBUtils.getQuotedIdentifier(attributes.get(0)));
-                } else {
-                    ddl.append(" ENGINE = Log");
+            ClickhouseTable clickhouseTable = (ClickhouseTable) table;
+            if (clickhouseTable.getEngine() != null) {
+                ddl.append(" ENGINE = ").append(clickhouseTable.getEngine().getName());
+                if (CommonUtils.isNotEmpty(clickhouseTable.getEngineMessage())) {
+                    ddl.append("\n").append(clickhouseTable.getEngineMessage());
                 }
-            } catch (DBException e) {
-                log.debug("Can't read " + table.getName() + " columns");
+            } else {
+                try {
+                    List<? extends GenericTableColumn> attributes = table.getAttributes(monitor);
+                    if (!CommonUtils.isEmpty(attributes)) {
+                        ddl.append(" ENGINE = MergeTree()\n" +
+                            "ORDER BY ").append(DBUtils.getQuotedIdentifier(attributes.get(0)));
+                    } else {
+                        ddl.append(" ENGINE = Log");
+                    }
+                } catch (DBException e) {
+                    log.debug("Can't read " + table.getName() + " columns");
+                }
             }
+            if (!table.isPersisted() && tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null
+                && CommonUtils.isNotEmpty(table.getDescription())) {
+                ddl.append("\nCOMMENT ").append(SQLUtils.quoteString(table, table.getDescription())); //$NON-NLS-1$
+            }
+        }
+    }
+
+    @Override
+    protected void addObjectExtraActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        NestedObjectCommand<GenericTableBase, PropertyHandler> command,
+        Map<String, Object> options)
+    {
+        GenericTableBase tableBase = command.getObject();
+        if (tableBase.isPersisted() && command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+            actions.add(new SQLDatabasePersistAction(
+                "Comment table",
+                "ALTER TABLE " + tableBase.getFullyQualifiedName(DBPEvaluationContext.DDL)
+                    + " MODIFY COMMENT "
+                    + SQLUtils.quoteString(tableBase, CommonUtils.notEmpty(tableBase.getDescription()))));
         }
     }
 }

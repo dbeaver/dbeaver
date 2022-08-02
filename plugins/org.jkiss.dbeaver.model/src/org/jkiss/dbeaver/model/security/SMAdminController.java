@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.security.user.SMObjectPermissions;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Admin interface
@@ -68,5 +70,13 @@ public interface SMAdminController extends SMController {
     // Permissions
     void setSubjectPermissions(String subjectId, List<String> permissionIds, String grantorId) throws DBException;
 
-    void setSubjectConnectionAccess(@NotNull String subjectId, @NotNull List<String> connectionIds, String grantor) throws DBException;
+    void deleteAllObjectPermissions(
+        @NotNull String objectId,
+        @NotNull SMObjectType objectType
+    ) throws DBException;
+
+    List<SMObjectPermissionsGrant> getSubjectObjectPermissionGrants(
+        @NotNull String subjectId,
+        @NotNull SMObjectType smObjectType
+    ) throws DBException;
 }

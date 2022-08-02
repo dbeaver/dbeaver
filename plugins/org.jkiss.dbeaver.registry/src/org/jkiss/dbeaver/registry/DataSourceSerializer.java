@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -29,17 +29,18 @@ import java.util.List;
  */
 interface DataSourceSerializer
 {
+
     void saveDataSources(
         DBRProgressMonitor monitor,
+        DataSourceConfigurationManager configurationManager,
         DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources,
-        Path configPath)
+        List<DataSourceDescriptor> localDataSources)
         throws DBException, IOException;
 
     void parseDataSources(
-        Path configPath,
-        DBPDataSourceConfigurationStorage configurationStorage,
-        boolean refresh,
-        DataSourceRegistry.ParseResults parseResults)
-        throws DBException, IOException;
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DataSourceRegistry.ParseResults parseResults,
+        boolean refresh
+    ) throws DBException, IOException;
 }

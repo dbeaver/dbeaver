@@ -95,6 +95,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPPlatformLangua
 
         // Navigator model
         this.navigatorModel = new DBNModel(this, null);
+        this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());
         this.navigatorModel.initialize();
 
         if (!getApplication().isExclusiveMode()) {

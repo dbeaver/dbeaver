@@ -536,7 +536,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
-        return dataSource.resolveDataType(monitor, typeFullName);
+        return PostgreUtils.resolveTypeFullName(monitor, this, typeFullName);
     }
 
     @Override
@@ -740,6 +740,16 @@ public class PostgreDatabase extends JDBCRemoteInstance
     public PostgreSchema getSchema(DBRProgressMonitor monitor, long oid) throws DBException {
         checkInstanceConnection(monitor);
         for (PostgreSchema schema : schemaCache.getAllObjects(monitor, this)) {
+            if (schema.getObjectId() == oid) {
+                return schema;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public PostgreSchema getSchema(long oid) {
+        for (PostgreSchema schema : schemaCache.getCachedObjects()) {
             if (schema.getObjectId() == oid) {
                 return schema;
             }

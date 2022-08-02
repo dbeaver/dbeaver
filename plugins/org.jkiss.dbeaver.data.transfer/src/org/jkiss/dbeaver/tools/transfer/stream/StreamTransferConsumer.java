@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
@@ -134,6 +136,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private final List<File> outputFiles = new ArrayList<>();
     private StatOutputStream statStream;
+    private DBCStatistics statistics;
 
     public StreamTransferConsumer() {
     }
@@ -224,6 +227,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
             // Export row
             processor.exportRow(session, resultSet, targetRow);
+            statistics.addRowsFetched(1);
             firstRow = false;
         } catch (IOException e) {
             throw new DBCException("IO error", e);
@@ -291,6 +295,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         exportSite = new StreamExportSite();
+        statistics = new DBCStatistics();
 
         // Open output streams
         boolean outputClipboard = settings.isOutputClipboard();
@@ -428,6 +433,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         multiFileNumber++;
         outputFile = makeOutputFile();
         outputFiles.add(outputFile);
+        statistics = new DBCStatistics();
 
         openOutputStreams();
     }
@@ -517,6 +523,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @NotNull
+    @Override
+    public DBCStatistics getStatistics() {
+        return statistics;
+    }
+
+    @NotNull
     public String getOutputFolder() {
         return translatePattern(settings.getOutputFolder(), null);
     }
@@ -595,12 +607,24 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 }
                 case VARIABLE_TABLE: {
                     if (settings.isUseSingleFile()) {
-                        return "export";
+                        return DTConstants.DEFAULT_TABLE_NAME_EXPORT;
                     }
                     if (dataContainer == null) {
                         return null;
                     }
-                    String tableName = DTUtils.getTableName(dataContainer.getDataSource(), dataContainer, true);
+                    String tableName;
+                    if (dataContainer instanceof SQLQueryContainer) {
+                        tableName = DTUtils.getTableNameFromQueryContainer(dataContainer.getDataSource(), (SQLQueryContainer) dataContainer);
+                    } else {
+                        tableName = DTUtils.getTableName(dataContainer.getDataSource(), dataContainer, true);
+                    }
+                    if (CommonUtils.isEmpty(tableName)) {
+                        if (parameters.orderNumber > 0) {
+                            tableName = DTConstants.DEFAULT_TABLE_NAME_EXPORT + "_" + parameters.orderNumber;
+                        } else {
+                            tableName = DTConstants.DEFAULT_TABLE_NAME_EXPORT;
+                        }
+                    }
                     return stripObjectName(tableName);
                 }
                 case VARIABLE_TIMESTAMP:

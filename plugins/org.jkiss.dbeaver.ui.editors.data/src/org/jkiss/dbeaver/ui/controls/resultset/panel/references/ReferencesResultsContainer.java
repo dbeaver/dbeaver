@@ -234,7 +234,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
             if (vEntityOwner != null) {
                 Object activeAssociations = vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
                 if (activeAssociations instanceof Collection) {
-                    for (Object refKeyMemoMap : (Collection)activeAssociations) {
+                    for (Object refKeyMemoMap : (Collection<?>)activeAssociations) {
                         if (refKeyMemoMap instanceof Map) {
                             refKeyMemos.add(new ReferenceKeyMemo((Map) refKeyMemoMap));
                         }

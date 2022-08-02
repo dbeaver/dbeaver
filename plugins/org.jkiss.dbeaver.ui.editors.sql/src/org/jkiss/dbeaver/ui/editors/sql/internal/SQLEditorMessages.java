@@ -58,8 +58,9 @@ public class SQLEditorMessages extends NLS {
     public static String editor_file_delete_confirm_delete_title;
 
     public static String editor_query_log_viewer_draw_text_type_qury_part;
-
-	public static String editor_sql_preference;
+    public static String editor_query_log_viewer_reexecute_query_button_text;
+    
+    public static String editor_sql_preference;
     public static String editors_sql_data_grid;
     public static String editors_sql_description;
     public static String editors_sql_error_cant_execute_query_message;
@@ -346,6 +347,10 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_title_tooltip_database;
     public static String sql_editor_title_tooltip_schema;
 
+    public static String sql_generator_title_text;
+    public static String sql_generator_no_obj_container_text;
+    public static String sql_generator_no_ddl_text;
+    public static String sql_generator_nonsql_text;
 
     static {
         // initialize resource bundle

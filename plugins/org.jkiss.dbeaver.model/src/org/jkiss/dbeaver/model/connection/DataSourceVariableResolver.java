@@ -25,14 +25,27 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
     private final DBPDataSourceContainer dataSourceContainer;
     private final DBPConnectionConfiguration configuration;
 
-    public DataSourceVariableResolver(@Nullable DBPDataSourceContainer dataSourceContainer, @Nullable DBPConnectionConfiguration configuration) {
+    public DataSourceVariableResolver(
+        @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable DBPConnectionConfiguration configuration) {
         this.dataSourceContainer = dataSourceContainer;
         this.configuration = configuration;
     }
 
+    public boolean isSecure() {
+        return true;
+    }
+
+    protected DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
+    }
+
+    protected DBPConnectionConfiguration getConfiguration() {
+        return configuration;
+    }
+
     @Override
     public String get(String name) {
-        if (dataSourceContainer != null) {
+        if (configuration != null) {
             switch (name) {
                 case DBPConnectionConfiguration.VARIABLE_HOST:
                     return configuration.getHostName();
@@ -44,12 +57,13 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                     return configuration.getDatabaseName();
                 case DBPConnectionConfiguration.VARIABLE_USER:
                     return configuration.getUserName();
-                case DBPConnectionConfiguration.VARIABLE_PASSWORD:
-                    return configuration.getUserPassword();
                 case DBPConnectionConfiguration.VARIABLE_URL:
                     return configuration.getUrl();
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:
                     return configuration.getConnectionType().getId();
+            }
+            if (DBPConnectionConfiguration.VARIABLE_PASSWORD.equals(name) && isSecure()) {
+                return configuration.getUserPassword();
             }
         }
         if (dataSourceContainer != null) {

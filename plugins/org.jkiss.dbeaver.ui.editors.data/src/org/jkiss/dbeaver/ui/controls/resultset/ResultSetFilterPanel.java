@@ -392,7 +392,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filterExpandPanel.setEnabled(enable);
             refreshButton.setEnabled(enable);
             historyPanel.setEnabled(enable);
-            filtersText.setEditable(enable && viewer.supportsDataFilter());
+            filtersText.setEditable(viewer.supportsDataFilter());
             executePanel.setEnabled(enable);
         } finally {
             setRedraw(true);
@@ -432,7 +432,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         if (dataContainer instanceof DBSEntity) {
             DBPDataSource dataSource = viewer.getDataContainer().getDataSource();
             if (dataSource != null) {
-                DBNDatabaseNode dcNode = dataSource.getContainer().getPlatform().getNavigatorModel().findNode(dataContainer);
+                DBNDatabaseNode dcNode = DBWorkbench.getPlatform().getNavigatorModel().findNode(dataContainer);
                 if (dcNode != null) {
                     return dcNode.getNodeIcon();
                 }

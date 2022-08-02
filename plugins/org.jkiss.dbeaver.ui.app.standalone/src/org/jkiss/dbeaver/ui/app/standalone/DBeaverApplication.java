@@ -37,6 +37,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
@@ -83,13 +84,8 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
 
     public static final String WORKSPACE_DIR_LEGACY = "${user.home}/.dbeaver"; //$NON-NLS-1$
     public static final String WORKSPACE_DIR_4 = "${user.home}/.dbeaver4"; //$NON-NLS-1$
-    public static final String WORKSPACE_DIR_6; //$NON-NLS-1$
-
-    private static final Path FILE_WITH_WORKSPACES;
 
     public static final String DBEAVER_DATA_DIR = "DBeaverData";
-
-    public static final String WORKSPACE_DIR_CURRENT;
 
     public static final String[] WORKSPACE_DIR_PREVIOUS = {
         WORKSPACE_DIR_4,
@@ -101,6 +97,12 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
     private static final String PROP_EXIT_DATA = IApplicationContext.EXIT_DATA_PROPERTY; //$NON-NLS-1$
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
+    public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
+
+    private final String WORKSPACE_DIR_6; //$NON-NLS-1$
+    private final Path FILE_WITH_WORKSPACES;
+    public final String WORKSPACE_DIR_CURRENT;
+
     static boolean WORKSPACE_MIGRATED = false;
 
     static DBeaverApplication instance;
@@ -109,6 +111,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
     private boolean reuseWorkspace = false;
     private boolean primaryInstance = true;
     private boolean headlessMode = false;
+    private boolean ignoreRecentWorkspaces = false;
 
     private IInstanceController instanceServer;
 
@@ -121,7 +124,12 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
     private boolean resetUIOnRestart, resetWorkspaceOnRestart;
     private long lastUserActivityTime = -1;
 
-    static {
+    public DBeaverApplication() {
+        this(DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER);
+    }
+
+    protected DBeaverApplication(String defaultWorkspaceLocation, String defaultAppWorkspaceName) {
+
         // Explicitly set UTF-8 as default file encoding
         // In some places Eclipse reads this property directly.
         //System.setProperty(StandardConstants.ENV_FILE_ENCODING, GeneralUtils.UTF8_ENCODING);
@@ -138,17 +146,17 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
             if (appData == null) {
                 appData = System.getProperty("user.home");
             }
-            workingDirectory = appData + "\\" + DBEAVER_DATA_DIR;
+            workingDirectory = appData + "\\" + defaultWorkspaceLocation;
         } else if (osName.contains("MAC")) {
-            workingDirectory = System.getProperty("user.home") + "/Library/" + DBEAVER_DATA_DIR;
+            workingDirectory = System.getProperty("user.home") + "/Library/" + defaultWorkspaceLocation;
         } else {
             // Linux
             String dataHome = System.getProperty("XDG_DATA_HOME");
             if (dataHome == null) {
                 dataHome = System.getProperty("user.home") + "/.local/share";
             }
-            String badWorkingDir = dataHome + "/." + DBEAVER_DATA_DIR;
-            String goodWorkingDir = dataHome + "/" + DBEAVER_DATA_DIR;
+            String badWorkingDir = dataHome + "/." + defaultWorkspaceLocation;
+            String goodWorkingDir = dataHome + "/" + defaultWorkspaceLocation;
             if (!new File(goodWorkingDir).exists() && new File(badWorkingDir).exists()) {
                 // Let's use bad working dir if it exists (#6316)
                 workingDirectory = badWorkingDir;
@@ -158,12 +166,10 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         }
 
         // Workspace dir
-        WORKSPACE_DIR_6 = new File(workingDirectory, "workspace6").getAbsolutePath();
+        WORKSPACE_DIR_6 = new File(workingDirectory, defaultAppWorkspaceName).getAbsolutePath();
         WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_6;
         FILE_WITH_WORKSPACES = Paths.get(workingDirectory, ".workspaces"); //$NON-NLS-1$
     }
-
-
 
     /**
      * Gets singleton instance of DBeaver application
@@ -237,13 +243,10 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
             return IApplication.EXIT_OK;
         }
 
-        initDebugWriter();
-        TimezoneRegistry.overrideTimezone();
-        updateSplashHandler();
-
         final Runtime runtime = Runtime.getRuntime();
 
-        // Init Core plugin and mark it as standalone version
+        // Debug logger
+        initDebugWriter();
 
         log.debug(GeneralUtils.getProductName() + " " + GeneralUtils.getProductVersion() + " is starting"); //$NON-NLS-1$
         log.debug("OS: " + System.getProperty(StandardConstants.ENV_OS_NAME) + " " + System.getProperty(StandardConstants.ENV_OS_VERSION) + " (" + System.getProperty(StandardConstants.ENV_OS_ARCH) + ")");
@@ -255,10 +258,18 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         // Write version info
         writeWorkspaceInfo();
 
+        // Initialize platform
+        DBWorkbench.getPlatform();
+
+        // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
+        updateSplashHandler();
+
         initializeApplication();
 
         // Run instance server
         instanceServer = DBeaverInstanceServer.startInstanceServer(commandLine, createInstanceController());
+
+        TimezoneRegistry.overrideTimezone();
 
         // Prefs default
         PlatformUI.getPreferenceStore().setDefault(
@@ -321,8 +332,11 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         }
     }
 
-    private static boolean setIDEWorkspace(@NotNull Location instanceLoc) {
+    private boolean setIDEWorkspace(@NotNull Location instanceLoc) {
         if (instanceLoc.isSet()) {
+            return false;
+        }
+        if (ignoreRecentWorkspaces) {
             return false;
         }
         Collection<String> recentWorkspaces = getRecentWorkspaces(instanceLoc);
@@ -348,7 +362,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
     }
 
     @NotNull
-    private static Collection<String> getRecentWorkspaces(@NotNull Location instanceLoc) {
+    private Collection<String> getRecentWorkspaces(@NotNull Location instanceLoc) {
         ChooseWorkspaceData launchData = new ChooseWorkspaceData(instanceLoc.getDefault());
         String[] arrayOfRecentWorkspaces = launchData.getRecentWorkspaces();
         Collection<String> recentWorkspaces;
@@ -384,7 +398,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
     }
 
     @NotNull
-    private static Collection<String> getBackedUpWorkspaces() {
+    private Collection<String> getBackedUpWorkspaces() {
         if (!Files.exists(FILE_WITH_WORKSPACES) || Files.isDirectory(FILE_WITH_WORKSPACES)) {
             return Collections.emptyList();
         }
@@ -397,7 +411,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         }
     }
 
-    private static void saveWorkspacesToBackup(@NotNull List<? extends CharSequence> workspaces) {
+    private void saveWorkspacesToBackup(@NotNull List<? extends CharSequence> workspaces) {
         try {
             if (!Files.exists(FILE_WITH_WORKSPACES.getParent())) {
                 Files.createDirectories(FILE_WITH_WORKSPACES.getParent());
@@ -645,7 +659,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
     }
 
     private void initDebugWriter() {
-        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        DBPPreferenceStore preferenceStore = DBeaverActivator.getInstance().getPreferences();
         if (!preferenceStore.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED)) {
             return;
         }
@@ -776,6 +790,10 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
 
     public void setResetWorkspaceOnRestart(boolean resetWorkspaceOnRestart) {
         this.resetWorkspaceOnRestart = resetWorkspaceOnRestart;
+    }
+
+    protected void setIgnoreRecentWorkspaces(boolean ignoreRecentWorkspaces) {
+        this.ignoreRecentWorkspaces = ignoreRecentWorkspaces;
     }
 
     private class ProxyPrintStream extends OutputStream {

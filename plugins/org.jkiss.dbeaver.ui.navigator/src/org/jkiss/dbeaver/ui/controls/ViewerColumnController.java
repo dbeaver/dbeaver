@@ -165,8 +165,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         return selectedColumnNumber;
     }
 
-    public void fillConfigMenu(IContributionManager menuManager)
-    {
+    public void fillConfigMenu(IContributionManager menuManager) {
         menuManager.add(new Action(UINavigatorMessages.obj_editor_properties_control_action_configure_columns, DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
             {
                 setDescription(UINavigatorMessages.obj_editor_properties_control_action_configure_columns_description);
@@ -175,6 +174,16 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             public void run()
             {
                 configureColumns();
+            }
+        });
+        menuManager.add(new Action(UINavigatorMessages.obj_editor_properties_control_action_columns_fit_width) {
+            {
+                setDescription(UINavigatorMessages.obj_editor_properties_control_action_columns_fit_width_description);
+            }
+            @Override
+            public void run()
+            {
+                repackColumns(true);
             }
         });
     }
@@ -326,9 +335,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         return true;
     }
 
-    public void repackColumns()
-    {
-        if (isAllSized()) {
+    public void repackColumns() {
+        repackColumns(false);
+    }
+
+    private void repackColumns(boolean forceRepack) {
+        if (!forceRepack && isAllSized()) {
             return;
         }
         isPacking = true;

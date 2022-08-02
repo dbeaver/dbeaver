@@ -75,7 +75,8 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_PAGE = new DBIcon("page", "tree/page.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_INFO = new DBIcon("info", "tree/info.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SESSIONS = new DBIcon("sessions", "tree/sessions.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_LOCKS = new DBIcon("locks", "tree/locks.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_LOCKED = new DBIcon("locked", "tree/locked.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_UNLOCKED = new DBIcon("unlocked", "tree/unlocked.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_PACKAGE = new DBIcon("package", "tree/package.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TASK = new DBIcon("task", "tree/task.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_DATA_TYPE = new DBIcon("data_type", "tree/data_type.png"); //$NON-NLS-1$ //$NON-NLS-2$

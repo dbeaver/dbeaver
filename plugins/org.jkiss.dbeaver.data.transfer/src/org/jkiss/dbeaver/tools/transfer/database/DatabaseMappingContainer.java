@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -57,6 +59,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     private String targetName;
     private DatabaseMappingType mappingType;
     private final List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
+    private Map<DBPPropertyDescriptor, Object> changedPropertiesMap;
+    private Map<String, Object> rawChangedPropertiesMap; // For tasks with empty container
 
     public DatabaseMappingContainer(DatabaseConsumerSettings consumerSettings, DBSDataContainer source) {
         this.consumerSettings = consumerSettings;
@@ -105,16 +109,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh);
     }
 
-    public void refreshOnlyAttributesMappingTypes(DBRRunnableContext context, boolean forceRefresh) throws DBException {
-        refreshAttributesMappingTypes(new VoidProgressMonitor(), forceRefresh);
-    }
-
-    private void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
+    public void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
         this.mappingType = mappingType;
         refreshAttributesMappingTypes(monitor, forceRefresh);
     }
 
-    private void refreshAttributesMappingTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
+    public void refreshAttributesMappingTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(monitor);
         if (!CommonUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {
@@ -147,6 +147,18 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     @Override
     public DBSDataContainer getSource() {
         return source;
+    }
+
+    public Map<DBPPropertyDescriptor, Object> getChangedPropertiesMap() {
+        return changedPropertiesMap;
+    }
+
+    public void setChangedPropertiesMap(Map<DBPPropertyDescriptor, Object> changedPropertiesMap) {
+        this.changedPropertiesMap = changedPropertiesMap;
+    }
+
+    public Map<String, Object> getRawChangedPropertiesMap() {
+        return rawChangedPropertiesMap;
     }
 
     @Override
@@ -267,6 +279,17 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 }
             }
         }
+        if (!CommonUtils.isEmpty(changedPropertiesMap)) {
+            Map<String, Object> propertiesMap = new LinkedHashMap<>();
+            settings.put("changedProperties", propertiesMap);
+            for (Map.Entry<DBPPropertyDescriptor, Object> entry : changedPropertiesMap.entrySet()) {
+                Object value = entry.getValue();
+                propertiesMap.put(entry.getKey().getId(), value.toString());
+            }
+        } else if (!CommonUtils.isEmpty(rawChangedPropertiesMap)) {
+            // In case then we have only the raw map of changed container properties
+            settings.put("changedProperties", rawChangedPropertiesMap);
+        }
     }
 
     public void loadSettings(DBRRunnableContext context, Map<String, Object> settings) {
@@ -310,6 +333,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 }
             }
         }
+        rawChangedPropertiesMap = JSONUtils.getObject(settings, "changedProperties");
     }
 
     public boolean isSameMapping(DatabaseMappingContainer mapping) {
@@ -325,6 +349,10 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             }
         }
         return true;
+    }
+
+    public boolean hasNewTargetObject() {
+        return mappingType == DatabaseMappingType.create || mappingType == DatabaseMappingType.recreate;
     }
 
     public String getTargetFullName() {

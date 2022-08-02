@@ -39,7 +39,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * RedshiftExternalSchema
@@ -100,17 +100,17 @@ public class RedshiftExternalSchema extends PostgreSchema {
     }
 
     @Association
-    public Collection<RedshiftExternalTable> getExternalTables(DBRProgressMonitor monitor) throws DBException {
+    public List<RedshiftExternalTable> getExternalTables(DBRProgressMonitor monitor) throws DBException {
         return externalTableCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public Collection<? extends PostgreTable> getTables(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends PostgreTable> getTables(DBRProgressMonitor monitor) throws DBException {
         return getExternalTables(monitor);
     }
 
     @Override
-    public Collection<RedshiftExternalTable> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public List<RedshiftExternalTable> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getExternalTables(monitor);
     }
 

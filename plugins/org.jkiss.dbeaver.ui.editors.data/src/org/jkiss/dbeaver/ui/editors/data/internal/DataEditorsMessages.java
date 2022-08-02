@@ -41,6 +41,8 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_auto_completion_tip;
     // ResultSetGrid
     public static String pref_page_database_resultsets_group_grid;
+    public static String pref_page_database_resultsets_group_behavior;
+    public static String pref_page_database_resultsets_group_appearance;
     public static String pref_page_database_resultsets_label_mark_odd_rows;
     public static String pref_page_database_resultsets_label_highlight_rows_with_selected_cells;
     public static String pref_page_database_resultsets_label_colorize_data_types;
@@ -55,6 +57,8 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_show_attr_ordering_tip;
     public static String pref_page_database_resultsets_label_use_smooth_scrolling;
     public static String pref_page_database_resultsets_label_use_smooth_scrolling_tip;
+    public static String pref_page_database_resultsets_label_show_collections_inline;
+    public static String pref_page_database_resultsets_label_show_collections_inline_tip;
     public static String pref_page_database_resultsets_label_show_boolean_as_checkbox;
     public static String pref_page_database_resultsets_label_show_boolean_as_checkbox_tip;
     public static String pref_page_database_resultsets_label_show_whitespace_characters;
@@ -63,6 +67,8 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_toggle_boolean_on_click_tip;
     public static String pref_page_database_resultsets_label_show_boolean_config_link;
     public static String pref_page_database_resultsets_label_double_click_behavior;
+    public static String pref_page_database_resultsets_label_enter_for_inline_behavior;
+    public static String pref_page_database_resultsets_label_enter_for_inline_behavior_tip;
 
     public static String pref_page_result_selector_editor;
 	public static String pref_page_result_selector_inline_editor;
@@ -108,6 +114,7 @@ public class DataEditorsMessages extends NLS {
 	public static String virtual_structure_editor_table_column_source_datasource;
 	public static String virtual_structure_editor_dialog_button_refresh;
 
+    public static String complex_object_editor_root_element_name;
     public static String complex_object_editor_dialog_menu_copy_element;
     public static String complex_object_editor_dialog_menu_add_element;
     public static String complex_object_editor_dialog_menu_set_element_to_null;
