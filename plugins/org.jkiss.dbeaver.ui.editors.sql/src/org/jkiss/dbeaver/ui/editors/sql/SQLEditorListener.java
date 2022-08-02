@@ -17,10 +17,10 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener.PreferenceChangeEvent;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -48,10 +48,5 @@ public interface SQLEditorListener
     
     void onDataReceived(@NotNull DBPPreferenceStore contextPrefStore, @NotNull ResultSetModel resultSet, @Nullable String name);
 
-    void onQueryExecuted(
-        @NotNull DBPPreferenceStore contextPrefStore, 
-        @NotNull String query, 
-        @Nullable StatResultSet statistics, 
-        @NotNull String error
-    );
+    void onQueryResult(@NotNull DBPPreferenceStore contextPrefStore, @NotNull SQLQueryResult result);
 }

@@ -22,13 +22,15 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.console.MessageConsole;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.plaintext.PlainTextFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorOutputConsoleViewer;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 
 public class SQLConsoleView extends SQLEditorOutputConsoleViewer {
@@ -45,32 +47,34 @@ public class SQLConsoleView extends SQLEditorOutputConsoleViewer {
         grid.append("\n");
         
         int totalRows = formatter.printGrid(grid, model);
-        if (totalRows > 0) {
-            this.getOutputWriter().append(grid.toString()).append("\n\n");
-            this.getOutputWriter().append(String.valueOf(totalRows)).append(" row(s) fetched.\n\n");
+        this.getOutputWriter().append(grid.toString()).append("\n\n");
+        this.getOutputWriter().append(String.valueOf(totalRows)).append(" row(s) fetched.\n\n");
+        this.getOutputWriter().flush();
+        this.scrollToEnd();
+    }
+
+    public void printQueryResult(@NotNull DBPPreferenceStore prefs, @NotNull SQLQueryResult result) {
+        boolean hasUpdateCount = result.getExecuteResults().stream().anyMatch(r -> r.getUpdateCount() != null);
+        Throwable error = result.getError();
+        
+        if (hasUpdateCount || error != null) {
+            PlainTextFormatter formatter = new PlainTextFormatter(prefs);
+            StringBuilder grid = new StringBuilder();
+            formatter.printQueryName(grid, result.getStatement().getText());
+    
+            grid.append("\n");
+            
+            if (hasUpdateCount) {
+                long updateCount = result.getExecuteResults().stream().mapToLong(r -> CommonUtils.notNull(r.getUpdateCount(), 0L)).sum();
+                grid.append(updateCount).append(" row(s) modified.\n\n");
+            }            
+            if (error != null) {
+                grid.append(GeneralUtils.getFirstMessage(error)).append("\n\n");
+            }
+            
+            this.getOutputWriter().append(grid.toString());
             this.getOutputWriter().flush();
             this.scrollToEnd();
         }
-    }
-
-    public void printQueryResult(
-        @NotNull DBPPreferenceStore prefs, 
-        @NotNull String query, 
-        @Nullable StatResultSet statistics,
-        @Nullable String errorMessage
-    ) {
-        PlainTextFormatter formatter = new PlainTextFormatter(prefs);
-        StringBuilder grid = new StringBuilder();
-        formatter.printQueryName(grid, query);
-
-        grid.append("\n");
-
-        if (errorMessage != null) {
-            grid.append(errorMessage);
-        }
-        
-        this.getOutputWriter().append(grid.toString()).append("\n\n");
-        this.getOutputWriter().flush();
-        this.scrollToEnd();
     }
 }

@@ -720,8 +720,6 @@ public class ResultSetViewer extends Viewer
                 setActivePresentation(new StatisticsPresentation());
                 activePresentationDescriptor = null;
                 changed = true;
-
-                fireQueryExecuted(resultSet.getSourceStatement().toString(), (StatResultSet) resultSet, null);
             } else {
                 // Regular results
                 if (filtersPanel != null) {

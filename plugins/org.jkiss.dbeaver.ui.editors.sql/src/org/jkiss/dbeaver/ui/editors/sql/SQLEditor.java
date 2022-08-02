@@ -3805,11 +3805,6 @@ public class SQLEditor extends SQLEditorBase implements
         public void onModelPrepared() {
             notifyOnDataListeners(this);
         }
-        
-        @Override
-        public void onQueryExecuted(@NotNull String query, @Nullable StatResultSet statistics, @Nullable String errorMessage) {
-            notifyOnQueryListeners(this, query, statistics, errorMessage);
-        }
 
         @Override
         public SQLScriptContext getScriptContext() {
@@ -4054,6 +4049,7 @@ public class SQLEditor extends SQLEditorBase implements
             } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
                 selectionProvider.setSelection(originalSelection);
             }
+            notifyOnQueryResultListeners(curResultsContainer, result);
             // Get results window (it is possible that it was closed till that moment
             {
                 for (QueryResultsContainer cr : queryProcessor.resultContainers) {
@@ -4491,17 +4487,12 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
 
-    private void notifyOnQueryListeners(
-        @NotNull QueryResultsContainer container, 
-        @NotNull String query, 
-        @Nullable StatResultSet statistics, 
-        @Nullable String errorMessage
-    ) {
+    private void notifyOnQueryResultListeners(@NotNull QueryResultsContainer container, @NotNull SQLQueryResult result) {
         // Notify listeners
         synchronized (listeners) {
             for (SQLEditorListener listener : listeners) {
                 try {
-                    listener.onQueryExecuted(getContextPrefStore(container), query, statistics, errorMessage);
+                    listener.onQueryResult(getContextPrefStore(container), result);
                 } catch (Throwable ex) {
                     ex.printStackTrace();
                 }
