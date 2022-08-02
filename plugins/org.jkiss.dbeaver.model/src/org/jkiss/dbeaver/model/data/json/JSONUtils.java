@@ -193,7 +193,18 @@ public class JSONUtils {
     public static void serializeProperties(@NotNull JsonWriter json, @NotNull String tagName, @Nullable Map<String, ?> properties) throws IOException {
         if (!CommonUtils.isEmpty(properties)) {
             json.name(tagName);
-            serializeMap(json, properties);
+            serializeMap(json, properties, false);
+        }
+    }
+
+    public static void serializePropertiesWithEmptyValues(
+        @NotNull JsonWriter json,
+        @NotNull String tagName,
+        @Nullable Map<String, ?> properties) throws IOException
+    {
+        if (!CommonUtils.isEmpty(properties)) {
+            json.name(tagName);
+            serializeMap(json, properties, true);
         }
     }
 
@@ -209,7 +220,7 @@ public class JSONUtils {
             } else if (value instanceof String) {
                 json.value(value.toString());
             } else if (value instanceof Map) {
-                serializeMap(json, (Map<String, ?>) value);
+                serializeMap(json, (Map<String, ?>) value, false);
             } else if (value instanceof Collection) {
                 serializeCollection(json, (Collection<?>) value);
             } else {
@@ -219,7 +230,8 @@ public class JSONUtils {
         json.endArray();
     }
 
-    public static void serializeMap(@NotNull JsonWriter json, @NotNull Map<String, ?> map) throws IOException {
+    public static void serializeMap(@NotNull JsonWriter json, @NotNull Map<String, ?> map,
+                                    boolean allowsEmptyValue) throws IOException {
         json.beginObject();
         for (Map.Entry<String, ?> entry : map.entrySet()) {
             Object propValue = entry.getValue();
@@ -232,6 +244,8 @@ public class JSONUtils {
             } else if (propValue instanceof String) {
                 String strValue = (String) propValue;
                 if (!strValue.isEmpty()) {
+                    field(json, fieldName, strValue);
+                } else if (allowsEmptyValue) {
                     field(json, fieldName, strValue);
                 }
             } else if (propValue instanceof Boolean) {
