@@ -139,8 +139,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         // Show the first page first - it may initialize state required later
         showPage((IWizardPage) pagesTree.getItem(0).getData());
 
+        // Set title and image from first page
+        IWizardPage firstPage = getStartingPage();
+        setTitle(firstPage.getTitle());
+        setTitleImage(firstPage.getImage());
+        setMessage(firstPage.getDescription());
+
         // Afterwards show the starting page
-        showPage(getStartingPage());
+        showPage(firstPage);
 
         updateButtons();
 

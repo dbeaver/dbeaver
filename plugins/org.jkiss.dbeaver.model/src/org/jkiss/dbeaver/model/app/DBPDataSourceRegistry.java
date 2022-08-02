@@ -127,7 +127,17 @@ public interface DBPDataSourceRegistry extends DBPObject {
     void flushConfig();
     void refreshConfig();
 
+    /**
+     * Returns and nullifies last registry save/load error.
+     */
     Throwable getLastError();
+
+    boolean hasError();
+
+    /**
+     * Throws lasty occured load/save error
+     */
+    void checkForErrors() throws DBException;
 
     void notifyDataSourceListeners(final DBPEvent event);
 
@@ -137,8 +147,6 @@ public interface DBPDataSourceRegistry extends DBPObject {
     // Registry auth provider. Null by default.
     @Nullable
     DBACredentialsProvider getAuthCredentialsProvider();
-
-    void checkForErrors() throws DBException;
 
     void dispose();
 

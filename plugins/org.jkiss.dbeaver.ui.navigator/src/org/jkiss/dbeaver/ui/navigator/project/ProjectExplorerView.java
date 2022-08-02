@@ -216,7 +216,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                     public String getText(Object element) {
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
-                            if (resource instanceof IFile) {
+                            if (resource instanceof IFile && resource.exists()) {
                                 try {
                                     IFileStore fileStore = EFS.getStore(resource.getLocationURI());
                                     IFileInfo iFileInfo = fileStore.fetchInfo();
@@ -239,7 +239,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                     public String getText(Object element) {
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
-                            if (resource != null) {
+                            if (resource != null && resource.exists()) {
                                 long lastModified = ContentUtils.getResourceLastModified(resource);
                                 if (lastModified <= 0) {
                                     return "";
@@ -258,9 +258,11 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                     public String getText(Object element) {
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
-                            ProgramInfo program = ProgramInfo.getProgram(resource);
-                            if (program != null) {
-                                return program.getProgram().getName();
+                            if (resource.exists()) {
+                                ProgramInfo program = ProgramInfo.getProgram(resource);
+                                if (program != null) {
+                                    return program.getProgram().getName();
+                                }
                             }
                         }
                         return "";

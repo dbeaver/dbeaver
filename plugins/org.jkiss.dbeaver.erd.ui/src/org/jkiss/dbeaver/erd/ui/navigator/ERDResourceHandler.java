@@ -171,13 +171,17 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
         if (resource.getResource() instanceof IFile) {
             try {
+                IResource iResource = resource.getResource();
                 DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(
-                    resource.getResource().getProject());
+                    iResource.getProject());
                 if (projectMeta == null) {
                     return Collections.emptyList();
                 }
-                return ERDPersistedState.extractContainers(projectMeta,
-                    resource.getResource().getRawLocation().toFile().toPath());
+                if (iResource instanceof IFile) {
+                    try (InputStream is = ((IFile) iResource).getContents()) {
+                        return ERDPersistedState.extractContainers(projectMeta, is);
+                    }
+                }
             } catch (Exception e) {
                 log.error(e);
                 return null;
