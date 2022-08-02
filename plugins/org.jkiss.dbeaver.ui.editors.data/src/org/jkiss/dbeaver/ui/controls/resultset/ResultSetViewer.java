@@ -2022,8 +2022,7 @@ public class ResultSetViewer extends Viewer
     ///////////////////////////////////////
     // Status
 
-    public void setStatus(String status)
-    {
+    public void setStatus(String status) {
         setStatus(status, DBPMessageType.INFORMATION);
     }
 
@@ -2132,10 +2131,10 @@ public class ResultSetViewer extends Viewer
         }
         if (isTooltip) {
             setStatusTooltip(statusMessage);
-            } else {
+        } else {
             setStatus(statusMessage, hasWarnings ? DBPMessageType.WARNING :DBPMessageType.INFORMATION);
-                }
-            }
+        }
+    }
 
     private String getExecutionTimeMessage(boolean extended)
     {
@@ -2148,8 +2147,8 @@ public class ResultSetViewer extends Viewer
         Object endTime = null;
         if (extended) {
             endTime = LocalDateTime
-            .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
-            .format(EXECUTION_TIME_FORMATTER);
+                .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
+                .format(EXECUTION_TIME_FORMATTER);
         } else {
             endTime = LocalDateTime
                 .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
@@ -2157,10 +2156,10 @@ public class ResultSetViewer extends Viewer
         }
         if (fetchTime <= 0) {
             if (endTime instanceof LocalDateTime) {
-            return NLS.bind(
-                ResultSetMessages.controls_resultset_viewer_status_rows_time,
-                new Object[]{
-                    RuntimeUtils.formatExecutionTime(totalTime),
+                return NLS.bind(
+                    ResultSetMessages.controls_resultset_viewer_status_rows_time,
+                    new Object[]{
+                        RuntimeUtils.formatExecutionTime(totalTime),
                         DateTimeFormatter.ISO_DATE.format(((LocalDateTime) endTime)),
                         DateTimeFormatter.ISO_TIME.format(((LocalDateTime) endTime)),
                     });
@@ -2171,14 +2170,14 @@ public class ResultSetViewer extends Viewer
                         RuntimeUtils.formatExecutionTime(totalTime), endTime
                     });
 
-                }
+            }
         } else {
             if (endTime instanceof LocalDateTime) {
-            return NLS.bind(
-                ResultSetMessages.controls_resultset_viewer_status_rows_time_fetch,
-                new Object[]{
-                    RuntimeUtils.formatExecutionTime(totalTime),
-                    RuntimeUtils.formatExecutionTime(fetchTime),
+                return NLS.bind(
+                    ResultSetMessages.controls_resultset_viewer_status_rows_time_fetch,
+                    new Object[]{
+                        RuntimeUtils.formatExecutionTime(totalTime),
+                        RuntimeUtils.formatExecutionTime(fetchTime),
                         DateTimeFormatter.ISO_DATE.format(((LocalDateTime) endTime)),
                         DateTimeFormatter.ISO_TIME.format(((LocalDateTime) endTime)),
                     });
@@ -2190,7 +2189,7 @@ public class ResultSetViewer extends Viewer
                         RuntimeUtils.formatExecutionTime(fetchTime),
                         endTime,
                     });
-                }
+            }
         }
     }
 

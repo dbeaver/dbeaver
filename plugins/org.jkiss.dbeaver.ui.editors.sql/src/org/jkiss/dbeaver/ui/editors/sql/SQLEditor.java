@@ -4500,11 +4500,12 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    @NotNull
     private DBPPreferenceStore getContextPrefStore(@NotNull QueryResultsContainer container) {
         DBCExecutionContext context = container.getExecutionContext();
         DBPPreferenceStore contextPrefStore = context != null
-                ? context.getDataSource().getContainer().getPreferenceStore()
-                : DBWorkbench.getPlatform().getPreferenceStore();
+            ? context.getDataSource().getContainer().getPreferenceStore()
+            : DBWorkbench.getPlatform().getPreferenceStore();
         return contextPrefStore;
     }
 }
