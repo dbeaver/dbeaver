@@ -37,11 +37,6 @@ import java.util.Set;
  */
 public interface DBPDriver extends DBPNamedObject
 {
-    enum ConfigurationType {
-        EXTENDED,
-        URL
-    }
-
     /**
      * Driver contributor
      */
@@ -191,7 +186,7 @@ public interface DBPDriver extends DBPNamedObject
      */
     DBPDriver createOriginalCopy();
 
-    Set<ConfigurationType> getConfigurationTypes();
+    Set<DBPDriverConfigurationType> getConfigurationTypes();
 
     default String getFullId() {
         return getProviderId() + ":" + getId();

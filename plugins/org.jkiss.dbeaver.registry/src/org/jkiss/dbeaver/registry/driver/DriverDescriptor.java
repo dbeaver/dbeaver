@@ -63,6 +63,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * DriverDescriptor
@@ -171,7 +172,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean temporary;
     private int promoted;
 
-    private final Set<ConfigurationType> configurationTypes = new HashSet<>(Collections.singleton(ConfigurationType.EXTENDED));
+    private Set<DBPDriverConfigurationType> configurationTypes = new HashSet<>(Collections.singleton(DBPDriverConfigurationType.EXTENDED));
     private final List<DBPNativeClientLocation> nativeClientHomes = new ArrayList<>();
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
@@ -343,10 +344,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
         this.origFiles.addAll(this.libraries);
 
-        List<String> additionalConfigurationTypes = List.of(
-            CommonUtils.split(config.getAttribute(RegistryConstants.ATTR_ADDITIONAL_CONFIGURATION_TYPES), ","));
-        for (String type : additionalConfigurationTypes) {
-            this.configurationTypes.add(ConfigurationType.valueOf(type));
+        String[] supportedConfigurationTypes = CommonUtils.split(
+            config.getAttribute(RegistryConstants.ATTR_SUPPORTED_CONFIGURATION_TYPES), ",");
+        if (supportedConfigurationTypes.length > 0) {
+            this.configurationTypes = Stream.of(supportedConfigurationTypes)
+                .map(DBPDriverConfigurationType::valueOf)
+                .collect(Collectors.toSet());
         }
 
         for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE_SOURCE)) {
@@ -1472,7 +1475,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return origFiles;
     }
 
-    public Set<ConfigurationType> getConfigurationTypes() {
+    public Set<DBPDriverConfigurationType> getConfigurationTypes() {
         return configurationTypes;
     }
 

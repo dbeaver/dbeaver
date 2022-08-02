@@ -591,7 +591,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             JSONUtils.getString(cfgObject, RegistryConstants.ATTR_TYPE), DBPConnectionType.DEFAULT_TYPE));
                     String configurationType = JSONUtils.getString(cfgObject, RegistryConstants.ATTR_CONFIGURATION_TYPE);
                     if (!CommonUtils.isEmpty(configurationType)) {
-                        config.setConfigurationType(DBPDriver.ConfigurationType.valueOf(configurationType));
+                        config.setConfigurationType(DBPDriverConfigurationType.valueOf(configurationType));
                     }
                     String colorValue = JSONUtils.getString(cfgObject, RegistryConstants.ATTR_COLOR);
                     if (!CommonUtils.isEmpty(colorValue)) {
