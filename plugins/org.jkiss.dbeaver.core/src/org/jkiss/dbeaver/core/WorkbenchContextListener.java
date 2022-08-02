@@ -32,6 +32,9 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarHandler;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * WorkbenchContextListener.
  * Listens workbench parts activations/deactivation and activates contexts for navigator and SQL editors.
@@ -45,6 +48,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
     public static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.ui.perspective";
 
     private CommandExecutionListener commandExecutionListener;
+    private final Set<IWorkbenchWindow> registeredWindows = new HashSet<>();
 
     public WorkbenchContextListener() {
         IWorkbench workbench = PlatformUI.getWorkbench();
@@ -90,10 +94,11 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
     }
 
     private void listenWindowEvents(IWorkbenchWindow window) {
-        {
+        if (!registeredWindows.contains(window)) {
             // Register ds toolbar handler
             DataSourceToolbarHandler toolbarHandler = new DataSourceToolbarHandler(window);
             window.getShell().addDisposeListener(e -> toolbarHandler.dispose());
+            registeredWindows.add(window);
         }
 
         IPerspectiveListener perspectiveListener = new IPerspectiveListener() {

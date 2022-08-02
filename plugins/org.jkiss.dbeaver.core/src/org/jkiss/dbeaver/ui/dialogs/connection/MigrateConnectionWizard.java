@@ -106,7 +106,7 @@ public class MigrateConnectionWizard extends Wizard
 
         for (DataSourceDescriptor conn : connections) {
             conn.setDriver(targetDriver);
-            conn.getRegistry().updateDataSource(conn);
+            conn.persistConfiguration();
         }
 
         return true;

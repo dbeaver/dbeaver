@@ -625,7 +625,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
 
     @NotNull
     protected ApplicationWorkbenchAdvisor createWorkbenchAdvisor() {
-        return new ApplicationWorkbenchAdvisor();
+        return new ApplicationWorkbenchAdvisor(this);
     }
 
     @Override

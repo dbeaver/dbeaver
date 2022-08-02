@@ -143,7 +143,9 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
         protected void okPressed() {
             String selectedHome = homesSelector.getSelectedHome();
             dataSource.getConnectionConfiguration().setClientHomeId(selectedHome);
-            dataSource.persistConfiguration();
+            if (!dataSource.persistConfiguration()) {
+                return;
+            }
             super.okPressed();
         }
     }
