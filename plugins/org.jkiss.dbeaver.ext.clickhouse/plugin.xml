@@ -89,6 +89,11 @@
             <type standard="STRUCT"/>
             <type name="ENUM8"/>
             <type name="ENUM16"/>
+            <type name="INT128"/>
+            <type name="INT256"/>
+            <type name="UINT64"/>
+            <type name="UINT128"/>
+            <type name="UINT256"/>
         </provider>
     </extension>
 
