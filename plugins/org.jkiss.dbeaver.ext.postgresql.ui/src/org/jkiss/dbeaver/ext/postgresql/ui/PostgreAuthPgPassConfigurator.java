@@ -92,6 +92,8 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
             dataSource.getConnectionConfiguration().setProviderProperty(
                 PostgreConstants.PG_PASS_HOSTNAME,
                 overriddenHostnameText.getText());
+        } else {
+            dataSource.getConnectionConfiguration().setProviderProperty(PostgreConstants.PG_PASS_HOSTNAME, null);
         }
         dataSource.setSavePassword(true);
     }
