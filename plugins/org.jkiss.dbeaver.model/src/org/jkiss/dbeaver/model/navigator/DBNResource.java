@@ -109,9 +109,12 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     }
 
     @Override
-    public String getNodeType()
-    {
-        return handler == null ? null :handler.getTypeName(resource);
+    public String getNodeType() {
+        return handler == null ? getResourceNodeType() : handler.getTypeName(resource);
+    }
+
+    protected String getResourceNodeType() {
+        return "resource";
     }
 
     @Override
@@ -242,9 +245,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     }
 
     private DBNNode makeNode(IResource resource) {
-        boolean isRootResource =
-            CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getRootResource()) ||
-                CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getEclipseProject());
+        boolean isRootResource = isRootResource(resource);
         if (isRootResource && resource.getName().startsWith(".")) {
             // Skip project config
             return null;
@@ -265,6 +266,11 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
             log.error("Error creating navigator node for resource '" + resource.getName() + "'", e);
             return null;
         }
+    }
+
+    public boolean isRootResource(IResource resource) {
+        return CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getRootResource()) ||
+                CommonUtils.equalObjects(resource.getParent(), getOwnerProject().getEclipseProject());
     }
 
     @Override

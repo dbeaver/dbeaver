@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.resources.bookmarks;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
@@ -34,26 +33,22 @@ import java.util.Collections;
 /**
  * DBNBookmarkFolder
  */
-public class DBNBookmarkFolder extends DBNResource
-{
-    public DBNBookmarkFolder(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException
-    {
+public class DBNBookmarkFolder extends DBNResource {
+    public DBNBookmarkFolder(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException {
         super(parentNode, resource, handler);
     }
 
     @Override
-    public DBPImage getNodeIcon()
-    {
+    public DBPImage getNodeIcon() {
         IResource resource = getResource();
-        if (resource != null && resource.getParent() instanceof IProject) {
+        if (resource != null && isRootResource(resource)) {
             return UIIcon.BOOKMARK_FOLDER;
         }
         return super.getNodeIcon();
     }
 
     @Override
-    public boolean supportsDrop(DBNNode otherNode)
-    {
+    public boolean supportsDrop(DBNNode otherNode) {
         if (otherNode instanceof DBNDatabaseNode || otherNode instanceof DBNBookmark) {
             return true;
         } else {
@@ -62,8 +57,7 @@ public class DBNBookmarkFolder extends DBNResource
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException
-    {
+    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
             if (node instanceof DBNDatabaseNode) {
                 BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, node.getNodeName(), (IFolder) getResource());

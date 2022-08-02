@@ -976,7 +976,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (query == null) {
             final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
 
-            if (resource != null) {
+            if (resource != null && resource.exists()) {
                 try {
                     resource.deleteMarkers(SQLProblemAnnotation.MARKER_TYPE, false, IResource.DEPTH_ONE);
                 } catch (CoreException e) {

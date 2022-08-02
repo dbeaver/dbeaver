@@ -298,8 +298,8 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void persistConfiguration() {
-
+    public boolean persistConfiguration() {
+        return true;
     }
 
     @NotNull

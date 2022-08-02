@@ -57,6 +57,11 @@ public interface DBPApplication {
      */
     boolean isMultiuser();
 
+    /**
+     * Distributed application requires remote server.
+     */
+    boolean isDistributed();
+
     @NotNull
     DBASecureStorage getSecureStorage();
 

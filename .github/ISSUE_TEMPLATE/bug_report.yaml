@@ -1,0 +1,47 @@
+name: 🐛 Bug Report
+description: Report a reproducible bug or regression in DBeaver
+labels: [bug, wait for review]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill in all required fields with as many details as possible.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        Describe the issue you are experiencing. 
+        Attach log files if possible ([read how to provide log files on our wiki](https://github.com/dbeaver/dbeaver/wiki/Log-files))
+      placeholder: |
+        Please enter a description of the issue. Here you can also attach log files, screenshots or a video
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Describe the steps to reproduce the bug
+      placeholder: |
+        1. I try to connect to database '...'
+        2. With this config '...'
+        3. I push the button '...'
+        4. See an error '...'
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: DBeaver Version
+      description: What version of DBeaver are you running?
+      placeholder: ex. Community Edition 22.1.0
+    validations:
+      required: true
+  - type: input
+    id: os-kind
+    attributes:
+      label: Operating System
+      description: What an operating system do you use?
+      placeholder: ex. macOS Big Sur 11.5.2
+    validations:
+      required: false

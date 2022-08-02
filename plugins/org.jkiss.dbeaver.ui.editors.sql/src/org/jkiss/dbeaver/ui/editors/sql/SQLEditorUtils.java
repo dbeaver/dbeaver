@@ -278,6 +278,7 @@ public class SQLEditorUtils {
 
     public static class ResourceInfo {
         private final IResource resource;
+        @Deprecated
         private final File localFile;
         private final DBPDataSourceContainer dataSource;
         private final List<ResourceInfo> children;

@@ -366,6 +366,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     public boolean resetResourceProperties(@NotNull String resourcePath) {
+        loadMetadata();
         boolean hadProperties;
         synchronized (metadataSync) {
             hadProperties = resourceProperties.remove(resourcePath) != null;
