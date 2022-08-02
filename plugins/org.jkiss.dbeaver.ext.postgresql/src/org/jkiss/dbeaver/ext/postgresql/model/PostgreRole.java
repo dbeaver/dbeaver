@@ -513,11 +513,11 @@ public class PostgreRole implements
                 String objectSchema = privilege.getObjectSchema();
                 if ((kind == PostgrePrivilegeGrant.Kind.FUNCTION || kind == PostgrePrivilegeGrant.Kind.PROCEDURE)
                     && CommonUtils.isNotEmpty(privilegeObjectName) && privilegeObjectName.contains("_")
-                    && CommonUtils.isNotEmpty(objectSchema))
+                    && !privilegeObjectName.endsWith("_") && CommonUtils.isNotEmpty(objectSchema))
                 {
                     changeRoutineFullName(monitor, role, privilege, privilegeObjectName, objectSchema);
                 }
-                String tableId = objectSchema + "." + privilegeObjectName;
+                String tableId = objectSchema + "." + privilege.getObjectName();
                 List<PostgrePrivilegeGrant> privList = privs.computeIfAbsent(tableId, k -> new ArrayList<>());
                 privList.add(privilege);
             }
