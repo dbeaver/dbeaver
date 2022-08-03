@@ -43,6 +43,10 @@ public enum PostgrePrivilegeType implements DBAPrivilegeType {
     // Redshift-specific types
     RULE('R', true, PostgreTableReal.class),
 
+    // Specific Cockroach types
+    GRANT('g', true, PostgreDatabase.class, PostgreSchema.class, PostgreTableReal.class, PostgreDataType.class),
+    ZONECONFIG('z', true, PostgreDatabase.class, PostgreTableReal.class),
+
     UNKNOWN((char)0, false);
 
     private final Class<?>[] targetType;

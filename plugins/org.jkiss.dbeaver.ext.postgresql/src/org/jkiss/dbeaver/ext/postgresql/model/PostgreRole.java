@@ -524,7 +524,13 @@ public class PostgreRole implements
             // Pack to permission list
             List<PostgrePrivilege> result = new ArrayList<>(privs.size());
             for (List<PostgrePrivilegeGrant> priv : privs.values()) {
-                result.add(new PostgreRolePrivilege(role, kind, priv.get(0).getObjectSchema(), priv.get(0).getObjectName(), priv));
+                PostgrePrivilegeGrant privilegeGrant = priv.get(0);
+                result.add(new PostgreRolePrivilege(
+                    role,
+                    privilegeGrant.getKind(),
+                    privilegeGrant.getObjectSchema(),
+                    privilegeGrant.getObjectName(),
+                    priv));
             }
             return result;
         }
@@ -563,6 +569,10 @@ public class PostgreRole implements
                 }
                 if (procedure != null && CommonUtils.isNotEmpty(procedure.getOverloadedName())) {
                     privilege.setObjectName(procedure.getOverloadedName());
+                    if (procedure.getKind() == PostgreProcedureKind.p) {
+                        // They all are FUNCTIONS by default
+                        privilege.setKind(PostgrePrivilegeGrant.Kind.PROCEDURE);
+                    }
                 }
             }
         }

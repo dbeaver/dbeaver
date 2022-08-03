@@ -90,6 +90,10 @@ public class PostgrePrivilegeGrant {
         return kind;
     }
 
+    public void setKind(Kind kind) {
+        this.kind = kind;
+    }
+
     public String getGrantor() {
         return grantor;
     }
