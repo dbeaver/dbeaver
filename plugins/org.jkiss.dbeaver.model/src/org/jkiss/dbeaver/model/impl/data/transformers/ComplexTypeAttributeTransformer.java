@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingType;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.struct.DBSBindableDataType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -39,7 +40,12 @@ import java.util.Map;
 public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, Object> options) throws DBException {
+    public void transformAttribute(
+        @NotNull DBCSession session,
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull List<Object[]> rows,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
             return;
         }
@@ -48,13 +54,29 @@ public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer 
             dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
         }
         if (dataType instanceof DBSEntity) {
-            createNestedTypeBindings(session, attribute, rows, (DBSEntity) dataType);
+            createNestedTypeBindings(session, attribute, rows, dataType);
         }
     }
 
-    static void createNestedTypeBindings(DBCSession session, DBDAttributeBinding attribute, List<Object[]> rows, DBSEntity dataType) throws DBException {
+    static void createNestedTypeBindings(
+        @NotNull DBCSession session,
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull List<Object[]> rows,
+        @NotNull DBSDataType dataType
+    ) throws DBException {
+        List<? extends DBSEntityAttribute> nestedAttrs;
+        if (dataType instanceof DBSBindableDataType) {
+            DBSEntity container = attribute.getTopParent().getEntityAttribute().getParentObject();
+            DBSBindableDataType bindable = (DBSBindableDataType) dataType;
+            nestedAttrs = bindable.bindAttributesToContext(session.getProgressMonitor(), container, attribute.getEntityAttribute());
+        } else if (dataType instanceof DBSEntity) {
+            nestedAttrs = ((DBSEntity) dataType).getAttributes(session.getProgressMonitor());
+        } else {
+            nestedAttrs = null;
+        }
+        
         List<DBDAttributeBinding> nestedBindings = new ArrayList<>();
-        for (DBSEntityAttribute nestedAttr : CommonUtils.safeCollection(dataType.getAttributes(session.getProgressMonitor()))) {
+        for (DBSEntityAttribute nestedAttr : CommonUtils.safeCollection(nestedAttrs)) {
             DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(attribute, nestedAttr, nestedBindings.size());
             nestedBinding.lateBinding(session, rows);
             nestedBindings.add(nestedBinding);
