@@ -4480,7 +4480,7 @@ public class SQLEditor extends SQLEditorBase implements
                         container.getQuery().getOriginalText()
                     );
                 } catch (Throwable ex) {
-                    ex.printStackTrace();
+                    log.error(ex);
                 }
             }
         }
@@ -4494,7 +4494,7 @@ public class SQLEditor extends SQLEditorBase implements
                 try {
                     listener.onQueryResult(getContextPrefStore(container), result);
                 } catch (Throwable ex) {
-                    ex.printStackTrace();
+                    log.error(ex);
                 }
             }
         }
