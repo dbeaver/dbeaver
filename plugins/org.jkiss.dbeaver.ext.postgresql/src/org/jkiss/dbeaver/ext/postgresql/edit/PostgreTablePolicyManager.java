@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePolicy;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -180,6 +181,6 @@ public class PostgreTablePolicyManager
         final DBPDataSource dataSource = policy.getDataSource();
         return DBUtils.getQuotedIdentifier(dataSource, policy.getName())
             + " ON "
-            + DBUtils.getQuotedIdentifier(dataSource, policy.getParentObject().getName());
+            + DBUtils.getObjectFullName(policy.getParentObject(), DBPEvaluationContext.DDL);
     }
 }
