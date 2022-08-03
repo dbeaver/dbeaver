@@ -58,6 +58,10 @@ public final class SQLUtils {
 
     public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
     public static final Pattern PATTERN_SIMPLE_NAME = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
+    public static final Pattern PATTERN_COLUMN_NAME = Pattern.compile(
+        "(([a-z_][a-z0-9_]*)|(\\\"([a-z_][a-z0-9_]*)\\\"))(\\.(([a-z_][a-z0-9_]*)|(\\\"([a-z_][a-z0-9_]*)\\\")))*",
+        Pattern.CASE_INSENSITIVE
+    );
 
     private static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile("(CREATE (:OR REPLACE)?).+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
@@ -500,11 +504,7 @@ public final class SQLUtils {
                 // Constraint may consist of several conditions and we don't want to break operator precedence
                 query.append('(');
             }
-            if (constraint.getEntityAlias() != null) {
-                query.append(constraint.getEntityAlias()).append('.');
-            } else if (conditionTable != null) {
-                query.append(conditionTable).append('.');
-            }
+
             // Attribute name could be an expression. So check if this is a real attribute
             // and generate full/quoted name for it.
             String attrName;
@@ -516,7 +516,14 @@ public final class SQLUtils {
                     binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
                     binding instanceof DBDAttributeBindingType)
                 {
-                    attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
+                    if (binding.getEntityAttribute() instanceof DBSContextBoundAttribute) {
+                        DBSContextBoundAttribute entityAttribute = (DBSContextBoundAttribute) binding.getEntityAttribute();
+                        attrName = entityAttribute.formatMemberReference(true, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION);
+                    } else {
+                        attrName = DBUtils.getObjectFullName(
+                            dataSource, binding, DBPEvaluationContext.DML, DBPAttributeReferencePurpose.DATA_SELECTION
+                        );
+                    }
                 } else {
                     if (binding.getMetaAttribute() == null || binding.getEntityAttribute() != null) {
                         // Seems to a reference on a table column.
@@ -529,10 +536,13 @@ public final class SQLUtils {
                     }
                 }
             } else if (cAttr != null) {
-                attrName = DBUtils.getObjectFullName(dataSource, cAttr, DBPEvaluationContext.DML);
+                attrName = DBUtils.getObjectFullName(
+                    dataSource, cAttr, DBPEvaluationContext.DML, DBPAttributeReferencePurpose.DATA_SELECTION
+                );
             } else {
                 attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
             }
+            
             query.append(attrName).append(' ').append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
             if (constraints.size() > 1) {
                 query.append(')');
@@ -563,10 +573,21 @@ public final class SQLUtils {
             if (co.isPlainNameReference() || co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta || co.getAttribute() instanceof DBDAttributeBindingType) {
                 String orderColumn = subQuery ? co.getAttributeLabel() : co.getAttributeName();
                 if (canOrderByName(dataSource, co, orderColumn) && !filter.hasNameDuplicates(orderColumn)) {
-                    // It is a simple column.
-                    orderString = co.getFullAttributeName();
-                    if (conditionTable != null) {
-                        orderString = conditionTable + '.' + orderString;
+                    DBSAttributeBase attr = co.getAttribute();
+                    if (attr instanceof DBDAttributeBinding
+                        && ((DBDAttributeBinding) attr).getEntityAttribute() instanceof DBSContextBoundAttribute
+                    ) {
+                        DBDAttributeBinding attrBinding = (DBDAttributeBinding) attr;
+                        DBSContextBoundAttribute entityAttribute = (DBSContextBoundAttribute) attrBinding.getEntityAttribute();
+                        orderString = entityAttribute.formatMemberReference(
+                            true, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION
+                        );
+                    } else {
+                        // It is a simple column.
+                        orderString = co.getFullAttributeName();
+                        if (conditionTable != null) {
+                            orderString = conditionTable + '.' + orderString;
+                        }
                     }
                 }
             }
@@ -598,7 +619,7 @@ public final class SQLUtils {
         if (!dataSource.getSQLDialect().supportsOrderByIndex()) {
             return true;
         }
-        return PATTERN_SIMPLE_NAME
+        return PATTERN_COLUMN_NAME // we should assume columns of composite type like comp.x
             .matcher(constraintName)
             .matches();
     }
@@ -670,14 +691,26 @@ public final class SQLUtils {
                 }
                 if (hasNull) {
                     conString.append("IS NULL OR ");
-                    
-                    if (constraint.getEntityAlias() != null) {
-                    	conString.append(constraint.getEntityAlias()).append('.');
-                    } else if (conditionTable != null) {
-                    	conString.append(conditionTable).append('.');
+                    DBSAttributeBase attr = constraint.getAttribute();
+                    if (attr instanceof DBDAttributeBinding
+                        && ((DBDAttributeBinding) attr).getEntityAttribute() instanceof DBSContextBoundAttribute
+                    ) {
+                        DBDAttributeBinding attrBinding = (DBDAttributeBinding) attr;
+                        DBSContextBoundAttribute entityAttribute = (DBSContextBoundAttribute) attrBinding.getEntityAttribute();
+                        conString.append(entityAttribute.formatMemberReference(
+                            true, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION
+                        ));
+                    } else {
+                        if (constraint.getEntityAlias() != null) {
+                            conString.append(constraint.getEntityAlias()).append('.');
+                        } else if (conditionTable != null) {
+                            conString.append(conditionTable).append('.');
+                        }
+                        conString.append(DBUtils.getObjectFullName(
+                            dataSource, constraint.getAttribute(), DBPEvaluationContext.DML, DBPAttributeReferencePurpose.DATA_SELECTION
+                        ));
                     }
-                    
-                    conString.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
+                    conString.append(" ");
                 }
 
                 Pair<String, String> brackets = dataSource.getSQLDialect().getInClauseParentheses();

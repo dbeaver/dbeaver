@@ -72,13 +72,43 @@ public final class DBUtils {
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBPNamedObject object)
     {
-        return object instanceof DBSObject ? getQuotedIdentifier(((DBSObject) object).getDataSource(), object.getName()) : object.getName();
+        if (object instanceof DBSContextBoundAttribute) {
+            return ((DBSContextBoundAttribute) object).formatMemberReference(false, null, DBPAttributeReferencePurpose.UNSPECIFIED);
+        } else {
+            return object instanceof DBSObject 
+                ? getQuotedIdentifier(((DBSObject) object).getDataSource(), object.getName()) 
+                : object.getName();
+        }
+    }
+    /**
+     * Get object name in quotes if they are needed.
+
+     * @param object to get identifier of
+     * @return object identifier
+     */
+    @NotNull
+    public static String getQuotedIdentifier(@NotNull DBSObject object) {
+        if (object instanceof DBSContextBoundAttribute) {
+            return ((DBSContextBoundAttribute) object).formatMemberReference(false, null, DBPAttributeReferencePurpose.UNSPECIFIED);
+        } else {
+            return getQuotedIdentifier(object.getDataSource(), object.getName());
+        }
     }
 
+    /**
+     * Get object name in quotes if they are needed.
+
+     * @param object to get identifier of
+     * @param purpose of identifier usage
+     * @return object identifier
+     */
     @NotNull
-    public static String getQuotedIdentifier(@NotNull DBSObject object)
-    {
-        return getQuotedIdentifier(object.getDataSource(), object.getName());
+    public static String getQuotedIdentifier(@NotNull DBSObject object, @NotNull DBPAttributeReferencePurpose purpose) {
+        if (object instanceof DBSContextBoundAttribute) {
+            return ((DBSContextBoundAttribute) object).formatMemberReference(false, null, purpose);
+        } else {
+            return getQuotedIdentifier(object.getDataSource(), object.getName());
+        }
     }
 
     public static boolean isQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str) {
@@ -1610,16 +1640,47 @@ public final class DBUtils {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
         } else if (object instanceof DBSObject && ((DBSObject) object).getDataSource() != null) {
-            return getObjectFullName(((DBSObject) object).getDataSource(), object, context);
+            return getObjectFullName(((DBSObject) object).getDataSource(), object, context, DBPAttributeReferencePurpose.UNSPECIFIED);
         } else {
             return object.getName();
         }
     }
+    
+    /**
+     * Get the full name of the object.
 
+     * @param dataSource container
+     * @param object object to get name of
+     * @param context evaluation context
+     * @return full name of the object
+     */
     @NotNull
-    public static String getObjectFullName(@NotNull DBPDataSource dataSource, @NotNull DBPNamedObject object, DBPEvaluationContext context)
+    public static String getObjectFullName(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBPNamedObject object, 
+        @NotNull DBPEvaluationContext context) {
+        return getObjectFullName(dataSource, object, context, DBPAttributeReferencePurpose.UNSPECIFIED);
+    }
+
+    /**
+     * Get the full name of the object.
+
+     * @param dataSource container
+     * @param object object to get name of
+     * @param context evaluation context
+     * @param purpose to use object name to
+     * @return full name of the object
+     */
+    @NotNull
+    public static String getObjectFullName(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBPNamedObject object, 
+        @NotNull DBPEvaluationContext context,
+        @NotNull DBPAttributeReferencePurpose purpose)
     {
-        if (object instanceof DBPQualifiedObject) {
+        if (object instanceof DBDAttributeBinding) {
+            return ((DBDAttributeBinding) object).getFullyQualifiedName(context, purpose);
+        } else if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
         } else {
             return getQuotedIdentifier(dataSource, object.getName());
