@@ -266,7 +266,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         jsonWriter.beginObject();
                         for (Map.Entry<String, DBPExternalConfiguration> ecfg : externalConfigurations.entrySet()) {
                             jsonWriter.name(ecfg.getKey());
-                            JSONUtils.serializeMap(jsonWriter, ecfg.getValue().getProperties(), false);
+                            JSONUtils.serializeMap(jsonWriter, ecfg.getValue().getProperties());
                         }
                         jsonWriter.endObject();
                     }
@@ -880,10 +880,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE, connectionInfo.getCloseIdleInterval());
             }
             JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
-            JSONUtils.serializePropertiesWithEmptyValues(
-                json,
-                RegistryConstants.TAG_PROPERTIES,
-                connectionInfo.getProperties());
+            JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties(), true);
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_AUTH_MODEL, connectionInfo.getAuthModelId());
             JSONUtils.serializeProperties(json, "auth-properties", connectionInfo.getAuthProperties());
@@ -1033,10 +1030,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     credentials);
             }
         }
-        JSONUtils.serializePropertiesWithEmptyValues(
-            json,
-            RegistryConstants.TAG_PROPERTIES,
-            configuration.getProperties());
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties(), true);
         json.endObject();
     }
 
