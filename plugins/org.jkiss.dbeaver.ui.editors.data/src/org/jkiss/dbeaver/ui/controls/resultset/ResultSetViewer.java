@@ -707,6 +707,7 @@ public class ResultSetViewer extends Viewer
                 sqlText,
                 GeneralUtils.makeErrorStatus(message, error), container instanceof IResultSetContainerExt ? (IResultSetContainerExt) container : null));
         updatePresentationInToolbar();
+        fireQueryExecuted(sqlText, null, error.getMessage());
     }
 
     void updatePresentation(final DBCResultSet resultSet, boolean metadataChanged) {
@@ -4575,6 +4576,12 @@ public class ResultSetViewer extends Viewer
     private void fireResultSetModelPrepared() {
         for (IResultSetListener listener : getListenersCopy()) {
             listener.onModelPrepared();
+        }
+    }
+    
+    private void fireQueryExecuted(String query, StatResultSet statistics, String errorMessage) {
+        for (IResultSetListener listener : getListenersCopy()) {
+            listener.onQueryExecuted(query, statistics, errorMessage);
         }
     }
 
