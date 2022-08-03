@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -35,7 +36,8 @@ public class ERDContentProviderDecorated extends ERDContentProviderDefault {
     }
 
     @Override
-    public void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram, @NotNull List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity) {
+    public void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram,
+                                     @NotNull List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity) throws DBCException {
         ERDAttributeVisibility attributeVisibility = ERDAttributeVisibility.ALL;
         boolean alphabeticalOrder = false;
         if (diagram instanceof ERDContainerDecorated) {

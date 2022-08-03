@@ -38,6 +38,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     private Text portText;
     private Text dbText;
 
+    private Button showAllDatabases;
     private Button showAllSchemas;
     private Button encryptPassword;
 
@@ -135,6 +136,14 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             if (!isSqlServer) {
                 encryptPassword = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_encrypt_password, SQLServerUIMessages.dialog_setting_encrypt_password_tip, false, 2);
             }
+            if (isDriverAzure || isDriverBabelfish()) {
+                showAllDatabases = UIUtils.createCheckbox(
+                    secureGroup,
+                    SQLServerUIMessages.dialog_setting_show_all_databases,
+                    SQLServerUIMessages.dialog_setting_show_all_databases_tip,
+                    false,
+                    2);
+            }
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 2);
         }
 
@@ -213,6 +222,10 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             }
             dbText.setText(CommonUtils.notEmpty(databaseName));
         }
+        if (showAllDatabases != null) {
+            showAllDatabases.setSelection(
+                CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_DATABASES)));
+        }
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
 
         if (!isSqlServer()) {
@@ -234,6 +247,11 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         }
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
+        }
+
+        if (showAllDatabases != null) {
+            connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_DATABASES,
+                String.valueOf(showAllDatabases.getSelection()));
         }
 
         if (showAllSchemas != null) {

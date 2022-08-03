@@ -68,6 +68,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
+import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -4048,6 +4049,7 @@ public class SQLEditor extends SQLEditorBase implements
             } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
                 selectionProvider.setSelection(originalSelection);
             }
+            notifyOnQueryResultListeners(curResultsContainer, result);
             // Get results window (it is possible that it was closed till that moment
             {
                 for (QueryResultsContainer cr : queryProcessor.resultContainers) {
@@ -4067,6 +4069,11 @@ public class SQLEditor extends SQLEditorBase implements
                     int resultsIndex = 0;
                     for (QueryResultsContainer results : queryProcessor.resultContainers) {
                         if (results.query != query) {
+                            // This happens when query results is statistics tab
+                            // in that case we need to update tab selection and
+                            // select new statistics tab
+                            // see #16605
+                            setResultTabSelection(results.resultsTab);
                             continue;
                         }
                         if (resultsIndex < result.getExecuteResults().size()) {
@@ -4467,21 +4474,43 @@ public class SQLEditor extends SQLEditorBase implements
 
     }
     
-    private void notifyOnDataListeners(QueryResultsContainer container) {
-        DBCExecutionContext context = container.getExecutionContext();
-        DBPPreferenceStore contextPrefStore = context != null
-            ? context.getDataSource().getContainer().getPreferenceStore()
-            : DBWorkbench.getPlatform().getPreferenceStore();
-
+    private void notifyOnDataListeners(@NotNull QueryResultsContainer container) {
         // Notify listeners
         synchronized (listeners) {
             for (SQLEditorListener listener : listeners) {
                 try {
-                    listener.onDataReceived(contextPrefStore, container.getResultSetController().getModel(), container.getName());
+                    listener.onDataReceived(
+                        getContextPrefStore(container), 
+                        container.getResultSetController().getModel(), 
+                        container.getQuery().getOriginalText()
+                    );
                 } catch (Throwable ex) {
-                    ex.printStackTrace();
+                    log.error(ex);
                 }
             }
         }
+    }
+
+
+    private void notifyOnQueryResultListeners(@NotNull QueryResultsContainer container, @NotNull SQLQueryResult result) {
+        // Notify listeners
+        synchronized (listeners) {
+            for (SQLEditorListener listener : listeners) {
+                try {
+                    listener.onQueryResult(getContextPrefStore(container), result);
+                } catch (Throwable ex) {
+                    log.error(ex);
+                }
+            }
+        }
+    }
+
+    @NotNull
+    private DBPPreferenceStore getContextPrefStore(@NotNull QueryResultsContainer container) {
+        DBCExecutionContext context = container.getExecutionContext();
+        DBPPreferenceStore contextPrefStore = context != null
+            ? context.getDataSource().getContainer().getPreferenceStore()
+            : DBWorkbench.getPlatform().getPreferenceStore();
+        return contextPrefStore;
     }
 }
