@@ -542,17 +542,44 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner) throws SQLException {
             StringBuilder sql = new StringBuilder("SELECT db.* FROM sys.databases db");
-            if (owner.isBabelfish) {
+            DBPDataSourceContainer container = owner.getContainer();
+            DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
+            String property = configuration.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_DATABASES);
+            // By default we will show all databases only for SQL Server
+            // And for other databases if "Show All databases" setting is enabled
+            boolean showSpecifiedDatabase = property != null && !CommonUtils.getBoolean(property) ||
+                (property == null && (owner.isBabelfish || SQLServerUtils.isDriverAzure(owner.getContainer().getDriver())));
+            String databaseName = configuration.getDatabaseName();
+            boolean useCurrentDatabaseName = showSpecifiedDatabase && CommonUtils.isEmpty(databaseName);
+            if (useCurrentDatabaseName) {
                 sql.append("\nWHERE db.name = db_name()");
+            } else if (showSpecifiedDatabase) {
+                sql.append("\nWHERE db.name = ?");
             }
-            DBSObjectFilter databaseFilters = owner.getContainer().getObjectFilter(SQLServerDatabase.class, null, false);
-            if (databaseFilters != null && databaseFilters.isEnabled()) {
-                JDBCUtils.appendFilterClause(sql, databaseFilters, "name", !owner.isBabelfish, owner);
-            }
-            sql.append("\nORDER BY db.name");
-            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            if (databaseFilters != null) {
-                JDBCUtils.setFilterParameters(dbStat, 1, databaseFilters);
+            JDBCPreparedStatement dbStat;
+            if (!showSpecifiedDatabase) {
+                DBSObjectFilter databaseFilters = container.getObjectFilter(
+                    SQLServerDatabase.class,
+                    null,
+                    false);
+                if (databaseFilters != null && databaseFilters.isEnabled()) {
+                    JDBCUtils.appendFilterClause(
+                        sql,
+                        databaseFilters,
+                        "name",
+                        true,
+                        owner);
+                }
+                sql.append("\nORDER BY db.name");
+                dbStat = session.prepareStatement(sql.toString());
+                if (databaseFilters != null) {
+                    JDBCUtils.setFilterParameters(dbStat, 1, databaseFilters);
+                }
+            } else {
+                dbStat = session.prepareStatement(sql.toString());
+                if (!useCurrentDatabaseName) {
+                    dbStat.setString(1, databaseName);
+                }
             }
             return dbStat;
         }
