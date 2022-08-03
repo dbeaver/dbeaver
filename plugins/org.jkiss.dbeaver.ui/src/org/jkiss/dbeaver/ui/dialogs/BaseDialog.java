@@ -38,6 +38,7 @@ public class BaseDialog extends Dialog
 
     private String title;
     private DBPImage icon;
+    protected int buttonBarPlaceholderColumns = 2;
 
     public BaseDialog(Shell parentShell, String title, @Nullable DBPImage icon)
     {
@@ -86,7 +87,7 @@ public class BaseDialog extends Dialog
 
     @Override
     protected Control createButtonBar(Composite parent) {
-        final Composite composite = UIUtils.createPlaceholder(parent, 2, 0);
+        final Composite composite = UIUtils.createPlaceholder(parent, this.buttonBarPlaceholderColumns, 0);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
         createButtonsForButtonBar(createButtonBarComposite(composite, SWT.LEAD), SWT.LEAD);
