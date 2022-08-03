@@ -222,7 +222,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             }
             dbText.setText(CommonUtils.notEmpty(databaseName));
         }
-        if (isDriverAzure && showAllDatabases != null) {
+        if (showAllDatabases != null) {
             showAllDatabases.setSelection(
                 CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_DATABASES)));
         }

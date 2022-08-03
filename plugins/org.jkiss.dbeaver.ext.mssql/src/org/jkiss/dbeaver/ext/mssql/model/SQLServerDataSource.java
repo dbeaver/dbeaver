@@ -544,8 +544,11 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             StringBuilder sql = new StringBuilder("SELECT db.* FROM sys.databases db");
             DBPDataSourceContainer container = owner.getContainer();
             DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
-            boolean showSpecifiedDatabase = !CommonUtils.getBoolean(configuration.getProviderProperty(
-                    SQLServerConstants.PROP_SHOW_ALL_DATABASES), false);
+            String property = configuration.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_DATABASES);
+            // By default we will show all databases only for SQL Server
+            // And for other databases if "Show All databases" setting is enabled
+            boolean showSpecifiedDatabase = property != null && !CommonUtils.getBoolean(property) ||
+                (property == null && (owner.isBabelfish || SQLServerUtils.isDriverAzure(owner.getContainer().getDriver())));
             String databaseName = configuration.getDatabaseName();
             boolean useCurrentDatabaseName = showSpecifiedDatabase && CommonUtils.isEmpty(databaseName);
             if (useCurrentDatabaseName) {
