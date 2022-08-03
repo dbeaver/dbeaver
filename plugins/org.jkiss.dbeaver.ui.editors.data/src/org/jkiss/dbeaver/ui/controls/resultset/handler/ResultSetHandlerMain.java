@@ -487,9 +487,9 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_EXPORT: {
-                List<Long> selectedRows = new ArrayList<>();
+                List<Integer> selectedRows = new ArrayList<>();
                 for (ResultSetRow selectedRow : rsv.getSelection().getSelectedRows()) {
-                    selectedRows.add(Long.valueOf(selectedRow.getRowNumber()));
+                    selectedRows.add(selectedRow.getRowNumber());
                 }
 
                 ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
