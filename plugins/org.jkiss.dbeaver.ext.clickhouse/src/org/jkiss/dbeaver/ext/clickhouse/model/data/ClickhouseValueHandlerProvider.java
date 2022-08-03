@@ -23,15 +23,21 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.util.Locale;
+
 public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject type) {
-        if (type.getTypeName().equalsIgnoreCase("enum8") || type.getTypeName().equalsIgnoreCase("enum16")) {
+        String lowerTypeName = type.getTypeName().toLowerCase(Locale.ENGLISH);
+        if ("enum8".equals(lowerTypeName) || "enum16".equals(lowerTypeName)) {
             return ClickhouseEnumValueHandler.INSTANCE;
         } else if (type.getDataKind() == DBPDataKind.ARRAY) {
             return ClickhouseArrayValueHandler.INSTANCE;
         } else if (type.getDataKind() == DBPDataKind.STRUCT) {
             return ClickhouseStructValueHandler.INSTANCE;
+        } else if ("int128".equals(lowerTypeName) || "int256".equals(lowerTypeName)
+            || "uint64".equals(lowerTypeName) || "uint128".equals(lowerTypeName) || "uint256".equals(lowerTypeName)) {
+            return new ClickhouseBigNumberValueHandler(type, preferences);
         } else {
             return null;
         }

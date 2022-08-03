@@ -329,12 +329,12 @@ public final class DBUtils {
             if (child == null && i == 0) {
                 DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults != null) {
-                    DBSObjectContainer container = contextDefaults.getDefaultCatalog();
+                    DBSObjectContainer container = contextDefaults.getDefaultSchema();
                     if (container != null) {
                         child = container.getChild(monitor, childName);
                     }
                     if (child == null) {
-                        container = contextDefaults.getDefaultSchema();
+                        container = contextDefaults.getDefaultCatalog();
                         if (container != null) {
                             child = container.getChild(monitor, childName);
                         }

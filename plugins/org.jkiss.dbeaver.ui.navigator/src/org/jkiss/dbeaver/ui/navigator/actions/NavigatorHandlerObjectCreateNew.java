@@ -240,7 +240,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         } else if (node instanceof DBNResource) {
             final DBPWorkspaceEclipse workspace = DBPPlatformEclipse.getInstance().getWorkspace();
             IResource resource = ((DBNResource) node).getResource();
-            if (resource instanceof IProject) {
+            if (resource instanceof IProject && !DBWorkbench.getPlatform().getApplication().isDistributed()) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_PROJECT));
             }
             DBPResourceHandler handler = workspace.getResourceHandler(resource);

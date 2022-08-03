@@ -113,9 +113,6 @@ class StatusLabel extends Composite {
                     errorList = Collections.singletonList(viewer.getModel().getStatistics().getError());
                 }
             }
-            if (CommonUtils.isEmpty(errorList)) {
-                return;
-            }
             StatusDetailsDialog dialog = new StatusDetailsDialog(
                 viewer.getSite().getShell(),
                 getMessage(),
@@ -126,6 +123,10 @@ class StatusLabel extends Composite {
 
     public void setStatus(String message) {
         this.setStatus(message, DBPMessageType.INFORMATION);
+    }
+
+    public void setStatusTooltip(String message) {
+        this.statusText.setToolTipText(message);
     }
 
     public void setStatus(String message, DBPMessageType messageType)

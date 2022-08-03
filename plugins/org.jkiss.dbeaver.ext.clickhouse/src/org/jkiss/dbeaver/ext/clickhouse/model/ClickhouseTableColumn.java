@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.clickhouse.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -40,8 +41,9 @@ public class ClickhouseTableColumn extends GenericTableColumn {
     }
 
     @Override
-    public void setFullTypeName(String fullTypeName) {
+    public void setFullTypeName(String fullTypeName) throws DBException {
         this.fullTypeName = fullTypeName;
+        super.setFullTypeName(fullTypeName);
     }
 
     @NotNull
