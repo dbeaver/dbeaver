@@ -4069,6 +4069,11 @@ public class SQLEditor extends SQLEditorBase implements
                     int resultsIndex = 0;
                     for (QueryResultsContainer results : queryProcessor.resultContainers) {
                         if (results.query != query) {
+                            // This happens when query results is statistics tab
+                            // in that case we need to update tab selection and
+                            // select new statistics tab
+                            // see #16605
+                            setResultTabSelection(results.resultsTab);
                             continue;
                         }
                         if (resultsIndex < result.getExecuteResults().size()) {
