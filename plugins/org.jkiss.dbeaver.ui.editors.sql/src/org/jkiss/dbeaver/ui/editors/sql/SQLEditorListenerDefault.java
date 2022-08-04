@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener.PreferenceChangeEvent;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -66,6 +67,11 @@ public class SQLEditorListenerDefault implements SQLEditorListener
     
     @Override
     public void onDataReceived(@NotNull DBPPreferenceStore contextPrefStore, @NotNull ResultSetModel resultSet, @Nullable String name) {
+
+    }
+
+    @Override
+    public void onQueryResult(@NotNull DBPPreferenceStore contextPrefStore, @NotNull SQLQueryResult result) {
 
     }
 }

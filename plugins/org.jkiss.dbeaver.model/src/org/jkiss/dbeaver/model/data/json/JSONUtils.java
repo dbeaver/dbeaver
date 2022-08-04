@@ -197,6 +197,17 @@ public class JSONUtils {
         }
     }
 
+    public static void serializeProperties(
+        @NotNull JsonWriter json,
+        @NotNull String tagName,
+        @Nullable Map<String, ?> properties, boolean allowEmptyValues) throws IOException
+    {
+        if (!CommonUtils.isEmpty(properties)) {
+            json.name(tagName);
+            serializeMap(json, properties, allowEmptyValues);
+        }
+    }
+
     public static void serializeCollection(@NotNull JsonWriter json, @NotNull Collection<?> list) throws IOException {
         json.beginArray();
         for (Object value : CommonUtils.safeCollection(list)) {
@@ -220,6 +231,11 @@ public class JSONUtils {
     }
 
     public static void serializeMap(@NotNull JsonWriter json, @NotNull Map<String, ?> map) throws IOException {
+        serializeMap(json, map, false);
+    }
+
+    public static void serializeMap(@NotNull JsonWriter json, @NotNull Map<String, ?> map,
+                                    boolean allowsEmptyValue) throws IOException {
         json.beginObject();
         for (Map.Entry<String, ?> entry : map.entrySet()) {
             Object propValue = entry.getValue();
@@ -232,6 +248,8 @@ public class JSONUtils {
             } else if (propValue instanceof String) {
                 String strValue = (String) propValue;
                 if (!strValue.isEmpty()) {
+                    field(json, fieldName, strValue);
+                } else if (allowsEmptyValue) {
                     field(json, fieldName, strValue);
                 }
             } else if (propValue instanceof Boolean) {

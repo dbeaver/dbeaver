@@ -18,6 +18,9 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 
 /**
  * Result set provider
@@ -31,6 +34,10 @@ public interface IResultSetListener {
     void handleResultSetSelectionChange(SelectionChangedEvent event);
 
     default void onModelPrepared() {
+        // do nothing
+    }
+    
+    default void onQueryExecuted(@NotNull String query, @Nullable StatResultSet statistics, @Nullable String errorMessage) {
         // do nothing
     }
 }

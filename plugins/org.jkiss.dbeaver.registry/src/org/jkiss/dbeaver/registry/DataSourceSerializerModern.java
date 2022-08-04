@@ -887,7 +887,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 JSONUtils.field(json, RegistryConstants.ATTR_CLOSE_IDLE, connectionInfo.getCloseIdleInterval());
             }
             JSONUtils.fieldNE(json, "config-profile", connectionInfo.getConfigProfileName());
-            JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties());
+            JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, connectionInfo.getProperties(), true);
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROVIDER_PROPERTIES, connectionInfo.getProviderProperties());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_AUTH_MODEL, connectionInfo.getAuthModelId());
             JSONUtils.serializeProperties(json, "auth-properties", connectionInfo.getAuthProperties());
@@ -1037,7 +1037,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     credentials);
             }
         }
-        JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties());
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties(), true);
         json.endObject();
     }
 

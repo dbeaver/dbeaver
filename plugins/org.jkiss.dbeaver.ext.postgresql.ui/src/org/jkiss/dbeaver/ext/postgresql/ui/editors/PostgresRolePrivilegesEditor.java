@@ -219,7 +219,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
     private PostgrePrivilege getObjectPermissions(DBSObject object) {
         if (object instanceof PostgreProcedure) {
-            String fqProcName = DBUtils.getQuotedIdentifier(((PostgreProcedure) object).getSchema()) + "." + ((PostgreProcedure) object).getSpecificName();
+            String fqProcName = DBUtils.getQuotedIdentifier(((PostgreProcedure) object).getSchema()) + "." + ((PostgreProcedure) object).getOverloadedName();
             return permissionMap.get(fqProcName);
         } else {
             return permissionMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));

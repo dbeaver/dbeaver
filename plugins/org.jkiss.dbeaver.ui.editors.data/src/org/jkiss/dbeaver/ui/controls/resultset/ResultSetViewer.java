@@ -34,7 +34,11 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.*;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.menus.CommandContributionItem;
@@ -108,10 +112,10 @@ import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -145,6 +149,7 @@ public class ResultSetViewer extends Viewer
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
     private static final DateTimeFormatter EXECUTION_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, HH:mm:ss");
+
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
 
     private IResultSetFilterManager filterManager;
@@ -702,6 +707,7 @@ public class ResultSetViewer extends Viewer
                 sqlText,
                 GeneralUtils.makeErrorStatus(message, error), container instanceof IResultSetContainerExt ? (IResultSetContainerExt) container : null));
         updatePresentationInToolbar();
+        fireQueryExecuted(sqlText, null, error.getMessage());
     }
 
     void updatePresentation(final DBCResultSet resultSet, boolean metadataChanged) {
@@ -2016,8 +2022,7 @@ public class ResultSetViewer extends Viewer
     ///////////////////////////////////////
     // Status
 
-    public void setStatus(String status)
-    {
+    public void setStatus(String status) {
         setStatus(status, DBPMessageType.INFORMATION);
     }
 
@@ -2035,65 +2040,14 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private void setStatusTooltip(String message) {
+        statusLabel.setStatusTooltip(message);
+    }
+
     public void updateStatusMessage()
     {
-        String statusMessage;
-        if (model.getRowCount() == 0) {
-            if (model.getVisibleAttributeCount() == 0) {
-                statusMessage = ResultSetMessages.controls_resultset_viewer_status_empty + getExecutionTimeMessage();
-            } else {
-                statusMessage = ResultSetMessages.controls_resultset_viewer_status_no_data + getExecutionTimeMessage();
-            }
-        } else {
-            if (recordMode) {
-                statusMessage =
-                    ResultSetMessages.controls_resultset_viewer_status_row + (curRow == null ? 0 : curRow.getVisualNumber() + 1) +
-                        "/" + model.getRowCount() +
-                    (curRow == null ? getExecutionTimeMessage() : "");
-            } else {
-                long rowsFetched, rowsUpdated = -1;
-                DBCStatistics stats = getModel().getStatistics();
-                if (stats == null || stats.isEmpty()) {
-                    rowsFetched = getModel().getRowCount();
-                } else {
-                    rowsFetched = stats.getRowsFetched();
-                    rowsUpdated = stats.getRowsUpdated();
-                }
-                if (rowsFetched < 0 && rowsUpdated >= 0) {
-                    statusMessage = NLS.bind(
-                        ResultSetMessages.controls_resultset_viewer_status_rows_updated,
-                        ResultSetUtils.formatRowCount(rowsUpdated),
-                        getExecutionTimeMessage()
-                    );
-                } else {
-                    statusMessage = NLS.bind(
-                        ResultSetMessages.controls_resultset_viewer_status_rows_fetched,
-                        ResultSetUtils.formatRowCount(rowsFetched),
-                        getExecutionTimeMessage()
-                    );
-                }
-            }
-        }
-        boolean hasWarnings = !dataReceiver.getErrorList().isEmpty();
-        if (hasWarnings) {
-            statusMessage += " - " + dataReceiver.getErrorList().size() + " warning(s)";
-        } else if (model.getStatistics() != null) {
-            hasWarnings = model.getStatistics().getError() != null;
-            if (hasWarnings) {
-                statusMessage += " - finished with error";
-            }
-        }
-        if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME)) {
-            DBSDataContainer dataContainer = getDataContainer();
-            if (dataContainer != null) {
-                DBPDataSource dataSource = dataContainer.getDataSource();
-                if (dataSource != null) {
-                    statusMessage += " [" + dataSource.getContainer().getName() + "]";
-                }
-            }
-        }
-        setStatus(statusMessage, hasWarnings ? DBPMessageType.WARNING : DBPMessageType.INFORMATION);
-
+        updateStatusInfo(false);
+        updateStatusInfo(true);
         if (rowCountLabel != null && !rowCountLabel.isDisposed()) {
             // Update row count label
             String rcMessage;
@@ -2117,7 +2071,72 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private String getExecutionTimeMessage()
+    private void updateStatusInfo(boolean isTooltip) {
+        String statusMessage;
+        if (model.getRowCount() == 0) {
+            if (model.getVisibleAttributeCount() == 0) {
+                statusMessage =
+                    ResultSetMessages.controls_resultset_viewer_status_empty + getExecutionTimeMessage(isTooltip);
+            } else {
+                statusMessage =
+                    ResultSetMessages.controls_resultset_viewer_status_no_data + getExecutionTimeMessage(isTooltip);
+            }
+        } else {
+            if (recordMode) {
+                statusMessage =
+                    ResultSetMessages.controls_resultset_viewer_status_row + (curRow == null ? 0 : curRow.getVisualNumber() + 1) +
+                        "/" + model.getRowCount() +
+                    (curRow == null ? getExecutionTimeMessage(isTooltip) : "");
+            } else {
+                long rowsFetched, rowsUpdated = -1;
+                DBCStatistics stats = getModel().getStatistics();
+                if (stats == null || stats.isEmpty()) {
+                    rowsFetched = getModel().getRowCount();
+                } else {
+                    rowsFetched = stats.getRowsFetched();
+                    rowsUpdated = stats.getRowsUpdated();
+                }
+                if (rowsFetched < 0 && rowsUpdated >= 0) {
+                    statusMessage = NLS.bind(
+                        ResultSetMessages.controls_resultset_viewer_status_rows_updated,
+                        ResultSetUtils.formatRowCount(rowsUpdated),
+                        getExecutionTimeMessage(isTooltip)
+                    );
+                } else {
+                    statusMessage = NLS.bind(
+                        ResultSetMessages.controls_resultset_viewer_status_rows_fetched,
+                        ResultSetUtils.formatRowCount(rowsFetched),
+                        getExecutionTimeMessage(isTooltip)
+                    );
+                }
+            }
+        }
+        boolean hasWarnings = !dataReceiver.getErrorList().isEmpty();
+        if (hasWarnings) {
+            statusMessage += " - " + dataReceiver.getErrorList().size() + " warning(s)";
+        } else if (model.getStatistics() != null) {
+            hasWarnings = model.getStatistics().getError() != null;
+            if (hasWarnings) {
+                statusMessage += " - finished with error";
+            }
+        }
+        if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME)) {
+            DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer != null) {
+                DBPDataSource dataSource = dataContainer.getDataSource();
+                if (dataSource != null) {
+                    statusMessage += " [" + dataSource.getContainer().getName() + "]";
+                }
+            }
+        }
+        if (isTooltip) {
+            setStatusTooltip(statusMessage);
+        } else {
+            setStatus(statusMessage, hasWarnings ? DBPMessageType.WARNING :DBPMessageType.INFORMATION);
+        }
+    }
+
+    private String getExecutionTimeMessage(boolean extended)
     {
         DBCStatistics statistics = model.getStatistics();
         if (statistics == null || statistics.isEmpty()) {
@@ -2125,26 +2144,52 @@ public class ResultSetViewer extends Viewer
         }
         long fetchTime = statistics.getFetchTime();
         long totalTime = statistics.getTotalTime();
-        final String endTime = LocalDateTime
-            .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
-            .format(EXECUTION_TIME_FORMATTER);
-        if (fetchTime <= 0) {
-            return NLS.bind(
-                ResultSetMessages.controls_resultset_viewer_status_rows_time,
-                new Object[]{
-                    RuntimeUtils.formatExecutionTime(totalTime),
-                    endTime
-                }
-            );
+        Object endTime = null;
+        if (extended) {
+            endTime = LocalDateTime
+                .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
+                .format(EXECUTION_TIME_FORMATTER);
         } else {
-            return NLS.bind(
-                ResultSetMessages.controls_resultset_viewer_status_rows_time_fetch,
-                new Object[]{
-                    RuntimeUtils.formatExecutionTime(totalTime),
-                    RuntimeUtils.formatExecutionTime(fetchTime),
-                    endTime
-                }
-            );
+            endTime = LocalDateTime
+                .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
+                .truncatedTo(ChronoUnit.SECONDS);
+        }
+        if (fetchTime <= 0) {
+            if (endTime instanceof LocalDateTime) {
+                return NLS.bind(
+                    ResultSetMessages.controls_resultset_viewer_status_rows_time,
+                    new Object[]{
+                        RuntimeUtils.formatExecutionTime(totalTime),
+                        DateTimeFormatter.ISO_DATE.format(((LocalDateTime) endTime)),
+                        DateTimeFormatter.ISO_TIME.format(((LocalDateTime) endTime)),
+                    });
+            } else {
+                return NLS.bind(
+                    ResultSetMessages.controls_resultset_viewer_status_rows_time_long,
+                    new Object[]{
+                        RuntimeUtils.formatExecutionTime(totalTime), endTime
+                    });
+
+            }
+        } else {
+            if (endTime instanceof LocalDateTime) {
+                return NLS.bind(
+                    ResultSetMessages.controls_resultset_viewer_status_rows_time_fetch,
+                    new Object[]{
+                        RuntimeUtils.formatExecutionTime(totalTime),
+                        RuntimeUtils.formatExecutionTime(fetchTime),
+                        DateTimeFormatter.ISO_DATE.format(((LocalDateTime) endTime)),
+                        DateTimeFormatter.ISO_TIME.format(((LocalDateTime) endTime)),
+                    });
+            } else {
+                return NLS.bind(
+                    ResultSetMessages.controls_resultset_viewer_status_rows_time_fetch_long,
+                    new Object[]{
+                        RuntimeUtils.formatExecutionTime(totalTime),
+                        RuntimeUtils.formatExecutionTime(fetchTime),
+                        endTime,
+                    });
+            }
         }
     }
 
@@ -2293,8 +2338,12 @@ public class ResultSetViewer extends Viewer
         model.appendData(rows, resetOldRows);
 
         UIUtils.asyncExec(() -> {
-            setStatus(NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
-
+            String message = NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(),
+                rows.size()) + getExecutionTimeMessage(false);
+            String tooltip = NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(),
+                rows.size()) + getExecutionTimeMessage(true);
+            setStatus(message, DBPMessageType.INFORMATION);
+            setStatusTooltip(tooltip);
             updateEditControls();
         });
     }
@@ -4527,6 +4576,12 @@ public class ResultSetViewer extends Viewer
     private void fireResultSetModelPrepared() {
         for (IResultSetListener listener : getListenersCopy()) {
             listener.onModelPrepared();
+        }
+    }
+    
+    private void fireQueryExecuted(String query, StatResultSet statistics, String errorMessage) {
+        for (IResultSetListener listener : getListenersCopy()) {
+            listener.onQueryExecuted(query, statistics, errorMessage);
         }
     }
 
