@@ -117,6 +117,7 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     public DBPConnectionConfiguration() {
         this.connectionType = DBPConnectionType.DEFAULT_TYPE;
+        this.configurationType = DBPDriverConfigurationType.EXTENDED;
         this.properties = new LinkedHashMap<>();
         this.providerProperties = new LinkedHashMap<>();
         this.events = new LinkedHashMap<>();
