@@ -1475,7 +1475,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return origFiles;
     }
 
-    public Set<DBPDriverConfigurationType> getConfigurationTypes() {
+    public Set<DBPDriverConfigurationType> supportedConfigurationTypes() {
         return configurationTypes;
     }
 

@@ -186,7 +186,10 @@ public interface DBPDriver extends DBPNamedObject
      */
     DBPDriver createOriginalCopy();
 
-    Set<DBPDriverConfigurationType> getConfigurationTypes();
+    /**
+     * Show supported configuration types
+     */
+    Set<DBPDriverConfigurationType> supportedConfigurationTypes();
 
     default String getFullId() {
         return getProviderId() + ":" + getId();
