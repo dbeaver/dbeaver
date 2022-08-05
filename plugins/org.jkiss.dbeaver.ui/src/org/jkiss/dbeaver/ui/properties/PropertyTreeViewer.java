@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleDecorator;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -81,6 +82,8 @@ public class PropertyTreeViewer extends TreeViewer {
     }
 
     private static final String CATEGORY_GENERAL = UIMessages.ui_properties_tree_viewer_category_general;
+    private static final int MIN_COLUMN_WIDTH = 100;
+    private static final int MAX_COLUMN_WIDTH = 300;
 
     private boolean expandSingleRoot = true;
     private boolean namesEditable = false;
@@ -273,6 +276,32 @@ public class PropertyTreeViewer extends TreeViewer {
                 tree.setRedraw(true);
             }
         });
+    }
+
+    /**
+     * Change size of columns if their width are smaller
+     * First column will be smaller then others because usually it's just a name
+     */
+    public void changeColumnsWidth() {
+        Tree tree = getTree();
+        if (tree != null && !tree.isDisposed()) {
+            UIUtils.asyncExec(() -> {
+                tree.setRedraw(false);
+                TreeColumn[] columns = tree.getColumns();
+                if (!ArrayUtils.isEmpty(columns) && columns.length > 1) {
+                    for (int i = 0; i < columns.length; i++) {
+                        if (i == 0) {
+                            if (columns[0].getWidth() < MIN_COLUMN_WIDTH) {
+                                columns[0].setWidth(MIN_COLUMN_WIDTH);
+                            }
+                        } else if (columns[i].getWidth() < MAX_COLUMN_WIDTH) {
+                            columns[i].setWidth(MAX_COLUMN_WIDTH);
+                        }
+                    }
+                }
+                tree.setRedraw(true);
+            });
+        }
     }
 
     private Map<String, TreeNode> loadTreeNodes(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
