@@ -20,6 +20,6 @@ package org.jkiss.dbeaver.model.connection;
  * Driver configuration type
  */
 public enum DBPDriverConfigurationType {
-    EXTENDED,
+    MANUAL,
     URL
 }

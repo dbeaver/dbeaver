@@ -189,7 +189,7 @@ public interface DBPDriver extends DBPNamedObject
     /**
      * Show supported configuration types
      */
-    Set<DBPDriverConfigurationType> supportedConfigurationTypes();
+    Set<DBPDriverConfigurationType> getSupportedConfigurationTypes();
 
     default String getFullId() {
         return getProviderId() + ":" + getId();
