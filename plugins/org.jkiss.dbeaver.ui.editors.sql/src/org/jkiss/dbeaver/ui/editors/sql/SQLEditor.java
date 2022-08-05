@@ -4147,7 +4147,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private class FindReplaceTarget extends DynamicFindReplaceTarget {
-        private boolean lastFocusInEditor = true;
+        private IFindReplaceTarget previousTarget = null;
         @Override
         public IFindReplaceTarget getTarget() {
             //getTarget determines current composite used for find/replace
@@ -4156,29 +4156,22 @@ public class SQLEditor extends SQLEditorBase implements
             TextViewer textViewer = getTextViewer();
             boolean focusInEditor = textViewer != null && textViewer.getTextWidget() != null && textViewer.getTextWidget().isFocusControl();
             if (!focusInEditor) {
-                if (rsv == null
-                    || (!rsv.getActivePresentation().getControl().isFocusControl()
-                    && !outputViewer.getText().isFocusControl())
-                ) {
-                    focusInEditor = lastFocusInEditor;
+                if (rsv == null && !outputViewer.getText().isFocusControl() && previousTarget != null) {
+                    focusInEditor = textViewer != null && previousTarget.equals(textViewer.getFindReplaceTarget());
                 }
             }
-            lastFocusInEditor = focusInEditor;
-            if (!focusInEditor && (
-                rsv != null
-                && rsv.getActivePresentation().getControl().isFocusControl()
-                || outputViewer.getControl().isFocusControl())) {
+            if (!focusInEditor) {
                 //Focus is on presentation we need to find a class for it
                 if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
-                    return rsv.getAdapter(IFindReplaceTarget.class);
-                } else {
+                    previousTarget = rsv.getAdapter(IFindReplaceTarget.class);
+                } else if (outputViewer.getControl().isFocusControl()) {
                     //Output viewer is just StyledText we use StyledTextFindReplace
-                    return new StyledTextFindReplaceTarget(outputViewer.getText());
+                    previousTarget = new StyledTextFindReplaceTarget(outputViewer.getText());
                 }
-            } else if (textViewer != null) {
-                return textViewer.getFindReplaceTarget();
+            } else {
+                previousTarget = textViewer.getFindReplaceTarget();
             }
-            return null;
+            return previousTarget;
         }
     }
 
