@@ -85,12 +85,17 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     {
         String pkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_CAT);
         String pkTableSchema = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_SCHEM);
-        String pkTableName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME);
+        boolean trimNames = owner.getDataSource().getMetaModel().trimObjectNames();
+        String pkTableName = trimNames ?
+            GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME)
+            : GenericUtils.safeGetString(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME);
         String fkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKTABLE_CAT);
         String fkTableSchema = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKTABLE_SCHEM);
 
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
-        String pkName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PK_NAME);
+        String pkName = trimNames ?
+            GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PK_NAME)
+            : GenericUtils.safeGetString(foreignKeyObject, dbResult, JDBCConstants.PK_NAME);
 
         DBSForeignKeyModifyRule deleteRule;
         DBSForeignKeyModifyRule updateRule;
@@ -144,7 +149,9 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             }
         }
         if (pk == null) {
-            String pkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
+            String pkColumnName = trimNames ?
+                GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME)
+                : GenericUtils.safeGetString(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
             GenericTableColumn pkColumn = pkTable.getAttribute(session.getProgressMonitor(), pkColumnName);
             if (pkColumn == null) {
                 log.warn("Can't find PK table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + " column " + pkColumnName);
@@ -205,7 +212,10 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         GenericTableBase parent, GenericTableForeignKey foreignKey, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
-        String pkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
+        boolean trimNames = parent.getDataSource().getMetaModel().trimObjectNames();
+        String pkColumnName = trimNames ?
+            GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME)
+            : GenericUtils.safeGetString(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
         DBSEntityReferrer referencedConstraint = foreignKey.getReferencedConstraint();
         if (referencedConstraint == null) {
             log.warn("Null reference constraint in FK '" + foreignKey.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
@@ -221,7 +231,9 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         }
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
 
-        String fkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKCOLUMN_NAME);
+        String fkColumnName = trimNames ?
+            GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKCOLUMN_NAME)
+            : GenericUtils.safeGetString(foreignKeyObject, dbResult, JDBCConstants.FKCOLUMN_NAME);
         if (CommonUtils.isEmpty(fkColumnName)) {
             log.warn("Empty FK column for table " + foreignKey.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " PK column " + pkColumnName);
             return null;
