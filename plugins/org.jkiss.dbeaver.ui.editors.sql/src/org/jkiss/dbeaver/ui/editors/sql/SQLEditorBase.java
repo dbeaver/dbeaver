@@ -52,6 +52,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -1069,6 +1070,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
                 occurrencesHighlighter.updateInput(getEditorInput());
+            case SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS:
+            case SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY:
+            case SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE:
+            case ModelPreferences.SQL_FORMAT_KEYWORD_CASE:
+            case ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA:
+            case ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET:
+            case ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES:
+            case AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH:
+            case AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS:
+                reloadSyntaxRules();
         }
     }
 

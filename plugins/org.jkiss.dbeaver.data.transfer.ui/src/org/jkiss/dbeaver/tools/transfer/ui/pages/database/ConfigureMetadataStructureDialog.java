@@ -407,9 +407,11 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
     @Override
     protected void okPressed() {
         // Save changes from the new created table if we have it
-        Map<DBPPropertyDescriptor, Object> changedPropertiesValues = propertySource.getChangedPropertiesValues();
-        if (!CommonUtils.isEmpty(changedPropertiesValues)) {
-            mapping.setChangedPropertiesMap(changedPropertiesValues);
+        if (propertySource != null) {
+            Map<DBPPropertyDescriptor, Object> changedPropertiesValues = propertySource.getChangedPropertiesValues();
+            if (!CommonUtils.isEmpty(changedPropertiesValues)) {
+                mapping.setChangedPropertiesMap(changedPropertiesValues);
+            }
         }
         super.okPressed();
     }
