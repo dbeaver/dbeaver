@@ -34,11 +34,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.*;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.menus.CommandContributionItem;
@@ -2041,6 +2037,9 @@ public class ResultSetViewer extends Viewer
     }
 
     private void setStatusTooltip(String message) {
+        if (statusLabel == null || statusLabel.isDisposed()) {
+            return;
+        }
         statusLabel.setStatusTooltip(message);
     }
 
