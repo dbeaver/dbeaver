@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
@@ -93,8 +94,10 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
     @Override
     public void updateNavigatorNodeFromResource(@NotNull DBNNodeWithResource node, @NotNull IResource resource) {
         super.updateNavigatorNodeFromResource(node, resource);
-        if (resource instanceof IFolder && node instanceof DBNResource && ((DBNResource)node).isRootResource(resource)) {
-            node.setResourceImage(UIIcon.SCRIPTS);
+        if (resource instanceof IFolder) {
+            if (node instanceof DBNResource && ((DBNResource)node).isRootResource(resource)) {
+                node.setResourceImage(UIIcon.SCRIPTS);
+            }
         } else {
             node.setResourceImage(UIIcon.SQL_SCRIPT);
         }
@@ -110,7 +113,8 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
             input = new FileEditorInput((IFile) resource);
         }
         if (input != null) {
-            UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(input, SQLEditor.class.getName());
+            int matchFlags = IWorkbenchPage.MATCH_INPUT | IWorkbenchPage.MATCH_IGNORE_SIZE;
+            UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(input, SQLEditor.class.getName(), true, matchFlags);
         } else {
             super.openResource(resource);
         }

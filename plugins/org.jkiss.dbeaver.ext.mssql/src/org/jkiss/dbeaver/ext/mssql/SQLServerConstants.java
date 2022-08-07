@@ -95,6 +95,7 @@ public class SQLServerConstants {
     public static final int TABLE_TYPE_SYSTEM_ID = 243;
 
     public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
+    public static final String PROP_SHOW_ALL_DATABASES = "show-all-databases-azure";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
     public static final String PROP_ENCRYPT_PASSWORD = DBConstants.INTERNAL_PROP_PREFIX + "encrypt-password@";
 

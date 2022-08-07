@@ -22,14 +22,14 @@ import java.util.List;
 
 public class ResultSetDataContainerOptions {
 
-    private List<Long> selectedRows;
+    private List<Integer> selectedRows;
     private List<DBDAttributeBinding> selectedColumns;
 
-    public List<Long> getSelectedRows() {
+    public List<Integer> getSelectedRows() {
         return selectedRows;
     }
 
-    public void setSelectedRows(List<Long> selectedRows) {
+    public void setSelectedRows(List<Integer> selectedRows) {
         this.selectedRows = selectedRows;
     }
 

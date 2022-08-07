@@ -384,7 +384,7 @@ public class PostgreRole implements
                     "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND grantee=?")) {
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getName());
-                permissions.addAll(getRolePermissions(this, PostgrePrivilegeGrant.Kind.TABLE, dbStat));
+                permissions.addAll(getRolePermissions(monitor, this, PostgrePrivilegeGrant.Kind.TABLE, dbStat));
             } catch (Throwable e) {
                 log.error("Error reading table privileges", e);
             }
@@ -392,7 +392,7 @@ public class PostgreRole implements
                     "SELECT * FROM information_schema.routine_privileges WHERE specific_catalog=? AND grantee=?")) {
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getName());
-                permissions.addAll(getRolePermissions(this, PostgrePrivilegeGrant.Kind.FUNCTION, dbStat));
+                permissions.addAll(getRolePermissions(monitor, this, PostgrePrivilegeGrant.Kind.FUNCTION, dbStat));
             } catch (Throwable e) {
                 log.error("Error reading routine privileges", e);
             }
@@ -499,21 +499,82 @@ public class PostgreRole implements
         return null;
     }
 
-    protected static Collection<PostgrePrivilege> getRolePermissions(PostgreRole role, PostgrePrivilegeGrant.Kind kind, JDBCPreparedStatement dbStat) throws SQLException {
+    protected static Collection<PostgrePrivilege> getRolePermissions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreRole role,
+        @NotNull PostgrePrivilegeGrant.Kind kind,
+        @NotNull JDBCPreparedStatement dbStat) throws SQLException
+    {
         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
             Map<String, List<PostgrePrivilegeGrant>> privs = new LinkedHashMap<>();
             while (dbResult.next()) {
                 PostgrePrivilegeGrant privilege = new PostgrePrivilegeGrant(kind, dbResult);
-                String tableId = privilege.getObjectSchema() + "." + privilege.getObjectName();
+                String privilegeObjectName = privilege.getObjectName();
+                String objectSchema = privilege.getObjectSchema();
+                if ((kind == PostgrePrivilegeGrant.Kind.FUNCTION || kind == PostgrePrivilegeGrant.Kind.PROCEDURE)
+                    && CommonUtils.isNotEmpty(privilegeObjectName) && privilegeObjectName.contains("_")
+                    && !privilegeObjectName.endsWith("_") && CommonUtils.isNotEmpty(objectSchema))
+                {
+                    changeRoutineFullName(monitor, role, privilege, privilegeObjectName, objectSchema);
+                }
+                String tableId = objectSchema + "." + privilege.getObjectName();
                 List<PostgrePrivilegeGrant> privList = privs.computeIfAbsent(tableId, k -> new ArrayList<>());
                 privList.add(privilege);
             }
             // Pack to permission list
             List<PostgrePrivilege> result = new ArrayList<>(privs.size());
             for (List<PostgrePrivilegeGrant> priv : privs.values()) {
-                result.add(new PostgreRolePrivilege(role, kind, priv.get(0).getObjectSchema(), priv.get(0).getObjectName(), priv));
+                PostgrePrivilegeGrant privilegeGrant = priv.get(0);
+                result.add(new PostgreRolePrivilege(
+                    role,
+                    privilegeGrant.getKind(),
+                    privilegeGrant.getObjectSchema(),
+                    privilegeGrant.getObjectName(),
+                    priv));
             }
             return result;
+        }
+    }
+
+    private static void changeRoutineFullName(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreRole role,
+        @NotNull PostgrePrivilegeGrant privilege,
+        String privilegeObjectName,
+        String objectSchema)
+    {
+        // Functions and procedures stores their names as specific name
+        // Specific name = usual name + underscore + object id
+        // We need to get this id and search this routine in schema
+        // To get it correct full name with parameters
+        String privId = privilegeObjectName.substring(privilegeObjectName.lastIndexOf("_") + 1);
+        long routineId = CommonUtils.toLong(privId, -1);
+        if (routineId != -1) {
+            // Start searching routine in schema to get it full name and change it for PostgrePrivilegeGrant object
+            PostgreDatabase database = role.getDatabase();
+            PostgreSchema schema;
+            try {
+                schema = database.getSchema(monitor, objectSchema);
+            } catch (DBException e) {
+                log.debug("Can't find routine schema '" + objectSchema + "'", e);
+                // We can try to use public schema in this case
+                schema = database.getPublicSchema();
+            }
+            if (schema != null) {
+                PostgreProcedure procedure = null;
+                try {
+                    procedure = schema.getProcedure(monitor, routineId);
+                } catch (DBException e) {
+                    log.debug("Can't find routine in schema '" + privilegeObjectName + "'", e);
+                }
+                if (procedure != null && CommonUtils.isNotEmpty(procedure.getOverloadedName())) {
+                    privilege.setObjectName(procedure.getOverloadedName());
+                    if (procedure.getKind() == PostgreProcedureKind.p) {
+                        // They all are FUNCTIONS by default
+                        privilege.setKind(PostgrePrivilegeGrant.Kind.PROCEDURE);
+                    }
+                }
+            }
         }
     }
 

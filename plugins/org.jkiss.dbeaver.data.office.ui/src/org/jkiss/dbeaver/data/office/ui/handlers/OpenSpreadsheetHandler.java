@@ -63,9 +63,9 @@ public class OpenSpreadsheetHandler extends AbstractHandler
         IResultSetSelection rsSelection = resultSet.getSelection();
         List<ResultSetRow> rsSelectedRows = rsSelection.getSelectedRows();
         if (rsSelectedRows.size() > 1) {
-            List<Long> selectedRows = new ArrayList<>();
+            List<Integer> selectedRows = new ArrayList<>();
             for (ResultSetRow selectedRow : rsSelectedRows) {
-                selectedRows.add((long) selectedRow.getRowNumber());
+                selectedRows.add(selectedRow.getRowNumber());
             }
 
             options.setSelectedRows(selectedRows);

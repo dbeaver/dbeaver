@@ -732,8 +732,15 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void persistConfiguration() {
+    public boolean persistConfiguration() {
         registry.updateDataSource(this);
+        Throwable lastError = registry.getLastError();
+        if (lastError != null) {
+            DBWorkbench.getPlatformUI().showError("Save error", "Error saving datasource info", lastError);
+            return false;
+        }
+
+        return true;
     }
 
     @Override
