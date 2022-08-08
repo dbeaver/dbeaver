@@ -97,6 +97,17 @@ public class EntityPart extends NodePart {
         }
     }
 
+    /**
+     * VQB isn't supposed to have column relations, so
+     * getModelSourceConnections and getModelTargetConnections should return
+     * only entity connections
+     *
+     * @return is this part VQB related
+     */
+    protected boolean isVQB() {
+        return false;
+    }
+
     public void handleNameChange() {
         EntityFigure entityFigure = getFigure();
         EditableLabel label = entityFigure.getNameLabel();
@@ -273,7 +284,8 @@ public class EntityPart extends NodePart {
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
+            || ERDAttributeVisibility.isHideAttributeAssociations(store) || isVQB()) {
             return super.getModelSourceConnections();
         }
         return super.getModelSourceConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
@@ -282,7 +294,8 @@ public class EntityPart extends NodePart {
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
         final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
+        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
+            || ERDAttributeVisibility.isHideAttributeAssociations(store) || isVQB()) {
             return super.getModelTargetConnections();
         } else {
             return super.getModelTargetConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
