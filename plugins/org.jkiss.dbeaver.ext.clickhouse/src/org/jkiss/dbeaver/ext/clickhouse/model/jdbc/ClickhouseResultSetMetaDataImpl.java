@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetMetaDataImpl;
 import java.sql.SQLException;
 
 /**
- * JDBCUtils#normalizeIdentifier method usually use dor columns/tables name reading.
+ * JDBCUtils#normalizeIdentifier method is usually used for columns/tables name reading.
  * normalizeIdentifier trim names, but we can create tables/columns with spaces around their names
  * Let's just read names from the driver directly
  */
