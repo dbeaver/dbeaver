@@ -82,8 +82,8 @@ public class PropertyTreeViewer extends TreeViewer {
     }
 
     private static final String CATEGORY_GENERAL = UIMessages.ui_properties_tree_viewer_category_general;
-    private static final int MIN_COLUMN_WIDTH = 100;
-    private static final int MAX_COLUMN_WIDTH = 300;
+    private static final int NAME_COLUMN_WIDTH = 100;
+    private static final int VALUE_COLUMN_WIDTH = 300;
 
     private boolean expandSingleRoot = true;
     private boolean namesEditable = false;
@@ -291,11 +291,11 @@ public class PropertyTreeViewer extends TreeViewer {
                 if (!ArrayUtils.isEmpty(columns) && columns.length > 1) {
                     for (int i = 0; i < columns.length; i++) {
                         if (i == 0) {
-                            if (columns[0].getWidth() < MIN_COLUMN_WIDTH) {
-                                columns[0].setWidth(MIN_COLUMN_WIDTH);
+                            if (columns[0].getWidth() < NAME_COLUMN_WIDTH) {
+                                columns[0].setWidth(NAME_COLUMN_WIDTH);
                             }
-                        } else if (columns[i].getWidth() < MAX_COLUMN_WIDTH) {
-                            columns[i].setWidth(MAX_COLUMN_WIDTH);
+                        } else if (columns[i].getWidth() < VALUE_COLUMN_WIDTH) {
+                            columns[i].setWidth(VALUE_COLUMN_WIDTH);
                         }
                     }
                 }
