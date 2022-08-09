@@ -82,6 +82,8 @@ public class DBNModel implements IResourceChangeListener {
 
     private final DBPPlatform platform;
     private final List<? extends DBPProject> modelProjects;
+
+    private DBPProject defaultProject;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<>();
     private transient INavigatorListener[] listenersCopy = null;
@@ -120,6 +122,10 @@ public class DBNModel implements IResourceChangeListener {
 
     public boolean isGlobal() {
         return modelProjects == null;
+    }
+
+    public void setDefaultProject(DBPProject project) {
+        this.defaultProject = project;
     }
 
     public void initialize()
@@ -324,6 +330,12 @@ public class DBNModel implements IResourceChangeListener {
                 boolean multiNode = Arrays.stream(projects).anyMatch(pr -> pr.getProject().isVirtual());
                 if (!multiNode) {
                     throw new DBException("Multi-project workspace. Extension nodes not supported");
+                }
+                for (DBNProject project : projects) {
+                    if (project.getProject().equals(this.defaultProject)) {
+                        return findNodeByPath(monitor, nodePath,
+                            project, 0);
+                    }
                 }
             }
             return findNodeByPath(monitor, nodePath,
