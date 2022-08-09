@@ -287,6 +287,7 @@ public abstract class BaseProjectImpl implements DBPProject {
             final List<String> resources = new ArrayList<>();
 
             for (var resource : resourceProperties.entrySet()) {
+                boolean containsRequiredProperties = true;
                 final Map<String, Object> props = resource.getValue();
 
                 for (var property : properties.entrySet()) {
@@ -294,11 +295,13 @@ public abstract class BaseProjectImpl implements DBPProject {
                     final Object propValue = property.getValue();
 
                     if (!props.containsKey(propName) || !Objects.equals(props.get(propName), propValue)) {
+                        containsRequiredProperties = false;
                         break;
                     }
                 }
-
-                resources.add(resource.getKey());
+                if (containsRequiredProperties) {
+                    resources.add(resource.getKey());
+                }
             }
 
             return resources.toArray(String[]::new);
