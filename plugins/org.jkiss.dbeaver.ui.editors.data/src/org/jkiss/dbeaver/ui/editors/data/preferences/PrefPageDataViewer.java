@@ -52,7 +52,8 @@ public class PrefPageDataViewer extends TargetPrefPage {
     @Override
     protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer container) {
         final DBPPreferenceStore store = container.getPreferenceStore();
-        return store.contains(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS);
+        return store.contains(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS)
+            || store.contains(ModelPreferences.DICTIONARY_MAX_ROWS);
     }
 
     @Override
@@ -159,6 +160,7 @@ public class PrefPageDataViewer extends TargetPrefPage {
     @Override
     protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS);
+        store.setToDefault(ModelPreferences.DICTIONARY_MAX_ROWS);
     }
 
     @Override
