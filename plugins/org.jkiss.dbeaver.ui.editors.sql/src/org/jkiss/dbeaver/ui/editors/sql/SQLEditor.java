@@ -196,7 +196,7 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile DBPContextProvider executionContextProvider;
     private SQLScriptContext globalScriptContext;
     private volatile boolean syntaxLoaded = false;
-    private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
+    private FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<>();
     private QueryResultsContainer curResultsContainer;
     private Image editorImage;
@@ -4147,35 +4147,31 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private class FindReplaceTarget extends DynamicFindReplaceTarget {
-        private boolean lastFocusInEditor = true;
+        private IFindReplaceTarget previousTarget = null;
         @Override
         public IFindReplaceTarget getTarget() {
+            //getTarget determines current composite used for find/replace
+            //We should update it, when we focus on the other panels or output view
             ResultSetViewer rsv = getActiveResultSetViewer();
             TextViewer textViewer = getTextViewer();
             boolean focusInEditor = textViewer != null && textViewer.getTextWidget() != null && textViewer.getTextWidget().isFocusControl();
-
-            CTabItem activeResultsTab = getActiveResultsTab();
-            if (activeResultsTab != null && activeResultsTab.getData() instanceof StyledText) {
-                StyledText styledText = (StyledText) activeResultsTab.getData();
-                if (!focusInEditor) {
-                    return new StyledTextFindReplaceTarget(styledText);
-                }
-            }
-
             if (!focusInEditor) {
-                if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
-                    focusInEditor = false;
-                } else {
-                    focusInEditor = lastFocusInEditor;
+                if (rsv == null && !outputViewer.getText().isFocusControl() && previousTarget != null) {
+                    focusInEditor = textViewer != null && previousTarget.equals(textViewer.getFindReplaceTarget());
                 }
             }
-            lastFocusInEditor = focusInEditor;
-            if (!focusInEditor && rsv != null) {
-                return rsv.getAdapter(IFindReplaceTarget.class);
-            } else if (textViewer != null) {
-                return textViewer.getFindReplaceTarget();
+            if (!focusInEditor) {
+                //Focus is on presentation we need to find a class for it
+                if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
+                    previousTarget = rsv.getAdapter(IFindReplaceTarget.class);
+                } else if (outputViewer.getControl().isFocusControl()) {
+                    //Output viewer is just StyledText we use StyledTextFindReplace
+                    previousTarget = new StyledTextFindReplaceTarget(outputViewer.getText());
+                }
+            } else {
+                previousTarget = textViewer.getFindReplaceTarget();
             }
-            return null;
+            return previousTarget;
         }
     }
 
