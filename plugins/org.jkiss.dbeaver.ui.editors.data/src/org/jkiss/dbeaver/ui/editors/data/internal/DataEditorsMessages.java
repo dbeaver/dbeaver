@@ -77,6 +77,7 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_result_selector_paste_cell_value;
     public static String pref_page_database_resultsets_label_max_def_column_width;
     public static String pref_page_database_resultsets_label_max_def_column_width_tip;
+    public static String pref_page_database_resultsets_link_colors_and_fonts;
     // ResultSetPlainText
     public static String pref_page_database_resultsets_group_plain_text;
     public static String pref_page_database_resultsets_label_value_format;

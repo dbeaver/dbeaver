@@ -143,6 +143,7 @@ public class DBRShellCommand
             this.waitProcessFinish == source.waitProcessFinish &&
             this.waitProcessTimeoutMs == source.waitProcessTimeoutMs &&
             this.terminateAtDisconnect == source.terminateAtDisconnect &&
+            this.pauseAfterExecute == source.pauseAfterExecute &&
             CommonUtils.equalObjects(this.workingDirectory, source.workingDirectory);
     }
 }

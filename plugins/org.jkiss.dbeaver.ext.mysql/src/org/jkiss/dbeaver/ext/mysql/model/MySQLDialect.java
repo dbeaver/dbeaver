@@ -37,7 +37,7 @@ import java.util.Collections;
 /**
 * MySQL dialect
 */
-class MySQLDialect extends JDBCSQLDialect {
+public class MySQLDialect extends JDBCSQLDialect {
 
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,

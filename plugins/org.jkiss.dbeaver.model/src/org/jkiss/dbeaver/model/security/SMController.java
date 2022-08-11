@@ -90,6 +90,13 @@ public interface SMController extends SMAuthCredentialsManager {
 
     SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
 
+    /**
+     * Invalidate current sm session and tokens
+     *
+     * @throws DBException if the current session is not found or something went wrong
+     */
+    void logout() throws DBException;
+
     void updateSession(
         @NotNull String sessionId,
         @Nullable String userId,

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * DBPDriver
@@ -184,6 +185,11 @@ public interface DBPDriver extends DBPNamedObject
      * @return
      */
     DBPDriver createOriginalCopy();
+
+    /**
+     * Show supported configuration types
+     */
+    Set<DBPDriverConfigurationType> getSupportedConfigurationTypes();
 
     default String getFullId() {
         return getProviderId() + ":" + getId();
