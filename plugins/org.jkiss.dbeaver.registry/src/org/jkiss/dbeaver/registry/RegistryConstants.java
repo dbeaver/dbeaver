@@ -217,4 +217,7 @@ public class RegistryConstants {
     public static final String ATTR_PAUSE_AFTER_EXECUTE = "pauseAfterExecute";
     public static final String ATTR_WORKING_DIRECTORY = "workingDirectory";
     public static final String ATTR_COMMAND = "command";
+    public static final String ATTR_SUPPORTED_CONFIGURATION_TYPES = "supportedConfigurationTypes";
+    public static final String ATTR_CONFIGURATION_TYPE = "configurationType";
+
 }
