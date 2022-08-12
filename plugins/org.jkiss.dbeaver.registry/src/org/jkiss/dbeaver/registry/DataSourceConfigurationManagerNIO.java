@@ -109,8 +109,9 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
     }
 
     @Override
-    public InputStream readConfiguration(@NotNull String name) throws IOException {
-        Path path = getConfigurationPath(false).resolve(name);
+    public InputStream readConfiguration(@NotNull String name, boolean isLegacy) throws IOException {
+        Path configPath = isLegacy ? project.getAbsolutePath() : getConfigurationPath(false);
+        Path path = configPath.resolve(name);
         if (!Files.exists(path)) {
             return null;
         }

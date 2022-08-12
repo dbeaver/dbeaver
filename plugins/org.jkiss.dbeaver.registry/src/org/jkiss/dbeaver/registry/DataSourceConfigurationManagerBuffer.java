@@ -46,7 +46,7 @@ public class DataSourceConfigurationManagerBuffer implements DataSourceConfigura
     }
 
     @Override
-    public InputStream readConfiguration(@NotNull String name) throws DBException, IOException {
+    public InputStream readConfiguration(@NotNull String name, boolean isLegacy) throws DBException, IOException {
         if (data == null) {
             return null;
         }

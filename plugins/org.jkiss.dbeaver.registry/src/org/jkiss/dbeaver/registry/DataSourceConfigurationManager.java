@@ -35,7 +35,7 @@ public interface DataSourceConfigurationManager {
 
     List<DBPDataSourceConfigurationStorage> getConfigurationStorages();
 
-    InputStream readConfiguration(@NotNull String name) throws DBException, IOException;
+    InputStream readConfiguration(@NotNull String name, boolean isLegacy) throws DBException, IOException;
 
     void writeConfiguration(@NotNull String name, @NotNull byte[] data) throws DBException, IOException;
 
