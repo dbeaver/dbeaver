@@ -176,7 +176,7 @@ public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObje
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (sourceDeclaration == null && monitor != null) {
-            sourceDeclaration = OracleUtils.getSource(monitor, this, false, false);
+            sourceDeclaration = OracleUtils.getSource(monitor, this, false, true);
         }
         return sourceDeclaration;
     }

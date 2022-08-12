@@ -259,7 +259,7 @@ public class OracleDataType extends OracleObject<DBSObject>
             return "-- Source code not available";
         }
         if (sourceDeclaration == null && monitor != null) {
-            sourceDeclaration = OracleUtils.getSource(monitor, this, false, false);
+            sourceDeclaration = OracleUtils.getSource(monitor, this, false, true);
         }
         return sourceDeclaration;
     }

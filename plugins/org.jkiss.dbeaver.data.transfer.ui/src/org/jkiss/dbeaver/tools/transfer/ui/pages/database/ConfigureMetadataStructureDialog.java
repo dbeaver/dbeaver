@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -178,11 +177,19 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                             (DBSEntity) tableObject);
                     }
 
-                    PropertyTreeViewer propertyViewer = new PropertyTreeViewer(configTabs, SWT.BORDER);
-                    propertyViewer.getControl().setLayoutData(GridDataFactory.fillDefaults().hint(400, SWT.DEFAULT).create());
+                    final Composite propertiesComposite = new Composite(configTabs, SWT.NONE);
+                    propertiesComposite.setLayout(new GridLayout(1, false));
+                    propertiesComposite.setLayoutData(gd);
+
+                    UIUtils.createLabel(propertiesComposite, DTUIMessages.page_configure_table_properties_text);
+
+                    PropertyTreeViewer propertyViewer = new PropertyTreeViewer(propertiesComposite, SWT.BORDER);
+                    propertyViewer.getControl().setLayoutData(gd);
                     propertyViewer.loadProperties(propertySource);
 
-                    tablePropertiesTab.setControl(propertyViewer.getControl());
+                    propertyViewer.changeColumnsWidth();
+
+                    tablePropertiesTab.setControl(propertiesComposite);
                 } else {
                     createCompositeWithMessage(gd, tablePropertiesTab, DTUIMessages.page_configure_table_properties_no_properties);
                 }

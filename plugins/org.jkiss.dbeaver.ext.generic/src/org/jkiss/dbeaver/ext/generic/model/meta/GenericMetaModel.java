@@ -579,8 +579,21 @@ public class GenericMetaModel {
             null).getSourceStatement();
     }
 
+    /**
+     * Some drivers return columns, tables or other objects names with extra spaces around (like FireBird)
+     * For this reason we usually trim it from our side
+     * But other databases can have tables, columns, etc. with spaces around their names
+     *
+     * @return true if we trim objects names by default, false - if not
+     */
+    public boolean trimObjectNames() {
+        return true;
+    }
+
     public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
-        String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
+        String tableName = trimObjectNames()?
+            GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME)
+            : GenericUtils.safeGetString(tableObject, dbResult, JDBCConstants.TABLE_NAME);
         String tableType = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
 
         String tableSchema = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_SCHEM);
@@ -770,7 +783,9 @@ public class GenericMetaModel {
 
     public GenericTableConstraintColumn[] createConstraintColumnsImpl(JDBCSession session,
                                                                       GenericTableBase parent, GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
-        String columnName = GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME);
+        String columnName = trimObjectNames() ?
+            GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME)
+            : GenericUtils.safeGetString(pkObject, dbResult, JDBCConstants.COLUMN_NAME);
         if (CommonUtils.isEmpty(columnName)) {
             log.debug("Null primary key column for '" + object.getName() + "'");
             return null;
