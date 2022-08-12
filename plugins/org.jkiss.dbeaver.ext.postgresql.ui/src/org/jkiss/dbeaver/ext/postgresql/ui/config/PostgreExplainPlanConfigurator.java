@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
@@ -41,6 +42,13 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
 
     // It is static as we want to save it between plan explains
     private static boolean analyse;
+    private static boolean verbose;
+    private static boolean costs = true;
+    private static boolean settings;
+    private static boolean buffers;
+    private static boolean wal;
+    private static boolean timing = true;
+    private static boolean summary;
 
     @Override
     public DBCQueryPlannerConfiguration configureObject(DBRProgressMonitor monitor, Object container, DBCQueryPlannerConfiguration configuration, Map<String, Object> options) {
@@ -49,7 +57,15 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
             protected DBCQueryPlannerConfiguration runTask() {
                 PlanConfigDialog dialog = new PlanConfigDialog();
                 if (dialog.open() == IDialogConstants.OK_ID) {
-                    configuration.getParameters().put(PostgreQueryPlaner.PARAM_ANALYSE, analyse);
+                    Map<String, Object> parameters = configuration.getParameters();
+                    parameters.put(PostgreQueryPlaner.PARAM_ANALYSE, analyse);
+                    parameters.put(PostgreQueryPlaner.PARAM_VERBOSE, verbose);
+                    parameters.put(PostgreQueryPlaner.PARAM_COSTS, costs);
+                    parameters.put(PostgreQueryPlaner.PARAM_SETTINGS, settings);
+                    parameters.put(PostgreQueryPlaner.PARAM_BUFFERS, buffers);
+                    parameters.put(PostgreQueryPlaner.PARAM_WAL, wal);
+                    parameters.put(PostgreQueryPlaner.PARAM_TIMING, timing);
+                    parameters.put(PostgreQueryPlaner.PARAM_SUMMARY, summary);
                     return configuration;
                 }
                 return null;
@@ -59,21 +75,140 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
 
     private static class PlanConfigDialog extends BaseDialog {
 
+        private Button walCheckbox;
+        private Button timingCheckbox;
+        private Button summaryCheckbox;
+
         public PlanConfigDialog() {
-            super(UIUtils.getActiveWorkbenchShell(), "PostgreSQL explain plan configuration", null);
+            super(UIUtils.getActiveWorkbenchShell(), PostgreMessages.dialog_query_planner_settings_title, null);
         }
 
         @Override
         protected Composite createDialogArea(Composite parent) {
             Composite dialogArea = super.createDialogArea(parent);
-            Group settingsGroup = UIUtils.createControlGroup(dialogArea, "Settings", 2, GridData.FILL_BOTH, 0);
-            UIUtils.createCheckbox(settingsGroup, "Perform ANALYSE", "Perform EXPLAIN ANALYSE. Otherwise will do simple EXPLAIN.\n" +
-                "Note: ANALYSE may take a lot of time for big tables", analyse, 2).addSelectionListener(new SelectionAdapter() {
+            Group settingsGroup = UIUtils.createControlGroup(
+                dialogArea,
+                PostgreMessages.dialog_query_planner_settings_control_label,
+                2,
+                GridData.FILL_BOTH,
+                0);
+            Button analyseCheckbox = UIUtils.createCheckbox(
+                settingsGroup,
+                PostgreMessages.dialog_query_planner_settings_analyze,
+                PostgreMessages.dialog_query_planner_settings_analyze_tip,
+                analyse,
+                2);
+            analyseCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    analyse = ((Button)e.widget).getSelection();
+                    boolean analyseCheckboxSelection = analyseCheckbox.getSelection();
+                    analyse = analyseCheckbox.getSelection();
+                    if (walCheckbox != null) {
+                        walCheckbox.setEnabled(analyseCheckboxSelection);
+                    }
+                    if (timingCheckbox != null) {
+                        timingCheckbox.setEnabled(analyseCheckboxSelection);
+                    }
+                    if (summaryCheckbox != null) {
+                        summaryCheckbox.setEnabled(!analyseCheckboxSelection);
+                    }
                 }
             });
+
+            Button verboseCheckbox = UIUtils.createCheckbox(
+                settingsGroup,
+                PostgreMessages.dialog_query_planner_settings_verbose,
+                PostgreMessages.dialog_query_planner_settings_verbose_tip,
+                verbose,
+                2);
+            verboseCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    verbose = verboseCheckbox.getSelection();
+                }
+            });
+
+            Button costsCheckbox = UIUtils.createCheckbox(
+                settingsGroup,
+                PostgreMessages.dialog_query_planner_settings_costs,
+                 PostgreMessages.dialog_query_planner_settings_costs_tip,
+                costs,
+                2);
+            costsCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    costs = costsCheckbox.getSelection();
+                }
+            });
+
+            Button settingsCheckbox = UIUtils.createCheckbox(
+                settingsGroup,
+                PostgreMessages.dialog_query_planner_settings,
+                PostgreMessages.dialog_query_planner_settings_tip,
+                settings,
+                2);
+            settingsCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings = settingsCheckbox.getSelection();
+                }
+            });
+
+            Button buffersCheckbox = UIUtils.createCheckbox(
+                settingsGroup,
+                PostgreMessages.dialog_query_planner_settings_buffers,
+                PostgreMessages.dialog_query_planner_settings_buffers_tip,
+                buffers,
+                2);
+            buffersCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    buffers = buffersCheckbox.getSelection();
+                }
+            });
+
+            walCheckbox = UIUtils.createCheckbox(
+                settingsGroup,
+                PostgreMessages.dialog_query_planner_settings_wal,
+                PostgreMessages.dialog_query_planner_settings_wal_tip,
+                wal,
+                2);
+            walCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    wal = walCheckbox.getSelection();
+                }
+            });
+            walCheckbox.setEnabled(analyseCheckbox.getSelection());
+
+            timingCheckbox = UIUtils.createCheckbox(
+                settingsGroup,
+                PostgreMessages.dialog_query_planner_settings_timing,
+                PostgreMessages.dialog_query_planner_settings_timing_tip,
+                timing,
+                2);
+            timingCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    timing = timingCheckbox.getSelection();
+                }
+            });
+            timingCheckbox.setEnabled(analyseCheckbox.getSelection());
+
+            summaryCheckbox = UIUtils.createCheckbox(
+                settingsGroup,
+                PostgreMessages.dialog_query_planner_settings_summary,
+                PostgreMessages.dialog_query_planner_settings_summary_tip,
+                summary,
+                2);
+            summaryCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    summary = summaryCheckbox.getSelection();
+                }
+            });
+            summaryCheckbox.setEnabled(!analyseCheckbox.getSelection()); // It is enabled with ANALYZE parameter
+
             return dialogArea;
         }
     }
