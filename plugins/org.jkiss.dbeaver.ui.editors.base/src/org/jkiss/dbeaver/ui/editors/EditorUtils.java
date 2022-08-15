@@ -58,18 +58,20 @@ import java.lang.reflect.Method;
  */
 public class EditorUtils {
 
-    public static final String PROP_SQL_DATA_SOURCE_ID = "sql-editor-data-source-id";
-    private static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id";
+    public static final String PROP_SQL_DATA_SOURCE_ID = "sql-editor-data-source-id"; //$NON-NLS-1$
+    private static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id"; //$NON-NLS-1$
 
-    public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource";
-    private static final String PROP_CONTEXT_DEFAULT_CATALOG = "default-catalog";
-    private static final String PROP_CONTEXT_DEFAULT_SCHEMA = "default-schema";
+    public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource"; //$NON-NLS-1$
+    private static final String PROP_CONTEXT_DEFAULT_CATALOG = "default-catalog"; //$NON-NLS-1$
+    private static final String PROP_CONTEXT_DEFAULT_SCHEMA = "default-schema"; //$NON-NLS-1$
 
-    private static final String PROP_SQL_DATA_SOURCE_CONTAINER = "sql-editor-data-source-container";
-    private static final String PROP_EDITOR_CONTEXT = "database-editor-context";
-    private static final String PROP_EXECUTION_CONTEXT = "sql-editor-execution-context";
+    private static final String PROP_SQL_DATA_SOURCE_CONTAINER = "sql-editor-data-source-container"; //$NON-NLS-1$
+    private static final String PROP_EDITOR_CONTEXT = "database-editor-context"; //$NON-NLS-1$
+    private static final String PROP_EXECUTION_CONTEXT = "sql-editor-execution-context"; //$NON-NLS-1$
 
-    public static final String PROP_NAMESPACE = "org.jkiss.dbeaver";
+    public static final String PROP_NAMESPACE = "org.jkiss.dbeaver"; //$NON-NLS-1$
+
+    public static final String COLORS_AND_FONTS_PAGE_ID = "org.eclipse.ui.preferencePages.ColorsAndFonts"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(EditorUtils.class);
 

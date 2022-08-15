@@ -1457,7 +1457,9 @@ public class HexEditControl extends Composite {
      */
     public void paste()
     {
-        if (!myClipboard.hasContents()) return;
+        if (!myClipboard.hasContents() || this.isReadOnly()) {
+            return;
+        }
 
         handleSelectedPreModify();
         long caretPos = getCaretPos();

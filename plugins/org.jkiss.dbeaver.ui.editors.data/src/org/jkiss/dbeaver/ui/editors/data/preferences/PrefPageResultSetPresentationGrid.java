@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -134,6 +135,11 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage
             maxDefColumnWidth.setToolTipText(
                 DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width_tip);
             maxDefColumnWidth.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+            
+            new PreferenceLinkArea(appearanceGroup, SWT.NONE,
+                EditorUtils.COLORS_AND_FONTS_PAGE_ID,
+                DataEditorsMessages.pref_page_database_resultsets_link_colors_and_fonts,
+                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
 
             final Group behaviorGroup = UIUtils.createControlGroup(uiGroup,
                 DataEditorsMessages.pref_page_database_resultsets_group_behavior, 2,
