@@ -76,7 +76,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         @NotNull DataSourceRegistry.ParseResults parseResults,
         boolean refresh
     ) throws DBException, IOException {
-        try (InputStream is = configurationManager.readConfiguration(configurationStorage.getStorageName(), true)) {
+        try (InputStream is = configurationManager.readConfiguration(configurationStorage.getStorageName())) {
             if (is != null) {
                 SAXReader parser = new SAXReader(is);
                 final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);

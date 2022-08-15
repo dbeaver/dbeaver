@@ -356,7 +356,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             // Read secured creds file
             String configName = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX 
                 + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
-            InputStream secureCredsData = configurationManager.readConfiguration(configName, false);
+            InputStream secureCredsData = configurationManager.readConfiguration(configName);
             if (secureCredsData != null) {
                 try {
                     String credJson = loadConfigFile(secureCredsData, true);
@@ -376,7 +376,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (configurationStorage instanceof DataSourceMemoryStorage) {
             configData = ((DataSourceMemoryStorage) configurationStorage).getInputStream();
         } else {
-            configData = configurationManager.readConfiguration(configurationStorage.getStorageName(), false);
+            configData = configurationManager.readConfiguration(configurationStorage.getStorageName());
         }
         if (configData != null) {
             String configJson = loadConfigFile(configData, decryptProject);
