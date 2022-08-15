@@ -354,9 +354,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
     ) throws DBException, IOException {
         if (!configurationManager.isSecure()) {
             // Read secured creds file
-            String configName = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX 
-                + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
-            InputStream secureCredsData = configurationManager.readConfiguration(configName);
+            InputStream secureCredsData = configurationManager.readConfiguration(
+                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
             if (secureCredsData != null) {
                 try {
                     String credJson = loadConfigFile(secureCredsData, true);
