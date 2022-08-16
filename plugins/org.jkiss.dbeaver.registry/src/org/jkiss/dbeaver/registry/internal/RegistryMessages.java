@@ -20,16 +20,19 @@ package org.jkiss.dbeaver.registry.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class RegistryMessages extends NLS {
-	public static final String BUNDLE_NAME = "org.jkiss.dbeaver.registry.internal.RegistryMessages"; //$NON-NLS-1$
+    public static final String BUNDLE_NAME = "org.jkiss.dbeaver.registry.internal.RegistryMessages"; //$NON-NLS-1$
 
-	public static String dialog_connection_auth_title;
-	public static String dialog_connection_auth_title_for_handler;
+    public static String dialog_connection_auth_title;
+    public static String dialog_connection_auth_title_for_handler;
+    public static String dialog_connection_auth_username;
+    public static String dialog_connection_auth_password;
+    public static String dialog_connection_auth_passphrase;
 
     static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, RegistryMessages.class);
-	}
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, RegistryMessages.class);
+    }
 
-	private RegistryMessages() {
-	}
+    private RegistryMessages() {
+    }
 }

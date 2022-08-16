@@ -788,7 +788,7 @@ public class DataSourceDescriptor
                 // 3. USe legacy password provider
                 if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
                     // Ask for password
-                    authProvided = askForPassword(this, null, false);
+                    authProvided = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
                 }
             }
             if (!authProvided) {
@@ -862,7 +862,8 @@ public class DataSourceDescriptor
                         if (!tunnelConfiguration.isSavePassword()) {
                             DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
                             if (rc != DBWTunnel.AuthCredentials.NONE) {
-                                if (!askForPassword(this, tunnelConfiguration, rc == DBWTunnel.AuthCredentials.PASSWORD)) {
+                                if (!askForPassword(this, tunnelConfiguration,
+                                    rc)) {
                                     updateDataSourceObject(this);
                                     tunnelHandler = null;
                                     return false;
@@ -1505,7 +1506,9 @@ public class DataSourceDescriptor
         this.forceUseSingleConnection = value;
     }
 
-    public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler, final boolean passwordOnly) {
+    public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer,
+        @Nullable final DBWHandlerConfiguration networkHandler,
+        final DBWTunnel.AuthCredentials authType) {
         DBPConnectionConfiguration actualConfig = dataSourceContainer.getActualConnectionConfiguration();
         DBPConnectionConfiguration connConfig = dataSourceContainer.getConnectionConfiguration();
 
@@ -1517,7 +1520,14 @@ public class DataSourceDescriptor
 
         DBPAuthInfo authInfo;
         try {
-            authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
+            authInfo = DBWorkbench.getPlatformUI()
+                .promptUserCredentials(prompt, RegistryMessages.dialog_connection_auth_username, user,
+                    authType == DBWTunnel.AuthCredentials.PASSPHRASE ?
+                        RegistryMessages.dialog_connection_auth_passphrase
+                        : RegistryMessages.dialog_connection_auth_password,
+                    password,
+                    authType != DBWTunnel.AuthCredentials.CREDENTIALS,
+                    !dataSourceContainer.isTemporary());
         } catch (Exception e) {
             log.debug(e);
             authInfo = new DBPAuthInfo(user, password, false);
@@ -1527,7 +1537,7 @@ public class DataSourceDescriptor
         }
 
         if (networkHandler != null) {
-            if (!passwordOnly) {
+            if (authType == DBWTunnel.AuthCredentials.CREDENTIALS) {
                 networkHandler.setUserName(authInfo.getUserName());
             }
             networkHandler.setPassword(authInfo.getUserPassword());
@@ -1539,7 +1549,7 @@ public class DataSourceDescriptor
                 connConfig.updateHandler(networkHandler);
             }
         } else {
-            if (!passwordOnly) {
+            if (authType == DBWTunnel.AuthCredentials.CREDENTIALS) {
                 actualConfig.setUserName(authInfo.getUserName());
             }
             actualConfig.setUserPassword(authInfo.getUserPassword());
@@ -1547,7 +1557,7 @@ public class DataSourceDescriptor
         }
         if (authInfo.isSavePassword()) {
             if (authInfo.isSavePassword() && connConfig != actualConfig) {
-                if (!passwordOnly) {
+                if (authType == DBWTunnel.AuthCredentials.CREDENTIALS) {
                     connConfig.setUserName(authInfo.getUserName());
                 }
                 connConfig.setUserPassword(authInfo.getUserPassword());

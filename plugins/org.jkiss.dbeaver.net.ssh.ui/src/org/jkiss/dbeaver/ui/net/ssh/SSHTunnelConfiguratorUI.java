@@ -492,6 +492,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
                 if (showSavePasswordCheckbox) {
                     savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
+                    savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            passwordText.setEnabled(savePasswordCheckbox.getSelection());
+                        }
+                    });
                     savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 } else {
                     savePasswordCheckbox = null;
@@ -512,15 +518,25 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             privateKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH)));
             if (prefix.isEmpty()) {
                 userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
-                passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 if (savePasswordCheckbox != null) {
                     savePasswordCheckbox.setSelection(configuration.isSavePassword());
+                    passwordText.setEnabled(savePasswordCheckbox.getSelection());
+                    if (savePasswordCheckbox.getSelection()) {
+                        passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
+                    }
+                } else {
+                    passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 }
             } else {
                 userNameText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + RegistryConstants.ATTR_NAME)));
                 passwordText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD)));
                 if (savePasswordCheckbox != null) {
                     savePasswordCheckbox.setSelection(configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD));
+                    if (savePasswordCheckbox.getSelection()) {
+                        passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
+                    }
+                } else {
+                    passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 }
             }
             updateAuthMethodVisibility();
@@ -534,15 +550,24 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
             if (prefix.isEmpty()) {
                 configuration.setUserName(userNameText.getText().trim());
-                configuration.setPassword(passwordText.getText());
+
                 if (savePasswordCheckbox != null) {
                     configuration.setSavePassword(savePasswordCheckbox.getSelection());
+                    if (configuration.isSavePassword()) {
+                        configuration.setPassword(passwordText.getText());
+                    }
+                } else {
+                    configuration.setPassword(passwordText.getText());
                 }
             } else {
                 configuration.setProperty(prefix + RegistryConstants.ATTR_NAME, userNameText.getText().trim());
-                configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
                 if (savePasswordCheckbox != null) {
                     configuration.setProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD, savePasswordCheckbox.getSelection());
+                    if (savePasswordCheckbox.getSelection()) {
+                        configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
+                    }
+                } else {
+                    configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
                 }
             }
         }

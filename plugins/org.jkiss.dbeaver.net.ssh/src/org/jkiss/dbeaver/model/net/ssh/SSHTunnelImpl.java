@@ -112,13 +112,13 @@ public class SSHTunnelImpl implements DBWTunnel {
             if (privKeyValue != null) {
                 byte[] pkBinary = Base64.decode(privKeyValue);
                 if (SSHUtils.isKeyEncrypted(pkBinary)) {
-                    return AuthCredentials.PASSWORD;
+                    return AuthCredentials.PASSPHRASE;
                 }
             }
             // Check whether this key is encrypted
             String privKeyPath = configuration.getStringProperty(SSHConstants.PROP_KEY_PATH);
             if (privKeyPath != null && SSHUtils.isKeyEncrypted(privKeyPath)) {
-                return AuthCredentials.PASSWORD;
+                return AuthCredentials.PASSPHRASE;
             }
             return AuthCredentials.NONE;
         }
