@@ -25,11 +25,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -186,22 +185,13 @@ class SaveScriptDialog extends BaseDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
-        parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
-        Button persistButton = createButton(parent, IDialogConstants.OK_ID, ResultSetMessages.dialog_save_script_button_bar_button_persist, false);
-        ((GridData) persistButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
-
-        Label spacer = new Label(parent, SWT.NONE);
-        GridData gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        gd.minimumWidth = 50;
-        spacer.setLayoutData(gd);
-
-        ((GridLayout) parent.getLayout()).numColumns++;
-        ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
-
-        createButton(parent, IDialogConstants.DETAILS_ID, ResultSetMessages.dialog_save_script_button_bar_button_copy, false);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CLOSE_LABEL, true);
+    protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
+        if (alignment == SWT.LEAD) {
+            createButton(parent, IDialogConstants.OK_ID, ResultSetMessages.dialog_save_script_button_bar_button_persist, false);
+        } else {
+            createButton(parent, IDialogConstants.DETAILS_ID, ResultSetMessages.dialog_save_script_button_bar_button_copy, false);
+            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CLOSE_LABEL, true);
+        }
     }
 
     private void populateSQL() {
