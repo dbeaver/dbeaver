@@ -127,6 +127,17 @@ public class SQLServerUtils {
         return CommonUtils.toBoolean(container.getConnectionConfiguration().getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS));
     }
 
+    /**
+     * Checks whether the {@code nchar} and {@code nvarchar} are stored in the UCS-2 encoding
+     * which uses a byte-pair for representing a code point of the text.
+     * <p>
+     * Some databases return size of a given column in bytes, and in such case
+     * it must be divided by {@code 2} to compensate the encoding.
+     */
+    public static boolean isUnicodeCharStoredAsBytePairs(@NotNull DBPDataSource dataSource) {
+        return !isDriverAzure(dataSource.getContainer().getDriver());
+    }
+
     public static boolean supportsCrossDatabaseQueries(JDBCDataSource dataSource) {
         final DBPDriver driver = dataSource.getContainer().getDriver();
         if (isDriverBabelfish(driver)) {
