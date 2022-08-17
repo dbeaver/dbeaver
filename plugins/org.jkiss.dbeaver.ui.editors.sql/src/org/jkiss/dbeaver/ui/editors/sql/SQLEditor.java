@@ -1683,6 +1683,7 @@ public class SQLEditor extends SQLEditorBase implements
                         log.error("Error creating presentation", e);
                     }
                 }
+                getSite().setSelectionProvider(extraPresentation.getSelectionProvider());
                 if (maximize) {
                     stackLayout.topControl = getExtraPresentationControl();
                     getExtraPresentationControl().setFocus();
