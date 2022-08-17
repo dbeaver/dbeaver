@@ -17,46 +17,20 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
-import org.jkiss.dbeaver.model.exec.DBCScriptContext;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 
-abstract class ResultSetJobAbstract extends DataSourceJob implements DBCExecutionSource {
+abstract class ResultSetJobAbstract extends DataSourceJob {
 
-    protected final DBSDataContainer dataContainer;
-    protected final ResultSetViewer controller;
+    protected final ResultSetExecutionSource executionSource;
 
-    ResultSetJobAbstract(String name, DBSDataContainer dataContainer, ResultSetViewer controller, DBCExecutionContext executionContext) {
+    ResultSetJobAbstract(
+        @NotNull String name,
+        @NotNull ResultSetExecutionSource executionSource,
+        @NotNull DBCExecutionContext executionContext
+    ) {
         super(name, executionContext);
-        this.dataContainer = dataContainer;
-        this.controller = controller;
+        this.executionSource = executionSource;
         setUser(false);
-    }
-
-    @Nullable
-    @Override
-    public DBSDataContainer getDataContainer() {
-        return dataContainer;
-    }
-
-    @NotNull
-    @Override
-    public IResultSetController getExecutionController() {
-        return controller;
-    }
-
-    @Nullable
-    @Override
-    public Object getSourceDescriptor() {
-        return this;
-    }
-
-    @Nullable
-    @Override
-    public DBCScriptContext getScriptContext() {
-        return null;
     }
 }
