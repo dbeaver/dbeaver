@@ -181,7 +181,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                 this.storages.add(defaultStorage);
                 return defaultStorage;
             } catch (IOException e) {
-                throw new IllegalStateException("no default storage in registry " + this + "and unable to create it");
+                throw new IllegalStateException("Unable to create a default storage in registry " + this, e);
             }
         }
     }
