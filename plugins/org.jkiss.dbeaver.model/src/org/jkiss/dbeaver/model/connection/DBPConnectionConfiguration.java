@@ -54,19 +54,8 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     public static final String VARIABLE_DATE = "date";
 
-    public static final String[][] CONNECT_VARIABLES = new String[][]{
-        {VARIABLE_HOST, "target database host"},
-        {VARIABLE_PORT, "target database port"},
-        {VARIABLE_SERVER, "target server name"},
-        {VARIABLE_DATABASE, "target database name"},
-        {VARIABLE_USER, "database user name"},
-        {VARIABLE_URL, "connection URL"},
-        {VARIABLE_CONN_TYPE, "connection type"},
-        {VARIABLE_DATASOURCE, "datasource"},
-        {VAR_PROJECT_PATH, "project path"},
-        {VAR_PROJECT_NAME, "project name"},
-        {VARIABLE_DATE, "current date"},
 
+    public static final String[][] SYSTEM_VARIABLES = {
         {SystemVariablesResolver.VAR_WORKSPACE, "workspace path"},
         {SystemVariablesResolver.VAR_HOME, "OS user home path"},
         {SystemVariablesResolver.VAR_DBEAVER_HOME, "application install path"},
@@ -75,6 +64,22 @@ public class DBPConnectionConfiguration implements DBPObject {
         {SystemVariablesResolver.VAR_APP_VERSION, "application version"},
         {SystemVariablesResolver.VAR_LOCAL_IP, "local IP address"},
     };
+
+    public static final String[][] CONNECT_VARIABLES = ArrayUtils.concatArrays(
+        SYSTEM_VARIABLES,
+        new String[][]{
+            {VARIABLE_HOST, "target database host"},
+            {VARIABLE_PORT, "target database port"},
+            {VARIABLE_SERVER, "target server name"},
+            {VARIABLE_DATABASE, "target database name"},
+            {VARIABLE_USER, "database user name"},
+            {VARIABLE_URL, "connection URL"},
+            {VARIABLE_CONN_TYPE, "connection type"},
+            {VARIABLE_DATASOURCE, "datasource"},
+            {VAR_PROJECT_PATH, "project path"},
+            {VAR_PROJECT_NAME, "project name"},
+            {VARIABLE_DATE, "current date"},
+        });
 
     public static final String[][] INTERNAL_CONNECT_VARIABLES = ArrayUtils.concatArrays(
         CONNECT_VARIABLES,

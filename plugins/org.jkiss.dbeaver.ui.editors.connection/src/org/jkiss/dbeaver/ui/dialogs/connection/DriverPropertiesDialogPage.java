@@ -27,9 +27,13 @@ import org.eclipse.swt.widgets.Link;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptorSerializer;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -123,7 +127,8 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             for (Map.Entry<String, Object> entry : propertySource.getPropertyValues().entrySet()) {
                 String propName = CommonUtils.toString(entry.getKey());
                 if (!propName.isEmpty()) {
-                    properties.put(propName, CommonUtils.toString(entry.getValue()));
+                    properties.put(propName, GeneralUtils.replaceVariables(CommonUtils.toString(entry.getValue()),
+                        new SystemVariablesResolver()));
                 }
             }
         }
@@ -174,7 +179,11 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             }
             netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }
-
+        VariablesHintLabel variablesHintLabel = new VariablesHintLabel(ph,
+            UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
+            UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
+            DBPConnectionConfiguration.SYSTEM_VARIABLES,
+            false);
         setControl(ph);
     }
 
