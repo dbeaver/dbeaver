@@ -862,8 +862,7 @@ public class DataSourceDescriptor
                         if (!tunnelConfiguration.isSavePassword()) {
                             DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
                             if (rc != DBWTunnel.AuthCredentials.NONE) {
-                                if (!askForPassword(this, tunnelConfiguration,
-                                    rc)) {
+                                if (!askForPassword(this, tunnelConfiguration, rc)) {
                                     updateDataSourceObject(this);
                                     tunnelHandler = null;
                                     return false;
@@ -1506,9 +1505,11 @@ public class DataSourceDescriptor
         this.forceUseSingleConnection = value;
     }
 
-    public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer,
+    public static boolean askForPassword(
+        @NotNull final DataSourceDescriptor dataSourceContainer,
         @Nullable final DBWHandlerConfiguration networkHandler,
-        final DBWTunnel.AuthCredentials authType) {
+        @NotNull final DBWTunnel.AuthCredentials authType
+    ) {
         DBPConnectionConfiguration actualConfig = dataSourceContainer.getActualConnectionConfiguration();
         DBPConnectionConfiguration connConfig = dataSourceContainer.getConnectionConfiguration();
 
@@ -1520,14 +1521,16 @@ public class DataSourceDescriptor
 
         DBPAuthInfo authInfo;
         try {
-            authInfo = DBWorkbench.getPlatformUI()
-                .promptUserCredentials(prompt, RegistryMessages.dialog_connection_auth_username, user,
-                    authType == DBWTunnel.AuthCredentials.PASSPHRASE ?
-                        RegistryMessages.dialog_connection_auth_passphrase
-                        : RegistryMessages.dialog_connection_auth_password,
-                    password,
-                    authType != DBWTunnel.AuthCredentials.CREDENTIALS,
-                    !dataSourceContainer.isTemporary());
+            authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt,
+                RegistryMessages.dialog_connection_auth_username,
+                user,
+                authType == DBWTunnel.AuthCredentials.PASSPHRASE
+                    ? RegistryMessages.dialog_connection_auth_passphrase
+                    : RegistryMessages.dialog_connection_auth_password,
+                password,
+                authType != DBWTunnel.AuthCredentials.CREDENTIALS,
+                !dataSourceContainer.isTemporary()
+            );
         } catch (Exception e) {
             log.debug(e);
             authInfo = new DBPAuthInfo(user, password, false);

@@ -521,10 +521,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 if (savePasswordCheckbox != null) {
                     savePasswordCheckbox.setSelection(configuration.isSavePassword());
                     passwordText.setEnabled(savePasswordCheckbox.getSelection());
-                    if (savePasswordCheckbox.getSelection()) {
-                        passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
-                    }
-                } else {
+                }
+                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
                     passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 }
             } else {
@@ -532,10 +530,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 passwordText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD)));
                 if (savePasswordCheckbox != null) {
                     savePasswordCheckbox.setSelection(configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD));
-                    if (savePasswordCheckbox.getSelection()) {
-                        passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
-                    }
-                } else {
+                }
+                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
                     passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 }
             }
@@ -553,20 +549,16 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
                 if (savePasswordCheckbox != null) {
                     configuration.setSavePassword(savePasswordCheckbox.getSelection());
-                    if (configuration.isSavePassword()) {
-                        configuration.setPassword(passwordText.getText());
-                    }
-                } else {
+                }
+                if (savePasswordCheckbox == null || configuration.isSavePassword()) {
                     configuration.setPassword(passwordText.getText());
                 }
             } else {
                 configuration.setProperty(prefix + RegistryConstants.ATTR_NAME, userNameText.getText().trim());
                 if (savePasswordCheckbox != null) {
                     configuration.setProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD, savePasswordCheckbox.getSelection());
-                    if (savePasswordCheckbox.getSelection()) {
-                        configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
-                    }
-                } else {
+                }
+                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
                     configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
                 }
             }
