@@ -143,6 +143,9 @@ public class GroupingPanel implements IResultSetPanel {
 
     @Override
     public void refresh(boolean force) {
+        if (!force) {
+            return;
+        }
         // Here we can refresh grouping (makes sense if source query was modified with some conditions)
         // Or just clear it (if brand new query was executed)
         GroupingResultsContainer groupingResultsContainer = getGroupingResultsContainer();
