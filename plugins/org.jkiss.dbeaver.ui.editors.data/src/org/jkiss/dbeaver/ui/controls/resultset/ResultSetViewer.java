@@ -3965,8 +3965,6 @@ public class ResultSetViewer extends Viewer
         autoRefreshControl.cancelRefresh();
 
         // Read data
-        final DBDDataFilter useDataFilter = dataFilter != null ? dataFilter :
-            (dataContainer == getDataContainer() ? model.getDataFilter() : null);
         Composite progressControl = viewerPanel;
         if (activePresentation.getControl() instanceof Composite) {
             progressControl = (Composite) activePresentation.getControl();
@@ -3974,13 +3972,12 @@ public class ResultSetViewer extends Viewer
 
         ResultSetJobDataRead dataPumpJob = new ResultSetDataPumpJob(
             dataContainer,
-            useDataFilter,
+            new ResultSetExecutionSource(dataContainer, this, this, dataFilter),
             executionContext,
             progressControl,
             focusRow,
             saveHistory,
             scroll,
-            dataFilter,
             finalizer);
         dataPumpJob.setOffset(offset);
         dataPumpJob.setMaxRows(maxRows);
@@ -4902,31 +4899,26 @@ public class ResultSetViewer extends Viewer
     }
 
     private class ResultSetDataPumpJob extends ResultSetJobDataRead {
-        private final DBDDataFilter useDataFilter;
         private final int focusRow;
         private final boolean saveHistory;
         private final boolean scroll;
         private final Object presentationState;
-        private final DBDDataFilter dataFilter;
         private final Runnable finalizer;
 
         ResultSetDataPumpJob(
-            DBSDataContainer dataContainer,
-            DBDDataFilter useDataFilter,
-            DBCExecutionContext executionContext,
-            Composite progressControl,
+            @NotNull DBSDataContainer dataContainer,
+            @NotNull ResultSetExecutionSource executionSource,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull Composite progressControl,
             int focusRow,
             boolean saveHistory,
             boolean scroll,
-            DBDDataFilter dataFilter,
-            Runnable finalizer)
+            @Nullable Runnable finalizer)
         {
-            super(dataContainer, useDataFilter, ResultSetViewer.this, executionContext, progressControl);
-            this.useDataFilter = useDataFilter;
+            super(dataContainer, executionSource, executionContext, progressControl);
             this.focusRow = focusRow;
             this.saveHistory = saveHistory;
             this.scroll = scroll;
-            this.dataFilter = dataFilter;
             this.finalizer = finalizer;
             this.presentationState = savePresentationState();
         }
@@ -4953,6 +4945,8 @@ public class ResultSetViewer extends Viewer
         public void forceDataReadCancel(Throwable error) {
             setError(error);
             afterDataRead();
+
+            final DBSDataContainer dataContainer = executionSource.getDataContainer();
             if (dataContainer instanceof IQueryExecuteController) {
                 ((IQueryExecuteController) dataContainer).forceDataReadCancel(error);
             }
@@ -4961,7 +4955,7 @@ public class ResultSetViewer extends Viewer
         private void beforeDataRead() {
             dataReceiver.setFocusRow(focusRow);
             // Set explicit target container
-            dataReceiver.setTargetDataContainer(dataContainer);
+            dataReceiver.setTargetDataContainer(executionSource.getDataContainer());
 
             model.setUpdateInProgress(this);
             model.setStatistics(null);
@@ -4977,6 +4971,7 @@ public class ResultSetViewer extends Viewer
             }
             UIUtils.syncExec(() -> {
                 try {
+                    final DBSDataContainer dataContainer = executionSource.getDataContainer();
                     final Control control1 = getControl();
                     if (control1.isDisposed()) {
                         return;
@@ -4985,7 +4980,7 @@ public class ResultSetViewer extends Viewer
 
                     // update history. Do it first otherwise we are in the incorrect state (getDatacontainer() may return wrong value)
                     if (saveHistory && error == null) {
-                        setNewState(dataContainer, useDataFilter);
+                        setNewState(dataContainer, executionSource.getUseDataFilter());
                     }
 
                     boolean panelUpdated = false;
@@ -5052,6 +5047,7 @@ public class ResultSetViewer extends Viewer
                     activePresentation.updateValueView();
 
                     if (!scroll) {
+                        final DBDDataFilter dataFilter = executionSource.getDataFilter();
                         if (dataFilter != null) {
                             boolean visibilityChanged = !model.getDataFilter().equalVisibility(dataFilter);
                             model.updateDataFilter(dataFilter, true);

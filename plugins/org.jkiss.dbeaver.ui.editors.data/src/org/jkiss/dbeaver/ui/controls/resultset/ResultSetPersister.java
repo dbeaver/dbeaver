@@ -212,8 +212,12 @@ class ResultSetPersister {
             throw new DBCException("No execution context");
         }
 
-        RowRefreshJob job = new RowRefreshJob(executionContext, viewer.getDataContainer(), rowIdentifier, refreshRows);
-        viewer.queueDataPump(job);
+        viewer.queueDataPump(new RowRefreshJob(
+            executionContext,
+            new ResultSetExecutionSource(viewer.getDataContainer(), viewer, this),
+            rowIdentifier,
+            refreshRows
+        ));
         //job.schedule();
         return true;
     }
@@ -1018,13 +1022,16 @@ class ResultSetPersister {
 
     private class RowRefreshJob extends ResultSetJobAbstract {
 
-        private DBSDataContainer dataContainer;
-        private DBDRowIdentifier rowIdentifier;
-        private List<ResultSetRow> rows;
+        private final DBDRowIdentifier rowIdentifier;
+        private final List<ResultSetRow> rows;
 
-        RowRefreshJob(DBCExecutionContext context, DBSDataContainer dataContainer, DBDRowIdentifier rowIdentifier, List<ResultSetRow> rows) {
-            super("Refresh rows", dataContainer, viewer, context);
-            this.dataContainer = dataContainer;
+        RowRefreshJob(
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull ResultSetExecutionSource executionSource,
+            @NotNull DBDRowIdentifier rowIdentifier,
+            @NotNull List<ResultSetRow> rows
+        ) {
+            super("Refresh rows", executionSource, executionContext);
             this.rowIdentifier = rowIdentifier;
             this.rows = new ArrayList<>(rows);
         }
@@ -1036,6 +1043,7 @@ class ResultSetPersister {
             }
             monitor.beginTask("Refresh updated rows", 1);
             try {
+                final DBSDataContainer dataContainer = executionSource.getDataContainer();
                 final Object[][] refreshValues = new Object[rows.size()][];
 
                 final DBDAttributeBinding[] curAttributes = viewer.getModel().getAttributes();
