@@ -46,7 +46,10 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -170,7 +173,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                 }
             }
             // No default storage. Seems to be an internal error
-            throw new IllegalStateException("no default storage in registry " + this);
+            log.warn("no default storage in registry " + this);
+            try {
+                java.nio.file.Path configPath = this.getProject().getMetadataFolder(false).resolve(MODERN_CONFIG_FILE_NAME);
+                Files.createFile(configPath);
+                DBPDataSourceConfigurationStorage defaultStorage = new DataSourceFileStorage(configPath, false, true);
+                this.storages.add(defaultStorage);
+                return defaultStorage;
+            } catch (IOException e) {
+                throw new IllegalStateException("no default storage in registry " + this + "and unable to create it");
+            }
         }
     }
 

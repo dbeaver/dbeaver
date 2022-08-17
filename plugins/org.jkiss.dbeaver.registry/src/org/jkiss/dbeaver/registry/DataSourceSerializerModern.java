@@ -363,7 +363,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         credJson,
                         new TypeToken<Map<String, Map<String, Map<String, String>>>>() {
                         }.getType());
-                    secureProperties.putAll(res);
+                    if (res != null) {
+                        secureProperties.putAll(res);
+                    }
                 } catch (Exception e) {
                     log.error("Error decrypting secure credentials", e);
                 }
