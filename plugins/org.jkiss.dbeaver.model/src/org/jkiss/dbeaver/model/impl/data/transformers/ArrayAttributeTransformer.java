@@ -49,7 +49,7 @@ public class ArrayAttributeTransformer implements DBDAttributeTransformer {
         if (collectionType != null) {
             DBSDataType componentType = collectionType.getComponentType(session.getProgressMonitor());
             if (componentType instanceof DBSEntity) {
-                ComplexTypeAttributeTransformer.createNestedTypeBindings(session, attribute, rows, (DBSEntity) componentType);
+                ComplexTypeAttributeTransformer.createNestedTypeBindings(session, attribute, rows, componentType);
                 return;
             }
         }
