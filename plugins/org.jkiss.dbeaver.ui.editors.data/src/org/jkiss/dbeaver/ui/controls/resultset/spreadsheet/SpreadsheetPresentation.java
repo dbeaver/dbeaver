@@ -1893,8 +1893,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             final ResultSetCellLocation cellLocation = new ResultSetCellLocation(attr, row, getRowNestedIndexes(rowElement));
             final Object cellValue = controller.getModel().getCellValue(cellLocation);
 
-            if (cellValue instanceof DBDCollection) {
-                return ((DBDCollection) cellValue).getItemCount();
+            if (cellValue instanceof List<?>) {
+                return ((List<?>) cellValue).size();
             }
 
             return 0;
@@ -1934,8 +1934,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         if (curRow != null) {
                             Object cellValue = controller.getModel().getCellValue(
                                 new ResultSetCellLocation(binding, curRow));
-                            if (cellValue instanceof DBDCollection) {
-                                if (((DBDCollection) cellValue).getItemCount() < 3) {
+                            if (cellValue instanceof List<?>) {
+                                if (((List<?>) cellValue).size() < 3) {
                                     return ElementState.EXPANDED;
                                 }
                                 if (!DBUtils.isNullValue(cellValue)) {

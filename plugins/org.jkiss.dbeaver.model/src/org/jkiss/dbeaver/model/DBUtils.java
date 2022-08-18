@@ -761,84 +761,64 @@ public final class DBUtils {
     @Nullable
     public static Object getAttributeValue(
         @NotNull DBDAttributeBinding attribute,
-        DBDAttributeBinding[] allAttributes,
-        Object[] row,
-        int[] nestedIndexes)
-    {
+        @NotNull DBDAttributeBinding[] allAttributes,
+        @NotNull Object[] row,
+        @Nullable int[] nestedIndexes
+    ) {
         if (attribute.isCustom()) {
-            return DBVUtils.executeExpression(((DBDAttributeBindingCustom)attribute).getEntityAttribute(), allAttributes, row);
+            return DBVUtils.executeExpression(((DBDAttributeBindingCustom) attribute).getEntityAttribute(), allAttributes, row);
         }
 
-        int depth = attribute.getLevel();
-        if (depth == 0) {
-            final int index = attribute.getOrdinalPosition();
-            if (index >= row.length) {
-                log.debug("Bad attribute '" + attribute.getName() + "' index: " + index + " is out of row values' bounds (" + row.length + ")");
-                return null;
-            } else {
-                if (nestedIndexes == null) {
-                    return row[index];
-                } else {
-                    if (attribute.getDataKind() != DBPDataKind.ARRAY) {
-                        // Sibling non-array attribute
-                        return DBDVoid.INSTANCE;
-                    }
-                    Object colValue = row[index];
-                    if (colValue instanceof DBDCollection) {
-                        if (((DBDCollection) colValue).getItemCount() <= nestedIndexes[0]) {
-                            // Not an error. This collection is shorter than sibling collection
-                            return DBDVoid.INSTANCE;
-                        }
-                        return ((DBDCollection) colValue).getItem(nestedIndexes[0]);
-                    } else {
-                        log.debug("Index specified for non-collection attribute");
-                    }
-                }
-            }
+        final int depth = attribute.getLevel();
+        final int index = attribute.getTopParent().getOrdinalPosition();
+
+        if (depth == 0 && attribute != attribute.getTopParent()) {
+            log.debug("Top-level attribute '" + attribute.getName() + "' has bad top-level parent: '" + attribute.getTopParent().getName() + "'");
+            return null;
         }
-        Object curValue = row[attribute.getTopParent().getOrdinalPosition()];
-        int indexNumber = 0;
+
+        if (index >= row.length) {
+            log.debug("Bad attribute '" + attribute.getName() + "' index: " + index + " is out of row values' bounds (" + row.length + ")");
+            return null;
+        }
+
+        Object curValue = row[index];
+        int curNestedIndex = 0;
 
         for (int i = 0; i < depth; i++) {
             if (curValue == null) {
                 break;
             }
-            DBDAttributeBinding attr = attribute.getParent(depth - i - 1);
-            assert attr != null;
+
+            final int nestedIndex;
+
+            if (curValue instanceof List<?> && nestedIndexes != null) {
+                nestedIndex = nestedIndexes[curNestedIndex++];
+
+                if (((List<?>) curValue).size() <= nestedIndex) {
+                    // Not an error. This collection is shorter than sibling collection
+                    return DBDVoid.INSTANCE;
+                }
+            } else {
+                nestedIndex = 0;
+            }
+
             try {
-                int nestedIndex = 0;
-                if (curValue instanceof DBDCollection) {
-                    nestedIndex = nestedIndexes == null ? 0 : nestedIndexes[indexNumber++];
-                }
-                curValue = attr.extractNestedValue(
-                    curValue,
-                    nestedIndex);
+                curValue = Objects.requireNonNull(attribute.getParent(depth - i - 1)).extractNestedValue(curValue, nestedIndex);
             } catch (Throwable e) {
-                //log.debug("Error reading nested value of [" + attr.getName() + "]", e);
-                curValue = new DBDValueError(e);
-                break;
+                return new DBDValueError(e);
             }
-            if (nestedIndexes != null && indexNumber < nestedIndexes.length) {
-                if (attr instanceof DBDAttributeBindingElement) {
-                    // Nested value already extracted by element binding
-                } else if (attr instanceof DBDAttributeBindingType) {
-                    if (attr.getDataKind() != DBPDataKind.ARRAY) {
-                        return DBDVoid.INSTANCE;
-                    }
-                } else if (curValue instanceof DBDCollection) {
-                    if (((DBDCollection) curValue).getItemCount() <= nestedIndexes[indexNumber]) {
-                        // Not an error. This collection is shorter than sibling collection
-                        return DBDVoid.INSTANCE;
-                    }
-                    curValue = ((DBDCollection) curValue).getItem(nestedIndexes[indexNumber]);
-                    indexNumber++;
-                } else {
-                    if (i == depth - 1) {
-                        // Sibling non-collection attribute
-                        return DBDVoid.INSTANCE;
-                    }
-                }
+        }
+
+        while (nestedIndexes != null && curNestedIndex < nestedIndexes.length && curValue instanceof List<?>) {
+            final int nestedIndex = nestedIndexes[curNestedIndex++];
+
+            if (((List<?>) curValue).size() <= nestedIndex) {
+                // Not an error. This collection is shorter than sibling collection
+                return DBDVoid.INSTANCE;
             }
+
+            curValue = ((List<?>) curValue).get(nestedIndex);
         }
 
         return curValue;
