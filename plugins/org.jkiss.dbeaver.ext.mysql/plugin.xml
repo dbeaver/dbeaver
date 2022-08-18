@@ -207,7 +207,7 @@
                         description="Driver for MySQL 8 and later"
                         promoted="1"
                         categories="sql">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.17]" bundle="!drivers.mysql"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.29]" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
