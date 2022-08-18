@@ -48,8 +48,9 @@ import java.util.*;
 /**
  * PostgreTypeType
  */
-public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreClass, PostgreScriptObject, DBPQualifiedObject, DBPImageProvider
-{
+public class PostgreDataType extends JDBCDataType<PostgreSchema> 
+    implements PostgreClass, PostgreScriptObject, DBPQualifiedObject, DBPImageProvider, DBSBindableDataType {
+
     private static final Log log = Log.getLog(PostgreDataType.class);
 
     //private static final String CAT_MAIN = "Main";
@@ -530,6 +531,25 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Override
     public DBSEntityType getEntityType() {
         return DBSEntityType.TYPE;
+    }
+
+    @Nullable
+    @Override
+    public List<? extends DBSContextBoundAttribute> bindAttributesToContext(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity dataContainer,
+        @NotNull DBSEntityAttribute memberContext
+    ) throws DBException {
+        List<PostgreDataTypeAttribute> attrs = this.getAttributes(monitor);
+        if (attrs == null) {
+            return null;
+        }
+    
+        List<PostgreDataBoundTypeAttribute> boundAttrs = new ArrayList<>(attrs.size());
+        for (PostgreDataTypeAttribute attr : attrs) {
+            boundAttrs.add(new PostgreDataBoundTypeAttribute(monitor, (PostgreTableBase) dataContainer, memberContext, attr));
+        }
+        return boundAttrs;
     }
 
     @Override
