@@ -735,7 +735,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         if (hasStatistics && !forceRefresh) {
             return;
         }
-        if (!this.isMariaDB() && !this.isServerVersionAtLeast(4, 1)) {
+        
+        // TiDB & MariaDB & MySQL 4.1+: support
+        // rest MySQL: not support
+        if (!this.isTiDB() && !this.isMariaDB() && !this.isServerVersionAtLeast(4, 1)) {
             // Not supported by MySQL server
             hasStatistics = true;
             return;
@@ -792,7 +795,50 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return MySQLConstants.DRIVER_CLASS_MARIA_DB.equals(
             getContainer().getDriver().getDriverClassName());
     }
-
+    
+    public boolean isTiDB() {
+        return MySQLConstants.DRIVER_ID_TIDB.equals(
+            getContainer().getDriver().getId());
+    }
+    
+    // TiDB version string looks like: `5.7.25-TiDB-v6.1.0`
+    // JDBC will return major version 5 and minor version 7
+    // But the real TiDB version is v6.1.0
+    public boolean isTiDBServerVersionAtLeast (int major, int minor) {
+        if (!isTiDB()) {
+            return false;
+        }
+        
+        String tidbVersion = this.getInfo().getDatabaseProductVersion();
+        String[] tidbVersionArray = tidbVersion.split("-");
+        if (tidbVersionArray.length != 3 || !tidbVersionArray[1].equals("TiDB")) {
+            // It means not a TiDB server actually
+            return false;
+        }
+        
+        // drop first char "v"
+        String realTiDBVersion = tidbVersionArray[2].substring(1);
+        String[] realTiDBVersionArray = realTiDBVersion.split("\\.");
+        if (realTiDBVersionArray.length != 3) {
+            // It means not a TiDB server actually
+            return false;
+        }
+        
+        try {
+            int serverMajor = Integer.parseInt(realTiDBVersionArray[0]);
+            int serverMinor = Integer.parseInt(realTiDBVersionArray[1]);
+            
+            // target major version is less than server
+            // OR
+            // major version equals AND target minor version is equal or less than server
+            return (major < serverMajor || (major == serverMajor && minor <= serverMinor));
+        } catch (NumberFormatException e){
+            // It means not a TiDB server actually
+            log.error("TiDB server version not a number, error: " + e.getMessage());
+            return false;
+        }
+    }
+    
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         if (isMariaDB()) {
@@ -822,10 +868,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     public boolean supportsCheckConstraints() {
-        if (this.isMariaDB()) {
+        if (this.isTiDB()) {
+            // TiDB will ignore check constraints. 
+            // See here: https://docs.pingcap.com/tidb/dev/constraints
+            return false;
+        } else if (this.isMariaDB()) {
             return this.isServerVersionAtLeast(10, 2) && containsCheckConstraintTable;
-        }
-        else {
+        } else {
             return this.isServerVersionAtLeast(8, 0) && containsCheckConstraintTable;
         }
     }
@@ -842,18 +891,38 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     public boolean supportsSequences() {
-        if (this.isMariaDB()) {
+        if (this.isTiDB()) {
+            return this.isTiDBServerVersionAtLeast(4, 0);
+        } else if (this.isMariaDB()) {
             return this.isServerVersionAtLeast(10, 3);
         }
+
         return false;
     }
 
+    // TiDB: not support triggers
+    public boolean supportsTriggers() {
+        return !this.isTiDB();
+    }
+
+    // TiDB: not support procedures
+    public boolean supportsProcedures() {
+        return !this.isTiDB();
+    }
+    
+    // TiDB: not support event
+    public boolean supportsEvents() {
+        return !this.isTiDB();
+    }
+    
     /**
      * Checks if column statistics is supported.
      *
      * @return {@code true} if column statistics is supported
      */
     public boolean supportsColumnStatistics() {
-        return !isMariaDB() && isServerVersionAtLeast(8, 0);
+        // TiDB & MariaDB: not support
+        // MySQL: 8.0 + support
+        return !isTiDB() && !isMariaDB() && isServerVersionAtLeast(8, 0);
     }
 }

@@ -59,11 +59,13 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
 
     private final Image LOGO_MYSQL;
     private final Image LOGO_MARIADB;
+    private final Image LOGO_TIDB;
     private boolean needsPort;
 
     public MySQLConnectionPage() {
         LOGO_MYSQL = createImage("icons/mysql_logo.png");
         LOGO_MARIADB = createImage("icons/mariadb_logo.png");
+        LOGO_TIDB = createImage("icons/tidb_logo.png");
     }
 
     @Override
@@ -72,14 +74,18 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         super.dispose();
         UIUtils.dispose(LOGO_MYSQL);
         UIUtils.dispose(LOGO_MARIADB);
+        UIUtils.dispose(LOGO_TIDB);
     }
 
     @Override
     public Image getImage() {
+        String driverID = getSite().getDriver().getId();
         // We set image only once at activation
         // There is a bug in Eclipse which leads to SWTException after wizard image change
-        if (getSite().getDriver().getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
+        if (driverID.equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
             return LOGO_MARIADB;
+        } else if (driverID.equalsIgnoreCase(MySQLConstants.DRIVER_ID_TIDB)) {
+            return LOGO_TIDB;
         } else {
             return LOGO_MYSQL;
         }

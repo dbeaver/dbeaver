@@ -91,7 +91,7 @@
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure" label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.tip">
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure" label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.tip" visibleIf="object.dataSource.supportsProcedures()">
                             <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
                                 <items label="Parameters" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true">
                                 </items>
@@ -105,11 +105,11 @@
                             <items label="%tree.sequences.node.name" path="sequence" property="sequences" icon="#sequence">
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.triggers.node.name" icon="#triggers" description="%tree.triggers.node.tip" virtual="true">
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.triggers.node.name" icon="#triggers" description="%tree.triggers.node.tip" virtual="true" visibleIf="object.dataSource.supportsTriggers()">
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger" virtual="true">
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLEvent" label="%tree.events.node.name" icon="#events" description="%tree.events.node.tip">
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLEvent" label="%tree.events.node.name" icon="#events" description="%tree.events.node.tip" visibleIf="object.dataSource.supportsEvents()">
                             <items label="%tree.event.node.name" path="event" property="events" icon="#event">
                             </items>
                         </folder>
@@ -263,6 +263,32 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>
+                </driver>
+
+                <driver
+                    id="tidb"
+                    label="TiDB"
+                    icon="icons/tidb_icon.png"
+                    iconBig="icons/tidb_icon_big.png"
+                    class="com.mysql.cj.jdbc.Driver"
+                    sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                    defaultPort="4000"
+                    defaultUser="root"
+                    webURL="https://pingcap.com/"
+                    propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
+                    description="%driver.tidb.description"
+                    promoted="1"
+                    categories="sql">
+
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE" bundle="!drivers.mysql"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+
+                    <parameter name="serverType" value="tidb"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
                 </driver>
             </drivers>
 

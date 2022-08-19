@@ -103,7 +103,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     @Override
     public void filterCommands(DBECommandQueue<MySQLUser> queue)
     {
-        if (USE_DIRECT_UPDATE && !queue.isEmpty() && !MySQLUtils.isAlterUSerSupported(queue.getObject().getDataSource())) {
+        if (USE_DIRECT_UPDATE && !queue.isEmpty() && !MySQLUtils.isAlterUserSupported(queue.getObject().getDataSource())) {
             // Add privileges flush to the tail
             queue.add(
                 new DBECommandAbstract<MySQLUser>(

@@ -66,8 +66,12 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlanSerializer implement
         }
     }
 
+    // MariaDB 10.1+ & MySQL 5.6+: support
+    // rest MariaDB/MySQL & TiDB: not support
     private boolean supportsExplainJSON() {
-        if (dataSource.isMariaDB()) {
+        if (dataSource.isTiDB()) {
+            return false;
+        } else if (dataSource.isMariaDB()) {
             return dataSource.isServerVersionAtLeast(10, 1);
         } else {
             return dataSource.isServerVersionAtLeast(5, 6);

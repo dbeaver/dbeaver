@@ -32,6 +32,7 @@ public class MySQLConstants {
     public static final String DRIVER_ID_MYSQL = "mysql5";
     public static final String DRIVER_ID_MYSQL8 = "mysql8";
     public static final String DRIVER_ID_MARIA_DB = "mariaDB";
+    public static final String DRIVER_ID_TIDB = "tidb";
     public static final String DRIVER_CLASS_MARIA_DB = "org.mariadb.jdbc.Driver";
 
     public static final String HANDLER_SSL = "mysql_ssl";

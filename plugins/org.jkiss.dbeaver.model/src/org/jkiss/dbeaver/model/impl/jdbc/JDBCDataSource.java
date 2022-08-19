@@ -84,7 +84,7 @@ public abstract class JDBCDataSource
 
     private int databaseMajorVersion = 0;
     private int databaseMinorVersion = 0;
-
+    
     private final transient List<Connection> closingConnections = new ArrayList<>();
 
     protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
@@ -464,7 +464,7 @@ public abstract class JDBCDataSource
             }
         }
     }
-
+    
     public boolean isServerVersionAtLeast(int major, int minor) {
         if (databaseMajorVersion < major) {
             return false;

@@ -178,8 +178,11 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         if (!CommonUtils.isEmpty(fullTypeName) && (isTypeEnum() || isTypeSet())) {
             enumValues = parseEnumValues(fullTypeName);
         }
-
-        if (!getDataSource().isMariaDB() && getDataSource().isServerVersionAtLeast(5, 7)) {
+        
+        // GENERATION_EXPRESSION field in information_schema.columns
+        // TiDB & MySQL 5.7+ : support
+        // MariaDB & rest MySQL : not support
+        if (getDataSource().isTiDB() || (!getDataSource().isMariaDB() && getDataSource().isServerVersionAtLeast(5, 7))) {
             genExpression = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_GENERATION_EXPRESSION);
         }
 

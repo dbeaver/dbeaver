@@ -97,7 +97,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
                 });
         }
         final MySQLDataSource dataSource = getObject().getDataSource();
-        if (MySQLUtils.isAlterUSerSupported(dataSource)) {
+        if (MySQLUtils.isAlterUserSupported(dataSource)) {
             StringBuilder script = new StringBuilder();
             if (generateAlterScript(script, includeUserPassword)) {
                 actions.add(new SQLDatabasePersistAction(MySQLUIMessages.edit_command_change_user_action_update_user_record, script.toString()));

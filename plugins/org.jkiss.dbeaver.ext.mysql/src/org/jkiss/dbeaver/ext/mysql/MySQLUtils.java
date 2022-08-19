@@ -147,7 +147,20 @@ public class MySQLUtils {
                 driver.getDriverClassName());
     }
 
-    public static boolean isAlterUSerSupported(MySQLDataSource dataSource) {
-        return dataSource.isMariaDB() ? dataSource.isServerVersionAtLeast(10, 2) : dataSource.isServerVersionAtLeast(5, 7);
+    public static boolean isTiDB(DBPDriver driver) {
+        return MySQLConstants.DRIVER_ID_TIDB.equals(driver.getId());
+    }
+
+    public static boolean isAlterUserSupported(MySQLDataSource dataSource) {
+        if (dataSource.isTiDB()) {
+            // TiDB always support
+            return true;
+        } else if (dataSource.isMariaDB()) {
+            // MariaDB 10.2+
+            return dataSource.isServerVersionAtLeast(10, 2);
+        } else {
+            // MySQL 5.7+
+            return dataSource.isServerVersionAtLeast(5, 7);
+        }
     }
 }
