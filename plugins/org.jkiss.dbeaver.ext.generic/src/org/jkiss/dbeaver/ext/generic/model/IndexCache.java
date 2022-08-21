@@ -132,7 +132,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         throws SQLException, DBException
     {
         int ordinalPosition = GenericUtils.safeGetInt(indexObject, dbResult, JDBCConstants.ORDINAL_POSITION);
-        boolean trimName = parent.getDataSource().getMetaModel().trimObjectNames();
+        boolean trimName = parent.getDataSource().getMetaModel().isTrimObjectNames();
         String columnName = trimName ?
             GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.COLUMN_NAME)
             : GenericUtils.safeGetString(indexObject, dbResult, JDBCConstants.COLUMN_NAME);
