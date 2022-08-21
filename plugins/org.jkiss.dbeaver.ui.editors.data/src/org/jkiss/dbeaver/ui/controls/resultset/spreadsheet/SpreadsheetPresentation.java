@@ -2033,7 +2033,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             info.text = formatValue(attr, row, info.value);
 
             info.state = STATE_NONE;
-            if (attr != null) {
+            if (attr != null && cellValue != DBDVoid.INSTANCE) {
                 // State
                 if ((controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_LINKS) != 0) {
                     //ResultSetRow row = (ResultSetRow) (recordMode ? colElement.getElement() : rowElement.getElement());
