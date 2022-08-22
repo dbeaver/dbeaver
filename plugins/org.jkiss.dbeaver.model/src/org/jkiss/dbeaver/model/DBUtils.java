@@ -1392,8 +1392,10 @@ public final class DBUtils {
 
         if (offset > 0 || hasLimits || (possiblySelect && maxRows > 0 && !limitAffectsDML)) {
             if (limitTransformer == null) {
-                // Set explicit limit - it is safe because we pretty sure that this is a plain SELECT query
-                dbStat.setLimit(offset, maxRows);
+                if (!queryText.toLowerCase().startsWith("select next value for")) { // if it's not select next value for sequence query
+                    // Set explicit limit - it is safe because we pretty sure that this is a plain SELECT query
+                    dbStat.setLimit(offset, maxRows);
+                }
             } else {
                 limitTransformer.transformStatement(dbStat, 0);
             }
