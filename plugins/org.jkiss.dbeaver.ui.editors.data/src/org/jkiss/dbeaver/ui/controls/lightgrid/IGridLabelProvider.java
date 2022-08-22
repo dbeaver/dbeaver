@@ -54,6 +54,34 @@ public interface IGridLabelProvider {
      */
     Color getBackground(IGridItem element);
 
+    /**
+     * Provides a foreground color for the header of the given {@code item}.
+     *
+     * @param item     the item for which the color should be returned
+     * @param selected whether the selection color should be returned instead or not
+     * @return the foreground color for the {@code item}
+     */
+    @NotNull
+    Color getHeaderForeground(@Nullable IGridItem item, boolean selected);
+
+    /**
+     * Provides a background color for the header of the given {@code item}.
+     *
+     * @param item     the item for which the color should be returned
+     * @param selected whether the selection color should be returned instead or not
+     * @return the background color for the {@code item}
+     */
+    @NotNull
+    Color getHeaderBackground(@Nullable IGridItem item, boolean selected);
+
+    /**
+     * Provides a border color for the header of the given {@code item}.
+     *
+     * @param item the item for which the color should be returned
+     * @return the border color for the {@code item}
+     */
+    @NotNull
+    Color getHeaderBorder(@Nullable IGridItem item);
 
     /**
      * Provides a font for the given element.
