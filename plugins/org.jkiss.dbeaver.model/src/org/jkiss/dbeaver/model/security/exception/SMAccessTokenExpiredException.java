@@ -14,26 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.model.security.exception;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 
-/**
- * Security manager credentials provider.
- */
-public interface SMCredentialsProvider {
-    /**
-     * @return null if the user is not authorized
-     */
-    @Nullable
-    SMCredentials getActiveUserCredentials();
-
-    default void refreshSMSession() throws DBException {
+public class SMAccessTokenExpiredException extends SMException {
+    public SMAccessTokenExpiredException(String message) {
+        super(message);
     }
 
-    default boolean hasPermission(String permission) {
-        var activeUserCredentials = getActiveUserCredentials();
-        return activeUserCredentials != null && activeUserCredentials.hasPermission(permission);
+    public SMAccessTokenExpiredException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
