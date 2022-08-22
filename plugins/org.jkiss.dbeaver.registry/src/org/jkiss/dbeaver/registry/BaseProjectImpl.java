@@ -286,17 +286,21 @@ public abstract class BaseProjectImpl implements DBPProject {
         synchronized (metadataSync) {
             final List<String> resources = new ArrayList<>();
 
-            outer: for (var resource : resourceProperties.entrySet()) {
+            for (var resource : resourceProperties.entrySet()) {
+                boolean containsRequiredProperties = true;
                 final Map<String, Object> props = resource.getValue();
                 for (var property : properties.entrySet()) {
                     final String propName = property.getKey();
                     final Object propValue = property.getValue();
 
                     if (!props.containsKey(propName) || !Objects.equals(props.get(propName), propValue)) {
-                        continue outer;
+                        containsRequiredProperties = false;
+                        break;
                     }
                 }
-                resources.add(resource.getKey());
+                if (containsRequiredProperties) {
+                    resources.add(resource.getKey());
+                }
             }
 
             return resources.toArray(String[]::new);
