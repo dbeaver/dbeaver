@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -25,8 +27,10 @@ import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
@@ -38,6 +42,7 @@ import org.jkiss.utils.csv.CSVWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.sql.Struct;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,22 +126,29 @@ public class PostgreValueParser {
         }
     }
 
-    private static Object startTransformListOfValuesIntoArray(DBCSession session, PostgreDataType itemType, List list) throws DBCException {
+    private static Object startTransformListOfValuesIntoArray(DBCSession session, PostgreDataType itemType, List<?> list) throws DBException {
         //If array is one dimensional, we will return array of that type. If array is multidimensional we will return array of JDBCCollections.
         return transformListOfValuesIntoArray(session, itemType, list, true);
     }
 
-    private static Object transformListOfValuesIntoArray(DBCSession session, PostgreDataType itemType, List list, boolean firstAttempt) throws DBCException { //transform into array
+    private static Object transformListOfValuesIntoArray(DBCSession session, PostgreDataType itemType, List<?> list, boolean firstAttempt) throws DBException { //transform into array
         Object[] values = new Object[list.size()];
         for (int index = 0; index < list.size(); index++) {
-            if (list.get(index) instanceof List) {
-                values[index] = transformListOfValuesIntoArray(session, itemType, (List) list.get(index), false);
+            Object item = list.get(index);
+            if (item instanceof List) {
+                Object parsedValue;
+                if (itemType.getDataKind() == DBPDataKind.ARRAY) {
+                    parsedValue = transformListOfValuesIntoArray(session, itemType, (List<?>) item, false);
+                } else {
+                    parsedValue = transformListOfValuesIntoStruct(session, itemType, (List<?>) item);
+                }
+                values[index] = parsedValue;
             } else {
                 Object[] itemValues = new Object[list.size()];
                 for (int i = 0; i < list.size(); i++) {
                     itemValues[i] = convertStringToValue(session, itemType, (String) list.get(i));
                 }
-                if(firstAttempt){
+                if (firstAttempt){
                     return itemValues;
                 } else {
                     return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), itemValues);
@@ -147,8 +159,39 @@ public class PostgreValueParser {
             return values;
         } else {
             return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), values);
-
         }
+    }
+
+    private static Object transformListOfValuesIntoStruct(DBCSession session, PostgreDataType itemType, List<?> list) throws DBException { //transform into struct
+        List<PostgreDataTypeAttribute> attributes = CommonUtils.safeList(itemType.getAttributes(session.getProgressMonitor()));
+        Object[] itemValues = new Object[attributes.size()];
+
+        if (list.size() == 1 && list.get(0) instanceof List) {
+            // Structs are represented as an array with one element
+            list = (List<?>) list.get(0);
+        }
+        for (int i = 0; i < list.size(); i++) {
+            Object item = list.get(i);
+            if (item instanceof String) {
+                itemValues[i] = convertStringToValue(session, itemType, (String) item);
+            } else if (item instanceof List) {
+                // Structs are represented as an array with one element
+                if (((List<?>) item).size() == 1) {
+                    Object subItem = ((List<?>) item).get(0);
+                    if (subItem instanceof String) {
+                        itemValues[i] = convertStringToValue(session, itemType, (String) subItem);
+                    } else {
+                        log.debug("Invalid sub item type: " + subItem.getClass().getName());
+                    }
+                } else {
+                    log.debug("Invalid struct list size: " + ((List<?>) item).size());
+                }
+            } else {
+                log.debug("Invalid struct item type: " + item);
+            }
+        }
+        Struct contents = new JDBCStructImpl(itemType.getTypeName(), itemValues, list.toString());
+        return new JDBCCompositeStatic(session, itemType, contents);
     }
 
     private static Object convertStringToSimpleValue(DBCSession session, DBSTypedObject itemType, String string) throws DBCException {
