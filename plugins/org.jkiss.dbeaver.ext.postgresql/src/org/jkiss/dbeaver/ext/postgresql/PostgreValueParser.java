@@ -179,7 +179,12 @@ public class PostgreValueParser {
         }
     }
 
-    private static Object transformListOfValuesIntoStruct(DBCSession session, PostgreDataType itemType, List<?> list) throws DBException { //transform into struct
+    private static Object transformListOfValuesIntoStruct(
+        DBCSession session,
+        PostgreDataType itemType,
+        List<?> list)
+        throws DBException
+    { //transform into struct
         List<PostgreDataTypeAttribute> attributes = CommonUtils.safeList(itemType.getAttributes(session.getProgressMonitor()));
         Object[] itemValues = new Object[attributes.size()];
 
