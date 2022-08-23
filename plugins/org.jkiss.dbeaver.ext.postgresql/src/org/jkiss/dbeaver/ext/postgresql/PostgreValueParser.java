@@ -129,12 +129,22 @@ public class PostgreValueParser {
         }
     }
 
-    private static Object startTransformListOfValuesIntoArray(DBCSession session, PostgreDataType itemType, List<?> list) throws DBException {
+    private static Object startTransformListOfValuesIntoArray(
+        DBCSession session,
+        PostgreDataType itemType,
+        List<?> list) throws DBException
+    {
         //If array is one dimensional, we will return array of that type. If array is multidimensional we will return array of JDBCCollections.
         return transformListOfValuesIntoArray(session, itemType, list, true);
     }
 
-    private static Object transformListOfValuesIntoArray(DBCSession session, PostgreDataType itemType, List<?> list, boolean firstAttempt) throws DBException { //transform into array
+    private static Object transformListOfValuesIntoArray(
+        DBCSession session,
+        PostgreDataType itemType,
+        List<?> list,
+        boolean firstAttempt)
+        throws DBException
+    { //transform into array
         Object[] values = new Object[list.size()];
         for (int index = 0; index < list.size(); index++) {
             Object item = list.get(index);
@@ -154,7 +164,11 @@ public class PostgreValueParser {
                 if (firstAttempt){
                     return itemValues;
                 } else {
-                    return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), itemValues);
+                    return new JDBCCollection(
+                        session.getProgressMonitor(),
+                        itemType,
+                        DBUtils.findValueHandler(session, itemType),
+                        itemValues);
                 }
             }
         }
