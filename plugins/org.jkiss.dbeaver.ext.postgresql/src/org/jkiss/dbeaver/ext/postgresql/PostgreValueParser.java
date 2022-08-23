@@ -115,14 +115,17 @@ public class PostgreValueParser {
             } else {
                 if (componentType instanceof PostgreDataType) {
                     List<Object> itemStrings = parseArrayString(string, ",");
-                    return startTransformListOfValuesIntoArray(session, (PostgreDataType)componentType, itemStrings);
+                    return startTransformListOfValuesIntoArray(session, (PostgreDataType) componentType, itemStrings);
                 } else {
                     log.error("Incorrect type '" + arrayType.getFullTypeName() + "'");
                     return string;
                 }
             }
         } catch (Exception e) {
-            throw new DBCException("Error extracting array '" + arrayType.getFullTypeName() + "' items", e);
+            if (e instanceof DBCException) {
+                throw (DBCException) e;
+            }
+            throw new DBCException("Error parsing array '" + arrayType.getFullTypeName() + "' items", e);
         }
     }
 
@@ -353,6 +356,9 @@ public class PostgreValueParser {
 
                     // when end of an array
                     if (chars[i] == '}') {
+                        if (dims.isEmpty()) {
+                            throw new DBCException("Redundant trailing bracket in " + fieldString);
+                        }
                         dims.remove(dims.size() - 1);
                         bracePairsCount--;
 
