@@ -1347,7 +1347,7 @@ public final class DBUtils {
         boolean limitAffectsDML = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LIMIT_AFFECTS_DML));
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
-        boolean isForceTransform = false;
+        boolean isForceTransform = true;
         if (selectQuery) {
             DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, dataSource);
             if (transformProvider != null) {
@@ -1355,7 +1355,7 @@ public final class DBUtils {
                     && ((DBCQueryTransformProviderExt) transformProvider).isForceTransform(session, sqlQuery);
                 if (hasLimits) {
                     if (dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL)
-                        || isForceTransform) {
+                        || (transformProvider instanceof DBCQueryTransformProviderExt && isForceTransform)) {
                         limitTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
                     }
                 } else {

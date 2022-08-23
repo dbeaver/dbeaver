@@ -28,7 +28,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 
 /**
 * Query transformer for TOP.
- * No applicable to queries without FROM (see #16526)
+* Not applicable to queries without FROM (see #16526)
 */
 public class SQLServerQueryTransformerTop extends QueryTransformerTop implements DBCQueryTransformerExt {
 
