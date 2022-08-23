@@ -137,10 +137,10 @@ public class PostgreValueParser {
             Object item = list.get(index);
             if (item instanceof List) {
                 Object parsedValue;
-                if (itemType.getDataKind() == DBPDataKind.ARRAY) {
-                    parsedValue = transformListOfValuesIntoArray(session, itemType, (List<?>) item, false);
-                } else {
+                if (itemType.getDataKind() == DBPDataKind.STRUCT) {
                     parsedValue = transformListOfValuesIntoStruct(session, itemType, (List<?>) item);
+                } else {
+                    parsedValue = transformListOfValuesIntoArray(session, itemType, (List<?>) item, false);
                 }
                 values[index] = parsedValue;
             } else {
