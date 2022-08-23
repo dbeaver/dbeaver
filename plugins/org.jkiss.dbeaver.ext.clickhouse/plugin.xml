@@ -58,6 +58,7 @@
                     <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
                     <!-- Disable server timezone as it confuses during timestamp edit -->
                     <property name="use_server_time_zone" value="false"/>
+                    <property name="use_time_zone" value="false"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
