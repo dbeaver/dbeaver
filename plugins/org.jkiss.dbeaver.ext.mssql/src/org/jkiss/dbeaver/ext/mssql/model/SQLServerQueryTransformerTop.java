@@ -16,20 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformerExt;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerTop;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.utils.CommonUtils;
 
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
 
 /**
-* Query transformer for TOP.
-* Not applicable to queries without FROM (see #16526)
-*/
+ * Query transformer for TOP.
+ * Not applicable to queries without FROM (see #16526)
+ */
 public class SQLServerQueryTransformerTop extends QueryTransformerTop implements DBCQueryTransformerExt {
 
     @Override

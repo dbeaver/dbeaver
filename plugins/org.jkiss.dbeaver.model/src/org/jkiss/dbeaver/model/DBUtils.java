@@ -1344,7 +1344,7 @@ public final class DBUtils {
         // This is a flag for any potential SELECT query
         boolean possiblySelect = sqlQuery.getType() == SQLQueryType.SELECT || sqlQuery.getType() == SQLQueryType.UNKNOWN;
         final DBPDataSource dataSource = session.getDataSource();
-        boolean limitAffectsDML = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LIMIT_AFFECTS_DML));
+        final boolean limitAffectsDML = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LIMIT_AFFECTS_DML));
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
         boolean isForceTransform = true;
