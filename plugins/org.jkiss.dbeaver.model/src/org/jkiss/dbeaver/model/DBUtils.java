@@ -1343,15 +1343,19 @@ public final class DBUtils {
         final boolean hasLimits = (offset > 0 || selectQuery) && maxRows > 0;
         // This is a flag for any potential SELECT query
         boolean possiblySelect = sqlQuery.getType() == SQLQueryType.SELECT || sqlQuery.getType() == SQLQueryType.UNKNOWN;
-        boolean limitAffectsDML = Boolean.TRUE.equals(session.getDataSource().getDataSourceFeature(DBPDataSource.FEATURE_LIMIT_AFFECTS_DML));
+        final DBPDataSource dataSource = session.getDataSource();
+        boolean limitAffectsDML = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LIMIT_AFFECTS_DML));
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
+        boolean isForceTransform = false;
         if (selectQuery) {
-            DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
+            DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, dataSource);
             if (transformProvider != null) {
+                isForceTransform = transformProvider instanceof DBCQueryTransformProviderExt
+                    && ((DBCQueryTransformProviderExt) transformProvider).isForceTransform(session, sqlQuery);
                 if (hasLimits) {
-                    if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
-                            (transformProvider instanceof DBCQueryTransformProviderExt && ((DBCQueryTransformProviderExt) transformProvider).isForceTransform(session, sqlQuery))) {
+                    if (dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL)
+                        || isForceTransform) {
                         limitTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
                     }
                 } else {
@@ -1392,7 +1396,7 @@ public final class DBUtils {
 
         if (offset > 0 || hasLimits || (possiblySelect && maxRows > 0 && !limitAffectsDML)) {
             if (limitTransformer == null) {
-                if (!queryText.toLowerCase().startsWith("select next value for")) { // if it's not select next value for sequence query
+                if (isForceTransform) {
                     // Set explicit limit - it is safe because we pretty sure that this is a plain SELECT query
                     dbStat.setLimit(offset, maxRows);
                 }

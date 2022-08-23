@@ -445,7 +445,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
             //if (!SQLServerUtils.isDriverAzure(getContainer().getDriver())) {
-                return new QueryTransformerTop();
+                return new SQLServerQueryTransformerTop();
             //}
         }
         return super.createQueryTransformer(type);
