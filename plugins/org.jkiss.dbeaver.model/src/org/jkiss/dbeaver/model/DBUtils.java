@@ -1393,8 +1393,8 @@ public final class DBUtils {
 
         if (offset > 0 || hasLimits || (possiblySelect && maxRows > 0 && !limitAffectsDML)) {
             if (limitTransformer == null) {
-                if (transformProvider instanceof DBCQueryTransformProviderExt
-                    && ((DBCQueryTransformProviderExt) transformProvider).isLimitApplicableTo(sqlQuery)
+                if (!(transformProvider instanceof DBCQueryTransformProviderExt)
+                    || ((DBCQueryTransformProviderExt) transformProvider).isLimitApplicableTo(sqlQuery)
                 ) {
                     // Set explicit limit - it is safe because we pretty sure that this is a plain SELECT query
                     dbStat.setLimit(offset, maxRows);
