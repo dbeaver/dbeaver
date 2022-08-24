@@ -24,6 +24,7 @@ public interface DBCQueryTransformProviderExt {
     
     /**
      * Check if limit can be set for the query
+
      * @param query to check
      * @return if limit can be applied to the provided query
      */
