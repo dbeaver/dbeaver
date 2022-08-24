@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCBooleanValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.Locale;
