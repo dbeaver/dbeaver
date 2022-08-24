@@ -715,7 +715,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         if (!CommonUtils.isEmpty(catalogs)) {
             for (GenericCatalog catalog : catalogs) catalog.cacheStructure(monitor, scope);
-        } else if (!schemas.isEmpty()) {
+        } else if (schemas != null && !schemas.isEmpty()) {
             for (GenericSchema schema : schemas.getCachedObjects()) schema.cacheStructure(monitor, scope);
         } else if (structureContainer != null) {
             structureContainer.cacheStructure(monitor, scope);
