@@ -21,7 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -77,13 +76,6 @@ public class SessionContextImpl implements SMSessionContext {
             if (CommonUtils.equalObjects(session.getSessionSpace(), space)) {
                 return session;
             }
-            if (session instanceof SMSessionFederated || !(session instanceof SMSessionPersistent)) {
-                continue;
-            }
-            if (space instanceof DBPProject) {
-                return session;
-            }
-
         }
         return null;
     }
