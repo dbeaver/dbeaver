@@ -343,17 +343,17 @@ public class CoreMessages extends NLS {
 	public static String pref_page_query_manager_log_file_hint;
 
 	public static String pref_page_ui_general_checkbox_automatic_updates;
-	public static String pref_page_ui_general_group_browser;
-	public static String pref_page_ui_general_combo_browser;
-	public static String pref_page_ui_general_combo_browser_tip;
-	public static String pref_page_ui_general_combo_language;
-	public static String pref_page_ui_general_combo_timezone;
-	public static String pref_page_ui_general_combo_timezone_tip;
-	public static String pref_page_ui_general_combo_language_tip;
+    public static String pref_page_ui_general_group_browser;
+    public static String pref_page_ui_general_combo_browser;
+    public static String pref_page_ui_general_combo_browser_tip;
+    public static String pref_page_ui_general_combo_language;
+    public static String pref_page_ui_general_combo_timezone;
+    public static String pref_page_ui_general_combo_timezone_tip;
+    public static String pref_page_ui_general_combo_language_tip;
 	public static String pref_page_ui_general_keep_database_editors;
 	public static String pref_page_ui_general_refresh_editor_on_open;
 	public static String pref_page_ui_general_group_general;
-	public static String pref_page_ui_general_group_regional;
+    public static String pref_page_ui_general_group_regional;
 	public static String pref_page_ui_general_group_language;
 	public static String pref_page_ui_general_group_editors;
 	public static String pref_page_eclipse_ui_general_group_general;
@@ -364,7 +364,7 @@ public class CoreMessages extends NLS {
 	public static String runtime_jobs_connect_name;
 	public static String runtime_jobs_connect_status_connected;
 	public static String runtime_jobs_connect_status_error;
-	public static String runtime_jobs_disconnect_name;
+    public static String runtime_jobs_disconnect_name;
 	public static String runtime_jobs_connect_thread_name;
 	public static String runtime_jobs_disconnect_error;
 
@@ -610,7 +610,6 @@ public class CoreMessages extends NLS {
 	public static String driver_connection_sort_by;
 	public static String monitor_panel_transaction_monitor_tip;
 	public static String variable_host_or_database;
-
 
 
     static {

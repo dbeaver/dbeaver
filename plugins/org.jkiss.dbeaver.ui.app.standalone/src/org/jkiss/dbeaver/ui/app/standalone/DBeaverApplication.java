@@ -46,8 +46,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.EclipseApplicationImpl;
+import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
 import org.jkiss.dbeaver.registry.TimezoneRegistry;
-import org.jkiss.dbeaver.registry.WindowsBrowserRegistry;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
@@ -271,7 +271,7 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         instanceServer = DBeaverInstanceServer.startInstanceServer(commandLine, createInstanceController());
 
         if (RuntimeUtils.isWindows() && isStandalone()) {
-            WindowsBrowserRegistry.overrideBrowser();
+            SWTBrowserRegistry.overrideBrowser();
         }
         TimezoneRegistry.overrideTimezone();
 

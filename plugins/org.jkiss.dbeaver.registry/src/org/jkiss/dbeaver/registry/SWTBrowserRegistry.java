@@ -20,77 +20,72 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.Objects;
 
-public class WindowsBrowserRegistry {
+
+public class SWTBrowserRegistry {
 
     private static final String INTERNAL_BROWSER_PROPERTY = "org.eclipse.swt.browser.DefaultType";
 
-    //Windows versions which could not have Edge as an available browser
-    private static final String[] LEGACY_OS = {
+    // Windows versions which don't have Edge as an available browser, or need to install it manually
+
+    private static final String[] LEGACY_WINDOWS_VERSIONS = {
         "Windows 98", //$NON-NLS-1$
         "Windows XP", //$NON-NLS-1$
         "Windows Vista", //$NON-NLS-1$
         "Windows 7", //$NON-NLS-1$
+        "Windows 8", //$NON-NLS-1$
+        "Windows 8.1", //$NON-NLS-1$
     };
 
     public enum BrowserSelection {
-        EDGE("edge", "Microsoft Edge", 0),
-        INTERNET_EXPLORER("ie", "Internet Explorer", 1);
+        EDGE("Microsoft Edge"),
+        IE("Internet Explorer");
 
-        private final String type;
         private final String name;
-        private final int index;
 
-        BrowserSelection(@NotNull String type, @NotNull String name, int index) {
-            this.type = type;
+        BrowserSelection(@NotNull String name) {
             this.name = name;
-            this.index = index;
         }
 
-        public static BrowserSelection get(int index) {
-            Optional<BrowserSelection> first = Arrays.stream(values()).filter(it -> it.index == index).findFirst();
-            return first.orElse(null);
-        }
-
-        public static BrowserSelection get(String type) {
-            Optional<BrowserSelection> first = Arrays.stream(values()).filter(it -> it.type.equals(type)).findFirst();
-            return first.orElse(null);
-        }
-
-        public int getIndex() {
-            return index;
-        }
-
-        public String getName() {
+        @NotNull
+        public String getFullName() {
             return name;
         }
+
+    }
+
+    private SWTBrowserRegistry() {
+        //prevents construction
     }
 
     /**
-     * @return Get selected browser or default browser if none is selected
+     * Returns selected via combo browser or default browser if none is selected
      */
+    @NotNull
     public static BrowserSelection getActiveBrowser() {
         DBPPreferenceStore preferences = ModelPreferences.getPreferences();
         String type = preferences.getString(ModelPreferences.CLIENT_BROWSER);
         if (CommonUtils.isEmpty(type)) {
             return getDefaultBrowser();
         } else {
-            return BrowserSelection.get(type);
+            return Objects.requireNonNull(CommonUtils.valueOf(BrowserSelection.class, type));
         }
     }
 
     /**
-     * @return returns browser by default, depends on OS
+     * Returns default browser depends on the OS
      */
+    @NotNull
     public static BrowserSelection getDefaultBrowser() {
-        if (RuntimeUtils.isWindows() && Arrays.stream(LEGACY_OS)
-            .anyMatch(it -> it.equalsIgnoreCase(System.getProperty("os"
-                + ".name")))) {
-            return BrowserSelection.INTERNET_EXPLORER;
+
+        if (RuntimeUtils.isWindows()
+            && ArrayUtils.containsIgnoreCase(LEGACY_WINDOWS_VERSIONS, System.getProperty("os.name")
+        )) {
+            return BrowserSelection.IE;
         } else {
             return BrowserSelection.EDGE;
         }
@@ -101,12 +96,17 @@ public class WindowsBrowserRegistry {
      * if the user didn't specify otherwise
      */
     public static void overrideBrowser() {
-        System.setProperty(INTERNAL_BROWSER_PROPERTY, getActiveBrowser().type);
+        System.setProperty(INTERNAL_BROWSER_PROPERTY, getActiveBrowser().name());
     }
 
-    public static void setActiveBrowser(BrowserSelection browser) {
+    /**
+     * By passing down BrowserSelection sets browser to be used by eclipse
+     *
+     * @param browser selected browser
+     */
+    public static void setActiveBrowser(@NotNull BrowserSelection browser) {
         DBPPreferenceStore preferences = ModelPreferences.getPreferences();
-        preferences.setValue(ModelPreferences.CLIENT_BROWSER, browser.type);
+        preferences.setValue(ModelPreferences.CLIENT_BROWSER, browser.name());
         System.setProperty(INTERNAL_BROWSER_PROPERTY, preferences.getString(ModelPreferences.CLIENT_BROWSER));
     }
 

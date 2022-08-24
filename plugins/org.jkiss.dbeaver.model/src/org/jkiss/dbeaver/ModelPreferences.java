@@ -42,7 +42,7 @@ public final class ModelPreferences
 {
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
     public static final String CLIENT_TIMEZONE = "java.client.timezone";
-    public static final String CLIENT_BROWSER = "java.client.browser";
+    public static final String CLIENT_BROWSER = "swt.client.browser";
 
     public static final String NOTIFICATIONS_ENABLED = "notifications.enabled"; //$NON-NLS-1$
     public static final String NOTIFICATIONS_CLOSE_DELAY_TIMEOUT = "notifications.closeDelay"; //$NON-NLS-1$
