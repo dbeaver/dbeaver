@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -136,7 +135,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private final List<File> outputFiles = new ArrayList<>();
     private StatOutputStream statStream;
-    private DBCStatistics statistics;
 
     public StreamTransferConsumer() {
     }
@@ -227,7 +225,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
             // Export row
             processor.exportRow(session, resultSet, targetRow);
-            statistics.addRowsFetched(1);
             firstRow = false;
         } catch (IOException e) {
             throw new DBCException("IO error", e);
@@ -295,7 +292,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         exportSite = new StreamExportSite();
-        statistics = new DBCStatistics();
 
         // Open output streams
         boolean outputClipboard = settings.isOutputClipboard();
@@ -433,7 +429,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         multiFileNumber++;
         outputFile = makeOutputFile();
         outputFiles.add(outputFile);
-        statistics = new DBCStatistics();
 
         openOutputStreams();
     }
@@ -522,10 +517,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return true;
     }
 
-    @NotNull
-    @Override
-    public DBCStatistics getStatistics() {
-        return statistics;
+    public boolean isBeforeFirstRow() {
+        return firstRow;
     }
 
     @NotNull

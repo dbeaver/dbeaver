@@ -68,16 +68,6 @@ public class DBCStatistics implements DBCExecutionResult {
         this.rowsFetched = rowsFetched;
     }
 
-    public void addRowsFetched(long rowsFetched) {
-        if (rowsFetched < 0) {
-            return;
-        }
-        if (this.rowsFetched < 0) {
-            this.rowsFetched = 0;
-        }
-        this.rowsFetched += rowsFetched;
-    }
-
     public long getExecuteTime() {
         return executeTime;
     }
