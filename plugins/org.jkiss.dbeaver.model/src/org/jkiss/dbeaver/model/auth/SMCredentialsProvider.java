@@ -29,6 +29,9 @@ public interface SMCredentialsProvider {
     @Nullable
     SMCredentials getActiveUserCredentials();
 
+    /**
+     *  Refresh current sm session
+     */
     default void refreshSMSession() throws DBException {
     }
 
