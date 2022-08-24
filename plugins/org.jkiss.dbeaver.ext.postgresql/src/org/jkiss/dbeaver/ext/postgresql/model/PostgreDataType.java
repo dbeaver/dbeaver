@@ -493,9 +493,12 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read domain constraint value")) {
             try {
-            this.constraintText = JDBCUtils.queryString(
-                session,
-                "SELECT pg_catalog.pg_get_constraintdef((SELECT oid FROM pg_catalog.pg_constraint WHERE contypid = " + getObjectId() + "), true)");
+                this.constraintText = JDBCUtils.queryString(
+                    session,
+                    "SELECT defs.* \r\n"
+                    + "FROM pg_catalog.pg_constraint c\r\n"
+                    + "CROSS JOIN LATERAL pg_catalog.pg_get_constraintdef(oid, true) defs\r\n"
+                    + "WHERE contypid = " + getObjectId());
             } catch (SQLException e) {
                 throw new DBCException("Error reading domain constraint value", e, session.getExecutionContext());
             }

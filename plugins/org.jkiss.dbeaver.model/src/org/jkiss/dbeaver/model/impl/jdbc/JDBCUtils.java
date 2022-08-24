@@ -33,6 +33,8 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -691,6 +693,25 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
+    public static Collection<String> queryStrings(Connection session, String sql, Object... args) throws SQLException
+    {
+        try (PreparedStatement dbStat = session.prepareStatement(sql)) {
+            if (args != null) {
+                for (int i = 0; i < args.length; i++) {
+                    dbStat.setObject(i + 1, args[i]);
+                }
+            }
+            ArrayList<String> results = new ArrayList<>();
+            try (ResultSet resultSet = dbStat.executeQuery()) {
+                while (resultSet.next()) {
+                    results.add(resultSet.getString(1));
+                }
+            }
+            return results;
+        }
+    }
+    
     private static void debugColumnRead(ResultSet dbResult, String columnName, Exception error)
     {
         String colFullId = columnName;
