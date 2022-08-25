@@ -258,11 +258,11 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         // Write version info
         writeWorkspaceInfo();
 
-        // Initialize platform
-        DBWorkbench.getPlatform();
-
         // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
         updateSplashHandler();
+
+        // Initialize platform
+        DBWorkbench.getPlatform();
 
         initializeApplication();
 
