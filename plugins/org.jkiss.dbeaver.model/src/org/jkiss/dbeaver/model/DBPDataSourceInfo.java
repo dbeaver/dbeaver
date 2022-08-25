@@ -156,6 +156,13 @@ public interface DBPDataSourceInfo
 
     boolean supportsBatchUpdates();
 
+    /**
+     * Some databases doesn't provide in statement for select where queries
+     * in that case we need to create different query
+     * @return is datasource supports select where in statements
+     */
+    boolean supportsWhereInStatements();
+
     boolean supportsResultSetLimit();
 
     boolean supportsResultSetScroll();

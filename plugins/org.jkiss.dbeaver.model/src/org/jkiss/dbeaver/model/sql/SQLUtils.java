@@ -652,7 +652,33 @@ public final class SQLUtils {
             if (constraint.isReverseOperator()) {
                 conString.append("NOT ");
             }
-            if (operator.getArgumentCount() > 0) {
+            if (operator.equals(DBCLogicalOperator.EQUALS)) {
+                if (value instanceof Object[]) {
+                    Object[] array = ((Object[]) value);
+                    for (int i = 0; i < array.length; i++) {
+                        if (i > 0) {
+                            conString.append(" OR");
+                            conString.append(' ').append(DBUtils.getQuotedIdentifier(dataSource,
+                                constraint.getAttributeLabel())).append(' ');
+                        }
+                        conString.append(operator.getExpression());
+                        String strValue;
+                        if (constraint.getAttribute() == null) {
+                            // We have only attribute name
+                            if (array[i] instanceof CharSequence) {
+                                strValue = dataSource.getSQLDialect().getQuotedString(array[i].toString());
+                            } else {
+                                strValue = CommonUtils.toString(array[i]);
+                            }
+                        } else if (inlineCriteria) {
+                            strValue = convertValueToSQL(dataSource, constraint.getAttribute(), array[i]);
+                        } else {
+                            strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true);
+                        }
+                        conString.append(' ').append(strValue);
+                    }
+                }
+            } else if (operator.getArgumentCount() > 0) {
                 conString.append(operator.getExpression());
                 for (int i = 0; i < operator.getArgumentCount(); i++) {
                     if (i > 0) {
