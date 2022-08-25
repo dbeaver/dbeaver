@@ -53,4 +53,9 @@ public abstract class AbstractSessionPersistent implements SMSessionPersistent {
             return attributes.remove(name);
         }
     }
+
+    @Override
+    public void close() {
+
+    }
 }
