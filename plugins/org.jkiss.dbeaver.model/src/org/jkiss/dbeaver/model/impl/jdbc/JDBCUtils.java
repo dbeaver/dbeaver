@@ -693,9 +693,16 @@ public class JDBCUtils {
         }
     }
 
-    @Nullable
-    public static Collection<String> queryStrings(Connection session, String sql, Object... args) throws SQLException
-    {
+    /**
+     * Executes query that returns multiple strings as a result
+
+     * @param session current connection session
+     * @param sql query text
+     * @param args optional parameters for the prepared statement
+     * @return collection of strings
+     */
+    @NotNull
+    public static List<String> queryStrings(Connection session, String sql, Object... args) throws SQLException {
         try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
