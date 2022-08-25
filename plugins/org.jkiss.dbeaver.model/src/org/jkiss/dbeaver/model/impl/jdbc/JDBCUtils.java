@@ -850,6 +850,17 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
+    public static String quoteSearchStringIfNeeded(@NotNull JDBCSession session, @Nullable String string) {
+        final JDBCSQLDialect dialect = (JDBCSQLDialect) session.getDataSource().getSQLDialect();
+
+        if (!dialect.isQuoteSearchString() || CommonUtils.isEmpty(string)) {
+            return string;
+        }
+
+        return dialect.getQuotedIdentifier(string, true, false);
+    }
+
     public static boolean queryHasOutputParameters(SQLDialect sqlDialect, String sqlQuery) {
         return sqlQuery.contains("?");
     }

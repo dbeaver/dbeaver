@@ -121,18 +121,18 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
             final JDBCResultSet dbResult;
             if (DBSProcedureType.PROCEDURE == procedureType) {
                 dbResult = session.getMetaData().getProcedureColumns(
-                    getCatalog() == null ?
+                    JDBCUtils.quoteSearchStringIfNeeded(session, getCatalog() == null ?
                         this.getPackage() == null || !this.getPackage().isNameFromCatalog() ?
                             null :
                             this.getPackage().getName() :
-                        getCatalog().getName(),
+                        getCatalog().getName()),
                     getSchema() == null ? null : JDBCUtils.escapeWildCards(session, getSchema().getName()),
                     JDBCUtils.escapeWildCards(session, getName()),
                     getDataSource().getAllObjectsPattern()
                 );
             } else {
                 dbResult = session.getMetaData().getFunctionColumns(
-                    getCatalog() == null ? null : getCatalog().getName(),
+                    JDBCUtils.quoteSearchStringIfNeeded(session, getCatalog() == null ? null : getCatalog().getName()),
                     getSchema() == null ? null : JDBCUtils.escapeWildCards(session, getSchema().getName()),
                     JDBCUtils.escapeWildCards(session, getName()),
                     getDataSource().getAllObjectsPattern()
