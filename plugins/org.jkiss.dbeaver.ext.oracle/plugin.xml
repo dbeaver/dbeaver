@@ -359,6 +359,7 @@
                     iconBig="icons/oracle_icon_big.png"
                     propertiesURL="https://docs.oracle.com/cd/B19306_01/java.102/b14355/urls.htm#i1070726"
                     description="%driver.oracle.description"
+                    supportedConfigurationTypes="MANUAL,URL"
                     promoted="1"
                     categories="sql">
                     <replace provider="generic" driver="oracle"/>
@@ -381,7 +382,7 @@
                     <provider-properties>
                         <propertyGroup label="Misc">
                             <property id="@dbeaver-sid-service@" label="Service type" type="string" description="Database type" defaultValue="SID" validValues="SID,SERVICE"/>
-                            <property id="oracle.logon-as" label="Role" type="string" description="Connect as role" defaultValue="NORMAL" validValues="NORMAL,SYSDBA,SYSOPER"/>
+                            <property id="oracle.logon-as" label="Role" type="string" description="Connect as role" defaultValue="Normal" validValues="Normal,SYSDBA,SYSOPER"/>
                         </propertyGroup>
                     </provider-properties>
 
