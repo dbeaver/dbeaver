@@ -52,7 +52,10 @@ public class SQLEditorHandlerCheckProcedureConsole extends SQLEditorHandlerOpenO
         String sql = CommonUtils.notEmpty(generator.getResult());
         openAndExecuteSQLScriptExt(workbenchWindow, navigatorContext, title, true, currentSelection, sql, true);
     }
-        
+
+     /**
+     * Generate PostgreSQL procedure check SQL - via https://github.com/okbob/plpgsql_check
+     */        
     @NotNull
     public static SQLGenerator<DBSProcedure> checkGenerator(final List<DBSProcedure> entities) {
         SQLGeneratorProcedureCheck procedureCheck = new SQLGeneratorProcedureCheck();
