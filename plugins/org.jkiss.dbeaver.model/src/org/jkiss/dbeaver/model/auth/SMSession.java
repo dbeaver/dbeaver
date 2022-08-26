@@ -55,5 +55,9 @@ public interface SMSession extends DBPObject, AutoCloseable {
     @Nullable
     DBPProject getSingletonProject();
 
+    /**
+     * Closes session.
+     * It mustn't throw any errors.
+     */
     void close();
 }
