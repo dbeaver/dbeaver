@@ -43,16 +43,15 @@ public class SQLEditorHandlerCheckProcedureConsole extends SQLEditorHandlerOpenO
 
     private static final Log log = Log.getLog(SQLEditorHandlerCheckProcedureConsole.class);
 
-    public SQLEditorHandlerCheckProcedureConsole()
-    {
+    public SQLEditorHandlerCheckProcedureConsole() {
     }
     
     void openConsoleCheck(IWorkbenchWindow workbenchWindow, DBRRunnableWithResult<String> generator,
             SQLNavigatorContext navigatorContext, String title, boolean doRun, ISelection currentSelection) throws Exception {
-		UIUtils.runInUI(workbenchWindow, generator);
-		String sql = CommonUtils.notEmpty(generator.getResult());		
-		openAndExecuteSQLScriptExt(workbenchWindow, navigatorContext, title, true, currentSelection, sql, true);
-	}
+        UIUtils.runInUI(workbenchWindow, generator);
+        String sql = CommonUtils.notEmpty(generator.getResult());
+        openAndExecuteSQLScriptExt(workbenchWindow, navigatorContext, title, true, currentSelection, sql, true);
+    }
         
     @NotNull
     public static SQLGenerator<DBSProcedure> CHECK_GENERATOR(final List<DBSProcedure> entities) {

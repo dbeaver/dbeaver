@@ -30,8 +30,9 @@ import java.util.Collection;
 import java.util.List;
 
 public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
-	
-	public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
+
+    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, 
+	        Collection<? extends DBSProcedureParameter> parameters) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         if (parameters != null) {
             inParameters.addAll(parameters);
@@ -51,13 +52,6 @@ public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
                     case RETURN:
                         continue;
                     default:
-                        //if (isStoredProcedureCallIncludesOutParameters()) {
-                        //    if (!first) {
-                        //        sql.append(",");
-                        //    }
-                        //    sql.append("?");
-                        //}
-                        //break;
                         continue;
                 }
                 first = false;
@@ -73,7 +67,7 @@ public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
         Collection<? extends DBSProcedureParameter> parameters = proc.getParameters(monitor);
         DBPDataSource dataSource = proc.getDataSource();
         {
-        	generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters));
+            generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters));
         }
     }
 }
