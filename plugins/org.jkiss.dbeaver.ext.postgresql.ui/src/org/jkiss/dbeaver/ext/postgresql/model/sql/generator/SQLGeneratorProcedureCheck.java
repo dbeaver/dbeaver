@@ -31,8 +31,11 @@ import java.util.List;
 
 public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
 
+	/**
+	 * Generate PostgreSQL procedure check SQL - via https://github.com/okbob/plpgsql_check
+	 */
     public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, 
-	        Collection<? extends DBSProcedureParameter> parameters) {
+            Collection<? extends DBSProcedureParameter> parameters) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         if (parameters != null) {
             inParameters.addAll(parameters);
@@ -61,7 +64,10 @@ public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
         sql.append(";");
         sql.append("\n\n");
     }
-
+	
+	/**
+	 * Generate PostgreSQL procedure check SQL entry point
+	 */
     @Override
     protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {
         Collection<? extends DBSProcedureParameter> parameters = proc.getParameters(monitor);
