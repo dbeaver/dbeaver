@@ -14,29 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.model.security;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.NotNull;
 
-/**
- * Security manager credentials provider.
- */
-public interface SMCredentialsProvider {
-    /**
-     * @return null if the user is not authorized
-     */
-    @Nullable
-    SMCredentials getActiveUserCredentials();
+public class SMTokens {
+    @NotNull
+    private final String smAccessToken;
+    @NotNull
+    private final String smRefreshToken;
 
-    /**
-     *  Refresh current sm session
-     */
-    default void refreshSMSession() throws DBException {
+    public SMTokens(@NotNull String smAccessToken, @NotNull String smRefreshToken) {
+        this.smAccessToken = smAccessToken;
+        this.smRefreshToken = smRefreshToken;
     }
 
-    default boolean hasPermission(String permission) {
-        var activeUserCredentials = getActiveUserCredentials();
-        return activeUserCredentials != null && activeUserCredentials.hasPermission(permission);
+    @NotNull
+    public String getSmAccessToken() {
+        return smAccessToken;
+    }
+
+    @NotNull
+    public String getSmRefreshToken() {
+        return smRefreshToken;
     }
 }

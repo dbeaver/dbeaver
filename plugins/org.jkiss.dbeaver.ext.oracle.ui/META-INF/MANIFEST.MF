@@ -33,4 +33,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
 Import-Package: com.google.gson
+Export-Package: org.jkiss.dbeaver.ext.oracle.ui.config,
+ org.jkiss.dbeaver.ext.oracle.ui.actions,
+ org.jkiss.dbeaver.ext.oracle.ui.editors,
+ org.jkiss.dbeaver.ext.oracle.ui.views
 Automatic-Module-Name: org.jkiss.dbeaver.ext.oracle.ui
