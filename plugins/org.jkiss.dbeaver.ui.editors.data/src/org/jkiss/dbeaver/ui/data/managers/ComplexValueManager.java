@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
 import org.jkiss.dbeaver.ui.data.editors.ComplexValueInlineEditor;
+import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 
 /**
  * Complex value manager.
@@ -41,6 +42,8 @@ public abstract class ComplexValueManager extends BaseValueManager {
         switch (controller.getEditType()) {
             case PANEL:
                 return new ComplexValueInlineEditor(controller);
+            case INLINE:
+                return new StringInlineEditor(controller);
             case EDITOR:
                 return new DefaultValueViewDialog(controller);
             default:
