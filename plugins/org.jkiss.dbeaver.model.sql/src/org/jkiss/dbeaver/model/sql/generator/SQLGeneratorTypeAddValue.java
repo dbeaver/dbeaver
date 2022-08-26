@@ -22,11 +22,10 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 public class SQLGeneratorTypeAddValue extends SQLGenerator<Object> {
 
-	@Override
-	protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, Object object) throws DBException {
-		String entityName = getEntityName((DBSEntity) object);
+    @Override
+    protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, Object object) throws DBException {
+        String entityName = getEntityName((DBSEntity) object);
         sql.append("ALTER TYPE ").append(entityName).append(" ADD VALUE ''");
-        sql.append(";\n");
-		
-	}
+        sql.append(";\n");		
+    }
 }
