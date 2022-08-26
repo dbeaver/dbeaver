@@ -39,11 +39,23 @@
         <generator id="tableJoin" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorJoin" label="JOIN" description="JOIN tables" order="6" multiObject="true">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </generator>
+		<generator id="tableInsertOnConflict" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorInsertOnConflict" label="INSERT ON CONFLICT" description="INSERT into table ON CONFLICT" order="7">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableUpdateFrom" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorUpdateFrom" label="UPDATE FROM" description="UPDATE FROM (UPDATE with JOIN)" order="8">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableDeleteUsing" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorDeleteUsing" label="DELETE USING" description="DELETE USING (DELETE with JOIN)" order="9">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
         <generator id="procedureCall" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorProcedureCall" label="CALL" description="Execute procedure" order="1000">
             <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSProcedure"/>
         </generator>
         <generator id="tableDDL" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorDDL" label="DDL" description="Get table DDL" order="1001">
             <objectType name="org.jkiss.dbeaver.model.DBPScriptObject"/>
+        </generator>
+        <generator id="alterTypeAddValue" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorTypeAddValue" label="ADD VALUE" description="ALTER TYPE ADD VALUE" order="1002">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSTypedObject"/>
         </generator>
     </extension>
 
