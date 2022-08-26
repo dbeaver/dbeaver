@@ -743,5 +743,21 @@ SELECT
         </dashboard>
 
     </extension>
+    
+    <!-- SQL Generators -->
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="tableInsertOnConflict" class="org.jkiss.dbeaver.ext.postgresql.model.sql.generator.SQLGeneratorInsertOnConflict" label="INSERT ON CONFLICT" description="INSERT into table ON CONFLICT" order="7">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+        </generator>
+        <generator id="tableUpdateFrom" class="org.jkiss.dbeaver.ext.postgresql.model.sql.generator.SQLGeneratorUpdateFrom" label="UPDATE FROM" description="UPDATE FROM (UPDATE with JOIN)" order="8">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+        </generator>
+        <generator id="tableDeleteUsing" class="org.jkiss.dbeaver.ext.postgresql.model.sql.generator.SQLGeneratorDeleteUsing" label="DELETE USING" description="DELETE USING (DELETE with JOIN)" order="9">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+        </generator>
+        <generator id="alterTypeAddValue" class="org.jkiss.dbeaver.ext.postgresql.model.sql.generator.SQLGeneratorTypeAddValue" label="ADD VALUE" description="ALTER TYPE ADD VALUE" order="1002">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType"/>
+        </generator>
+    </extension>
 
 </plugin>
