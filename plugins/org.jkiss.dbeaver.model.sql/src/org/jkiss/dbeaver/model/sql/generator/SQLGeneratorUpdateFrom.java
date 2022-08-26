@@ -42,7 +42,9 @@ public class SQLGeneratorUpdateFrom extends SQLGeneratorTable {
             if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
                 continue;
             }
-            if (hasAttr) sql.append(", ");
+            if (hasAttr) {
+                sql.append(", ");
+            }
             sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
             sql.append("src." + DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
             hasAttr = true;
@@ -52,13 +54,15 @@ public class SQLGeneratorUpdateFrom extends SQLGeneratorTable {
             sql.append(getLineSeparator()).append("WHERE ");
             hasAttr = false;
             for (DBSEntityAttribute attr : keyAttributes) {
-                if (hasAttr) sql.append(" AND ");
+                if (hasAttr) {
+                    sql.append(" AND ");
+                }
                 sql.append("tgt." + DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
                 sql.append("src." + DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                 hasAttr = true;
             }
         } else {
-        	sql.append("ON ('/* insert attributes equality here, e.g. tgt.ID = src.ID AND ... */')\n");
+            sql.append("ON ('/* insert attributes equality here, e.g. tgt.ID = src.ID AND ... */')\n");
         }
         sql.append(";\n");
     }

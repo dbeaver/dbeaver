@@ -38,7 +38,7 @@ public class SQLGeneratorInsertOnConflict extends SQLGeneratorTable {
                 continue;
             }
             if (hasAttr) {
-            	sql.append(", ");
+                sql.append(", ");
             }
             sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
             hasAttr = true;
@@ -52,7 +52,7 @@ public class SQLGeneratorInsertOnConflict extends SQLGeneratorTable {
                 continue;
             }
             if (hasAttr) {
-            	sql.append(", ");
+                sql.append(", ");
             }
             sql.append("src." + DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
             hasAttr = true;
@@ -66,14 +66,14 @@ public class SQLGeneratorInsertOnConflict extends SQLGeneratorTable {
             sql.append("(");
             for (DBSEntityAttribute attr : keyAttributes) {
                 if (hasAttr) {
-                	sql.append(", ");
+                    sql.append(", ");
                 }
                 sql.append(DBUtils.getQuotedIdentifier(attr));
                 hasAttr = true;
             }
             sql.append(")\n");
         } else {
-        	sql.append("('/* insert on conflict attributes here, e.g. ID, ... */')\n");
+            sql.append("('/* insert on conflict attributes here, e.g. ID, ... */')\n");
         }
         sql.append("/* or you may use [DO NOTHING;] */").append(getLineSeparator());
         sql.append("DO UPDATE ").append(getLineSeparator());
@@ -84,10 +84,10 @@ public class SQLGeneratorInsertOnConflict extends SQLGeneratorTable {
                 continue;
             }
             if (hasAttr) {
-            	sql.append(", ");
+                sql.append(", ");
             }
             sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
-            sql.append("EXCLUDED."+DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
+            sql.append("EXCLUDED." + DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
             hasAttr = true;
         }        
         sql.append(";\n");

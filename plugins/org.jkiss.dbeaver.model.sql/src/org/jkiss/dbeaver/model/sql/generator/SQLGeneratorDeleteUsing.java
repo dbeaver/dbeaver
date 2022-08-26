@@ -41,7 +41,7 @@ public class SQLGeneratorDeleteUsing extends SQLGeneratorTable {
         boolean hasAttr = false;
         for (DBSEntityAttribute attr : keyAttributes) {
             if (hasAttr) {
-            	sql.append(" AND ");
+                sql.append(" AND ");
             }
             sql.append("tgt." + DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
             sql.append("src." + DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
