@@ -126,8 +126,8 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
             sql, 
             false);
     }
-	
-     /**
+
+    /**
      * openAndExecuteSQLScript with force sqlScript executing
      */
     public static void openAndExecuteSQLScriptExt(

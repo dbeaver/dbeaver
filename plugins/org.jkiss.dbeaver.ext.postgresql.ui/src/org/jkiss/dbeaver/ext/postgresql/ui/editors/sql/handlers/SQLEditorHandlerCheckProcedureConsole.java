@@ -53,7 +53,7 @@ public class SQLEditorHandlerCheckProcedureConsole extends SQLEditorHandlerOpenO
         openAndExecuteSQLScriptExt(workbenchWindow, navigatorContext, title, true, currentSelection, sql, true);
     }
 
-     /**
+    /**
      * Generate PostgreSQL procedure check SQL - via https://github.com/okbob/plpgsql_check
      */        
     @NotNull

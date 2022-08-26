@@ -31,7 +31,7 @@ import java.util.List;
 
 public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
 
-     /**
+    /**
      * Generate PostgreSQL procedure check SQL - via https://github.com/okbob/plpgsql_check
      */
     public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, 
