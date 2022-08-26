@@ -850,6 +850,9 @@ public class JDBCUtils {
         }
     }
 
+    /**
+     * Quotes search string, if needed, depending on {@link JDBCSQLDialect#isQuoteSearchString()}.
+     */
     @Nullable
     public static String quoteSearchStringIfNeeded(@NotNull JDBCSession session, @Nullable String string) {
         final JDBCSQLDialect dialect = (JDBCSQLDialect) session.getDataSource().getSQLDialect();
@@ -858,7 +861,7 @@ public class JDBCUtils {
             return string;
         }
 
-        return dialect.getQuotedIdentifier(string, true, false);
+        return dialect.getQuotedString(string);
     }
 
     public static boolean queryHasOutputParameters(SQLDialect sqlDialect, String sqlQuery) {
