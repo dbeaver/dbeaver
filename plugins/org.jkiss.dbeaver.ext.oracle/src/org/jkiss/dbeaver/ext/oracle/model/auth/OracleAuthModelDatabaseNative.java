@@ -46,7 +46,7 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<AuthM
             if (CommonUtils.isEmpty(role)) {
                 // Role can be also passed as provided property
                 String logonAs = configuration.getProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS);
-                if (!logonAs.equalsIgnoreCase(OracleConnectionRole.NORMAL.getTitle())) {
+                if (!OracleConnectionRole.NORMAL.getTitle().equalsIgnoreCase(logonAs)) {
                     role = configuration.getProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS);
                 }
             }
