@@ -66,8 +66,6 @@ public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
     protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {
         Collection<? extends DBSProcedureParameter> parameters = proc.getParameters(monitor);
         DBPDataSource dataSource = proc.getDataSource();
-        {
-            generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters));
-        }
+        generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters));
     }
 }

@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.sql.generator.SQLGeneratorTable;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 

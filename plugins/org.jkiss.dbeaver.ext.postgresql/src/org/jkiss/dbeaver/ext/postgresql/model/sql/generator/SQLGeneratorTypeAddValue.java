@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ext.postgresql.model.sql.generator;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.sql.generator.SQLGenerator;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 public class SQLGeneratorTypeAddValue extends SQLGenerator<Object> {
 

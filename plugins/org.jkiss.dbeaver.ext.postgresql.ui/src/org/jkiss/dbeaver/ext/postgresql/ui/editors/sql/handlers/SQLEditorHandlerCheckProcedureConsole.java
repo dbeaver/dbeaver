@@ -54,7 +54,7 @@ public class SQLEditorHandlerCheckProcedureConsole extends SQLEditorHandlerOpenO
     }
         
     @NotNull
-    public static SQLGenerator<DBSProcedure> CHECK_GENERATOR(final List<DBSProcedure> entities) {
+    public static SQLGenerator<DBSProcedure> checkGenerator(final List<DBSProcedure> entities) {
         SQLGeneratorProcedureCheck procedureCheck = new SQLGeneratorProcedureCheck();
         procedureCheck.initGenerator(entities);
         return procedureCheck;
@@ -62,8 +62,7 @@ public class SQLEditorHandlerCheckProcedureConsole extends SQLEditorHandlerOpenO
 
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         SQLNavigatorContext navContext = null;
         String procName = null;
@@ -86,7 +85,7 @@ public class SQLEditorHandlerCheckProcedureConsole extends SQLEditorHandlerOpenO
             return null;
         }
 
-        DBRRunnableWithResult<String> generator = CHECK_GENERATOR(entities);
+        DBRRunnableWithResult<String> generator = checkGenerator(entities);
 
         String title = "Stored procedures check";
         if (entities.size() == 1 && !CommonUtils.isEmpty(procName)) {
