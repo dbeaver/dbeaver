@@ -173,9 +173,6 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
             columnsController.addBooleanColumn(ResultSetMessages.controls_resultset_filter_column_pinned, null, SWT.LEFT, true, false, item -> {
                 final DBDAttributeBinding binding = (DBDAttributeBinding) item;
-                if (binding.getTopParent() != binding) {
-                    return null;
-                }
                 final DBDAttributeConstraint constraint = getBindingConstraint(binding);
                 return constraint.hasOption(SpreadsheetPresentation.ATTR_OPTION_PINNED);
             }, new EditingSupport(columnsViewer) {

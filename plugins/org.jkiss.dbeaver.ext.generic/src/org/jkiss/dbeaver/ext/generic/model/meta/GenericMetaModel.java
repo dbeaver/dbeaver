@@ -586,12 +586,12 @@ public class GenericMetaModel {
      *
      * @return true if we trim objects names by default, false - if not
      */
-    public boolean trimObjectNames() {
+    public boolean isTrimObjectNames() {
         return true;
     }
 
     public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {
-        String tableName = trimObjectNames()?
+        String tableName = isTrimObjectNames()?
             GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME)
             : GenericUtils.safeGetString(tableObject, dbResult, JDBCConstants.TABLE_NAME);
         String tableType = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
@@ -783,7 +783,7 @@ public class GenericMetaModel {
 
     public GenericTableConstraintColumn[] createConstraintColumnsImpl(JDBCSession session,
                                                                       GenericTableBase parent, GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
-        String columnName = trimObjectNames() ?
+        String columnName = isTrimObjectNames() ?
             GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME)
             : GenericUtils.safeGetString(pkObject, dbResult, JDBCConstants.COLUMN_NAME);
         if (CommonUtils.isEmpty(columnName)) {

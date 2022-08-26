@@ -85,7 +85,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     {
         String pkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_CAT);
         String pkTableSchema = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_SCHEM);
-        boolean trimNames = owner.getDataSource().getMetaModel().trimObjectNames();
+        boolean trimNames = owner.getDataSource().getMetaModel().isTrimObjectNames();
         String pkTableName = trimNames ?
             GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME)
             : GenericUtils.safeGetString(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME);
@@ -212,7 +212,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         GenericTableBase parent, GenericTableForeignKey foreignKey, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
-        boolean trimNames = parent.getDataSource().getMetaModel().trimObjectNames();
+        boolean trimNames = parent.getDataSource().getMetaModel().isTrimObjectNames();
         String pkColumnName = trimNames ?
             GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME)
             : GenericUtils.safeGetString(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);

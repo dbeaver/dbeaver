@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
@@ -38,17 +39,20 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
 
     private static final int PROGRESS_VISUALIZE_PERIOD = 100;
 
-    private DBDDataFilter dataFilter;
-    private Composite progressControl;
+    private final Composite progressControl;
     private int offset;
     private int maxRows;
     private Throwable error;
     private DBCStatistics statistics;
     private boolean refresh;
 
-    ResultSetJobDataRead(DBSDataContainer dataContainer, DBDDataFilter dataFilter, ResultSetViewer controller, DBCExecutionContext executionContext, Composite progressControl) {
-        super(ResultSetMessages.controls_rs_pump_job_name + " [" + dataContainer + "]", dataContainer, controller, executionContext);
-        this.dataFilter = dataFilter;
+    ResultSetJobDataRead(
+        @NotNull DBSDataContainer dataContainer,
+        @NotNull ResultSetExecutionSource executionSource,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Composite progressControl
+    ) {
+        super(ResultSetMessages.controls_rs_pump_job_name + " [" + dataContainer + "]", executionSource, executionContext);
         this.progressControl = progressControl;
     }
 
@@ -104,22 +108,23 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
         }
         long finalFlags = fetchFlags;
 
-        DBCExecutionPurpose purpose = dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER;
+        final DBSDataContainer dataContainer = executionSource.getDataContainer();
+        final DBDDataFilter dataFilter = executionSource.getUseDataFilter();
 
         progressMonitor.beginTask("Read data", 1);
         try (DBCSession session = getExecutionContext().openSession(
             progressMonitor,
-            purpose,
+            dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER,
             NLS.bind(ResultSetMessages.controls_rs_pump_job_context_name, dataContainer.toString())))
         {
             progressMonitor.subTask("Read data from container");
             DBExecUtils.tryExecuteRecover(monitor, session.getDataSource(), monitor1 -> {
                 try {
                     statistics = dataContainer.readData(
-                        ResultSetJobDataRead.this,
+                        executionSource,
                         session,
-                        controller.getDataReceiver(),
-                        dataFilter,
+                        executionSource.getExecutionController().getDataReceiver(),
+                        executionSource.getUseDataFilter(),
                         offset,
                         maxRows,
                         finalFlags,
@@ -151,7 +156,7 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
 
     @Override
     public Object getFamily() {
-        return getExecutionController();
+        return executionSource.getExecutionController();
     }
 
     private class PumpVisualizer extends UIJob {
@@ -167,6 +172,7 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
             ResultSetJobDataRead loadService = (ResultSetJobDataRead) visualizer.getLoadService();
+            final ResultSetViewer controller = executionSource.getExecutionController();
             if (loadService != null && loadService.isCanceled()) {
                 long cancelTimestamp = loadService.getCancelTimestamp();
                 long cancelTimeout = controller.getPreferenceStore().getLong(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);

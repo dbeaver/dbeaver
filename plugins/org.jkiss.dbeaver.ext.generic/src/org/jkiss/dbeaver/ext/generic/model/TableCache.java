@@ -86,7 +86,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
     protected GenericTableColumn fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTableBase table, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
-        boolean trimName = dataSource.getMetaModel().trimObjectNames();
+        boolean trimName = dataSource.getMetaModel().isTrimObjectNames();
         String columnName = trimName ?
             GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.COLUMN_NAME)
             : GenericUtils.safeGetString(columnObject, dbResult, JDBCConstants.COLUMN_NAME);

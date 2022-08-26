@@ -290,7 +290,7 @@ public class DBDDataFilter {
     public boolean hasNameDuplicates(String name) {
         int count = 0;
         for (DBDAttributeConstraint c : constraints) {
-            if (name.equalsIgnoreCase(c.getAttributeName())) {
+            if (name.equalsIgnoreCase(c.getFullAttributeName())) {
                 count++;
             }
         }

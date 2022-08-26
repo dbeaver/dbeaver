@@ -221,6 +221,22 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return getFullyQualifiedName(context, DBPAttributeReferencePurpose.UNSPECIFIED);
+    }
+
+    /**
+     * Entity full qualified name.
+     * Should include all parent objects' names and thus uniquely identify this entity within database.
+
+     * @param context evaluation context
+     * @param purpose of name usage
+     * @return full qualified name, never returns null.
+     */
+    @NotNull
+    public String getFullyQualifiedName(DBPEvaluationContext context, @NotNull DBPAttributeReferencePurpose purpose) {
+        if (this.getEntityAttribute() instanceof DBSContextBoundAttribute) {
+            return DBUtils.getQuotedIdentifier(this.getEntityAttribute(), purpose);
+        }
         final DBPDataSource dataSource = getDataSource();
         if (getParentObject() == null) {
             return DBUtils.getQuotedIdentifier(dataSource, getName());

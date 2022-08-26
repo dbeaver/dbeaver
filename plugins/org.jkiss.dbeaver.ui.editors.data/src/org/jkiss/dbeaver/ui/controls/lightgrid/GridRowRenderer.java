@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -36,15 +35,8 @@ class GridRowRenderer extends AbstractRenderer {
     public static final int EXPANDER_SPACING = 2;
     public static final int LEVEL_SPACING = EXPANDED_BOUNDS.width;
 
-    final Color DEFAULT_BACKGROUND;
-    final Color DEFAULT_FOREGROUND;
-    final Color DEFAULT_FOREGROUND_TEXT;
-
     public GridRowRenderer(LightGrid grid) {
         super(grid);
-        DEFAULT_BACKGROUND = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
-        DEFAULT_FOREGROUND = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
-        DEFAULT_FOREGROUND_TEXT = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
     }
 
     public void paint(
@@ -58,17 +50,11 @@ class GridRowRenderer extends AbstractRenderer {
         String text = grid.getLabelProvider().getText(element);
 
         gc.setFont(grid.normalFont);
-
-        Color background = selected ? grid.getContentProvider().getCellHeaderSelectionBackground(element) : grid.getContentProvider().getCellHeaderBackground(element);
-        if (background == null) {
-            background = DEFAULT_BACKGROUND;
-        }
-        gc.setBackground(background);
-
+        gc.setBackground(grid.getLabelProvider().getHeaderBackground(element, selected));
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height + 1);
 
         {
-            gc.setForeground(grid.getContentProvider().getCellHeaderBorder(null));
+            gc.setForeground(grid.getLabelProvider().getHeaderBorder(element));
 
             gc.drawLine(
                 bounds.x + bounds.width - 1,
@@ -90,7 +76,7 @@ class GridRowRenderer extends AbstractRenderer {
             Image expandImage = state == IGridContentProvider.ElementState.EXPANDED ? IMG_COLLAPSE : IMG_EXPAND;
             gc.drawImage(expandImage, x, bounds.y + (bounds.height - EXPANDED_BOUNDS.height) / 2);
             x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
-        } else if (grid.hasExpandableRows() && level == 0) {
+        } else if (grid.getContentProvider().isElementExpandable(element) && level == 0) {
             x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
         }
 
@@ -101,21 +87,7 @@ class GridRowRenderer extends AbstractRenderer {
             x += image.getBounds().width + IMAGE_SPACING;
         }
 
-        int width = bounds.width - x;
-
-        width -= RIGHT_MARGIN;
-
-        Color foreground = grid.getContentProvider().getCellHeaderForeground(element);
-        if (foreground == null) {
-            foreground = grid.getLabelProvider().getForeground(element);
-        }
-
-        gc.setForeground(foreground);
-
-        int y = bounds.y;
-        int selectionOffset = 0;
-
-        y += (bounds.height - gc.stringExtent(text).y) / 2;
+        gc.setForeground(grid.getLabelProvider().getHeaderForeground(element, false));
 
         Font font = grid.getLabelProvider().getFont(element);
         if (font == null) {
@@ -123,16 +95,16 @@ class GridRowRenderer extends AbstractRenderer {
         }
         gc.setFont(font);
         gc.drawString(
-            UITextUtils.getShortString(grid.fontMetrics, text, width),
-            bounds.x + x + selectionOffset,
-            y + selectionOffset,
+            UITextUtils.getShortString(grid.fontMetrics, text, bounds.width - x - RIGHT_MARGIN),
+            bounds.x + x,
+            bounds.y + (bounds.height - gc.stringExtent(text).y) / 2,
             isTransparent
         );
     }
 
     public int computeHeaderWidth(IGridRow element, int level) {
         int width = GridRowRenderer.LEFT_MARGIN + GridRowRenderer.RIGHT_MARGIN;
-        if (grid.hasExpandableRows()) {
+        if (grid.getContentProvider().isElementExpandable(element)) {
             width += GridRowRenderer.EXPANDED_BOUNDS.width + EXPANDER_SPACING;
         }
         Image rowImage = grid.getLabelProvider().getImage(element);
