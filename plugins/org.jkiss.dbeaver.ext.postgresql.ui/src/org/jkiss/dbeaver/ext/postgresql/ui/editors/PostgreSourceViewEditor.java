@@ -17,19 +17,34 @@
 
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreScriptObject;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
+import org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.SQLEditorHandlerCheckProcedureConsole;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenObjectConsole;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Map;
 
 /**
  * PostgreSourceViewEditor
@@ -82,6 +97,32 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                         refreshPart(PostgreSourceViewEditor.this, true);
                     }
                 }, true));
+            contributionManager.add(ActionUtils.makeActionContribution(
+                    new Action("Check", Action.AS_PUSH_BUTTON) {
+                        {
+                            setToolTipText("Check (via plpgsql_check)");
+                        }
+                        
+                        @Override
+                        public void run() {
+                        	IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                        	List<DBSProcedure> entities = new ArrayList<>();
+                            entities.add((DBSProcedure) sourceObject);
+                            DBRRunnableWithResult<String> generator = SQLEditorHandlerCheckProcedureConsole.CHECK_GENERATOR(entities);
+                            UIUtils.runInUI(workbenchWindow, generator);
+                    		String sql = CommonUtils.notEmpty(generator.getResult());
+                    		SQLNavigatorContext navContext = new SQLNavigatorContext(sourceObject);
+                    		String procName = ((DBSProcedure) sourceObject).getName();
+                    		String title = procName + " check";
+                    		try {
+								SQLEditorHandlerOpenObjectConsole.openAndExecuteSQLScriptExt(workbenchWindow, navContext, 
+										title, true, null /*currentSelection*/, sql, true);
+							} catch (CoreException e) {
+								DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
+							}
+                        }
+                        
+                    }, true));
         }
     }
 
