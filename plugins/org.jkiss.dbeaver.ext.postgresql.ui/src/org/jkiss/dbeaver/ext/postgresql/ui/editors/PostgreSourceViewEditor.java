@@ -98,31 +98,30 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     }
                 }, true));
             contributionManager.add(ActionUtils.makeActionContribution(
-                    new Action("Check", Action.AS_PUSH_BUTTON) {
-                        {
-                            setToolTipText("Check (via plpgsql_check)");
-                        }
+                new Action("Check", Action.AS_PUSH_BUTTON) {
+                    {
+                        setToolTipText("Check (via plpgsql_check)");
+                    }
                         
-                        @Override
-                        public void run() {
-                        	IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-                        	List<DBSProcedure> entities = new ArrayList<>();
-                            entities.add((DBSProcedure) sourceObject);
-                            DBRRunnableWithResult<String> generator = SQLEditorHandlerCheckProcedureConsole.CHECK_GENERATOR(entities);
-                            UIUtils.runInUI(workbenchWindow, generator);
-                    		String sql = CommonUtils.notEmpty(generator.getResult());
-                    		SQLNavigatorContext navContext = new SQLNavigatorContext(sourceObject);
-                    		String procName = ((DBSProcedure) sourceObject).getName();
-                    		String title = procName + " check";
-                    		try {
-								SQLEditorHandlerOpenObjectConsole.openAndExecuteSQLScriptExt(workbenchWindow, navContext, 
-										title, true, null /*currentSelection*/, sql, true);
-							} catch (CoreException e) {
-								DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
-							}
+                    @Override
+                    public void run() {
+                        IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                        List<DBSProcedure> entities = new ArrayList<>();
+                        entities.add((DBSProcedure) sourceObject);
+                        DBRRunnableWithResult<String> generator = SQLEditorHandlerCheckProcedureConsole.CHECK_GENERATOR(entities);
+                        UIUtils.runInUI(workbenchWindow, generator);
+                        String sql = CommonUtils.notEmpty(generator.getResult());
+                        SQLNavigatorContext navContext = new SQLNavigatorContext(sourceObject);
+                        String procName = ((DBSProcedure) sourceObject).getName();
+                        String title = procName + " check";
+                        try {
+                            SQLEditorHandlerOpenObjectConsole.openAndExecuteSQLScriptExt(workbenchWindow, navContext, 
+                                title, true, null, sql, true);
+                        } catch (CoreException e) {
+                            DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
                         }
-                        
-                    }, true));
+                    }
+                }, true));
         }
     }
 
