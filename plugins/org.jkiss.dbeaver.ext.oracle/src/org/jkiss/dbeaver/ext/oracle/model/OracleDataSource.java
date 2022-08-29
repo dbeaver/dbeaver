@@ -179,7 +179,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                     }
                 }
             } catch (SQLException e) {
-                log.debug(e);
+                log.debug("Can't get connection warnings", e);
             }
             return connection;
         } catch (DBCException e) {
