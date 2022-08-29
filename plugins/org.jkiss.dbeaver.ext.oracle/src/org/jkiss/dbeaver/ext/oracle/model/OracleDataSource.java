@@ -168,15 +168,12 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
         try {
             Connection con = super.openConnection(monitor, context, purpose);
-            SQLWarning warn;
+            SQLWarning warning;
             try {
-                warn = con.getWarnings();
-                if (warn != null && warn.getErrorCode() == OracleConstants.EC_PASSWORD_WILL_EXPIRE && !isPasswordExpiracyWarningShown) {
-                    DBWorkbench.getPlatformUI().showWarningMessageBox(
-                        OracleMessages.oracle_password_will_expire_warn_name, warn.getMessage()
-                        + "\n" + OracleMessages.oracle_password_will_expire_warn_description
-                    );
-                    isPasswordExpiracyWarningShown = true;
+                warning = con.getWarnings();
+                while (warning != null && !isPasswordExpiracyWarningShown) {
+                    checkForPasswordWillExpireWarning(warning);
+                    warning = warning.getNextWarning();
                 }
             } catch (SQLException e) {
                 log.debug(e);
@@ -192,6 +189,16 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 }
             }
             throw e;
+        }
+    }
+    
+    private void checkForPasswordWillExpireWarning(SQLWarning warning) {
+        if (warning != null && warning.getErrorCode() == OracleConstants.EC_PASSWORD_WILL_EXPIRE) {
+            DBWorkbench.getPlatformUI().showWarningMessageBox(
+                OracleMessages.oracle_password_will_expire_warn_name, warning.getMessage()
+                + "\n" + OracleMessages.oracle_password_will_expire_warn_description
+            );
+            isPasswordExpiracyWarningShown = true;
         }
     }
 
