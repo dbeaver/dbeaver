@@ -104,7 +104,7 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
     }
 
     @Override
-    public boolean trimObjectNames() {
+    public boolean isTrimObjectNames() {
         return false;
     }
 

@@ -51,7 +51,7 @@ public class RMProject extends RMObject {
     private String id;
     private String description;
     private Type type;
-    private OffsetDateTime createTime;
+    private Long createTime;
     private String creator;
     private Set<String> projectPermissions;
 
@@ -63,7 +63,7 @@ public class RMProject extends RMObject {
         String name,
         String description,
         Type type,
-        OffsetDateTime createTime,
+        Long createTime,
         String creator,
         Set<String> projectPermissions
     ) {
@@ -116,11 +116,11 @@ public class RMProject extends RMObject {
         this.type = type;
     }
 
-    public OffsetDateTime getCreateTime() {
+    public Long getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(OffsetDateTime createTime) {
+    public void setCreateTime(Long createTime) {
         this.createTime = createTime;
     }
 

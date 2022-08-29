@@ -95,12 +95,8 @@ class GridColumnRenderer extends AbstractRenderer {
         boolean flat = true;
         boolean drawSelected = false;
 
-        if (selected || hovering) {
-            gc.setBackground(grid.getContentProvider().getCellHeaderSelectionBackground(element));
-        } else {
-            gc.setBackground(grid.getContentProvider().getCellHeaderBackground(element));
-        }
-        gc.setForeground(grid.getContentProvider().getCellHeaderForeground(element));
+        gc.setBackground(grid.getLabelProvider().getHeaderBackground(element, selected || hovering));
+        gc.setForeground(grid.getLabelProvider().getHeaderForeground(element, selected || hovering));
 
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
@@ -214,7 +210,7 @@ class GridColumnRenderer extends AbstractRenderer {
             }
 
         } else {
-            gc.setForeground(grid.getContentProvider().getCellHeaderBorder(null));
+            gc.setForeground(grid.getLabelProvider().getHeaderBorder(element));
             gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
             gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
         }

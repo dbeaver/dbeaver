@@ -35,6 +35,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -1683,6 +1684,7 @@ public class SQLEditor extends SQLEditorBase implements
                         log.error("Error creating presentation", e);
                     }
                 }
+                getSite().setSelectionProvider(extraPresentation.getSelectionProvider());
                 if (maximize) {
                     stackLayout.topControl = getExtraPresentationControl();
                     getExtraPresentationControl().setFocus();
@@ -2629,11 +2631,14 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
+        DBPDataSourceContainer dsContainer = getDataSourceContainer();
+        
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
-            resultsSash.setBackground(resultTabs.getBackground());
-            topBarMan.getControl().setBackground(resultTabs.getBackground());
-            bottomBarMan.getControl().setBackground(resultTabs.getBackground());
+            Color bgColor = dsContainer == null ? null : UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration());
+            resultsSash.setBackground(bgColor);
+            topBarMan.getControl().setBackground(bgColor);
+            bottomBarMan.getControl().setBackground(bgColor);
         }
 
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
@@ -2668,8 +2673,7 @@ public class SQLEditor extends SQLEditorBase implements
             reloadSyntaxRules();
         }
 
-        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        if (dataSourceContainer == null) {
+        if (dsContainer == null) {
             resultsSash.setMaximizedControl(sqlEditorPanel);
         } else {
             if (curQueryProcessor != null && curQueryProcessor.getFirstResults().hasData()) {
@@ -2682,8 +2686,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         loadActivePreferenceSettings();
 
-        if (dataSourceContainer != null) {
-            globalScriptContext.loadVariables(dataSourceContainer.getDriver(), null);
+        if (dsContainer != null) {
+            globalScriptContext.loadVariables(dsContainer.getDriver(), null);
         } else {
             globalScriptContext.clearVariables();
         }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class QMMTransactionInfo extends QMMObject {
     }
 
     private QMMTransactionInfo(Builder builder) {
+        super(builder.openTime, builder.closeTime);
         connection = builder.connection;
         previous = builder.previous;
         committed = builder.committed;
@@ -81,13 +83,21 @@ public class QMMTransactionInfo extends QMMObject {
     public Map<String, Object> toMap() {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("connection", getConnection().toMap());
+        result.put("openTime", getOpenTime());
+        result.put("closeTime", getCloseTime());
         return result;
     }
 
     public static QMMTransactionInfo fromMap(Map<String, Object> objectMap) {
         QMMConnectionInfo connectionInfo = QMMConnectionInfo.fromMap(
             JSONUtils.getObject(objectMap, "connection"));
-        return builder().setConnection(connectionInfo).build();
+        long openTime = CommonUtils.toLong(objectMap.get("openTime"));
+        long closeTime = CommonUtils.toLong(objectMap.get("closeTime"));
+        return builder()
+            .setConnection(connectionInfo)
+            .setOpenTime(openTime)
+            .setCloseTime(closeTime)
+            .build();
     }
 
     public QMMTransactionInfo getPrevious() {
@@ -134,6 +144,8 @@ public class QMMTransactionInfo extends QMMObject {
         private QMMTransactionInfo previous;
         private boolean committed;
         private QMMTransactionSavepointInfo savepointStack;
+        private long openTime;
+        private long closeTime;
 
         private Builder() {
         }
@@ -155,6 +167,16 @@ public class QMMTransactionInfo extends QMMObject {
 
         public Builder setSavepointStack(QMMTransactionSavepointInfo savepointStack) {
             this.savepointStack = savepointStack;
+            return this;
+        }
+
+        public Builder setOpenTime(long openTime) {
+            this.openTime = openTime;
+            return this;
+        }
+
+        public Builder setCloseTime(long closeTime) {
+            this.closeTime = closeTime;
             return this;
         }
 

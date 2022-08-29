@@ -140,12 +140,13 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         }
         if (this.maxLength == 0) {
             this.maxLength = JDBCUtils.safeGetInt(dbResult, "max_length");
-        }
-        if (this.maxLength > 0) {
-            final String typeName = getTypeName();
-            if (typeName.equals(SQLServerConstants.TYPE_NVARCHAR) || typeName.equals(SQLServerConstants.TYPE_NCHAR)) {
-                // https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql#arguments
-                this.maxLength /= 2;
+
+            if (maxLength > 0 && SQLServerUtils.isUnicodeCharStoredAsBytePairs(getDataSource())) {
+                final String typeName = getTypeName();
+                if (typeName.equals(SQLServerConstants.TYPE_NVARCHAR) || typeName.equals(SQLServerConstants.TYPE_NCHAR)) {
+                    // https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql#arguments
+                    this.maxLength /= 2;
+                }
             }
         }
         setRequired(JDBCUtils.safeGetInt(dbResult, "is_nullable") == 0);

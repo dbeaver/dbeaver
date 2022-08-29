@@ -103,18 +103,6 @@ public interface IGridContentProvider extends IContentProvider {
      */
     Object getCellValue(IGridColumn colElement, IGridRow rowElement, boolean formatString);
 
-    @Nullable
-    Color getCellHeaderForeground(Object element);
-
-    @Nullable
-    Color getCellHeaderBackground(Object element);
-
-    @Nullable
-    Color getCellHeaderSelectionBackground(Object element);
-
-    @NotNull
-    Color getCellHeaderBorder(@Nullable Object element);
-
     @NotNull
     String getCellLinkText(IGridColumn colElement, IGridRow rowElement);
 
