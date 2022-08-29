@@ -17,12 +17,17 @@
 
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreScriptObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
-import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.SQLEditorHandlerCheckProcedureConsole;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -37,13 +42,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenObjectConsole;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.utils.CommonUtils;
-
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.ui.IWorkbenchWindow;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
