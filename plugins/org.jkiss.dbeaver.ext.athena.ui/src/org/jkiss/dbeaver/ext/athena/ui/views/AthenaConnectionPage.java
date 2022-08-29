@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
+import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
 import org.jkiss.dbeaver.ext.athena.ui.AthenaActivator;
 import org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -214,7 +215,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         if (s3LocationText != null) {
             String databaseName = connectionInfo.getDatabaseName();
             if (CommonUtils.isEmpty(databaseName)) {
-                databaseName = connectionInfo.getProviderProperty("{database}");
+                databaseName = connectionInfo.getProviderProperty(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION);
                 if (CommonUtils.isEmpty(databaseName)) {
                     databaseName = "s3://aws-athena-query-results-"; //$NON-NLS-1$
                 }
@@ -230,7 +231,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             connectionInfo.setServerName(awsRegionCombo.getText().trim());
         }
         if (s3LocationText != null) {
-            connectionInfo.setProviderProperty("{database}", s3LocationText.getText().trim());
+            connectionInfo.setProviderProperty(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, s3LocationText.getText().trim());
             connectionInfo.setDatabaseName(s3LocationText.getText().trim());
         }
         super.saveSettings(dataSource);

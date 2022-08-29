@@ -63,7 +63,7 @@ public class AthenaDataSourceProvider extends GenericDataSourceProvider implemen
         String urlTemplate = driver.getSampleURL();
         String regionName = connectionInfo.getServerName();
         if (regionName == null) {
-            regionName = connectionInfo.getProviderProperty("{server}");
+            regionName = connectionInfo.getProviderProperty(AthenaConstants.DRIVER_PROP_REGION);
         }
         if (CommonUtils.isEmpty(urlTemplate) || !urlTemplate.startsWith(AthenaConstants.JDBC_URL_PREFIX)) {
             return AthenaConstants.JDBC_URL_PREFIX + AthenaConstants.DRIVER_PROP_REGION + "=" + regionName + ";";
