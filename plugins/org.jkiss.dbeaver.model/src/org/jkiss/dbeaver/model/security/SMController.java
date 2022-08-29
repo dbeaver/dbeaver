@@ -86,7 +86,8 @@ public interface SMController extends SMAuthCredentialsManager {
         @NotNull SMSessionType sessionType,
         @NotNull String authProviderId,
         @Nullable String authProviderConfigurationId,
-        @NotNull Map<String, Object> userCredentials) throws DBException;
+        @NotNull Map<String, Object> userCredentials
+    ) throws DBException;
 
     SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
 
@@ -96,6 +97,13 @@ public interface SMController extends SMAuthCredentialsManager {
      * @throws DBException if the current session is not found or something went wrong
      */
     void logout() throws DBException;
+
+    /**
+     * Refresh current sm session and generate new token
+     *
+     * @throws DBException if the current refresh token invalid
+     */
+    SMTokens refreshSession(@NotNull String refreshToken) throws DBException;
 
     void updateSession(
         @NotNull String sessionId,
