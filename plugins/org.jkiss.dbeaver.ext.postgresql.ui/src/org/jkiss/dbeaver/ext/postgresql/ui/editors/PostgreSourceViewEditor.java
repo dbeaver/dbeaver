@@ -108,7 +108,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                         IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
                         List<DBSProcedure> entities = new ArrayList<>();
                         entities.add((DBSProcedure) sourceObject);
-                        DBRRunnableWithResult<String> generator = SQLEditorHandlerCheckProcedureConsole.CHECK_GENERATOR(entities);
+                        DBRRunnableWithResult<String> generator = SQLEditorHandlerCheckProcedureConsole.checkGenerator(entities);
                         UIUtils.runInUI(workbenchWindow, generator);
                         String sql = CommonUtils.notEmpty(generator.getResult());
                         SQLNavigatorContext navContext = new SQLNavigatorContext(sourceObject);
