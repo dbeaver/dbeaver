@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 
 import java.nio.file.Path;
 
@@ -26,10 +27,10 @@ import java.nio.file.Path;
  */
 class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
 {
-    private final Path sourceFile;
-    private final boolean isLegacy;
-    private final boolean isDefault;
-    private final String configSuffix;
+    private Path sourceFile;
+    private boolean isLegacy;
+    private boolean isDefault;
+    private String configSuffix;
 
     DataSourceFileStorage(Path sourceFile, boolean isLegacy, boolean isDefault) {
         this.sourceFile = sourceFile;
@@ -86,6 +87,11 @@ class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
 
     public Path getSourceFile() {
         return sourceFile;
+    }
+
+    void convertToModern(DBPProject project) {
+        this.sourceFile = project.getMetadataFolder(true).resolve(DBPDataSourceRegistry.MODERN_CONFIG_FILE_NAME);
+        this.isLegacy = false;
     }
 
     @Override

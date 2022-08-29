@@ -49,7 +49,6 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -729,6 +728,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         saveInProgress = true;
         try {
             for (DBPDataSourceConfigurationStorage storage : storages) {
+                if (storage instanceof DataSourceFileStorage && ((DataSourceFileStorage) storage).isLegacy()) {
+                    // Legacy storage. We must save it in the modern format
+                    ((DataSourceFileStorage) storage).convertToModern(project);
+                }
+
                 List<DataSourceDescriptor> localDataSources = getDataSources(storage);
 
                 try {
