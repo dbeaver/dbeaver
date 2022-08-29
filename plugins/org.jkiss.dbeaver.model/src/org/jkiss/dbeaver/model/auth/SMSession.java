@@ -46,6 +46,9 @@ public interface SMSession extends DBPObject, AutoCloseable {
     @NotNull
     String getSessionId();
 
+    /**
+     * Session start datetime
+     */
     @NotNull
     LocalDateTime getSessionStart();
 
