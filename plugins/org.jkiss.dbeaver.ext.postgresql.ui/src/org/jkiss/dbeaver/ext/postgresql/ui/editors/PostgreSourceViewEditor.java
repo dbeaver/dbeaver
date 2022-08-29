@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenObjectConsole;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.utils.CommonUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
