@@ -190,7 +190,18 @@ public class PostgreMessages extends NLS {
 
     public static String dialog_trigger_edit_page_label_trigger_function;
     public static String dialog_trigger_edit_page_select_function_title;
-
+    
+    /* Procedure check, etc */
+    
+    public static String procedure_check_label;
+    public static String procedure_check_label2;
+    public static String procedure_check_label_ext;
+    public static String procedure_check_description;
+    public static String source_view_show_header_label;
+    public static String source_view_show_header_description;
+    public static String message_open_console;
+    public static String error_cant_open_sql_editor;
+    
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, PostgreMessages.class);

@@ -17,20 +17,12 @@
 
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreScriptObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.SQLEditorHandlerCheckProcedureConsole;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -45,6 +37,16 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenObjectConsole;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.utils.CommonUtils;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.ui.IWorkbenchWindow;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreSourceViewEditor
@@ -85,10 +87,10 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
         if (sourceObject instanceof PostgreProcedure) {
             contributionManager.add(new Separator());
             contributionManager.add(ActionUtils.makeActionContribution(
-                new Action("Show header", Action.AS_CHECK_BOX) {
+                new Action(PostgreMessages.source_view_show_header_label, Action.AS_CHECK_BOX) {
                     {
                         setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_PROCEDURE));
-                        setToolTipText("Shows auto-generated function header");
+                        setToolTipText(PostgreMessages.source_view_show_header_description);
                         setChecked(!isInDebugMode());
                     }
                     @Override
@@ -98,9 +100,9 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     }
                 }, true));
             contributionManager.add(ActionUtils.makeActionContribution(
-                new Action("Check", Action.AS_PUSH_BUTTON) {
+                new Action(PostgreMessages.procedure_check_label, Action.AS_PUSH_BUTTON) {
                     {
-                        setToolTipText("Check (via plpgsql_check)");
+                        setToolTipText(PostgreMessages.procedure_check_description);
                     }
                         
                     @Override
@@ -113,12 +115,13 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                         String sql = CommonUtils.notEmpty(generator.getResult());
                         SQLNavigatorContext navContext = new SQLNavigatorContext(sourceObject);
                         String procName = ((DBSProcedure) sourceObject).getName();
-                        String title = procName + " check";
+                        String title = procName + " " + PostgreMessages.procedure_check_label2;
                         try {
                             SQLEditorHandlerOpenObjectConsole.openAndExecuteSQLScriptExt(workbenchWindow, navContext, 
                                 title, true, null, sql, true);
                         } catch (CoreException e) {
-                            DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
+                            DBWorkbench.getPlatformUI().showError(PostgreMessages.message_open_console, 
+                                PostgreMessages.error_cant_open_sql_editor, e);
                         }
                     }
                 }, true));

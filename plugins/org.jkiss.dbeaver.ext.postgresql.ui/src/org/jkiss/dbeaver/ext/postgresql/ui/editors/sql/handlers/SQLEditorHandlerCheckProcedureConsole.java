@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2022 DBeaver Corp and others
- * Copyright (C) 2010-2017 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +23,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.sql.generator.SQLGeneratorProcedureCheck;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.generator.SQLGenerator;
@@ -90,15 +90,16 @@ public class SQLEditorHandlerCheckProcedureConsole extends SQLEditorHandlerOpenO
 
         DBRRunnableWithResult<String> generator = checkGenerator(entities);
 
-        String title = "Stored procedures check";
+        String title = PostgreMessages.procedure_check_label_ext;
         if (entities.size() == 1 && !CommonUtils.isEmpty(procName)) {
-            title = procName + " check";
+            title = procName + " " + PostgreMessages.procedure_check_label2;
         }
 
         try {
             openConsoleCheck(workbenchWindow, generator, navContext, title, true, currentSelection);
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
+            DBWorkbench.getPlatformUI().showError(PostgreMessages.message_open_console, 
+                PostgreMessages.error_cant_open_sql_editor, e);
         }
         return null;
     }
