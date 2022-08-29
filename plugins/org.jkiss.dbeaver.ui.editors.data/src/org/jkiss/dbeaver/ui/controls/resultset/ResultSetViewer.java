@@ -2553,9 +2553,11 @@ public class ResultSetViewer extends Viewer
 
             DBDDataFilter filter = new DBDDataFilter(model.getDataFilter());
             DBDAttributeConstraint constraint = filter.getConstraint(curAttribute);
+            DBCLogicalOperator[] supportedOperators =
+                curAttribute.getValueHandler().getSupportedOperators(curAttribute);
             if (constraint != null) {
                 if (!ArrayUtils.isEmpty((Object[]) value)) {
-                    if (getDataSource() != null && !getDataSource().getInfo().supportsWhereInStatements()) {
+                    if (getDataSource() != null && !ArrayUtils.contains(supportedOperators, DBCLogicalOperator.IN)) {
                         constraint.setOperator(DBCLogicalOperator.EQUALS);
                     } else {
                         constraint.setOperator(DBCLogicalOperator.IN);
@@ -3435,7 +3437,13 @@ public class ResultSetViewer extends Viewer
             for (int k = 0; k < rows.size(); k++) {
                 keyValues[k] = model.getCellValue(new ResultSetCellLocation(attrBinding, rows.get(k)));
             }
-            constraint.setOperator(DBCLogicalOperator.EQUALS);
+            DBCLogicalOperator[] supportedOperators =
+                attrBinding.getValueHandler().getSupportedOperators(attrBinding);
+            if (ArrayUtils.contains(supportedOperators, DBCLogicalOperator.IN)) {
+                constraint.setOperator(DBCLogicalOperator.IN);
+            } else {
+                constraint.setOperator(DBCLogicalOperator.EQUALS);
+            }
             constraint.setValue(keyValues);
         }
     }
