@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -79,7 +80,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     private boolean useRuleHint;
     private boolean resolveGeometryAsStruct = true;
     private boolean hasStatistics;
-    private boolean isPasswordExpiracyWarningShown;
+    private boolean isPasswordExpireWarningShown;
 
     private final Map<String, Boolean> availableViews = new HashMap<>();
 
@@ -167,18 +168,20 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 */
 
         try {
-            Connection con = super.openConnection(monitor, context, purpose);
-            SQLWarning warning;
+            Connection connection = super.openConnection(monitor, context, purpose);
             try {
-                warning = con.getWarnings();
-                while (warning != null && !isPasswordExpiracyWarningShown) {
-                    checkForPasswordWillExpireWarning(warning);
-                    warning = warning.getNextWarning();
+                for (SQLWarning warninig = connection.getWarnings();
+                    warninig != null && !isPasswordExpireWarningShown;
+                    warninig = warninig.getNextWarning()
+                ) {
+                    if (checkForPasswordWillExpireWarning(warninig)) {
+                        isPasswordExpireWarningShown = true;
+                    }
                 }
             } catch (SQLException e) {
                 log.debug(e);
             }
-            return con;
+            return connection;
         } catch (DBCException e) {
             if (e.getErrorCode() == OracleConstants.EC_PASSWORD_EXPIRED) {
                 // Here we could try to ask for expired password change
@@ -192,14 +195,15 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
     
-    private void checkForPasswordWillExpireWarning(SQLWarning warning) {
+    private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
         if (warning != null && warning.getErrorCode() == OracleConstants.EC_PASSWORD_WILL_EXPIRE) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
-                OracleMessages.oracle_password_will_expire_warn_name, warning.getMessage()
-                + "\n" + OracleMessages.oracle_password_will_expire_warn_description
+                OracleMessages.oracle_password_will_expire_warn_name,
+                NLS.bind(OracleMessages.oracle_password_will_expire_warn_description, warning.getMessage())
             );
-            isPasswordExpiracyWarningShown = true;
+            return true;
         }
+        return false;
     }
 
     private boolean changeExpiredPassword(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
