@@ -39,6 +39,8 @@ public class SMAuthInfo {
     @Nullable
     private final String smAuthToken;
     @Nullable
+    private final String smRefreshToken;
+    @Nullable
     private final SMAuthPermissions authPermissions;
 
     private SMAuthInfo(
@@ -48,7 +50,7 @@ public class SMAuthInfo {
         @NotNull Map<String, Object> authData,
         @Nullable String redirectUrl,
         @Nullable String smAuthToken,
-        @Nullable SMAuthPermissions authPermissions
+        @Nullable String smRefreshToken, @Nullable SMAuthPermissions authPermissions
     ) {
         this.authStatus = authStatus;
         this.error = error;
@@ -56,6 +58,7 @@ public class SMAuthInfo {
         this.authData = authData;
         this.redirectUrl = redirectUrl;
         this.smAuthToken = smAuthToken;
+        this.smRefreshToken = smRefreshToken;
         this.authPermissions = authPermissions;
     }
 
@@ -89,13 +92,15 @@ public class SMAuthInfo {
     }
 
     public static SMAuthInfo success(@NotNull String authAttemptId,
-                                     @NotNull String token,
+                                     @NotNull String accessToken,
+                                     @Nullable String refreshToken,
                                      @NotNull SMAuthPermissions smAuthPermissions,
                                      @NotNull Map<String, Object> authData) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.SUCCESS)
             .setAuthAttemptId(authAttemptId)
-            .setSmAuthToken(token)
+            .setSmAuthToken(accessToken)
+            .setSmRefreshToken(refreshToken)
             .setAuthData(authData)
             .setAuthPermissions(smAuthPermissions)
             .build();
@@ -105,6 +110,11 @@ public class SMAuthInfo {
     @Nullable
     public String getSmAuthToken() {
         return smAuthToken;
+    }
+
+    @Nullable
+    public String getSmRefreshToken() {
+        return smRefreshToken;
     }
 
     @Nullable
@@ -145,6 +155,7 @@ public class SMAuthInfo {
         private Map<String, Object> authData;
         private String redirectUrl;
         private String smAuthToken;
+        private String smRefreshToken;
         private SMAuthPermissions authPermissions;
 
         private Builder() {
@@ -180,13 +191,19 @@ public class SMAuthInfo {
             return this;
         }
 
+        public Builder setSmRefreshToken(String smRefreshToken) {
+            this.smRefreshToken = smRefreshToken;
+            return this;
+        }
+
+
         public Builder setAuthPermissions(SMAuthPermissions authPermissions) {
             this.authPermissions = authPermissions;
             return this;
         }
 
         public SMAuthInfo build() {
-            return new SMAuthInfo(authStatus, error, authAttemptId, authData, redirectUrl, smAuthToken, authPermissions);
+            return new SMAuthInfo(authStatus, error, authAttemptId, authData, redirectUrl, smAuthToken, smRefreshToken, authPermissions);
         }
     }
 }

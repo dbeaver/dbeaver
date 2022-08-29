@@ -97,6 +97,19 @@ public class EntityPart extends NodePart {
         }
     }
 
+    /**
+     *  Some routing methods doesn't support attribute associations
+     *  Also not all visibility settings can allow an attribute-attribute
+     *  relations
+     *
+     * @return is attribute associations possible
+     */
+    protected boolean isAttributeAssociationsSupported() {
+        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        return store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI)
+            && !ERDAttributeVisibility.isHideAttributeAssociations(store);
+    }
+
     public void handleNameChange() {
         EntityFigure entityFigure = getFigure();
         EditableLabel label = entityFigure.getNameLabel();
@@ -272,20 +285,22 @@ public class EntityPart extends NodePart {
 
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
-        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
-            return super.getModelSourceConnections();
+        if (isAttributeAssociationsSupported()) {
+            return super.getModelSourceConnections().stream()
+                .filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE)
+                .collect(Collectors.toList());
         }
-        return super.getModelSourceConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
+        return super.getModelSourceConnections();
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
-        final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        if (!store.getString(ERDUIConstants.PREF_ROUTING_TYPE).equals(ERDUIConstants.ROUTING_MIKAMI) || ERDAttributeVisibility.isHideAttributeAssociations(store)) {
-            return super.getModelTargetConnections();
+        if (isAttributeAssociationsSupported()) {
+            return super.getModelTargetConnections().stream()
+                .filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE)
+                .collect(Collectors.toList());
         } else {
-            return super.getModelTargetConnections().stream().filter(erdAssociation -> erdAssociation.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE).collect(Collectors.toList());
+            return super.getModelTargetConnections();
         }
     }
 

@@ -139,16 +139,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBDPseudoAttribute rowIdAttribute = (flags & FLAG_READ_PSEUDO) != 0 ?
             DBUtils.getRowIdAttribute(this) : null;
 
-        // Always use alias if we have criteria or ROWID.
+        // Always use alias if we have data filter or ROWID.
         // Some criteria doesn't work without alias
-        // (e.g. structured attributes in Oracle requires table alias)
+        // (e.g. structured attributes in Oracle or composite types in PostgreSQL requires table alias)
         String tableAlias = null;
-        if ((dataFilter != null && dataFilter.hasConditions()) || rowIdAttribute != null) {
-            {
-                if (dataSource.getSQLDialect().supportsAliasInSelect()) {
-                    tableAlias = DEFAULT_TABLE_ALIAS;
-                }
-            }
+        if ((dataFilter != null || rowIdAttribute != null) && dataSource.getSQLDialect().supportsAliasInSelect()) {
+            tableAlias = DEFAULT_TABLE_ALIAS;
         }
 
         if (rowIdAttribute != null && tableAlias == null) {
@@ -363,7 +359,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     if (tableAlias != null) {
                         query.append(tableAlias).append(dialect.getStructSeparator());
                     }
-                    query.append(getAttributeName(attribute)).append("="); //$NON-NLS-1$
+                    query.append(getAttributeName(attribute, DBPAttributeReferencePurpose.UPDATE_TARGET)).append("="); //$NON-NLS-1$
                     DBDValueHandler valueHandler = handlers[i];
                     if (valueHandler instanceof DBDValueBinder) {
                         query.append(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[i]));
@@ -667,7 +663,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 */
 
         StringBuilder query = new StringBuilder();
-        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn));
+        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn, DBPAttributeReferencePurpose.DATA_SELECTION));
 
         String descColumns = DBVUtils.getDictionaryDescriptionColumns(monitor, keyColumn);
         Collection<DBSEntityAttribute> descAttributes = null;
@@ -840,8 +836,25 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         SQLDialect dialect = session.getDataSource().getSQLDialect();
         return dialect instanceof JDBCSQLDialect && ((JDBCSQLDialect) dialect).supportsUpsertStatement();
     }
+    
+    /**
+     * Get name of the attribute
 
+     * @param attribute to get name of
+     * @return attribute name
+     */
     public String getAttributeName(@NotNull DBSAttributeBase attribute) {
+        return getAttributeName(attribute, DBPAttributeReferencePurpose.UNSPECIFIED);
+    }
+    
+    /**
+     * Get name of the attribute
+
+     * @param attribute to get name of
+     * @param purpose of the name usage
+     * @return attribute name
+     */
+    public String getAttributeName(@NotNull DBSAttributeBase attribute, DBPAttributeReferencePurpose purpose) {
         if (attribute instanceof DBDAttributeBindingMeta) {
             // For top-level query bindings we need to use table columns name instead of alias.
             // For nested attributes we should use aliases
@@ -854,7 +867,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         }
         // Do not quote pseudo attribute name
-        return DBUtils.isPseudoAttribute(attribute) ? attribute.getName() : DBUtils.getObjectFullName(getDataSource(), attribute, DBPEvaluationContext.DML);
+        return DBUtils.isPseudoAttribute(attribute) 
+            ? attribute.getName() 
+            : DBUtils.getObjectFullName(getDataSource(), attribute, DBPEvaluationContext.DML, purpose);
     }
 
     private void appendAttributeCriteria(@Nullable String tableAlias, SQLDialect dialect, StringBuilder query, DBSAttributeBase attribute, Object value) {

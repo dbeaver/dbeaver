@@ -33,6 +33,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -691,6 +692,32 @@ public class JDBCUtils {
         }
     }
 
+    /**
+     * Executes query that returns multiple strings as a result
+
+     * @param session current connection session
+     * @param sql query text
+     * @param args optional parameters for the prepared statement
+     * @return collection of strings
+     */
+    @NotNull
+    public static List<String> queryStrings(Connection session, String sql, Object... args) throws SQLException {
+        try (PreparedStatement dbStat = session.prepareStatement(sql)) {
+            if (args != null) {
+                for (int i = 0; i < args.length; i++) {
+                    dbStat.setObject(i + 1, args[i]);
+                }
+            }
+            ArrayList<String> results = new ArrayList<>();
+            try (ResultSet resultSet = dbStat.executeQuery()) {
+                while (resultSet.next()) {
+                    results.add(resultSet.getString(1));
+                }
+            }
+            return results;
+        }
+    }
+    
     private static void debugColumnRead(ResultSet dbResult, String columnName, Exception error)
     {
         String colFullId = columnName;
@@ -821,6 +848,20 @@ public class JDBCUtils {
             log.debug("Error escaping wildcard string", e);
             return string;
         }
+    }
+
+    /**
+     * Quotes search string, if needed, depending on {@link JDBCSQLDialect#isQuoteSearchString()}.
+     */
+    @Nullable
+    public static String quoteSearchStringIfNeeded(@NotNull JDBCSession session, @Nullable String string) {
+        final JDBCSQLDialect dialect = (JDBCSQLDialect) session.getDataSource().getSQLDialect();
+
+        if (!dialect.isQuoteSearchString() || CommonUtils.isEmpty(string)) {
+            return string;
+        }
+
+        return dialect.getQuotedString(string);
     }
 
     public static boolean queryHasOutputParameters(SQLDialect sqlDialect, String sqlQuery) {

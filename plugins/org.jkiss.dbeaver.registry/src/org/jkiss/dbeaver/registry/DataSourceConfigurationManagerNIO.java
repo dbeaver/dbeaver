@@ -111,7 +111,11 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
     @Override
     public InputStream readConfiguration(@NotNull String name) throws IOException {
         Path path = getConfigurationPath(false).resolve(name);
-        if (!Files.exists(path)) {
+        if (Files.notExists(path)) {
+            // maybe it's .dbeaver-data-sources*.xml in the project folder (DBeaver < 6.1.3 (Legacy))
+            path = project.getAbsolutePath().resolve(name);
+        }
+        if (Files.notExists(path)) {
             return null;
         }
         return Files.newInputStream(path);

@@ -72,13 +72,43 @@ public final class DBUtils {
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBPNamedObject object)
     {
-        return object instanceof DBSObject ? getQuotedIdentifier(((DBSObject) object).getDataSource(), object.getName()) : object.getName();
+        if (object instanceof DBSContextBoundAttribute) {
+            return ((DBSContextBoundAttribute) object).formatMemberReference(false, null, DBPAttributeReferencePurpose.UNSPECIFIED);
+        } else {
+            return object instanceof DBSObject 
+                ? getQuotedIdentifier(((DBSObject) object).getDataSource(), object.getName()) 
+                : object.getName();
+        }
+    }
+    /**
+     * Get object name in quotes if they are needed.
+
+     * @param object to get identifier of
+     * @return object identifier
+     */
+    @NotNull
+    public static String getQuotedIdentifier(@NotNull DBSObject object) {
+        if (object instanceof DBSContextBoundAttribute) {
+            return ((DBSContextBoundAttribute) object).formatMemberReference(false, null, DBPAttributeReferencePurpose.UNSPECIFIED);
+        } else {
+            return getQuotedIdentifier(object.getDataSource(), object.getName());
+        }
     }
 
+    /**
+     * Get object name in quotes if they are needed.
+
+     * @param object to get identifier of
+     * @param purpose of identifier usage
+     * @return object identifier
+     */
     @NotNull
-    public static String getQuotedIdentifier(@NotNull DBSObject object)
-    {
-        return getQuotedIdentifier(object.getDataSource(), object.getName());
+    public static String getQuotedIdentifier(@NotNull DBSObject object, @NotNull DBPAttributeReferencePurpose purpose) {
+        if (object instanceof DBSContextBoundAttribute) {
+            return ((DBSContextBoundAttribute) object).formatMemberReference(false, null, purpose);
+        } else {
+            return getQuotedIdentifier(object.getDataSource(), object.getName());
+        }
     }
 
     public static boolean isQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str) {
@@ -761,87 +791,94 @@ public final class DBUtils {
     @Nullable
     public static Object getAttributeValue(
         @NotNull DBDAttributeBinding attribute,
-        DBDAttributeBinding[] allAttributes,
-        Object[] row,
-        int[] nestedIndexes)
-    {
+        @NotNull DBDAttributeBinding[] allAttributes,
+        @NotNull Object[] row,
+        @Nullable int[] nestedIndexes
+    ) {
         if (attribute.isCustom()) {
-            return DBVUtils.executeExpression(((DBDAttributeBindingCustom)attribute).getEntityAttribute(), allAttributes, row);
+            return DBVUtils.executeExpression(((DBDAttributeBindingCustom) attribute).getEntityAttribute(), allAttributes, row);
         }
 
-        int depth = attribute.getLevel();
-        if (depth == 0) {
-            final int index = attribute.getOrdinalPosition();
-            if (index >= row.length) {
-                log.debug("Bad attribute '" + attribute.getName() + "' index: " + index + " is out of row values' bounds (" + row.length + ")");
-                return null;
-            } else {
-                if (nestedIndexes == null) {
-                    return row[index];
-                } else {
-                    if (attribute.getDataKind() != DBPDataKind.ARRAY) {
-                        // Sibling non-array attribute
-                        return DBDVoid.INSTANCE;
-                    }
-                    Object colValue = row[index];
-                    if (colValue instanceof DBDCollection) {
-                        if (((DBDCollection) colValue).getItemCount() <= nestedIndexes[0]) {
-                            // Not an error. This collection is shorter than sibling collection
-                            return DBDVoid.INSTANCE;
-                        }
-                        return ((DBDCollection) colValue).getItem(nestedIndexes[0]);
-                    } else {
-                        log.debug("Index specified for non-collection attribute");
-                    }
-                }
-            }
+        final int depth = attribute.getLevel();
+        final int index = attribute.getTopParent().getOrdinalPosition();
+
+        if (depth == 0 && attribute != attribute.getTopParent()) {
+            log.debug("Top-level attribute '" + attribute.getName()
+                + "' has bad top-level parent: '" + attribute.getTopParent().getName() + "'");
+            return null;
         }
-        Object curValue = row[attribute.getTopParent().getOrdinalPosition()];
-        int indexNumber = 0;
+
+        if (index >= row.length) {
+            log.debug("Bad attribute '" + attribute.getName() + "' index: " + index + " is out of row values' bounds (" + row.length + ")");
+            return null;
+        }
+
+        Object curValue = row[index];
+        int curNestedIndex = 0;
 
         for (int i = 0; i < depth; i++) {
             if (curValue == null) {
                 break;
             }
-            DBDAttributeBinding attr = attribute.getParent(depth - i - 1);
-            assert attr != null;
+
+            final DBDAttributeBinding parent = Objects.requireNonNull(attribute.getParent(depth - i - 1));
+
             try {
-                int nestedIndex = 0;
-                if (curValue instanceof DBDCollection) {
-                    nestedIndex = nestedIndexes == null ? 0 : nestedIndexes[indexNumber++];
-                }
-                curValue = attr.extractNestedValue(
-                    curValue,
-                    nestedIndex);
-            } catch (Throwable e) {
-                //log.debug("Error reading nested value of [" + attr.getName() + "]", e);
-                curValue = new DBDValueError(e);
-                break;
-            }
-            if (nestedIndexes != null && indexNumber < nestedIndexes.length) {
-                if (attr instanceof DBDAttributeBindingElement) {
-                    // Nested value already extracted by element binding
-                } else if (attr instanceof DBDAttributeBindingType) {
-                    if (attr.getDataKind() != DBPDataKind.ARRAY) {
-                        return DBDVoid.INSTANCE;
-                    }
-                } else if (curValue instanceof DBDCollection) {
-                    if (((DBDCollection) curValue).getItemCount() <= nestedIndexes[indexNumber]) {
-                        // Not an error. This collection is shorter than sibling collection
-                        return DBDVoid.INSTANCE;
-                    }
-                    curValue = ((DBDCollection) curValue).getItem(nestedIndexes[indexNumber]);
-                    indexNumber++;
+                if (nestedIndexes == null || !isIndexedValue(parent, curValue)) {
+                    curValue = parent.extractNestedValue(curValue, 0);
+                } else if (isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
+                    curValue = parent.extractNestedValue(curValue, nestedIndexes[curNestedIndex]);
+                    curNestedIndex++;
                 } else {
-                    if (i == depth - 1) {
-                        // Sibling non-collection attribute
-                        return DBDVoid.INSTANCE;
-                    }
+                    return DBDVoid.INSTANCE;
                 }
+            } catch (Throwable e) {
+                return new DBDValueError(e);
+            }
+        }
+
+        while (nestedIndexes != null && curNestedIndex < nestedIndexes.length) {
+            if (curValue == null || !isIndexedValue(attribute, curValue)) {
+                break;
+            } else if (isValidIndex(curValue, nestedIndexes[curNestedIndex])) {
+                curValue = getValueElement(curValue, nestedIndexes[curNestedIndex]);
+                curNestedIndex++;
+            } else {
+                return DBDVoid.INSTANCE;
             }
         }
 
         return curValue;
+    }
+
+    private static boolean isIndexedValue(@NotNull DBDAttributeBinding attr, @NotNull Object value) {
+        return value instanceof List<?>
+            || value instanceof DBDComposite && !(value instanceof DBDDocument) && attr.getDataKind() == DBPDataKind.STRUCT;
+    }
+
+    private static boolean isValidIndex(@NotNull Object value, int index) {
+        return (!(value instanceof List<?>) || ((List<?>) value).size() > index)
+            && (!(value instanceof DBDComposite) || ((DBDComposite) value).getAttributeCount() > index);
+    }
+
+    @Nullable
+    private static Object getValueElement(@NotNull Object value, int index) {
+        if (value instanceof DBDComposite) {
+            final DBDComposite composite = (DBDComposite) value;
+            final DBSAttributeBase attribute = composite.getAttributes()[index];
+
+            try {
+                return composite.getAttributeValue(attribute);
+            } catch (DBCException e) {
+                return new DBDValueError(e);
+            }
+        }
+
+        if (value instanceof List<?> && ((List<?>) value).size() > index) {
+            return ((List<?>) value).get(index);
+        }
+
+        return null;
     }
 
     @NotNull
@@ -1610,16 +1647,47 @@ public final class DBUtils {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
         } else if (object instanceof DBSObject && ((DBSObject) object).getDataSource() != null) {
-            return getObjectFullName(((DBSObject) object).getDataSource(), object, context);
+            return getObjectFullName(((DBSObject) object).getDataSource(), object, context, DBPAttributeReferencePurpose.UNSPECIFIED);
         } else {
             return object.getName();
         }
     }
+    
+    /**
+     * Get the full name of the object.
 
+     * @param dataSource container
+     * @param object object to get name of
+     * @param context evaluation context
+     * @return full name of the object
+     */
     @NotNull
-    public static String getObjectFullName(@NotNull DBPDataSource dataSource, @NotNull DBPNamedObject object, DBPEvaluationContext context)
+    public static String getObjectFullName(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBPNamedObject object, 
+        @NotNull DBPEvaluationContext context) {
+        return getObjectFullName(dataSource, object, context, DBPAttributeReferencePurpose.UNSPECIFIED);
+    }
+
+    /**
+     * Get the full name of the object.
+
+     * @param dataSource container
+     * @param object object to get name of
+     * @param context evaluation context
+     * @param purpose to use object name to
+     * @return full name of the object
+     */
+    @NotNull
+    public static String getObjectFullName(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBPNamedObject object, 
+        @NotNull DBPEvaluationContext context,
+        @NotNull DBPAttributeReferencePurpose purpose)
     {
-        if (object instanceof DBPQualifiedObject) {
+        if (object instanceof DBDAttributeBinding) {
+            return ((DBDAttributeBinding) object).getFullyQualifiedName(context, purpose);
+        } else if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
         } else {
             return getQuotedIdentifier(dataSource, object.getName());

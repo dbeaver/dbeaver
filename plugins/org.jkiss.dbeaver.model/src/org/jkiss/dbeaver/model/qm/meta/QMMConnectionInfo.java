@@ -63,6 +63,7 @@ public class QMMConnectionInfo extends QMMObject {
     }
 
     private QMMConnectionInfo(Builder builder) {
+        super(builder.openTime, builder.closeTime);
         project = builder.project;
         projectId = builder.projectId;
         projectName = builder.projectName;
@@ -160,6 +161,8 @@ public class QMMConnectionInfo extends QMMObject {
         serializedConnectionInfo.put("driverId", getDriverId());
         serializedConnectionInfo.put("instanceId", getInstanceId());
         serializedConnectionInfo.put("contextName", getContextName());
+        serializedConnectionInfo.put("openTime", getOpenTime());
+        serializedConnectionInfo.put("closeTime", getCloseTime());
         if (connectionConfiguration != null) {
             serializedConnectionInfo.put("connectionUserName", connectionConfiguration.getUserName());
             serializedConnectionInfo.put("connectionURL", connectionConfiguration.getUrl());
@@ -186,6 +189,8 @@ public class QMMConnectionInfo extends QMMObject {
         String driverId = CommonUtils.toString(objectMap.get("driverId"));
         String instanceId = CommonUtils.toString(objectMap.get("instanceId"));
         String contextName = CommonUtils.toString(objectMap.get("contextName"));
+        long openTime = CommonUtils.toLong(objectMap.get("openTime"));
+        long closeTime = CommonUtils.toLong(objectMap.get("closeTime"));
         //Connection configuration
         String connectionUserName = CommonUtils.toString(objectMap.get("connectionUserName"));
         String connectionURL = CommonUtils.toString(objectMap.get("connectionURL"));
@@ -205,6 +210,8 @@ public class QMMConnectionInfo extends QMMObject {
             .setInstanceId(instanceId)
             .setContextName(contextName)
             .setConnectionConfiguration(configuration)
+            .setOpenTime(openTime)
+            .setCloseTime(closeTime)
             .setProjectId(projectId)
             .setProjectName(projectName)
             .setProjectPath(projectPath)
@@ -443,6 +450,8 @@ public class QMMConnectionInfo extends QMMObject {
         private String containerName;
         private DBPConnectionConfiguration connectionConfiguration;
         private String instanceId;
+        private long openTime;
+        private long closeTime;
         private String contextName;
         private SQLDialect sqlDialect;
         private boolean transactional;
@@ -500,6 +509,16 @@ public class QMMConnectionInfo extends QMMObject {
 
         public Builder setInstanceId(String instanceId) {
             this.instanceId = instanceId;
+            return this;
+        }
+
+        public Builder setOpenTime(long openTime) {
+            this.openTime = openTime;
+            return this;
+        }
+
+        public Builder setCloseTime(long closeTime) {
+            this.closeTime = closeTime;
             return this;
         }
 

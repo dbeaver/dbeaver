@@ -239,7 +239,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
         long updateRowCount = CommonUtils.toLong(objectMap.get("updateRowCount"));
         long fetchRowCount = CommonUtils.toLong(objectMap.get("fetchRowCount"));
         int errorCode = CommonUtils.toInt(objectMap.get("errorCode"));
-        String errorMessage = CommonUtils.toString(objectMap.get("errorMessage"));
+        String errorMessage = CommonUtils.toString(objectMap.get("errorMessage"), null);
         long openTime = CommonUtils.toLong(objectMap.get("openTime"));
         long closeTime = CommonUtils.toLong(objectMap.get("closeTime"));
         long fetchBeginTime = CommonUtils.toLong(objectMap.get("fetchBeginTime"));

@@ -791,7 +791,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public void setSingleConnection(boolean singleConnection) {
-        this.singleConnection = embedded;
+        this.singleConnection = singleConnection;
     }
 
     @Override

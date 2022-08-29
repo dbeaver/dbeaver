@@ -70,6 +70,7 @@ public class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements DBPWorksp
                 "Error authenticating application user: " +
                     "\n" + e.getMessage(),
                 true);
+            dispose();
             System.exit(101);
         }
 

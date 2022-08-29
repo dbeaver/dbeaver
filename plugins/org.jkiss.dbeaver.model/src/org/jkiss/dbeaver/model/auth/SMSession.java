@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 /**
  * Access session.
  */
-public interface SMSession extends DBPObject {
+public interface SMSession extends DBPObject, AutoCloseable {
 
     /**
      * Session space
@@ -55,4 +55,9 @@ public interface SMSession extends DBPObject {
     @Nullable
     DBPProject getSingletonProject();
 
+    /**
+     * Closes session.
+     * It mustn't throw any errors.
+     */
+    void close();
 }

@@ -50,6 +50,7 @@ public class QMMStatementInfo extends QMMObject {
     }
 
     private QMMStatementInfo(Builder builder) {
+        super(builder.openTime, builder.closeTime);
         connection = builder.connection;
         purpose = builder.purpose;
         previous = builder.previous;
@@ -85,6 +86,8 @@ public class QMMStatementInfo extends QMMObject {
     public Map<String, Object> toMap() {
         Map<String, Object> serializedInfo = new LinkedHashMap<>();
         serializedInfo.put("connection", connection.toMap());
+        serializedInfo.put("openTime", getOpenTime());
+        serializedInfo.put("closeTime", getCloseTime());
         serializedInfo.put("purposeId", getPurpose().getId());
         return serializedInfo;
     }
@@ -92,9 +95,13 @@ public class QMMStatementInfo extends QMMObject {
     public static QMMStatementInfo fromMap(Map<String, Object> objectMap) {
         QMMConnectionInfo connectionInfo = QMMConnectionInfo.fromMap(JSONUtils.getObject(objectMap, "connection"));
         DBCExecutionPurpose purpose = DBCExecutionPurpose.getById(CommonUtils.toInt(objectMap.get("purposeId")));
+        long openTime = CommonUtils.toLong(objectMap.get("openTime"));
+        long closeTime = CommonUtils.toLong(objectMap.get("closeTime"));
         return builder()
             .setConnection(connectionInfo)
             .setPurpose(purpose)
+            .setOpenTime(openTime)
+            .setCloseTime(closeTime)
             .build();
     }
 
@@ -121,6 +128,8 @@ public class QMMStatementInfo extends QMMObject {
         private DBCExecutionPurpose purpose;
         private QMMStatementInfo previous;
         private DBCStatement reference;
+        private long openTime;
+        private long closeTime;
 
         public Builder() {
         }
@@ -149,6 +158,17 @@ public class QMMStatementInfo extends QMMObject {
 
         public Builder setReference(DBCStatement reference) {
             this.reference = reference;
+            return this;
+        }
+
+
+        public Builder setOpenTime(long openTime) {
+            this.openTime = openTime;
+            return this;
+        }
+
+        public Builder setCloseTime(long closeTime) {
+            this.closeTime = closeTime;
             return this;
         }
 
