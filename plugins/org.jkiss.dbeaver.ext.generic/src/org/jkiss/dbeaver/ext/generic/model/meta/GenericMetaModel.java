@@ -584,10 +584,10 @@ public class GenericMetaModel {
      * For this reason we usually trim it from our side
      * But other databases can have tables, columns, etc. with spaces around their names
      *
-     * @return true if we trim objects names by default, false - if not
+     * @return true if we trim objects names, false - if not
      */
     public boolean isTrimObjectNames() {
-        return true;
+        return false;
     }
 
     public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {

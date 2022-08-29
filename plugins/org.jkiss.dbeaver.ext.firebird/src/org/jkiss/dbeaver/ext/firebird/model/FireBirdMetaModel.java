@@ -247,6 +247,11 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean isTrimObjectNames() {
+        return true;
+    }
+
+    @Override
     public boolean isSystemTable(GenericTableBase table) {
         String tableName = table.getName();
         tableName = tableName.toUpperCase(Locale.ENGLISH);
