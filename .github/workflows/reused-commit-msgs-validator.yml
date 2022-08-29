@@ -4,6 +4,8 @@ name: Check Commit Message
 on:
   workflow_call:
 
+permissions:
+  contents: read
 
 jobs:
   validate-commit-message:
