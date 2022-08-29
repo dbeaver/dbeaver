@@ -528,7 +528,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     }
                     dataSource = new DataSourceDescriptor(
                         registry,
-                        configurationStorage instanceof DataSourceMemoryStorage ? registry.getDefaultStorage() : configurationStorage,
+                        configurationStorage.isVirtual() ? registry.getDefaultStorage() : configurationStorage,
                         origin,
                         id,
                         driver,

@@ -31,6 +31,8 @@ public interface DBPDataSourceConfigurationStorage {
 
     boolean isDefault();
 
+    boolean isVirtual();
+
     String getStatus();
 
     // Used for secure credentials save/load (it is a prt of credentials file name)

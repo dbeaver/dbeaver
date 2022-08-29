@@ -84,6 +84,11 @@ class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
         return isDefault;
     }
 
+    @Override
+    public boolean isVirtual() {
+        return false;
+    }
+
     public Path getSourceFile() {
         return sourceFile;
     }
