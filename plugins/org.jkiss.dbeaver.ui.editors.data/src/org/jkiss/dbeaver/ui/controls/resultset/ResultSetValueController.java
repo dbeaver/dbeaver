@@ -241,7 +241,11 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @Override
     public boolean isReadOnly() {
-        return controller.getAttributeReadOnlyStatus(getBinding()) != null;
+        DBSTypedObject valueType = getBinding().getPresentationAttribute();
+        // TODO: 8/26/2022 Add support for editing internal array rows
+        return controller.getAttributeReadOnlyStatus(getBinding()) != null || (valueType.getDataKind() != null
+            && valueType.getDataKind() == DBPDataKind.ARRAY
+            && cellLocation.getRowIndexes() != null);
     }
 
     @Override

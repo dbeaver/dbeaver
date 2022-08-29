@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.auth;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 
 /**
  * Security manager credentials provider.
@@ -27,6 +28,12 @@ public interface SMCredentialsProvider {
      */
     @Nullable
     SMCredentials getActiveUserCredentials();
+
+    /**
+     *  Refresh current sm session
+     */
+    default void refreshSMSession() throws DBException {
+    }
 
     default boolean hasPermission(String permission) {
         var activeUserCredentials = getActiveUserCredentials();
