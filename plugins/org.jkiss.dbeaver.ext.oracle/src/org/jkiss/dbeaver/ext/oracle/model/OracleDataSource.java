@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OracleQueryPlanner;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.*;
@@ -78,6 +79,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     private boolean useRuleHint;
     private boolean resolveGeometryAsStruct = true;
     private boolean hasStatistics;
+    private boolean isPasswordExpiracyWarningShown;
 
     private final Map<String, Boolean> availableViews = new HashMap<>();
 
@@ -165,7 +167,20 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 */
 
         try {
-            return super.openConnection(monitor, context, purpose);
+            Connection con = super.openConnection(monitor, context, purpose);
+            SQLWarning warn;
+            try {
+                warn = con.getWarnings();
+                if (warn != null && warn.getErrorCode() == OracleConstants.EC_PASSWORD_WILL_EXPIRE && !isPasswordExpiracyWarningShown) {
+                    DBWorkbench.getPlatformUI().showWarningMessageBox(
+                        OracleMessages.oracle_password_will_expire_warn_name, warn.getMessage() + "\n" + OracleMessages.oracle_password_will_expire_warn_description
+                    );
+                    isPasswordExpiracyWarningShown = true;
+                }
+            } catch (SQLException e) {
+                log.debug(e);
+            }
+            return con;
         } catch (DBCException e) {
             if (e.getErrorCode() == OracleConstants.EC_PASSWORD_EXPIRED) {
                 // Here we could try to ask for expired password change
