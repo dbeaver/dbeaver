@@ -71,11 +71,6 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         return "\\";
     }
 
-    @Override
-    public boolean isQuoteSearchString() {
-        return true;
-    }
-
     @NotNull
     @Override
     public MultiValueInsertMode getDefaultMultiValueInsertMode() {
