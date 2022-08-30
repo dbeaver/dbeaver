@@ -423,7 +423,7 @@ public class GenericMetaModel {
                                 specificName = procedureName;
                             }
                             GenericProcedure function = funcMap.get(specificName);
-                            if (function != null) {
+                            if (function != null && !supportsEqualFunctionsAndProceduresNames()) {
                                 // Broken driver
                                 log.debug("Broken driver [" + session.getDataSource().getContainer().getDriver().getName() + "] - returns the same list for getProcedures and getFunctons");
                                 break;
@@ -469,6 +469,16 @@ public class GenericMetaModel {
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
         }
+    }
+
+    /**
+     * Many databases can not have procedures and functions with equal specific names - this is database restriction.
+     * They can have procedures/functions with equal names and different parameters (overloaded).
+     *
+     * @return true if the database can have in one container procedure and function with equal names (considering parameters)
+     */
+    public boolean supportsEqualFunctionsAndProceduresNames() {
+        return false;
     }
 
     public GenericProcedure createProcedureImpl(

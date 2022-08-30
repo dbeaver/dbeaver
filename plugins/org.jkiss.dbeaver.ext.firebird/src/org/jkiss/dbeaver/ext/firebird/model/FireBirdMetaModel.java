@@ -74,6 +74,11 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean supportsEqualFunctionsAndProceduresNames() {
+        return true;
+    }
+
+    @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         return FireBirdUtils.getProcedureSource(monitor, sourceObject);
     }
