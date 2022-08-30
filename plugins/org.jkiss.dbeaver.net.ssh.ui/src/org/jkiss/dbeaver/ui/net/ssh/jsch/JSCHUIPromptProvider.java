@@ -53,20 +53,14 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
 
         @Override
         public boolean promptPassword(String message) {
-            if (shouldUsePassword()) {
-                setPassword(configuration.getPassword());
-                return true;
-            }
-            return super.promptPassword(message);
+            setPassword(configuration.getPassword());
+            return true;
         }
 
         @Override
         public boolean promptPassphrase(String message) {
-            if (shouldUsePassword()) {
-                setPassphrase(configuration.getPassword());
-                return true;
-            }
-            return super.promptPassphrase(message);
+            setPassphrase(configuration.getPassword());
+            return true;
         }
 
         @Override

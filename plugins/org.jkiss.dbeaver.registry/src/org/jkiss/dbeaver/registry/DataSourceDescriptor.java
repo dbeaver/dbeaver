@@ -1561,9 +1561,17 @@ public class DataSourceDescriptor
         if (authInfo.isSavePassword()) {
             if (authInfo.isSavePassword() && connConfig != actualConfig) {
                 if (authType == DBWTunnel.AuthCredentials.CREDENTIALS) {
-                    connConfig.setUserName(authInfo.getUserName());
+                    if (networkHandler != null) {
+                        networkHandler.setUserName(authInfo.getUserName());
+                    } else {
+                        connConfig.setUserName(authInfo.getUserName());
+                    }
                 }
-                connConfig.setUserPassword(authInfo.getUserPassword());
+                if (networkHandler != null) {
+                    networkHandler.setPassword(authInfo.getUserPassword());
+                } else {
+                    connConfig.setUserPassword(authInfo.getUserPassword());
+                }
             }
             // Update connection properties
             dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);

@@ -34,6 +34,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -230,6 +232,25 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         text.setLayoutData(gdt);
     }
 
+    @Nullable
+    private static DBPAuthInfo promptCredentialsDialog(@NotNull SSHConstants.AuthType type) {
+        final DBPAuthInfo credentialsToConnectTo;
+        try {
+            credentialsToConnectTo = DBWorkbench.getPlatformUI()
+                .promptUserCredentials("Please enter your SSH credentials",
+                    RegistryMessages.dialog_connection_auth_username,
+                    type.equals(SSHConstants.AuthType.PUBLIC_KEY)
+                    ? RegistryMessages.dialog_connection_auth_passphrase
+                    : RegistryMessages.dialog_connection_auth_password,
+                    type.equals(SSHConstants.AuthType.PUBLIC_KEY),
+                    false
+                );
+        } catch (Exception e) {
+            return null;
+        }
+        return credentialsToConnectTo;
+    }
+
     private void testTunnelConnection() {
         DBWHandlerConfiguration configuration = new DBWHandlerConfiguration(savedConfiguration);
         configuration.setProperties(Collections.emptyMap());
@@ -254,6 +275,15 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 connectionConfig.setHostPort(configuration.getStringProperty(DBWHandlerConfiguration.PROP_PORT));
                 try {
                     monitor.subTask("Initialize tunnel");
+                    String authTypeName = configuration.getStringProperty("authType");
+                    SSHConstants.AuthType authType = SSHConstants.AuthType.valueOf(authTypeName);
+                    DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType);
+                    if (dbpAuthInfo != null) {
+                        if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
+                            configuration.setUserName(dbpAuthInfo.getUserName());
+                        }
+                        configuration.setPassword(dbpAuthInfo.getUserPassword());
+                    }
                     tunnel.initializeHandler(monitor, configuration, connectionConfig);
                     monitor.worked(1);
                     // Get info
