@@ -29,8 +29,7 @@ public interface DBWTunnel extends DBWNetworkHandler, DBWForwarder {
     enum AuthCredentials {
         NONE,
         CREDENTIALS,
-        PASSWORD,
-        PASSPHRASE
+        PASSWORD
     }
 
     AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration);

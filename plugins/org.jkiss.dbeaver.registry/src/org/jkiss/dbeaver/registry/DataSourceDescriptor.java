@@ -1524,7 +1524,7 @@ public class DataSourceDescriptor
             authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt,
                 RegistryMessages.dialog_connection_auth_username,
                 user,
-                authType == DBWTunnel.AuthCredentials.PASSPHRASE
+                authType == DBWTunnel.AuthCredentials.PASSWORD
                     ? RegistryMessages.dialog_connection_auth_passphrase
                     : RegistryMessages.dialog_connection_auth_password,
                 password,
