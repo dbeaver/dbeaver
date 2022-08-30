@@ -43,10 +43,15 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+
+import net.sf.jsqlparser.expression.NextValExpression;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.*;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -532,7 +537,22 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     public boolean isLimitApplicableTo(SQLQuery query) {
-        return query.getEntityMetadata(false) != null;
+        boolean hasNextValExpr = false;
+        try {
+            Statement statement = SQLSemanticProcessor.parseQuery(this.sqlDialect, query.getText());
+            if (statement instanceof Select) {
+                SelectBody selectBody = ((Select) statement).getSelectBody();
+                if (selectBody instanceof PlainSelect) {
+                    hasNextValExpr = ((PlainSelect) selectBody).getSelectItems().stream().anyMatch(
+                        item -> (item instanceof SelectExpressionItem) 
+                            && (((SelectExpressionItem) item).getExpression() instanceof NextValExpression)
+                    );
+                }
+            }
+        } catch (DBCException e) {
+            log.error("Can't parse query " + query.getText(), e);
+        }
+        return !hasNextValExpr;
     }
     
     static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {
