@@ -29,11 +29,13 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarHandler;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * WorkbenchContextListener.
@@ -41,7 +43,7 @@ import java.util.Set;
  *
  * TODO: add multipage editor listener and folder listener. Maybe use focus listener on control
  */
-class WorkbenchContextListener implements IWindowListener, IPageListener, IPartListener {
+public class WorkbenchContextListener implements IWindowListener, IPageListener, IPartListener {
 
     //private static final Log log = Log.getLog(WorkbenchContextListener.class);
 
@@ -239,7 +241,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
     @Override
     public void partOpened(IWorkbenchPart part) {
-
+        fireOnNewSqlEditorListener(part);
     }
 
     static WorkbenchContextListener registerInWorkbench() {
@@ -270,4 +272,25 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
         }
     }
+    
+    private static final Object editorListenersSyncRoot = new Object();
+    private static final Set<Consumer<SQLEditor>> editorListeners = new HashSet<>();
+    
+    public static void addOnNewSqlEditorListener(Consumer<SQLEditor> listener) {
+        synchronized (editorListenersSyncRoot) {
+            editorListeners.add(listener);
+        }
+    }
+    
+    private static void fireOnNewSqlEditorListener(IWorkbenchPart part) {
+        if (part instanceof SQLEditor) {
+            SQLEditor editor = (SQLEditor) part;
+            synchronized (editorListenersSyncRoot) {
+                for (Consumer<SQLEditor> consumer : editorListeners) {
+                    consumer.accept(editor);
+                }
+            }
+        }
+    }
+    
 }
