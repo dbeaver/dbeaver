@@ -72,9 +72,9 @@ public class SQLGeneratorInsertOnConflict extends SQLGeneratorTable {
                 sql.append(DBUtils.getQuotedIdentifier(attr));
                 hasAttr = true;
             }
-            sql.append(")\n");
+            sql.append(")").append(getLineSeparator());
         } else {
-            sql.append("('/* insert on conflict attributes here, e.g. ID, ... */')\n");
+            sql.append("('/* insert on conflict attributes here, e.g. ID, ... */')").append(getLineSeparator());
         }
         sql.append("/* or you may use [DO NOTHING;] */").append(getLineSeparator());
         sql.append("DO UPDATE ").append(getLineSeparator());
@@ -91,6 +91,6 @@ public class SQLGeneratorInsertOnConflict extends SQLGeneratorTable {
             sql.append("EXCLUDED." + DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
             hasAttr = true;
         }        
-        sql.append(";\n");
+        sql.append(";").append(getLineSeparator());
     }
 }

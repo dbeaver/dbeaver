@@ -42,15 +42,12 @@ import java.util.List;
 public class SQLEditorHandlerCheckProcedureConsole extends SQLEditorHandlerOpenObjectConsole {
 
     private static final Log log = Log.getLog(SQLEditorHandlerCheckProcedureConsole.class);
-
-    public SQLEditorHandlerCheckProcedureConsole() {
-    }
     
     void openConsoleCheck(IWorkbenchWindow workbenchWindow, DBRRunnableWithResult<String> generator,
             SQLNavigatorContext navigatorContext, String title, boolean doRun, ISelection currentSelection) throws Exception {
         UIUtils.runInUI(workbenchWindow, generator);
         String sql = CommonUtils.notEmpty(generator.getResult());
-        openAndExecuteSQLScriptExt(workbenchWindow, navigatorContext, title, true, currentSelection, sql, true);
+        openAndExecuteSQLScript(workbenchWindow, navigatorContext, title, true, currentSelection, sql, true);
     }
 
     /**

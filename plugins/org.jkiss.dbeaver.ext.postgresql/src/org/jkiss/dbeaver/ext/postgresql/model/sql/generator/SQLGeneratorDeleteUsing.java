@@ -48,6 +48,6 @@ public class SQLGeneratorDeleteUsing extends SQLGeneratorTable {
             sql.append("src." + DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
             hasAttr = true;
         }
-        sql.append(";\n");
+        sql.append(";").append(getLineSeparator());
     }
 }

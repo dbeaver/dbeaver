@@ -17,12 +17,12 @@
 package org.jkiss.dbeaver.ext.postgresql.model.sql.generator;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.generator.SQLGeneratorProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -32,46 +32,64 @@ import java.util.List;
 public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
 
     /**
+     * Generate PostgreSQL procedure check SQL entry point
+     */
+    @Override
+    protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {
+        Collection<? extends DBSProcedureParameter> parameters = proc.getParameters(monitor);
+        generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters));
+    }
+    
+    /**
      * Generate PostgreSQL procedure check SQL - via https://github.com/okbob/plpgsql_check
      */
-    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, 
+    private void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, 
             Collection<? extends DBSProcedureParameter> parameters) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         if (parameters != null) {
             inParameters.addAll(parameters);
         }
         sql.append("select * from plpgsql_check_function('" + proc.getFullyQualifiedName(DBPEvaluationContext.DML) + "(");
-        if (!inParameters.isEmpty()) {
-            boolean first = true;
-            for (DBSProcedureParameter parameter : inParameters) {
-                switch (parameter.getParameterKind()) {
-                    case IN:
-                        if (!first) {
-                            sql.append(",");
-                        }
-                        String typeName = parameter.getParameterType().getFullTypeName();
-                        sql.append(typeName);
-                        break;
-                    case RETURN:
-                        continue;
-                    default:
-                        continue;
+        boolean first = true;
+        for (DBSProcedureParameter parameter : inParameters) {
+        	if (parameter.getParameterKind() == DBSProcedureParameterKind.IN) {
+        		if (!first) {
+                    sql.append(",");
                 }
+                String typeName = parameter.getParameterType().getFullTypeName();
+                sql.append(typeName);
                 first = false;
-            }
+        	}            
         }
-        sql.append(")')");
-        sql.append(";");
-        sql.append("\n\n");
+        sql.append(")'").append(getLineSeparator());
+        sql.append("/*, */");
+        sql.append(getLineSeparator()).append(" /* relid => 0, */ /* oid of relation assigned with trigger function. "
+        		+ "It is necessary for check of any trigger function */");
+        sql.append(getLineSeparator()).append(" /* fatal_errors => true, */ /* stop on first error */");
+        sql.append(getLineSeparator()).append(" /* other_warnings => true, */ /* show warnings like different attributes number "
+        		+ "in assignmenet on left and right side, variable overlaps function's parameter, "
+        		+ "unused variables, unwanted casting, .. */");
+        sql.append(getLineSeparator()).append(" /* extra_warnings => true, */ /* show warnings like missing RETURN, "
+        		+ "shadowed variables, dead code, never read (unused) function's parameter, "
+        		+ "unmodified variables, modified auto variables, .. */");
+        sql.append(getLineSeparator()).append(" /* performance_warnings => false, */ /* performance related warnings like "
+        		+ "declared type with type modificator, casting, "
+        		+ "implicit casts in where clause (can be reason why index is not used), .. */");
+        sql.append(getLineSeparator()).append(" /* security_warnings => false, */ /* security related checks "
+        		+ "like SQL injection vulnerability detection */");
+        sql.append(getLineSeparator()).append(" /* anyelementtype => 'int', */ /* a real type used instead anyelement type */");
+        sql.append(getLineSeparator()).append(" /* anyenumtype => '-', */ /* a real type used instead anyenum type */");
+        sql.append(getLineSeparator()).append(" /* anyrangetype => 'int4range', */ /* a real type used instead anyrange type */");
+        sql.append(getLineSeparator()).append(" /* anycompatibletype => 'int', */ /* a real type used instead anycompatible type */");
+        sql.append(getLineSeparator()).append(" /* anycompatiblerangetype => 'int4range', */ /* a real type used instead "
+        		+ "anycompatible range type */");
+        sql.append(getLineSeparator()).append(" /* without_warnings => false, */ /* disable all warnings */");
+        sql.append(getLineSeparator()).append(" /* all_warnings => false, */ /* enable all warnings */");
+        sql.append(getLineSeparator()).append(" /* newtable => NULL, */ /* the names of NEW or OLD transitive tables. "
+        		+ "These parameters are required when transitive tables are used */");
+        sql.append(getLineSeparator()).append(" /* oldtable => NULL */");
+        sql.append(getLineSeparator()).append(")");
+        sql.append(";").append(getLineSeparator()).append(getLineSeparator());
     }
-
-    /**
-     * Generate PostgreSQL procedure check SQL entry point
-     */
-    @Override
-    protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {
-        Collection<? extends DBSProcedureParameter> parameters = proc.getParameters(monitor);
-        DBPDataSource dataSource = proc.getDataSource();
-        generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters));
-    }
+    
 }

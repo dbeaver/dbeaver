@@ -116,8 +116,9 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
             String title,
             boolean doRun,
             ISelection currentSelection,
-            String sql) throws CoreException {
-        openAndExecuteSQLScriptExt(
+            String sql
+    ) throws CoreException {
+        openAndExecuteSQLScript(
             workbenchWindow,
             navigatorContext,
             title,
@@ -130,14 +131,15 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
     /**
      * openAndExecuteSQLScript with force sqlScript executing
      */
-    public static void openAndExecuteSQLScriptExt(
+    public static void openAndExecuteSQLScript(
         IWorkbenchWindow workbenchWindow,
         SQLNavigatorContext navigatorContext,
         String title,
         boolean doRun,
         ISelection currentSelection,
         String sql,
-        boolean forceScript) throws CoreException {
+        boolean forceProcessAsScript
+    ) throws CoreException {
         SQLEditor editor;
         if (OPEN_FILE_EDITOR) {
             DBPProject project = navigatorContext.getProject();
@@ -173,7 +175,7 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
                     public void done(IJobChangeEvent event) {
                         UIUtils.syncExec(() -> editor.processSQL(
                             false,
-                            forceScript || NavigatorUtils.getSelectedObjects(currentSelection).size() > 1
+                            forceProcessAsScript || NavigatorUtils.getSelectedObjects(currentSelection).size() > 1
                         ));
                     }
                 });

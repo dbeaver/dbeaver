@@ -320,11 +320,17 @@
     </extension>
     
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.plpgsql_check" name="Check (via plpgsql_check)" description="Check function (via plpgsql_check)" categoryId="org.jkiss.dbeaver.ext.postgresql"/>
+        <command 
+            id="org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.plpgsql_check" 
+            name="%db.editor.procedure.check.name" 
+            description="%db.editor.procedure.check.description" 
+            categoryId="org.jkiss.dbeaver.ext.postgresql"/>
     </extension>
     
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.plpgsql_check" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.SQLEditorHandlerCheckProcedureConsole">
+        <handler 
+            commandId="org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.plpgsql_check" 
+            class="org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.SQLEditorHandlerCheckProcedureConsole">
             <enabledWhen>
                 <or>
                     <with variable="selection">

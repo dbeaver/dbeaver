@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobStep;
@@ -114,9 +115,9 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                         String sql = CommonUtils.notEmpty(generator.getResult());
                         SQLNavigatorContext navContext = new SQLNavigatorContext(sourceObject);
                         String procName = ((DBSProcedure) sourceObject).getName();
-                        String title = procName + " " + PostgreMessages.procedure_check_label2;
+                        String title = NLS.bind(PostgreMessages.procedure_check_label2, procName); 
                         try {
-                            SQLEditorHandlerOpenObjectConsole.openAndExecuteSQLScriptExt(workbenchWindow, navContext, 
+                            SQLEditorHandlerOpenObjectConsole.openAndExecuteSQLScript(workbenchWindow, navContext, 
                                 title, true, null, sql, true);
                         } catch (CoreException e) {
                             DBWorkbench.getPlatformUI().showError(PostgreMessages.message_open_console, 

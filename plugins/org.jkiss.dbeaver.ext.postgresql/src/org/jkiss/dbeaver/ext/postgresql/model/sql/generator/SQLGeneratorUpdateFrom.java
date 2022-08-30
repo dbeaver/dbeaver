@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model.sql.generator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.sql.ChangeTableDataStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.generator.SQLGeneratorTable;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -63,8 +62,8 @@ public class SQLGeneratorUpdateFrom extends SQLGeneratorTable {
                 hasAttr = true;
             }
         } else {
-            sql.append("ON ('/* insert attributes equality here, e.g. tgt.ID = src.ID AND ... */')\n");
+            sql.append("ON ('/* insert attributes equality here, e.g. tgt.ID = src.ID AND ... */')").append(getLineSeparator());
         }
-        sql.append(";\n");
+        sql.append(";").append(getLineSeparator());
     }
 }
