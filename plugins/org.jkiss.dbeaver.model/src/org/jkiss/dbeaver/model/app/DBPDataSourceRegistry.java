@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Datasource registry.
@@ -147,6 +148,10 @@ public interface DBPDataSourceRegistry extends DBPObject {
     // Registry auth provider. Null by default.
     @Nullable
     DBACredentialsProvider getAuthCredentialsProvider();
+
+    void setAuthCredentialsProvider(DBACredentialsProvider authCredentialsProvider);
+
+    Set<DBPDataSourceFolder> getTemporaryFolders();
 
     void dispose();
 
