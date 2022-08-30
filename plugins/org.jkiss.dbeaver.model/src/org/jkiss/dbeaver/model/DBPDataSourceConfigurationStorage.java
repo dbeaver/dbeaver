@@ -31,6 +31,9 @@ public interface DBPDataSourceConfigurationStorage {
 
     boolean isDefault();
 
+    /**
+     * Checks if configuration storage is virtual
+     */
     boolean isVirtual();
 
     String getStatus();

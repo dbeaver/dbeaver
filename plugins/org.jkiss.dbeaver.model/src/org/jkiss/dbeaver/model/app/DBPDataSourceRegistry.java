@@ -149,8 +149,14 @@ public interface DBPDataSourceRegistry extends DBPObject {
     @Nullable
     DBACredentialsProvider getAuthCredentialsProvider();
 
+    /**
+     * Sets auth credentials provider to the registry.
+     */
     void setAuthCredentialsProvider(DBACredentialsProvider authCredentialsProvider);
 
+    /**
+     * Returns all folders having temporary connections.
+     */
     Set<DBPDataSourceFolder> getTemporaryFolders();
 
     void dispose();

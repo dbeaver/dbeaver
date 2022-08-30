@@ -25,8 +25,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.List;
 import java.util.function.Predicate;
 
+/**
+ * Data source persistent registry.
+ */
 public interface DataSourcePersistentRegistry {
 
+    /**
+     * Loads data sources from storages.
+     */
     void loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
@@ -34,10 +40,19 @@ public interface DataSourcePersistentRegistry {
         boolean purgeUntouched
     );
 
+    /**
+     * Saves data sources.
+     */
     void saveDataSources();
 
+    /**
+     * Returns data source configuration manager.
+     */
     DataSourceConfigurationManager getConfigurationManager();
 
+    /**
+     * Saves data source configuration to the configuration manager.
+     */
     void saveConfigurationToManager(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DataSourceConfigurationManager configurationManager,
