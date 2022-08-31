@@ -32,19 +32,11 @@ import java.util.List;
 public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
 
     /**
-     * Generate PostgreSQL procedure check SQL entry point
+     * Generate PostgreSQL procedure check SQL - via https://github.com/okbob/plpgsql_check
      */
     @Override
     protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {
-        Collection<? extends DBSProcedureParameter> parameters = proc.getParameters(monitor);
-        generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters));
-    }
-    
-    /**
-     * Generate PostgreSQL procedure check SQL - via https://github.com/okbob/plpgsql_check
-     */
-    private void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, 
-            Collection<? extends DBSProcedureParameter> parameters) {
+        Collection<? extends DBSProcedureParameter> parameters = CommonUtils.safeCollection(proc.getParameters(monitor));
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         inParameters.addAll(CommonUtils.safeCollection(parameters));
         sql.append("select * from plpgsql_check_function('" + proc.getFullyQualifiedName(DBPEvaluationContext.DML) + "(");
@@ -60,8 +52,8 @@ public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
             }            
         }
         sql.append(")'").append(getLineSeparator());
-        sql.append("/*, */");
-        sql.append("/* Optional parameters are commented below - they may differ depending of plpgsql_check version */");
+        sql.append("/*, */").append(getLineSeparator());
+        sql.append("/* Optional parameters are commented below - they may differ (or be absent) depending on plpgsql_check version */");
         sql.append(getLineSeparator()).append(" /* relid => 0, */ /* oid of relation assigned with trigger function. "
                 + "It is necessary for check of any trigger function */");
         sql.append(getLineSeparator()).append(" /* fatal_errors => true, */ /* stop on first error */");

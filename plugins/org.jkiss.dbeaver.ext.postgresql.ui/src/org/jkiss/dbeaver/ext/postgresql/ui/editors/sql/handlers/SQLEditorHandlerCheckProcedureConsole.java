@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
@@ -89,11 +90,13 @@ public class SQLEditorHandlerCheckProcedureConsole extends SQLEditorHandlerOpenO
 
         String title = PostgreMessages.procedure_check_label_ext;
         if (entities.size() == 1 && !CommonUtils.isEmpty(procName)) {
-            title = procName + " " + PostgreMessages.procedure_check_label2;
+            title = NLS.bind(PostgreMessages.procedure_check_label2, procName); 
         }
 
         try {
-            openConsoleCheck(workbenchWindow, generator, navContext, title, true, currentSelection);
+            UIUtils.runInUI(workbenchWindow, generator);
+            String sql = CommonUtils.notEmpty(generator.getResult());
+            openAndExecuteSQLScript(workbenchWindow, navContext, title, true, currentSelection, sql, true);
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(PostgreMessages.message_open_console, 
                 PostgreMessages.error_cant_open_sql_editor, e);

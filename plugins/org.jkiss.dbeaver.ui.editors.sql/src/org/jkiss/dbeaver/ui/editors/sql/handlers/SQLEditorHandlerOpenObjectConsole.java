@@ -114,12 +114,12 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
      * openAndExecuteSQLScript in a SQL window
      */
     public static void openAndExecuteSQLScript(
-            IWorkbenchWindow workbenchWindow,
-            SQLNavigatorContext navigatorContext,
-            String title,
-            boolean doRun,
-            ISelection currentSelection,
-            String sql
+        IWorkbenchWindow workbenchWindow,
+        SQLNavigatorContext navigatorContext,
+        String title,
+        boolean doRun,
+        ISelection currentSelection,
+        String sql
     ) throws CoreException {
         openAndExecuteSQLScript(
             workbenchWindow,
