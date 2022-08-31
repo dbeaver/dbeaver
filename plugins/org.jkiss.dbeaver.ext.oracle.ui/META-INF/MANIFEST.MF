@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.oracle.ui;singleton:=true
-Bundle-Version: 1.0.75.qualifier
-Bundle-Release-Date: 20220822
+Bundle-Version: 1.0.76.qualifier
+Bundle-Release-Date: 20220905
 Bundle-Activator: org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -33,4 +33,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
 Import-Package: com.google.gson
+Export-Package: org.jkiss.dbeaver.ext.oracle.ui.config,
+ org.jkiss.dbeaver.ext.oracle.ui.actions,
+ org.jkiss.dbeaver.ext.oracle.ui.editors,
+ org.jkiss.dbeaver.ext.oracle.ui.views
 Automatic-Module-Name: org.jkiss.dbeaver.ext.oracle.ui

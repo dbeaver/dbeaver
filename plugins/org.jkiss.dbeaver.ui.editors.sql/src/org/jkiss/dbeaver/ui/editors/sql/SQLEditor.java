@@ -35,6 +35,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -68,7 +69,6 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
-import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -2630,11 +2630,14 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
+        DBPDataSourceContainer dsContainer = getDataSourceContainer();
+        
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
-            resultsSash.setBackground(resultTabs.getBackground());
-            topBarMan.getControl().setBackground(resultTabs.getBackground());
-            bottomBarMan.getControl().setBackground(resultTabs.getBackground());
+            Color bgColor = dsContainer == null ? null : UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration());
+            resultsSash.setBackground(bgColor);
+            topBarMan.getControl().setBackground(bgColor);
+            bottomBarMan.getControl().setBackground(bgColor);
         }
 
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
@@ -2669,8 +2672,7 @@ public class SQLEditor extends SQLEditorBase implements
             reloadSyntaxRules();
         }
 
-        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        if (dataSourceContainer == null) {
+        if (dsContainer == null) {
             resultsSash.setMaximizedControl(sqlEditorPanel);
         } else {
             if (curQueryProcessor != null && curQueryProcessor.getFirstResults().hasData()) {
@@ -2683,8 +2685,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         loadActivePreferenceSettings();
 
-        if (dataSourceContainer != null) {
-            globalScriptContext.loadVariables(dataSourceContainer.getDriver(), null);
+        if (dsContainer != null) {
+            globalScriptContext.loadVariables(dsContainer.getDriver(), null);
         } else {
             globalScriptContext.clearVariables();
         }
@@ -2740,15 +2742,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING) {
             return;
         }
-        IPath location = sqlFile.getLocation();
-        if (location == null) {
-            return;
-        }
-        File osFile = location.toFile();
-        if (!osFile.exists() || osFile.length() != 0) {
-            // Not empty
-            return;
-        }
         try {
             IProgressMonitor monitor = new NullProgressMonitor();
             if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW) {
@@ -2767,10 +2760,12 @@ public class SQLEditor extends SQLEditorBase implements
             }
             // This file is empty and never (at least during this session) had any contents.
             // Drop it.
-            log.debug("Delete empty SQL script '" + sqlFile.getFullPath().toOSString() + "'");
-            sqlFile.delete(true, monitor);
+            if (sqlFile.exists()) {
+                log.debug("Delete empty SQL script '" + sqlFile.getFullPath().toOSString() + "'");
+                sqlFile.delete(true, monitor);
+            }
         } catch (Exception e) {
-            log.error("Can't delete empty script file", e); //$NON-NLS-1$
+            log.error("Error deleting empty script file", e); //$NON-NLS-1$
         }
     }
 

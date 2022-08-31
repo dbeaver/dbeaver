@@ -46,6 +46,11 @@ public class SMCredentials {
         return userId;
     }
 
+    @NotNull
+    public Set<String> getPermissions() {
+        return permissions;
+    }
+
     public boolean hasPermission(String permission) {
         return permissions.contains(permission);
     }

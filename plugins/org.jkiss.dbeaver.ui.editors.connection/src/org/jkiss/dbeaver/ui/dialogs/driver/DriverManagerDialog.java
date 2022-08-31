@@ -25,6 +25,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -69,7 +71,6 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private Button editButton;
     private Button deleteButton;
     private DriverSelectViewer treeControl;
-    private ImageDescriptor dialogImage;
     //private Label driverDescription;
     //private ProgressMonitorPart monitorPart;
     private Text descText;
@@ -105,8 +106,11 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
         getShell().setText(UIConnectionMessages.dialog_driver_manager_title);
         getShell().setMinimumSize(300, 300);
-        dialogImage = DBeaverIcons.getImageDescriptor(UIIcon.DRIVER_MANAGER);
-        getShell().setImage(dialogImage.createImage());
+        ImageDescriptor dialogImage = DBeaverIcons.getImageDescriptor(UIIcon.DRIVER_MANAGER);
+        Image image = dialogImage.createImage();
+        getShell().setImage(image);
+        getShell().addDisposeListener(e -> UIUtils.dispose(image));
+
 
         Composite group = UIUtils.createPlaceholder((Composite) super.createDialogArea(parent), 2);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -219,7 +223,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         }
         StringBuilder buf = new StringBuilder();
         DriverTreeViewer driverTreeViewer = (DriverTreeViewer) treeControl.getSelectorViewer();
-        List<Object> driverList = (List<Object>) driverTreeViewer.getInput();
+        List<?> driverList = (List<?>) driverTreeViewer.getInput();
 
         for (Object dObj : driverList) {
             if (dObj instanceof DriverTreeViewer.DriverCategory) {
@@ -413,16 +417,13 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                         }
                     }
                 }
-                driverTable.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        if (((TableItem)e.item).getChecked()) {
-                            drivers.add((DriverDescriptor) e.item.getData());
-                        } else {
-                            drivers.remove((DriverDescriptor) e.item.getData());
-                        }
+                driverTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                    if (((TableItem)e.item).getChecked()) {
+                        drivers.add((DriverDescriptor) e.item.getData());
+                    } else {
+                        drivers.remove((DriverDescriptor) e.item.getData());
                     }
-                });
+                }));
 
                 return super.createDialogArea(parent);
             }
@@ -442,36 +443,4 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         return super.close();
     }
 
-/*    @Override
-    public void run(boolean fork, boolean cancelable, final DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
-    {
-        // Code copied from WizardDialog
-        if (monitorPart != null) {
-            monitorPart.setVisible(true);
-            monitorPart.layout();
-            monitorPart.attachToCancelComponent(null);
-        }
-        // The operation can only be canceled if it is executed in a separate
-        // thread.
-        // Otherwise the UI is blocked anyway.
-        try {
-            ModalContext.run(
-                new IRunnableWithProgress() {
-                    @Override
-                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        runnable.run(new DefaultProgressMonitor(monitor));
-                    }
-                },
-                true,
-                monitorPart,
-                getShell().getDisplay());
-        } finally {
-            // explicitly invoke done() on our progress monitor so that its
-            // label does not spill over to the next invocation, see bug 271530
-            if (monitorPart != null) {
-                monitorPart.done();
-                monitorPart.setVisible(false);
-            }
-        }
-    }*/
 }

@@ -64,15 +64,19 @@ public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer 
         @NotNull List<Object[]> rows,
         @NotNull DBSDataType dataType
     ) throws DBException {
-        List<? extends DBSEntityAttribute> nestedAttrs;
+        List<? extends DBSEntityAttribute> nestedAttrs = null;
         if (dataType instanceof DBSBindableDataType) {
-            DBSEntity container = attribute.getTopParent().getEntityAttribute().getParentObject();
-            DBSBindableDataType bindable = (DBSBindableDataType) dataType;
-            nestedAttrs = bindable.bindAttributesToContext(session.getProgressMonitor(), container, attribute.getEntityAttribute());
-        } else if (dataType instanceof DBSEntity) {
-            nestedAttrs = ((DBSEntity) dataType).getAttributes(session.getProgressMonitor());
-        } else {
-            nestedAttrs = null;
+            DBSEntityAttribute entityAttribute = attribute.getTopParent().getEntityAttribute();
+            if (entityAttribute != null) {
+                DBSEntity container = entityAttribute.getParentObject();
+                DBSBindableDataType bindable = (DBSBindableDataType) dataType;
+                nestedAttrs = bindable.bindAttributesToContext(session.getProgressMonitor(), container, entityAttribute);
+            }
+        }
+        if (nestedAttrs == null) {
+            if (dataType instanceof DBSEntity) {
+                nestedAttrs = ((DBSEntity) dataType).getAttributes(session.getProgressMonitor());
+            }
         }
         
         List<DBDAttributeBinding> nestedBindings = new ArrayList<>();

@@ -45,6 +45,10 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
         if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
             return;
         }
+        if (attribute.getDataKind() == DBPDataKind.STRUCT && !CommonUtils.isEmpty(attribute.getNestedBindings())) {
+            // Do not transform structs to avoid double transformation
+            return;
+        }
         resolveMapsFromData(session, attribute, rows);
     }
 
