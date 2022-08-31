@@ -232,6 +232,9 @@ public class ModelMessages extends NLS {
 	public static String tasks_restore_readonly_title;
 	public static String tasks_restore_readonly_message;
 
+    public static String jdbc_content_view_error_message_title;
+    public static String jdbc_content_view_error_message_body;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);
