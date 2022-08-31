@@ -46,9 +46,7 @@ public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
     private void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, 
             Collection<? extends DBSProcedureParameter> parameters) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
-        if (parameters != null) {
-            inParameters.addAll(parameters);
-        }
+        inParameters.addAll(CommonUtils.safeCollection(parameters));
         sql.append("select * from plpgsql_check_function('" + proc.getFullyQualifiedName(DBPEvaluationContext.DML) + "(");
         boolean first = true;
         for (DBSProcedureParameter parameter : inParameters) {
