@@ -69,7 +69,6 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
-import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -2743,15 +2742,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING) {
             return;
         }
-        IPath location = sqlFile.getLocation();
-        if (location == null) {
-            return;
-        }
-        File osFile = location.toFile();
-        if (!osFile.exists() || osFile.length() != 0) {
-            // Not empty
-            return;
-        }
         try {
             IProgressMonitor monitor = new NullProgressMonitor();
             if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW) {
@@ -2770,10 +2760,12 @@ public class SQLEditor extends SQLEditorBase implements
             }
             // This file is empty and never (at least during this session) had any contents.
             // Drop it.
-            log.debug("Delete empty SQL script '" + sqlFile.getFullPath().toOSString() + "'");
-            sqlFile.delete(true, monitor);
+            if (sqlFile.exists()) {
+                log.debug("Delete empty SQL script '" + sqlFile.getFullPath().toOSString() + "'");
+                sqlFile.delete(true, monitor);
+            }
         } catch (Exception e) {
-            log.error("Can't delete empty script file", e); //$NON-NLS-1$
+            log.error("Error deleting empty script file", e); //$NON-NLS-1$
         }
     }
 

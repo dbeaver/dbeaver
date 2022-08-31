@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
+import java.time.LocalDateTime;
+
 public class BasicWorkspaceSession extends AbstractSessionPersistent implements SMSession, SMSessionPrincipal {
 
     public static final SMSessionType DB_SESSION_TYPE = new SMSessionType("DBeaver");
@@ -40,6 +42,7 @@ public class BasicWorkspaceSession extends AbstractSessionPersistent implements 
     private final DBPWorkspace workspace;
     private String userName;
     private String domainName;
+    private final LocalDateTime startTime;
 
     public BasicWorkspaceSession(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
@@ -70,6 +73,8 @@ public class BasicWorkspaceSession extends AbstractSessionPersistent implements 
                 domainName = DBConstants.LOCAL_DOMAIN_NAME;
             }
         }
+
+        this.startTime = LocalDateTime.now();
     }
 
     @NotNull
@@ -93,6 +98,12 @@ public class BasicWorkspaceSession extends AbstractSessionPersistent implements 
     @Override
     public String getSessionId() {
         return workspace.getWorkspaceId();
+    }
+
+    @NotNull
+    @Override
+    public LocalDateTime getSessionStart() {
+        return startTime;
     }
 
     @Override

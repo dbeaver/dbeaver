@@ -125,7 +125,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         } catch (InterruptedException e) {
             return null;
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Open editor", "Can execute command '" + actionId + "'", e);
+            DBWorkbench.getPlatformUI().showError("Open editor", null, e);
         }
         return null;
     }
