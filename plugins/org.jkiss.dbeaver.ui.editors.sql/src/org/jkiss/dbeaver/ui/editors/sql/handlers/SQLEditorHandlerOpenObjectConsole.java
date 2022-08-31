@@ -110,6 +110,9 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
         openAndExecuteSQLScript(workbenchWindow, navigatorContext, title, doRun, currentSelection, sql);
     }
     
+	/**
+     * openAndExecuteSQLScript in a SQL window
+     */
     public static void openAndExecuteSQLScript(
             IWorkbenchWindow workbenchWindow,
             SQLNavigatorContext navigatorContext,

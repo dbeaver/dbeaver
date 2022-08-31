@@ -52,41 +52,42 @@ public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
         sql.append("select * from plpgsql_check_function('" + proc.getFullyQualifiedName(DBPEvaluationContext.DML) + "(");
         boolean first = true;
         for (DBSProcedureParameter parameter : inParameters) {
-        	if (parameter.getParameterKind() == DBSProcedureParameterKind.IN) {
-        		if (!first) {
+            if (parameter.getParameterKind() == DBSProcedureParameterKind.IN) {
+                if (!first) {
                     sql.append(",");
                 }
                 String typeName = parameter.getParameterType().getFullTypeName();
                 sql.append(typeName);
                 first = false;
-        	}            
+            }            
         }
         sql.append(")'").append(getLineSeparator());
         sql.append("/*, */");
+        sql.append("/* Optional parameters are commented below - they may differ depending of plpgsql_check version */");
         sql.append(getLineSeparator()).append(" /* relid => 0, */ /* oid of relation assigned with trigger function. "
-        		+ "It is necessary for check of any trigger function */");
+                + "It is necessary for check of any trigger function */");
         sql.append(getLineSeparator()).append(" /* fatal_errors => true, */ /* stop on first error */");
         sql.append(getLineSeparator()).append(" /* other_warnings => true, */ /* show warnings like different attributes number "
-        		+ "in assignmenet on left and right side, variable overlaps function's parameter, "
-        		+ "unused variables, unwanted casting, .. */");
+                + "in assignmenet on left and right side, variable overlaps function's parameter, "
+                + "unused variables, unwanted casting, .. */");
         sql.append(getLineSeparator()).append(" /* extra_warnings => true, */ /* show warnings like missing RETURN, "
-        		+ "shadowed variables, dead code, never read (unused) function's parameter, "
-        		+ "unmodified variables, modified auto variables, .. */");
+                + "shadowed variables, dead code, never read (unused) function's parameter, "
+                + "unmodified variables, modified auto variables, .. */");
         sql.append(getLineSeparator()).append(" /* performance_warnings => false, */ /* performance related warnings like "
-        		+ "declared type with type modificator, casting, "
-        		+ "implicit casts in where clause (can be reason why index is not used), .. */");
+                + "declared type with type modificator, casting, "
+                + "implicit casts in where clause (can be reason why index is not used), .. */");
         sql.append(getLineSeparator()).append(" /* security_warnings => false, */ /* security related checks "
-        		+ "like SQL injection vulnerability detection */");
+                + "like SQL injection vulnerability detection */");
         sql.append(getLineSeparator()).append(" /* anyelementtype => 'int', */ /* a real type used instead anyelement type */");
         sql.append(getLineSeparator()).append(" /* anyenumtype => '-', */ /* a real type used instead anyenum type */");
         sql.append(getLineSeparator()).append(" /* anyrangetype => 'int4range', */ /* a real type used instead anyrange type */");
         sql.append(getLineSeparator()).append(" /* anycompatibletype => 'int', */ /* a real type used instead anycompatible type */");
         sql.append(getLineSeparator()).append(" /* anycompatiblerangetype => 'int4range', */ /* a real type used instead "
-        		+ "anycompatible range type */");
+                + "anycompatible range type */");
         sql.append(getLineSeparator()).append(" /* without_warnings => false, */ /* disable all warnings */");
         sql.append(getLineSeparator()).append(" /* all_warnings => false, */ /* enable all warnings */");
         sql.append(getLineSeparator()).append(" /* newtable => NULL, */ /* the names of NEW or OLD transitive tables. "
-        		+ "These parameters are required when transitive tables are used */");
+                + "These parameters are required when transitive tables are used */");
         sql.append(getLineSeparator()).append(" /* oldtable => NULL */");
         sql.append(getLineSeparator()).append(")");
         sql.append(";").append(getLineSeparator()).append(getLineSeparator());
