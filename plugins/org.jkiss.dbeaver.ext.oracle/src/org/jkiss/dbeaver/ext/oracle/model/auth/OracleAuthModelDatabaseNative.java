@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model.auth;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -44,7 +45,10 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<AuthM
             String role = configuration.getAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS);
             if (CommonUtils.isEmpty(role)) {
                 // Role can be also passed as provided property
-                role = configuration.getProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS);
+                String logonAs = configuration.getProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS);
+                if (!OracleConnectionRole.NORMAL.getTitle().equalsIgnoreCase(logonAs)) {
+                    role = configuration.getProviderProperty(OracleConstants.PROP_AUTH_LOGON_AS);
+                }
             }
             if (!CommonUtils.isEmpty(role)) {
                 userName += " AS " + role;

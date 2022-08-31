@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.time.OffsetDateTime;
 import java.util.Set;
 
 /**
@@ -87,6 +87,17 @@ public class RMProject extends RMObject {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getDisplayName() {
+        switch (type) {
+            case GLOBAL:
+                return ModelMessages.project_shared_display_name;
+            case USER:
+                return ModelMessages.project_private_display_name;
+            default:
+                return getName();
+        }
     }
 
     @Override

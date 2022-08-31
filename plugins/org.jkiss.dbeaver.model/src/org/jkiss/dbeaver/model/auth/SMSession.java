@@ -22,6 +22,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
+import java.time.LocalDateTime;
+
 /**
  * Access session.
  */
@@ -43,6 +45,12 @@ public interface SMSession extends DBPObject, AutoCloseable {
      */
     @NotNull
     String getSessionId();
+
+    /**
+     * Session start datetime
+     */
+    @NotNull
+    LocalDateTime getSessionStart();
 
     /**
      * Application session is a global singleton session
