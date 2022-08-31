@@ -2958,10 +2958,12 @@ public class SQLEditor extends SQLEditorBase implements
         final DBPWorkspaceEclipse workspace = ((DBPWorkspaceEclipse) DBWorkbench.getPlatform().getWorkspace());
         final IFolder root = workspace.getResourceDefaultRoot(workspace.getActiveProject(), ScriptsHandlerImpl.class, false);
         if (root != null) {
-            return new File(root.getLocationURI()).toString();
-        } else {
-            return null;
+            URI locationURI = root.getLocationURI();
+            if (locationURI.getScheme().equals("file")) {
+                return new File(locationURI).toString();
+            }
         }
+        return null;
     }
 
     @Nullable
