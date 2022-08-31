@@ -36,12 +36,9 @@ public class SQLGeneratorProcedureCheck extends SQLGeneratorProcedure {
      */
     @Override
     protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {
-        Collection<? extends DBSProcedureParameter> parameters = CommonUtils.safeCollection(proc.getParameters(monitor));
-        List<DBSProcedureParameter> inParameters = new ArrayList<>();
-        inParameters.addAll(CommonUtils.safeCollection(parameters));
         sql.append("select * from plpgsql_check_function('" + proc.getFullyQualifiedName(DBPEvaluationContext.DML) + "(");
         boolean first = true;
-        for (DBSProcedureParameter parameter : inParameters) {
+        for (DBSProcedureParameter parameter : CommonUtils.safeCollection(proc.getParameters(monitor))) {
             if (parameter.getParameterKind() == DBSProcedureParameterKind.IN) {
                 if (!first) {
                     sql.append(",");
