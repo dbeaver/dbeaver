@@ -109,8 +109,9 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                     if (timingCheckbox != null) {
                         timingCheckbox.setEnabled(analyseCheckboxSelection);
                     }
-                    if (summaryCheckbox != null) {
-                        summaryCheckbox.setEnabled(!analyseCheckboxSelection);
+                    if (summaryCheckbox != null && analyseCheckboxSelection) {
+                        // SUMMARY has default value for ANALYZE parameter as true
+                        summaryCheckbox.setSelection(true);
                     }
                 }
             });
@@ -207,7 +208,6 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                     summary = summaryCheckbox.getSelection();
                 }
             });
-            summaryCheckbox.setEnabled(!analyseCheckbox.getSelection()); // It is enabled with ANALYZE parameter
 
             return dialogArea;
         }
