@@ -82,6 +82,7 @@ public class ConsoleViewSwitchHandler extends AbstractHandler {
                     // Hide results
                     editor.toggleResultPanel(false, true);
                 }
+                setConcoleViewEnabledForEditor(editor, false);
             }
         });
         editor.getResultTabsContainer().setSelection(item);
