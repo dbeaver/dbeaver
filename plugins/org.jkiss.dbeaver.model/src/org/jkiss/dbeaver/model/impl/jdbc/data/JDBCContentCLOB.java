@@ -106,8 +106,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                     File tempFile;
                     try {
                         tempFile = ContentUtils.createTempContentFile(monitor, platform, "clob" + clob.hashCode());
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         throw new DBCException("Can't create temp file", e);
                     }
                     try (Writer os = new OutputStreamWriter(new FileOutputStream(tempFile), getDefaultEncoding())) {

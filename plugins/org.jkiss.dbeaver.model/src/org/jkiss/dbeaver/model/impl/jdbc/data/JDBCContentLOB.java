@@ -38,6 +38,7 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
 
     private DBDContentStorage originalStorage;
     protected DBDContentStorage storage;
+    private boolean errorMessageIsShown;
 
     protected JDBCContentLOB(DBCExecutionContext dataSource)
     {
@@ -115,10 +116,11 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
 
     void handleContentReadingException(DBCException e) throws DBCException {
         DBCTransactionManager transactionManager = DBUtils.getTransactionManager(executionContext);
-        if (transactionManager != null && transactionManager.isAutoCommit()) {
+        if (!errorMessageIsShown && transactionManager != null && transactionManager.isAutoCommit()) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
                 ModelMessages.jdbc_content_view_error_message_title,
                 ModelMessages.jdbc_content_view_error_message_body);
+            errorMessageIsShown = true;
         }
         throw new DBCException("Can't read content value", e);
     }

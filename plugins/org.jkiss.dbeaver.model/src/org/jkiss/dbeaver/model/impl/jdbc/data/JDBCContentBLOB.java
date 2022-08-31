@@ -104,8 +104,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                     File tempFile;
                     try {
                         tempFile = ContentUtils.createTempContentFile(monitor, platform, "blob" + blob.hashCode());
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         throw new DBCException("Can't create temporary file", e);
                     }
                     try (OutputStream os = new FileOutputStream(tempFile)) {
