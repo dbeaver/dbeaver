@@ -71,17 +71,31 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                     Map<String, Object> parameters = configuration.getParameters();
                     parameters.put(PostgreQueryPlaner.PARAM_ANALYSE, analyse);
                     parameters.put(PostgreQueryPlaner.PARAM_VERBOSE, verbose);
-                    parameters.put(PostgreQueryPlaner.PARAM_COSTS, costs);
-                    parameters.put(PostgreQueryPlaner.PARAM_SETTINGS, settings);
-                    parameters.put(PostgreQueryPlaner.PARAM_BUFFERS, buffers);
-                    parameters.put(PostgreQueryPlaner.PARAM_WAL, wal);
-                    parameters.put(PostgreQueryPlaner.PARAM_TIMING, timing);
-                    parameters.put(PostgreQueryPlaner.PARAM_SUMMARY, summary);
+                    if (isVersionSupports(9, 0)) {
+                        parameters.put(PostgreQueryPlaner.PARAM_COSTS, costs);
+                        parameters.put(PostgreQueryPlaner.PARAM_BUFFERS, buffers);
+                    }
+                    if (isVersionSupports(12, 0)) {
+                        parameters.put(PostgreQueryPlaner.PARAM_SETTINGS, settings);
+                    }
+                    if (isVersionSupports(13, 0)) {
+                        parameters.put(PostgreQueryPlaner.PARAM_WAL, wal);
+                    }
+                    if (isVersionSupports(9, 2)) {
+                        parameters.put(PostgreQueryPlaner.PARAM_TIMING, timing);
+                    }
+                    if (isVersionSupports(10, 0)) {
+                        parameters.put(PostgreQueryPlaner.PARAM_SUMMARY, summary);
+                    }
                     return configuration;
                 }
                 return null;
             }
         }.execute();
+    }
+
+    private static boolean isVersionSupports(int major, int minor) {
+        return dataSource != null && dataSource.isServerVersionAtLeast(major, minor);
     }
 
     private static class PlanConfigDialog extends BaseDialog {
@@ -161,7 +175,7 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                 });
             }
 
-            if (dataSource != null && dataSource.isServerVersionAtLeast(12, 0)) {
+            if (isVersionSupports(12, 0)) {
                 Button settingsCheckbox = UIUtils.createCheckbox(
                     settingsGroup,
                     PostgreMessages.dialog_query_planner_settings,
@@ -210,7 +224,7 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                 walCheckbox.setEnabled(analyseCheckbox.getSelection());
             }
 
-            if (dataSource != null && dataSource.isServerVersionAtLeast(9, 2)) {
+            if (isVersionSupports(9, 2)) {
                 timingCheckbox = UIUtils.createCheckbox(
                     settingsGroup,
                     PostgreMessages.dialog_query_planner_settings_timing,
@@ -226,7 +240,7 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
                 timingCheckbox.setEnabled(analyseCheckbox.getSelection());
             }
 
-            if (dataSource != null && dataSource.isServerVersionAtLeast(10, 0)) {
+            if (isVersionSupports(10, 0)) {
                 summaryCheckbox = UIUtils.createCheckbox(
                     settingsGroup,
                     PostgreMessages.dialog_query_planner_settings_summary,
