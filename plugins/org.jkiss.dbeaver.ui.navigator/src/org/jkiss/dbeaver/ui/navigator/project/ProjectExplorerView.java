@@ -16,12 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.navigator.project;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileInfo;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -217,13 +213,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
                             if (resource instanceof IFile && resource.exists()) {
-                                try {
-                                    IFileStore fileStore = EFS.getStore(resource.getLocationURI());
-                                    IFileInfo iFileInfo = fileStore.fetchInfo();
-                                    return sizeFormat.format(iFileInfo.getLength());
-                                } catch (CoreException e) {
-                                    return e.getMessage();
-                                }
+                                return sizeFormat.format(ContentUtils.getFileLength(resource));
                             }
                         }
                         return "";
