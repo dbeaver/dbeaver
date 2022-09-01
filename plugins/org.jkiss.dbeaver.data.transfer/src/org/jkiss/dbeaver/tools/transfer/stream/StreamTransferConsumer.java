@@ -362,8 +362,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             truncate = true;
         }
 
-        this.statStream = new StatOutputStream(new FileOutputStream(outputFile, !truncate));
-        this.outputStream = new BufferedOutputStream(statStream, OUT_FILE_BUFFER_SIZE);
+        this.outputStream = new BufferedOutputStream(new FileOutputStream(outputFile, !truncate), OUT_FILE_BUFFER_SIZE);
+        this.outputStream = this.statStream = new StatOutputStream(outputStream);
+
         if (settings.isCompressResults()) {
             this.zipStream = new ZipOutputStream(this.outputStream);
             this.zipStream.putNextEntry(new ZipEntry(getOutputFileName()));
