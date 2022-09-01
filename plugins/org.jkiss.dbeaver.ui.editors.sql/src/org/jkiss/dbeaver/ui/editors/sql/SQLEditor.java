@@ -113,6 +113,7 @@ import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -2742,6 +2743,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING) {
             return;
         }
+
+        if (!sqlFile.exists() || ContentUtils.getFileLength(sqlFile) != 0) {
+            // Not empty
+            return;
+        }
         try {
             IProgressMonitor monitor = new NullProgressMonitor();
             if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW) {
@@ -2952,10 +2958,12 @@ public class SQLEditor extends SQLEditorBase implements
         final DBPWorkspaceEclipse workspace = ((DBPWorkspaceEclipse) DBWorkbench.getPlatform().getWorkspace());
         final IFolder root = workspace.getResourceDefaultRoot(workspace.getActiveProject(), ScriptsHandlerImpl.class, false);
         if (root != null) {
-            return new File(root.getLocationURI()).toString();
-        } else {
-            return null;
+            URI locationURI = root.getLocationURI();
+            if (locationURI.getScheme().equals("file")) {
+                return new File(locationURI).toString();
+            }
         }
+        return null;
     }
 
     @Nullable
