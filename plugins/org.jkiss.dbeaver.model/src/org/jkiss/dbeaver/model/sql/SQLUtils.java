@@ -652,8 +652,11 @@ public final class SQLUtils {
             if (constraint.isReverseOperator()) {
                 conString.append("NOT ");
             }
-            if (operator.equals(DBCLogicalOperator.EQUALS)) {
-                if (value instanceof Object[]) {
+            if (operator.getArgumentCount() > 0) {
+
+                if (operator.equals(DBCLogicalOperator.EQUALS) && value instanceof Object[]) {
+                    // Special case for multiple values for IN
+                    // Generate series of ORed conditions
                     Object[] array = ((Object[]) value);
                     for (int i = 0; i < array.length; i++) {
                         if (i > 0) {
@@ -662,42 +665,18 @@ public final class SQLUtils {
                                 constraint.getAttributeLabel())).append(' ');
                         }
                         conString.append(operator.getExpression());
-                        String strValue;
-                        if (constraint.getAttribute() == null) {
-                            // We have only attribute name
-                            if (array[i] instanceof CharSequence) {
-                                strValue = dataSource.getSQLDialect().getQuotedString(array[i].toString());
-                            } else {
-                                strValue = CommonUtils.toString(array[i]);
-                            }
-                        } else if (inlineCriteria) {
-                            strValue = convertValueToSQL(dataSource, constraint.getAttribute(), array[i]);
-                        } else {
-                            strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true);
-                        }
+                        String strValue = getStringValue(dataSource, constraint, inlineCriteria, array[i]);
                         conString.append(' ').append(strValue);
                     }
-                }
-            } else if (operator.getArgumentCount() > 0) {
-                conString.append(operator.getExpression());
-                for (int i = 0; i < operator.getArgumentCount(); i++) {
-                    if (i > 0) {
-                        conString.append(" AND");
-                    }
-                    String strValue;
-                    if (constraint.getAttribute() == null) {
-                        // We have only attribute name
-                        if (value instanceof CharSequence) {
-                            strValue = dataSource.getSQLDialect().getQuotedString(value.toString());
-                        } else {
-                            strValue = CommonUtils.toString(value);
+                } else {
+                    conString.append(operator.getExpression());
+                    for (int i = 0; i < operator.getArgumentCount(); i++) {
+                        if (i > 0) {
+                            conString.append(" AND");
                         }
-                    } else if (inlineCriteria) {
-                        strValue = convertValueToSQL(dataSource, constraint.getAttribute(), value);
-                    } else {
-                        strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true);
+                        String strValue = getStringValue(dataSource, constraint, inlineCriteria, value);
+                        conString.append(' ').append(strValue);
                     }
-                    conString.append(' ').append(strValue);
                 }
             } else if (operator.getArgumentCount() < 0) {
                 // Multiple arguments
@@ -767,6 +746,23 @@ public final class SQLUtils {
         } else {
             return null;
         }
+    }
+
+    private static String getStringValue(@NotNull DBPDataSource dataSource, @NotNull DBDAttributeConstraint constraint, boolean inlineCriteria, Object value) {
+        String strValue;
+        if (constraint.getAttribute() == null) {
+            // We have only attribute name
+            if (value instanceof CharSequence) {
+                strValue = dataSource.getSQLDialect().getQuotedString(value.toString());
+            } else {
+                strValue = CommonUtils.toString(value);
+            }
+        } else if (inlineCriteria) {
+            strValue = convertValueToSQL(dataSource, constraint.getAttribute(), value);
+        } else {
+            strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true);
+        }
+        return strValue;
     }
 
     public static int getConstraintOrderIndex(@NotNull DBDDataFilter dataFilter, @NotNull DBDAttributeConstraint constraint) {
