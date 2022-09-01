@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSInstanceContainer;
  * datasource instance may be refreshed at any moment. Obtain references on datasource only
  * from DBSObject or DBPContextProvider interfaces.
  */
-public interface DBPDataSource extends DBSInstanceContainer
+public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttributes
 {
     /**
      * Row limit (setMaxSize) affects DML (UPDATE, INSERT, etc) statements.
