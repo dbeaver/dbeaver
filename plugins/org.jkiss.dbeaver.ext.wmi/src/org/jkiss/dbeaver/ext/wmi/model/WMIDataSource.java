@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.AbstractDataSource;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.wmi.service.WMIService;
 
@@ -46,9 +45,8 @@ import java.util.Collections;
 /**
  * WMIDataSource
  */
-public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionContext, IAdaptable
+public class WMIDataSource extends AbstractDataSource implements DBSInstance, DBCExecutionContext, IAdaptable
 {
-    private final DBPDataSourceContainer container;
     private WMINamespace rootNamespace;
     private final SQLDialect dialect;
     private final long id;
@@ -57,18 +55,11 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
     public WMIDataSource(DBPDataSourceContainer container)
         throws DBException
     {
-        this.container = container;
+        super(container);
         this.dialect = new WMIDialect();
         this.id = AbstractExecutionContext.generateContextId();
 
         QMUtils.getDefaultHandler().handleContextOpen(this, false);
-    }
-
-    @NotNull
-    @Override
-    public DBPDataSourceContainer getContainer()
-    {
-        return container;
     }
 
     @NotNull
@@ -104,24 +95,6 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
     @Override
     public String getContextName() {
         return "WMI Data Source";
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public DBSObject getParentObject() {
-        return container;
-    }
-
-    @NotNull
-    @Override
-    public WMIDataSource getDataSource() {
-        return this;
     }
 
     @Override
@@ -247,17 +220,6 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
     @Override
     public SQLDialect getSQLDialect() {
         return dialect;
-    }
-
-    @NotNull
-    @Override
-    public String getName() {
-        return container.getName();
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return true;
     }
 
 }

@@ -163,7 +163,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         DBExecUtils.startContextInitiation(getContainer());
         try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
             // Read server version info here - it is needed during database metadata fetch (#8061)
-            getDataSource().readDatabaseServerVersion(bootstrapConnection.getMetaData());
+            readDatabaseServerVersion(bootstrapConnection.getMetaData());
 
             // Get all databases
             try (PreparedStatement dbStat = prepareReadDatabaseListStatement(monitor, bootstrapConnection, configuration)) {
@@ -275,7 +275,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             getServerType().initDefaultSSLConfig(connectionInfo, props);
         }
         PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
-        if (serverType != null && serverType.turnOffPreparedStatements()
+        if (serverType.turnOffPreparedStatements()
             && !CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
             // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
             props.put("prepareThreshold", "0");
@@ -498,7 +498,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } else if (adapter == DBCQueryPlanner.class) {
             return adapter.cast(new PostgreQueryPlaner(this));
         } else if (adapter == DBSDataBulkLoader.class) {
-            if (getDataSource().getServerType().supportsCopyFromStdIn()) {
+            if (getServerType().supportsCopyFromStdIn()) {
                 return adapter.cast(new PostgreCopyLoader(this));
             }
         } else if (adapter == DBAUserPasswordManager.class) {
@@ -507,12 +507,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
         }
         return super.getAdapter(adapter);
-    }
-
-    @NotNull
-    @Override
-    public PostgreDataSource getDataSource() {
-        return this;
     }
 
     @Nullable
@@ -734,7 +728,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     @Override
     public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
         Throwable rootCause = GeneralUtils.getRootCause(error);
-        if (rootCause != null && PostgreConstants.PSQL_EXCEPTION_CLASS_NAME.equals(rootCause.getClass().getName())) {
+        if (PostgreConstants.PSQL_EXCEPTION_CLASS_NAME.equals(rootCause.getClass().getName())) {
             try {
                 Object serverErrorMessage = BeanUtils.readObjectProperty(rootCause, "serverErrorMessage");
                 if (serverErrorMessage != null) {
