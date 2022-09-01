@@ -69,7 +69,6 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
-import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -114,6 +113,7 @@ import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -2743,12 +2743,8 @@ public class SQLEditor extends SQLEditorBase implements
         if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING) {
             return;
         }
-        IPath location = sqlFile.getLocation();
-        if (location == null) {
-            return;
-        }
-        File osFile = location.toFile();
-        if (!osFile.exists() || osFile.length() != 0) {
+
+        if (!sqlFile.exists() || ContentUtils.getFileLength(sqlFile) != 0) {
             // Not empty
             return;
         }
@@ -2770,10 +2766,12 @@ public class SQLEditor extends SQLEditorBase implements
             }
             // This file is empty and never (at least during this session) had any contents.
             // Drop it.
-            log.debug("Delete empty SQL script '" + sqlFile.getFullPath().toOSString() + "'");
-            sqlFile.delete(true, monitor);
+            if (sqlFile.exists()) {
+                log.debug("Delete empty SQL script '" + sqlFile.getFullPath().toOSString() + "'");
+                sqlFile.delete(true, monitor);
+            }
         } catch (Exception e) {
-            log.error("Can't delete empty script file", e); //$NON-NLS-1$
+            log.error("Error deleting empty script file", e); //$NON-NLS-1$
         }
     }
 
@@ -2960,10 +2958,12 @@ public class SQLEditor extends SQLEditorBase implements
         final DBPWorkspaceEclipse workspace = ((DBPWorkspaceEclipse) DBWorkbench.getPlatform().getWorkspace());
         final IFolder root = workspace.getResourceDefaultRoot(workspace.getActiveProject(), ScriptsHandlerImpl.class, false);
         if (root != null) {
-            return new File(root.getLocationURI()).toString();
-        } else {
-            return null;
+            URI locationURI = root.getLocationURI();
+            if (locationURI.getScheme().equals("file")) {
+                return new File(locationURI).toString();
+            }
         }
+        return null;
     }
 
     @Nullable

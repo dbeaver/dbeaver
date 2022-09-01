@@ -26,6 +26,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
@@ -75,6 +76,18 @@ public class ConsoleViewSwitchHandler extends AbstractHandler {
         item.setToolTipText("");
         item.setImage(DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE).createImage());
         item.setData(viewer);
+        tabsContainer.addCTabFolder2Listener(new CTabFolder2Adapter() {
+            @Override
+                public void close (CTabFolderEvent event) {
+                    Widget item = event.item;
+                    if (item instanceof CTabItem) {
+                        CTabItem cTab = (CTabItem) item;
+                        if (cTab.getData() instanceof SQLConsoleView) {
+                            setConcoleViewEnabledForEditor(editor, false);
+                        }
+                    }
+               }
+        });
         item.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e) {

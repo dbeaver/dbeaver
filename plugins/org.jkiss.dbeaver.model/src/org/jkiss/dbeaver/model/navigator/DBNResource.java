@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileInfo;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
@@ -583,9 +580,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     @Property(viewable = true, order = 11)
     public String getResourceSize() throws CoreException {
         if (resource instanceof IFile) {
-            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
-            IFileInfo iFileInfo = fileStore.fetchInfo();
-            return numberFormat.format(iFileInfo.getLength());
+            return numberFormat.format(ContentUtils.getFileLength(resource));
         }
         return null;
     }

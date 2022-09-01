@@ -75,28 +75,34 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
             .toArray(DBPPropertyDescriptor[]::new);
     }
 
+    @Override
     @NotNull
     public String getId() {
         return id;
     }
 
+    @Override
     @NotNull
     public String getCodeName() {
         return codeName;
     }
 
+    @Override
     public String getLabel() {
         return label;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public DBWHandlerType getType() {
         return type;
     }
 
+    @Override
     public boolean isSecured() {
         return secured;
     }
@@ -118,6 +124,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         return handlerType;
     }
 
+    @Override
     public <T extends DBWNetworkHandler> T createHandler(Class<T> impl)
         throws DBException {
         return handlerType.createInstance(impl);

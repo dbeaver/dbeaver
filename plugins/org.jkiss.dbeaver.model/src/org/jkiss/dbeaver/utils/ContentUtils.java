@@ -532,7 +532,20 @@ public class ContentUtils {
             IFileInfo iFileInfo = fileStore.fetchInfo();
             return iFileInfo.getLastModified();
         } catch (CoreException e) {
-            return 0;
+            log.debug(e);
+            return -1;
         }
     }
+
+    public static long getFileLength(IResource resource) {
+        try {
+            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
+            IFileInfo iFileInfo = fileStore.fetchInfo();
+            return iFileInfo.getLength();
+        } catch (CoreException e) {
+            log.debug(e);
+            return -1;
+        }
+    }
+
 }

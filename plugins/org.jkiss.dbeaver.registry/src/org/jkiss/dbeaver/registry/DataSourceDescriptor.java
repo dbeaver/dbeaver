@@ -736,7 +736,7 @@ public class DataSourceDescriptor
         registry.updateDataSource(this);
         Throwable lastError = registry.getLastError();
         if (lastError != null) {
-            DBWorkbench.getPlatformUI().showError("Save error", "Error saving datasource info", lastError);
+            DBWorkbench.getPlatformUI().showError("Save error", "Error saving datasource configuration", lastError);
             return false;
         }
 

@@ -168,12 +168,6 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return serverVersion;
     }
 
-    @NotNull
-    @Override
-    public DBPDataSource getDataSource() {
-        return this;
-    }
-
     public DatabaseCache getDatabaseCache() {
         return databaseCache;
     }

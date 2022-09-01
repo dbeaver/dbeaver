@@ -346,9 +346,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             helpMenu.add(showHelpAction);
             helpMenu.add(new Separator());
             helpMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.help.installationDialog"));
-            helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             helpMenu.add(new Separator());
             helpMenu.add(new GroupMarker("installation_help"));
+            helpMenu.add(new Separator());
+            helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 /*
             if (showAltHelp) {
                 //helpMenu.add(searchHelpAction);

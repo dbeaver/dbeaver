@@ -213,13 +213,6 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     // Connection related Info
     // -----------------------
 
-    @NotNull
-    @Override
-    public DB2DataSource getDataSource()
-    {
-        return this;
-    }
-
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
     {
