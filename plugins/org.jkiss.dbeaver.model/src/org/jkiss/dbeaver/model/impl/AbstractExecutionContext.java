@@ -141,7 +141,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getContextAttribute(String attributeName) {
-        return (T)contextAttributes.get(attributeName);
+        return (T) contextAttributes.get(attributeName);
     }
 
     @Override

@@ -36,7 +36,9 @@ import java.util.List;
  * AbstractSimpleDataSource.
  * Data source which contains of single instance
  */
-public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecutionContext> extends AbstractDataSource implements DBSInstance, DBSObjectContainer, DBSObject {
+public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecutionContext>
+    extends AbstractDataSource
+    implements DBSInstance, DBSObjectContainer, DBSObject {
 
     protected EXEC_CONTEXT executionContext;
     @NotNull

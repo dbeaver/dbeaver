@@ -63,14 +63,18 @@ public abstract class AbstractDataSource implements DBPDataSource, DBSObject {
 
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return container.getDescription();
     }
 
     @Override
     public boolean isPersisted() {
         return true;
+    }
+
+    @Override
+    public Object getDataSourceFeature(String featureId) {
+        return null;
     }
 
     @Override
@@ -81,7 +85,7 @@ public abstract class AbstractDataSource implements DBPDataSource, DBSObject {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getContextAttribute(String attributeName) {
-        return (T)contextAttributes.get(attributeName);
+        return (T) contextAttributes.get(attributeName);
     }
 
     @Override

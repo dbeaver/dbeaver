@@ -370,11 +370,6 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return dataSourceInfo;
     }
 
-    @Override
-    public Object getDataSourceFeature(String featureId) {
-        return null;
-    }
-
     @NotNull
     @Override
     public SQLDialect getSQLDialect() {

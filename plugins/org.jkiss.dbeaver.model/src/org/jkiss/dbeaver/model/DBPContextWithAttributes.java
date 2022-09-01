@@ -25,12 +25,24 @@ import java.util.Map;
  */
 public interface DBPContextWithAttributes {
 
+    /**
+     * Returns copy of all context attributes
+     */
     Map<String, ?> getContextAttributes();
 
+    /**
+     * Returns attribute value by name.
+     */
     <T> T getContextAttribute(String attributeName);
 
+    /**
+     * Sets context attribute
+     */
     <T> void setContextAttribute(String attributeName, T attributeValue);
 
+    /**
+     * Removes context attribute
+     */
     void removeContextAttribute(String attributeName);
 
 }

@@ -52,9 +52,7 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
     private final long id;
     private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
 
-    public WMIDataSource(DBPDataSourceContainer container)
-        throws DBException
-    {
+    public WMIDataSource(DBPDataSourceContainer container) {
         super(container);
         this.dialect = new WMIDialect();
         this.id = AbstractExecutionContext.generateContextId();
@@ -67,11 +65,6 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
     public DBPDataSourceInfo getInfo()
     {
         return new WMIDataSourceInfo();
-    }
-
-    @Override
-    public Object getDataSourceFeature(String featureId) {
-        return null;
     }
 
     @NotNull
