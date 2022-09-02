@@ -42,7 +42,7 @@ import java.util.Comparator;
  * Additionally, holds information about remote workspace.
  * Identified by unique ID (random UUID).
  */
-public class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements DBPWorkspaceEclipse {
+public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements DBPWorkspaceEclipse {
 
     private static final Log log = Log.getLog(EclipseWorkspaceImpl.class);
 

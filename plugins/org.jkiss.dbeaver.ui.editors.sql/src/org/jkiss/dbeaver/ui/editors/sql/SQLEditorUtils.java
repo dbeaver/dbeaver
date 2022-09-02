@@ -25,7 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -35,8 +35,8 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayInputStream;
@@ -73,7 +73,7 @@ public class SQLEditorUtils {
     		IStatus status = new Status(IStatus.ERROR, SQLEditorActivator.PLUGIN_ID, "No active project to locate Script Folder");
 			throw new CoreException(status);
 		}
-        return DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
+        return DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
     }
 
     @Nullable
@@ -90,7 +90,7 @@ public class SQLEditorUtils {
         ResourceInfo recentFile = null;
         for (ResourceInfo file : scripts) {
             if (file.resource != null) {
-                long lastModified = ContentUtils.getResourceLastModified(file.resource);
+                long lastModified = ResourceUtils.getResourceLastModified(file.resource);
                 if (lastModified > recentTimestamp) {
                     recentTimestamp = lastModified;
                     recentFile = file;
@@ -135,7 +135,7 @@ public class SQLEditorUtils {
 
     @NotNull
     public static List<ResourceInfo> getScriptsFromProject(@NotNull DBPProject dbpProject) throws CoreException {
-        IFolder resourceDefaultRoot = DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(dbpProject, ScriptsHandlerImpl.class, false);
+        IFolder resourceDefaultRoot = DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(dbpProject, ScriptsHandlerImpl.class, false);
         if (resourceDefaultRoot != null) {
             return getScriptsFromFolder(resourceDefaultRoot);
         } else {
@@ -222,7 +222,7 @@ public class SQLEditorUtils {
 
 
         // Make new script file
-        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder,
+        IFile tempFile = ResourceUtils.getUniqueFile(scriptsFolder,
                 CommonUtils.isEmpty(filename) ? "Script" : CommonUtils.escapeFileName(filename),
                 SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(getResolvedNewScriptTemplate(dataSourceContainer).getBytes(StandardCharsets.UTF_8)), true, progressMonitor);

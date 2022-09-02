@@ -14,22 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.IWorkspace;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+package org.jkiss.dbeaver.model.qm;
 
 /**
- * EclipseApplicationImpl
+ * Query manager controller
  */
-public abstract class EclipseApplicationImpl extends BaseApplicationImpl {
+public interface QMRegistry {
 
-    @NotNull
-    @Override
-    public DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace) {
-        return new DesktopWorkspaceImpl(platform, eclipseWorkspace);
-    }
+    QMMCollector getMetaCollector();
+
+    QMExecutionHandler getDefaultHandler();
+
+    QMEventBrowser getEventBrowser(boolean currentSessionOnly);
+
+    void registerHandler(QMExecutionHandler handler);
+
+    void unregisterHandler(QMExecutionHandler handler);
+
+    void registerMetaListener(QMMetaListener metaListener);
+
+    void unregisterMetaListener(QMMetaListener metaListener);
 
 }

@@ -17,31 +17,23 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
+import org.jkiss.code.Nullable;
 
 /**
  * Desktop eclipse based workspace
  */
-public interface DBPWorkspaceEclipse extends DBPWorkspace
-{
-    @NotNull
-    IWorkspace getEclipseWorkspace();
+public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse {
 
-    void setActiveProject(DBPProject project);
-
-    DBPProject getProject(@NotNull IProject project);
-
-    /**
-     * Reloads workspace contents. Creates missing projects, removes unexistent projects
-     */
-    void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException;
-
-    void addProjectListener(DBPProjectListener listener);
-
-    void removeProjectListener(DBPProjectListener listener);
+    DBPResourceHandler getDefaultResourceHandler();
+    DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors();
+    DBPResourceHandlerDescriptor[] getAllResourceHandlers();
+    @Nullable
+    DBPResourceHandler getResourceHandler(IResource resource);
+    @Nullable
+    IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor handler, boolean forceCreate);
+    @Nullable
+    IFolder getResourceDefaultRoot(DBPProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate);
 
 }

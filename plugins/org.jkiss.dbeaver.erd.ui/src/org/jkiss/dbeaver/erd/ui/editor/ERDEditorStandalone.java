@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.model.DiagramLoader;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
@@ -179,7 +179,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     public DBPProject getDiagramProject() {
         final IFile resource = getEditorFile();
         if (resource != null) {
-            return DBPPlatformEclipse.getInstance().getWorkspace().getProject(resource.getProject());
+            return DBPPlatformDesktop.getInstance().getWorkspace().getProject(resource.getProject());
         }
         return DBWorkbench.getPlatform().getWorkspace().getActiveProject();
     }

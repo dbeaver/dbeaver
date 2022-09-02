@@ -187,9 +187,9 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @Override
     protected IResource[] addImplicitMembers(IResource[] members) {
         DBPWorkspace workspace = project.getWorkspace();
-        if (workspace instanceof DBPWorkspaceEclipse) {
-            for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceEclipse)workspace).getAllResourceHandlers()) {
-                IFolder rhDefaultRoot = ((DBPWorkspaceEclipse)workspace).getResourceDefaultRoot(getProject(), rh, false);
+        if (workspace instanceof DBPWorkspaceDesktop) {
+            for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceDesktop)workspace).getAllResourceHandlers()) {
+                IFolder rhDefaultRoot = ((DBPWorkspaceDesktop)workspace).getResourceDefaultRoot(getProject(), rh, false);
                 if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
                     // Add as explicit member
                     members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);

@@ -23,12 +23,12 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 /**
  * DBPPlatform
  */
-public interface DBPPlatformEclipse extends DBPPlatform {
+public interface DBPPlatformDesktop extends DBPPlatform {
 
     @NotNull
-    DBPWorkspaceEclipse getWorkspace();
+    DBPWorkspaceDesktop getWorkspace();
 
-    static DBPPlatformEclipse getInstance() {
-        return DBWorkbench.getPlatform(DBPPlatformEclipse.class);
+    static DBPPlatformDesktop getInstance() {
+        return DBWorkbench.getPlatform(DBPPlatformDesktop.class);
     }
 }

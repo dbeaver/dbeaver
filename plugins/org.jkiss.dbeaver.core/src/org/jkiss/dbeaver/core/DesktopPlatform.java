@@ -28,18 +28,17 @@ import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.qm.QMController;
+import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
-import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DesktopWorkspaceImpl;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
-import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
-import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
+import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -55,7 +54,7 @@ import java.nio.file.Paths;
 /**
  * DesktopPlatform
  */
-public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEclipse {
+public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesktop {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
@@ -69,8 +68,8 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
     private static volatile boolean isClosing = false;
 
     private File tempFolder;
-    private BaseWorkspaceImpl workspace;
-    private QMControllerImpl queryManager;
+    private DesktopWorkspaceImpl workspace;
+    private QMRegistryImpl queryManager;
     private QMLogFileWriter qmLogWriter;
     private DBACertificateStorage certificateStorage;
 
@@ -154,12 +153,12 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
             new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "security"));
 
         // Create workspace
-        this.workspace = (BaseWorkspaceImpl) getApplication().createWorkspace(this, ResourcesPlugin.getWorkspace());
+        this.workspace = (DesktopWorkspaceImpl) getApplication().createWorkspace(this, ResourcesPlugin.getWorkspace());
         // Init workspace in UI because it may need some UI interactions to initialize
         this.workspace.initializeProjects();
 
         QMUtils.initApplication(this);
-        this.queryManager = new QMControllerImpl();
+        this.queryManager = new QMRegistryImpl();
 
         this.qmLogWriter = new QMLogFileWriter();
         this.queryManager.registerMetaListener(qmLogWriter);
@@ -223,14 +222,8 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 
     @NotNull
     @Override
-    public DBPWorkspaceEclipse getWorkspace() {
+    public DBPWorkspaceDesktop getWorkspace() {
         return workspace;
-    }
-
-    @NotNull
-    @Override
-    public DBPResourceHandler getDefaultResourceHandler() {
-        return DefaultResourceHandlerImpl.INSTANCE;
     }
 
     @NotNull
@@ -257,7 +250,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformEcli
 */
 
     @NotNull
-    public QMController getQueryManager() {
+    public QMRegistry getQueryManager() {
         return queryManager;
     }
 
