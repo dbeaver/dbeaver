@@ -32,6 +32,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.GlobalEventManagerImpl;
+import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
+import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -42,6 +45,7 @@ import org.osgi.framework.Bundle;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Locale;
 
 /**
  * DBeaverTestPlatform
@@ -173,6 +177,12 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
     @NotNull
     @Override
+    public DBPPlatformLanguage getLanguage() {
+        return PlatformLanguageRegistry.getInstance().getLanguage(Locale.ENGLISH);
+    }
+
+    @NotNull
+    @Override
     public DBPApplication getApplication() {
         return BaseApplicationImpl.getInstance();
     }
@@ -180,6 +190,17 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     @NotNull
     public QMRegistry getQueryManager() {
         return qmController;
+    }
+
+    @Override
+    public DBPGlobalEventManager getGlobalEventManager() {
+        return GlobalEventManagerImpl.getInstance();
+    }
+
+    @NotNull
+    @Override
+    public DBPDataFormatterRegistry getDataFormatterRegistry() {
+        return DataFormatterRegistry.getInstance();
     }
 
     @NotNull

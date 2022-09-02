@@ -35,16 +35,13 @@ import java.nio.file.Path;
 /**
  * DBPPlatform
  */
-public interface DBPPlatform
-{
+public interface DBPPlatform {
+
     @NotNull
     DBPApplication getApplication();
 
     @NotNull
     DBPWorkspace getWorkspace();
-
-    @NotNull
-    DBPPlatformLanguage getLanguage();
 
     @NotNull
     DBNModel getNavigatorModel();
@@ -70,11 +67,6 @@ public interface DBPPlatform
     @NotNull
     DBFRegistry getFileSystemRegistry();
 
-    DBPGlobalEventManager getGlobalEventManager();
-
-    @NotNull
-    DBPDataFormatterRegistry getDataFormatterRegistry();
-
     @NotNull
     DBPPreferenceStore getPreferenceStore();
 
@@ -88,13 +80,10 @@ public interface DBPPlatform
     File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
     @NotNull
-    File getApplicationConfiguration();
+    Path getApplicationConfiguration();
 
     @NotNull
     File getConfigurationFile(String fileName);
-
-    @NotNull
-    Path getCustomDriversHome();
 
     boolean isReadOnly();
 

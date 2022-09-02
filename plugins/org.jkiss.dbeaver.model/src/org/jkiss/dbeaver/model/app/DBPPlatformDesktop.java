@@ -30,7 +30,15 @@ public interface DBPPlatformDesktop extends DBPPlatform {
     DBPWorkspaceDesktop getWorkspace();
 
     @NotNull
+    DBPPlatformLanguage getLanguage();
+
+    @NotNull
     DBPExternalFileManager getExternalFileManager();
+
+    DBPGlobalEventManager getGlobalEventManager();
+
+    @NotNull
+    DBPDataFormatterRegistry getDataFormatterRegistry();
 
     static DBPPlatformDesktop getInstance() {
         return DBWorkbench.getPlatform(DBPPlatformDesktop.class);

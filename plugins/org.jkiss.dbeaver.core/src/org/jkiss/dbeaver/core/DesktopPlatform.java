@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.core;
 
+import org.eclipse.core.internal.registry.IRegistryConstants;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.PlatformUI;
@@ -24,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
@@ -32,34 +34,39 @@ import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
-import org.jkiss.dbeaver.registry.BaseApplicationImpl;
-import org.jkiss.dbeaver.registry.BasePlatformImpl;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.DesktopWorkspaceImpl;
+import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
+import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Locale;
+import java.util.Properties;
 
 /**
  * DesktopPlatform
  */
-public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesktop {
+public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesktop, DBPPlatformLanguageManager {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
 
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
+    private static final String OSGI_CONFIG_FILE = "config.ini";
 
     private static final Log log = Log.getLog(DesktopPlatform.class);
 
@@ -72,6 +79,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     private QMRegistryImpl queryManager;
     private QMLogFileWriter qmLogWriter;
     private DBACertificateStorage certificateStorage;
+    private DBPPlatformLanguage language;
 
     private static boolean disposed = false;
 
@@ -143,6 +151,14 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     protected void initialize() {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize desktop platform...");
+
+        {
+            this.language = PlatformLanguageRegistry.getInstance().getLanguage(Locale.getDefault());
+            if (this.language == null) {
+                log.debug("Language for locale '" + Locale.getDefault() + "' not found. Use default.");
+                this.language = PlatformLanguageRegistry.getInstance().getLanguage(Locale.ENGLISH);
+            }
+        }
 
         if (getPreferenceStore().getBoolean(DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE)) {
             // Register BC security provider
@@ -232,6 +248,43 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         return BaseApplicationImpl.getInstance();
     }
 
+    @NotNull
+    @Override
+    public DBPPlatformLanguage getLanguage() {
+        return language;
+    }
+
+    @Override
+    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
+        if (CommonUtils.equalObjects(language, this.language)) {
+            return;
+        }
+
+        try {
+            final File config = new File(RuntimeUtils.getLocalFileFromURL(Platform.getConfigurationLocation().getURL()), OSGI_CONFIG_FILE);
+            final Properties properties = new Properties();
+
+            if (config.exists()) {
+                try (FileInputStream is = new FileInputStream(config)) {
+                    properties.load(is);
+                }
+            }
+
+            properties.put(IRegistryConstants.PROP_NL, language.getCode());
+
+            try (FileOutputStream os = new FileOutputStream(config)) {
+                properties.store(os, null);
+            }
+
+            this.language = language;
+            // This property is fake. But we set it to trigger property change listener
+            // which will ask to restart workbench.
+            getPreferenceStore().setValue(ModelPreferences.PLATFORM_LANGUAGE, language.getCode());
+        } catch (IOException e) {
+            throw new DBException("Unexpected error while saving startup configuration", e);
+        }
+    }
+
 /*
     private void changeRuntimeLocale(@NotNull DBPPlatformLanguage runtimeLocale) {
         // Check locale
@@ -252,6 +305,17 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     @NotNull
     public QMRegistry getQueryManager() {
         return queryManager;
+    }
+
+    @Override
+    public DBPGlobalEventManager getGlobalEventManager() {
+        return GlobalEventManagerImpl.getInstance();
+    }
+
+    @NotNull
+    @Override
+    public DBPDataFormatterRegistry getDataFormatterRegistry() {
+        return DataFormatterRegistry.getInstance();
     }
 
     @NotNull
