@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -117,7 +118,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         IProject[] allProjects = root.getProjects();
         if (ArrayUtils.isEmpty(allProjects)) {
             try {
-                refreshWorkspaceContents(new LoggingProgressMonitor(log));
+                reloadWorkspace(new LoggingProgressMonitor(log));
             } catch (Throwable e) {
                 log.error(e);
             }
@@ -133,6 +134,10 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                 }
             }
         }
+    }
+
+    protected void reloadWorkspace(DBRProgressMonitor monitor) {
+
     }
 
     protected boolean isProjectAccessible(IProject project) {

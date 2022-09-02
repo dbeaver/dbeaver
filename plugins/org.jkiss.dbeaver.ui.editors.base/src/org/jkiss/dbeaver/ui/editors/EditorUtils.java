@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -178,7 +177,7 @@ public class EditorUtils {
             } else {
                 File localFile = getLocalFileFromInput(editorInput);
                 if (localFile != null) {
-                    final DBPExternalFileManager efManager = DBWorkbench.getPlatform().getExternalFileManager();
+                    final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
                     String dataSourceId = (String) efManager.getFileProperty(localFile, PROP_SQL_DATA_SOURCE_ID);
                     String projectName = (String) efManager.getFileProperty(localFile, PROP_SQL_PROJECT_ID);
                     if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectName)) {
@@ -222,7 +221,7 @@ public class EditorUtils {
             } else {
                 File localFile = getLocalFileFromInput(editorInput);
                 if (localFile != null) {
-                    final DBPExternalFileManager efManager = DBWorkbench.getPlatform().getExternalFileManager();
+                    final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
                     defaultDatasource = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_DATASOURCE);
                     defaultCatalogName = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_CATALOG);
                     defaultSchema= (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_SCHEMA);
@@ -299,7 +298,7 @@ public class EditorUtils {
     }
 
     public static void setFileDataSource(@NotNull File localFile, @NotNull DatabaseEditorContext context) {
-        final DBPExternalFileManager efManager = DBWorkbench.getPlatform().getExternalFileManager();
+        final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
         DBPDataSourceContainer dataSourceContainer = context.getDataSourceContainer();
         efManager.setFileProperty(
             localFile,

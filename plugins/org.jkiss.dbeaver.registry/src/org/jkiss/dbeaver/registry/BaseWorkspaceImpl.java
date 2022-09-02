@@ -16,28 +16,25 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -45,14 +42,13 @@ import java.util.*;
 /**
  * BaseWorkspaceImpl.
  */
-public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExternalFileManager {
+public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
 
     private static final Log log = Log.getLog(BaseWorkspaceImpl.class);
 
     public static final String DEFAULT_RESOURCES_ROOT = "Resources"; //$NON-NLS-1$
 
     protected static final String PROP_PROJECT_ACTIVE = "project.active";
-    private static final String EXT_FILES_PROPS_STORE = "dbeaver-external-files.data";
 
     private static final String WORKSPACE_ID = "workspace-id";
 
@@ -62,18 +58,12 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
 
     protected final Map<IProject, LocalProjectImpl> projects = new LinkedHashMap<>();
     protected DBPProject activeProject;
-
     private final List<DBPProjectListener> projectListeners = new ArrayList<>();
-    private final Map<String, Map<String, Object>> externalFileProperties = new HashMap<>();
-
-    private final AbstractJob externalFileSaver = new WorkspaceFilesMetadataJob();
 
     protected BaseWorkspaceImpl(DBPPlatform platform, IWorkspace eclipseWorkspace) {
         this.platform = platform;
         this.eclipseWorkspace = eclipseWorkspace;
         this.workspaceAuthContext = new SessionContextImpl(null);
-
-        loadExternalFileProperties();
     }
 
     @NotNull
@@ -116,12 +106,12 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
             }
             this.projects.clear();
         }
-        DBVModel.checkGlobalCacheIsEmpty();
-
         if (!projectListeners.isEmpty()) {
             log.warn("Some project listeners are still register: " + projectListeners);
             projectListeners.clear();
         }
+
+        DBVModel.checkGlobalCacheIsEmpty();
     }
 
     @NotNull
@@ -168,65 +158,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
         return getProject(eProject);
     }
 
-    @NotNull
-    @Override
-    public SMSessionContext getAuthContext() {
-        return workspaceAuthContext;
-    }
-
-    @Override
-    public void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException {
-        try {
-            IWorkspaceRoot root = eclipseWorkspace.getRoot();
-
-            root.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
-
-            File workspaceLocation = root.getLocation().toFile();
-            if (!workspaceLocation.exists()) {
-                // Nothing to refresh
-                return;
-            }
-
-            // Remove unexistent projects
-            for (IProject project : root.getProjects()) {
-                File projectDir = project.getLocation().toFile();
-                if (!projectDir.exists()) {
-                    monitor.subTask("Removing unexistent project '" + project.getName() + "'");
-                    project.delete(false, true, monitor.getNestedMonitor());
-                }
-            }
-
-            File[] wsFiles = workspaceLocation.listFiles();
-            if (!ArrayUtils.isEmpty(wsFiles)) {
-                // Add missing projects
-                monitor.beginTask("Refreshing workspace contents", wsFiles.length);
-                for (File wsFile : wsFiles) {
-                    if (!wsFile.isDirectory() || wsFile.isHidden() || wsFile.getName().startsWith(".")) {
-                        // skip regular files
-                        continue;
-                    }
-                    File projectConfig = new File(wsFile, IProjectDescription.DESCRIPTION_FILE_NAME);
-                    if (projectConfig.exists()) {
-                        String projectName = wsFile.getName();
-                        IProject project = root.getProject(projectName);
-                        if (project.exists()) {
-                            continue;
-                        }
-                        try {
-                            monitor.subTask("Adding project '" + projectName + "'");
-                            project.create(monitor.getNestedMonitor());
-                        } catch (CoreException e) {
-                            log.error("Error adding project '" + projectName + "' to workspace");
-                        }
-                    }
-                }
-            }
-
-        } catch (Throwable e) {
-            log.error("Error refreshing workspce contents", e);
-        }
-    }
-
     @Override
     public void addProjectListener(DBPProjectListener listener) {
         synchronized (projectListeners) {
@@ -239,6 +170,12 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
         synchronized (projectListeners) {
             projectListeners.remove(listener);
         }
+    }
+
+    @NotNull
+    @Override
+    public SMSessionContext getAuthContext() {
+        return workspaceAuthContext;
     }
 
     @NotNull
@@ -275,74 +212,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
     @Override
     public DBPDataSourceRegistry getDefaultDataSourceRegistry() {
         return activeProject == null ? null : activeProject.getDataSourceRegistry();
-    }
-
-    @Override
-    public Map<String, Object> getFileProperties(File file) {
-        synchronized (externalFileProperties) {
-            return externalFileProperties.get(file.getAbsolutePath());
-        }
-    }
-
-    @Override
-    public Object getFileProperty(File file, String property) {
-        synchronized (externalFileProperties) {
-            final Map<String, Object> fileProps = externalFileProperties.get(file.getAbsolutePath());
-            return fileProps == null ? null : fileProps.get(property);
-        }
-    }
-
-    @Override
-    public void setFileProperty(File file, String property, Object value) {
-        synchronized (externalFileProperties) {
-            final String filePath = file.getAbsolutePath();
-            Map<String, Object> fileProps = externalFileProperties.get(filePath);
-            if (fileProps == null) {
-                fileProps = new HashMap<>();
-                externalFileProperties.put(filePath, fileProps);
-            }
-            if (value == null) {
-                fileProps.remove(property);
-            } else {
-                fileProps.put(property, value);
-            }
-        }
-
-        saveExternalFileProperties();
-    }
-
-    @Override
-    public Map<String, Map<String, Object>> getAllFiles() {
-        synchronized (externalFileProperties) {
-            return new LinkedHashMap<>(externalFileProperties);
-        }
-    }
-
-    private void loadExternalFileProperties() {
-        synchronized (externalFileProperties) {
-            externalFileProperties.clear();
-            Path propsFile = GeneralUtils.getMetadataFolder().resolve(EXT_FILES_PROPS_STORE);
-            if (Files.exists(propsFile)) {
-                try (InputStream is = Files.newInputStream(propsFile)) {
-                    try (ObjectInputStream ois = new ObjectInputStream(is)) {
-                        final Object object = ois.readObject();
-                        if (object instanceof Map) {
-                            externalFileProperties.putAll((Map) object);
-                        } else {
-                            log.error("Bad external files properties data format: " + object);
-                        }
-                    }
-                } catch (Exception e) {
-                    log.error("Error saving external files properties", e);
-                }
-            }
-        }
-    }
-
-    private void saveExternalFileProperties() {
-        synchronized (externalFileProperties) {
-            externalFileSaver.schedule(100);
-        }
     }
 
     protected void fireActiveProjectChange(DBPProject oldActiveProject, DBPProject activeProject) {
@@ -385,27 +254,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse, DBPExter
             BaseWorkspaceImpl.writeWorkspaceInfo(GeneralUtils.getMetadataFolder(), workspaceInfo);
         }
         return workspaceId;
-    }
-
-    private class WorkspaceFilesMetadataJob extends AbstractJob {
-        public WorkspaceFilesMetadataJob() {
-            super("External files metadata saver");
-        }
-
-        @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
-            synchronized (externalFileProperties) {
-                Path propsFile = GeneralUtils.getMetadataFolder().resolve(EXT_FILES_PROPS_STORE);
-                try (OutputStream os = Files.newOutputStream(propsFile)) {
-                    try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
-                        oos.writeObject(externalFileProperties);
-                    }
-                } catch (Exception e) {
-                    log.error("Error saving external files properties", e);
-                }
-            }
-            return Status.OK_STATUS;
-        }
     }
 
 }

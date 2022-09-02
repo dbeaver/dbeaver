@@ -113,7 +113,7 @@ public class SQLEditorUtils {
             }
 
             // Search in external files
-            for (Map.Entry<String, Map<String, Object>> fileEntry : DBWorkbench.getPlatform().getExternalFileManager().getAllFiles().entrySet()) {
+            for (Map.Entry<String, Map<String, Object>> fileEntry : DBPPlatformDesktop.getInstance().getExternalFileManager().getAllFiles().entrySet()) {
                 if (container.getId().equals(fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE_ID))) {
                     File extFile = new File(fileEntry.getKey());
                     if (extFile.exists()) {

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
@@ -27,6 +28,9 @@ public interface DBPPlatformDesktop extends DBPPlatform {
 
     @NotNull
     DBPWorkspaceDesktop getWorkspace();
+
+    @NotNull
+    DBPExternalFileManager getExternalFileManager();
 
     static DBPPlatformDesktop getInstance() {
         return DBWorkbench.getPlatform(DBPPlatformDesktop.class);

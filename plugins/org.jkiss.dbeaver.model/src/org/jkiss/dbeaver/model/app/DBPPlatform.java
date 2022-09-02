@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
@@ -84,9 +83,6 @@ public interface DBPPlatform
 
     @NotNull
     DBASecureStorage getSecureStorage();
-
-    @NotNull
-    DBPExternalFileManager getExternalFileManager();
 
     @NotNull
     File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;

@@ -20,18 +20,30 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.*;
 
 /**
  * DBeaver desktop workspace.
  */
-public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWorkspaceDesktop {
+public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWorkspaceDesktop, DBPExternalFileManager {
 
     private static final Log log = Log.getLog(DesktopWorkspaceImpl.class);
+
+    private static final String EXT_FILES_PROPS_STORE = "dbeaver-external-files.data";
+
+    private final Map<String, Map<String, Object>> externalFileProperties = new HashMap<>();
+
+    private final AbstractJob externalFileSaver = new WorkspaceFilesMetadataJob();
 
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<>();
     private DBPResourceHandler defaultHandler;
@@ -40,6 +52,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         super(platform, eclipseWorkspace);
 
         loadExtensions(Platform.getExtensionRegistry());
+        loadExternalFileProperties();
     }
 
     private void loadExtensions(IExtensionRegistry registry) {
@@ -211,6 +224,153 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             }
         }
         return realFolder;
+    }
+
+    @Override
+    public void refreshWorkspaceContents(DBRProgressMonitor monitor) {
+        try {
+            IWorkspaceRoot root = getEclipseWorkspace().getRoot();
+
+            root.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
+
+            File workspaceLocation = root.getLocation().toFile();
+            if (!workspaceLocation.exists()) {
+                // Nothing to refresh
+                return;
+            }
+
+            // Remove unexistent projects
+            for (IProject project : root.getProjects()) {
+                File projectDir = project.getLocation().toFile();
+                if (!projectDir.exists()) {
+                    monitor.subTask("Removing unexistent project '" + project.getName() + "'");
+                    project.delete(false, true, monitor.getNestedMonitor());
+                }
+            }
+
+            File[] wsFiles = workspaceLocation.listFiles();
+            if (!ArrayUtils.isEmpty(wsFiles)) {
+                // Add missing projects
+                monitor.beginTask("Refreshing workspace contents", wsFiles.length);
+                for (File wsFile : wsFiles) {
+                    if (!wsFile.isDirectory() || wsFile.isHidden() || wsFile.getName().startsWith(".")) {
+                        // skip regular files
+                        continue;
+                    }
+                    File projectConfig = new File(wsFile, IProjectDescription.DESCRIPTION_FILE_NAME);
+                    if (projectConfig.exists()) {
+                        String projectName = wsFile.getName();
+                        IProject project = root.getProject(projectName);
+                        if (project.exists()) {
+                            continue;
+                        }
+                        try {
+                            monitor.subTask("Adding project '" + projectName + "'");
+                            project.create(monitor.getNestedMonitor());
+                        } catch (CoreException e) {
+                            log.error("Error adding project '" + projectName + "' to workspace");
+                        }
+                    }
+                }
+            }
+
+        } catch (Throwable e) {
+            log.error("Error refreshing workspce contents", e);
+        }
+    }
+
+    @Override
+    protected void reloadWorkspace(DBRProgressMonitor monitor) {
+        refreshWorkspaceContents(monitor);
+    }
+
+    @Override
+    public Map<String, Object> getFileProperties(File file) {
+        synchronized (externalFileProperties) {
+            return externalFileProperties.get(file.getAbsolutePath());
+        }
+    }
+
+    @Override
+    public Object getFileProperty(File file, String property) {
+        synchronized (externalFileProperties) {
+            final Map<String, Object> fileProps = externalFileProperties.get(file.getAbsolutePath());
+            return fileProps == null ? null : fileProps.get(property);
+        }
+    }
+
+    @Override
+    public void setFileProperty(File file, String property, Object value) {
+        synchronized (externalFileProperties) {
+            final String filePath = file.getAbsolutePath();
+            Map<String, Object> fileProps = externalFileProperties.get(filePath);
+            if (fileProps == null) {
+                fileProps = new HashMap<>();
+                externalFileProperties.put(filePath, fileProps);
+            }
+            if (value == null) {
+                fileProps.remove(property);
+            } else {
+                fileProps.put(property, value);
+            }
+        }
+
+        saveExternalFileProperties();
+    }
+
+    @Override
+    public Map<String, Map<String, Object>> getAllFiles() {
+        synchronized (externalFileProperties) {
+            return new LinkedHashMap<>(externalFileProperties);
+        }
+    }
+
+    private void loadExternalFileProperties() {
+        synchronized (externalFileProperties) {
+            externalFileProperties.clear();
+            java.nio.file.Path propsFile = GeneralUtils.getMetadataFolder().resolve(EXT_FILES_PROPS_STORE);
+            if (Files.exists(propsFile)) {
+                try (InputStream is = Files.newInputStream(propsFile)) {
+                    try (ObjectInputStream ois = new ObjectInputStream(is)) {
+                        final Object object = ois.readObject();
+                        if (object instanceof Map) {
+                            externalFileProperties.putAll((Map) object);
+                        } else {
+                            log.error("Bad external files properties data format: " + object);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Error saving external files properties", e);
+                }
+            }
+        }
+    }
+
+    private void saveExternalFileProperties() {
+        synchronized (externalFileProperties) {
+            externalFileSaver.schedule(100);
+        }
+    }
+
+    private class WorkspaceFilesMetadataJob extends AbstractJob {
+        public WorkspaceFilesMetadataJob() {
+            super("External files metadata saver");
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            synchronized (externalFileProperties) {
+                java.nio.file.Path propsFile = GeneralUtils.getMetadataFolder().resolve(EXT_FILES_PROPS_STORE);
+                try (OutputStream os = Files.newOutputStream(propsFile)) {
+                    try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
+                        oos.writeObject(externalFileProperties);
+                    }
+                } catch (Exception e) {
+                    log.error("Error saving external files properties", e);
+                }
+            }
+            return Status.OK_STATUS;
+        }
     }
 
 }

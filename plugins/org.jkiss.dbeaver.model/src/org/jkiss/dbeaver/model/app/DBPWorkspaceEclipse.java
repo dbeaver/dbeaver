@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.model.app;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Desktop eclipse based workspace
@@ -34,11 +32,6 @@ public interface DBPWorkspaceEclipse extends DBPWorkspace
     void setActiveProject(DBPProject project);
 
     DBPProject getProject(@NotNull IProject project);
-
-    /**
-     * Reloads workspace contents. Creates missing projects, removes unexistent projects
-     */
-    void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException;
 
     void addProjectListener(DBPProjectListener listener);
 

@@ -20,11 +20,18 @@ package org.jkiss.dbeaver.model.app;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Desktop eclipse based workspace
  */
 public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse {
+
+    /**
+     * Reloads workspace contents. Creates missing projects, removes unexistent projects
+     */
+    void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException;
 
     DBPResourceHandler getDefaultResourceHandler();
     DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors();
