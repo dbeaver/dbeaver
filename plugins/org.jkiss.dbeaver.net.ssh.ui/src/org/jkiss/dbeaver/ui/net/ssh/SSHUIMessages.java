@@ -54,8 +54,12 @@ public class SSHUIMessages extends NLS {
 	public static String model_ssh_configurator_variables_hint_label;
 	public static String model_ssh_configurator_ssh_documentation_link;
 
+    public static String model_ssh_dialog_credentials;
+    public static String model_ssh_dialog_credentials_username;
+    public static String model_ssh_dialog_credentials_password;
+    public static String model_ssh_dialog_credentials_passphrase;
 
-	static {
+    static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, SSHUIMessages.class);
 	}

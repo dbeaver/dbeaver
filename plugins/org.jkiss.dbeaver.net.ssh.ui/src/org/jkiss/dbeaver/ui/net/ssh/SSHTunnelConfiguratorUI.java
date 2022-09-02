@@ -32,6 +32,7 @@ import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
@@ -69,6 +70,7 @@ import java.util.Locale;
  * SSH tunnel configuration
  */
 public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
+    private static final Log log = Log.getLog(SSHTunnelConfiguratorUI.class);
 
     private DBWHandlerConfiguration savedConfiguration;
 
@@ -233,19 +235,23 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     @Nullable
-    private static DBPAuthInfo promptCredentialsDialog(@NotNull SSHConstants.AuthType type) {
+    private static DBPAuthInfo promptCredentialsDialog(@NotNull SSHConstants.AuthType type,
+        @NotNull DBWHandlerConfiguration configuration) {
         final DBPAuthInfo credentialsToConnectTo;
         try {
             credentialsToConnectTo = DBWorkbench.getPlatformUI()
-                .promptUserCredentials("Please enter your SSH credentials",
-                    RegistryMessages.dialog_connection_auth_username,
+                .promptUserCredentials(SSHUIMessages.model_ssh_dialog_credentials,
+                    SSHUIMessages.model_ssh_dialog_credentials_username,
+                    configuration.getUserName(),
                     type.equals(SSHConstants.AuthType.PUBLIC_KEY)
-                    ? RegistryMessages.dialog_connection_auth_passphrase
-                    : RegistryMessages.dialog_connection_auth_password,
+                    ? SSHUIMessages.model_ssh_dialog_credentials_passphrase
+                    : SSHUIMessages.model_ssh_dialog_credentials_password,
+                    configuration.getPassword(),
                     type.equals(SSHConstants.AuthType.PUBLIC_KEY),
                     false
                 );
         } catch (Exception e) {
+            log.error(e);
             return null;
         }
         return credentialsToConnectTo;
@@ -277,7 +283,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     monitor.subTask("Initialize tunnel");
                     String authTypeName = configuration.getStringProperty("authType");
                     SSHConstants.AuthType authType = SSHConstants.AuthType.valueOf(authTypeName);
-                    DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType);
+                    DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration);
                     if (dbpAuthInfo != null) {
                         if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
                             configuration.setUserName(dbpAuthInfo.getUserName());
