@@ -53,6 +53,11 @@ public class DataSourceMemoryStorage implements DBPDataSourceConfigurationStorag
     }
 
     @Override
+    public boolean isVirtual() {
+        return true;
+    }
+
+    @Override
     public String getStatus() {
         return null;
     }

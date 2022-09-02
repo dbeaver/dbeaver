@@ -92,8 +92,28 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         if (oldQuery) {
             return "EXPLAIN " + (verbose ? "VERBOSE " : "") + query;
         } else {
-            boolean doAnalyze = CommonUtils.toBoolean(this.configuration.getParameters().get(PostgreQueryPlaner.PARAM_ANALYSE));
-            return "EXPLAIN (FORMAT XML" + (doAnalyze ? ", ANALYSE" : "") + ") " + query;
+            Map<String, Object> parameters = this.configuration.getParameters();
+            StringBuilder explainStat = new StringBuilder(64);
+            explainStat.append("EXPLAIN (FORMAT XML");
+            for (Map.Entry<String, Object> entry : CommonUtils.safeCollection(parameters.entrySet())) {
+                String key = entry.getKey();
+                if (PostgreQueryPlaner.PARAM_COSTS.equals(key) || PostgreQueryPlaner.PARAM_TIMING.equals(key)
+                    || (PostgreQueryPlaner.PARAM_SUMMARY.equals(key)
+                    && CommonUtils.toBoolean(parameters.get(PostgreQueryPlaner.PARAM_ANALYSE)))) {
+                    // COSTS and TIMING are true by default, no need to add it to query if they are true, but we need to add them
+                    // if they are false. And SUMMARY is true by default only for ANALYZE parameter
+                    if (!CommonUtils.toBoolean(entry.getValue())) {
+                        explainStat.append(",").append(key).append(" FALSE");
+                    }
+                    continue;
+                }
+                // In other cases we can just add parameter keyword
+                if (CommonUtils.toBoolean(entry.getValue())) {
+                    explainStat.append(",").append(key);
+                }
+            }
+            explainStat.append(") ").append(query);
+            return explainStat.toString();
         }
     }
 

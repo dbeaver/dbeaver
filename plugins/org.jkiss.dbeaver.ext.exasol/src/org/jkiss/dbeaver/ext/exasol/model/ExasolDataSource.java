@@ -436,13 +436,6 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	// Connection related Info
 	// -----------------------
 
-	@NotNull
-	@Override
-	public ExasolDataSource getDataSource()
-	{
-		return this;
-	}
-
 	@Override
 	protected DBPDataSourceInfo createDataSourceInfo(
         DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)

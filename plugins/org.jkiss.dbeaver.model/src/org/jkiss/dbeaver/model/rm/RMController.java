@@ -92,7 +92,8 @@ public interface RMController {
     String setResourceContents(
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull byte[] data) throws DBException;
+        @NotNull byte[] data,
+        boolean forceOverwrite) throws DBException;
 
     @NotNull
     String setResourceProperty(

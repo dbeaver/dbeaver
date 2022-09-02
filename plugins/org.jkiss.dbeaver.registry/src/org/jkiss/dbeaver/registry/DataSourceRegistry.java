@@ -53,7 +53,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class DataSourceRegistry implements DBPDataSourceRegistry {
+public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePersistentRegistry {
     @Deprecated
     public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
     @Deprecated
@@ -613,6 +613,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return authCredentialsProvider;
     }
 
+    @Override
     public void setAuthCredentialsProvider(DBACredentialsProvider authCredentialsProvider) {
         this.authCredentialsProvider = authCredentialsProvider;
     }
@@ -629,6 +630,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return result;
     }
 
+    @Override
     public Set<DBPDataSourceFolder> getTemporaryFolders() {
         Set<DBPDataSourceFolder> result = new HashSet<>(Collections.emptySet());
         Set<DBPDataSourceFolder> folders = getDataSources().stream()
@@ -648,6 +650,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         loadDataSources(configurationManager.getConfigurationStorages(), configurationManager, refresh, true);
     }
 
+    @Override
     public void loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
@@ -718,6 +721,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
+    @Override
     public void saveDataSources() {
         if (project.isInMemory()) {
             return;

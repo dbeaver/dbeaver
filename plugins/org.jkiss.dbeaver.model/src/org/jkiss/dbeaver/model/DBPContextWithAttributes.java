@@ -16,29 +16,33 @@
  */
 package org.jkiss.dbeaver.model;
 
+import java.util.Map;
+
 /**
- * Provided data source configuration storage
+ * Abstract context with attributes.
+ * All attributes will be cleared after context close.
+ * Attributes are valid only during implementor Java object live time.
  */
-public interface DBPDataSourceConfigurationStorage {
-
-    String getStorageId();
-
-    default String getStorageName() {
-        return getStorageId();
-    }
-
-    boolean isValid();
-
-    boolean isDefault();
+public interface DBPContextWithAttributes {
 
     /**
-     * Checks if configuration storage is virtual
+     * Returns copy of all context attributes
      */
-    boolean isVirtual();
+    Map<String, ?> getContextAttributes();
 
-    String getStatus();
+    /**
+     * Returns attribute value by name.
+     */
+    <T> T getContextAttribute(String attributeName);
 
-    // Used for secure credentials save/load (it is a prt of credentials file name)
-    String getStorageSubId();
+    /**
+     * Sets context attribute
+     */
+    <T> void setContextAttribute(String attributeName, T attributeValue);
+
+    /**
+     * Removes context attribute
+     */
+    void removeContextAttribute(String attributeName);
 
 }

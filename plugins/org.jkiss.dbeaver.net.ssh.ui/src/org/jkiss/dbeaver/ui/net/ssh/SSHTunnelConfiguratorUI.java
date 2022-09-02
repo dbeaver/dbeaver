@@ -342,7 +342,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         String implType = configuration.getStringProperty(SSHConstants.PROP_IMPLEMENTATION);
         if (CommonUtils.isEmpty(implType)) {
-            tunnelImplCombo.select(0);
+            // Try SSHJ by default
+            tunnelImplCombo.setText("SSHJ");
+            if (tunnelImplCombo.getSelectionIndex() == -1) {
+                tunnelImplCombo.select(0);
+            }
         } else {
             SSHImplementationDescriptor desc = SSHImplementationRegistry.getInstance().getDescriptor(implType);
             if (desc != null) {

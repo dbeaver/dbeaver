@@ -257,15 +257,6 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
         return searchStringEscape;
     }
 
-    /**
-     * Determines whether the search string should be quoted.
-     * <p>
-     * Generally, it should be done by the driver itself, but some don't do that.
-     */
-    public boolean isQuoteSearchString() {
-        return false;
-    }
-
     @Override
     public int getCatalogUsage() {
         return catalogUsage;
