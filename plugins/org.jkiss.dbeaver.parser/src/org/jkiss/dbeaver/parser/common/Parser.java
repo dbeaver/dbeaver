@@ -178,7 +178,7 @@ public class Parser {
                             // just apply the context-local operations between the terms
                             ImmList<ParsingStep> stepsDone = evaluateOperation(localState.prevSteps, localState.transitionToGo);
                             if (!stepsDone.isEmpty()) {
-                                for (GrammarNfaTransition t : localState.transitionToGo.getTo().getNextByTem(dispatchResult.term)) {
+                                for (GrammarNfaTransition t : localState.transitionToGo.getTo().getNextByTerm(dispatchResult.term)) {
                                     if (t.getTo() == nfa.getTo()) {
                                         ImmList<ParsingStep> finalSteps = stepsDone.filter(s -> s.stack.isRoot());
                                         if (!finalSteps.isEmpty()) {
@@ -674,7 +674,7 @@ public class Parser {
                             // just apply the context-local operations between the terms
                             ImmList<ParsingStep> stepsDone = evaluateOperation(localState.prevSteps, localState.transitionToGo);
                             if (!stepsDone.isEmpty()) {
-                                for (GrammarNfaTransition t : localState.transitionToGo.getTo().getNextByTem(term)) {
+                                for (GrammarNfaTransition t : localState.transitionToGo.getTo().getNextByTerm(term)) {
                                     if (t.getTo() == nfa.getTo()) {
                                         ImmList<ParsingStep> finalSteps = stepsDone.filter(s -> s.stack.isRoot());
                                         if (!finalSteps.isEmpty()) {

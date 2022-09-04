@@ -93,7 +93,7 @@ public class GrammarNfaState {
         return Collections.unmodifiableMap(this.nextByTerm);
     }
 
-    public Iterable<GrammarNfaTransition> getNextByTem(TermPatternInfo term) {
+    public Iterable<GrammarNfaTransition> getNextByTerm(TermPatternInfo term) {
         if (nextByTerm != null) {
             ArrayList<GrammarNfaTransition> transitions = nextByTerm.get(term);
             if (transitions != null) {

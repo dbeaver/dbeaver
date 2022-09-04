@@ -16,15 +16,10 @@
  */
 package org.jkiss.dbeaver.parser.common;
 
-import org.jkiss.dbeaver.parser.common.grammar.bnf.XmlGraph;
-import org.jkiss.dbeaver.parser.common.grammar.bnf.XmlGraphNode;
 import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaOperation;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**

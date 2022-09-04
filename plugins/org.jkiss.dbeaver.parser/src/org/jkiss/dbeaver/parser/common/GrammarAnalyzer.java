@@ -28,9 +28,41 @@ import java.util.*;
  */
 class GrammarAnalyzer {
 
-    private final List<GrammarNfaTransition> terminalTransitions; //
+    private final List<GrammarNfaTransition> terminalTransitions;
     private final NfaFragment root;
     private final Map<Integer, String> recursionErrorsByTargetId = new HashMap<>();
+
+    /*
+     * Grammar graph traversal step
+     */
+    private static class Step {
+        private final boolean isUp;
+        private final GrammarNfaState state;
+        private final GrammarNfaTransition transition;
+
+        private Step(boolean isUp, GrammarNfaState state, GrammarNfaTransition transition) {
+            this.isUp = isUp;
+            this.state = state;
+            this.transition = transition;
+        }
+
+        public static Step initial(GrammarNfaState state) {
+            return new Step(false, state, null);
+        }
+
+        public Step enter(GrammarNfaTransition transition) {
+            return new Step(false, transition.getTo(), transition);
+        }
+
+        public Step exit() {
+            return new Step(true, state, transition);
+        }
+
+        @Override
+        public String toString() {
+            return transition == null ? state.toString() : transition.toString();
+        }
+    }
 
     public GrammarAnalyzer(List<GrammarNfaTransition> terminalTransitions, NfaFragment root) {
         this.terminalTransitions = terminalTransitions;
@@ -110,37 +142,5 @@ class GrammarAnalyzer {
             }
         }
         start.prepare();
-    }
-
-    /*
-     * Grammar graph traversal step
-     */
-    private static class Step {
-        private final boolean isUp;
-        private final GrammarNfaState state;
-        private final GrammarNfaTransition transition;
-
-        private Step(boolean isUp, GrammarNfaState state, GrammarNfaTransition transition) {
-            this.isUp = isUp;
-            this.state = state;
-            this.transition = transition;
-        }
-
-        public static Step initial(GrammarNfaState state) {
-            return new Step(false, state, null);
-        }
-
-        public Step enter(GrammarNfaTransition transition) {
-            return new Step(false, transition.getTo(), transition);
-        }
-
-        public Step exit() {
-            return new Step(true, state, transition);
-        }
-
-        @Override
-        public String toString() {
-            return transition == null ? state.toString() : transition.toString();
-        }
     }
 }
