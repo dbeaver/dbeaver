@@ -16,178 +16,131 @@
  */
 package org.jkiss.dbeaver.parser.common;
 
+import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaBuilder.NfaFragment;
+import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaState;
+import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaTransition;
+import org.jkiss.dbeaver.parser.common.grammar.nfa.ParseOperationKind;
+
 import java.util.*;
 
-import org.jkiss.dbeaver.parser.common.grammar.nfa.*;
-import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaBuilder.NfaFragment;
-
-/* 
+/*
  * Class responsible for building terminal-guided automaton based on grammar graph
  */
 class GrammarAnalyzer {
 
-    private final List<GrammarNfaTransition> terminalTransitions;
+    private final List<GrammarNfaTransition> terminalTransitions; //
     private final NfaFragment root;
-
-    /*
-     * Grammar graph traversal step
-     */
-    private static class Step implements Iterable<GrammarNfaTransition> {
-        private final Step prev;
-        private final boolean isUp;
-        private final GrammarNfaTransition transition;
-
-        private Step(Step prev, boolean isUp, GrammarNfaTransition transition) {
-            this.prev = prev;
-            this.isUp = isUp;
-            this.transition = transition;
-        }
-
-        public static Step initial(GrammarNfaTransition transition) {
-            return new Step(null, false, transition);
-        }
-
-        public Step enter(GrammarNfaTransition transition) {
-            return new Step(this, false, transition);
-        }
-
-        public Step exit(GrammarNfaTransition transition) {
-            return new Step(this, true, transition);
-        }
-
-        @Override
-        public String toString() {
-            ArrayList<String> steps = new ArrayList<>();
-            for (Step x = this; x != null; x = x.prev) {
-                steps.add(x.transition.toString());
-            }
-            return "Path of " + String.join(", ", steps);
-        }
-
-        @Override
-        public Iterator<GrammarNfaTransition> iterator() {
-            return new Iterator<GrammarNfaTransition>() {
-                private Step current = Step.this;
-
-                @Override
-                public GrammarNfaTransition next() {
-                    if (this.current == null) {
-                        throw new NoSuchElementException();
-                    } else {
-                        GrammarNfaTransition result = this.current.transition;
-                        this.current = this.current.prev;
-                        return result;
-                    }
-                }
-
-                @Override
-                public boolean hasNext() {
-                    return this.current != null;
-                }
-            };
-        }
-
-    }
+    private final Map<Integer, String> recursionErrorsByTargetId = new HashMap<>();
 
     public GrammarAnalyzer(List<GrammarNfaTransition> terminalTransitions, NfaFragment root) {
         this.terminalTransitions = terminalTransitions;
         this.root = root;
     }
 
-    /**
-     * Build a parser finite state machine associating grammar graph operations with terminal-guided transitions
-     * @return parser finite state machine
-     */
-    public ParserFsm buildTerminalsGraph() {
-        int fsmsStatesCount = this.root.getFrom().getNext().size() + this.terminalTransitions.size();
-        Map<GrammarNfaTransition, ParserFsmNode> states = new HashMap<>(fsmsStatesCount);
-        List<ParserFsmNode> initialStates = new ArrayList<>();
-
-        // map each by-text-part transition to finite state machine node
-        for (GrammarNfaTransition startTransition : this.root.getFrom().getNext()) {
-            ParserFsmNode initialState = new ParserFsmNode(states.size(), false);
-            states.put(startTransition, initialState);
-            initialStates.add(initialState);
-        }
-        ParserFsmNode endState = new ParserFsmNode(states.size(), true);
-        for (GrammarNfaTransition transition : this.terminalTransitions) {
-            //System.out.println("#" + states.size() + " for " + transition.getOperation());
-            states.put(transition, new ParserFsmNode(states.size(), false));
-        }
-
-        // discover and register all text-start transitions
-        for (GrammarNfaTransition startTransition : this.root.getFrom().getNext()) {
-            discoverPathsFrom(states, startTransition);
-        }
-        // discover and register all transitions between terminals
-        for (GrammarNfaTransition transition : this.terminalTransitions) {
-            discoverPathsFrom(states, transition);
-        }
-
-        List<ParserFsmNode> parseFsmStates = new ArrayList<>(states.values());
-        parseFsmStates.add(endState);
-        return new ParserFsm(initialStates, parseFsmStates);
+    public List<String> getErrors() {
+        return List.copyOf(this.recursionErrorsByTargetId.values());
     }
 
     /**
-     * Discover grammar graph operations associated with all paths from a given transition to other terminal or text-end transitions
-     * @param states collection to register
-     * @param transition af grammar graph
+     * Discover and register all text-start transitions
      */
-    private void discoverPathsFrom(Map<GrammarNfaTransition, ParserFsmNode> states, GrammarNfaTransition transition) {
-        //System.out.println("starting from " + transition);
-        List<Step> paths = this.findPaths(transition);
-        for (Step path : paths) {
-            List<GrammarNfaOperation> ops = new ArrayList<>();
-            for (GrammarNfaTransition step : path) {
-                GrammarNfaOperation op = step.getOperation();
-                if (op.getKind() != ParseOperationKind.TERM && op.getKind() != ParseOperationKind.NONE) {
-                    ops.add(op);
-                }
-            }
-            Collections.reverse(ops);
-            states.get(transition).connectTo(states.get(path.transition), path.transition.getOperation().getPattern(), ops);
-            //System.out.println(transition.getOperation() + " --> " + path.transition.getOperation() + " { "
-            //        + String.join(", ", ops.stream().map(GrammarNfaOperation::toString).collect(Collectors.toList())) + " } ");
+    public void discoverByTermRelations() {
+        Queue<GrammarNfaState> queue = new LinkedList<>();
+        Set<GrammarNfaState> queued = new HashSet<>();
+
+        queue.add(this.root.getFrom());
+
+        while (!queue.isEmpty()) {
+            GrammarNfaState state = queue.remove();
+            this.discoverPaths(state, queue, queued);
         }
     }
 
     /**
      * Find all paths by DFS from a given transition to other terminal or text-end transitions
-     * @param transition of grammar graph
-     * @return list of path ending steps
      */
-    private List<Step> findPaths(GrammarNfaTransition transition) {
+    private void discoverPaths(GrammarNfaState start, Queue<GrammarNfaState> queue, Set<GrammarNfaState> queued) {
         ArrayDeque<Step> stack = new ArrayDeque<>();
-        stack.push(Step.initial(transition));
-        List<Step> result = new ArrayList<>();
+        stack.push(Step.initial(start));
         BitSet active = new BitSet();
 
+        int wtf = 0;
         while (stack.size() > 0) {
             Step currStep = stack.pop();
             if (currStep.isUp) {
-                active.clear(currStep.transition.getTo().getId());
-            } else {
-                if (active.get(currStep.transition.getTo().getId())) {
-                    throw new RuntimeException("recursion hit at " + currStep);
-                } else {
-                    active.set(currStep.transition.getTo().getId());
-                    stack.push(currStep.exit(currStep.transition));
-
-                    for (GrammarNfaTransition child : currStep.transition.getTo().getNext()) {
-                        Step next = currStep.enter(child);
-                        if (child.getTo() == root.getTo()) {
-                            result.add(next);
+                for (GrammarNfaTransition transition : currStep.state.getNext()) { // propagate expected terms back
+                    if (transition.getOperation().getKind() != ParseOperationKind.TERM) {
+                        for (TermPatternInfo term : transition.getTo().getExpectedTerms()) {
+                            currStep.state.registerExpectedTerm(term, transition);
                         }
-                        if (child.getOperation().getKind().equals(ParseOperationKind.TERM)) {
-                            result.add(next);
-                        } else {
-                            stack.push(next);
+                    }
+                }
+                active.clear(currStep.state.getId());
+            } else {
+                if (active.get(currStep.state.getId())) {
+                    int targetId = currStep.state.getId();
+                    if (!recursionErrorsByTargetId.containsKey(targetId)) {
+                        recursionErrorsByTargetId.put(targetId, "Recursion detected at " + currStep);
+                    }
+                    stack.push(currStep.exit());
+                } else {
+                    active.set(currStep.state.getId());
+                    stack.push(currStep.exit());
+
+                    if (!currStep.state.isExpectedTermsPopulated()) {
+                        for (GrammarNfaTransition transition : currStep.state.getNext()) {
+                            if (recursionErrorsByTargetId.containsKey(transition.getTo().getId())) {
+                                continue;
+                            }
+
+                            if (transition.getTo() == root.getTo()) {
+                                currStep.state.registerExpectedTerm(TermPatternInfo.EOF, transition);
+                            }
+                            if (transition.getOperation().getKind().equals(ParseOperationKind.TERM)) {
+                                currStep.state.registerExpectedTerm(transition.getOperation().getPattern(), transition);
+                                if (queued.add(transition.getTo())) {
+                                    queue.add(transition.getTo());
+                                }
+                            } else {
+                                stack.push(currStep.enter(transition));
+                            }
                         }
                     }
                 }
             }
         }
-        return result;
+        start.prepare();
+    }
+
+    /*
+     * Grammar graph traversal step
+     */
+    private static class Step {
+        private final boolean isUp;
+        private final GrammarNfaState state;
+        private final GrammarNfaTransition transition;
+
+        private Step(boolean isUp, GrammarNfaState state, GrammarNfaTransition transition) {
+            this.isUp = isUp;
+            this.state = state;
+            this.transition = transition;
+        }
+
+        public static Step initial(GrammarNfaState state) {
+            return new Step(false, state, null);
+        }
+
+        public Step enter(GrammarNfaTransition transition) {
+            return new Step(false, transition.getTo(), transition);
+        }
+
+        public Step exit() {
+            return new Step(true, state, transition);
+        }
+
+        @Override
+        public String toString() {
+            return transition == null ? state.toString() : transition.toString();
+        }
     }
 }

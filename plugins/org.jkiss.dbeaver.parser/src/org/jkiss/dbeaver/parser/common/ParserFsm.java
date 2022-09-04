@@ -16,7 +16,15 @@
  */
 package org.jkiss.dbeaver.parser.common;
 
+import org.jkiss.dbeaver.parser.common.grammar.bnf.XmlGraph;
+import org.jkiss.dbeaver.parser.common.grammar.bnf.XmlGraphNode;
+import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaOperation;
+
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +41,12 @@ class ParserFsm {
 
     public Iterable<ParserFsmNode> getInitialStates() {
         return initialStates;
+    }
+
+    public void compact() {
+        for (ParserFsmNode n : this.allStates) {
+            n.compact();
+        }
     }
 
     /**
@@ -56,20 +70,56 @@ class ParserFsm {
                 sb.append(" <END>");
             }
             sb.append("\n");
-            var transitionsByPatterm = s.getTransitions().stream()
-                                        .collect(Collectors.groupingBy(t -> t.getPattern() == null ? "" : t.getPattern()));
-            
-            for (var entry : transitionsByPatterm.entrySet()) {
+            var transitionsByPattern = s.getTransitions().stream()
+                .collect(Collectors.groupingBy(t -> t.getPattern() == null ? "" : t.getPattern()));
+
+            for (var entry : transitionsByPattern.entrySet()) {
                 sb.append("\ton ").append(entry.getKey()).append("\n");
                 for (var transition : entry.getValue()) {
                     sb.append("\t\tto ").append(transition.getTo()).append(" { ");
-                    sb.append(String.join(", ", transition.getOperations().stream().map(op -> op.toString()).collect(Collectors.toList())));
+                    sb.append(transition.getOperations().stream().map(GrammarNfaOperation::toString).collect(Collectors.joining(", ")));
                     sb.append(" }\n");
                 }
                 
             }
         } 
         return sb.toString();
+    }
+
+    public void collectDebugString(ITextPartConsumer consumer) throws IOException {
+        StringBuilder sb;
+        for (var s : allStates) {
+            sb = new StringBuilder();
+            sb.append("state").append(s).append(":");
+            if (this.initialStates.contains(s)) {
+                sb.append("<START>");
+            }
+            if (s.isEnd()) {
+                sb.append(" <END>");
+            }
+            sb.append("\n");
+            consumer.accept(sb.toString());
+
+            var transitionsByPattern = s.getTransitions().stream()
+                .collect(Collectors.groupingBy(t -> t.getPattern() == null ? "" : t.getPattern()));
+
+            for (var entry : transitionsByPattern.entrySet()) {
+                sb = new StringBuilder();
+                sb.append("\ton ").append(entry.getKey()).append("\n");
+                consumer.accept(sb.toString());
+                for (var transition : entry.getValue()) {
+                    sb = new StringBuilder();
+                    sb.append("\t\tto ").append(transition.getTo()).append(" { ");
+                    sb.append(transition.getOperations().stream().map(GrammarNfaOperation::toString).collect(Collectors.joining(", ")));
+                    sb.append(" }\n");
+                    consumer.accept(sb.toString());
+                }
+            }
+        }
+    }
+
+    public interface ITextPartConsumer {
+        void accept(String str) throws IOException;
     }
 
     /*

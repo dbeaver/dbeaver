@@ -46,6 +46,14 @@ public class GrammarInfo {
         return this.skipRuleName;
     }
 
+    public GrammarRule getRule(String name) {
+        GrammarRule rule = this.rules.get(name);
+        if (rule == null) {
+            throw new IllegalArgumentException("Rule '" + name + "' not defined in grammar '" + this.getName() + "'.");
+        }
+        return rule;
+    }
+
     public GrammarRule findRule(String name) {
         return this.rules.get(name);
     }

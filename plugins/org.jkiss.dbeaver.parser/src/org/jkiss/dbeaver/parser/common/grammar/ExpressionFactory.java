@@ -53,7 +53,7 @@ public class ExpressionFactory {
     }
 
     @NotNull
-    public static RuleExpression any(@NotNull Object... exprs) {
+    public static RuleExpression zeroOrMore(@NotNull Object... exprs) {
         return num(0, Integer.MAX_VALUE, exprs);
     }
 

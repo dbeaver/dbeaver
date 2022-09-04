@@ -16,11 +16,12 @@
  */
 package org.jkiss.dbeaver.parser.common;
 
-import java.util.List;
-
-import org.jkiss.dbeaver.parser.common.grammar.*;
-import org.jkiss.dbeaver.parser.common.grammar.nfa.*;
+import org.jkiss.dbeaver.parser.common.grammar.GrammarInfo;
+import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaBuilder;
 import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaBuilder.NfaFragment;
+import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaTransition;
+
+import java.util.List;
 
 /**
  * Factory of parsers caching parser finite state machine
@@ -28,27 +29,39 @@ import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaBuilder.NfaFragment
 public class ParserFactory {
     
     private final GrammarInfo grammar;
-    private final ParserFsm parserFsm;
+    private final NfaFragment nfa;
+    private final List<String> errors;
 
-    private ParserFactory(GrammarInfo grammar, ParserFsm parserFsm) {
+    private ParserFactory(GrammarInfo grammar, NfaFragment nfa, List<String> errors) {
         this.grammar = grammar;
-        this.parserFsm = parserFsm;
-    }
-    
-    public Parser createParser() {
-        return new Parser(grammar, parserFsm);
+        this.nfa = nfa;
+        this.errors = errors;
     }
     
     public static ParserFactory getFactory(GrammarInfo grammar) {
         GrammarNfaBuilder builder = new GrammarNfaBuilder(grammar);
-        
         NfaFragment root = builder.traverseGrammar();
         List<GrammarNfaTransition> terminalTransitions = builder.getTerminalTransitions();
 
-        GrammarAnalyzer analyzer = new GrammarAnalyzer(terminalTransitions, root);
-        ParserFsm parserFsm = analyzer.buildTerminalsGraph();
-        parserFsm.prepare();
+        if (builder.getErrors().size() > 0) {
+            return new ParserFactory(grammar, null, builder.getErrors());
+        }
 
-        return new ParserFactory(grammar, parserFsm);
+        GrammarAnalyzer analyzer = new GrammarAnalyzer(terminalTransitions, root);
+        analyzer.discoverByTermRelations();
+
+        if (analyzer.getErrors().size() > 0) {
+            return new ParserFactory(grammar, null, analyzer.getErrors());
+        }
+
+        return new ParserFactory(grammar, root, List.of());
+    }
+
+    public List<String> getErrors() {
+        return this.errors;
+    }
+
+    public Parser createParser() {
+        return new Parser(grammar, nfa);
     }
 }
