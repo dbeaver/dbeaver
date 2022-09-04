@@ -44,8 +44,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.binary.internal.BinaryEditorMessages;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
@@ -87,7 +87,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         if (localPath == null) {
             return;
         }
-        localPath = ContentUtils.convertPathToWorkspacePath(localPath);
+        localPath = ResourceUtils.convertPathToWorkspacePath(localPath);
         if (localPath == null) {
             return;
         }
@@ -279,7 +279,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             }
             // Sync workspace-related file changes
             if (file != null) {
-                ContentUtils.syncFile(RuntimeUtils.makeMonitor(monitor), file);
+                ResourceUtils.syncFile(RuntimeUtils.makeMonitor(monitor), file);
             }
         }
     }

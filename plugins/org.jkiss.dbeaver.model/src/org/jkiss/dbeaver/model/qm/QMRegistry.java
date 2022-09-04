@@ -15,20 +15,25 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.app;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+package org.jkiss.dbeaver.model.qm;
 
 /**
- * DBPPlatform
+ * Query manager controller
  */
-public interface DBPPlatformEclipse extends DBPPlatform {
+public interface QMRegistry {
 
-    @NotNull
-    DBPWorkspaceEclipse getWorkspace();
+    QMMCollector getMetaCollector();
 
-    static DBPPlatformEclipse getInstance() {
-        return DBWorkbench.getPlatform(DBPPlatformEclipse.class);
-    }
+    QMExecutionHandler getDefaultHandler();
+
+    QMEventBrowser getEventBrowser(boolean currentSessionOnly);
+
+    void registerHandler(QMExecutionHandler handler);
+
+    void unregisterHandler(QMExecutionHandler handler);
+
+    void registerMetaListener(QMMetaListener metaListener);
+
+    void unregisterMetaListener(QMMetaListener metaListener);
+
 }

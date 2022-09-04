@@ -1169,6 +1169,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
+        <handler id="default" class="org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl"/>
         <handler id="projects" class="org.jkiss.dbeaver.ui.resources.ProjectHandlerImpl">
             <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
         </handler>

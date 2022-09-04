@@ -14,22 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.IWorkspace;
+package org.jkiss.dbeaver.model.app;
+
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+import org.jkiss.dbeaver.model.DBPExternalFileManager;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
- * EclipseApplicationImpl
+ * DBPPlatform
  */
-public abstract class EclipseApplicationImpl extends BaseApplicationImpl {
+public interface DBPPlatformDesktop extends DBPPlatform {
 
     @NotNull
-    @Override
-    public DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace) {
-        return new DesktopWorkspaceImpl(platform, eclipseWorkspace);
-    }
+    DBPWorkspaceDesktop getWorkspace();
 
+    @NotNull
+    DBPPlatformLanguage getLanguage();
+
+    @NotNull
+    DBPExternalFileManager getExternalFileManager();
+
+    DBPGlobalEventManager getGlobalEventManager();
+
+    @NotNull
+    DBPDataFormatterRegistry getDataFormatterRegistry();
+
+    static DBPPlatformDesktop getInstance() {
+        return DBWorkbench.getPlatform(DBPPlatformDesktop.class);
+    }
 }

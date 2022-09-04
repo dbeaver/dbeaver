@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -121,7 +122,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             );
             workspaceLanguage.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             List<PlatformLanguageDescriptor> languages = PlatformLanguageRegistry.getInstance().getLanguages();
-            DBPPlatformLanguage pLanguage = DBWorkbench.getPlatform().getLanguage();
+            DBPPlatformLanguage pLanguage = DBPPlatformDesktop.getInstance().getLanguage();
             for (int i = 0; i < languages.size(); i++) {
                 PlatformLanguageDescriptor lang = languages.get(i);
                 workspaceLanguage.add(lang.getLabel());
@@ -289,7 +290,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         }
         if (workspaceLanguage.getSelectionIndex() >= 0) {
             PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
-            DBPPlatformLanguage curLanguage = DBWorkbench.getPlatform().getLanguage();
+            DBPPlatformLanguage curLanguage = DBPPlatformDesktop.getInstance().getLanguage();
 
             try {
                 if (curLanguage != language) {

@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -54,7 +54,7 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.text.SimpleDateFormat;
@@ -170,7 +170,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
                 IFile scriptFile;
                 try {
                     scriptFile = SQLEditorUtils.createNewScript(
-                        DBPPlatformEclipse.getInstance().getWorkspace().getProject(rootFolder.getProject()),
+                        DBPPlatformDesktop.getInstance().getWorkspace().getProject(rootFolder.getProject()),
                         rootFolder,
                         navigatorContext);
                     SQLEditorHandlerOpenEditor.openResource(scriptFile, navigatorContext);
@@ -263,7 +263,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             public String getText(Object element) {
                 IResource resource = ((ResourceInfo) element).getResource();
                 if (resource instanceof IFile) {
-                    long lastModified = ContentUtils.getResourceLastModified(resource);
+                    long lastModified = ResourceUtils.getResourceLastModified(resource);
                     if (lastModified > 0) {
                         return sdf.format(new Date(lastModified));
                     }
@@ -292,7 +292,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
            @Override
            public String getText(Object element) {
                final ResourceInfo ri = (ResourceInfo) element;
-               IFolder resourceDefaultRoot = DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(navigatorContext.getProject(), ScriptsHandlerImpl.class, false);
+               IFolder resourceDefaultRoot = DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(navigatorContext.getProject(), ScriptsHandlerImpl.class, false);
                IResource resource = ri.getResource();
                if (resource == null) {
                    return null;

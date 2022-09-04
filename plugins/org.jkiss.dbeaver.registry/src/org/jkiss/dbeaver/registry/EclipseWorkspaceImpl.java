@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -42,7 +43,7 @@ import java.util.Comparator;
  * Additionally, holds information about remote workspace.
  * Identified by unique ID (random UUID).
  */
-public class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements DBPWorkspaceEclipse {
+public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements DBPWorkspaceEclipse {
 
     private static final Log log = Log.getLog(EclipseWorkspaceImpl.class);
 
@@ -117,7 +118,7 @@ public class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements DBPWorksp
         IProject[] allProjects = root.getProjects();
         if (ArrayUtils.isEmpty(allProjects)) {
             try {
-                refreshWorkspaceContents(new LoggingProgressMonitor(log));
+                reloadWorkspace(new LoggingProgressMonitor(log));
             } catch (Throwable e) {
                 log.error(e);
             }
@@ -133,6 +134,10 @@ public class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements DBPWorksp
                 }
             }
         }
+    }
+
+    protected void reloadWorkspace(DBRProgressMonitor monitor) {
+
     }
 
     protected boolean isProjectAccessible(IProject project) {
