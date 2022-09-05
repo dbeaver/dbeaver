@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 
@@ -36,9 +37,10 @@ import java.io.IOException;
  */
 public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDContent {
 
+    private final String ERROR_MESSAGE_PARAM = "error-message-is-shown";
+
     private DBDContentStorage originalStorage;
     protected DBDContentStorage storage;
-    private boolean errorMessageIsShown;
 
     protected JDBCContentLOB(DBCExecutionContext dataSource)
     {
@@ -116,11 +118,12 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
 
     void handleContentReadingException(DBCException e) throws DBCException {
         DBCTransactionManager transactionManager = DBUtils.getTransactionManager(executionContext);
+        boolean errorMessageIsShown = CommonUtils.toBoolean(executionContext.getContextAttribute(ERROR_MESSAGE_PARAM));
         if (!errorMessageIsShown && transactionManager != null && transactionManager.isAutoCommit()) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
                 ModelMessages.jdbc_content_view_error_message_title,
                 ModelMessages.jdbc_content_view_error_message_body);
-            errorMessageIsShown = true;
+            executionContext.setContextAttribute(ERROR_MESSAGE_PARAM, Boolean.TRUE);
         }
         throw new DBCException("Can't read content value", e);
     }
