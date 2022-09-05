@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
@@ -128,7 +128,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             meta.startElement(ExportConstants.TAG_ARCHIVE);
             meta.addAttribute(ExportConstants.ATTR_VERSION, ExportConstants.ARCHIVE_VERSION_CURRENT);
 
-            exportData.initExport(DBPPlatformEclipse.getInstance().getWorkspace(), meta, archiveStream);
+            exportData.initExport(DBPPlatformDesktop.getInstance().getWorkspace(), meta, archiveStream);
 
             {
                 // Export source info
@@ -245,7 +245,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
     private int getChildCount(ProjectExportData exportData, IResource resource) throws CoreException
     {
-        if (exportData.workspace.getResourceHandler(resource) == null) {
+        if (DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resource) == null) {
             return 0;
         }
         int childCount = 1;

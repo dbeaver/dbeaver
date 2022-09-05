@@ -91,6 +91,11 @@ public class DB2ZOSMetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean isTrimObjectNames() {
+        return true;
+    }
+
+    @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
         return getTableDDL(monitor, sourceObject, options);
     }

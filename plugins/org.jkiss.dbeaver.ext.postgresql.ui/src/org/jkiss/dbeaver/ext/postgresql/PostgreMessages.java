@@ -191,6 +191,25 @@ public class PostgreMessages extends NLS {
     public static String dialog_trigger_edit_page_label_trigger_function;
     public static String dialog_trigger_edit_page_select_function_title;
 
+    public static String dialog_query_planner_settings_title;
+    public static String dialog_query_planner_settings_control_label;
+    public static String dialog_query_planner_settings_analyze;
+    public static String dialog_query_planner_settings_analyze_tip;
+    public static String dialog_query_planner_settings_verbose;
+    public static String dialog_query_planner_settings_verbose_tip;
+    public static String dialog_query_planner_settings_costs;
+    public static String dialog_query_planner_settings_costs_tip;
+    public static String dialog_query_planner_settings;
+    public static String dialog_query_planner_settings_tip;
+    public static String dialog_query_planner_settings_buffers;
+    public static String dialog_query_planner_settings_buffers_tip;
+    public static String dialog_query_planner_settings_wal;
+    public static String dialog_query_planner_settings_wal_tip;
+    public static String dialog_query_planner_settings_timing;
+    public static String dialog_query_planner_settings_timing_tip;
+    public static String dialog_query_planner_settings_summary;
+    public static String dialog_query_planner_settings_summary_tip;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, PostgreMessages.class);

@@ -27,6 +27,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -192,7 +193,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     @Override
     public void fireGlobalEvent(String eventId, Map<String, Object> properties) throws RemoteException {
-        DBWorkbench.getPlatform().getGlobalEventManager().fireGlobalEvent(eventId, properties);
+        DBPPlatformDesktop.getInstance().getGlobalEventManager().fireGlobalEvent(eventId, properties);
     }
 
     @Override

@@ -130,5 +130,4 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     {
         return false;
     }
-
 }

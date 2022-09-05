@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.erd.ui.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -62,7 +62,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
 
     public static IFolder getDiagramsFolder(DBPProject project, boolean forceCreate) throws CoreException
     {
-        return DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(project, ERDResourceHandler.class, forceCreate);
+        return DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(project, ERDResourceHandler.class, forceCreate);
     }
 
     @Override
@@ -131,9 +131,9 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         if (folder == null) {
             throw new DBException("Can't detect folder for diagram");
         }
-        ContentUtils.checkFolderExists(folder, monitor);
+        ResourceUtils.checkFolderExists(folder, monitor);
 
-        final IFile file = ContentUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), ERD_EXT);
+        final IFile file = ResourceUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), ERD_EXT);
 
         try {
             DBRRunnableWithProgress runnable = monitor1 -> {
@@ -172,7 +172,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         if (resource.getResource() instanceof IFile) {
             try {
                 IResource iResource = resource.getResource();
-                DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(
+                DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(
                     iResource.getProject());
                 if (projectMeta == null) {
                     return Collections.emptyList();

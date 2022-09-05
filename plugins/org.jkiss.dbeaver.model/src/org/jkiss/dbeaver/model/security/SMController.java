@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPObjectController;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
 import org.jkiss.dbeaver.model.auth.SMAuthInfo;
 import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
@@ -33,7 +34,7 @@ import java.util.Set;
 /**
  * Admin interface
  */
-public interface SMController extends SMAuthCredentialsManager {
+public interface SMController extends DBPObjectController, SMAuthCredentialsManager {
 
     ///////////////////////////////////////////
     // Users

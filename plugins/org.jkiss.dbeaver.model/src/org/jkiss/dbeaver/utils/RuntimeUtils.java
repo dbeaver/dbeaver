@@ -208,6 +208,23 @@ public final class RuntimeUtils {
         }
     }
 
+    public static java.nio.file.Path getLocalPathFromURL(URL fileURL) throws IOException {
+        // Escape spaces to avoid URI syntax error
+        try {
+            URI filePath = GeneralUtils.makeURIFromFilePath(fileURL.toString());
+            /*
+                File can't accept URI with file authority in it. This created a problem for shared folders.
+                see dbeaver#15117
+             */
+            if (filePath.getAuthority() != null) {
+                return java.nio.file.Path.of(filePath.getSchemeSpecificPart());
+            }
+            return java.nio.file.Path.of(filePath);
+        } catch (URISyntaxException e) {
+            throw new IOException("Bad local file path: " + fileURL, e);
+        }
+    }
+
     public static boolean runTask(final DBRRunnableWithProgress task, String taskName, final long waitTime) {
         return runTask(task, taskName, waitTime, false);
     }

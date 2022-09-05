@@ -595,12 +595,6 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @NotNull
     @Override
-    public OracleDataSource getDataSource() {
-        return this;
-    }
-
-    @NotNull
-    @Override
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
         if ((typeName.equals(OracleConstants.TYPE_NAME_XML) || typeName.equals(OracleConstants.TYPE_FQ_XML))) {
             return DBPDataKind.CONTENT;
@@ -824,7 +818,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                     "\tF.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME AND S.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME")) {
                     while (dbResult.next()) {
                         String tsName = dbResult.getString(1);
-                        OracleTablespace tablespace = tablespaceCache.getObject(monitor, getDataSource(), tsName);
+                        OracleTablespace tablespace = tablespaceCache.getObject(monitor, OracleDataSource.this, tsName);
                         if (tablespace != null) {
                             tablespace.fetchSizes(dbResult);
                         }
@@ -952,7 +946,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             return session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM " +
+                "SELECT " + OracleUtils.getSysCatalogHint(owner) + " * FROM " +
                     OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner, "TYPES") + " WHERE OWNER IS NULL ORDER BY TYPE_NAME");
         }
 

@@ -119,6 +119,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         this.tableTypeCache = new TableTypeCache();
     }
 
+    @NotNull
+    @Override
+    public GenericDataSource getDataSource() {
+        return this;
+    }
+
     @Override
     protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
         // Recreate URL from parameters
@@ -344,12 +350,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
     public GenericSchema getSchema(String name) {
         return schemas == null ? null : schemas.getCachedObject(name);
-    }
-
-    @NotNull
-    @Override
-    public GenericDataSource getDataSource() {
-        return this;
     }
 
     @Override

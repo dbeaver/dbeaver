@@ -57,9 +57,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -115,6 +115,7 @@ import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -303,7 +304,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         IFile file = EditorUtils.getFileFromInput(getEditorInput());
         return file == null ?
-            DBWorkbench.getPlatform().getWorkspace().getActiveProject() : DBPPlatformEclipse.getInstance().getWorkspace().getProject(file.getProject());
+            DBWorkbench.getPlatform().getWorkspace().getActiveProject() : DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
     }
 
     @Nullable
@@ -2742,6 +2743,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING) {
             return;
         }
+
+        if (!sqlFile.exists() || ResourceUtils.getFileLength(sqlFile) != 0) {
+            // Not empty
+            return;
+        }
         try {
             IProgressMonitor monitor = new NullProgressMonitor();
             if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW) {
@@ -2949,13 +2955,15 @@ public class SQLEditor extends SQLEditorBase implements
         if (inputFile != null) {
             return inputFile.getParent();
         }
-        final DBPWorkspaceEclipse workspace = ((DBPWorkspaceEclipse) DBWorkbench.getPlatform().getWorkspace());
+        final DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
         final IFolder root = workspace.getResourceDefaultRoot(workspace.getActiveProject(), ScriptsHandlerImpl.class, false);
         if (root != null) {
-            return new File(root.getLocationURI()).toString();
-        } else {
-            return null;
+            URI locationURI = root.getLocationURI();
+            if (locationURI.getScheme().equals("file")) {
+                return new File(locationURI).toString();
+            }
         }
+        return null;
     }
 
     @Nullable

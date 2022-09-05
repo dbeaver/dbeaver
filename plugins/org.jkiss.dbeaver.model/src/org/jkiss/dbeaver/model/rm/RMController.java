@@ -19,25 +19,50 @@ package org.jkiss.dbeaver.model.rm;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPObjectController;
 
 /**
  * Resource manager API.
  */
-public interface RMController {
+public interface RMController extends DBPObjectController {
 
+    ////////////////////////////////////////////
+    // Projects
+
+    /**
+     * Returns list of all projects accessible to calling user
+     */
     @NotNull
     RMProject[] listAccessibleProjects() throws DBException;
 
+    /**
+     * Returns list of all shared projects
+     */
     @NotNull
     RMProject[] listAllSharedProjects() throws DBException;
 
+    /**
+     * Creates new shared project
+     */
     RMProject createProject(@NotNull String name, @Nullable String description) throws DBException;
 
+    /**
+     * Deletes shared project
+     */
     void deleteProject(@NotNull String projectId) throws DBException;
 
+    /**
+     * Reads project information
+     */
     RMProject getProject(@NotNull String projectId, boolean readResources, boolean readProperties) throws DBException;
 
+    /**
+     * Reads single project property
+     */
     Object getProjectProperty(@NotNull String projectId, @NotNull String propName) throws DBException;
+
+    ////////////////////////////////////////////
+    // DataSources
 
     /**
      * Returns datasources configuration in modern format
@@ -55,6 +80,12 @@ public interface RMController {
      */
     void deleteProjectDataSources(@NotNull String projectId, @NotNull String[] dataSourceIds) throws DBException;
 
+    ////////////////////////////////////////////
+    // Resources
+
+    /**
+     * Reads resources by path
+     */
     @NotNull
     RMResource[] listResources(
         @NotNull String projectId,
@@ -64,40 +95,56 @@ public interface RMController {
         boolean readHistory,
         boolean recursive) throws DBException;
 
+    /**
+     * Creates new empty resource
+     */
     String createResource(
         @NotNull String projectId,
         @NotNull String resourcePath,
         boolean isFolder) throws DBException;
 
+    /**
+     * Moves resource to another folder
+     */
     String moveResource(
         @NotNull String projectId,
         @NotNull String oldResourcePath,
         @NotNull String newResourcePath) throws DBException;
 
+    /**
+     * Deletes resource by path
+     */
     void deleteResource(
         @NotNull String projectId,
         @NotNull String resourcePath,
         boolean recursive) throws DBException;
 
-    RMResource[] getResourcePath(
-        @NotNull String projectId,
-        @NotNull String resourcePath) throws DBException;
-
+    /**
+     * Reads resource data
+     */
     @NotNull
     byte[] getResourceContents(
         @NotNull String projectId,
         @NotNull String resourcePath) throws DBException;
 
+    /**
+     * Writes resource data
+     */
     @NotNull
     String setResourceContents(
         @NotNull String projectId,
         @NotNull String resourcePath,
-        @NotNull byte[] data) throws DBException;
+        @NotNull byte[] data,
+        boolean forceOverwrite) throws DBException;
 
+    /**
+     * Sets resource property
+     */
     @NotNull
     String setResourceProperty(
         @NotNull String projectId,
         @NotNull String resourcePath,
         @NotNull String propertyName,
         @Nullable Object propertyValue) throws DBException;
+
 }

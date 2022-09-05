@@ -160,6 +160,10 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             return;
         }
         RuntimeUtils.runTask(monitor1 -> {
+            Session[] sessions = this.sessions;
+            if (ArrayUtils.isEmpty(sessions)) {
+                return;
+            }
             for (Session session : sessions) {
                 if (session != null && session.isConnected()) {
                     session.disconnect();

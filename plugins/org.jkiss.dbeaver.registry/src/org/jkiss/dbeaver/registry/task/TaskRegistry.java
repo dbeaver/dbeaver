@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -82,7 +83,7 @@ public class TaskRegistry implements DBTTaskRegistry
             }
         }
 
-        DBWorkbench.getPlatform().getGlobalEventManager().addEventListener((eventId, properties) -> {
+        DBPPlatformDesktop.getInstance().getGlobalEventManager().addEventListener((eventId, properties) -> {
             if (eventId.equals(EVENT_TASK_EXECUTE)) {
                 String projectName = CommonUtils.toString(properties.get(EVENT_PARAM_PROJECT));
                 String taskId = CommonUtils.toString(properties.get(EVENT_PARAM_TASK));
