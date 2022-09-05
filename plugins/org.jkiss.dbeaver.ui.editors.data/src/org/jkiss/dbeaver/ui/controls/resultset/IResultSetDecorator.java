@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDAttributeDecorator;
 
 /**
  * ResultSet decorator.
@@ -49,7 +50,8 @@ public interface IResultSetDecorator {
     @Nullable
     String getEmptyDataDescription();
 
-    IResultSetLabelProvider getDataLabelProvider();
+    @Nullable
+    DBDAttributeDecorator getDataLabelProvider();
 
     /**
      * Fill additional menu actions

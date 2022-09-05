@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.data.AttributeMetaDataProxy;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -157,10 +158,14 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        if (adapter.isInstance(dataContainer)) {
-            return adapter.cast(dataContainer);
+        Object result = GeneralUtils.adapt(dataContainer, adapter);
+        if (result == null) {
+            result = GeneralUtils.adapt(controller, adapter);
         }
-        return null;
+        if (result == null) {
+            result = GeneralUtils.adapt(controller.getDecorator(), adapter);
+        }
+        return adapter.cast(result);
     }
 
     @Nullable

@@ -15,17 +15,20 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 
-public interface IResultSetLabelProvider {
+import java.awt.*;
+
+/**
+ * Decorates an attribute.
+ */
+public interface DBDAttributeDecorator {
 
     /**
-     * Provides a foreground color for the given result set cell.
+     * Provides a foreground color for the given attribute at given row.
      *
      * @param attribute the attribute
      * @param row       the visual row number
@@ -35,7 +38,7 @@ public interface IResultSetLabelProvider {
     Color getCellForeground(@NotNull DBDAttributeBinding attribute, int row);
 
     /**
-     * Provides a background color for the given result set cell.
+     * Provides a background color for the given attribute at given row.
      *
      * @param attribute the attribute
      * @param row       the visual row number
