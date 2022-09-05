@@ -263,7 +263,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     public void setConsoleViewOutputEnabled(boolean value) {
-        isResultSetAutoFocusEnabled = value;
+        isResultSetAutoFocusEnabled = !value;
     }
 
     @Override
@@ -1606,7 +1606,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     private void setResultTabSelection(CTabItem item) {
-        if (!isResultSetAutoFocusEnabled || resultTabs.getItemCount() == 1 || !(item.getData() instanceof QueryResultsContainer)) {
+        if (isResultSetAutoFocusEnabled || !(item.getData() instanceof QueryResultsContainer)) {
             resultTabs.setSelection(item);
         }
     }
@@ -2453,7 +2453,7 @@ public class SQLEditor extends SQLEditorBase implements
             // 1. The user is not executing query in a new tab
             // 2. The user is executing script that may open several result sets
             //    and replace current tab on single query execution option is not set
-            if (!isResultSetAutoFocusEnabled && !newTab && (!isSingleQuery || (isSingleQuery && !replaceCurrentTab))) {
+            if (isResultSetAutoFocusEnabled && !newTab && (!isSingleQuery || (isSingleQuery && !replaceCurrentTab))) {
                 int tabsClosed = closeExtraResultTabs(null, true, false);
                 if (tabsClosed == IDialogConstants.CANCEL_ID) {
                     return false;
@@ -3939,7 +3939,7 @@ public class SQLEditor extends SQLEditorBase implements
                         return;
                     }
                     if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)
-                        && !isResultSetAutoFocusEnabled) {
+                        && isResultSetAutoFocusEnabled) {
                         resultsSash.setMaximizedControl(sqlEditorPanel);
                     }
                     clearProblems(null);
