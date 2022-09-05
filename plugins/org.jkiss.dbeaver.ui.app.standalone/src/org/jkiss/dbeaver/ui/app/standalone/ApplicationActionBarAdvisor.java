@@ -402,7 +402,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             tzItem.setDoubleClickListener(() -> {
                 UIUtils.showMessageBox(null, "Time zone", "You can change time zone by changing 'client timezone' in 'Settings' -> 'User Interface' or by adding parameter:\n" +
                         "-D" + StandardConstants.ENV_USER_TIMEZONE + "=<TimeZone>\n" +
-                        "in the end of file'\n" + DBWorkbench.getPlatform().getApplicationConfiguration().getAbsolutePath() + "'\n" , SWT.ICON_INFORMATION
+                        "in the end of file'\n" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath().toString() + "'\n" , SWT.ICON_INFORMATION
                 );
             });
             statusLine.add(tzItem);
@@ -414,7 +414,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             localeItem.setDoubleClickListener(() -> {
                 UIUtils.showMessageBox(null, "Locale", "You can change locale by adding parameters\n" +
                     "-nl\n<language_iso_code>\n" +
-                    "in file '" + DBWorkbench.getPlatform().getApplicationConfiguration().getAbsolutePath() + "'.\n" +
+                    "in file '" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath().toString() + "'.\n" +
                     "Or by passing command line parameter -nl <language_iso_code>", SWT.ICON_INFORMATION);
             });
             statusLine.add(localeItem);

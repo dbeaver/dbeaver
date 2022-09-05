@@ -38,10 +38,10 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -238,7 +238,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNDataSource) {
             createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
         } else if (node instanceof DBNResource) {
-            final DBPWorkspaceEclipse workspace = DBPPlatformEclipse.getInstance().getWorkspace();
+            final DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
             IResource resource = ((DBNResource) node).getResource();
             if (resource instanceof IProject && !DBWorkbench.getPlatform().getApplication().isDistributed()) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_PROJECT));
