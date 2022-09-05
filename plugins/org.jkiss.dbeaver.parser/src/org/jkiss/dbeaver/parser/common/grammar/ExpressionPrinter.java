@@ -96,7 +96,14 @@ public class ExpressionPrinter implements ExpressionVisitor<StringBuilder, Strin
 
     @Override
     public StringBuilder visitNumber(NumberExpression numberExpression, StringBuilder sb) {
-        return this.visitUnary(numberExpression, sb);
+        this.visitUnary(numberExpression, sb).append("{");
+        sb.append(numberExpression.min);
+        sb.append(",");
+        if (numberExpression.max != Integer.MAX_VALUE) {
+            sb.append(numberExpression.max);
+        }
+        sb.append("}");
+        return sb;
     }
 
     @Override

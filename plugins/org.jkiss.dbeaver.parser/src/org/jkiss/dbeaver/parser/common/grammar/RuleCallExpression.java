@@ -21,9 +21,15 @@ package org.jkiss.dbeaver.parser.common.grammar;
  */
 public class RuleCallExpression extends RuleExpression {
 
+    public final String tag;
     public final String ruleName;
 
     public RuleCallExpression(String ruleName) {
+        this(null, ruleName);
+    }
+
+    public RuleCallExpression(String tag, String ruleName) {
+        this.tag = tag;
         this.ruleName = ruleName;
     }
 

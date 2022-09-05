@@ -23,19 +23,22 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+
 /**
  * Parsing tree
  */
 public class ParseTreeNode {
     private final GrammarRule rule;
+    private final String tag;
     private final int position;
     private final ParseTreeNode parent;
     private final List<ParseTreeNode> children;
 
     private int endPosition;
     
-    public ParseTreeNode(GrammarRule rule, int position, int endPosition, ParseTreeNode parent, List<ParseTreeNode> children) {
+    public ParseTreeNode(GrammarRule rule, String tag, int position, int endPosition, ParseTreeNode parent, List<ParseTreeNode> children) {
         this.rule = rule;
+        this.tag = tag;
         this.position = position;
         this.endPosition = endPosition;
         this.parent = parent;
@@ -44,6 +47,10 @@ public class ParseTreeNode {
        
     public GrammarRule getRule() {
         return rule;
+    }
+    
+    public String getTag() {
+        return tag;
     }
     
     public int getPosition() {
@@ -104,6 +111,10 @@ public class ParseTreeNode {
         for (ParseTreeNode child: this.children) {
             child.collectStringImpl(sb, text, indent + "  ");
         }
+    }
+
+    public String getContent(String text) {
+        return text.substring(this.getPosition(), this.getEndPosition());
     }
 
     private static class Itr implements Iterator<ParseTreeNode> {
