@@ -137,11 +137,18 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         return handler;
     }
 
+    public boolean isDefault() {
+        return "default".equals(id);
+    }
+
     public boolean canHandle(IResource resource) {
         return canHandle(resource, false);
     }
 
     public boolean canHandle(IResource resource, boolean testContent) {
+        if (isDefault()) {
+            return false;
+        }
         if (!contentTypes.isEmpty() && resource instanceof IFile) {
             if (testContent) {
                 try {

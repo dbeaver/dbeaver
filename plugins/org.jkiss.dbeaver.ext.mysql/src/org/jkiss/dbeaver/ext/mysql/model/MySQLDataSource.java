@@ -365,7 +365,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             catalogCache.getAllObjects(monitor, this);
             //activeCatalogName = MySQLUtils.determineCurrentDatabase(session);
 
-            if (getDataSource().supportsInformationSchema()) {
+            if (supportsInformationSchema()) {
                 // Check check constraints in base
                 try {
                     String resultSet = JDBCUtils.queryString(session, "SELECT * FROM information_schema.TABLES t\n" +
@@ -408,27 +408,23 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    public Collection<? extends MySQLCatalog> getChildren(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
+    public Collection<? extends MySQLCatalog> getChildren(@NotNull DBRProgressMonitor monitor) {
         return getCatalogs();
     }
 
     @Override
-    public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
-        throws DBException {
+    public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) {
         return getCatalog(childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
-        throws DBException {
+    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return MySQLCatalog.class;
     }
 
     @Override
-    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-        throws DBException {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) {
 
     }
 
@@ -682,12 +678,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             return adapter.cast(new MySQLPlanAnalyser(this));
         }
         return super.getAdapter(adapter);
-    }
-
-    @NotNull
-    @Override
-    public MySQLDataSource getDataSource() {
-        return this;
     }
 
     @Override

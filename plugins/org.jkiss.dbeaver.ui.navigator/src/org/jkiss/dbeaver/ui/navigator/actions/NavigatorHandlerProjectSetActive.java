@@ -21,7 +21,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -46,7 +46,7 @@ public class NavigatorHandlerProjectSetActive extends NavigatorHandlerObjectBase
     }
 
     static void setActiveProject(DBPProject project) {
-        DBPWorkspaceEclipse workspace = DBPPlatformEclipse.getInstance().getWorkspace();
+        DBPWorkspaceEclipse workspace = DBPPlatformDesktop.getInstance().getWorkspace();
         if (workspace.getActiveProject() != project) {
             workspace.setActiveProject(project);
 

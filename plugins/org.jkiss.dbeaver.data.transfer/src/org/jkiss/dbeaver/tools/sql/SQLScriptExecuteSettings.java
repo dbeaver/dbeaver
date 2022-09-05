@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.Path;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -154,7 +154,7 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
     }
 
     public static IFile getWorkspaceFile(String filePath) {
-        return DBPPlatformEclipse.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getFile(new Path(filePath));
+        return DBPPlatformDesktop.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getFile(new Path(filePath));
     }
 
 }

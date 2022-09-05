@@ -510,16 +510,6 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
-    public boolean hasExpandableRows() {
-        final IGridContentProvider provider = getContentProvider();
-        for (GridColumn column : columns) {
-            if (provider.isElementExpandable(column)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private int getNestedRowsCount(IGridRow row) {
         if (expandedRows.isEmpty()) {
             return 0;
@@ -3370,7 +3360,7 @@ public abstract class LightGrid extends Canvas {
             return IGridContentProvider.ElementState.EXPANDED;
         }
 
-        if (getContentProvider().hasChildren(row) || hasExpandableRows()) {
+        if (getContentProvider().isElementExpandable(row)) {
             return IGridContentProvider.ElementState.COLLAPSED;
         }
 
@@ -4769,7 +4759,7 @@ public abstract class LightGrid extends Canvas {
 
     private void drawEmptyColumnHeader(GC gc, int x, int y, int width, int height)
     {
-        gc.setBackground(getContentProvider().getCellHeaderBackground(null));
+        gc.setBackground(getLabelProvider().getHeaderBackground(null, false));
 
         gc.fillRectangle(
             x, 
@@ -4780,11 +4770,11 @@ public abstract class LightGrid extends Canvas {
 
     private void drawEmptyRowHeader(GC gc, int x, int y, int width, int height)
     {
-        gc.setBackground(getContentProvider().getCellHeaderBackground(null));
+        gc.setBackground(getLabelProvider().getHeaderBackground(null, false));
 
         gc.fillRectangle(x, y, width, height + 1);
 
-        gc.setForeground(getContentProvider().getCellHeaderBorder(null));
+        gc.setForeground(getLabelProvider().getHeaderBorder(null));
 
         gc.drawLine(
             x + width - 1,
@@ -4809,7 +4799,7 @@ public abstract class LightGrid extends Canvas {
 
     private void drawTopLeftCell(GC gc, int x, int y, int width, int height) {
         int sortOrder = getContentProvider().getSortOrder(null);
-        gc.setBackground(getContentProvider().getCellHeaderBackground(null));
+        gc.setBackground(getLabelProvider().getHeaderBackground(null, false));
 
         gc.fillRectangle(
             x,
@@ -4817,7 +4807,7 @@ public abstract class LightGrid extends Canvas {
             width - 1,
             height + 1);
 
-        gc.setForeground(getContentProvider().getCellHeaderBorder(null));
+        gc.setForeground(getLabelProvider().getHeaderBorder(null));
 
         gc.drawLine(
             x + width - 1,

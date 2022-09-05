@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -71,7 +71,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
 
     public static void openResource(IResource resource, @Nullable SQLNavigatorContext navigatorContext) {
         try {
-            DBPResourceHandler handler = DBPPlatformEclipse.getInstance().getWorkspace().getResourceHandler(resource);
+            DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resource);
             if (handler != null) {
                 if (navigatorContext != null && resource instanceof IFile && navigatorContext.getDataSourceContainer() != null) {
                     EditorUtils.setFileDataSource((IFile) resource, navigatorContext);
@@ -125,7 +125,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         } catch (InterruptedException e) {
             return null;
         } catch (Throwable e) {
-            DBWorkbench.getPlatformUI().showError("Open editor", "Can execute command '" + actionId + "'", e);
+            DBWorkbench.getPlatformUI().showError("Open editor", null, e);
         }
         return null;
     }

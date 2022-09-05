@@ -18,14 +18,13 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.qm.QMController;
+import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 
@@ -36,19 +35,13 @@ import java.nio.file.Path;
 /**
  * DBPPlatform
  */
-public interface DBPPlatform
-{
+public interface DBPPlatform {
+
     @NotNull
     DBPApplication getApplication();
 
     @NotNull
     DBPWorkspace getWorkspace();
-
-    @NotNull
-    DBPResourceHandler getDefaultResourceHandler();
-
-    @NotNull
-    DBPPlatformLanguage getLanguage();
 
     @NotNull
     DBNModel getNavigatorModel();
@@ -59,8 +52,11 @@ public interface DBPPlatform
     @NotNull
     OSDescriptor getLocalSystem();
 
+    /**
+     * Returns global QM registry
+     */
     @NotNull
-    QMController getQueryManager();
+    QMRegistry getQueryManager();
 
     @NotNull
     DBDRegistry getValueHandlerRegistry();
@@ -70,11 +66,6 @@ public interface DBPPlatform
 
     @NotNull
     DBFRegistry getFileSystemRegistry();
-
-    DBPGlobalEventManager getGlobalEventManager();
-
-    @NotNull
-    DBPDataFormatterRegistry getDataFormatterRegistry();
 
     @NotNull
     DBPPreferenceStore getPreferenceStore();
@@ -86,19 +77,13 @@ public interface DBPPlatform
     DBASecureStorage getSecureStorage();
 
     @NotNull
-    DBPExternalFileManager getExternalFileManager();
-
-    @NotNull
     File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
     @NotNull
-    File getApplicationConfiguration();
+    Path getApplicationConfiguration();
 
     @NotNull
     File getConfigurationFile(String fileName);
-
-    @NotNull
-    Path getCustomDriversHome();
 
     boolean isReadOnly();
 

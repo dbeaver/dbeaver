@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class AlternativeExpression extends GroupExpression {
 
-    protected AlternativeExpression(List<RuleExpression> alts) {
+    public AlternativeExpression(List<RuleExpression> alts) {
         super(alts);
     }
 

@@ -37,8 +37,8 @@ class ResultSetContextImpl implements IResultSetContext {
     @Override
     public boolean supportsAttributes() {
         DBDAttributeBinding[] attrs = viewer.getModel().getAttributes();
-        return attrs.length > 0 &&
-            (attrs[0].getDataKind() != DBPDataKind.DOCUMENT || !CommonUtils.isEmpty(attrs[0].getNestedBindings()));
+        return attrs.length > 0/* &&
+            (attrs[0].getDataKind() != DBPDataKind.DOCUMENT || !CommonUtils.isEmpty(attrs[0].getNestedBindings()))*/;
     }
 
     @Override

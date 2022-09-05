@@ -21,9 +21,15 @@ package org.jkiss.dbeaver.parser.common.grammar;
  */
 public abstract class TerminalExpression extends RuleExpression {
 
+    public final String tag;
     public final String pattern;
 
     public TerminalExpression(String pattern) {
+        this(null, pattern);
+    }
+
+    public TerminalExpression(String tag, String pattern) {
+        this.tag = tag;
         this.pattern = pattern;
     }
 

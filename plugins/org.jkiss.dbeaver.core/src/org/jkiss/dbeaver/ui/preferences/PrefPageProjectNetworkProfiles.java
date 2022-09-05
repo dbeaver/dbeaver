@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -401,7 +401,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         } else {
             this.project = GeneralUtils.adapt(element, IProject.class);
         }
-        this.projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(this.project);
+        this.projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(this.project);
     }
 
 }

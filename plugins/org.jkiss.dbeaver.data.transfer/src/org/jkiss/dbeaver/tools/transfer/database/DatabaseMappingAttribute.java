@@ -262,13 +262,14 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
         DBSObjectContainer container = parent.getSettings().getContainer();
 
+        if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name)) {
+            name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
+        }
+
         if (container != null && !CommonUtils.isEmpty(name) && quoteIdentifier) {
             name = DBUtils.getQuotedIdentifier(container.getDataSource(), name);
         }
 
-        if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name)) {
-            name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
-        }
         return name;
     }
 

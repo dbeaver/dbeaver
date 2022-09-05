@@ -40,9 +40,9 @@ import java.util.List;
 /**
  * QMController default implementation
  */
-public class QMControllerImpl implements QMController {
+public class QMRegistryImpl implements QMRegistry {
 
-    private static final Log log = Log.getLog(QMControllerImpl.class);
+    private static final Log log = Log.getLog(QMRegistryImpl.class);
 
     private QMExecutionHandler defaultHandler;
     private QMMCollectorImpl metaHandler;
@@ -50,7 +50,7 @@ public class QMControllerImpl implements QMController {
     private QMEventBrowser eventBrowser;
     private DefaultEventBrowser defaultEventBrowser = new DefaultEventBrowser();
 
-    public QMControllerImpl() {
+    public QMRegistryImpl() {
         defaultHandler = (QMExecutionHandler) Proxy.newProxyInstance(
             getClass().getClassLoader(),
             new Class[]{ QMExecutionHandler.class },

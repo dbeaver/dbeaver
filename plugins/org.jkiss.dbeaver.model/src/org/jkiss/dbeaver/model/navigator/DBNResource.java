@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileInfo;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
@@ -29,14 +26,14 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -255,7 +252,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
                 // Sub folder
                 return handler.makeNavigatorNode(this, resource);
             }
-            DBPResourceHandler resourceHandler = DBPPlatformEclipse.getInstance().getWorkspace().getResourceHandler(resource);
+            DBPResourceHandler resourceHandler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resource);
             if (resourceHandler == null) {
                 log.debug("Skip resource '" + resource.getName() + "'");
                 return null;
@@ -502,7 +499,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     }
 
     public void refreshResourceState(Object source) {
-        DBPResourceHandler newHandler = DBPPlatformEclipse.getInstance().getWorkspace().getResourceHandler(resource);
+        DBPResourceHandler newHandler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resource);
         if (newHandler != handler) {
             handler = newHandler;
         }
@@ -583,9 +580,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     @Property(viewable = true, order = 11)
     public String getResourceSize() throws CoreException {
         if (resource instanceof IFile) {
-            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
-            IFileInfo iFileInfo = fileStore.fetchInfo();
-            return numberFormat.format(iFileInfo.getLength());
+            return numberFormat.format(ResourceUtils.getFileLength(resource));
         }
         return null;
     }
@@ -593,7 +588,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     @Property(viewable = true, order = 11)
     public String getResourceLastModified() throws CoreException {
         if (resource instanceof IFile) {
-            long lastModified = ContentUtils.getResourceLastModified(resource);
+            long lastModified = ResourceUtils.getResourceLastModified(resource);
             return lastModified <= 0 ? "" : DATE_FORMAT.format(lastModified);
         }
         return null;

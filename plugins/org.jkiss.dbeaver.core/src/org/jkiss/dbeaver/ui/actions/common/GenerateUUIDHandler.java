@@ -28,8 +28,11 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -90,10 +93,16 @@ public class GenerateUUIDHandler extends NavigatorHandlerObjectBase {
                     clipboard.setContents(
                         new Object[]{uuid},
                         new Transfer[]{textTransfer});
+                    DBeaverNotifications.showNotification(
+                        "uuid-generator",
+                        CoreMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy,
+                        CoreMessages.notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy_text,
+                        DBPMessageType.INFORMATION,
+                        null
+                    );
                 } finally {
                     clipboard.dispose();
                 }
-
             }
         }
 

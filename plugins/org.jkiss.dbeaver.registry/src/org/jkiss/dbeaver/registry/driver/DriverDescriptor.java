@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.registry.VersionUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -791,7 +792,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public void setSingleConnection(boolean singleConnection) {
-        this.singleConnection = embedded;
+        this.singleConnection = singleConnection;
     }
 
     @Override
@@ -1500,6 +1501,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return null;
     }
 
+    @NotNull
     public static Path getCustomDriversHome() {
         Path homeFolder;
         // Try to use custom drivers path from preferences
@@ -1513,8 +1515,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 if (homeFolder != null && homeFolder.getParent() != null) {
                     homeFolder = homeFolder.getParent().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
                 } else {
-                    log.warn("Can't find folder path for drivers");
-                    return null;
+                    log.warn("Can't find folder path for drivers. Use home folder");
+                    return RuntimeUtils.getUserHomeDir().toPath().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
                 }
             } else {
                 homeFolder = platform.getWorkspace().getAbsolutePath().getParent().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);

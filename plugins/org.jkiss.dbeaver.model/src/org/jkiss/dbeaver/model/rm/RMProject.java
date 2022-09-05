@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.time.OffsetDateTime;
 import java.util.Set;
 
 /**
@@ -51,7 +51,7 @@ public class RMProject extends RMObject {
     private String id;
     private String description;
     private Type type;
-    private OffsetDateTime createTime;
+    private Long createTime;
     private String creator;
     private Set<String> projectPermissions;
 
@@ -63,7 +63,7 @@ public class RMProject extends RMObject {
         String name,
         String description,
         Type type,
-        OffsetDateTime createTime,
+        Long createTime,
         String creator,
         Set<String> projectPermissions
     ) {
@@ -87,6 +87,17 @@ public class RMProject extends RMObject {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getDisplayName() {
+        switch (type) {
+            case GLOBAL:
+                return ModelMessages.project_shared_display_name;
+            case USER:
+                return ModelMessages.project_private_display_name;
+            default:
+                return getName();
+        }
     }
 
     @Override
@@ -116,11 +127,11 @@ public class RMProject extends RMObject {
         this.type = type;
     }
 
-    public OffsetDateTime getCreateTime() {
+    public Long getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(OffsetDateTime createTime) {
+    public void setCreateTime(Long createTime) {
         this.createTime = createTime;
     }
 
