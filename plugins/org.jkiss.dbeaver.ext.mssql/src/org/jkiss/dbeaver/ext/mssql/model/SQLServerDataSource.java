@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import net.sf.jsqlparser.expression.NextValExpression;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.*;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -48,10 +51,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
-
-import net.sf.jsqlparser.expression.NextValExpression;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.*;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -530,6 +529,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return false;
     }
 
+    @Override
     public boolean isLimitApplicableTo(SQLQuery query) {
         boolean hasNextValExpr = false;
         try {
@@ -537,10 +537,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             if (statement instanceof Select) {
                 SelectBody selectBody = ((Select) statement).getSelectBody();
                 if (selectBody instanceof PlainSelect) {
-                    hasNextValExpr = ((PlainSelect) selectBody).getSelectItems().stream().anyMatch(
-                        item -> (item instanceof SelectExpressionItem) 
-                            && (((SelectExpressionItem) item).getExpression() instanceof NextValExpression)
-                    );
+                    PlainSelect plainSelect = (PlainSelect) selectBody;
+                    if (plainSelect.getFromItem() == null) {
+                        hasNextValExpr = plainSelect.getSelectItems().stream().anyMatch(
+                            item -> (item instanceof SelectExpressionItem) 
+                                && (((SelectExpressionItem) item).getExpression() instanceof NextValExpression)
+                        );
+                    }
                 }
             }
         } catch (DBCException e) {

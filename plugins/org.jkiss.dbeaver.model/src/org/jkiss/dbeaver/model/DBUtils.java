@@ -1348,15 +1348,18 @@ public final class DBUtils {
         // because it sets update rows limit [SQL Server]
         boolean selectQuery = sqlQuery.getType() == SQLQueryType.SELECT && sqlQuery.isPlainSelect();
         final boolean hasLimits = (offset > 0 || selectQuery) && maxRows > 0;
+        boolean isShouldSetLimit = true;
         // This is a flag for any potential SELECT query
         boolean possiblySelect = sqlQuery.getType() == SQLQueryType.SELECT || sqlQuery.getType() == SQLQueryType.UNKNOWN;
         boolean limitAffectsDML = Boolean.TRUE.equals(session.getDataSource().getDataSourceFeature(DBPDataSource.FEATURE_LIMIT_AFFECTS_DML));
 
-        DBCQueryTransformProvider transformProvider = null;
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
         if (selectQuery) {
-            transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
+            DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
             if (transformProvider != null) {
+                if (transformProvider instanceof DBCQueryTransformProviderExt) {
+                    isShouldSetLimit = ((DBCQueryTransformProviderExt) transformProvider).isLimitApplicableTo(sqlQuery);
+                }
                 if (hasLimits) {
                     if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
                             (transformProvider instanceof DBCQueryTransformProviderExt && ((DBCQueryTransformProviderExt) transformProvider).isForceTransform(session, sqlQuery))) {
@@ -1397,11 +1400,6 @@ public final class DBUtils {
             createStatement(session, queryText, doScrollable) :
             makeStatement(session, queryText, doScrollable);
         dbStat.setStatementSource(executionSource);
-
-        boolean isShouldSetLimit = true;
-        if (transformProvider != null && transformProvider instanceof DBCQueryTransformProviderExt) {
-            isShouldSetLimit = ((DBCQueryTransformProviderExt) transformProvider).isLimitApplicableTo(sqlQuery);
-        }
         
         if (offset > 0 || hasLimits || (possiblySelect && maxRows > 0 && !limitAffectsDML)) {
             if (limitTransformer == null) {
