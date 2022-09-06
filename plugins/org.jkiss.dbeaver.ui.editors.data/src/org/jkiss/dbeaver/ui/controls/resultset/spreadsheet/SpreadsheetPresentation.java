@@ -54,7 +54,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.data.DBDAttributeDecorator;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -2283,9 +2282,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
             final DBDAttributeDecorator dataLabelProvider = getController().getDecorator().getDataLabelProvider();
             if (dataLabelProvider != null) {
-                final java.awt.Color fg = dataLabelProvider.getCellForeground(attribute, row.getVisualNumber());
+                final String fg = dataLabelProvider.getCellForeground(attribute, row.getVisualNumber());
                 if (fg != null) {
-                    return UIUtils.getSWTColorFromAWTColor(fg);
+                    return UIUtils.getSharedColor(fg);
                 }
             }
 
@@ -2403,9 +2402,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
             final DBDAttributeDecorator dataLabelProvider = getController().getDecorator().getDataLabelProvider();
             if (dataLabelProvider != null) {
-                final java.awt.Color bg = dataLabelProvider.getCellBackground(attribute, row.getVisualNumber());
+                final String bg = dataLabelProvider.getCellBackground(attribute, row.getVisualNumber());
                 if (bg != null) {
-                    return UIUtils.getSWTColorFromAWTColor(bg);
+                    return UIUtils.getSharedColor(bg);
                 }
             }
 

@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.awt.*;
-
 /**
  * Decorates an attribute.
  */
@@ -35,7 +33,7 @@ public interface DBDAttributeDecorator {
      * @return the foreground color for the cell, or {@code null} to use the default foreground color
      */
     @Nullable
-    Color getCellForeground(@NotNull DBDAttributeBinding attribute, int row);
+    String getCellForeground(@NotNull DBDAttributeBinding attribute, int row);
 
     /**
      * Provides a background color for the given attribute at given row.
@@ -45,6 +43,6 @@ public interface DBDAttributeDecorator {
      * @return the background color for the cell, or {@code null} to use the default background color
      */
     @Nullable
-    Color getCellBackground(@NotNull DBDAttributeBinding attribute, int row);
+    String getCellBackground(@NotNull DBDAttributeBinding attribute, int row);
 
 }

@@ -1856,16 +1856,6 @@ public class UIUtils {
         }
     }
 
-    @NotNull
-    public static org.eclipse.swt.graphics.Color getSWTColorFromAWTColor(@NotNull java.awt.Color color) {
-        return getSharedColor(new RGB(color.getRed(), color.getGreen(), color.getBlue()));
-    }
-
-    @NotNull
-    public static java.awt.Color getAWTColorFromSWTColor(@NotNull org.eclipse.swt.graphics.Color color) {
-        return new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue());
-    }
-
     public static Shell createCenteredShell(Shell parent) {
 
         final Rectangle bounds = parent.getBounds();

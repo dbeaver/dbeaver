@@ -48,6 +48,7 @@ import java.io.Reader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * Export XLSX with Apache POI
@@ -573,13 +574,12 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     @NotNull
     private CellStyle getCellStyle(@NotNull DBDAttributeBinding attribute, int row) {
         if (decorator != null) {
-            final Color bg = decorator.getCellBackground(attribute, row);
+            final String bg = decorator.getCellBackground(attribute, row);
 
             if (bg != null) {
-                // Setting foreground color sets background color. This is a bug/feature of POI?
-
+                // Setting the foreground color sets the background color. Is this a bug/feature of POI?
                 final XSSFCellStyle style = (XSSFCellStyle) this.style.clone();
-                style.setFillForegroundColor(new XSSFColor(bg, new DefaultIndexedColorMap()));
+                style.setFillForegroundColor(new XSSFColor(asColor(bg), new DefaultIndexedColorMap()));
                 style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
                 return style;
@@ -587,5 +587,19 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         }
 
         return style;
+    }
+
+    /**
+     * A reimplementation of {@link org.eclipse.jface.resource.StringConverter#asRGB(String)}.
+     * <p>
+     * Let's keep it here until it will be required in other places too
+     */
+    @NotNull
+    private static Color asColor(@NotNull String value) {
+        final StringTokenizer tokenizer = new StringTokenizer(value, ",");
+        final int r = Integer.parseInt(tokenizer.nextToken().trim());
+        final int g = Integer.parseInt(tokenizer.nextToken().trim());
+        final int b = Integer.parseInt(tokenizer.nextToken().trim());
+        return new Color(r, g, b);
     }
 }
