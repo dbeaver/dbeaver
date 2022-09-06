@@ -23,6 +23,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.dnd.Clipboard;
@@ -109,36 +110,51 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         composite = UIUtils.createPlaceholder(parent, 1);
         CSSUtils.setCSSClass(composite, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
-        browser = new Browser(composite, SWT.NONE);
-        browser.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        new BrowserFunction(browser, "setClipboardContents") {
-            @Override
-            public Object function(Object[] arguments) {
-                UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), arguments[0]);
-                return null;
+        Browser newBrowser;
+        try {
+            newBrowser = new Browser(composite, SWT.NONE);
+        } catch (SWTError error) {
+            for (Control control: composite.getChildren()) {
+                control.dispose();
             }
-        };
+            if (error.code == SWT.ERROR_NOT_IMPLEMENTED) {
+                newBrowser = null;
+            } else {
+                throw error;
+            }
+        }
+        browser = newBrowser;
 
-        if (presentation instanceof AbstractPresentation) {
-            new BrowserFunction(browser, "setPresentationSelection") {
+        if (browser != null) {
+            browser.setLayoutData(new GridData(GridData.FILL_BOTH));
+            new BrowserFunction(browser, "setClipboardContents") {
                 @Override
                 public Object function(Object[] arguments) {
-                    final List<GridPos> selection = new ArrayList<>();
-                    for (Object pos : ((Object[]) arguments[0])) {
-                        final String[] split = ((String) pos).split(":");
-                        selection.add(new GridPos(CommonUtils.toInt(split[0]), CommonUtils.toInt(split[1])));
-                    }
-                    ((AbstractPresentation) presentation).setSelection(new StructuredSelection(selection), false);
+                    UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), arguments[0]);
                     return null;
                 }
             };
-        }
 
-        browser.addDisposeListener(e -> {
-            cleanupFiles();
-            GISViewerActivator.getDefault().getPreferences().removePropertyChangeListener(this);
-        });
+            if (presentation instanceof AbstractPresentation) {
+                new BrowserFunction(browser, "setPresentationSelection") {
+                    @Override
+                    public Object function(Object[] arguments) {
+                        final List<GridPos> selection = new ArrayList<>();
+                        for (Object pos : ((Object[]) arguments[0])) {
+                            final String[] split = ((String) pos).split(":");
+                            selection.add(new GridPos(CommonUtils.toInt(split[0]), CommonUtils.toInt(split[1])));
+                        }
+                        ((AbstractPresentation) presentation).setSelection(new StructuredSelection(selection), false);
+                        return null;
+                    }
+                };
+            }
+
+            browser.addDisposeListener(e -> {
+                cleanupFiles();
+                GISViewerActivator.getDefault().getPreferences().removePropertyChangeListener(this);
+            });
+        }
 
         {
             Composite bottomPanel = UIUtils.createPlaceholder(composite, 1);//new Composite(composite, SWT.NONE);
@@ -444,6 +460,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         return composite;
     }
 
+    @Nullable
     public Browser getBrowser() {
         return browser;
     }
@@ -453,6 +470,9 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     }
 
     void updateToolbar() {
+        if (browser == null) {
+            return;
+        }
         toolBarManager.removeAll();
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_open, DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
             @Override
@@ -611,11 +631,13 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     }
 
     private void updateControlsVisibility() {
-        GC gc = new GC(browser.getDisplay());
-        try {
-            browser.execute("javascript:showTools(" + toolsVisible +");");
-        } finally {
-            gc.dispose();
+        if (browser != null) {
+            GC gc = new GC(browser.getDisplay());
+            try {
+                browser.execute("javascript:showTools(" + toolsVisible +");");
+            } finally {
+                gc.dispose();
+            }
         }
     }
 

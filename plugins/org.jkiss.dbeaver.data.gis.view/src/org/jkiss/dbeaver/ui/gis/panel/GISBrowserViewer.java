@@ -48,6 +48,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         super(controller);
     }
     
+    @Nullable
     @Override
     protected Browser createControl(Composite editPlaceholder)
     {
