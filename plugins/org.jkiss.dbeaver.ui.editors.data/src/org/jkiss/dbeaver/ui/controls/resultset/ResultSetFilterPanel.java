@@ -708,6 +708,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             //setLayoutData(new GridData(GridData.FILL_BOTH));
 
             this.sizingGC = new GC(this);
+            this.addDisposeListener(e -> sizingGC.dispose());
             this.addMouseListener(new DoubleClickMouseAdapter() {
                 @Override
                 public void onMouseDoubleClick(@NotNull MouseEvent e) {
