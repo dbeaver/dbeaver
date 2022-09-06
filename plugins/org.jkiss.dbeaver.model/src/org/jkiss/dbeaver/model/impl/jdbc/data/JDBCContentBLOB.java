@@ -121,7 +121,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                     this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding(), true);
                 }
             } catch (DBCException e) {
-                handleContentReadingException(e);
+                throwCorrectException(e);
             }
             // Free blob - we don't need it anymore
             releaseBlob();

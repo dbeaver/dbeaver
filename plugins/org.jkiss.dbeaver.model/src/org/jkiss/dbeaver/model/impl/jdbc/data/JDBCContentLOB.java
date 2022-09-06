@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -23,9 +24,9 @@ import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.DBConfigurationException;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -36,8 +37,6 @@ import java.io.IOException;
  * @author Serge Rider
  */
 public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDContent {
-
-    private final String ERROR_MESSAGE_PARAM = "error-message-is-shown";
 
     private DBDContentStorage originalStorage;
     protected DBDContentStorage storage;
@@ -116,16 +115,17 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
 
     protected abstract JDBCContentLOB createNewContent();
 
-    void handleContentReadingException(DBCException e) throws DBCException {
+    void throwCorrectException(DBCException e) throws DBCException {
         DBCTransactionManager transactionManager = DBUtils.getTransactionManager(executionContext);
-        boolean errorMessageIsShown = CommonUtils.toBoolean(executionContext.getContextAttribute(ERROR_MESSAGE_PARAM));
+        boolean errorMessageIsShown = CommonUtils.toBoolean(
+            executionContext.getContextAttribute(DBConstants.ERROR_MESSAGE_PARAM_IS_SHOWN));
         if (!errorMessageIsShown && transactionManager != null && transactionManager.isAutoCommit()) {
-            DBWorkbench.getPlatformUI().showWarningMessageBox(
-                ModelMessages.jdbc_content_view_error_message_title,
-                ModelMessages.jdbc_content_view_error_message_body);
-            executionContext.setContextAttribute(ERROR_MESSAGE_PARAM, Boolean.TRUE);
+            throw new DBConfigurationException(
+                e.getMessage(),
+                e,
+                ModelMessages.jdbc_content_view_error_message_hint);
         }
-        throw new DBCException("Can't read content value", e);
+        throw new DBCException(e.getMessage(), e);
     }
 
 }

@@ -121,7 +121,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                     this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding(), true);
                 }
             } catch (DBCException e) {
-                handleContentReadingException(e);
+                throwCorrectException(e);
             }
             // Free lob - we don't need it anymore
             releaseClob();

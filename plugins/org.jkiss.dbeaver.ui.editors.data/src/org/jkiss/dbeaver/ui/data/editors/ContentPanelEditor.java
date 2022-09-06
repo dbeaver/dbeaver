@@ -29,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -36,6 +37,8 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBConfigurationException;
 import org.jkiss.dbeaver.model.impl.data.StringContent;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -550,6 +553,16 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                             streamEditor.primeEditorValue(monitor, control, content);
                         }
                     } catch (Exception e) {
+                        if (e instanceof DBConfigurationException) {
+                            String hintMessage = ((DBConfigurationException) e).getHintMessage();
+                            if (CommonUtils.isNotEmpty(hintMessage)) {
+                                DBWorkbench.getPlatformUI().showWarningMessageBox("Error", hintMessage);
+                                DBCExecutionContext context = DBUtils.getDefaultContext(content.getDataSource(), false);
+                                if (context != null) {
+                                    context.setContextAttribute(DBConstants.ERROR_MESSAGE_PARAM_IS_SHOWN, Boolean.TRUE);
+                                }
+                            }
+                        }
                         valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
                         DBWorkbench.getPlatformUI().showError("Value panel", "Error loading contents", e);
                     }
