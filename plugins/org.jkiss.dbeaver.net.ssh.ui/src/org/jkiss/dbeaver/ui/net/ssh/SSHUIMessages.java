@@ -54,6 +54,7 @@ public class SSHUIMessages extends NLS {
 	public static String model_ssh_configurator_variables_hint_label;
 	public static String model_ssh_configurator_ssh_documentation_link;
 
+    public static String jsch_remote_host_identifier_changed_warning_title;
 
 	static {
 		// initialize resource bundle

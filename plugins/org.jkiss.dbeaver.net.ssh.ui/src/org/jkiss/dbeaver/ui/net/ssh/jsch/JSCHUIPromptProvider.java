@@ -23,6 +23,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.ssh.JSCHUserInfoPromptProvider;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.net.ssh.SSHUIMessages;
 import org.jkiss.utils.CommonUtils;
 
 public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
@@ -78,6 +80,11 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
 
         private boolean shouldUsePassword() {
             return configuration.getType().usesPassword() && (configuration.isSavePassword() || CommonUtils.isNotEmpty(configuration.getPassword()));
+        }
+
+        @Override
+        public boolean promptYesNo(String question) {
+            return DBWorkbench.getPlatformUI().confirmAction(SSHUIMessages.jsch_remote_host_identifier_changed_warning_title, question);
         }
     }
 }
