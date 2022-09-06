@@ -103,4 +103,8 @@ public class AdvancedListItem {
     public String toString() {
         return CommonUtils.toString(data);
     }
+
+    void dispose() {
+        textLayout.dispose();
+    }
 }
