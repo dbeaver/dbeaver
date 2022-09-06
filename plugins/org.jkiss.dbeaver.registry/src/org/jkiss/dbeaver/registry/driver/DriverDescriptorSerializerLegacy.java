@@ -39,7 +39,6 @@ import java.util.Map;
 /**
  * DriverDescriptorSerializerLegacy
  */
-@Deprecated
 public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer {
 
     private static final Log log = Log.getLog(DriverDescriptorSerializerLegacy.class);

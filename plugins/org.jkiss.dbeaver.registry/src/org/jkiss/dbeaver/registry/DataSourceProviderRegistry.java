@@ -43,6 +43,8 @@ import org.xml.sax.Attributes;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -182,12 +184,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             // Try to load initial drivers config
             String providedDriversConfig = System.getProperty("dbeaver.drivers.configuration-file");
             if (!CommonUtils.isEmpty(providedDriversConfig)) {
-                File configFile = new File(providedDriversConfig);
-                if (configFile.exists()) {
-                    log.debug("Loading provided drivers configuration from '" + configFile.getAbsolutePath() + "'");
+                Path configFile = Path.of(providedDriversConfig);
+                if (Files.exists(configFile)) {
+                    log.debug("Loading provided drivers configuration from '" + configFile.toAbsolutePath() + "'");
                     loadDrivers(configFile, true);
                 } else {
-                    log.debug("Provided drivers configuration file '" + configFile.getAbsolutePath() + "' doesn't exist");
+                    log.debug("Provided drivers configuration file '" + configFile.toAbsolutePath() + "' doesn't exist");
                 }
             }
 
@@ -195,7 +197,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             File driversConfig = DBWorkbench.getPlatform().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
             if (driversConfig.exists()) {
                 log.debug("Loading user drivers configuration from '" + driversConfig.getAbsolutePath() + "'");
-                loadDrivers(driversConfig, false);
+                loadDrivers(driversConfig.toPath(), false);
             }
         }
 
@@ -397,17 +399,18 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Persistence
 
-    private void loadDrivers(File driversConfig, boolean provided)
+    private void loadDrivers(Path driversConfig, boolean provided)
     {
-        if (driversConfig.exists()) {
+        if (Files.exists(driversConfig)) {
             try {
-                try (InputStream is = new FileInputStream(driversConfig)) {
-                    new SAXReader(is).parse(new DriverDescriptorSerializerLegacy.DriversParser(provided));
+                try (InputStream is = Files.newInputStream(driversConfig)) {
+                    new SAXReader(is).parse(
+                        new DriverDescriptorSerializerLegacy.DriversParser(provided));
                 } catch (XMLException ex) {
                     log.warn("Drivers config parse error", ex);
                 }
             } catch (Exception ex) {
-                log.warn("Error loading drivers from " + driversConfig.getPath(), ex);
+                log.warn("Error loading drivers from " + driversConfig, ex);
             }
         }
     }
@@ -426,9 +429,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 }
                 xml.startElement(RegistryConstants.TAG_PROVIDER);
                 xml.addAttribute(RegistryConstants.ATTR_ID, provider.getId());
-                for (DBPDriver driver : provider.getDrivers()) {
-                    if (driver instanceof DriverDescriptor && ((DriverDescriptor) driver).isModified()) {
-                        ((DriverDescriptor) driver).serialize(xml, false);
+                for (DriverDescriptor driver : provider.getDrivers()) {
+                    if (driver.isModified()) {
+                        driver.serialize(xml, false);
                     }
                 }
                 xml.endElement();

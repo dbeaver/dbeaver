@@ -1488,7 +1488,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         new DriverDescriptorSerializerModern(this).serialize(json, export);
     }
 
-    @Deprecated
     public void serialize(XMLBuilder xml, boolean export) throws IOException {
         new DriverDescriptorSerializerLegacy(this).serialize(xml, export);
     }
