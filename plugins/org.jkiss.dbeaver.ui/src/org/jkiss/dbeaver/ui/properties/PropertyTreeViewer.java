@@ -122,6 +122,10 @@ public class PropertyTreeViewer extends TreeViewer {
         treeControl.addListener(SWT.PaintItem, new PaintListener());
         this.boldFont = UIUtils.makeBoldFont(treeControl.getFont());
 
+        treeControl.addDisposeListener(e -> {
+            UIUtils.dispose(boldFont);
+        });
+
         new DefaultViewerToolTipSupport(this);
 
 
