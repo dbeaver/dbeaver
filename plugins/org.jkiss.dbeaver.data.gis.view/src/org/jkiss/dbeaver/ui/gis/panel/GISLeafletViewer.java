@@ -114,7 +114,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         try {
             newBrowser = new Browser(composite, SWT.NONE);
         } catch (SWTError error) {
-            for (Control control: composite.getChildren()) {
+            for (Control control : composite.getChildren()) {
                 control.dispose();
             }
             if (error.code == SWT.ERROR_NOT_IMPLEMENTED) {
@@ -634,7 +634,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         if (browser != null) {
             GC gc = new GC(browser.getDisplay());
             try {
-                browser.execute("javascript:showTools(" + toolsVisible +");");
+                browser.execute("javascript:showTools(" + toolsVisible + ");");
             } finally {
                 gc.dispose();
             }
