@@ -397,6 +397,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 driversConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(configFileName);
             }
 
+            if (driversConfig == null) {
+                return;
+            }
+
             try (StringReader is = new StringReader(driversConfig)) {
                 new SAXReader(is).parse(
                     new DriverDescriptorSerializerLegacy.DriversParser(provided));
