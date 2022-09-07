@@ -85,6 +85,11 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     private static final String GROUP_PATH = "path"; //$NON-NLS-1$
     private static final String GROUP_LOGIN = "login"; //$NON-NLS-1$
     private boolean activated;
+    private DriverPropertiesDialogPage driverPropertiesDialogPage;
+
+    public DriverPropertiesDialogPage getDriverPropertiesDialogPage() {
+        return driverPropertiesDialogPage;
+    }
 
     @Override
     public void createControl(Composite composite)
@@ -238,6 +243,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_PATH, pathText);
             addControlToGroup(GROUP_PATH, buttonsPanel);
         }
+        addAdditionalGeneralControls(settingsGroup);
 
         {
             createAuthPanel(addrGroup, 4);
@@ -248,6 +254,10 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
         createDriverPanel(addrGroup);
         setControl(addrGroup);
+    }
+
+    protected void addAdditionalGeneralControls(Composite settingsGroup) {
+
     }
 
     @Nullable
@@ -590,8 +600,9 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
+        driverPropertiesDialogPage = new DriverPropertiesDialogPage(this);
         return new IDialogPage[] {
-            new DriverPropertiesDialogPage(this)
+            driverPropertiesDialogPage
         };
     }
 

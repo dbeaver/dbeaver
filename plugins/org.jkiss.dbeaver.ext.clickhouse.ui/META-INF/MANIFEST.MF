@@ -8,7 +8,10 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.clickhouse,
- org.jkiss.dbeaver.ui.editors.data
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.editors.connection,
+ org.jkiss.dbeaver.ui.editors.data,
+ org.jkiss.dbeaver.ext.generic.ui;bundle-version="1.0.65"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Vendor: %Bundle-Vendor

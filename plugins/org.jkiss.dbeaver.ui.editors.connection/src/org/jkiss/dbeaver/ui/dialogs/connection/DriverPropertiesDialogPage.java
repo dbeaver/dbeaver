@@ -47,6 +47,10 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
 
     private DBPConnectionConfiguration prevConnectionInfo = null;
 
+    public PropertySourceCustom getPropertySource() {
+        return propertySource;
+    }
+
     public DriverPropertiesDialogPage(ConnectionPageAbstract hostPage)
     {
         this.hostPage = hostPage;
