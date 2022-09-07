@@ -117,9 +117,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             for (Control control : composite.getChildren()) {
                 control.dispose();
             }
-            if (error.code == SWT.ERROR_NOT_IMPLEMENTED) {
-                newBrowser = null;
-            } else {
+            newBrowser = null;
+            if (error.code != SWT.ERROR_NOT_IMPLEMENTED) {
                 throw error;
             }
         }
