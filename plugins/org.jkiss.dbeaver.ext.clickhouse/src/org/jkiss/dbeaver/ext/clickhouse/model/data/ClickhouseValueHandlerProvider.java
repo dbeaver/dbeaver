@@ -31,6 +31,8 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
         String lowerTypeName = type.getTypeName().toLowerCase(Locale.ENGLISH);
         if ("enum8".equals(lowerTypeName) || "enum16".equals(lowerTypeName)) {
             return ClickhouseEnumValueHandler.INSTANCE;
+        } else if (type.getDataKind() == DBPDataKind.DATETIME) {
+            return new ClickhouseDateTimeValueHandler(preferences);
         } else if (type.getDataKind() == DBPDataKind.ARRAY) {
             return ClickhouseArrayValueHandler.INSTANCE;
         } else if (type.getDataKind() == DBPDataKind.STRUCT) {

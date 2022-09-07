@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -40,6 +41,9 @@ public interface DBDDataFormatter {
 
     @Nullable
     String getPattern();
+
+    @Nullable
+    void setPattern(@NotNull String pattern);
 
     @Nullable
     String formatValue(Object value);

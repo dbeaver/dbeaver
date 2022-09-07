@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
@@ -121,6 +122,12 @@ public class NumberDataFormatter implements DBDDataFormatter {
     public String getPattern()
     {
         return null;
+    }
+
+    @Nullable
+    @Override
+    public void setPattern(@NotNull String pattern) {
+
     }
 
     @Nullable

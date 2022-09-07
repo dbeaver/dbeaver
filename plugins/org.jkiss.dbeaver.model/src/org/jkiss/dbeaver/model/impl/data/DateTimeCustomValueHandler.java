@@ -99,7 +99,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler im
         }
     }
 
-    private DBDDataFormatter getFormatter(DBSTypedObject typedObject, String typeId)
+    protected DBDDataFormatter getFormatter(DBSTypedObject typedObject, String typeId)
     {
         try {
             return formatSettings.getDataFormatterProfile().createFormatter(typeId, typedObject);

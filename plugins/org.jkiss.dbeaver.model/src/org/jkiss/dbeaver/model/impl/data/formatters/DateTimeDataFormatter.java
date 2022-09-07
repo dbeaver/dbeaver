@@ -48,24 +48,15 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     private StringBuffer buffer;
     private FieldPosition position;
     private DateTimeFormatter dateTimeFormatter;
+    private Locale locale;
 
     @Override
     public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
     {
-        pattern = CommonUtils.toString(properties.get(PROP_PATTERN));
+        this.locale = locale;
         final String timezone = CommonUtils.toString(properties.get(PROP_TIMEZONE));
         zone = CommonUtils.isEmptyTrimmed(timezone) ? null : ZoneId.of(timezone);
-        String sdfPattern = pattern.replace("n", "f");
-        dateFormat = new ExtendedDateFormat(
-            sdfPattern,
-            locale);
-        // We shouldn't use lanient formatter (#7244)
-        dateFormat.setLenient(false);
-        buffer = new StringBuffer();
-        position = new FieldPosition(0);
-        // DateTimeFormatter pattern for nanoseconds is "n" but old "f" (ExtendedDateFormat)
-        String java8DatePattern = pattern.replaceAll("f+", "n");
-        dateTimeFormatter = DateTimeFormatter.ofPattern(java8DatePattern);
+        setPattern(CommonUtils.toString(properties.get(PROP_PATTERN)));
     }
 
     @Nullable
@@ -79,9 +70,23 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     }
 
     @Override
-    public String getPattern()
-    {
+    public String getPattern() {
         return pattern;
+    }
+
+    @Override
+    public void setPattern(@NotNull String pattern) {
+        this.pattern = pattern;
+        String sdfPattern = pattern.replace("n", "f");
+        dateFormat = new ExtendedDateFormat(
+            sdfPattern,
+            this.locale);
+        dateFormat = new ExtendedDateFormat(sdfPattern, locale);
+        dateFormat.setLenient(false);
+        buffer = new StringBuffer();
+        position = new FieldPosition(0);
+        String java8DatePattern = pattern.replaceAll("f+", "n");
+        dateTimeFormatter = DateTimeFormatter.ofPattern(java8DatePattern);
     }
 
     @Override
