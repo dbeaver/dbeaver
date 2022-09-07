@@ -57,7 +57,9 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
-    private static final String CONFIG_FOLDER = ".config";
+
+    public static final String CONFIG_FOLDER = ".config";
+    public static final String FILES_FOLDER = ".files";
 
     private OSDescriptor localSystem;
 
@@ -148,6 +150,20 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         return configurationController;
     }
 
+    @Override
+    @NotNull
+    public DBConfigurationController createConfigurationController() {
+        DBPApplication application = getApplication();
+        if (application instanceof DBPApplicationConfigurator) {
+            return ((DBPApplicationConfigurator) application).createConfigurationController();
+        }
+        LocalConfigurationController controller = new LocalConfigurationController(
+            getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
+        );
+        controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
+        return controller;
+    }
+
     @NotNull
     @Override
     public DBFileController getFileController() {
@@ -164,7 +180,10 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         if (application instanceof DBPApplicationConfigurator) {
             return ((DBPApplicationConfigurator) application).createFileController();
         }
-        return new LocalFileController();
+
+        return new LocalFileController(
+            getWorkspace().getMetadataFolder().resolve(FILES_FOLDER)
+        );
     }
 
     @NotNull
@@ -174,20 +193,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     }
 
     protected abstract Plugin getProductPlugin();
-
-    @Override
-    @NotNull
-    public DBConfigurationController createConfigurationController() {
-        DBPApplication application = getApplication();
-        if (application instanceof DBPApplicationConfigurator) {
-            return ((DBPApplicationConfigurator) application).createConfigurationController();
-        }
-        LocalConfigurationController controller = new LocalConfigurationController(
-            getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
-        );
-        controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
-        return controller;
-    }
 
     @NotNull
     @Override

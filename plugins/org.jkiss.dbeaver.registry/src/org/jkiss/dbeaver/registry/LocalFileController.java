@@ -20,7 +20,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBFileController;
 
+import java.nio.file.Path;
+
 public class LocalFileController implements DBFileController {
+
+    private final Path dataFolder;
+
+    public LocalFileController(Path dataFolder) {
+        this.dataFolder = dataFolder;
+    }
+
     @Override
     public byte[] loadFileData(@NotNull String filePath) throws DBException {
         return new byte[0];

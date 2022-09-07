@@ -397,7 +397,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 driversConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(configFileName);
             }
 
-            if (driversConfig == null) {
+            if (CommonUtils.isEmpty(driversConfig)) {
                 return;
             }
 
@@ -425,7 +425,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private void loadConnectionTypes() {
         try {
             String ctConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
-            if (ctConfig != null) {
+            if (!CommonUtils.isEmpty(ctConfig)) {
                 try (Reader is = new StringReader(ctConfig)) {
                     new SAXReader(is).parse(new ConnectionTypeParser());
                 } catch (XMLException ex) {

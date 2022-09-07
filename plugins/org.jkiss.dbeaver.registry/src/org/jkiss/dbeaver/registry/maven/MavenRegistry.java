@@ -127,7 +127,7 @@ public class MavenRegistry {
     public void loadCustomRepositories() {
         try {
             String config = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(MAVEN_REPOSITORIES_CONFIG);
-            if (config == null) {
+            if (CommonUtils.isEmpty(config)) {
                 return;
             }
             final Document reposDocument = XMLUtils.parseDocument(new StringReader(config));
