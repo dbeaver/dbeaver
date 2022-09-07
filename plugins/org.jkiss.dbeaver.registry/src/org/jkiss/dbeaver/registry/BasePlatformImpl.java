@@ -17,8 +17,11 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConfigurationController;
+import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
@@ -35,6 +38,7 @@ import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,6 +62,8 @@ public abstract class BasePlatformImpl implements DBPPlatform {
     private DBNModel navigatorModel;
 
     private final List<IPluginService> activatedServices = new ArrayList<>();
+    private LocalConfigurationController configurationController;
+    private LocalFileController localFileController;
 
     protected void initialize() {
         log.debug("Initialize base platform...");
@@ -133,6 +139,44 @@ public abstract class BasePlatformImpl implements DBPPlatform {
 
     @NotNull
     @Override
+    public DBConfigurationController getConfigurationController() {
+        if (configurationController == null) {
+            configurationController = createConfigurationController();
+        }
+        return configurationController;
+    }
+
+    @NotNull
+    @Override
+    public DBFileController getFileController() {
+        if (localFileController == null) {
+            localFileController = createLocalFileController();
+        }
+        return localFileController;
+    }
+
+    @NotNull
+    protected LocalFileController createLocalFileController() {
+        return new LocalFileController();
+    }
+
+    @NotNull
+    @Override
+    public File getLocalConfigurationFile(String fileName) {
+        return new File(getProductPlugin().getStateLocation().toFile(), fileName);
+    }
+
+    protected abstract Plugin getProductPlugin();
+
+    @NotNull
+    protected LocalConfigurationController createConfigurationController() {
+        return new LocalConfigurationController(
+            getProductPlugin().getStateLocation().toFile().toPath()
+        );
+    }
+
+    @NotNull
+    @Override
     public Path getApplicationConfiguration() {
         Path configPath;
         try {
@@ -165,8 +209,4 @@ public abstract class BasePlatformImpl implements DBPPlatform {
         return DataSourceProviderRegistry.getInstance();
     }
 
-    @Override
-    public boolean isReadOnly() {
-        return Platform.getInstanceLocation().isReadOnly();
-    }
 }

@@ -307,7 +307,7 @@ public class MavenRegistry
 
     private static File getConfigurationFile()
     {
-        return DBWorkbench.getPlatform().getConfigurationFile("maven-repositories.xml");
+        return DBWorkbench.getPlatform().getLocalConfigurationFile("maven-repositories.xml");
     }
 
 }

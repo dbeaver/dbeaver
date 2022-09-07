@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -33,23 +34,44 @@ import org.xml.sax.Attributes;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * DriverDescriptorSerializerLegacy
  */
 public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer {
 
+    public static final String DRIVERS_FILE_NAME = "drivers.xml"; //$NON-NLS-1$
+
     private static final Log log = Log.getLog(DriverDescriptorSerializerLegacy.class);
 
-    private DriverDescriptor driver;
-
-    DriverDescriptorSerializerLegacy(DriverDescriptor driver) {
-        this.driver = driver;
+    public void serializeDrivers(OutputStream os, List<DataSourceProviderDescriptor> providers) throws IOException {
+        XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
+        xml.setButify(true);
+        xml.startElement(RegistryConstants.TAG_DRIVERS);
+        for (DataSourceProviderDescriptor provider : providers) {
+            if (provider.isTemporary()) {
+                continue;
+            }
+            List<DriverDescriptor> drivers = provider.getDrivers().stream().filter(DriverDescriptor::isModified).collect(Collectors.toList());
+            if (drivers.isEmpty()) {
+                continue;
+            }
+            xml.startElement(RegistryConstants.TAG_PROVIDER);
+            xml.addAttribute(RegistryConstants.ATTR_ID, provider.getId());
+            for (DriverDescriptor driver : drivers) {
+                serializeDriver(xml, driver, false);
+            }
+            xml.endElement();
+        }
+        xml.endElement();
+        xml.flush();
     }
 
-    public void serialize(XMLBuilder xml, boolean export)
+    private void serializeDriver(XMLBuilder xml, DriverDescriptor driver, boolean export)
             throws IOException {
         Map<String, String> pathSubstitutions = getPathSubstitutions();
 

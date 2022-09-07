@@ -189,7 +189,7 @@ public class GeometryViewerRegistry {
 
     @NotNull
     private static File getConfigFile() {
-        return DBWorkbench.getPlatform().getConfigurationFile("geometry_registry_config.xml");
+        return DBWorkbench.getPlatform().getLocalConfigurationFile("geometry_registry_config.xml");
     }
 
     //viewers are read only, so it's ok to not synchronize access

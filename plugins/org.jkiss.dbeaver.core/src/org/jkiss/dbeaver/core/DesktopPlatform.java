@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.internal.registry.IRegistryConstants;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Plugin;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -236,6 +237,11 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         log.debug("Platform shutdown completed (" + (System.currentTimeMillis() - startTime) + "ms)");
     }
 
+    @Override
+    protected Plugin getProductPlugin() {
+        return DBeaverActivator.getInstance();
+    }
+
     @NotNull
     @Override
     public DBPWorkspaceDesktop getWorkspace() {
@@ -384,12 +390,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             log.error("Can't create temp directory " + tempFolder.getAbsolutePath());
         }
         return tempFolder;
-    }
-
-    @NotNull
-    @Override
-    public File getConfigurationFile(String fileName) {
-        return DBeaverActivator.getConfigurationFile(fileName);
     }
 
     @Override

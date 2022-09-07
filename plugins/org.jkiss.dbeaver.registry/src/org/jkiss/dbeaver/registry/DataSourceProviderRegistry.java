@@ -43,19 +43,18 @@ import org.xml.sax.Attributes;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
-{
+public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry {
     private static final Log log = Log.getLog(DataSourceProviderRegistry.class);
 
     private static DataSourceProviderRegistry instance = null;
 
-    public synchronized static DataSourceProviderRegistry getInstance()
-    {
+    public synchronized static DataSourceProviderRegistry getInstance() {
         if (instance == null) {
             instance = new DataSourceProviderRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
@@ -79,8 +78,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     private final Map<String, DataSourceOriginProviderDescriptor> dataSourceOrigins = new LinkedHashMap<>();
 
-    private DataSourceProviderRegistry()
-    {
+    private DataSourceProviderRegistry() {
         globalDataSourcePreferenceStore = new SimplePreferenceStore() {
             @Override
             public void addPropertyChangeListener(DBPPreferenceListener listener) {
@@ -99,8 +97,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         };
     }
 
-    private void loadExtensions(IExtensionRegistry registry)
-    {
+    private void loadExtensions(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID);
@@ -187,18 +184,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 Path configFile = Path.of(providedDriversConfig);
                 if (Files.exists(configFile)) {
                     log.debug("Loading provided drivers configuration from '" + configFile.toAbsolutePath() + "'");
-                    loadDrivers(configFile, true);
+                    loadDrivers(providedDriversConfig, true);
                 } else {
                     log.debug("Provided drivers configuration file '" + configFile.toAbsolutePath() + "' doesn't exist");
                 }
             }
 
             // Load user drivers
-            File driversConfig = DBWorkbench.getPlatform().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
-            if (driversConfig.exists()) {
-                log.debug("Loading user drivers configuration from '" + driversConfig.getAbsolutePath() + "'");
-                loadDrivers(driversConfig.toPath(), false);
-            }
+            loadDrivers(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, false);
         }
 
         // Resolve all driver replacements
@@ -232,7 +225,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
                 connectionTypes.put(ct.getId(), ct);
             }
-            File ctConfig = DBWorkbench.getPlatform().getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
+            File ctConfig = DBWorkbench.getPlatform().getLocalConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
             if (ctConfig.exists()) {
                 loadConnectionTypes(ctConfig);
             }
@@ -280,8 +273,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    public void dispose()
-    {
+    public void dispose() {
         synchronized (registryListeners) {
             if (!registryListeners.isEmpty()) {
                 log.warn("Some datasource registry listeners are still registered: " + registryListeners);
@@ -298,8 +290,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     @Override
     @Nullable
-    public DataSourceProviderDescriptor getDataSourceProvider(String id)
-    {
+    public DataSourceProviderDescriptor getDataSourceProvider(String id) {
         for (DataSourceProviderDescriptor provider : dataSourceProviders) {
             if (provider.getId().equals(id)) {
                 return provider;
@@ -315,13 +306,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         return provider;
     }
 
-    public List<DataSourceProviderDescriptor> getDataSourceProviders()
-    {
+    public List<DataSourceProviderDescriptor> getDataSourceProviders() {
         return dataSourceProviders;
     }
 
-    public List<DBPDataSourceProviderDescriptor> getEnabledDataSourceProviders()
-    {
+    public List<DBPDataSourceProviderDescriptor> getEnabledDataSourceProviders() {
         //IActivityManager activityManager = PlatformUI.getWorkbench().getActivitySupport().getActivityManager();
         List<DBPDataSourceProviderDescriptor> enabled = new ArrayList<>(dataSourceProviders);
 /*
@@ -399,62 +388,44 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Persistence
 
-    private void loadDrivers(Path driversConfig, boolean provided)
-    {
-        if (Files.exists(driversConfig)) {
-            try {
-                try (InputStream is = Files.newInputStream(driversConfig)) {
-                    new SAXReader(is).parse(
-                        new DriverDescriptorSerializerLegacy.DriversParser(provided));
-                } catch (XMLException ex) {
-                    log.warn("Drivers config parse error", ex);
-                }
-            } catch (Exception ex) {
-                log.warn("Error loading drivers from " + driversConfig, ex);
-            }
-        }
-    }
-
-    public void saveDrivers()
-    {
-        File driversConfig = DBWorkbench.getPlatform().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
+    private void loadDrivers(String configFileName, boolean provided) {
         try {
-            OutputStream os = new FileOutputStream(driversConfig);
-            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
-            xml.setButify(true);
-            xml.startElement(RegistryConstants.TAG_DRIVERS);
-            for (DataSourceProviderDescriptor provider : this.dataSourceProviders) {
-                if (provider.isTemporary()) {
-                    continue;
-                }
-                xml.startElement(RegistryConstants.TAG_PROVIDER);
-                xml.addAttribute(RegistryConstants.ATTR_ID, provider.getId());
-                for (DriverDescriptor driver : provider.getDrivers()) {
-                    if (driver.isModified()) {
-                        driver.serialize(xml, false);
-                    }
-                }
-                xml.endElement();
+            String driversConfig;
+            if (provided) {
+                driversConfig = Files.readString(Path.of(configFileName), StandardCharsets.UTF_8);
+            } else {
+                driversConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(configFileName);
             }
-            xml.endElement();
-            xml.flush();
-            os.close();
-        }
-        catch (Exception ex) {
-            log.warn("Error saving drivers", ex);
+
+            try (StringReader is = new StringReader(driversConfig)) {
+                new SAXReader(is).parse(
+                    new DriverDescriptorSerializerLegacy.DriversParser(provided));
+            } catch (XMLException ex) {
+                log.warn("Drivers config parse error", ex);
+            }
+        } catch (Exception ex) {
+            log.warn("Error loading drivers from " + configFileName, ex);
         }
     }
 
-    private void loadConnectionTypes(File configFile)
-    {
+    public void saveDrivers() {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            new DriverDescriptorSerializerLegacy().serializeDrivers(baos, this.dataSourceProviders);
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, baos.toString(StandardCharsets.UTF_8));
+        } catch (Exception ex) {
+            log.error("Error saving drivers", ex);
+        }
+    }
+
+    private void loadConnectionTypes(File configFile) {
         try {
             try (InputStream is = new FileInputStream(configFile)) {
                 new SAXReader(is).parse(new ConnectionTypeParser());
             } catch (XMLException ex) {
                 log.warn("Can't load connection types config from " + configFile.getPath(), ex);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             log.warn("Error parsing connection types", ex);
         }
     }
@@ -462,19 +433,16 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Connection types
 
-    public Collection<DBPConnectionType> getConnectionTypes()
-    {
+    public Collection<DBPConnectionType> getConnectionTypes() {
         return connectionTypes.values();
     }
 
-    public DBPConnectionType getConnectionType(String id, DBPConnectionType defaultType)
-    {
+    public DBPConnectionType getConnectionType(String id, DBPConnectionType defaultType) {
         DBPConnectionType connectionType = connectionTypes.get(id);
         return connectionType == null ? defaultType : connectionType;
     }
 
-    public void addConnectionType(DBPConnectionType connectionType)
-    {
+    public void addConnectionType(DBPConnectionType connectionType) {
         if (this.connectionTypes.containsKey(connectionType.getId())) {
             log.warn("Duplicate connection type id: " + connectionType.getId());
             return;
@@ -482,8 +450,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         this.connectionTypes.put(connectionType.getId(), connectionType);
     }
 
-    public void removeConnectionType(DBPConnectionType connectionType)
-    {
+    public void removeConnectionType(DBPConnectionType connectionType) {
         if (!this.connectionTypes.containsKey(connectionType.getId())) {
             log.warn("Connection type doesn't exist: " + connectionType.getId());
             return;
@@ -492,9 +459,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     @Override
-    public void saveConnectionTypes()
-    {
-        File ctConfig = DBWorkbench.getPlatform().getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
+    public void saveConnectionTypes() {
+        File ctConfig = DBWorkbench.getPlatform().getLocalConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
         try {
             OutputStream os = new FileOutputStream(ctConfig);
             XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
@@ -520,8 +486,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             xml.endElement();
             xml.flush();
             os.close();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             log.warn("Error saving drivers", ex);
         }
     }
@@ -587,32 +552,29 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     /**
      * Searches for resource within external resources provided by plugins
+     *
      * @param resourcePath path
      * @return URL or null if specified resource not found
      */
     @Nullable
-    public URL findResourceURL(String resourcePath)
-    {
+    public URL findResourceURL(String resourcePath) {
         ExternalResourceDescriptor descriptor = resourceContributions.get(resourcePath);
         return descriptor == null ? null : descriptor.getURL();
     }
 
-    public void addDataSourceRegistryListener(DBPRegistryListener listener)
-    {
+    public void addDataSourceRegistryListener(DBPRegistryListener listener) {
         synchronized (registryListeners) {
             registryListeners.add(listener);
         }
     }
 
-    public void removeDataSourceRegistryListener(DBPRegistryListener listener)
-    {
+    public void removeDataSourceRegistryListener(DBPRegistryListener listener) {
         synchronized (registryListeners) {
             registryListeners.remove(listener);
         }
     }
 
-    void fireRegistryChange(DataSourceRegistry registry, boolean load)
-    {
+    void fireRegistryChange(DataSourceRegistry registry, boolean load) {
         synchronized (registryListeners) {
             for (DBPRegistryListener listener : registryListeners) {
                 if (load) {
@@ -624,12 +586,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    class ConnectionTypeParser implements SAXListener
-    {
+    class ConnectionTypeParser implements SAXListener {
         @Override
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
-            throws XMLException
-        {
+            throws XMLException {
             if (localName.equals(RegistryConstants.TAG_TYPE)) {
                 String typeId = atts.getValue(RegistryConstants.ATTR_ID);
                 DBPConnectionType origType = null;
@@ -661,10 +621,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
 
         @Override
-        public void saxText(SAXReader reader, String data) {}
+        public void saxText(SAXReader reader, String data) {
+        }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {}
+        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
+        }
     }
 
 

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.headless;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
@@ -258,10 +259,9 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         return tempFolder;
     }
 
-    @NotNull
     @Override
-    public File getConfigurationFile(String fileName) {
-        return DBeaverTestActivator.getConfigurationFile(fileName);
+    protected Plugin getProductPlugin() {
+        return DBeaverTestActivator.getInstance();
     }
 
     @Override

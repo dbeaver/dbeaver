@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
@@ -42,13 +44,11 @@ import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.Map.Entry;
-import java.lang.reflect.Array;
 
 /**
  * Viewer columns registry
@@ -255,7 +255,7 @@ class DataFilterRegistry {
     private volatile ConfigSaver saver = null;
 
     public DataFilterRegistry() {
-        File columnsConfig = DBWorkbench.getPlatform().getConfigurationFile(CONFIG_FILE);
+        File columnsConfig = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE);
         if (columnsConfig.exists()) {
             loadConfiguration(columnsConfig);
         }
@@ -385,7 +385,7 @@ class DataFilterRegistry {
         }
         
         private void flushConfig() {
-            File configFile = DBWorkbench.getPlatform().getConfigurationFile(CONFIG_FILE);
+            File configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE);
             try (OutputStream out = new FileOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
                 xml.setButify(true);

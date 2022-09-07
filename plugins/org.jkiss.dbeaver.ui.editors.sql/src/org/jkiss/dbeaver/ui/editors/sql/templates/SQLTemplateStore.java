@@ -195,7 +195,7 @@ public class SQLTemplateStore extends TemplateStore {
 
         private File getConfigurationFile()
         {
-            return DBWorkbench.getPlatform().getConfigurationFile("templates.xml");
+            return DBWorkbench.getPlatform().getLocalConfigurationFile("templates.xml");
         }
 
         @Override

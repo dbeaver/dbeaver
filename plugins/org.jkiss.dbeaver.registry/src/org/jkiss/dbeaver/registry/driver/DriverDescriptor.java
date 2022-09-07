@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
-import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -51,7 +50,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
-import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -1482,14 +1480,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public static File getDriversContribFolder() throws IOException {
         return new File(Platform.getInstallLocation().getDataArea(DRIVERS_FOLDER).toExternalForm());
-    }
-
-    public void serialize(JsonWriter json, boolean export) throws IOException {
-        new DriverDescriptorSerializerModern(this).serialize(json, export);
-    }
-
-    public void serialize(XMLBuilder xml, boolean export) throws IOException {
-        new DriverDescriptorSerializerLegacy(this).serialize(xml, export);
     }
 
     public DBPNativeClientLocation getDefaultClientLocation() {

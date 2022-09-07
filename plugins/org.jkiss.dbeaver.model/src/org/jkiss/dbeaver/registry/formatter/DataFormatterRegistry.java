@@ -130,7 +130,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
     {
         customProfiles = new ArrayList<>();
 
-        File storeFile = DBWorkbench.getPlatform().getConfigurationFile(CONFIG_FILE_NAME);
+        File storeFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE_NAME);
         if (!storeFile.exists()) {
             return;
         }
@@ -157,7 +157,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         if (customProfiles == null) {
             return;
         }
-        File storeFile = DBWorkbench.getPlatform().getConfigurationFile(CONFIG_FILE_NAME);
+        File storeFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE_NAME);
         try (OutputStream os = new FileOutputStream(storeFile)) {
             XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);

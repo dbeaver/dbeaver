@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model;
 
-import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+import org.jkiss.dbeaver.DBException;
 
 /**
- * EclipseApplicationImpl
+ * Binary files controller.
  */
-public abstract class EclipseApplicationImpl extends BaseApplicationImpl {
+public interface DBFileController extends DBPObjectController {
 
-    @NotNull
-    @Override
-    public DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace) {
-        return new DesktopWorkspaceImpl(platform, eclipseWorkspace);
-    }
+    byte[] loadFileData(@NotNull String filePath) throws DBException;
+
+    void saveFileData(@NotNull String filePath, byte[] fileData) throws DBException;
+
+    String[] listFiles(@NotNull String filePath) throws DBException;
+
+    void deleteFile(@NotNull String filePath, boolean recursive) throws DBException;
 
 }

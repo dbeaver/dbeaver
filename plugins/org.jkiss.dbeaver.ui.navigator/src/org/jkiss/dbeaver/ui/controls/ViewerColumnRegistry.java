@@ -76,7 +76,7 @@ class ViewerColumnRegistry {
     private volatile ConfigSaver saver = null;
 
     public ViewerColumnRegistry() {
-        File columnsConfig = DBWorkbench.getPlatform().getConfigurationFile(COLUMNS_CONFIG_FILE);
+        File columnsConfig = DBWorkbench.getPlatform().getLocalConfigurationFile(COLUMNS_CONFIG_FILE);
         if (columnsConfig.exists()) {
             loadConfiguration(columnsConfig);
         }
@@ -132,7 +132,7 @@ class ViewerColumnRegistry {
 
         private void flushConfig() {
 
-            File configFile = DBWorkbench.getPlatform().getConfigurationFile(COLUMNS_CONFIG_FILE);
+            File configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(COLUMNS_CONFIG_FILE);
             try (OutputStream out = new FileOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
                 xml.setButify(true);

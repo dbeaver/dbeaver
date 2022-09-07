@@ -14,26 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.connection;
+package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPObjectController;
 
 /**
- * Resource manager API.
+ * Config files controller.
  */
-public interface RMDriverController extends DBPObjectController {
+public interface DBConfigurationController extends DBPObjectController {
 
-    String loadDriversConfiguration() throws DBException;
+    /**
+     * Loads config file contents.
+     * @param filePath relative or absolute file path
+     *
+     */
+    String loadConfigurationFile(@NotNull String filePath) throws DBException;
 
-    void saveDriversConfiguration(String configurationXML) throws DBException;
-
-    byte[] loadDriverFile(String driverFullId, String filePath) throws DBException;
-
-    void saveDriverFile(String driverFullId, String filePath, byte[] fileData) throws DBException;
-
-    void deleteDriverFile(String driverFullId, String filePath) throws DBException;
-
-    void deleteDriverFiles(String driverFullId) throws DBException;
+    /**
+     * Saves config file contents
+     * @param filePath relative or absolute
+     * @param data
+     * @throws DBException
+     */
+    void saveConfigurationFile(
+        @NotNull String filePath,
+        @NotNull String data) throws DBException;
 
 }
