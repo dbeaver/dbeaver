@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPApplicationConfigurator;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -49,7 +51,7 @@ import java.util.List;
  *
  * Base implementation of DBeaver platform
  */
-public abstract class BasePlatformImpl implements DBPPlatform {
+public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationConfigurator {
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
 
@@ -62,8 +64,8 @@ public abstract class BasePlatformImpl implements DBPPlatform {
     private DBNModel navigatorModel;
 
     private final List<IPluginService> activatedServices = new ArrayList<>();
-    private LocalConfigurationController configurationController;
-    private LocalFileController localFileController;
+    private DBConfigurationController configurationController;
+    private DBFileController localFileController;
 
     protected void initialize() {
         log.debug("Initialize base platform...");
@@ -150,13 +152,18 @@ public abstract class BasePlatformImpl implements DBPPlatform {
     @Override
     public DBFileController getFileController() {
         if (localFileController == null) {
-            localFileController = createLocalFileController();
+            localFileController = createFileController();
         }
         return localFileController;
     }
 
+    @Override
     @NotNull
-    protected LocalFileController createLocalFileController() {
+    public DBFileController createFileController() {
+        DBPApplication application = getApplication();
+        if (application instanceof DBPApplicationConfigurator) {
+            return ((DBPApplicationConfigurator) application).createFileController();
+        }
         return new LocalFileController();
     }
 
@@ -168,8 +175,13 @@ public abstract class BasePlatformImpl implements DBPPlatform {
 
     protected abstract Plugin getProductPlugin();
 
+    @Override
     @NotNull
-    protected LocalConfigurationController createConfigurationController() {
+    public DBConfigurationController createConfigurationController() {
+        DBPApplication application = getApplication();
+        if (application instanceof DBPApplicationConfigurator) {
+            return ((DBPApplicationConfigurator) application).createConfigurationController();
+        }
         LocalConfigurationController controller = new LocalConfigurationController(
             getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
         );
