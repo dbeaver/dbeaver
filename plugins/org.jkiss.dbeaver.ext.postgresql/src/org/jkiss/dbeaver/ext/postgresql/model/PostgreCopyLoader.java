@@ -22,7 +22,10 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataBulkLoader;
@@ -31,10 +34,15 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +65,7 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
     private Object copyManager;
     private Method copyInMethod;
     private Writer csvWriter;
-    private File csvFile;
+    private Path csvFile;
 
     private AttrMapping[] mappings;
 
@@ -103,14 +111,16 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
 
             copyManager = copyManagerClass.getConstructor(baseConnectionClass).newInstance(pgConnection);
 
-            File tempFolder = DBWorkbench.getPlatform().getTempFolder(session.getProgressMonitor(), "postgesql-copy-datasets");
-            csvFile = new File(tempFolder, CommonUtils.escapeFileName(table.getFullyQualifiedName(DBPEvaluationContext.DML)) + "-" + System.currentTimeMillis() + ".csv");  //$NON-NLS-1$ //$NON-NLS-2$
-            if (!csvFile.createNewFile()){
-                throw new IOException("Can't create CSV file " + csvFile.getAbsolutePath());
+            Path tempFolder = DBWorkbench.getPlatform().getTempFolder(session.getProgressMonitor(), "postgesql-copy-datasets");
+            csvFile = tempFolder.resolve(CommonUtils.escapeFileName(table.getFullyQualifiedName(DBPEvaluationContext.DML)) + "-" + System.currentTimeMillis() + ".csv");  //$NON-NLS-1$ //$NON-NLS-2$
+            try {
+                Files.createFile(csvFile);
+            } catch (IOException ex) {
+                throw new IOException("Can't create CSV file " + csvFile);
             }
 
             csvWriter = new BufferedWriter(
-                new FileWriter(csvFile, StandardCharsets.UTF_8),
+                Files.newBufferedWriter(csvFile, StandardCharsets.UTF_8),
                 copyBufferSize
                 );
 
@@ -198,7 +208,7 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
 
         try {
             Object rowCount;
-            try (Reader csvReader = new FileReader(csvFile, StandardCharsets.UTF_8)) {
+            try (Reader csvReader = Files.newBufferedReader(csvFile, StandardCharsets.UTF_8)) {
                 rowCount = copyInMethod.invoke(copyManager, queryText, csvReader, copyBufferSize);
             }
 
@@ -221,10 +231,12 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
     @Override
 
     public void close() {
-        if (csvFile != null && csvFile.exists()) {
-            if (!csvFile.delete()) {
-                log.debug("Error deleting CSV file " + csvFile.getAbsolutePath());
-                csvFile.deleteOnExit();
+        if (csvFile != null && Files.exists(csvFile)) {
+            try {
+                Files.delete(csvFile);
+            } catch (IOException e) {
+                log.debug("Error deleting CSV file " + csvFile, e);
+                csvFile.toFile().deleteOnExit();
             }
         }
     }

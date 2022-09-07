@@ -54,6 +54,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Properties;
@@ -75,7 +76,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     private static volatile boolean isClosing = false;
 
-    private File tempFolder;
+    private Path tempFolder;
     private DesktopWorkspaceImpl workspace;
     private QMRegistryImpl queryManager;
     private QMLogFileWriter qmLogWriter;
@@ -226,7 +227,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         if (tempFolder != null) {
 
             if (!ContentUtils.deleteFileRecursive(tempFolder)) {
-                log.warn("Can not delete temp folder '" + tempFolder.getAbsolutePath() + "'");
+                log.warn("Can not delete temp folder '" + tempFolder + "'");
             }
             tempFolder = null;
         }
@@ -349,7 +350,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     }
 
     @NotNull
-    public File getTempFolder(DBRProgressMonitor monitor, String name) {
+    public Path getTempFolder(DBRProgressMonitor monitor, String name) {
         if (tempFolder == null) {
             // Make temp folder
             monitor.subTask("Create temp folder");
@@ -365,29 +366,39 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
                 } else {
                     tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 }
-                final java.nio.file.Path tempDirectory = Files.createTempDirectory(
+                tempFolder = Files.createTempDirectory(
                     Paths.get(tempFolderPath),
                     TEMP_PROJECT_NAME);
-                tempFolder = tempDirectory.toFile();
             } catch (IOException e) {
                 final String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 if (!CommonUtils.isEmpty(sysTempFolder)) {
-                    tempFolder = new File(sysTempFolder, TEMP_PROJECT_NAME);
-                    if (!tempFolder.mkdirs()) {
-                        final String sysUserFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
-                        if (!CommonUtils.isEmpty(sysUserFolder)) {
-                            tempFolder = new File(sysUserFolder, TEMP_PROJECT_NAME);
-                            if (!tempFolder.mkdirs()) {
-                                tempFolder = new File(TEMP_PROJECT_NAME);
+                    tempFolder = Path.of(sysTempFolder).resolve(TEMP_PROJECT_NAME);
+                    if (!Files.exists(tempFolder)) {
+                        try {
+                            Files.createDirectories(tempFolder);
+                        } catch (IOException ex) {
+                            final String sysUserFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
+                            if (!CommonUtils.isEmpty(sysUserFolder)) {
+                                tempFolder = Path.of(sysUserFolder).resolve(TEMP_PROJECT_NAME);
+                                if (!Files.exists(tempFolder)) {
+                                    try {
+                                        Files.createDirectories(tempFolder);
+                                    } catch (IOException exc) {
+                                        tempFolder = Path.of(TEMP_PROJECT_NAME);
+                                    }
+                                }
                             }
                         }
-
                     }
                 }
             }
         }
-        if (!tempFolder.exists() && !tempFolder.mkdirs()) {
-            log.error("Can't create temp directory " + tempFolder.getAbsolutePath());
+        if (!Files.exists(tempFolder)) {
+            try {
+                Files.createDirectories(tempFolder);
+            } catch (IOException e) {
+                log.error("Can't create temp directory " + tempFolder, e);
+            }
         }
         return tempFolder;
     }

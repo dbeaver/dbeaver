@@ -66,7 +66,7 @@ public class LocalConfigurationController implements DBConfigurationController {
         Path localPath = configFolder.resolve(filePath);
         try {
             if (!Files.exists(configFolder)) {
-                Files.createDirectory(configFolder);
+                Files.createDirectories(configFolder);
             }
             if (Files.exists(localPath)) {
                 ContentUtils.makeFileBackup(localPath);

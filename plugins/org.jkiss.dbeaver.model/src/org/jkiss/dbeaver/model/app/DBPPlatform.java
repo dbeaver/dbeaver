@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -79,7 +78,7 @@ public interface DBPPlatform {
     DBASecureStorage getSecureStorage();
 
     @NotNull
-    File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
+    Path getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
     /**
      * Platform configuration controller.

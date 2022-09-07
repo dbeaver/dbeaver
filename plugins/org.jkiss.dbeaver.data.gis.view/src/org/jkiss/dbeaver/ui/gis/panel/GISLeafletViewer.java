@@ -72,6 +72,8 @@ import org.jkiss.utils.IOUtils;
 import org.locationtech.jts.geom.Geometry;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,7 +95,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     private DBGeometry[] lastValue;
     private int sourceSRID; // Explicitly set SRID
     private int actualSourceSRID; // SRID taken from geometry value
-    private File scriptFile;
+    private Path scriptFile;
     private final ToolBarManager toolBarManager;
     private int defaultSRID; // Target SRID used to render map
 
@@ -263,8 +265,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                     browser.setUrl("about:blank");
                 } else {
                     final Bounds bounds = recenter ? null : Bounds.tryExtractFromBrowser(browser);
-                    final File file = generateViewScript(values, bounds);
-                    browser.setUrl(file.toURI().toURL().toString());
+                    final Path file = generateViewScript(values, bounds);
+                    browser.setUrl(file.toFile().toURI().toURL().toString());
                 }
             } catch (IOException e) {
                 throw new DBException("Error generating viewer script", e);
@@ -274,12 +276,12 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         updateToolbar();
     }
 
-    private File generateViewScript(DBGeometry[] values, @Nullable Bounds bounds) throws IOException {
+    private Path generateViewScript(DBGeometry[] values, @Nullable Bounds bounds) throws IOException {
         if (scriptFile == null) {
-            File tempDir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "gis-viewer-files");
+            Path tempDir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "gis-viewer-files");
             checkIncludesExistence(tempDir);
 
-            scriptFile = File.createTempFile("view", "gis.html", tempDir);
+            scriptFile = Files.createTempFile(tempDir, "view", "gis.html");
         }
 
         int attributeSrid = GisConstants.SRID_SIMPLE;
@@ -399,7 +401,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 }
                 return null;
             });
-            try (FileOutputStream fos = new FileOutputStream(scriptFile)) {
+            try (OutputStream fos = Files.newOutputStream(scriptFile)) {
                 fos.write(viewTemplate.getBytes(GeneralUtils.UTF8_CHARSET));
             }
         } finally {
@@ -409,16 +411,14 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         return scriptFile;
     }
 
-    private void checkIncludesExistence(File scriptDir) throws IOException {
-        File incFolder = new File(scriptDir, "inc");
-        if (!incFolder.exists()) {
-            if (!incFolder.mkdirs()) {
-                throw new IOException("Can't create inc folder '" + incFolder.getAbsolutePath() + "'");
-            }
+    private void checkIncludesExistence(Path scriptDir) throws IOException {
+        Path incFolder = scriptDir.resolve("inc");
+        if (!Files.exists(incFolder)) {
+            Files.createDirectories(incFolder);
             for (String fileName : GISBrowserViewerConstants.INC_FILES) {
                 InputStream fis = GISViewerActivator.getDefault().getResourceStream(GISBrowserViewerConstants.WEB_INC_PATH + fileName);
                 if (fis != null) {
-                    try (FileOutputStream fos = new FileOutputStream(new File(incFolder, fileName))) {
+                    try (OutputStream fos = Files.newOutputStream(incFolder.resolve(fileName))) {
                         try {
                             IOUtils.copyStream(fis, fos);
                         } catch (Exception e) {
@@ -434,8 +434,10 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
     private void cleanupFiles() {
         if (scriptFile != null) {
-            if (!scriptFile.delete()) {
-                log.debug("Can't delete temp script file '" + scriptFile.getAbsolutePath() + "'");
+            try {
+                Files.delete(scriptFile);
+            } catch (IOException e) {
+                log.debug("Can't delete temp script file '" + scriptFile + "'", e);
             }
         }
     }
@@ -457,7 +459,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_open, DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
             @Override
             public void run() {
-                ShellUtils.launchProgram(scriptFile.getAbsolutePath());
+                ShellUtils.launchProgram(scriptFile.toAbsolutePath().toString());
             }
         });
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_copy_as, DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {
