@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -179,6 +180,15 @@ public interface DBPDriver extends DBPNamedObject
     void loadDriver(DBRProgressMonitor monitor) throws DBException;
 
     String getConnectionURL(DBPConnectionConfiguration configuration);
+
+    /**
+     * Create connection URL with help of connection configuration and maybe dataSource
+     *
+     * @param configuration of connection
+     * @param dataSource can be null
+     * @return URL for connection
+     */
+    String getConnectionURL(@NotNull DBPConnectionConfiguration configuration, @Nullable DBPDataSourceContainer dataSource);
 
     /**
      * Create copy of

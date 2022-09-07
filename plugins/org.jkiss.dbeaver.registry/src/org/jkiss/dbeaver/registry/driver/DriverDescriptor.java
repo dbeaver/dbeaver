@@ -1091,7 +1091,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @Override
-    public String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo, DBPDataSourceContainer dataSource) {
         if (isSampleURLForced()) {
             // Generate URL by template
             return JDBCURL.generateUrlByTemplate(this, connectionInfo);
@@ -1099,6 +1099,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             // It can be empty in some cases (e.g. when we create connections from command line command)
             return getDataSourceProvider().getConnectionURL(this, connectionInfo);
         }
+    }
+
+    @Override
+    public String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+        return getConnectionURL(connectionInfo, null);
     }
 
     @Override

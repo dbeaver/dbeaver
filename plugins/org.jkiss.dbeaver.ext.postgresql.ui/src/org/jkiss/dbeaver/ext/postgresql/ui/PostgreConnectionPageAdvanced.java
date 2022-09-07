@@ -206,7 +206,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING, String.valueOf(ddPlainBehaviorCombo.getSelectionIndex() == 0));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_TAG_STRING, String.valueOf(ddTagBehaviorCombo.getSelectionIndex() == 0));
 
-        saveConnectionURL(connectionCfg);
+        saveConnectionURL(connectionCfg, dataSource);
     }
 
 }

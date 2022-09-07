@@ -105,7 +105,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
-        saveConnectionURL(dataSource.getConnectionConfiguration());
+        saveConnectionURL(dataSource.getConnectionConfiguration(), dataSource);
         if (savePasswordCheck != null) {
             DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
             descriptor.setSavePassword(savePasswordCheck.getSelection());
@@ -116,12 +116,16 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }
     }
 
-    protected void saveConnectionURL(DBPConnectionConfiguration connectionInfo)
+    protected void saveConnectionURL(DBPConnectionConfiguration connectionInfo, DBPDataSourceContainer dataSource)
     {
         if (!isCustomURL()) {
             connectionInfo.setUrl(
-                site.getDriver().getConnectionURL(connectionInfo));
+                site.getDriver().getConnectionURL(connectionInfo, dataSource));
         }
+    }
+
+    protected void saveConnectionURL(DBPConnectionConfiguration connectionInfo) {
+        saveConnectionURL(connectionInfo, null);
     }
 
     protected void createDriverPanel(Composite parent) {
