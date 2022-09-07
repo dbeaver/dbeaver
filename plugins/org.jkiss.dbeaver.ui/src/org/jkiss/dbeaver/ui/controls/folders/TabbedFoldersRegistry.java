@@ -31,7 +31,10 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,8 +59,8 @@ class TabbedFoldersRegistry {
     private volatile ConfigSaver saver = null;
 
     public TabbedFoldersRegistry() {
-        File savedStates = DBWorkbench.getPlatform().getLocalConfigurationFile(COLUMNS_CONFIG_FILE);
-        if (savedStates.exists()) {
+        Path savedStates = DBWorkbench.getPlatform().getLocalConfigurationFile(COLUMNS_CONFIG_FILE);
+        if (Files.exists(savedStates)) {
             loadConfiguration(savedStates);
         }
     }
@@ -83,9 +86,9 @@ class TabbedFoldersRegistry {
         }
     }
 
-    private void loadConfiguration(File configFile) {
+    private void loadConfiguration(Path configFile) {
         savedStates.clear();
-        try (InputStream in = new FileInputStream(configFile)) {
+        try (InputStream in = Files.newInputStream(configFile)) {
             SAXReader parser = new SAXReader(in);
             final FolderStateParser dsp = new FolderStateParser();
             parser.parse(dsp);
@@ -113,8 +116,8 @@ class TabbedFoldersRegistry {
 
         private void flushConfig() {
 
-            File configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(COLUMNS_CONFIG_FILE);
-            try (OutputStream out = new FileOutputStream(configFile)) {
+            Path configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(COLUMNS_CONFIG_FILE);
+            try (OutputStream out = Files.newOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
                 xml.setButify(true);
                 try (final XMLBuilder.Element e = xml.startElement("folders")) {

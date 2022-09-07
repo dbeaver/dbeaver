@@ -32,16 +32,27 @@ import java.nio.file.Path;
 public class LocalConfigurationController implements DBConfigurationController {
 
     private final Path configFolder;
+    private Path legacyConfigFolder;
 
     public LocalConfigurationController(Path configFolder) {
         this.configFolder = configFolder;
+    }
+
+    public void setLegacyConfigFolder(Path legacyConfigFolder) {
+        this.legacyConfigFolder = legacyConfigFolder;
     }
 
     @Override
     public String loadConfigurationFile(@NotNull String filePath) throws DBException {
         Path localPath = configFolder.resolve(filePath);
         if (!Files.exists(localPath)) {
-            return null;
+            // Try to get it from legacy location
+            if (legacyConfigFolder != null) {
+                localPath = legacyConfigFolder.resolve(filePath);
+            }
+            if (!Files.exists(localPath)) {
+                return null;
+            }
         }
         try {
             return Files.readString(localPath, StandardCharsets.UTF_8);
@@ -54,6 +65,9 @@ public class LocalConfigurationController implements DBConfigurationController {
     public void saveConfigurationFile(@NotNull String filePath, @NotNull String data) throws DBException {
         Path localPath = configFolder.resolve(filePath);
         try {
+            if (!Files.exists(configFolder)) {
+                Files.createDirectory(configFolder);
+            }
             if (Files.exists(localPath)) {
                 ContentUtils.makeFileBackup(localPath);
             }

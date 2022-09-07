@@ -45,8 +45,12 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -255,8 +259,8 @@ class DataFilterRegistry {
     private volatile ConfigSaver saver = null;
 
     public DataFilterRegistry() {
-        File columnsConfig = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE);
-        if (columnsConfig.exists()) {
+        Path columnsConfig = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE);
+        if (Files.exists(columnsConfig)) {
             loadConfiguration(columnsConfig);
         }
     }
@@ -297,9 +301,9 @@ class DataFilterRegistry {
         return objName.toString();
     }
 
-    private void loadConfiguration(@NotNull File configFile) {
+    private void loadConfiguration(@NotNull Path configFile) {
         savedFilters.clear();
-        try (InputStream in = new FileInputStream(configFile)) {
+        try (InputStream in = Files.newInputStream(configFile)) {
             SAXReader parser = new SAXReader(in);
             final DataFilterParser dsp = new DataFilterParser();
             parser.parse(dsp);
@@ -385,8 +389,8 @@ class DataFilterRegistry {
         }
         
         private void flushConfig() {
-            File configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE);
-            try (OutputStream out = new FileOutputStream(configFile)) {
+            Path configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE);
+            try (OutputStream out = Files.newOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
                 xml.setButify(true);
                 try (final XMLBuilder.Element e = xml.startElement("data-filters")) {

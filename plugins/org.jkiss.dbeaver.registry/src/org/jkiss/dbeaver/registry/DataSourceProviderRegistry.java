@@ -41,7 +41,10 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -225,10 +228,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
                 connectionTypes.put(ct.getId(), ct);
             }
-            File ctConfig = DBWorkbench.getPlatform().getLocalConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
-            if (ctConfig.exists()) {
-                loadConnectionTypes(ctConfig);
-            }
+            loadConnectionTypes();
         }
 
         // Load external resources information
@@ -418,12 +418,15 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    private void loadConnectionTypes(File configFile) {
+    private void loadConnectionTypes() {
         try {
-            try (InputStream is = new FileInputStream(configFile)) {
-                new SAXReader(is).parse(new ConnectionTypeParser());
-            } catch (XMLException ex) {
-                log.warn("Can't load connection types config from " + configFile.getPath(), ex);
+            String ctConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
+            if (ctConfig != null) {
+                try (Reader is = new StringReader(ctConfig)) {
+                    new SAXReader(is).parse(new ConnectionTypeParser());
+                } catch (XMLException ex) {
+                    log.warn("Can't load connection types config from " + RegistryConstants.CONNECTION_TYPES_FILE_NAME, ex);
+                }
             }
         } catch (Exception ex) {
             log.warn("Error parsing connection types", ex);
@@ -460,10 +463,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     @Override
     public void saveConnectionTypes() {
-        File ctConfig = DBWorkbench.getPlatform().getLocalConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
         try {
-            OutputStream os = new FileOutputStream(ctConfig);
-            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            XMLBuilder xml = new XMLBuilder(baos, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             xml.startElement(RegistryConstants.TAG_TYPES);
             for (DBPConnectionType connectionType : connectionTypes.values()) {
@@ -485,7 +487,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
             xml.endElement();
             xml.flush();
-            os.close();
+
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
+                RegistryConstants.CONNECTION_TYPES_FILE_NAME,
+                baos.toString(StandardCharsets.UTF_8));
         } catch (Exception ex) {
             log.warn("Error saving drivers", ex);
         }

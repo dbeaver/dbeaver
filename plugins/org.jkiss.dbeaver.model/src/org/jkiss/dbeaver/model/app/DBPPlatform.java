@@ -82,21 +82,27 @@ public interface DBPPlatform {
     File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
     /**
-     * Platform configuration controller
+     * Platform configuration controller.
+     * Keeps application configuration which can be shared with other users.
      */
     @NotNull
     DBConfigurationController getConfigurationController();
 
+    /**
+     * Local config files are used to store some configuration specific to local machine only.
+     */
+    @NotNull
+    Path getLocalConfigurationFile(String fileName);
+
+    /**
+     * File controller allows to read/write binary files (e.g. custom driver libraries)
+     */
     @NotNull
     DBFileController getFileController();
 
     @Deprecated
     @NotNull
     Path getApplicationConfiguration();
-
-    @Deprecated
-    @NotNull
-    File getLocalConfigurationFile(String fileName);
 
     boolean isShuttingDown();
 

@@ -34,7 +34,11 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -130,12 +134,12 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
     {
         customProfiles = new ArrayList<>();
 
-        File storeFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE_NAME);
-        if (!storeFile.exists()) {
+        Path storeFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE_NAME);
+        if (!Files.exists(storeFile)) {
             return;
         }
         try {
-            try (InputStream is = new FileInputStream(storeFile)) {
+            try (InputStream is = Files.newInputStream(storeFile)) {
                 SAXReader parser = new SAXReader(is);
                 try {
                     parser.parse(new FormattersParser());
@@ -143,7 +147,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
                     throw new DBException("Datasource config parse error", ex);
                 }
             } catch (DBException ex) {
-                log.warn("Can't load profiles config from " + storeFile.getPath(), ex);
+                log.warn("Can't load profiles config from " + storeFile, ex);
             }
         }
         catch (IOException ex) {
@@ -157,8 +161,8 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         if (customProfiles == null) {
             return;
         }
-        File storeFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE_NAME);
-        try (OutputStream os = new FileOutputStream(storeFile)) {
+        Path storeFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE_NAME);
+        try (OutputStream os = Files.newOutputStream(storeFile)) {
             XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             xml.startElement("profiles");

@@ -34,7 +34,11 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -106,11 +110,11 @@ public class GeometryViewerRegistry {
     }
 
     private static void populateFromConfig(@NotNull Collection<String> notVisiblePredefinedTilesIds, @NotNull Collection<LeafletTilesDescriptor> userDefinedTiles) {
-        File cfg = getConfigFile();
-        if (!cfg.exists()) {
+        Path cfg = getConfigFile();
+        if (!Files.exists(cfg)) {
             return;
         }
-        try (InputStream in = new FileInputStream(cfg)) {
+        try (InputStream in = Files.newInputStream(cfg)) {
             SAXReader saxReader = new SAXReader(in);
             saxReader.parse(new SAXListener.BaseListener() {
                 private final StringBuilder buffer = new StringBuilder();
@@ -188,7 +192,7 @@ public class GeometryViewerRegistry {
     }
 
     @NotNull
-    private static File getConfigFile() {
+    private static Path getConfigFile() {
         return DBWorkbench.getPlatform().getLocalConfigurationFile("geometry_registry_config.xml");
     }
 
@@ -254,7 +258,7 @@ public class GeometryViewerRegistry {
     }
 
     private void flushConfig() {
-        try (OutputStream out = new FileOutputStream(getConfigFile())) {
+        try (OutputStream out = Files.newOutputStream(getConfigFile())) {
             XMLBuilder xmlBuilder = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
             xmlBuilder.setButify(true);
             try (XMLBuilder.Element ignored = xmlBuilder.startElement(KEY_ROOT)) {

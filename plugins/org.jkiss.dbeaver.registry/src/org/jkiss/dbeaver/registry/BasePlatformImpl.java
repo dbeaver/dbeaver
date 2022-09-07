@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,6 +55,7 @@ public abstract class BasePlatformImpl implements DBPPlatform {
 
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
+    private static final String CONFIG_FOLDER = ".config";
 
     private OSDescriptor localSystem;
 
@@ -162,17 +162,19 @@ public abstract class BasePlatformImpl implements DBPPlatform {
 
     @NotNull
     @Override
-    public File getLocalConfigurationFile(String fileName) {
-        return new File(getProductPlugin().getStateLocation().toFile(), fileName);
+    public Path getLocalConfigurationFile(String fileName) {
+        return getProductPlugin().getStateLocation().toFile().toPath().resolve(fileName);
     }
 
     protected abstract Plugin getProductPlugin();
 
     @NotNull
     protected LocalConfigurationController createConfigurationController() {
-        return new LocalConfigurationController(
-            getProductPlugin().getStateLocation().toFile().toPath()
+        LocalConfigurationController controller = new LocalConfigurationController(
+            getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
         );
+        controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
+        return controller;
     }
 
     @NotNull
