@@ -1557,7 +1557,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             return false;
         }
         resolvedFiles.clear();
-        Path targetFolder = targetFileLocation.resolve(getProviderId()).resolve(getId());
         for (DBPDriverLibrary library : libraries) {
             // We need to sync resolved files with real files of library
             // - Local files are linked directly
@@ -1575,23 +1574,39 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     continue;
                 }
 
-                if (!Files.exists(targetFolder)) {
-                    try {
-                        Files.createDirectories(targetFolder);
-                    } catch (IOException e) {
-                        log.error("Error creating driver target directory '" + targetFolder + "'", e);
-                        return false;
-                    }
+                String targetPath = library.getPath();
+                int divPos = targetPath.indexOf(":");
+                if (divPos != -1) {
+                    targetPath = targetPath.substring(divPos + 1);
+                    while (targetPath.startsWith("/")) targetPath = targetPath.substring(1);
                 }
 
-                Path trgLocalFile = targetFolder.resolve(srcLocalFile.getFileName());
                 if (Files.isDirectory(srcLocalFile)) {
+                    Path targetFolder = targetFileLocation.resolve(targetPath);
+                    if (!Files.exists(targetFolder)) {
+                        try {
+                            Files.createDirectories(targetFolder);
+                        } catch (IOException e) {
+                            log.error("Error creating driver target directory '" + targetFolder + "'", e);
+                            return false;
+                        }
+                    }
+
                     try {
-                        resolveDirectories(targetFileLocation, library, srcLocalFile, trgLocalFile, libraryFiles);
+                        resolveDirectories(targetFileLocation, library, srcLocalFile, targetFolder, libraryFiles);
                     } catch (IOException e) {
                         log.error("Error resolving directory files at '" + srcLocalFile + "'", e);
                     }
                 } else {
+                    Path trgLocalFile = targetFileLocation.resolve(targetPath);
+                    Path trgFolder = trgLocalFile.getParent();
+                    if (!Files.exists(trgFolder)) {
+                        try {
+                            Files.createDirectories(trgFolder);
+                        } catch (IOException e) {
+                            log.error("Error creating driver file directory '" + trgFolder + "'", e);
+                        }
+                    }
                     DriverFileInfo fileInfo = resolveFile(targetFileLocation, library, srcLocalFile, trgLocalFile);
                     if (fileInfo != null) {
                         libraryFiles.add(fileInfo);
