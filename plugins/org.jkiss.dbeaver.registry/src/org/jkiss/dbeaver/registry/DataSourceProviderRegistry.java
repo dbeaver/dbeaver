@@ -424,6 +424,26 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
+    /**
+     * Resolve all jar files in all enabled drivers.
+     */
+    public void linkDriverFiles(Path targetFileLocation) {
+        boolean didResolve = false;
+        for (DataSourceProviderDescriptor dspd : this.dataSourceProviders) {
+            for (DriverDescriptor driver : dspd.getDrivers()) {
+                if (driver.isDisabled() || driver.isInternalDriver()) {
+                    continue;
+                }
+                if (driver.resolveDriverFiles(targetFileLocation)) {
+                    didResolve = true;
+                }
+            }
+        }
+        if (didResolve) {
+            saveDrivers();
+        }
+    }
+
     private void loadConnectionTypes() {
         try {
             String ctConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBFileController;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 
 import java.nio.file.Path;
 
@@ -31,22 +32,22 @@ public class LocalFileController implements DBFileController {
     }
 
     @Override
-    public byte[] loadFileData(@NotNull String filePath) throws DBException {
-        return new byte[0];
+    public byte[] loadFileData(@NotNull String fileType, @NotNull String filePath) throws DBException {
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    public void saveFileData(@NotNull String filePath, byte[] fileData) throws DBException {
-
+    public void saveFileData(@NotNull String fileType, @NotNull String filePath, byte[] fileData) throws DBException {
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    public String[] listFiles(@NotNull String filePath) throws DBException {
-        return new String[0];
+    public String[] listFiles(@NotNull String fileType, @NotNull String filePath) throws DBException {
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    public void deleteFile(@NotNull String filePath, boolean recursive) throws DBException {
-
+    public void deleteFile(@NotNull String fileType, @NotNull String filePath, boolean recursive) throws DBException {
+        throw new DBCFeatureNotSupportedException();
     }
 }

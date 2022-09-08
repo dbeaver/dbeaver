@@ -21,15 +21,20 @@ import org.jkiss.dbeaver.DBException;
 
 /**
  * Binary files controller.
+ *
+ * There are different file types.
+ * - 'database-driver' is for driver jar files
  */
 public interface DBFileController extends DBPObjectController {
 
-    byte[] loadFileData(@NotNull String filePath) throws DBException;
+    String TYPE_DATABASE_DRIVER = "database-driver";
 
-    void saveFileData(@NotNull String filePath, byte[] fileData) throws DBException;
+    byte[] loadFileData(@NotNull String fileType, @NotNull String filePath) throws DBException;
 
-    String[] listFiles(@NotNull String filePath) throws DBException;
+    void saveFileData(@NotNull String fileType, @NotNull String filePath, byte[] fileData) throws DBException;
 
-    void deleteFile(@NotNull String filePath, boolean recursive) throws DBException;
+    String[] listFiles(@NotNull String fileType, @NotNull String filePath) throws DBException;
+
+    void deleteFile(@NotNull String fileType, @NotNull String filePath, boolean recursive) throws DBException;
 
 }

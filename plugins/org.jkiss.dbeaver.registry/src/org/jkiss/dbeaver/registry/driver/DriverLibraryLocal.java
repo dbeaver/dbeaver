@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Collection;
 
@@ -89,16 +90,20 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         // Try to use direct path
         String localFilePath = this.getLocalFilePath();
 
-        Path libraryFile = Path.of(localFilePath);
-        if (Files.exists(libraryFile)) {
-            return libraryFile;
-        }
+        try {
+            Path libraryFile = Path.of(localFilePath);
+            if (Files.exists(libraryFile)) {
+                return libraryFile;
+            }
 
-        // Try to get local file
-        Path platformFile = detectLocalFile();
-        if (platformFile != null && Files.exists(platformFile)) {
-            // Relative file do not exists - use plain one
-            return platformFile;
+            // Try to get local file
+            Path platformFile = detectLocalFile();
+            if (platformFile != null && Files.exists(platformFile)) {
+                // Relative file do not exists - use plain one
+                return platformFile;
+            }
+        } catch (InvalidPathException e) {
+            // ignore - bad local path
         }
 
         URL url = driver.getProviderDescriptor().getContributorBundle().getEntry(localFilePath);
@@ -118,17 +123,16 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         } else {
             try {
                 url = FileLocator.toFileURL(new URL(localFilePath));
-                Path urlFile = Path.of(url.getFile());
+                Path urlFile = RuntimeUtils.getLocalPathFromURL(url);
                 if (Files.exists(urlFile)) {
-                    platformFile = urlFile;
+                    return urlFile;
                 }
             } catch (IOException ex) {
                 // ignore
             }
         }
 
-        // Nothing fits - just return plain url
-        return platformFile;
+        return null;
     }
 
     @Nullable

@@ -52,6 +52,7 @@ import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -62,6 +63,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.CRC32;
 
 /**
  * DriverDescriptor
@@ -69,7 +71,6 @@ import java.util.stream.Stream;
 public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private static final Log log = Log.getLog(DriverDescriptor.class);
 
-    private static final String DRIVERS_FOLDER = "drivers"; //$NON-NLS-1$
     private static final String PROP_DRIVERS_LOCATION = "DRIVERS_LOCATION";
 
     private static final String LICENSE_ACCEPT_KEY = "driver.license.accept.";
@@ -120,9 +121,23 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             return type;
         }
 
+        public long getFileCRC() {
+            return fileCRC;
+        }
+
         @Override
         public String toString() {
             return file.getFileName().toString();
+        }
+    }
+
+    private static class ReplaceInfo {
+        String providerId;
+        String driverId;
+
+        private ReplaceInfo(String providerId, String driverId) {
+            this.providerId = providerId;
+            this.driverId = driverId;
         }
     }
 
@@ -1244,6 +1259,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     private List<Path> validateFilesPresence(boolean resetVersions) {
+        if (DBWorkbench.getPlatform().getApplication().isDistributed()) {
+            // We are in distributed mode
+            return syncDistributedDependencies();
+        }
+
         boolean localLibsExists = false;
         final List<DBPDriverLibrary> downloadCandidates = new ArrayList<>();
         for (DBPDriverLibrary library : libraries) {
@@ -1289,14 +1309,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
             if (resetVersions) {
                 resetDriverInstance();
-
-/*
-                for (DBPDriverLibrary library : libraries) {
-                    if (!library.isDisabled()) {
-                        library.resetVersion();
-                    }
-                }
-*/
             }
             downloaded = true;
             for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
@@ -1359,6 +1371,63 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         // Check if local files are zip archives with jars inside
         return DriverUtils.extractZipArchives(result);
+    }
+
+    /**
+     * Sync driver libs with remote server
+     */
+    private List<Path> syncDistributedDependencies() {
+        List<Path> localFilePaths = new ArrayList<>();
+
+        final Map<DBPDriverLibrary, List<DriverFileInfo>> downloadCandidates = new LinkedHashMap<>();
+        for (DBPDriverLibrary library : libraries) {
+            if (library.isDisabled() ||!library.matchesCurrentPlatform()) {
+                continue;
+            }
+            List<DriverFileInfo> files = resolvedFiles.get(library);
+            if (files != null) {
+                for (DriverFileInfo depFile : files) {
+                    String depFilePath = depFile.getFile().toString();
+                    Path driverFolder = getWorkspaceStorageFolder();
+                    Path localDriverFile = driverFolder.resolve(depFilePath);
+                    if (!Files.exists(localDriverFile) || depFile.getFileCRC() == 0 ||
+                        depFile.getFileCRC() != calculateFileCRC(localDriverFile))
+                    {
+                        downloadCandidates
+                            .computeIfAbsent(library, key -> new ArrayList<>())
+                            .add(depFile);
+                    } else {
+                        localFilePaths.add(localDriverFile);
+                    }
+                }
+            }
+        }
+
+        if (!downloadCandidates.isEmpty()) {
+
+        }
+
+        return localFilePaths;
+    }
+
+    public static long calculateFileCRC(Path localDriverFile) {
+        try (InputStream is = Files.newInputStream(localDriverFile)) {
+            CRC32 crc = new CRC32();
+
+            byte[] buffer = new byte[65536];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                crc.update(buffer, 0, bytesRead);
+            }
+            return crc.getValue();
+        } catch (IOException e) {
+            log.error("Error reading file '" + localDriverFile + "', CRC calculation failed", e);
+            return 0;
+        }
+    }
+
+    private Path getWorkspaceStorageFolder() {
+        return getWorkspaceDriversStorageFolder().resolve(getId());
     }
 
     List<DriverFileInfo> getCachedFiles(DBPDriverLibrary library) {
@@ -1472,16 +1541,126 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return configurationTypes;
     }
 
-    public static File getDriversContribFolder() throws IOException {
-        return new File(Platform.getInstallLocation().getDataArea(DRIVERS_FOLDER).toExternalForm());
-    }
-
     public DBPNativeClientLocation getDefaultClientLocation() {
         DBPNativeClientLocationManager clientManager = getNativeClientManager();
         if (clientManager != null) {
             return clientManager.getDefaultLocalClientLocation();
         }
         return null;
+    }
+
+    /**
+     * Add resolved files to all libraries
+     */
+    public boolean resolveDriverFiles(Path targetFileLocation) {
+        if (libraries.isEmpty()) {
+            return false;
+        }
+        resolvedFiles.clear();
+        Path targetFolder = targetFileLocation.resolve(getProviderId()).resolve(getId());
+        for (DBPDriverLibrary library : libraries) {
+            // We need to sync resolved files with real files of library
+            // - Local files are linked directly
+            // - Local folders are linked to folder's contents
+            if (library instanceof DriverLibraryLocal) {
+                List<DriverFileInfo> libraryFiles = resolvedFiles.computeIfAbsent(library, key -> new ArrayList<>());
+
+                Path srcLocalFile = library.getLocalFile();
+                if (srcLocalFile == null) {
+                    log.warn("\t-Driver library file '" + library.getPath() + "' is missing");
+                    continue;
+                }
+                if (!Files.exists(srcLocalFile)) {
+                    log.warn("\tDriver library file '" + srcLocalFile.toAbsolutePath() + "' doesn't exist");
+                    continue;
+                }
+
+                if (!Files.exists(targetFolder)) {
+                    try {
+                        Files.createDirectories(targetFolder);
+                    } catch (IOException e) {
+                        log.error("Error creating driver target directory '" + targetFolder + "'", e);
+                        return false;
+                    }
+                }
+
+                Path trgLocalFile = targetFolder.resolve(srcLocalFile.getFileName());
+                if (Files.isDirectory(srcLocalFile)) {
+                    try {
+                        resolveDirectories(targetFileLocation, library, srcLocalFile, trgLocalFile, libraryFiles);
+                    } catch (IOException e) {
+                        log.error("Error resolving directory files at '" + srcLocalFile + "'", e);
+                    }
+                } else {
+                    DriverFileInfo fileInfo = resolveFile(targetFileLocation, library, srcLocalFile, trgLocalFile);
+                    if (fileInfo != null) {
+                        libraryFiles.add(fileInfo);
+                    }
+                }
+
+
+            } else {
+                // Ignore all non-local libraries for now
+            }
+        }
+        return true;
+    }
+
+    private void resolveDirectories(Path targetFileLocation, DBPDriverLibrary library, Path srcLocalFile, Path trgLocalFile, List<DriverFileInfo> libraryFiles) throws IOException {
+        if (!Files.exists(trgLocalFile)) {
+            try {
+                Files.createDirectories(trgLocalFile);
+            } catch (IOException e) {
+                log.error("Error creating driver library target directory '" + trgLocalFile + "'", e);
+                return;
+            }
+        }
+        // Resolve directory contents
+        List<Path> srcDirFiles = Files.list(srcLocalFile).collect(Collectors.toList());
+        for (Path dirFile : srcDirFiles) {
+            Path trgDirFile = trgLocalFile.resolve(dirFile.getFileName());
+            if (Files.isDirectory(dirFile)) {
+                resolveDirectories(targetFileLocation, library, dirFile, trgDirFile, libraryFiles);
+            } else {
+                DriverFileInfo fileInfo = resolveFile(targetFileLocation, library, dirFile, trgDirFile);
+                if (fileInfo != null) {
+                    libraryFiles.add(fileInfo);
+                }
+            }
+        }
+    }
+
+    private DriverFileInfo resolveFile(Path targetFileLocation, DBPDriverLibrary library, Path srcLocalFile, Path trgLocalFile) {
+        Path relPath = targetFileLocation.relativize(trgLocalFile);
+        DriverFileInfo info = new DriverFileInfo(trgLocalFile.getFileName().toString(), null, library.getType(), relPath);
+        info.fileCRC = calculateFileCRC(srcLocalFile);
+        long targetCRC = Files.exists(trgLocalFile) ? calculateFileCRC(trgLocalFile) : 0;
+        if (info.fileCRC != targetCRC) {
+            // Copy file
+            try {
+                Files.copy(srcLocalFile, trgLocalFile);
+            } catch (IOException e) {
+                log.error("Error copying library file '" + srcLocalFile + "' into '" + trgLocalFile + "'", e);
+                return null;
+            }
+        }
+        return info;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    /////////////////////////////////////////
+    // Static utilities
+
+    public static Path getWorkspaceDriversStorageFolder() {
+        return DBWorkbench.getPlatform().getWorkspace().getMetadataFolder().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
+    }
+
+    public static Path getDriversContribFolder() throws IOException {
+        return Path.of(Platform.getInstallLocation().getDataArea(DBConstants.DEFAULT_DRIVERS_FOLDER).toExternalForm());
     }
 
     @NotNull
@@ -1542,21 +1721,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
         return libraries.toArray(new String[0]);
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
-
-    private static class ReplaceInfo {
-        String providerId;
-        String driverId;
-
-        private ReplaceInfo(String providerId, String driverId) {
-            this.providerId = providerId;
-            this.driverId = driverId;
-        }
     }
 
 }
