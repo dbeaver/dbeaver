@@ -746,6 +746,8 @@
 
                     <parameter name="supports-limits" value="false"/>
                     <parameter name="supports-references" value="false"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                    <parameter name="query-set-active-db" value="USE ?"/>
                 </driver>
                 <driver
                     id="spark_hive"
