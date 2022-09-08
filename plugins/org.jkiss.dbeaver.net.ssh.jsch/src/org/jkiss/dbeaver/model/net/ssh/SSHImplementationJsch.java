@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.net.ssh;
 
 import com.jcraft.jsch.*;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -33,10 +34,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,6 +46,8 @@ import java.util.stream.Collectors;
  * SSH tunnel
  */
 public class SSHImplementationJsch extends SSHImplementationAbstract {
+    private static final String CHANNEL_TYPE_SFTP = "sftp";
+
     private static final Log log = Log.getLog(SSHImplementationJsch.class);
 
     private transient JSch jsch;
@@ -204,6 +204,59 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             closeTunnel(monitor);
             initTunnel(monitor, savedConfiguration, savedConnectionInfo);
         }
+    }
+
+    @Override
+    public void getFile(
+        @NotNull String src,
+        @NotNull OutputStream dst,
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBException, IOException {
+        final ChannelSftp channel = openSftpChannel();
+
+        try {
+            channel.get(src, dst, new SftpProgressMonitorAdapter(monitor));
+        } catch (SftpException e) {
+            throw new IOException("Error downloading file through SFTP channel", e);
+        } finally {
+            channel.disconnect();
+        }
+    }
+
+    @Override
+    public void putFile(
+        @NotNull InputStream src,
+        @NotNull String dst,
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBException, IOException {
+        final ChannelSftp channel = openSftpChannel();
+
+        try {
+            channel.put(src, dst, new SftpProgressMonitorAdapter(monitor));
+        } catch (SftpException e) {
+            throw new IOException("Error uploading file through SFTP channel", e);
+        } finally {
+            channel.disconnect();
+        }
+    }
+
+    @NotNull
+    private ChannelSftp openSftpChannel() throws DBException, IOException {
+        final Session[] sessions = this.sessions;
+        final ChannelSftp channel;
+
+        if (ArrayUtils.isEmpty(sessions)) {
+            throw new DBException("No active session available");
+        }
+
+        try {
+            channel = (ChannelSftp) sessions[sessions.length - 1].openChannel(CHANNEL_TYPE_SFTP);
+            channel.connect();
+        } catch (JSchException e) {
+            throw new IOException("Error opening SFTP channel", e);
+        }
+
+        return channel;
     }
 
     private void addIdentityKeyValue(String keyValue, String password) throws JSchException {
@@ -367,6 +420,35 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             }
             log.debug("SSH " + levelStr + ": " + message);
 
+        }
+    }
+
+    private static class SftpProgressMonitorAdapter implements SftpProgressMonitor {
+        private final DBRProgressMonitor delegate;
+
+        public SftpProgressMonitorAdapter(@NotNull DBRProgressMonitor delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void init(int op, String src, String dst, long max) {
+            if (op == PUT) {
+                delegate.beginTask(NLS.bind("Upload file ''{0}'' -> ''{1}''", src, dst), (int) max);
+            } else {
+                delegate.beginTask(NLS.bind("Download file ''{0}'' -> ''{1}''", src, dst), (int) max);
+            }
+        }
+
+        @Override
+        public boolean count(long count) {
+            delegate.worked((int) count);
+
+            return !delegate.isCanceled();
+        }
+
+        @Override
+        public void end() {
+            delegate.done();
         }
     }
 }

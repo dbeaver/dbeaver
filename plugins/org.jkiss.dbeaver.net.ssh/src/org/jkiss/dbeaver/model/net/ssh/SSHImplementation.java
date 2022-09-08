@@ -16,12 +16,15 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * SSH tunnel implementation
@@ -41,4 +44,29 @@ public interface SSHImplementation {
     void closeTunnel(DBRProgressMonitor monitor)
         throws DBException, IOException;
 
+    /**
+     * Downloads a file from the specified remote path.
+     *
+     * @param src     path to a remote file
+     * @param dst     output stream used for writing data to
+     * @param monitor progress monitor which is used for tracking download progress
+     */
+    void getFile(
+        @NotNull String src,
+        @NotNull OutputStream dst,
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBException, IOException;
+
+    /**
+     * Uploads a file to the specified remote path.
+     *
+     * @param src     input stream used for reading data from
+     * @param dst     path to a remote file
+     * @param monitor progress monitor which is used for tracking upload progress
+     */
+    void putFile(
+        @NotNull InputStream src,
+        @NotNull String dst,
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBException, IOException;
 }

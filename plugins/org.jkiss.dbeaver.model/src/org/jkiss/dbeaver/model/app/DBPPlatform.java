@@ -105,4 +105,5 @@ public interface DBPPlatform {
 
     boolean isShuttingDown();
 
+    //void runRemoteTask(@NotNull DBRRunnableWithProgress runnable);
 }

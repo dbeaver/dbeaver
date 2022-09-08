@@ -22,10 +22,13 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
+import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
+import net.schmizz.sshj.xfer.InMemoryDestFile;
+import net.schmizz.sshj.xfer.InMemorySourceFile;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -40,6 +43,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -169,6 +174,61 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
             closeTunnel(monitor);
             initTunnel(monitor, savedConfiguration, savedConnectionInfo);
         }
+    }
+
+    @Override
+    public void getFile(@NotNull String src, @NotNull OutputStream dst, @NotNull DBRProgressMonitor monitor) throws DBException, IOException {
+        try (SFTPClient client = openSftpClient()) {
+            client.get(src, new InMemoryDestFile() {
+                @Override
+                public long getLength() {
+                    return -1;
+                }
+
+                @Override
+                public OutputStream getOutputStream() {
+                    return dst;
+                }
+
+                @Override
+                public OutputStream getOutputStream(boolean b) {
+                    return dst;
+                }
+            });
+        }
+    }
+
+    @Override
+    public void putFile(@NotNull InputStream src, @NotNull String dst, @NotNull DBRProgressMonitor monitor) throws DBException, IOException {
+        try (SFTPClient client = openSftpClient()) {
+            client.put(new InMemorySourceFile() {
+                @Override
+                public String getName() {
+                    return "memory";
+                }
+
+                @Override
+                public long getLength() {
+                    return -1;
+                }
+
+                @Override
+                public InputStream getInputStream() {
+                    return src;
+                }
+            }, dst);
+        }
+    }
+
+    @NotNull
+    private SFTPClient openSftpClient() throws DBException, IOException {
+        final SSHClient client = this.sshClient;
+
+        if (client == null) {
+            throw new DBException("No active session available");
+        }
+
+        return sshClient.newSFTPClient();
     }
 
     private class LocalPortListener extends Thread {
