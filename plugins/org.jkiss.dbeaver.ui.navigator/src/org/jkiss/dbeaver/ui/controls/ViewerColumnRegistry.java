@@ -30,7 +30,10 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -76,8 +79,8 @@ class ViewerColumnRegistry {
     private volatile ConfigSaver saver = null;
 
     public ViewerColumnRegistry() {
-        File columnsConfig = DBWorkbench.getPlatform().getConfigurationFile(COLUMNS_CONFIG_FILE);
-        if (columnsConfig.exists()) {
+        Path columnsConfig = DBWorkbench.getPlatform().getLocalConfigurationFile(COLUMNS_CONFIG_FILE);
+        if (Files.exists(columnsConfig)) {
             loadConfiguration(columnsConfig);
         }
     }
@@ -103,9 +106,9 @@ class ViewerColumnRegistry {
         }
     }
 
-    private void loadConfiguration(File configFile) {
+    private void loadConfiguration(Path configFile) {
         columnsConfig.clear();
-        try (InputStream in = new FileInputStream(configFile)) {
+        try (InputStream in = Files.newInputStream(configFile)) {
             SAXReader parser = new SAXReader(in);
             final ColumnsParser dsp = new ColumnsParser();
             parser.parse(dsp);
@@ -132,8 +135,8 @@ class ViewerColumnRegistry {
 
         private void flushConfig() {
 
-            File configFile = DBWorkbench.getPlatform().getConfigurationFile(COLUMNS_CONFIG_FILE);
-            try (OutputStream out = new FileOutputStream(configFile)) {
+            Path configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(COLUMNS_CONFIG_FILE);
+            try (OutputStream out = Files.newOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
                 xml.setButify(true);
                 try (final XMLBuilder.Element e = xml.startElement("items")) {

@@ -38,7 +38,12 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -103,13 +108,13 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                     }
                 } else {
                     // Create new local storage
-                    File tempFile;
+                    Path tempFile;
                     try {
                         tempFile = ContentUtils.createTempContentFile(monitor, platform, "clob" + clob.hashCode());
                     } catch (IOException e) {
                         throw new DBCException("Can't create temp file", e);
                     }
-                    try (Writer os = new OutputStreamWriter(new FileOutputStream(tempFile), getDefaultEncoding())) {
+                    try (Writer os = Files.newBufferedWriter(tempFile, Charset.forName(getDefaultEncoding()))) {
                         ContentUtils.copyStreams(clob.getCharacterStream(), contentLength, os, monitor);
                     } catch (IOException e) {
                         ContentUtils.deleteTempFile(tempFile);
@@ -238,7 +243,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 return CommonUtils.toString(((DBDContentCached) storage).getCachedValue());
             } else {
                 if (storage instanceof ExternalContentStorage) {
-                    return "[" + ((ExternalContentStorage) storage).getFile().getName() + "]";
+                    return "[" + ((ExternalContentStorage) storage).getFile().getFileName() + "]";
                 }
             }
         }

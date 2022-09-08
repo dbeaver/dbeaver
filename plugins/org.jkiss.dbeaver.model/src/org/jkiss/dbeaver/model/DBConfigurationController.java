@@ -14,22 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model;
 
-import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+import org.jkiss.dbeaver.DBException;
 
 /**
- * EclipseApplicationImpl
+ * Config files controller.
  */
-public abstract class EclipseApplicationImpl extends BaseApplicationImpl {
+public interface DBConfigurationController extends DBPObjectController {
 
-    @NotNull
-    @Override
-    public DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace) {
-        return new DesktopWorkspaceImpl(platform, eclipseWorkspace);
-    }
+    /**
+     * Loads config file contents.
+     * @param filePath relative or absolute file path
+     *
+     */
+    String loadConfigurationFile(@NotNull String filePath) throws DBException;
+
+    /**
+     * Saves config file contents
+     * @param filePath relative or absolute
+     * @param data
+     * @throws DBException
+     */
+    void saveConfigurationFile(
+        @NotNull String filePath,
+        @NotNull String data) throws DBException;
 
 }

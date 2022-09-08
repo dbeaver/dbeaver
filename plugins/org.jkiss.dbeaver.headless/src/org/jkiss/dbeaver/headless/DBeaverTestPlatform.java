@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.headless;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
-import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -45,6 +45,7 @@ import org.osgi.framework.Bundle;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 
 /**
@@ -228,7 +229,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     }
 
     @NotNull
-    public File getTempFolder(DBRProgressMonitor monitor, String name) {
+    public Path getTempFolder(DBRProgressMonitor monitor, String name) {
         if (tempFolder == null) {
             // Make temp folder
             monitor.subTask("Create temp folder");
@@ -255,13 +256,12 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         if (!tempFolder.exists() && !tempFolder.mkdirs()) {
             log.error("Can't create temp directory " + tempFolder.getAbsolutePath());
         }
-        return tempFolder;
+        return tempFolder.toPath();
     }
 
-    @NotNull
     @Override
-    public File getConfigurationFile(String fileName) {
-        return DBeaverTestActivator.getConfigurationFile(fileName);
+    protected Plugin getProductPlugin() {
+        return DBeaverTestActivator.getInstance();
     }
 
     @Override
@@ -269,10 +269,4 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         return isClosing();
     }
 
-    private static class TestPreferenceStore extends SimplePreferenceStore {
-        @Override
-        public void save() {
-
-        }
-    }
 }
