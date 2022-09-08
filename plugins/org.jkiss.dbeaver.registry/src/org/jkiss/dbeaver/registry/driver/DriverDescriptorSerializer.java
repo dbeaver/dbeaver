@@ -17,17 +17,23 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * DriverDescriptorSerializer
  */
-public class DriverDescriptorSerializer {
+public abstract class DriverDescriptorSerializer {
+
+    abstract void serializeDrivers(OutputStream os, List<DataSourceProviderDescriptor> providers) throws IOException;
 
     static String replacePathVariables(String path) {
         return GeneralUtils.replaceVariables(path, new DriverVariablesResolver());

@@ -37,7 +37,12 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -100,14 +105,14 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                 }
             } else {
                 // Create new local storage
-                File tempFile;
+                Path tempFile;
                 try {
                     tempFile = ContentUtils.createTempContentFile(monitor, platform, "blob" + blob.hashCode());
                 }
                 catch (IOException e) {
                     throw new DBCException("Can't create temporary file", e);
                 }
-                try (OutputStream os = new FileOutputStream(tempFile)) {
+                try (OutputStream os = Files.newOutputStream(tempFile)) {
                     try (InputStream bs = blob.getBinaryStream()) {
                         ContentUtils.copyStreams(bs, contentLength, os, monitor);
                     }

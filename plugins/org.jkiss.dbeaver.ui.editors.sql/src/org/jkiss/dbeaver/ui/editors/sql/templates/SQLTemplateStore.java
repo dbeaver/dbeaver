@@ -12,7 +12,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.templates.ContextTypeRegistry;
 import org.eclipse.jface.text.templates.Template;
@@ -30,9 +29,14 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.PropertyResourceBundle;
@@ -51,8 +55,7 @@ public class SQLTemplateStore extends TemplateStore {
     private static final Log log = Log.getLog(SQLTemplateStore.class);
     public static final String PREF_STORE_KEY = "org.jkiss.dbeaver.core.sql_templates";
 
-    public SQLTemplateStore(ContextTypeRegistry registry)
-    {
+    public SQLTemplateStore(ContextTypeRegistry registry) {
         super(registry, new PreferenceStoreDelegate(new CustomTemplatesStore()), PREF_STORE_KEY); //$NON-NLS-1$
     }
 
@@ -61,16 +64,14 @@ public class SQLTemplateStore extends TemplateStore {
      *
      * @throws java.io.IOException {@inheritDoc}
      */
-    protected void loadContributedTemplates() throws IOException
-    {
+    protected void loadContributedTemplates() throws IOException {
         Collection<TemplatePersistenceData> contributed = readContributedTemplates();
         for (TemplatePersistenceData data : contributed) {
             internalAdd(data);
         }
     }
 
-    private Collection<TemplatePersistenceData> readContributedTemplates() throws IOException
-    {
+    private Collection<TemplatePersistenceData> readContributedTemplates() throws IOException {
         Collection<TemplatePersistenceData> templates = new ArrayList<>();
         readIncludedTemplates(
             SQLEditorActivator.PLUGIN_ID,
@@ -94,15 +95,14 @@ public class SQLTemplateStore extends TemplateStore {
         String contributorId,
         Collection<TemplatePersistenceData> templates,
         String file,
-        String translations) throws IOException
-    {
+        String translations) throws IOException {
         if (file != null) {
             Bundle plugin = Platform.getBundle(contributorId);
-            URL url = FileLocator.find(plugin, Path.fromOSString(file), null);
+            URL url = FileLocator.find(plugin, org.eclipse.core.runtime.Path.fromOSString(file), null);
             if (url != null) {
                 ResourceBundle bundle = null;
                 if (translations != null) {
-                    URL bundleURL = FileLocator.find(plugin, Path.fromOSString(translations), null);
+                    URL bundleURL = FileLocator.find(plugin, org.eclipse.core.runtime.Path.fromOSString(translations), null);
                     if (bundleURL != null) {
                         InputStream bundleStream = bundleURL.openStream();
                         try {
@@ -140,11 +140,10 @@ public class SQLTemplateStore extends TemplateStore {
      *
      * @param template the template to validate
      * @return <code>true</code> if validation is successful or no context
-     *         type registry is specified, <code>false</code> if validation
-     *         fails
+     * type registry is specified, <code>false</code> if validation
+     * fails
      */
-    private boolean validateTemplate(Template template)
-    {
+    private boolean validateTemplate(Template template) {
         String contextTypeId = template.getContextTypeId();
         if (!contextExists(contextTypeId))
             return false;
@@ -166,53 +165,50 @@ public class SQLTemplateStore extends TemplateStore {
      *
      * @param contextTypeId the context type id to look for
      * @return <code>true</code> if the context type specified by the id
-     *         is present in the context type registry, or if no registry is
-     *         specified
+     * is present in the context type registry, or if no registry is
+     * specified
      */
-    private boolean contextExists(String contextTypeId)
-    {
+    private boolean contextExists(String contextTypeId) {
         return contextTypeId != null && (getRegistry() == null || getRegistry().getContextType(contextTypeId) != null);
     }
 
-    protected void handleException(IOException x)
-    {
+    protected void handleException(IOException x) {
         log.error(x);
     }
 
     private static class CustomTemplatesStore extends SimplePreferenceStore {
-        private CustomTemplatesStore()
-        {
+        private CustomTemplatesStore() {
             super(DBWorkbench.getPlatform().getPreferenceStore());
             try {
-                File configurationFile = getConfigurationFile();
-                if (configurationFile.exists()) {
-                    setValue(PREF_STORE_KEY, ContentUtils.readFileToString(configurationFile));
+                Path configurationFile = getConfigurationFile();
+                if (Files.exists(configurationFile)) {
+                    setValue(PREF_STORE_KEY, Files.readString(configurationFile));
                 }
             } catch (IOException e) {
                 log.error(e);
             }
         }
 
-        private File getConfigurationFile()
-        {
-            return DBWorkbench.getPlatform().getConfigurationFile("templates.xml");
+        private Path getConfigurationFile() {
+            return DBWorkbench.getPlatform().getLocalConfigurationFile("templates.xml");
         }
 
         @Override
-        public void save() throws IOException
-        {
+        public void save() throws IOException {
             // Save templates
-            File configurationFile = getConfigurationFile();
+            Path configurationFile = getConfigurationFile();
             String templatesConfig = getString(PREF_STORE_KEY);
             if (!CommonUtils.isEmpty(templatesConfig)) {
                 // Save it in templates file
-                try (Writer writer = new OutputStreamWriter(new FileOutputStream(configurationFile), StandardCharsets.UTF_8)) {
+                try (Writer writer = Files.newBufferedWriter(configurationFile, StandardCharsets.UTF_8)) {
                     writer.write(templatesConfig);
                 }
             } else {
-                if (configurationFile.exists()) {
-                    if (!configurationFile.delete()) {
-                        log.warn("Can't delete empty template configuration");
+                if (Files.exists(configurationFile)) {
+                    try {
+                        Files.delete(configurationFile);
+                    } catch (IOException e) {
+                        log.warn("Can't delete empty template configuration", e);
                     }
                 }
             }

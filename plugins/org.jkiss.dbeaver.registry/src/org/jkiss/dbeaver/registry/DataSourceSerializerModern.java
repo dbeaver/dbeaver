@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptorSerializerModern;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -253,7 +254,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             jsonWriter.name(dmap.getKey());
                             jsonWriter.beginObject();
                             for (DBPDriver driver : dmap.getValue().values()) {
-                                ((DriverDescriptor) driver).serialize(jsonWriter, true);
+                                new DriverDescriptorSerializerModern().serializeDriver(
+                                    jsonWriter, (DriverDescriptor) driver, true);
                             }
                             jsonWriter.endObject();
                         }
@@ -425,6 +427,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
                 deserializeModifyPermissions(ctConfig, ct);
             }
+
+            // Drivers
+            // TODO: load drivers config
 
             // External configurations
             Map<String, DBPExternalConfiguration> externalConfigurations = new LinkedHashMap<>();

@@ -57,7 +57,11 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
     private transient LocalPortListener portListener;
 
     @Override
-    protected synchronized void setupTunnel(@NotNull DBRProgressMonitor monitor, @NotNull DBWHandlerConfiguration configuration, @NotNull SSHHostConfiguration[] hosts, @NotNull SSHPortForwardConfiguration portForward) throws DBException, IOException  {
+    protected synchronized void setupTunnel(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull SSHHostConfiguration[] hosts,
+        @NotNull SSHPortForwardConfiguration portForward) throws DBException {
         try {
             final SSHHostConfiguration host = hosts[0];
             final SSHAuthConfiguration auth = host.getAuthConfiguration();
@@ -90,10 +94,10 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                 case PUBLIC_KEY:
                     if (auth.getKeyFile() != null) {
                         if (!CommonUtils.isEmpty(auth.getPassword())) {
-                            KeyProvider keyProvider = sshClient.loadKeys(auth.getKeyFile().getAbsolutePath(), auth.getPassword().toCharArray());
+                            KeyProvider keyProvider = sshClient.loadKeys(auth.getKeyFile().toAbsolutePath().toString(), auth.getPassword().toCharArray());
                             sshClient.authPublickey(host.getUsername(), keyProvider);
                         } else {
-                            sshClient.authPublickey(host.getUsername(), auth.getKeyFile().getAbsolutePath());
+                            sshClient.authPublickey(host.getUsername(), auth.getKeyFile().toAbsolutePath().toString());
                         }
                     } else {
                         KeyProvider keyProvider = sshClient.loadKeys(auth.getKeyValue(), null,
@@ -124,7 +128,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
     }
 
     @Override
-    public void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
+    public void closeTunnel(DBRProgressMonitor monitor) {
         if (portListener != null) {
             portListener.stopServer();
         }
