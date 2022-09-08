@@ -114,6 +114,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         try {
             newBrowser = new Browser(composite, SWT.NONE);
         } catch (SWTError error) {
+            log.error("Internal web browser initialization failed", error);
             for (Control control : composite.getChildren()) {
                 control.dispose();
             }
