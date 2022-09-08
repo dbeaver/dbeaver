@@ -114,7 +114,10 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
                                         if (!CommonUtils.isEmpty(file.getVersion())) {
                                             JSONUtils.field(json, RegistryConstants.ATTR_VERSION, file.getVersion());
                                         }
-                                        JSONUtils.field(json, RegistryConstants.ATTR_PATH, substitutePathVariables(pathSubstitutions, file.getFile().getAbsolutePath()));
+                                        JSONUtils.field(
+                                            json,
+                                            RegistryConstants.ATTR_PATH,
+                                            substitutePathVariables(pathSubstitutions, file.getFile().toAbsolutePath().toString()));
                                         json.endObject();
                                     }
                                 }

@@ -29,8 +29,9 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -206,18 +207,16 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
 
     public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException
     {
-        final File localFile = getLocalFile();
+        final Path localFile = getLocalFile();
         if (localFile == null) {
             throw new IOException("No target file for '" + getPath() + "'");
         }
-        if (!forceUpdate && localFile.exists() && localFile.length() > 0) {
+        if (!forceUpdate && Files.exists(localFile) && Files.size(localFile) > 0) {
             return;
         }
-        final File localDir = localFile.getParentFile();
-        if (!localDir.exists()) {
-            if (!localDir.mkdirs()) {
-                log.warn("Can't create directory for local driver file '" + localDir.getAbsolutePath() + "'");
-            }
+        final Path localDir = localFile.getParent();
+        if (!Files.exists(localDir)) {
+            Files.createDirectories(localDir);
         }
 
         String externalURL = getExternalURL(monitor);

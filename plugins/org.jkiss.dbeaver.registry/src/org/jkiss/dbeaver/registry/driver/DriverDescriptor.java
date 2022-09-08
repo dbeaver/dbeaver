@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.registry.NativeClientDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.VersionUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -88,9 +87,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         private final String id;
         private final String version;
         private final DBPDriverLibrary.FileType type;
-        private final File file;
+        private final Path file;
+        private long fileCRC;
 
-        DriverFileInfo(String id, String version, DBPDriverLibrary.FileType type, File file) {
+        DriverFileInfo(String id, String version, DBPDriverLibrary.FileType type, Path file) {
             this.id = id;
             this.version = version;
             this.file = file;
@@ -104,7 +104,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.type = library.getType();
         }
 
-        public File getFile() {
+        public Path getFile() {
             return file;
         }
 
@@ -122,7 +122,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         @Override
         public String toString() {
-            return file.getName();
+            return file.getFileName().toString();
         }
     }
 
@@ -1065,10 +1065,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public String getLicense() {
         for (DBPDriverLibrary file : libraries) {
             if (file.getType() == DBPDriverLibrary.FileType.license) {
-                final File licenseFile = file.getLocalFile();
-                if (licenseFile != null && licenseFile.exists()) {
+                final Path licenseFile = file.getLocalFile();
+                if (licenseFile != null && Files.exists(licenseFile)) {
                     try {
-                        return ContentUtils.readFileToString(licenseFile);
+                        return Files.readString(licenseFile);
                     } catch (IOException e) {
                         log.warn(e);
                     }
@@ -1166,14 +1166,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private void loadLibraries() throws DBException {
         this.classLoader = null;
 
-        List<File> allLibraryFiles = validateFilesPresence(false);
+        List<Path> allLibraryFiles = validateFilesPresence(false);
 
         List<URL> libraryURLs = new ArrayList<>();
         // Load libraries
-        for (File file : allLibraryFiles) {
+        for (Path file : allLibraryFiles) {
             URL url;
             try {
-                url = file.toURI().toURL();
+                url = file.toUri().toURL();
             } catch (MalformedURLException e) {
                 log.error(e);
                 continue;
@@ -1221,7 +1221,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return rootClassLoader;
     }
 
-    public List<File> getAllLibraryFiles() {
+    public List<Path> getAllLibraryFiles() {
         return validateFilesPresence(false);
     }
 
@@ -1235,7 +1235,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             if (library.isDisabled() || library.isOptional() || !library.matchesCurrentPlatform()) {
                 continue;
             }
-            if (library.getLocalFile() == null || !library.getLocalFile().exists()) {
+            if (library.getLocalFile() == null || !Files.exists(library.getLocalFile())) {
                 return true;
             }
         }
@@ -1243,7 +1243,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @NotNull
-    private List<File> validateFilesPresence(boolean resetVersions) {
+    private List<Path> validateFilesPresence(boolean resetVersions) {
         boolean localLibsExists = false;
         final List<DBPDriverLibrary> downloadCandidates = new ArrayList<>();
         for (DBPDriverLibrary library : libraries) {
@@ -1265,7 +1265,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         allExists = false;
                     } else {
                         for (DriverFileInfo file : files) {
-                            if (file.file == null || !file.file.exists()) {
+                            if (file.file == null || !Files.exists(file.file)) {
                                 allExists = false;
                                 break;
                             }
@@ -1307,7 +1307,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             providerDescriptor.getRegistry().saveDrivers();
         }
 
-        List<File> result = new ArrayList<>();
+        List<Path> result = new ArrayList<>();
 
         for (DBPDriverLibrary library : libraries) {
             if (library.isDisabled() || !library.matchesCurrentPlatform()) {
@@ -1318,7 +1318,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 List<DriverFileInfo> files = resolvedFiles.get(library);
                 if (files != null) {
                     for (DriverFileInfo file : files) {
-                        if (file.file != null) {
+                        if (file.file != null && !result.contains(file.file)) {
                             result.add(file.file);
                         }
                     }
@@ -1327,16 +1327,27 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 if (library.getType() == DBPDriverLibrary.FileType.license) {
                     continue;
                 }
-                File localFile = library.getLocalFile();
+                Path localFile = library.getLocalFile();
                 if (localFile != null) {
-                    if (localFile.isDirectory()) {
-                        File[] folderFiles = localFile.listFiles((dir, name1) ->
-                            name1.endsWith(".jar") || name1.endsWith(".zip"));
-                        if (folderFiles != null) {
-                            Collections.addAll(result, folderFiles);
+                    if (Files.isDirectory(localFile)) {
+                        try {
+                            List<Path> folderFiles = Files.list(localFile)
+                                .filter(p -> {
+                                    String fileName = p.getFileName().toString();
+                                    return fileName.endsWith(".jar") || fileName.endsWith(".zip");
+                                })
+                                .collect(Collectors.toList());
+
+                            if (!folderFiles.isEmpty()) {
+                                result.addAll(folderFiles);
+                            }
+                        } catch (IOException e) {
+                            log.error("Error reading driver directory '" + localFile + "'", e);
                         }
                     }
-                    result.add(localFile);
+                    if (!result.contains(localFile)) {
+                        result.add(localFile);
+                    }
                 }
             }
         }
@@ -1344,23 +1355,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         // Now check driver version
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE) && !downloaded) {
             // TODO: implement new version check
-/*
-            {
-                try {
-                    UIUtils.runInProgressService(monitor -> {
-                        try {
-                            checkDriverVersion(monitor);
-                        } catch (IOException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    });
-                } catch (InvocationTargetException e) {
-                    log.error(e.getTargetException());
-                } catch (InterruptedException e) {
-                    // ignore
-                }
-            }
-*/
         }
 
         // Check if local files are zip archives with jars inside

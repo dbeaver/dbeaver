@@ -44,6 +44,8 @@ import org.jkiss.utils.xml.XMLBuilder;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -171,12 +173,12 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
             if (exportData.isExportDrivers()) {
                 // Export driver libraries
-                Set<File> libFiles = new HashSet<>();
-                Map<String, File> libPathMap = new HashMap<>();
+                Set<Path> libFiles = new HashSet<>();
+                Map<String, Path> libPathMap = new HashMap<>();
                 for (DBPDriver driver : exportData.usedDrivers) {
                     for (DBPDriverLibrary fileDescriptor : driver.getDriverLibraries()) {
-                        final File libraryFile = fileDescriptor.getLocalFile();
-                        if (libraryFile != null && !fileDescriptor.isDisabled() && libraryFile.exists()) {
+                        final Path libraryFile = fileDescriptor.getLocalFile();
+                        if (libraryFile != null && !fileDescriptor.isDisabled() && Files.exists(libraryFile)) {
                             libFiles.add(libraryFile);
                             libPathMap.put(fileDescriptor.getPath(), libraryFile);
                         }
@@ -194,9 +196,9 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                     exportData.meta.startElement(ExportConstants.TAG_LIBRARIES);
                     Set<String> libFileNames = new HashSet<>();
                     for (String libPath : libPathMap.keySet()) {
-                        final File libFile = libPathMap.get(libPath);
+                        final Path libFile = libPathMap.get(libPath);
                         // Check for file name duplications
-                        final String libFileName = libFile.getName();
+                        final String libFileName = libFile.getFileName().toString();
                         if (libFileNames.contains(libFileName)) {
                             log.warn("Duplicate driver library file name: " + libFileName); //$NON-NLS-1$
                             continue;
@@ -213,7 +215,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                         final ZipEntry driverFile = new ZipEntry(ExportConstants.DIR_DRIVERS + "/" + libFileName); //$NON-NLS-1$
                         driverFile.setComment("Driver library"); //$NON-NLS-1$
                         exportData.archiveStream.putNextEntry(driverFile);
-                        try (InputStream is = new FileInputStream(libFile)) {
+                        try (InputStream is = Files.newInputStream(libFile)) {
                             IOUtils.copyStream(is, exportData.archiveStream, COPY_BUFFER_SIZE);
                         }
 

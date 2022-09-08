@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Set;
 
@@ -88,9 +88,9 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         createLicenseTab(tabs);
         createDetailsTab(tabs);
 
-        final File localFile = library.getLocalFile();
+        final Path localFile = library.getLocalFile();
         if (localFile != null) {
-            fileText.setText(localFile.getAbsolutePath());
+            fileText.setText(localFile.toAbsolutePath().toString());
         }
 
         return group;

@@ -22,8 +22,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 
 /**
@@ -88,7 +88,7 @@ public interface DBPDriverLibrary
     String getExternalURL(DBRProgressMonitor monitor);
 
     @Nullable
-    File getLocalFile();
+    Path getLocalFile();
 
     boolean matchesCurrentPlatform();
 

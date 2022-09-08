@@ -32,9 +32,9 @@ import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.xml.sax.Attributes;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -156,10 +156,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                     continue;
                                 }
                                 xml.addAttribute(RegistryConstants.ATTR_ID, file.getId());
+                                // check if we need to store local file in storage
+
                                 if (!CommonUtils.isEmpty(file.getVersion())) {
                                     xml.addAttribute(RegistryConstants.ATTR_VERSION, file.getVersion());
                                 }
-                                xml.addAttribute(RegistryConstants.ATTR_PATH, substitutePathVariables(pathSubstitutions, file.getFile().getAbsolutePath()));
+                                xml.addAttribute(
+                                    RegistryConstants.ATTR_PATH,
+                                    substitutePathVariables(pathSubstitutions, file.getFile().toAbsolutePath().toString()));
                             }
                         }
                     }
@@ -316,7 +320,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         //log.debug("Skip obsolete custom library '" + path + "'");
                         return;
                     }
-                    if(providedDrivers && lib == null && !(curDriver.getDriverLibraries().isEmpty())){
+                    if (providedDrivers && lib == null && !(curDriver.getDriverLibraries().isEmpty())){
                         curDriver.disabledAllDefaultLibraries();
                     }
                     String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
@@ -347,7 +351,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                         atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_ID)),
                                         atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_VERSION)),
                                         curLibrary.getType(),
-                                        new File(path));
+                                        Path.of(path));
                                 curDriver.addLibraryFile(curLibrary, info);
                             }
                         }

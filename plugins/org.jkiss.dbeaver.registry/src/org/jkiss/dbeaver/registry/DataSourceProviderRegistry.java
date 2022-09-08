@@ -416,7 +416,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             new DriverDescriptorSerializerLegacy().serializeDrivers(baos, this.dataSourceProviders);
-            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, baos.toString(StandardCharsets.UTF_8));
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
+                DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME,
+                baos.toString(StandardCharsets.UTF_8));
         } catch (Exception ex) {
             log.error("Error saving drivers", ex);
         }

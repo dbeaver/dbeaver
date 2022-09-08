@@ -22,6 +22,8 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -59,8 +61,11 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.*;
 
 /**
  * DriverEditDialog
@@ -192,7 +197,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         group.setLayoutData(gd);
 
         {
-            TabFolder tabFolder = new TabFolder(group, SWT.NONE);
+            CTabFolder tabFolder = new CTabFolder(group, SWT.FLAT);
             tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             createMainTab(tabFolder);
@@ -223,7 +228,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         return group;
     }
 
-    private void createMainTab(TabFolder group) {
+    private void createMainTab(CTabFolder group) {
         boolean isReadOnly = !provider.isDriversManagable();
         int advStyle = isReadOnly ? SWT.READ_ONLY : SWT.NONE;
 
@@ -346,12 +351,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
             urlLabel.setLayoutData(gd);
         }
 
-        TabItem paramsTab = new TabItem(group, SWT.NONE);
+        CTabItem paramsTab = new CTabItem(group, SWT.NONE);
         paramsTab.setText(UIConnectionMessages.dialog_edit_driver_setting);
         paramsTab.setControl(propsGroup);
     }
 
-    private void createLibrariesTab(TabFolder group) {
+    private void createLibrariesTab(CTabFolder group) {
         GridData gd;
         Composite libsGroup = new Composite(group, SWT.NONE);
         libsGroup.setLayout(new GridLayout(2, false));
@@ -379,8 +384,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
                             displayName += " [" + lib.getPreferredVersion() + "]";
                         }
                         cell.setText(displayName);
-                        File localFile = lib.getLocalFile();
-                        if (localFile != null && !localFile.exists()) {
+                        Path localFile = lib.getLocalFile();
+                        if (localFile != null && !Files.exists(localFile)) {
                             cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
                         } else if (!driver.isLibraryResolved(lib)) {
                             cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLUE));
@@ -405,8 +410,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 @Override
                 public String getToolTipText(Object element) {
                     if (element instanceof DBPDriverLibrary) {
-                        File localFile = ((DBPDriverLibrary) element).getLocalFile();
-                        return localFile == null ? "N/A" : localFile.getAbsolutePath();
+                        Path localFile = ((DBPDriverLibrary) element).getLocalFile();
+                        return localFile == null ? "N/A" : localFile.toAbsolutePath().toString();
                     }
                     return super.getToolTipText(element);
                 }
@@ -419,11 +424,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 if (selectedLibrary instanceof DriverLibraryMavenArtifact) {
                     editMavenArtifact();
                 } else if (selectedLibrary instanceof DriverLibraryLocal) {
-                    File localFile = selectedLibrary.getLocalFile();
-                    if (localFile.isDirectory()) {
-                        ShellUtils.launchProgram(localFile.getAbsolutePath());
+                    Path localFile = selectedLibrary.getLocalFile();
+                    if (Files.isDirectory(localFile)) {
+                        ShellUtils.launchProgram(localFile.toAbsolutePath().toString());
                     } else {
-                        ShellUtils.showInSystemExplorer(localFile.getAbsolutePath());
+                        ShellUtils.showInSystemExplorer(localFile.toAbsolutePath().toString());
                     }
                 }
             });
@@ -544,7 +549,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         changeLibContent();
 
-        TabItem libsTab = new TabItem(group, SWT.NONE);
+        CTabItem libsTab = new CTabItem(group, SWT.NONE);
         libsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_name_driver_libraries);
         libsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_tooltip_driver_libraries);
         libsTab.setControl(libsGroup);
@@ -611,7 +616,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         }
     }
 
-    private void createParametersTab(TabFolder group) {
+    private void createParametersTab(CTabFolder group) {
         Composite paramsGroup = new Composite(group, SWT.NONE);
         paramsGroup.setLayout(new GridLayout(1, false));
 
@@ -622,13 +627,13 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driverPropertySource.addDefaultValues(driver.getDefaultDriverParameters());
         parametersEditor.loadProperties(driverPropertySource);
 
-        TabItem paramsTab = new TabItem(group, SWT.NONE);
+        CTabItem paramsTab = new CTabItem(group, SWT.NONE);
         paramsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_name_advanced_parameters);
         paramsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_tooltip_advanced_parameters);
         paramsTab.setControl(paramsGroup);
     }
 
-    private void createConnectionPropertiesTab(TabFolder group) {
+    private void createConnectionPropertiesTab(CTabFolder group) {
         Composite paramsGroup = new Composite(group, SWT.NONE);
         paramsGroup.setLayout(new GridLayout(1, false));
 
@@ -637,17 +642,17 @@ public class DriverEditDialog extends HelpEnabledDialog {
         connectionPropertiesEditor.loadProperties(connectionPropertySource);
 
 
-        TabItem paramsTab = new TabItem(group, SWT.NONE);
+        CTabItem paramsTab = new CTabItem(group, SWT.NONE);
         paramsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_name_connection_properties);
         paramsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_tooltip_connection_properties);
         paramsTab.setControl(paramsGroup);
     }
 
-    private void createClientHomesTab(TabFolder group) {
+    private void createClientHomesTab(CTabFolder group) {
         clientHomesPanel = new ClientHomesPanel(group, SWT.NONE);
         clientHomesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        TabItem paramsTab = new TabItem(group, SWT.NONE);
+        CTabItem paramsTab = new CTabItem(group, SWT.NONE);
         paramsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_name_client_homes);
         paramsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_name_client_homes);
         paramsTab.setControl(clientHomesPanel);
@@ -662,7 +667,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         });
     }
 
-    private void createLicenseTab(TabFolder group, String license) {
+    private void createLicenseTab(CTabFolder group, String license) {
         Composite paramsGroup = new Composite(group, SWT.NONE);
         paramsGroup.setLayout(new GridLayout(1, false));
 
@@ -675,7 +680,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         //gd.grabExcessVerticalSpace = true;
         licenseText.setLayoutData(gd);
 
-        TabItem paramsTab = new TabItem(group, SWT.NONE);
+        CTabItem paramsTab = new CTabItem(group, SWT.NONE);
         paramsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_name_license);
         paramsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_tooltip_license);
         paramsTab.setControl(paramsGroup);
@@ -706,13 +711,13 @@ public class DriverEditDialog extends HelpEnabledDialog {
         libTable.setInput(driver.getEnabledDriverLibraries());
         boolean hasFiles = false, hasDownloads = false;
         for (DBPDriverLibrary library : driver.getDriverLibraries()) {
-            final File localFile = library.getLocalFile();
-            hasFiles = hasFiles || (!library.isDisabled() && localFile != null && localFile.exists());
+            final Path localFile = library.getLocalFile();
+            hasFiles = hasFiles || (!library.isDisabled() && localFile != null && Files.exists(localFile));
             if (!hasFiles && !library.isDisabled()) {
                 final Collection<DriverDescriptor.DriverFileInfo> files = driver.getLibraryFiles(library);
                 if (files != null) {
                     for (DriverDescriptor.DriverFileInfo file : files) {
-                        if (file.getFile() != null && file.getFile().exists()) {
+                        if (file.getFile() != null && Files.exists(file.getFile())) {
                             hasFiles = true;
                         }
                     }
