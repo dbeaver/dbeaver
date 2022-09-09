@@ -933,6 +933,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return libraries;
     }
 
+    public void setDriverLibraries(List<? extends DBPDriverLibrary> libs) {
+        this.libraries.clear();
+        this.libraries.addAll(libs);
+    }
+
     public List<DBPDriverLibrary> getEnabledDriverLibraries() {
         List<DBPDriverLibrary> filtered = new ArrayList<>();
         for (DBPDriverLibrary lib : libraries) {
