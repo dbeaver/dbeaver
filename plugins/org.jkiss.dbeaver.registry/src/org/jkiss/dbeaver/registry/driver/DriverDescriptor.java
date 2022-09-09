@@ -1458,7 +1458,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     Path getWorkspaceStorageFolder() {
-        return getWorkspaceDriversStorageFolder().resolve(getId());
+        return getWorkspaceDriversStorageFolder().resolve(getProviderId()).resolve(getId());
     }
 
     List<DriverFileInfo> getCachedFiles(DBPDriverLibrary library) {
