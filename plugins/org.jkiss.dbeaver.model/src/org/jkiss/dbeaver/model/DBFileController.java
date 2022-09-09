@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.DBException;
  */
 public interface DBFileController extends DBPObjectController {
 
-    String TYPE_DATABASE_DRIVER = "database-driver";
+    String TYPE_DATABASE_DRIVER = "libraries";
 
     byte[] loadFileData(@NotNull String fileType, @NotNull String filePath) throws DBException;
 

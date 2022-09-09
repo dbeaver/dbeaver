@@ -60,6 +60,7 @@ import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1394,9 +1395,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             List<DriverFileInfo> files = resolvedFiles.get(library);
             if (files != null) {
                 for (DriverFileInfo depFile : files) {
-                    String depFilePath = depFile.getFile().toString();
                     Path driverFolder = getWorkspaceStorageFolder();
-                    Path localDriverFile = driverFolder.resolve(depFilePath);
+                    Path localDriverFile = driverFolder.resolve(depFile.getFile());
                     if (!Files.exists(localDriverFile) || depFile.getFileCRC() == 0 ||
                         depFile.getFileCRC() != calculateFileCRC(localDriverFile))
                     {
@@ -1416,9 +1416,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 DBPDriverLibrary library = libEntry.getKey();
                 for (DriverFileInfo fileInfo : libEntry.getValue()) {
                     try {
+                        Path driverFolder = getWorkspaceStorageFolder();
+                        Path localDriverFile = driverFolder.resolve(fileInfo.getFile());
+                        if (!Files.exists(localDriverFile.getParent())) {
+                            Files.createDirectories(localDriverFile.getParent());
+                        }
+
                         byte[] fileData = fileController.loadFileData(DBFileController.TYPE_DATABASE_DRIVER, fileInfo.getFile().toString());
-                        System.out.println(1);
-                    } catch (DBException e) {
+                        Files.write(localDriverFile, fileData, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE_NEW);
+
+                        localFilePaths.add(localDriverFile);
+                    } catch (Exception e) {
                         log.error("Error downloading driver file '" + fileInfo.getFile() + "'", e);
                     }
                 }

@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class LocalFileController implements DBFileController {
@@ -33,12 +35,22 @@ public class LocalFileController implements DBFileController {
 
     @Override
     public byte[] loadFileData(@NotNull String fileType, @NotNull String filePath) throws DBException {
-        throw new DBCFeatureNotSupportedException();
+        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        try {
+            return Files.readAllBytes(targetPath);
+        } catch (IOException e) {
+            throw new DBException("Error reading file '" + filePath + "' data", e);
+        }
     }
 
     @Override
     public void saveFileData(@NotNull String fileType, @NotNull String filePath, byte[] fileData) throws DBException {
-        throw new DBCFeatureNotSupportedException();
+        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        try {
+            Files.write(targetPath, fileData);
+        } catch (IOException e) {
+            throw new DBException("Error writing file '" + filePath + "' data", e);
+        }
     }
 
     @Override
