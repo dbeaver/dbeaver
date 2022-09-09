@@ -125,6 +125,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             return fileCRC;
         }
 
+        public void setFileCRC(long fileCRC) {
+            this.fileCRC = fileCRC;
+        }
+
         @Override
         public String toString() {
             return file.getFileName().toString();
@@ -675,7 +679,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.driverInstance = null;
         this.driverClass = null;
         this.isLoaded = false;
-        this.resolvedFiles.clear();
+
+        if (!isDistributedMode()) {
+            this.resolvedFiles.clear();
+        }
     }
 
     private Object createDriverInstance()
@@ -1145,7 +1152,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         isLoaded = false;
 
         loadGlobalLibraries();
-        loadLibraries();
+        loadLibraries(monitor);
 
         if (licenseRequired) {
             String licenseText = getLicense();
@@ -1178,7 +1185,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
-    private void loadLibraries() throws DBException {
+    private void loadLibraries(DBRProgressMonitor monitor) throws DBException {
         this.classLoader = null;
 
         List<Path> allLibraryFiles = validateFilesPresence(false);
@@ -1259,7 +1266,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     private List<Path> validateFilesPresence(boolean resetVersions) {
-        if (DBWorkbench.getPlatform().getApplication().isDistributed()) {
+        if (isDistributedMode()) {
             // We are in distributed mode
             return syncDistributedDependencies();
         }
@@ -1381,7 +1388,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         final Map<DBPDriverLibrary, List<DriverFileInfo>> downloadCandidates = new LinkedHashMap<>();
         for (DBPDriverLibrary library : libraries) {
-            if (library.isDisabled() ||!library.matchesCurrentPlatform()) {
+            if (library.isDisabled() || !library.matchesCurrentPlatform()) {
                 continue;
             }
             List<DriverFileInfo> files = resolvedFiles.get(library);
@@ -1404,7 +1411,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
 
         if (!downloadCandidates.isEmpty()) {
-
+            DBFileController fileController = DBWorkbench.getPlatform().getFileController();
+            for (var libEntry : downloadCandidates.entrySet()) {
+                DBPDriverLibrary library = libEntry.getKey();
+                for (DriverFileInfo fileInfo : libEntry.getValue()) {
+                    try {
+                        byte[] fileData = fileController.loadFileData(DBFileController.TYPE_DATABASE_DRIVER, fileInfo.getFile().toString());
+                        System.out.println(1);
+                    } catch (DBException e) {
+                        log.error("Error downloading driver file '" + fileInfo.getFile() + "'", e);
+                    }
+                }
+            }
         }
 
         return localFilePaths;
@@ -1562,7 +1580,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             // - Local files are linked directly
             // - Local folders are linked to folder's contents
             if (library instanceof DriverLibraryLocal) {
-                List<DriverFileInfo> libraryFiles = resolvedFiles.computeIfAbsent(library, key -> new ArrayList<>());
+                List<DriverFileInfo> libraryFiles = new ArrayList<>();
 
                 Path srcLocalFile = library.getLocalFile();
                 if (srcLocalFile == null) {
@@ -1613,11 +1631,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     }
                 }
 
+                if (!libraryFiles.isEmpty()) {
+                    resolvedFiles.put(library, libraryFiles);
+                }
 
             } else {
                 // Ignore all non-local libraries for now
             }
         }
+        if (resolvedFiles.isEmpty()) {
+            return false;
+        }
+        modified = true;
         return true;
     }
 
@@ -1633,6 +1658,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         // Resolve directory contents
         List<Path> srcDirFiles = Files.list(srcLocalFile).collect(Collectors.toList());
         for (Path dirFile : srcDirFiles) {
+            String fileName = dirFile.getFileName().toString();
+            // Skip non-libraries
+            if (fileName.endsWith(".txt")) {
+                continue;
+            }
             Path trgDirFile = trgLocalFile.resolve(dirFile.getFileName());
             if (Files.isDirectory(dirFile)) {
                 resolveDirectories(targetFileLocation, library, dirFile, trgDirFile, libraryFiles);
@@ -1736,6 +1766,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
         return libraries.toArray(new String[0]);
+    }
+
+    private static boolean isDistributedMode() {
+        return DBWorkbench.getPlatform().getApplication().isDistributed();
     }
 
 }

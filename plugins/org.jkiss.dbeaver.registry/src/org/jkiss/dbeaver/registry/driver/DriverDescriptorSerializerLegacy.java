@@ -57,6 +57,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 continue;
             }
             List<DriverDescriptor> drivers = provider.getDrivers().stream().filter(DriverDescriptor::isModified).collect(Collectors.toList());
+            drivers.removeIf(driverDescriptor -> driverDescriptor.getReplacedBy() != null);
             if (drivers.isEmpty()) {
                 continue;
             }
@@ -163,7 +164,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                 }
                                 xml.addAttribute(
                                     RegistryConstants.ATTR_PATH,
-                                    substitutePathVariables(pathSubstitutions, file.getFile().toAbsolutePath().toString()));
+                                    substitutePathVariables(pathSubstitutions, file.getFile().toString()));
+                                if (file.getFileCRC() != 0) {
+                                    xml.addAttribute("crc", Long.toHexString(file.getFileCRC()));
+                                }
                             }
                         }
                     }
@@ -352,6 +356,13 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                         atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_VERSION)),
                                         curLibrary.getType(),
                                         Path.of(path));
+                                String crcString = atts.getValue("crc");
+                                if (!CommonUtils.isEmpty(crcString)) {
+                                    long crc = Long.parseLong(crcString, 16);
+                                    if (crc != 0) {
+                                        info.setFileCRC(crc);
+                                    }
+                                }
                                 curDriver.addLibraryFile(curLibrary, info);
                             }
                         }
