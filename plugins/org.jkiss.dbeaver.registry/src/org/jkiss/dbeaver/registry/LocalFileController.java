@@ -63,6 +63,11 @@ public class LocalFileController implements DBFileController {
 
     @Override
     public void deleteFile(@NotNull String fileType, @NotNull String filePath, boolean recursive) throws DBException {
-        throw new DBCFeatureNotSupportedException();
+        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        try {
+            Files.delete(targetPath);
+        } catch (IOException e) {
+            throw new DBException("Error deleting file '" + filePath + "' data: " + e.getMessage(), e);
+        }
     }
 }

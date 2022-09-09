@@ -69,6 +69,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DriverEditDialog
@@ -864,6 +865,10 @@ public class DriverEditDialog extends HelpEnabledDialog {
         for (DBPDriverLibrary oldLib : oldLibs) {
             if (!libraries.contains(oldLib)) {
                 // Remove old library files
+                List<DBPDriver> usedBy = getDriversByLibrary(oldLib);
+                if (usedBy.size() <= 1) {
+                    syncRemoveDriverLibFile(oldLib);
+                }
             }
         }
         for (DBPDriverLibrary newLib : libraries) {
@@ -880,15 +885,47 @@ public class DriverEditDialog extends HelpEnabledDialog {
                     continue;
                 }
                 if (Files.isDirectory(localFilePath)) {
-
+                    synAddDriverLibDirectory(newLib, localFilePath, shortFileName);
                 } else {
-                    addDriverLibFile(newLib, localFilePath, shortFileName);
+                    ((DriverLibraryLocal) newLib).setPath(shortFileName);
+                    syncAddDriverLibFile(newLib, localFilePath, shortFileName);
                 }
             }
         }
     }
 
-    private void addDriverLibFile(DBPDriverLibrary newLib, Path localFilePath, String shortFileName) throws DBException {
+    private void syncRemoveDriverLibFile(DBPDriverLibrary library) throws DBException {
+        Collection<DriverDescriptor.DriverFileInfo> libraryFiles = driver.getLibraryFiles(library);
+        if (libraryFiles == null) {
+            return;
+        }
+        DBFileController fileController = DBWorkbench.getPlatform().getFileController();
+
+        for (DriverDescriptor.DriverFileInfo file : libraryFiles) {
+            fileController.deleteFile(
+                DBFileController.TYPE_DATABASE_DRIVER,
+                file.getFile().toString(),
+                false);
+        }
+    }
+
+    private void synAddDriverLibDirectory(DBPDriverLibrary newLib, Path localFilePath, String shortFileName) throws DBException {
+        try {
+            List<Path> dirFiles = Files.list(localFilePath).collect(Collectors.toList());
+            for (Path file : dirFiles) {
+                shortFileName = shortFileName + "/" + file.getFileName().toString();
+                if (Files.isDirectory(file)) {
+                    synAddDriverLibDirectory(newLib, file, shortFileName + "/" + file.getFileName().toString());
+                } else {
+                    syncAddDriverLibFile(newLib, file, shortFileName);
+                }
+            }
+        } catch (IOException e) {
+            throw new DBException("Error sync lib directory", e);
+        }
+    }
+
+    private void syncAddDriverLibFile(DBPDriverLibrary library, Path localFilePath, String shortFileName) throws DBException {
         DBFileController fileController = DBWorkbench.getPlatform().getFileController();
 
         String filePath = "drivers/" + driver.getId() + "/" + shortFileName;
@@ -901,12 +938,26 @@ public class DriverEditDialog extends HelpEnabledDialog {
         } catch (IOException e) {
             throw new DBException("IO error while saving driver file", e);
         }
-        ((DriverLibraryLocal) newLib).setPath(shortFileName);
         DriverDescriptor.DriverFileInfo fileInfo = new DriverDescriptor.DriverFileInfo(
             shortFileName, null, DBPDriverLibrary.FileType.jar, Path.of(filePath));
         fileInfo.setFileCRC(DriverDescriptor.calculateFileCRC(localFilePath));
-        driver.addLibraryFile(newLib, fileInfo);
+        driver.addLibraryFile(library, fileInfo);
     }
+
+    private static List<DBPDriver> getDriversByLibrary(DBPDriverLibrary oldLib) {
+        List<DBPDriver> drivers = new ArrayList<>();
+        for (DataSourceProviderDescriptor dspd : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
+            for (DBPDriver driver : dspd.getDrivers()) {
+                for (DBPDriverLibrary library : driver.getDriverLibraries()) {
+                    if (CommonUtils.equalObjects(library.getPath(), oldLib.getPath())) {
+                        drivers.add(driver);
+                    }
+                }
+            }
+        }
+        return drivers;
+    }
+
 
     public static void showBadConfigDialog(final Shell shell, final String message, final DBException error) {
         //log.debug(message);
