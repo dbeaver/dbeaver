@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -108,6 +109,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private Button nonInstantiableCheck;
 
     private boolean showAddFiles = false;
+
+    private final boolean isDistributed = DBWorkbench.getPlatform().getApplication().isDistributed();
 
     static int getDialogCount() {
         return dialogCount;
@@ -498,20 +501,22 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         });
 
-        UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_add_artifact, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                addMavenArtifact();
-            }
-        });
+        if (!isDistributed) {
+            UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_add_artifact, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    addMavenArtifact();
+                }
+            });
 
-        updateVersionButton = UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_update_version, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                driver.updateFiles();
-                changeLibContent();
-            }
-        });
+            updateVersionButton = UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_update_version, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    driver.updateFiles();
+                    changeLibContent();
+                }
+            });
+        }
 
         detailsButton = UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_details, new SelectionAdapter() {
             @Override
@@ -729,7 +734,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         }
         findClassButton.setEnabled(provider.isDriversManagable() && hasFiles);
-        updateVersionButton.setEnabled(hasDownloads);
+        if (updateVersionButton != null) {
+            updateVersionButton.setEnabled(hasDownloads);
+        }
     }
 
     private void changeLibSelection() {

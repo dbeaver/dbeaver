@@ -1452,7 +1452,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
-    private Path getWorkspaceStorageFolder() {
+    Path getWorkspaceStorageFolder() {
         return getWorkspaceDriversStorageFolder().resolve(getId());
     }
 
@@ -1776,7 +1776,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return libraries.toArray(new String[0]);
     }
 
-    private static boolean isDistributedMode() {
+    static boolean isDistributedMode() {
         return DBWorkbench.getPlatform().getApplication().isDistributed();
     }
 

@@ -107,6 +107,12 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @NotNull
     @Override
+    public String getDisplayName() {
+        return getName();
+    }
+
+    @NotNull
+    @Override
     public DBPWorkspace getWorkspace() {
         return workspace;
     }

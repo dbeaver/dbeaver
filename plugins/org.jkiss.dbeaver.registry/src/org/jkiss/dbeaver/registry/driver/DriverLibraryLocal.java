@@ -89,6 +89,12 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
     public Path getLocalFile() {
         // Try to use direct path
         String localFilePath = this.getLocalFilePath();
+        if (DriverDescriptor.isDistributedMode()) {
+            Path resolvedCache = driver.getWorkspaceStorageFolder().resolve(localFilePath);
+            if (Files.exists(resolvedCache)) {
+                localFilePath = resolvedCache.toAbsolutePath().toString();
+            }
+        }
 
         try {
             Path libraryFile = Path.of(localFilePath);
