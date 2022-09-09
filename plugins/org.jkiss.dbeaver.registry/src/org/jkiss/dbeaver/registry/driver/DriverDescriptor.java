@@ -92,7 +92,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         private final Path file;
         private long fileCRC;
 
-        DriverFileInfo(String id, String version, DBPDriverLibrary.FileType type, Path file) {
+        public DriverFileInfo(String id, String version, DBPDriverLibrary.FileType type, Path file) {
             this.id = id;
             this.version = version;
             this.file = file;
@@ -957,7 +957,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return null;
     }
 
-    void addLibraryFile(DBPDriverLibrary library, DriverFileInfo fileInfo) {
+    public void addLibraryFile(DBPDriverLibrary library, DriverFileInfo fileInfo) {
         List<DriverFileInfo> files = resolvedFiles.computeIfAbsent(library, k -> new ArrayList<>());
         files.add(fileInfo);
     }

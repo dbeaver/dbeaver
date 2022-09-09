@@ -147,7 +147,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             xml.addAttribute("load-optional-dependencies", true);
                         }
                     }
-                    //xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
+
                     List<DriverDescriptor.DriverFileInfo> files = driver.getResolvedFiles().get(lib);
                     if (files != null) {
                         for (DriverDescriptor.DriverFileInfo file : files) {

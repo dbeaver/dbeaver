@@ -47,9 +47,12 @@ public class LocalFileController implements DBFileController {
     public void saveFileData(@NotNull String fileType, @NotNull String filePath, byte[] fileData) throws DBException {
         Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
         try {
+            if (!Files.exists(targetPath.getParent())) {
+                Files.createDirectories(targetPath.getParent());
+            }
             Files.write(targetPath, fileData);
         } catch (IOException e) {
-            throw new DBException("Error writing file '" + filePath + "' data", e);
+            throw new DBException("Error writing file '" + filePath + "' data: " + e.getMessage(), e);
         }
     }
 

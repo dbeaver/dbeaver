@@ -33,6 +33,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -61,6 +62,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -806,6 +808,15 @@ public class DriverEditDialog extends HelpEnabledDialog {
     @Override
     protected void okPressed() {
 
+        if (isDistributed) {
+            try {
+                syncDriverLibraries();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Error saving driver", "Driver libraries sync failed", e);
+                return;
+            }
+        }
+
         // Set props
         driver.setName(driverNameText.getText());
         driver.setDescription(CommonUtils.notEmpty(driverDescText.getText()));
@@ -845,6 +856,56 @@ public class DriverEditDialog extends HelpEnabledDialog {
         provider.getRegistry().saveDrivers();
 
         super.okPressed();
+    }
+
+    // Distributed products only!
+    private void syncDriverLibraries() throws DBException {
+        List<DBPDriverLibrary> oldLibs = driver.getEnabledDriverLibraries();
+        for (DBPDriverLibrary oldLib : oldLibs) {
+            if (!libraries.contains(oldLib)) {
+                // Remove old library files
+            }
+        }
+        for (DBPDriverLibrary newLib : libraries) {
+            if (!oldLibs.contains(newLib)) {
+                if (!(newLib instanceof DriverLibraryLocal)) {
+                    log.error("Wrong driver library found: " + newLib + ". Must be a local file");
+                    continue;
+                }
+                // Add new library files
+                Path localFilePath = Path.of(newLib.getPath());
+                String shortFileName = localFilePath.getFileName().toString();
+                if (!Files.exists(localFilePath)) {
+                    log.error("Driver library doesn't exist: " + localFilePath + ".");
+                    continue;
+                }
+                if (Files.isDirectory(localFilePath)) {
+
+                } else {
+                    addDriverLibFile(newLib, localFilePath, shortFileName);
+                }
+            }
+        }
+    }
+
+    private void addDriverLibFile(DBPDriverLibrary newLib, Path localFilePath, String shortFileName) throws DBException {
+        DBFileController fileController = DBWorkbench.getPlatform().getFileController();
+
+        String filePath = "drivers/" + driver.getId() + "/" + shortFileName;
+        try {
+            byte[] fileData = Files.readAllBytes(localFilePath);
+            fileController.saveFileData(
+                DBFileController.TYPE_DATABASE_DRIVER,
+                filePath,
+                fileData);
+        } catch (IOException e) {
+            throw new DBException("IO error while saving driver file", e);
+        }
+        ((DriverLibraryLocal) newLib).setPath(shortFileName);
+        DriverDescriptor.DriverFileInfo fileInfo = new DriverDescriptor.DriverFileInfo(
+            shortFileName, null, DBPDriverLibrary.FileType.jar, Path.of(filePath));
+        fileInfo.setFileCRC(DriverDescriptor.calculateFileCRC(localFilePath));
+        driver.addLibraryFile(newLib, fileInfo);
     }
 
     public static void showBadConfigDialog(final Shell shell, final String message, final DBException error) {

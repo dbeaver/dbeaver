@@ -29,14 +29,12 @@ import java.util.Collection;
 /**
  * Driver library
  */
-public interface DBPDriverLibrary
-{
+public interface DBPDriverLibrary {
 
     /**
      * Driver file type
      */
-    enum FileType
-    {
+    enum FileType {
         jar,
         lib,
         executable,
