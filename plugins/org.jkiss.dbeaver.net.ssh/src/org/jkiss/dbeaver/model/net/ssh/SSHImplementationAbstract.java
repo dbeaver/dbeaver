@@ -34,8 +34,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -213,8 +214,8 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
                     }
                     authentication = SSHAuthConfiguration.usingKey(privKeyValue, password, savePassword);
                 } else {
-                    final File file = new File(path);
-                    if (!file.exists()) {
+                    final Path file = Path.of(path);
+                    if (!Files.exists(file)) {
                         throw new DBException("Private key file '" + path + "' does not exist");
                     }
                     authentication = SSHAuthConfiguration.usingKey(file, password, savePassword);

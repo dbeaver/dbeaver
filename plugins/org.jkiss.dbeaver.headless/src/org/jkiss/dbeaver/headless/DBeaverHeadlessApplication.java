@@ -20,7 +20,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.registry.EclipseApplicationImpl;
+import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.nio.file.Path;
@@ -28,7 +28,7 @@ import java.nio.file.Path;
 /**
  * Headless application
  */
-public class DBeaverHeadlessApplication extends EclipseApplicationImpl {
+public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
 
     private static final Log log = Log.getLog(DBeaverHeadlessApplication.class);
 

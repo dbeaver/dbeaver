@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class SequenceExpression extends GroupExpression {
 
-    protected SequenceExpression(List<RuleExpression> exprs) {
+    public SequenceExpression(List<RuleExpression> exprs) {
         super(exprs);
     }
 

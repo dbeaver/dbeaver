@@ -21,20 +21,22 @@ package org.jkiss.dbeaver.ext.oracle.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class OracleMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.oracle.internal.OracleMessages"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.oracle.internal.OracleMessages"; //$NON-NLS-1$
 
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, OracleMessages.class);
-	}
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, OracleMessages.class);
+    }
 
-	private OracleMessages() {
-	}
+    private OracleMessages() {
+    }
 
-	public static String dialog_connection_sid;
-	public static String dialog_connection_service;
-	public static String edit_oracle_dependencies_dependency_name;
-	public static String edit_oracle_dependencies_dependency_description;
-	public static String edit_oracle_dependencies_dependent_name;
-	public static String edit_oracle_dependencies_dependent_description;
+    public static String dialog_connection_sid;
+    public static String dialog_connection_service;
+    public static String edit_oracle_dependencies_dependency_name;
+    public static String edit_oracle_dependencies_dependency_description;
+    public static String edit_oracle_dependencies_dependent_name;
+    public static String edit_oracle_dependencies_dependent_description;
+    public static String oracle_password_will_expire_warn_name;
+    public static String oracle_password_will_expire_warn_description;
 }

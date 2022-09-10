@@ -43,7 +43,11 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
     @Override
     public long getContentLength() throws DBCException {
         if (storage != null) {
-            return storage.getContentLength();
+            try {
+                return storage.getContentLength();
+            } catch (IOException e) {
+                throw new DBCException("Error reading content length", e);
+            }
         }
         return getLOBLength();
     }

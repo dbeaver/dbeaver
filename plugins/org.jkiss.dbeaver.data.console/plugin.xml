@@ -17,6 +17,10 @@
  * limitations under the License.
   -->
 <plugin>
+    <extension point="org.eclipse.ui.startup">
+        <startup class="org.jkiss.dbeaver.data.console.SQLConsoleViewStartup"/>
+    </extension>
+
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.consoleView" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.consoleView.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.consoleView.description" categoryId="org.jkiss.dbeaver.core.sql">
             <state class="org.eclipse.jface.commands.ToggleState" id="org.eclipse.ui.commands.toggleState" />
@@ -31,8 +35,14 @@
     
     <extension point="org.eclipse.ui.menus">
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side" >
-            <dynamic id="org.jkiss.dbeaver.ui.editors.sql.show.consoleView.contributor" class="org.jkiss.dbeaver.data.console.ConsoleViewSwitchContributor" />
+            <!--
+                <dynamic id="org.jkiss.dbeaver.ui.editors.sql.show.consoleView.contributor" class="org.jkiss.dbeaver.data.console.ConsoleViewSwitchContributor" />
+            -->
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.consoleView"/>
         </menuContribution>
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute?after=plan">
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.consoleView"/>
+        </menuContribution >
     </extension>
     
     <extension point="org.eclipse.ui.commandImages">

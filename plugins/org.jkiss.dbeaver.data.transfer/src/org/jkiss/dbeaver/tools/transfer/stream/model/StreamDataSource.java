@@ -59,11 +59,6 @@ public class StreamDataSource extends AbstractSimpleDataSource<StreamExecutionCo
     }
 
     @Override
-    public Object getDataSourceFeature(String featureId) {
-        return null;
-    }
-
-    @Override
     public SQLDialect getSQLDialect() {
         return dialect;
     }

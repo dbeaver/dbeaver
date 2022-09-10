@@ -98,6 +98,7 @@
             <type name="UINT64"/>
             <type name="UINT128"/>
             <type name="UINT256"/>
+            <type name="BOOL"/>
         </provider>
     </extension>
 

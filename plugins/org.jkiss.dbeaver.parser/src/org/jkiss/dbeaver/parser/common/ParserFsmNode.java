@@ -16,24 +16,20 @@
  */
 package org.jkiss.dbeaver.parser.common;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaOperation;
+
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jkiss.dbeaver.parser.common.grammar.nfa.GrammarNfaOperation;
 
 /**
  * Node of the parser finite state machine representing logical position in the text between some terminals
  */
 class ParserFsmNode {
     private final int id;
-    private final List<ParserFsmStep> steps = new ArrayList<>();
+    private final ArrayList<ParserFsmStep> steps = new ArrayList<>();
     private final Map<String, TermGroup> stepsByTermGroup = new HashMap<>();
-    private final List<ParserFsmStep> finalSteps = new ArrayList<>();
+    private final ArrayList<ParserFsmStep> finalSteps = new ArrayList<>();
     private final boolean isEnd;
     private Pattern pattern;
 
@@ -43,18 +39,30 @@ class ParserFsmNode {
     private static class TermGroup {
         private final String groupName;
         private final String pattern;
-        private final List<ParserFsmStep> steps;
+        private final ArrayList<ParserFsmStep> steps;
 
-        public TermGroup(String groupName, String pattern, List<ParserFsmStep> steps) {
+        public TermGroup(String groupName, String pattern, ArrayList<ParserFsmStep> steps) {
             this.groupName = groupName;
             this.pattern = pattern;
             this.steps = steps;
+            this.steps.trimToSize();
         }
     }
 
     public ParserFsmNode(int id, boolean isEnd) {
         this.id = id;
         this.isEnd = isEnd;
+    }
+
+    public void compact() {
+        this.steps.trimToSize();
+        for (ParserFsmStep s : steps) {
+            s.getOperations().trimToSize();
+        }
+        for (TermGroup g : stepsByTermGroup.values()) {
+            g.steps.trimToSize();
+        }
+        finalSteps.trimToSize();
     }
 
     public boolean isEnd() {
@@ -72,19 +80,16 @@ class ParserFsmNode {
     /**
      * Register transition from the current node to the target node,
      * associate it to the given patterns and grammar operations
-     * @param target node
-     * @param pattern
-     * @param operations
      */
-    public void connectTo(ParserFsmNode target, String pattern, List<GrammarNfaOperation> operations) {
-        this.steps.add(new ParserFsmStep(this, target, pattern, operations));
+    public void connectTo(ParserFsmNode target, String pattern, String tag, ArrayList<GrammarNfaOperation> operations) {
+        this.steps.add(new ParserFsmStep(this, target, pattern, tag, operations));
     }
 
     /**
      * Prepare common recognizing pattern for all possible terminals associated with presented parsing steps
      */
     public void prepare() {
-        Map<String, List<ParserFsmStep>> stepsByTerm = new HashMap<>();
+        Map<String, ArrayList<ParserFsmStep>> stepsByTerm = new HashMap<>();
         for (ParserFsmStep s : this.steps) {
             if (s.getPattern() != null) {
                 stepsByTerm.computeIfAbsent(s.getPattern(), p -> new ArrayList<>()).add(s);

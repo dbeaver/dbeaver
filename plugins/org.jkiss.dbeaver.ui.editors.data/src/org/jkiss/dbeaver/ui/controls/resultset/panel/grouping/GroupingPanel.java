@@ -128,7 +128,9 @@ public class GroupingPanel implements IResultSetPanel {
 
     @Override
     public void activatePanel() {
+        getGroupingResultsContainer();
         refresh(false);
+        groupingPlaceholder.layout(true, true);
     }
 
     @Override

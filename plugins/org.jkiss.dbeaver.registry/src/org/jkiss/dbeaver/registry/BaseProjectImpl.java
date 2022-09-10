@@ -75,7 +75,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     private final SMSessionContext sessionContext;
 
     private volatile ProjectFormat format = ProjectFormat.UNKNOWN;
-    private volatile DataSourceRegistry dataSourceRegistry;
+    private volatile DBPDataSourceRegistry dataSourceRegistry;
     private volatile TaskManagerImpl taskManager;
     private volatile Map<String, Object> properties;
     private volatile Map<String, Map<String, Object>> resourceProperties;
@@ -175,7 +175,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     @NotNull
-    protected DataSourceRegistry createDataSourceRegistry() {
+    protected DBPDataSourceRegistry createDataSourceRegistry() {
         return new DataSourceRegistry(this);
     }
 

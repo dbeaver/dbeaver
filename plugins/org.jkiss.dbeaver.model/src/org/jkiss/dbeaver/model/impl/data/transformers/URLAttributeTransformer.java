@@ -83,10 +83,10 @@ public class URLAttributeTransformer implements DBDAttributeTransformer {
         @NotNull
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
-            if (pattern == null) {
-                return DBValueFormatting.getDefaultValueDisplayString(value, format);
-            } else {
+            if (pattern != null && format == DBDDisplayFormat.UI) {
                 return messageFormat.format(new Object[] { value } );
+            } else {
+                return DBValueFormatting.getDefaultValueDisplayString(value, format);
             }
         }
 

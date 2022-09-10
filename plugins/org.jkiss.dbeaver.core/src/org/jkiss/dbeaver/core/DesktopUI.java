@@ -215,6 +215,9 @@ public class DesktopUI implements DBPPlatformUI {
                 break;
             }
         }
+        if (rootStatus == Status.CANCEL_STATUS) {
+            return UserResponse.CANCEL;
+        }
         log.error(rootStatus.getMessage(), rootStatus.getException());
 
         // log.debug(message);

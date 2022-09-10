@@ -71,15 +71,8 @@ public interface DBPApplication {
     /**
      * Application information details.
      * Like license info or some custom produce info
-     * @param monitor
      */
     String getInfoDetails(DBRProgressMonitor monitor);
-
-    /**
-     * Returns last user activity time
-     * @return -1 by default
-     */
-    long getLastUserActivityTime();
 
     /**
      * Default project name, e.g. 'General'.

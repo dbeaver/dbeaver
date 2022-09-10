@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -40,11 +39,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.List;
 import java.util.StringJoiner;
 
 /**
@@ -90,7 +87,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 } else if (PostgreUtils.isPGObject(object)) {
                     final Object value = PostgreUtils.extractPGObjectValue(object);
                     if (value instanceof String) {
-                        return convertStringToCollection(session, type, itemType, (String) value);
+                        return convertStringArrayToCollection(session, arrayType, itemType, (String) value);
                     } else {
                         log.error("Can't parse array");
                         return new JDBCCollection(
@@ -100,7 +97,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                         );
                     }
                 } else {
-                    return convertStringToCollection(session, type, itemType, (String) object);
+                    return convertStringArrayToCollection(session, arrayType, itemType, (String) object);
                 }
             } else if (object instanceof Object[]) {
                 return new JDBCCollection(
@@ -120,36 +117,6 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             statement.setObject(paramIndex, getValueDisplayString(paramType, value, DBDDisplayFormat.NATIVE), Types.OTHER);
         } else {
             super.bindParameter(session, statement, paramType, paramIndex, value);
-        }
-    }
-
-    private JDBCCollection convertStringToCollection(@NotNull DBCSession session, @NotNull DBSTypedObject arrayType, @NotNull PostgreDataType itemType, @NotNull String value) throws DBCException {
-        String delimiter;
-
-        PostgreDataType arrayDataType = PostgreUtils.findDataType(session, (PostgreDataSource) session.getDataSource(), arrayType);
-        if (arrayDataType != null) {
-            delimiter = CommonUtils.toString(arrayDataType.getArrayDelimiter(), PostgreConstants.DEFAULT_ARRAY_DELIMITER);
-        } else {
-            delimiter = PostgreConstants.DEFAULT_ARRAY_DELIMITER;
-        }
-        if (itemType.getDataKind() == DBPDataKind.STRUCT) {
-            // Items are structures. Parse them as CSV
-            List<Object> itemStrings = PostgreValueParser.parseArrayString(value, delimiter);
-            Object[] itemValues = new Object[itemStrings.size()];
-            DBDValueHandler itemValueHandler = DBUtils.findValueHandler(session, itemType);
-            for (int i = 0; i < itemStrings.size(); i++) {
-                Object itemString = itemStrings.get(i);
-                Object itemValue = itemValueHandler.getValueFromObject(session, itemType, itemString, false, false);
-                itemValues[i] = itemValue;
-            }
-            return new JDBCCollection(session.getProgressMonitor(), itemType, itemValueHandler, itemValues);
-        } else {
-            List<Object> strings = PostgreValueParser.parseArrayString(value, delimiter);
-            Object[] contents = new Object[strings.size()];
-            for (int i = 0; i < strings.size(); i++) {
-                contents[i] = PostgreValueParser.convertStringToValue(session, itemType, String.valueOf(strings.get(i)));
-            }
-            return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), contents);
         }
     }
 

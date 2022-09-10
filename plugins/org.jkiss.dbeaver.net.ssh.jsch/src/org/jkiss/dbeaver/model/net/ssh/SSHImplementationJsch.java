@@ -33,9 +33,13 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -160,6 +164,10 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             return;
         }
         RuntimeUtils.runTask(monitor1 -> {
+            Session[] sessions = this.sessions;
+            if (ArrayUtils.isEmpty(sessions)) {
+                return;
+            }
             for (Session session : sessions) {
                 if (session != null && session.isConnected()) {
                     session.disconnect();
@@ -207,10 +215,10 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
     }
 
-    private void addIdentityKeyFile(DBRProgressMonitor monitor, DBPDataSourceContainer dataSource, File key, String password) throws IOException, JSchException {
+    private void addIdentityKeyFile(DBRProgressMonitor monitor, DBPDataSourceContainer dataSource, Path key, String password) throws IOException, JSchException {
         String header;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(key))) {
+        try (BufferedReader reader = Files.newBufferedReader(key)) {
             header = reader.readLine();
         }
 
@@ -224,10 +232,10 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             log.debug("Attempting to convert an unsupported key into suitable format");
 
             String id = dataSource != null ? dataSource.getId() : "profile";
-            File dir = DBWorkbench.getPlatform().getTempFolder(monitor, "openssh-pkey");
-            File tmp = new File(dir, id + ".pem");
+            Path dir = DBWorkbench.getPlatform().getTempFolder(monitor, "openssh-pkey");
+            Path tmp = dir.resolve(id + ".pem");
 
-            Files.copy(key.toPath(), tmp.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(key, tmp, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
 
             password = CommonUtils.notEmpty(password);
 
@@ -242,7 +250,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                     "-P", password,
                     "-N", password,
                     "-m", "PEM",
-                    "-f", tmp.getAbsolutePath(),
+                    "-f", tmp.toAbsolutePath().toString(),
                     "-q")
                 .start();
 
@@ -267,8 +275,10 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             } catch (InterruptedException e) {
                 throw new IOException(e);
             } finally {
-                if (!tmp.delete()) {
-                    log.debug("Failed to delete private key file");
+                try {
+                    Files.delete(tmp);
+                } catch (IOException e) {
+                    log.debug("Failed to delete private key file", e);
                 }
             }
         } else {
@@ -276,11 +286,11 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
     }
 
-    private void addIdentityKey0(File key, String password) throws JSchException {
+    private void addIdentityKey0(Path key, String password) throws JSchException {
         if (!CommonUtils.isEmpty(password)) {
-            jsch.addIdentity(key.getAbsolutePath(), password);
+            jsch.addIdentity(key.toAbsolutePath().toString(), password);
         } else {
-            jsch.addIdentity(key.getAbsolutePath());
+            jsch.addIdentity(key.toAbsolutePath().toString());
         }
     }
 

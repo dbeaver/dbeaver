@@ -17,40 +17,30 @@
 
 package org.jkiss.dbeaver.utils;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileInfo;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * Content manipulation utilities
@@ -62,13 +52,13 @@ public class ContentUtils {
 
     private static final Log log = Log.getLog(ContentUtils.class);
 
-    public static File getLobFolder(DBRProgressMonitor monitor, DBPPlatform application)
+    public static Path getLobFolder(DBRProgressMonitor monitor, DBPPlatform application)
         throws IOException
     {
         return application.getTempFolder(monitor, LOB_DIR);
     }
 
-    public static File createTempContentFile(DBRProgressMonitor monitor, DBPPlatform application, String fileName)
+    public static Path createTempContentFile(DBRProgressMonitor monitor, DBPPlatform application, String fileName)
         throws IOException
     {
         return makeTempFile(
@@ -87,25 +77,13 @@ public class ContentUtils {
 */
     }
 
-    public static File makeTempFile(DBRProgressMonitor monitor, File folder, String name, String extension)
+    public static Path makeTempFile(DBRProgressMonitor monitor, Path folder, String name, String extension)
         throws IOException
     {
         name = CommonUtils.escapeFileName(name);
-        File tempFile = new File(folder, name + "-" + System.currentTimeMillis() + "." + extension);  //$NON-NLS-1$ //$NON-NLS-2$
-        if (!tempFile.createNewFile()){
-            throw new IOException(MessageFormat.format(ModelMessages.error_can_create_temp_file, tempFile.getAbsolutePath(), folder.getAbsoluteFile()));
-        }
+        Path tempFile = folder.resolve(name + "-" + System.currentTimeMillis() + "." + extension);  //$NON-NLS-1$ //$NON-NLS-2$
+        Files.createFile(tempFile);
         return tempFile;
-    }
-
-    public static void deleteTempFile(DBRProgressMonitor monitor, IFile file)
-    {
-        try {
-            file.delete(true, false, monitor.getNestedMonitor());
-        }
-        catch (CoreException e) {
-            log.warn("Can't delete temporary file '" + file.getFullPath().toString() + "'", e);
-        }
     }
 
     public static void saveContentToFile(InputStream contentStream, File file, DBRProgressMonitor monitor)
@@ -251,71 +229,6 @@ public class ContentUtils {
         }
     }
 
-    public static void copyStreamToFile(DBRProgressMonitor monitor, InputStream inputStream, long contentLength, IFile localFile)
-        throws IOException
-    {
-        //localFile.appendContents(inputStream, true, false, monitor.getNestedMonitor());
-        File file = localFile.getLocation().toFile();
-        try {
-            try (OutputStream outputStream = new FileOutputStream(file)) {
-                ContentUtils.copyStreams(inputStream, contentLength, outputStream, monitor);
-            }
-        }
-        finally {
-            inputStream.close();
-        }
-        syncFile(monitor, localFile);
-
-    }
-
-    public static void copyReaderToFile(DBRProgressMonitor monitor, Reader reader, long contentLength, String charset, IFile localFile)
-        throws IOException
-    {
-        try {
-            if (charset == null) {
-                charset = localFile.getCharset();
-            } else {
-                localFile.setCharset(charset, monitor.getNestedMonitor());
-            }
-        }
-        catch (CoreException e) {
-            log.warn("Can't set content charset", e);
-        }
-        File file = localFile.getLocation().toFile();
-        try {
-            try (OutputStream outputStream = new FileOutputStream(file)) {
-                Writer writer = new OutputStreamWriter(outputStream, charset == null ? GeneralUtils.DEFAULT_ENCODING : charset);
-                ContentUtils.copyStreams(reader, contentLength, writer, monitor);
-                writer.flush();
-            }
-        }
-        finally {
-            reader.close();
-        }
-        syncFile(monitor, localFile);
-    }
-
-    public static void syncFile(DBRProgressMonitor monitor, IResource localFile) {
-        // Sync file with contents
-        try {
-            localFile.refreshLocal(IFile.DEPTH_ZERO, monitor.getNestedMonitor());
-        }
-        catch (CoreException e) {
-            log.warn("Can't synchronize file '" + localFile + "' with contents", e);
-        }
-    }
-
-    public static IFile getUniqueFile(IFolder folder, String fileName, String fileExt)
-    {
-        IFile file = folder.getFile(fileName + "." + fileExt);
-        int index = 1;
-        while (file.exists()) {
-            file = folder.getFile(fileName + "-" + index + "." + fileExt);
-            index++;
-        }
-        return file;
-    }
-
     public static String readFileToString(File file) throws IOException
     {
         try (InputStream fileStream = new FileInputStream(file)) {
@@ -336,32 +249,6 @@ public class ContentUtils {
     public static String readToString(InputStream is, Charset charset) throws IOException
     {
         return IOUtils.readToString(new UnicodeReader(is, charset));
-    }
-
-    @Nullable
-    public static IFile convertPathToWorkspaceFile(IPath path)
-    {
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        IFile file = root.getFileForLocation(path);
-        if (file != null) {
-            return file;
-        }
-        // Probably we have a path to some linked resource
-        IPath folderPath = path.removeLastSegments(1);
-        URI folderURI = folderPath.toFile().toURI();
-        IContainer[] containers = root.findContainersForLocationURI(folderURI);
-        if (!ArrayUtils.isEmpty(containers)) {
-            IContainer container = containers[0];
-            file = container.getFile(path.removeFirstSegments(path.segmentCount() - 1));
-        }
-        return file;
-    }
-
-    @Nullable
-    public static IPath convertPathToWorkspacePath(IPath path)
-    {
-        IFile wFile = convertPathToWorkspaceFile(path);
-        return wFile == null ? null : wFile.getFullPath();
     }
 
     public static boolean isTextContent(DBDContent content)
@@ -468,6 +355,14 @@ public class ContentUtils {
         }
     }
 
+    public static void deleteTempFile(Path tempFile) {
+        try {
+            Files.delete(tempFile);
+        } catch (IOException e) {
+            log.warn("Can't delete temp file '" + tempFile.toAbsolutePath() + "'");
+        }
+    }
+
     public static boolean deleteFileRecursive(File file) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
@@ -482,22 +377,26 @@ public class ContentUtils {
         return file.delete();
     }
 
-    public static void checkFolderExists(IFolder folder)
-            throws DBException
-    {
-        checkFolderExists(folder, new VoidProgressMonitor());
-    }
-
-    public static void checkFolderExists(IFolder folder, DBRProgressMonitor monitor)
-            throws DBException
-    {
-        if (!folder.exists()) {
+    public static boolean deleteFileRecursive(Path file) {
+        if (Files.isDirectory(file)) {
             try {
-                folder.create(true, true, monitor.getNestedMonitor());
-            } catch (CoreException e) {
-                throw new DBException("Can't create folder '" + folder.getFullPath() + "'", e);
+                List<Path> files = Files.list(file).collect(Collectors.toList());
+                for (Path ch : files) {
+                    if (!deleteFileRecursive(ch)) {
+                        return false;
+                    }
+                }
+            } catch (IOException e) {
+                log.warn("Error reading directory " + file, e);
             }
         }
+        try {
+            Files.delete(file);
+        } catch (IOException e) {
+            log.warn("Error deleting file " + file, e);
+            return false;
+        }
+        return true;
     }
 
     public static void makeFileBackup(Path file) {
@@ -526,13 +425,4 @@ public class ContentUtils {
         }
     }
 
-    public static long getResourceLastModified(IResource resource) {
-        try {
-            IFileStore fileStore = EFS.getStore(resource.getLocationURI());
-            IFileInfo iFileInfo = fileStore.fetchInfo();
-            return iFileInfo.getLastModified();
-        } catch (CoreException e) {
-            return 0;
-        }
-    }
 }

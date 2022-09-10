@@ -44,7 +44,7 @@ public class ClickhouseTypeParser {
         builder.setRule("number", E.regex("[-]?[0-9]+"));
 
         builder.setRule("enum_entry", E.seq(E.call("string"), "=", E.call("number")));
-        builder.setRule("enum_entry_list", E.seq(E.call("enum_entry"), E.any(",", E.call("enum_entry"))));
+        builder.setRule("enum_entry_list", E.seq(E.call("enum_entry"), E.zeroOrMore(",", E.call("enum_entry"))));
         builder.setRule("enum", E.seq(E.regex("enum(8|16)"), "(", E.call("enum_entry_list"), ")"));
 
         builder.setStartRuleName("enum");

@@ -21,10 +21,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -35,13 +37,14 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
 
     private static final Log log = Log.getLog(DriverDescriptorSerializerModern.class);
 
-    private DriverDescriptor driver;
+    public static final String DRIVERS_FILE_NAME = "drivers-configuration.json"; //$NON-NLS-1$
 
-    DriverDescriptorSerializerModern(DriverDescriptor driver) {
-        this.driver = driver;
+    @Override
+    void serializeDrivers(OutputStream os, List<DataSourceProviderDescriptor> providers) throws IOException {
+
     }
 
-    public void serialize(JsonWriter json, boolean export) throws IOException {
+    public void serializeDriver(JsonWriter json, DriverDescriptor driver, boolean export) throws IOException {
         Map<String, String> pathSubstitutions = getPathSubstitutions();
 
         json.name(driver.getId());

@@ -38,6 +38,8 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
         } else if ("int128".equals(lowerTypeName) || "int256".equals(lowerTypeName)
             || "uint64".equals(lowerTypeName) || "uint128".equals(lowerTypeName) || "uint256".equals(lowerTypeName)) {
             return new ClickhouseBigNumberValueHandler(type, preferences);
+        } else if ("bool".equals(lowerTypeName)) {
+            return ClickhouseBoolValueHandler.INSTANCE;
         } else {
             return null;
         }

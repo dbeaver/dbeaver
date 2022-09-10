@@ -49,6 +49,9 @@ class ClickhouseDataTypeCache extends GenericDataTypeCache {
         if (DBUtils.findObject(genericDataTypes, "Decimal") == null) {
             genericDataTypes.add(new GenericDataType(owner, Types.DECIMAL, "Decimal", "Decimal", false, false, 0, 0, 0));
         }
+        if (DBUtils.findObject(genericDataTypes, "Bool") == null) {
+            genericDataTypes.add(new GenericDataType(owner, Types.BOOLEAN, "Bool", "Bool", false, false, 0, 0, 0));
+        }
         // Add array data types
         for (GenericDataType dt : new ArrayList<>(genericDataTypes)) {
             genericDataTypes.add(new GenericDataTypeArray(dt.getParentObject(), Types.ARRAY, "Array(" + dt.getName() + ")", "Array of " + dt.getName(), dt));

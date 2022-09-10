@@ -423,7 +423,7 @@ public class GenericMetaModel {
                                 specificName = procedureName;
                             }
                             GenericProcedure function = funcMap.get(specificName);
-                            if (function != null) {
+                            if (function != null && !supportsEqualFunctionsAndProceduresNames()) {
                                 // Broken driver
                                 log.debug("Broken driver [" + session.getDataSource().getContainer().getDriver().getName() + "] - returns the same list for getProcedures and getFunctons");
                                 break;
@@ -469,6 +469,16 @@ public class GenericMetaModel {
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
         }
+    }
+
+    /**
+     * Many databases can not have procedures and functions with equal specific names - this is database restriction.
+     * They can have procedures/functions with equal names and different parameters (overloaded).
+     *
+     * @return true if the database can have in one container procedure and function with equal names (considering parameters)
+     */
+    public boolean supportsEqualFunctionsAndProceduresNames() {
+        return false;
     }
 
     public GenericProcedure createProcedureImpl(
@@ -584,10 +594,10 @@ public class GenericMetaModel {
      * For this reason we usually trim it from our side
      * But other databases can have tables, columns, etc. with spaces around their names
      *
-     * @return true if we trim objects names by default, false - if not
+     * @return true if we trim objects names, false - if not
      */
     public boolean isTrimObjectNames() {
-        return true;
+        return false;
     }
 
     public GenericTableBase createTableImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericMetaObject tableObject, @NotNull JDBCResultSet dbResult) {

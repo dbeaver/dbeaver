@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Local content storage.
@@ -27,6 +27,6 @@ import java.io.File;
  */
 public interface DBDContentStorageLocal extends DBDContentStorage {
 
-    File getDataFile();
+    Path getDataFile();
 
 }

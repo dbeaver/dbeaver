@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -223,7 +223,7 @@ public class MavenRepository
                 extPath = id;
                 break;
         }
-        Path homeFolder = DBWorkbench.getPlatform().getCustomDriversHome().resolve("maven/" + extPath);
+        Path homeFolder = DriverDescriptor.getCustomDriversHome().resolve("maven/" + extPath);
         //File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + extPath);
         if (!Files.exists(homeFolder)) {
             try {

@@ -127,13 +127,6 @@ public class FireBirdDataSource extends GenericDataSource
         super.initialize(monitor);
     }
 
-    @NotNull
-    @Override
-    public FireBirdDataSource getDataSource() {
-        return this;
-    }
-
-    
 	@NotNull
     @Override
 	public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration) throws DBException {

@@ -14,21 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.app;
+package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.DBException;
 
 /**
- * DBPPlatform
+ * Binary files controller.
  */
-public interface DBPPlatformEclipse extends DBPPlatform {
+public interface DBFileController extends DBPObjectController {
 
-    @NotNull
-    DBPWorkspaceEclipse getWorkspace();
+    byte[] loadFileData(@NotNull String filePath) throws DBException;
 
-    static DBPPlatformEclipse getInstance() {
-        return DBWorkbench.getPlatform(DBPPlatformEclipse.class);
-    }
+    void saveFileData(@NotNull String filePath, byte[] fileData) throws DBException;
+
+    String[] listFiles(@NotNull String filePath) throws DBException;
+
+    void deleteFile(@NotNull String filePath, boolean recursive) throws DBException;
+
 }

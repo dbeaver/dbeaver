@@ -41,11 +41,13 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
+import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
-import org.jkiss.dbeaver.registry.EclipseApplicationImpl;
+import org.jkiss.dbeaver.registry.DesktopApplicationImpl;
+import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
 import org.jkiss.dbeaver.registry.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -76,7 +78,7 @@ import java.util.stream.Stream;
 /**
  * This class controls all aspects of the application's execution
  */
-public class DBeaverApplication extends EclipseApplicationImpl implements DBPApplicationController {
+public class DBeaverApplication extends DesktopApplicationImpl implements DBPApplicationDesktop, DBPApplicationController {
 
     private static final Log log = Log.getLog(DBeaverApplication.class);
 
@@ -258,17 +260,20 @@ public class DBeaverApplication extends EclipseApplicationImpl implements DBPApp
         // Write version info
         writeWorkspaceInfo();
 
-        // Initialize platform
-        DBWorkbench.getPlatform();
-
         // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
         updateSplashHandler();
+
+        // Initialize platform
+        DBWorkbench.getPlatform();
 
         initializeApplication();
 
         // Run instance server
         instanceServer = DBeaverInstanceServer.startInstanceServer(commandLine, createInstanceController());
 
+        if (RuntimeUtils.isWindows() && isStandalone()) {
+            SWTBrowserRegistry.overrideBrowser();
+        }
         TimezoneRegistry.overrideTimezone();
 
         // Prefs default

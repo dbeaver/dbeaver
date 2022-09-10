@@ -36,7 +36,11 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.BeanUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * BFILE content
@@ -151,13 +155,13 @@ public class OracleContentBFILE extends JDBCContentLOB {
                     }
                 } else {
                     // Create new local storage
-                    File tempFile;
+                    Path tempFile;
                     try {
                         tempFile = ContentUtils.createTempContentFile(monitor, platform, "blob" + bfile.hashCode());
                     } catch (IOException e) {
                         throw new DBCException("Can't create temporary file", e);
                     }
-                    try (OutputStream os = new FileOutputStream(tempFile)) {
+                    try (OutputStream os = Files.newOutputStream(tempFile)) {
                         try (InputStream bs = getInputStream()) {
                             ContentUtils.copyStreams(bs, contentLength, os, monitor);
                         }
