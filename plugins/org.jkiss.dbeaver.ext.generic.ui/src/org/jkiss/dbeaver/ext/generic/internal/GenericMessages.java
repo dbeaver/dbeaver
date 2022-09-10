@@ -36,6 +36,7 @@ public class GenericMessages extends NLS {
     public static String dialog_connection_general_tab_tooltip;
     public static String dialog_connection_host_label;
     public static String dialog_connection_jdbc_url_;
+    public static String dialog_connection_type_label;
     public static String dialog_connection_password_label;
     public static String dialog_connection_path_label;
     public static String dialog_connection_port_label;
