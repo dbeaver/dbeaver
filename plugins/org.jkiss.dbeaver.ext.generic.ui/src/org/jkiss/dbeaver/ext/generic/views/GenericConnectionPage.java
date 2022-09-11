@@ -112,23 +112,20 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     boolean useUrl = typeURLRadio.getSelection();
-                    site.getActiveDataSource().getConnectionConfiguration()
-                        .setConfigurationType(useUrl ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
                     setupConnectionModeSelection(useUrl);
                     saveAndUpdate();
                 }
             };
+            Label cnnTypeLabel = UIUtils.createControlLabel(settingsGroup, GenericMessages.dialog_connection_type_label);
+            cnnTypeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             Composite modeGroup = UIUtils.createComposite(settingsGroup, 3);
-            UIUtils.createControlLabel(modeGroup, GenericMessages.dialog_connection_type_label);
             typeManualRadio = UIUtils.createRadioButton(modeGroup, GenericMessages.dialog_connection_host_label, false, typeSwitcher);
             typeURLRadio = UIUtils.createRadioButton(modeGroup, GenericMessages.dialog_connection_jdbc_url_, true, typeSwitcher);
-            modeGroup.setLayoutData(GridDataFactory.fillDefaults().span(4, 1).create());
+            modeGroup.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).create());
             addControlToGroup(GROUP_CONNECTION_MODE, modeGroup);
             
-            Label urlLabel = new Label(settingsGroup, SWT.NONE);
-            urlLabel.setText(GenericMessages.dialog_connection_jdbc_url_ + ":");
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            urlLabel.setLayoutData(gd);
+            Label urlLabel = UIUtils.createControlLabel(settingsGroup, GenericMessages.dialog_connection_jdbc_url_);
+            urlLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             urlText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -390,8 +387,8 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         this.parseSampleURL(site.getDriver());
-        boolean showURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
-        setupConnectionModeSelection(showURL);
+        boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
+        setupConnectionModeSelection(useURL);
         site.updateButtons();
         if (!isCustom) {
             if (hostText != null) {

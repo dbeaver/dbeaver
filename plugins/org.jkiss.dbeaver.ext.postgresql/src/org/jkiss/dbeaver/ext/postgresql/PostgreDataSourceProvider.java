@@ -74,6 +74,9 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         if (authModel instanceof DBPDataSourceURLProvider) {
             return ((DBPDataSourceURLProvider) authModel).getConnectionURL(driver, connectionInfo);
         }
+        if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
+            return connectionInfo.getUrl();
+        }
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
         if (serverType.supportsCustomConnectionURL()) {
             return JDBCURL.generateUrlByTemplate(driver, connectionInfo);
