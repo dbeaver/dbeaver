@@ -42,45 +42,47 @@ public class DataSourceSynchronizeHandler extends AbstractDataSourceHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final DBCExecutionContext context = getActiveExecutionContext(event, true);
 
-        if (context != null) {
-            final var dataSource = context.getDataSource();
-            final var dataSourceContainer = dataSource.getContainer();
-            final var dataSourceProvider = (DBPDataSourceProviderSynchronizable) dataSourceContainer.getDriver().getDataSourceProvider();
-
-            new AbstractJob("Synchronize data source [" + dataSource.getName() + "]") {
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-
-                    try {
-                        final boolean localSynchronized = dataSourceProvider.isLocalDataSourceSynchronized(monitor, dataSourceContainer);
-                        final boolean remoteSynchronized = dataSourceProvider.isRemoteDataSourceSynchronized(monitor, dataSourceContainer);
-
-                        if (localSynchronized != remoteSynchronized) {
-                            final Reply[] reply = new Reply[1];
-
-                            UIUtils.syncExec(() -> reply[0] = MessageBoxBuilder.builder()
-                                .setTitle(CoreMessages.dialog_data_source_synchronize_title)
-                                .setMessage(NLS.bind(CoreMessages.dialog_data_source_synchronize_message, dataSource.getName()))
-                                .setPrimaryImage(DBIcon.STATUS_QUESTION)
-                                .setReplies(REPLY_KEEP_LOCAL_CHANGES, REPLY_KEEP_REMOTE_CHANGES, Reply.CANCEL)
-                                .setDefaultReply(Reply.CANCEL)
-                                .showMessageBox());
-
-                            if (reply[0] == REPLY_KEEP_LOCAL_CHANGES) {
-                                dataSourceProvider.syncRemoteDataSource(monitor, dataSourceContainer);
-                            } else if (reply[0] == REPLY_KEEP_REMOTE_CHANGES) {
-                                dataSourceProvider.syncLocalDataSource(monitor, dataSourceContainer);
-                                DataSourceInvalidateHandler.invalidateDataSource(dataSourceContainer.getDataSource());
-                            }
-                        }
-
-                        return Status.OK_STATUS;
-                    } catch (DBException e) {
-                        return GeneralUtils.makeExceptionStatus(e);
-                    }
-                }
-            }.schedule();
+        if (context == null) {
+            return null;
         }
+
+        final var dataSource = context.getDataSource();
+        final var dataSourceContainer = dataSource.getContainer();
+        final var dataSourceProvider = (DBPDataSourceProviderSynchronizable) dataSourceContainer.getDriver().getDataSourceProvider();
+
+        new AbstractJob("Synchronize data source [" + dataSource.getName() + "]") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+
+                try {
+                    final boolean localSynchronized = dataSourceProvider.isLocalDataSourceSynchronized(monitor, dataSourceContainer);
+                    final boolean remoteSynchronized = dataSourceProvider.isRemoteDataSourceSynchronized(monitor, dataSourceContainer);
+
+                    if (localSynchronized != remoteSynchronized) {
+                        final Reply[] reply = new Reply[1];
+
+                        UIUtils.syncExec(() -> reply[0] = MessageBoxBuilder.builder()
+                            .setTitle(CoreMessages.dialog_data_source_synchronize_title)
+                            .setMessage(NLS.bind(CoreMessages.dialog_data_source_synchronize_message, dataSource.getName()))
+                            .setPrimaryImage(DBIcon.STATUS_QUESTION)
+                            .setReplies(REPLY_KEEP_LOCAL_CHANGES, REPLY_KEEP_REMOTE_CHANGES, Reply.CANCEL)
+                            .setDefaultReply(Reply.CANCEL)
+                            .showMessageBox());
+
+                        if (reply[0] == REPLY_KEEP_LOCAL_CHANGES) {
+                            dataSourceProvider.syncRemoteDataSource(monitor, dataSourceContainer);
+                        } else if (reply[0] == REPLY_KEEP_REMOTE_CHANGES) {
+                            dataSourceProvider.syncLocalDataSource(monitor, dataSourceContainer);
+                            DataSourceInvalidateHandler.invalidateDataSource(dataSourceContainer.getDataSource());
+                        }
+                    }
+
+                    return Status.OK_STATUS;
+                } catch (DBException e) {
+                    return GeneralUtils.makeExceptionStatus(e);
+                }
+            }
+        }.schedule();
 
         return null;
     }

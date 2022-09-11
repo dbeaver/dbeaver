@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public interface DBPDataSourceProviderSynchronizable extends DBPDataSourceProvider {
+
     /**
      * Synchronized the local data source with the remote data source.
      *
@@ -65,11 +66,10 @@ public interface DBPDataSourceProviderSynchronizable extends DBPDataSourceProvid
      * @param container local data source container
      * @return {@code true} if the remote data source is synchronized, {@code false} otherwise
      * @throws DBException on any database error
-     * @see #syncLocalDataSource(DBRProgressMonitor, DBPDataSourceContainer)
-     * @see #syncRemoteDataSource(DBRProgressMonitor, DBPDataSourceContainer)
      */
     boolean isRemoteDataSourceSynchronized(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container
     ) throws DBException;
+
 }

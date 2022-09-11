@@ -69,4 +69,5 @@ public interface SSHImplementation {
         @NotNull String dst,
         @NotNull DBRProgressMonitor monitor
     ) throws DBException, IOException;
+
 }
