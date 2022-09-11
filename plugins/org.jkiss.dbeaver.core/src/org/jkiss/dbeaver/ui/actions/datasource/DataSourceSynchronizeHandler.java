@@ -20,7 +20,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceProviderSynchronizable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -33,18 +35,19 @@ import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class DataSourceSynchronizeHandler extends AbstractDataSourceHandler {
-    private static final Reply REPLY_KEEP_LOCAL_CHANGES = new Reply("Keep local changes");
-    private static final Reply REPLY_KEEP_REMOTE_CHANGES = new Reply("Keep remote changes");
+    private static final Reply REPLY_KEEP_LOCAL_CHANGES = new Reply(CoreMessages.dialog_data_source_synchronize_reply_keep_local_label);
+    private static final Reply REPLY_KEEP_REMOTE_CHANGES = new Reply(CoreMessages.dialog_data_source_synchronize_reply_keep_remote_label);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final DBCExecutionContext context = getActiveExecutionContext(event, true);
 
         if (context != null) {
-            final var dataSourceContainer = context.getDataSource().getContainer();
+            final var dataSource = context.getDataSource();
+            final var dataSourceContainer = dataSource.getContainer();
             final var dataSourceProvider = (DBPDataSourceProviderSynchronizable) dataSourceContainer.getDriver().getDataSourceProvider();
 
-            new AbstractJob("Synchronize data source [" + context.getDataSource().getName() + "]") {
+            new AbstractJob("Synchronize data source [" + dataSource.getName() + "]") {
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
 
@@ -56,8 +59,8 @@ public class DataSourceSynchronizeHandler extends AbstractDataSourceHandler {
                             final Reply[] reply = new Reply[1];
 
                             UIUtils.syncExec(() -> reply[0] = MessageBoxBuilder.builder()
-                                .setTitle("Synchronize Data Sources")
-                                .setMessage("Data source '" + context.getDataSource().getName() + "' is not synchronized.\n\nYou must decide which version to keep.")
+                                .setTitle(CoreMessages.dialog_data_source_synchronize_title)
+                                .setMessage(NLS.bind(CoreMessages.dialog_data_source_synchronize_message, dataSource.getName()))
                                 .setPrimaryImage(DBIcon.STATUS_QUESTION)
                                 .setReplies(REPLY_KEEP_LOCAL_CHANGES, REPLY_KEEP_REMOTE_CHANGES, Reply.CANCEL)
                                 .setDefaultReply(Reply.CANCEL)
