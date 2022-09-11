@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public interface DBPDataSourceProviderRemote extends DBPDataSourceProvider {
+public interface DBPDataSourceProviderSynchronizable extends DBPDataSourceProvider {
     /**
      * Synchronized the local data source with the remote data source.
      *
@@ -28,7 +28,10 @@ public interface DBPDataSourceProviderRemote extends DBPDataSourceProvider {
      * @param container data source container that needs synchronization
      * @throws DBException on any database error
      */
-    void syncLocalDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException;
+    void syncLocalDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException;
 
     /**
      * Synchronized the remote data source with the local data source.
@@ -37,7 +40,10 @@ public interface DBPDataSourceProviderRemote extends DBPDataSourceProvider {
      * @param container data source container that needs synchronization
      * @throws DBException on any database error
      */
-    void syncRemoteDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException;
+    void syncRemoteDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException;
 
     /**
      * Checks whether the local data source is synchronized with the remote one.
@@ -47,5 +53,23 @@ public interface DBPDataSourceProviderRemote extends DBPDataSourceProvider {
      * @return {@code true} if the local data source is synchronized, {@code false} otherwise
      * @throws DBException on any database error
      */
-    boolean isSynchronized(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException;
+    boolean isLocalDataSourceSynchronized(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException;
+
+    /**
+     * Checks whether the remote database was changed in some way since last synchronization request.
+     *
+     * @param monitor   progress monitor which is used for tracking progress
+     * @param container local data source container
+     * @return {@code true} if the remote data source is synchronized, {@code false} otherwise
+     * @throws DBException on any database error
+     * @see #syncLocalDataSource(DBRProgressMonitor, DBPDataSourceContainer)
+     * @see #syncRemoteDataSource(DBRProgressMonitor, DBPDataSourceContainer)
+     */
+    boolean isRemoteDataSourceSynchronized(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException;
 }

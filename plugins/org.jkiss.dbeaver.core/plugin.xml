@@ -50,7 +50,7 @@
             class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             namespace="org.jkiss.dbeaver.core.datasource"
-            properties="connected,transactional,transactionActive,supportsTransactions"
+            properties="connected,transactional,synchronizable,transactionActive,supportsTransactions"
             type="org.jkiss.dbeaver.model.DBPContextProvider"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
@@ -129,6 +129,7 @@
         <command id="org.jkiss.dbeaver.core.commit" name="%command.org.jkiss.dbeaver.core.commit.name" description="%command.org.jkiss.dbeaver.core.commit.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.rollback" name="%command.org.jkiss.dbeaver.core.rollback.name" description="%command.org.jkiss.dbeaver.core.rollback.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.autocommit" name="%command.org.jkiss.dbeaver.core.txn.autocommit.name" description="%command.org.jkiss.dbeaver.core.txn.autocommit.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.connection.synchronize" name="%command.org.jkiss.dbeaver.core.connection.synchronize.name" description="%command.org.jkiss.dbeaver.core.connection.synchronize.description" categoryId="org.jkiss.dbeaver.core.database" />
         <command id="org.jkiss.dbeaver.core.connection.readonly" name="%command.org.jkiss.dbeaver.core.connection.readonly.name" description="%command.org.jkiss.dbeaver.core.connection.readonly.description" categoryId="org.jkiss.dbeaver.core.database" />
         <command id="org.jkiss.dbeaver.core.txn.log" name="%command.org.jkiss.dbeaver.core.txn.log.name" description="%command.org.jkiss.dbeaver.core.txn.log.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.pending" name="%command.org.jkiss.dbeaver.core.txn.pending.name" description="%command.org.jkiss.dbeaver.core.txn.pending.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -154,6 +155,7 @@
         <image commandId="org.jkiss.dbeaver.core.connect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.png"/>
         <image commandId="org.jkiss.dbeaver.core.invalidate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/reconnect.png"/>
         <image commandId="org.jkiss.dbeaver.core.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.png"/>
+        <image commandId="org.jkiss.dbeaver.core.connection.synchronize" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sync_connection.png"/>
         <image commandId="org.jkiss.dbeaver.core.connection.readonly" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/readonly.png" />
         <image commandId="org.jkiss.dbeaver.folder.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.png"/>
         <image commandId="org.jkiss.dbeaver.core.commit" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/commit.png"/>
@@ -199,6 +201,13 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.toolbar.general.visible">
             <reference definitionId="DBeaverPerspectiveActive"/>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.editor.synchronizable">
+            <with variable="activeEditor">
+                <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                    <test property="org.jkiss.dbeaver.core.datasource.synchronizable" value="true"/>
+                </adapt>
+            </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.editor.transactional">
             <with variable="activeEditor">
@@ -340,6 +349,9 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.invalidate" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.connection.synchronize" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceSynchronizeHandler">
+            <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.synchronizable"/></visibleWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
             <enabledWhen>
@@ -520,6 +532,9 @@
                 <command commandId="org.jkiss.dbeaver.core.disconnectProject">
                     <visibleWhen checkEnabled="true"/>
                 </command>
+                <command commandId="org.jkiss.dbeaver.core.connection.synchronize">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.synchronizable"/></visibleWhen>
+                </command>
                 <separator name="session" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.commit">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></visibleWhen>
@@ -563,6 +578,14 @@
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.disconnect">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.connection.synchronize">
+                    <visibleWhen>
+                        <and>
+                            <reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/>
+                            <reference definitionId="org.jkiss.dbeaver.core.ui.editor.synchronizable"/>
+                        </and>
+                    </visibleWhen>
                 </command>
                 <separator name="sql_tools" visible="true"/>
                 <separator name="additions" visible="false"/>

@@ -19,21 +19,21 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
 
-public enum Reply {
-    YES(IDialogConstants.YES_LABEL),
-    NO(IDialogConstants.NO_LABEL),
-    OK(IDialogConstants.OK_LABEL)
-    ;
+public final class Reply {
+    public static final Reply YES = new Reply(IDialogConstants.YES_LABEL);
+    public static final Reply NO = new Reply(IDialogConstants.NO_LABEL);
+    public static final Reply OK = new Reply(IDialogConstants.OK_LABEL);
+    public static final Reply CANCEL = new Reply(IDialogConstants.CANCEL_LABEL);
 
     @NotNull
     private final String displayString;
 
-    Reply(@NotNull String displayString) {
+    public Reply(@NotNull String displayString) {
         this.displayString = displayString;
     }
 
     @NotNull
-    String getDisplayString() {
+    public String getDisplayString() {
         return displayString;
     }
 }

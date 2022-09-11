@@ -951,11 +951,11 @@ public class DataSourceDescriptor
             this.setForceUseSingleConnection(true);
         }
 
-        final DBPDataSourceProvider dataSourceProvider = getDriver().getDataSourceProvider();
-        if (dataSourceProvider instanceof DBPDataSourceProviderRemote) {
+        final DBPDataSourceProvider provider = getDriver().getDataSourceProvider();
+        if (provider instanceof DBPDataSourceProviderSynchronizable) {
             try {
                 monitor.beginTask("Synchronize local data source", 1);
-                ((DBPDataSourceProviderRemote) dataSourceProvider).syncLocalDataSource(monitor, this);
+                ((DBPDataSourceProviderSynchronizable) provider).syncLocalDataSource(monitor, this);
                 monitor.worked(1);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Data source synchronization error", "Error synchronizing local data source", e);
@@ -965,7 +965,7 @@ public class DataSourceDescriptor
             }
         }
 
-        this.dataSource = dataSourceProvider.openDataSource(monitor, this);
+        this.dataSource = provider.openDataSource(monitor, this);
         this.connectTime = new Date();
         monitor.worked(1);
 
@@ -1054,10 +1054,10 @@ public class DataSourceDescriptor
 
             monitor.worked(1);
 
-            final DBPDataSourceProvider dataSourceProvider = driver.getDataSourceProvider();
-            if (dataSourceProvider instanceof DBPDataSourceProviderRemote) {
-                final DBPDataSourceProviderRemote remoteProvider = (DBPDataSourceProviderRemote) dataSourceProvider;
-                if (!remoteProvider.isSynchronized(monitor, this)) {
+            final DBPDataSourceProvider provider = driver.getDataSourceProvider();
+            if (provider instanceof DBPDataSourceProviderSynchronizable) {
+                final DBPDataSourceProviderSynchronizable remoteProvider = (DBPDataSourceProviderSynchronizable) provider;
+                if (!remoteProvider.isLocalDataSourceSynchronized(monitor, this)) {
                     try {
                         monitor.beginTask("Synchronize remote data source", 1);
                         remoteProvider.syncRemoteDataSource(monitor, this);
