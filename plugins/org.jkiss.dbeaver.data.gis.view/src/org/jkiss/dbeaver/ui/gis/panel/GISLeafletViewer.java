@@ -90,7 +90,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             .registerTypeHierarchyAdapter(DBDContent.class, new DBDContentAdapter()).create();
 
     private final DBDAttributeBinding[] bindings;
-    private final Browser browser;
+    private Browser browser;
     private DBGeometry[] lastValue;
     private int sourceSRID; // Explicitly set SRID
     private int actualSourceSRID; // SRID taken from geometry value
@@ -110,20 +110,18 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         composite = UIUtils.createPlaceholder(parent, 1);
         CSSUtils.setCSSClass(composite, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
-        Browser newBrowser;
         try {
-            newBrowser = new Browser(composite, SWT.NONE);
+            browser = new Browser(composite, SWT.NONE);
         } catch (SWTError error) {
             log.error("Internal web browser initialization failed", error);
             for (Control control : composite.getChildren()) {
                 control.dispose();
             }
-            newBrowser = null;
+            browser = null;
             if (error.code != SWT.ERROR_NOT_IMPLEMENTED) {
                 throw error;
             }
         }
-        browser = newBrowser;
 
         if (browser != null) {
             browser.setLayoutData(new GridData(GridData.FILL_BOTH));
