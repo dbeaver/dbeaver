@@ -629,13 +629,15 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     }
 
     private void updateControlsVisibility() {
-        if (browser != null) {
-            GC gc = new GC(browser.getDisplay());
-            try {
-                browser.execute("javascript:showTools(" + toolsVisible + ");");
-            } finally {
-                gc.dispose();
-            }
+        if (browser == null) {
+            return;
+        }
+        
+        GC gc = new GC(browser.getDisplay());
+        try {
+            browser.execute("javascript:showTools(" + toolsVisible + ");");
+        } finally {
+            gc.dispose();
         }
     }
 
