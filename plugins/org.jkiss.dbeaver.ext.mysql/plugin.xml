@@ -255,7 +255,7 @@
                     description="MariaDB JDBC driver"
                     promoted="1"
                     categories="sql">
-                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[2.7.1]" bundle="!drivers.mariadb"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.0.7]" bundle="!drivers.mariadb"/>
 
                     <file type="license" path="drivers/mariadb/LICENSE.txt" bundle="drivers.mariadb"/>
                     <file type="jar" path="drivers/mariadb" bundle="drivers.mariadb"/>
