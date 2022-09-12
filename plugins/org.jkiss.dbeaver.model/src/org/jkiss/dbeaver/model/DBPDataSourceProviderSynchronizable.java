@@ -20,10 +20,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+/**
+ * Provider for a synchronizable data source.
+ */
 public interface DBPDataSourceProviderSynchronizable extends DBPDataSourceProvider {
 
     /**
-     * Synchronized the local data source with the remote data source.
+     * Synchronizes the local data source with the remote data source.
      *
      * @param monitor   progress monitor which is used for tracking synchronization progress
      * @param container data source container that needs synchronization
@@ -35,7 +38,7 @@ public interface DBPDataSourceProviderSynchronizable extends DBPDataSourceProvid
     ) throws DBException;
 
     /**
-     * Synchronized the remote data source with the local data source.
+     * Synchronizes the remote data source with the local data source.
      *
      * @param monitor   progress monitor which is used for tracking synchronization progress
      * @param container data source container that needs synchronization

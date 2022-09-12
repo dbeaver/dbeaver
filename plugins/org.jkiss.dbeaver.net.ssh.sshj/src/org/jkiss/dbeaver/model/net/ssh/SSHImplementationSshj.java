@@ -177,7 +177,11 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
     }
 
     @Override
-    public void getFile(@NotNull String src, @NotNull OutputStream dst, @NotNull DBRProgressMonitor monitor) throws DBException, IOException {
+    public void getFile(
+        @NotNull String src,
+        @NotNull OutputStream dst,
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBException, IOException {
         try (SFTPClient client = openSftpClient()) {
             client.get(src, new InMemoryDestFile() {
                 @Override
@@ -199,12 +203,16 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
     }
 
     @Override
-    public void putFile(@NotNull InputStream src, @NotNull String dst, @NotNull DBRProgressMonitor monitor) throws DBException, IOException {
+    public void putFile(
+        @NotNull InputStream src,
+        @NotNull String dst,
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBException, IOException {
         try (SFTPClient client = openSftpClient()) {
             client.put(new InMemorySourceFile() {
                 @Override
                 public String getName() {
-                    return "memory";
+                    return "memory";  //$NON-NLS-1$
                 }
 
                 @Override
@@ -222,9 +230,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
 
     @NotNull
     private SFTPClient openSftpClient() throws DBException, IOException {
-        final SSHClient client = this.sshClient;
-
-        if (client == null) {
+        if (sshClient == null) {
             throw new DBException("No active session available");
         }
 

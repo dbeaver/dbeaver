@@ -958,7 +958,11 @@ public class DataSourceDescriptor
                 ((DBPDataSourceProviderSynchronizable) provider).syncLocalDataSource(monitor, this);
                 monitor.worked(1);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Data source synchronization error", "Error synchronizing local data source", e);
+                DBWorkbench.getPlatformUI().showError(
+                    RegistryMessages.dialog_data_source_synchronization_fail_title,
+                    NLS.bind(RegistryMessages.dialog_data_source_synchronization_fail_local_message, getName()),
+                    e
+                );
                 throw e;
             } finally {
                 monitor.done();
@@ -1063,7 +1067,11 @@ public class DataSourceDescriptor
                         remoteProvider.syncRemoteDataSource(monitor, this);
                         monitor.worked(1);
                     } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Data source synchronization error", "Error synchronizing remote data source", e);
+                        DBWorkbench.getPlatformUI().showError(
+                            RegistryMessages.dialog_data_source_synchronization_fail_title,
+                            NLS.bind(RegistryMessages.dialog_data_source_synchronization_fail_remote_message, dataSource.getName()),
+                            e
+                        );
                         throw e;
                     } finally {
                         monitor.done();
