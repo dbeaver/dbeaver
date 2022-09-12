@@ -33,7 +33,9 @@ import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -228,4 +231,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         return DataSourceProviderRegistry.getInstance();
     }
 
+    @Override
+    public void runTask(
+        @NotNull DBRRunnableWithProgress task,
+        @NotNull String name
+    ) throws InvocationTargetException, InterruptedException {
+        task.run(new VoidProgressMonitor());
+    }
 }

@@ -28,9 +28,11 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 
 /**
@@ -104,5 +106,15 @@ public interface DBPPlatform {
     Path getApplicationConfiguration();
 
     boolean isShuttingDown();
+
+    /**
+     * Runs a blocking task and monitors the execution process.
+     *
+     * @param task task to execute
+     * @param name name of the task
+     * @throws InvocationTargetException on any error during execution of {@code task}
+     * @throws InterruptedException      on task interrupt
+     */
+    void runTask(@NotNull DBRRunnableWithProgress task, @NotNull String name) throws InvocationTargetException, InterruptedException;
 
 }

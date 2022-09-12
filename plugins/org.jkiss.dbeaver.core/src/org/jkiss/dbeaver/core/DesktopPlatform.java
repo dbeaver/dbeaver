@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
@@ -53,6 +54,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -408,4 +410,11 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         return isClosing();
     }
 
+    @Override
+    public void runTask(
+        @NotNull DBRRunnableWithProgress task,
+        @NotNull String name
+    ) throws InvocationTargetException, InterruptedException {
+        RuntimeUtils.runTask(task, name, 0);
+    }
 }
