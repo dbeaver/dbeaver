@@ -89,41 +89,44 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         throws DBCException
     {
         if (storage == null && clob != null) {
-            long contentLength = getContentLength();
-            DBPPlatform platform = DBWorkbench.getPlatform();
-            if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
-                try {
-                    String subString = clob.getSubString(1, (int) contentLength);
-                    storage = new JDBCContentChars(executionContext, subString);
-                } catch (Exception e) {
-                    log.debug("Can't get CLOB as substring", e);
+            try {
+                long contentLength = getContentLength();
+                DBPPlatform platform = DBWorkbench.getPlatform();
+                if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                     try {
-                        storage = StringContentStorage.createFromReader(clob.getCharacterStream(), contentLength);
-                    } catch (IOException e1) {
-                        throw new DBCException("IO error while reading content", e);
-                    } catch (Throwable e1) {
+                        String subString = clob.getSubString(1, (int) contentLength);
+                        storage = new JDBCContentChars(executionContext, subString);
+                    } catch (Exception e) {
+                        log.debug("Can't get CLOB as substring", e);
+                        try {
+                            storage = StringContentStorage.createFromReader(clob.getCharacterStream(), contentLength);
+                        } catch (IOException e1) {
+                            throw new DBCException("IO error while reading content", e);
+                        } catch (Throwable e1) {
+                            throw new DBCException(e, executionContext);
+                        }
+                    }
+                } else {
+                    // Create new local storage
+                    Path tempFile;
+                    try {
+                        tempFile = ContentUtils.createTempContentFile(monitor, platform, "clob" + clob.hashCode());
+                    } catch (IOException e) {
+                        throw new DBCException("Can't create temp file", e);
+                    }
+                    try (Writer os = Files.newBufferedWriter(tempFile, Charset.forName(getDefaultEncoding()))) {
+                        ContentUtils.copyStreams(clob.getCharacterStream(), contentLength, os, monitor);
+                    } catch (IOException e) {
+                        ContentUtils.deleteTempFile(tempFile);
+                        throw new DBCException("IO error while copying content", e);
+                    } catch (Throwable e) {
+                        ContentUtils.deleteTempFile(tempFile);
                         throw new DBCException(e, executionContext);
                     }
+                    this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding(), true);
                 }
-            } else {
-                // Create new local storage
-                Path tempFile;
-                try {
-                    tempFile = ContentUtils.createTempContentFile(monitor, platform, "clob" + clob.hashCode());
-                }
-                catch (IOException e) {
-                    throw new DBCException("Can't create temp file", e);
-                }
-                try (Writer os = Files.newBufferedWriter(tempFile, Charset.forName(getDefaultEncoding()))) {
-                    ContentUtils.copyStreams(clob.getCharacterStream(), contentLength, os, monitor);
-                } catch (IOException e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw new DBCException("IO error while copying content", e);
-                } catch (Throwable e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw new DBCException(e, executionContext);
-                }
-                this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding(), true);
+            } catch (DBCException e) {
+                handleContentReadingException(e);
             }
             // Free lob - we don't need it anymore
             releaseClob();
