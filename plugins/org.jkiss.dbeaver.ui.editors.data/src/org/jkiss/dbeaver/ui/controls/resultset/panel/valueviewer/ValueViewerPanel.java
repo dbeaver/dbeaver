@@ -266,8 +266,9 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
                 } else {
                     viewPlaceholder.setLayout(new FillLayout());
                 }
+            }
 
-            } else {
+            if (valueEditor == null || valueEditor.getControl() == null) {
                 final Composite placeholder = UIUtils.createPlaceholder(viewPlaceholder, 1);
                 placeholder.setBackground(placeholder.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
                 placeholder.addPaintListener(e -> {
