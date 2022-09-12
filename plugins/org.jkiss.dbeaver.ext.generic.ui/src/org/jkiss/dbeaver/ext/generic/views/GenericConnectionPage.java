@@ -370,11 +370,11 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         typeURLRadio.setSelection(useUrl);
         typeManualRadio.setSelection(!useUrl);
         urlText.setEditable(useUrl);
-        for (String groupName: new String[] { GROUP_HOST, GROUP_SERVER, GROUP_DB, GROUP_PATH }) {
+        for (String groupName : new String[] { GROUP_HOST, GROUP_SERVER, GROUP_DB, GROUP_PATH }) {
             for (Control control : propGroupMap.get(groupName)) {
                 control.setEnabled(!useUrl);
                 if (control instanceof Text) {
-                    ((Text)control).setEditable(!useUrl);
+                    ((Text) control).setEditable(!useUrl);
                 }
             }
         }

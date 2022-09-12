@@ -103,7 +103,13 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
                 setupConnectionModeSelection(useUrl);
             }
         };
-        Group addrGroup = UIUtils.createControlGroup(settingsGroup, SQLServerUIMessages.dialog_connection_server_label, 4, GridData.FILL_HORIZONTAL, 0);
+        Group addrGroup = UIUtils.createControlGroup(
+            settingsGroup,
+            SQLServerUIMessages.dialog_connection_server_label,
+            4,
+            GridData.FILL_HORIZONTAL,
+            0
+        );
         Label connTypeLabel = UIUtils.createControlLabel(addrGroup, SQLServerUIMessages.dialog_connection_type_label);
         connTypeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         Composite modeGroup = UIUtils.createComposite(addrGroup, 2);
