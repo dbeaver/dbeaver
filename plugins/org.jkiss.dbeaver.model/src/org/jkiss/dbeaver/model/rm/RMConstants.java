@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.model.rm;
  * RM constants
  */
 public interface RMConstants  {
-    String PERMISSION_PROJECT_CONNECTIONS_EDIT = "project-connection-edit";
-    String PERMISSION_PROJECT_CONNECTIONS_VIEW = "project-connection-view";
+    String PERMISSION_PROJECT_DATA_SOURCES_EDIT = "project-data-source-edit";
+    String PERMISSION_PROJECT_DATA_SOURCES_VIEW = "project-data-source-view";
 
     String PERMISSION_PROJECT_RESOURCE_VIEW = "project-resource-view";
     String PERMISSION_PROJECT_RESOURCE_EDIT = "project-resource-edit";

@@ -22,6 +22,7 @@ public interface SMConstants {
     String SESSION_PARAM_TRUSTED_USER_ROLES = "trustedUserRoles";
 
     String SUBJECT_PERMISSION_SCOPE = "subject";
+    String PROJECT_PERMISSION_SCOPE = "project";
 
     String DATA_SOURCE_ACCESS_PERMISSION = "access";
 }
