@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
@@ -128,7 +129,7 @@ public class ObjectPropertyTester extends PropertyTester
             }
             case PROP_CAN_DELETE: {
                 if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
-                    return true;
+                    return node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
                 }
 
                 if (DBNUtils.isReadOnly(node)) {
@@ -245,7 +246,7 @@ public class ObjectPropertyTester extends PropertyTester
             // Just try to find first create handler
             if (node instanceof DBNDataSource) {
                 // We always can create datasource
-                return true;
+                return node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
             }
 
             Class<?> objectType;
@@ -272,7 +273,7 @@ public class ObjectPropertyTester extends PropertyTester
             if (objectType == null) {
                 return false;
             }
-            DBEObjectMaker objectMaker = getObjectManager(objectType, DBEObjectMaker.class);
+            DBEObjectMaker<?,?> objectMaker = getObjectManager(objectType, DBEObjectMaker.class);
             if (objectMaker == null) {
                 return false;
             }

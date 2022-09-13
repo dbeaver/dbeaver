@@ -29,6 +29,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -211,16 +212,16 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public File getLocalFile()
+    public Path getLocalFile()
     {
         // Try to get local file
         File platformFile = detectLocalFile();
-        if (platformFile != null && platformFile.exists()) {
+        if (platformFile != null) {
             // Relative file do not exists - use plain one
-            return platformFile;
+            return platformFile.toPath();
         }
         // Nothing fits - just return plain url
-        return platformFile;
+        return null;
     }
 
     private File detectLocalFile()

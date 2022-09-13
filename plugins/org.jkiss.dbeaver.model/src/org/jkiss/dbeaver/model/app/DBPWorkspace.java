@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 
@@ -28,7 +29,7 @@ import java.util.List;
 /**
  * DBPWorkspace
  */
-public interface DBPWorkspace extends SMAuthSpace
+public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
 {
     String METADATA_FOLDER = ".metadata";
 

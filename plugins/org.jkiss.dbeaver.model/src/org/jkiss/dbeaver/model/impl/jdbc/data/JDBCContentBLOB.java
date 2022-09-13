@@ -88,42 +88,45 @@ public class JDBCContentBLOB extends JDBCContentLOB {
         throws DBCException
     {
         if (storage == null && blob != null) {
-            long contentLength = getContentLength();
-            DBPPlatform platform = DBWorkbench.getPlatform();
-            if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
-                try {
-                    try (InputStream bs = blob.getBinaryStream()) {
-                        storage = BytesContentStorage.createFromStream(
-                            bs,
-                            contentLength,
-                            getDefaultEncoding());
+            try {
+                long contentLength = getContentLength();
+                DBPPlatform platform = DBWorkbench.getPlatform();
+                if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
+                    try {
+                        try (InputStream bs = blob.getBinaryStream()) {
+                            storage = BytesContentStorage.createFromStream(
+                                bs,
+                                contentLength,
+                                getDefaultEncoding());
+                        }
+                    } catch (IOException e) {
+                        throw new DBCException("IO error while reading content", e);
+                    } catch (Throwable e) {
+                        throw new DBCException(e, executionContext);
                     }
-                } catch (IOException e) {
-                    throw new DBCException("IO error while reading content", e);
-                } catch (Throwable e) {
-                    throw new DBCException(e, executionContext);
-                }
-            } else {
-                // Create new local storage
-                Path tempFile;
-                try {
-                    tempFile = ContentUtils.createTempContentFile(monitor, platform, "blob" + blob.hashCode());
-                }
-                catch (IOException e) {
-                    throw new DBCException("Can't create temporary file", e);
-                }
-                try (OutputStream os = Files.newOutputStream(tempFile)) {
-                    try (InputStream bs = blob.getBinaryStream()) {
-                        ContentUtils.copyStreams(bs, contentLength, os, monitor);
+                } else {
+                    // Create new local storage
+                    Path tempFile;
+                    try {
+                        tempFile = ContentUtils.createTempContentFile(monitor, platform, "blob" + blob.hashCode());
+                    } catch (IOException e) {
+                        throw new DBCException("Can't create temporary file", e);
                     }
-                } catch (IOException e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw new DBCException("IO error while copying stream", e);
-                } catch (Throwable e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw new DBCException(e, executionContext);
+                    try (OutputStream os = Files.newOutputStream(tempFile)) {
+                        try (InputStream bs = blob.getBinaryStream()) {
+                            ContentUtils.copyStreams(bs, contentLength, os, monitor);
+                        }
+                    } catch (IOException e) {
+                        ContentUtils.deleteTempFile(tempFile);
+                        throw new DBCException("IO error while copying stream", e);
+                    } catch (Throwable e) {
+                        ContentUtils.deleteTempFile(tempFile);
+                        throw new DBCException(e, executionContext);
+                    }
+                    this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding(), true);
                 }
-                this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding(), true);
+            } catch (DBCException e) {
+                handleContentReadingException(e);
             }
             // Free blob - we don't need it anymore
             releaseBlob();

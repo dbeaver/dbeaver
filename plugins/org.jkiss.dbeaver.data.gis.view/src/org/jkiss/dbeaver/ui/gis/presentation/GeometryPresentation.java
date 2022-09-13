@@ -67,6 +67,7 @@ public class GeometryPresentation extends AbstractPresentation {
     protected void applyThemeSettings(ITheme currentTheme) {
     }
 
+    @Nullable
     @Override
     public Composite getControl() {
         return leafletViewer.getBrowser();

@@ -51,6 +51,8 @@ import org.w3c.dom.Element;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -283,24 +285,26 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                         if (libEntry != null) {
                             // Extract driver to "drivers" folder
                             String libName = libFile.getName();
-                            File contribFolder = DriverDescriptor.getDriversContribFolder();
-                            if (!contribFolder.exists()) {
-                                if (!contribFolder.mkdir()) {
-                                    log.error("Cannot create drivers folder '" + contribFolder.getAbsolutePath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+                            Path contribFolder = DriverDescriptor.getDriversContribFolder();
+                            if (!Files.exists(contribFolder)) {
+                                try {
+                                    Files.createDirectories(contribFolder);
+                                } catch (IOException e) {
+                                    log.error("Cannot create drivers folder '" + contribFolder.toAbsolutePath() + "'", e);
                                     continue;
                                 }
                             }
-                            File importLibFile = new File(contribFolder, libName);
-                            if (!importLibFile.exists()) {
-                                try (FileOutputStream os = new FileOutputStream(importLibFile)) {
+                            Path importLibFile = contribFolder.resolve(libName);
+                            if (!Files.exists(importLibFile)) {
+                                try (OutputStream os = Files.newOutputStream(importLibFile)) {
                                     try (InputStream is = zipFile.getInputStream(libEntry)) {
                                         IOUtils.copyStream(is, os);
                                     }
                                 }
                             }
                             // Make relative path
-                            String contribPath = contribFolder.getAbsolutePath();
-                            String libAbsolutePath = importLibFile.getAbsolutePath();
+                            String contribPath = contribFolder.toAbsolutePath().toString();
+                            String libAbsolutePath = importLibFile.toAbsolutePath().toString();
                             String relativePath = libAbsolutePath.substring(contribPath.length());
                             while (relativePath.charAt(0) == '/' || relativePath.charAt(0) == '\\') {
                                 relativePath = relativePath.substring(1);

@@ -21,18 +21,13 @@ package org.jkiss.dbeaver.data.office.export;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -42,12 +37,18 @@ import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.*;
+import java.awt.Color;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * Export XLSX with Apache POI
@@ -87,6 +88,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private String nullString;
 
     private DBDAttributeBinding[] columns;
+    private DBDAttributeDecorator decorator;
 
     private SXSSFWorkbook wb;
 
@@ -329,6 +331,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     public void exportHeader(DBCSession session) {
 
         columns = getSite().getAttributes();
+        decorator = GeneralUtils.adapt(getSite().getSource(), DBDAttributeDecorator.class);
         // FIXME: we want to avoid UI component dependency. But still want to use its preferences
         showDescription = session.getDataSource().getContainer().getPreferenceStore()
                 .getBoolean("resultset.show.columnDescription");
@@ -472,7 +475,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns[i];
             Cell cell = rowX.createCell(i + startCol, getCellType(column));
-            cell.setCellStyle(style);
+            cell.setCellStyle(getCellStyle(column, rowCount));
 
             if (DBUtils.isNullValue(row[i])) {
                 if (!CommonUtils.isEmpty(nullString)) {
@@ -568,4 +571,35 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         return cellValue;
     }
 
+    @NotNull
+    private CellStyle getCellStyle(@NotNull DBDAttributeBinding attribute, int row) {
+        if (decorator != null) {
+            final String bg = decorator.getCellBackground(attribute, row);
+
+            if (bg != null) {
+                // Setting the foreground color sets the background color. Is this a bug/feature of POI?
+                final XSSFCellStyle style = (XSSFCellStyle) this.style.clone();
+                style.setFillForegroundColor(new XSSFColor(asColor(bg), new DefaultIndexedColorMap()));
+                style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+                return style;
+            }
+        }
+
+        return style;
+    }
+
+    /**
+     * A reimplementation of {@link org.eclipse.jface.resource.StringConverter#asRGB(String)}.
+     * <p>
+     * Let's keep it here until it will be required in other places too
+     */
+    @NotNull
+    private static Color asColor(@NotNull String value) {
+        final StringTokenizer tokenizer = new StringTokenizer(value, ",");
+        final int r = Integer.parseInt(tokenizer.nextToken().trim());
+        final int g = Integer.parseInt(tokenizer.nextToken().trim());
+        final int b = Integer.parseInt(tokenizer.nextToken().trim());
+        return new Color(r, g, b);
+    }
 }

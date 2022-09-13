@@ -24,8 +24,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
 import java.nio.file.Path;
@@ -35,7 +37,7 @@ import java.util.UUID;
 /**
  * Project meta information.
  */
-public interface DBPProject extends DBPObject, SMAuthSpace
+public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm
 {
     String METADATA_FOLDER = ".dbeaver";
 
@@ -55,6 +57,9 @@ public interface DBPProject extends DBPObject, SMAuthSpace
 
     @NotNull
     String getName();
+
+    @NotNull
+    String getDisplayName();
 
     @NotNull
     UUID getProjectID();
@@ -116,5 +121,7 @@ public interface DBPProject extends DBPObject, SMAuthSpace
     Object getResourceProperty(@NotNull IResource resource, @NotNull String propName);
 
     void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue);
+
+    void refreshProject(DBRProgressMonitor monitor);
 
 }

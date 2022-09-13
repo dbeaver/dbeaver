@@ -15,18 +15,28 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.model.access;
 
-import org.eclipse.swt.graphics.Color;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+/**
+ * Permission realm
+ */
+public interface DBAPermissionRealm {
 
-public interface IResultSetLabelProvider {
+    /**
+     * Access to all public API for authorized users
+     */
+    String PERMISSION_PUBLIC = "public";
+    /**
+     * Access to private resources (e.g. private project)
+     */
+    String PERMISSION_PRIVATE_OWNER = "private";
+    /**
+     * Admin access to all API
+     */
+    String PERMISSION_ADMIN = "admin";
 
-    @Nullable
-    Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row);
+    boolean hasRealmPermission(String permission);
 
-    @Nullable
-    Color getCellBackground(DBDAttributeBinding attribute, ResultSetRow row);
+    boolean supportsRealmFeature(String feature);
 
 }

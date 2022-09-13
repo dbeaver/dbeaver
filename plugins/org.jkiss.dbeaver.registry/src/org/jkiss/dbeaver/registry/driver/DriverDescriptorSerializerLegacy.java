@@ -32,9 +32,9 @@ import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.xml.sax.Attributes;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,6 +57,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 continue;
             }
             List<DriverDescriptor> drivers = provider.getDrivers().stream().filter(DriverDescriptor::isModified).collect(Collectors.toList());
+            drivers.removeIf(driverDescriptor -> driverDescriptor.getReplacedBy() != null);
             if (drivers.isEmpty()) {
                 continue;
             }
@@ -146,7 +147,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             xml.addAttribute("load-optional-dependencies", true);
                         }
                     }
-                    //xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
+
                     List<DriverDescriptor.DriverFileInfo> files = driver.getResolvedFiles().get(lib);
                     if (files != null) {
                         for (DriverDescriptor.DriverFileInfo file : files) {
@@ -156,10 +157,17 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                     continue;
                                 }
                                 xml.addAttribute(RegistryConstants.ATTR_ID, file.getId());
+                                // check if we need to store local file in storage
+
                                 if (!CommonUtils.isEmpty(file.getVersion())) {
                                     xml.addAttribute(RegistryConstants.ATTR_VERSION, file.getVersion());
                                 }
-                                xml.addAttribute(RegistryConstants.ATTR_PATH, substitutePathVariables(pathSubstitutions, file.getFile().getAbsolutePath()));
+                                xml.addAttribute(
+                                    RegistryConstants.ATTR_PATH,
+                                    substitutePathVariables(pathSubstitutions, file.getFile().toString()));
+                                if (file.getFileCRC() != 0) {
+                                    xml.addAttribute("crc", Long.toHexString(file.getFileCRC()));
+                                }
                             }
                         }
                     }
@@ -316,7 +324,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         //log.debug("Skip obsolete custom library '" + path + "'");
                         return;
                     }
-                    if(providedDrivers && lib == null && !(curDriver.getDriverLibraries().isEmpty())){
+                    if (providedDrivers && lib == null && !(curDriver.getDriverLibraries().isEmpty())){
                         curDriver.disabledAllDefaultLibraries();
                     }
                     String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
@@ -347,7 +355,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                         atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_ID)),
                                         atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_VERSION)),
                                         curLibrary.getType(),
-                                        new File(path));
+                                        Path.of(path));
+                                String crcString = atts.getValue("crc");
+                                if (!CommonUtils.isEmpty(crcString)) {
+                                    long crc = Long.parseLong(crcString, 16);
+                                    if (crc != 0) {
+                                        info.setFileCRC(crc);
+                                    }
+                                }
                                 curDriver.addLibraryFile(curLibrary, info);
                             }
                         }
