@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.parser.common.grammar.nfa;
 
-import java.util.*;
-
+import org.jkiss.dbeaver.parser.common.TermPatternCaps;
+import org.jkiss.dbeaver.parser.common.TermPatternInfo;
 import org.jkiss.dbeaver.parser.common.grammar.*;
+
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Builder of the complete grammar graph in form of non-deterministic finite automaton
@@ -26,11 +29,12 @@ import org.jkiss.dbeaver.parser.common.grammar.*;
  */
 public class GrammarNfaBuilder {
 
+    private final List<String> errors = new ArrayList<>();
     private final GrammarInfo grammar;
     private final GrammarNfa nfa;
-    private int exprId = 0;
-
     private final List<GrammarNfaTransition> terminalTransitions = new ArrayList<>();
+    private final Map<String, TermPatternInfo> terms = new HashMap<>();
+    private int exprId = 0;
 
     public static class NfaFragment {
         private final GrammarNfaState from;
@@ -55,6 +59,10 @@ public class GrammarNfaBuilder {
         this.nfa = new GrammarNfa();
     }
 
+    public List<String> getErrors() {
+        return this.errors;
+    }
+
     public List<GrammarNfaTransition> getTerminalTransitions() {
         return this.terminalTransitions;
     }
@@ -63,8 +71,13 @@ public class GrammarNfaBuilder {
         return this.exprId++;
     }
 
+    private TermPatternInfo registerTerm(String pattern, TermPatternCaps caps) {
+        return terms.computeIfAbsent(pattern, p -> new TermPatternInfo(this.terms.size() + 1, p, caps));
+    }
+
     /**
      * Walk through the grammar and build the complete grammar graph in form of non-deterministic finite automaton
+     *
      * @return start and final states of the complete grammar graph
      */
     public NfaFragment traverseGrammar() {
@@ -75,18 +88,40 @@ public class GrammarNfaBuilder {
             ruleFragments.put(rule, ruleVisitor.traverseRule(rule));
         }
 
+        GrammarRule skipRule = grammar.getSkipRuleName() == null ? null : grammar.getRule(grammar.getSkipRuleName());
         for (GrammarNfaTransition n : nfa.getTransitions().toArray(new GrammarNfaTransition[0])) {
-            if(n.getOperation().getKind() == ParseOperationKind.CALL) {
-                nfa.removeTransition(n);
-                nfa.createTransition(n.getFrom(), ruleFragments.get(n.getOperation().getRule()).getFrom(), GrammarNfaOperation.makeEmpty(n.getOperation().getExprId()));
-            }
-            if(n.getOperation().getKind() == ParseOperationKind.RESUME) {
-                nfa.removeTransition(n);
-                nfa.createTransition(ruleFragments.get(n.getOperation().getRule()).getTo(), n.getTo(), GrammarNfaOperation.makeEmpty(n.getOperation().getExprId()));
+            GrammarNfaOperation op = n.getOperation();
+            if (op.getRule() != skipRule) {
+                if (op.getKind() == ParseOperationKind.CALL) {
+                    nfa.removeTransition(n);
+                    nfa.createTransition(
+                        n.getFrom(), ruleFragments.get(op.getRule()).getFrom(),
+                        GrammarNfaOperation.makeRuleOperation(op.getExprId(), ParseOperationKind.CALL, op.getTag(), op.getRule())
+                    );
+                }
+                if (op.getKind() == ParseOperationKind.RESUME) {
+                    nfa.removeTransition(n);
+                    nfa.createTransition(
+                        ruleFragments.get(op.getRule()).getTo(), n.getTo(),
+                        GrammarNfaOperation.makeRuleOperation(op.getExprId(), ParseOperationKind.RESUME, op.getTag(), op.getRule())
+                    );
+                }
             }
         }
 
-        return ruleFragments.get(grammar.findRule(grammar.getStartRuleName()));
+        GrammarNfaState start = nfa.createState(null);
+        GrammarNfaState end = nfa.createState(null);
+        GrammarNfaOperation emptyOp = GrammarNfaOperation.makeEmpty(nextExprId());
+
+        GrammarRule rootRule = grammar.getRule(grammar.getStartRuleName());
+        NfaFragment rootFragment = ruleFragments.get(rootRule);
+        NfaFragment tailFragment = ruleVisitor.visitSkipRuleIfNeeded(rootRule);
+
+        nfa.createTransition(start, rootFragment.from, emptyOp);
+        nfa.createTransition(rootFragment.to, tailFragment.from, emptyOp);
+        nfa.createTransition(tailFragment.to, end, emptyOp);
+        nfa.compact();
+        return new NfaFragment(start, end);
     }
 
     private class RuleVisitor implements ExpressionVisitor<GrammarRule, GrammarNfaBuilder.NfaFragment> {
@@ -95,15 +130,37 @@ public class GrammarNfaBuilder {
             NfaFragment fragment = rule.getExpression().apply(this, rule);
             GrammarNfaState start = nfa.createState(rule);
             GrammarNfaState end = nfa.createState(rule);
-            nfa.createTransition(start, fragment.from, GrammarNfaOperation.makeRuleOperation(exprId, ParseOperationKind.RULE_START, rule));
-            nfa.createTransition(fragment.to, end, GrammarNfaOperation.makeRuleOperation(exprId, ParseOperationKind.RULE_END, rule));
+            nfa.createTransition(
+                start,
+                fragment.from,
+                GrammarNfaOperation.makeRuleOperation(exprId, ParseOperationKind.RULE_START, null, rule)
+            );
+            nfa.createTransition(
+                fragment.to,
+                end,
+                GrammarNfaOperation.makeRuleOperation(exprId, ParseOperationKind.RULE_END, null, rule)
+            );
             return new NfaFragment(start, end);
         }
 
-        private NfaFragment visitSkipRuleIfNeeded(GrammarRule rule) {
+        public NfaFragment visitSkipRuleIfNeeded(GrammarRule rule) {
             if (rule.isUseSkipRule()) {
-                GrammarRule skipRule = grammar.findRule(grammar.getSkipRuleName());
-                return this.traverseRule(skipRule);
+                GrammarRule skipRule = grammar.getRule(grammar.getSkipRuleName());
+                GrammarNfaState from = nfa.createState(rule);
+                GrammarNfaState to = nfa.createState(rule);
+                NfaFragment fragment = this.traverseRule(skipRule);
+                int exprId = nextExprId();
+                nfa.createTransition(
+                    from,
+                    fragment.from,
+                    GrammarNfaOperation.makeRuleOperation(exprId, ParseOperationKind.CALL, null, skipRule)
+                );
+                nfa.createTransition(
+                    fragment.to,
+                    to,
+                    GrammarNfaOperation.makeRuleOperation(exprId, ParseOperationKind.RESUME, null, skipRule)
+                );
+                return new NfaFragment(from, to);
             } else {
                 GrammarNfaState state = nfa.createState(rule);
                 return new NfaFragment(state, state);
@@ -117,8 +174,16 @@ public class GrammarNfaBuilder {
             GrammarNfaState to = nfa.createState(rule);
             for (RuleExpression alt : alternatives.children) {
                 NfaFragment fragment = alt.apply(this, rule);
-                nfa.createTransition(from, fragment.from, GrammarNfaOperation.makeEmpty(exprId));
-                nfa.createTransition(fragment.to, to, GrammarNfaOperation.makeEmpty(exprId));
+                nfa.createTransition(
+                    from,
+                    fragment.from,
+                    GrammarNfaOperation.makeSequenceOperation(exprId, ParseOperationKind.SEQ_ENTER, 0, 1, 0)
+                );
+                nfa.createTransition(
+                    fragment.to,
+                    to,
+                    GrammarNfaOperation.makeSequenceOperation(exprId, ParseOperationKind.SEQ_EXIT, 0, 1, 1)
+                );
             }
             return new NfaFragment(from, to);
         }
@@ -129,19 +194,25 @@ public class GrammarNfaBuilder {
             NfaFragment head = this.visitSkipRuleIfNeeded(rule);
             GrammarNfaState from = head.to;
             GrammarNfaState to = nfa.createState(rule);
-            
+
             String rawChars = charactersExpression.pattern;
-            
-            // optional checks to separate consequent words from each other
-            String lookbehind = Character.isLetterOrDigit(rawChars.charAt(0)) ? "\\b" : "";
-            String lookahead = Character.isLetterOrDigit(rawChars.charAt(rawChars.length() - 1)) ? "\\b" : "";
-            String pattern = lookbehind + RegexExpression.escapeSpecialChars(rawChars) + lookahead;
-            
-            if (!rule.isCaseSensitiveTerms()) {
-                pattern = "(?i:" + pattern + ")";
+            if (rawChars.length() == 0) {
+                nfa.createTransition(from, to, GrammarNfaOperation.makeEmpty(exprId));
+            } else {
+                // optional checks to separate consequent words from each other
+                String lookbehind = Character.isLetterOrDigit(rawChars.charAt(0)) ? "\\b" : "";
+                String lookahead = Character.isLetterOrDigit(rawChars.charAt(rawChars.length() - 1)) ? "\\b" : "";
+                String pattern = lookbehind + RegexExpression.escapeSpecialChars(rawChars) + lookahead;
+
+                if (!rule.isCaseSensitiveTerms()) {
+                    pattern = "(?i:" + pattern + ")";
+                }
+
+                terminalTransitions.add(nfa.createTransition(from, to, GrammarNfaOperation.makeTerm(
+                    exprId, charactersExpression.tag, registerTerm(pattern, TermPatternCaps.FIXED)
+                )));
             }
-            
-            terminalTransitions.add(nfa.createTransition(from, to, GrammarNfaOperation.makeTerm(exprId, pattern)));
+
             return new NfaFragment(head.from, to);
         }
 
@@ -192,12 +263,17 @@ public class GrammarNfaBuilder {
         @Override
         public NfaFragment visitRuleCall(RuleCallExpression ruleCallExpression, GrammarRule rule) {
             int exprId = nextExprId();
+            String tag = ruleCallExpression.tag;
             GrammarNfaState from = nfa.createState(rule);
             GrammarNfaState to = nfa.createState(rule);
             GrammarNfaState call = nfa.createState(rule);
             GrammarRule targetRule = grammar.findRule(ruleCallExpression.ruleName);
-            nfa.createTransition(from, call, GrammarNfaOperation.makeRuleOperation(exprId, ParseOperationKind.CALL, targetRule));
-            nfa.createTransition(call, to, GrammarNfaOperation.makeRuleOperation(exprId, ParseOperationKind.RESUME, targetRule));
+            if (targetRule != null) {
+                nfa.createTransition(from, call, GrammarNfaOperation.makeRuleOperation(exprId, ParseOperationKind.CALL, tag, targetRule));
+                nfa.createTransition(call, to, GrammarNfaOperation.makeRuleOperation(exprId, ParseOperationKind.RESUME, tag, targetRule));
+            } else {
+                errors.add("Rule '" + ruleCallExpression.ruleName + "' referenced by '" + rule.getName() + "' is not defined.");
+            }
             return new NfaFragment(from, to);
         }
 
@@ -207,10 +283,12 @@ public class GrammarNfaBuilder {
             int minNum = numberExpression.min;
             int maxNum = numberExpression.max;
 
-            if (minNum < 0 || maxNum < minNum)
+            if (minNum < 0 || maxNum < minNum) {
                 throw new IllegalArgumentException("Max loop number can't be 0");
+            }
 
             GrammarNfaState from = nfa.createState(rule);
+            GrammarNfaState count = nfa.createState(rule);
             GrammarNfaState to = nfa.createState(rule);
             NfaFragment part = numberExpression.child.apply(this, rule);
 
@@ -221,10 +299,11 @@ public class GrammarNfaBuilder {
                 nfa.createTransition(from, part.from, GrammarNfaOperation.makeSequenceOperation(
                     exprId, ParseOperationKind.LOOP_ENTER, minNum, maxNum, null
                 ));
-                nfa.createTransition(part.to, part.from, GrammarNfaOperation.makeSequenceOperation(
+                nfa.createTransition(part.to, count, GrammarNfaOperation.makeSequenceOperation(
                     exprId, ParseOperationKind.LOOP_INCREMENT, minNum, maxNum, null
                 ));
-                nfa.createTransition(part.to, to, GrammarNfaOperation.makeSequenceOperation(
+                nfa.createTransition(count, part.from, GrammarNfaOperation.makeEmpty(exprId));
+                nfa.createTransition(count, to, GrammarNfaOperation.makeSequenceOperation(
                     exprId, ParseOperationKind.LOOP_EXIT, minNum, maxNum, null
                 ));
             }
@@ -241,13 +320,24 @@ public class GrammarNfaBuilder {
             NfaFragment head = this.visitSkipRuleIfNeeded(rule);
             GrammarNfaState from = head.to;
             GrammarNfaState to = nfa.createState(rule);
-            
+
             String pattern = regexExpression.pattern;
+            TermPatternCaps caps;
+            if (Pattern.matches(pattern, "")) {
+                nfa.createTransition(from, to, GrammarNfaOperation.makeEmpty(exprId));
+                caps = TermPatternCaps.VAR_NULLABLE;
+            } else {
+                caps = TermPatternCaps.VARIABLE;
+            }
+
             if (!rule.isCaseSensitiveTerms()) {
                 pattern = "(?i:" + pattern + ")";
             }
-            
-            terminalTransitions.add(nfa.createTransition(from, to, GrammarNfaOperation.makeTerm(exprId, pattern)));
+
+            terminalTransitions.add(nfa.createTransition(from, to, GrammarNfaOperation.makeTerm(
+                exprId, regexExpression.tag, registerTerm(pattern, caps)
+            )));
+
             return new NfaFragment(head.from, to);
         }
     }

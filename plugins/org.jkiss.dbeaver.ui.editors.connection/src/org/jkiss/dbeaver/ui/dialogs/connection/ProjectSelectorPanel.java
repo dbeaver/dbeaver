@@ -29,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -44,13 +45,18 @@ public class ProjectSelectorPanel {
     private DBPProject selectedProject;
 
     public ProjectSelectorPanel(@NotNull Composite parent, @Nullable DBPProject activeProject, int style) {
+        this(parent, activeProject, style, false);
+    }
+
+    public ProjectSelectorPanel(@NotNull Composite parent, @Nullable DBPProject activeProject, int style, boolean showOnlyEditable) {
         this.selectedProject = activeProject;
 
         final List<DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
+        if (showOnlyEditable) {
+            projects.removeIf(p -> !p.hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT));
+        }
         if (projects.size() == 1) {
-            if (selectedProject == null) {
-                selectedProject = projects.get(0);
-            }
+            selectedProject = projects.get(0);
         } else if (projects.size() > 1) {
 
             boolean showIcon = (style & SWT.ICON) != 0;
@@ -96,4 +102,5 @@ public class ProjectSelectorPanel {
     public DBPProject getSelectedProject() {
         return selectedProject;
     }
+
 }

@@ -22,21 +22,19 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 
 /**
  * Driver library
  */
-public interface DBPDriverLibrary
-{
+public interface DBPDriverLibrary {
 
     /**
      * Driver file type
      */
-    enum FileType
-    {
+    enum FileType {
         jar,
         lib,
         executable,
@@ -88,7 +86,7 @@ public interface DBPDriverLibrary
     String getExternalURL(DBRProgressMonitor monitor);
 
     @Nullable
-    File getLocalFile();
+    Path getLocalFile();
 
     boolean matchesCurrentPlatform();
 

@@ -48,7 +48,7 @@ public class ResourcePropertyTester extends PropertyTester
             return false;
         }
         IResource resource = (IResource)receiver;
-        DBPWorkspaceEclipse workspace = DBPPlatformEclipse.getInstance().getWorkspace();
+        DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
         DBPResourceHandler handler = workspace.getResourceHandler(resource);
         if (handler == null) {
             return false;

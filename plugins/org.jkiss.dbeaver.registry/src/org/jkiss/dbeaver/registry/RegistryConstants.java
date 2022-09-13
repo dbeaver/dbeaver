@@ -21,8 +21,6 @@ package org.jkiss.dbeaver.registry;
  */
 public class RegistryConstants {
 
-
-    public static final String DRIVERS_FILE_NAME = "drivers.xml"; //$NON-NLS-1$
     public static final String CONNECTION_TYPES_FILE_NAME = "connection-types.xml"; //$NON-NLS-1$
 
     public static final String TAG_DRIVERS = "drivers"; //$NON-NLS-1$

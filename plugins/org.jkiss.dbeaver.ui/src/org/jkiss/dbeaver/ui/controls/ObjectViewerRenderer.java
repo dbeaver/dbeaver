@@ -84,6 +84,10 @@ public abstract class ObjectViewerRenderer {
 
         itemsViewer.getControl().setCursor(arrowCursor);
 
+        itemsViewer.getControl().addDisposeListener(e -> {
+            linkLayout.dispose();
+        });
+
         if (trackInput) {
             final CellTrackListener actionsListener = new CellTrackListener();
             SelectionAdapter selectionAdapter = new SelectionAdapter() {

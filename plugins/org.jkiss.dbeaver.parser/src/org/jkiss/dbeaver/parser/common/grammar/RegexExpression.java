@@ -30,6 +30,10 @@ public class RegexExpression extends TerminalExpression {
         super(pattern);
     }
 
+    public RegexExpression(String tag, String pattern) {
+        super(tag, pattern);
+    }
+    
     @Override
     protected <T, R> R applyImpl(ExpressionVisitor<T, R> visitor, T arg) {
         return visitor.visitRegex(this, arg);

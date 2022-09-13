@@ -200,7 +200,7 @@ public class ConsoleViewSwitchHandler extends AbstractHandler {
         } else {
             String value = enabled ? CONSOLE_VIEW_ENABLED_VALUE_TRUE : CONSOLE_VIEW_ENABLED_VALUE_FALSE;
             editor.setPartProperty(CONSOLE_VIEW_ENABLED_PROPERTY, value);
-            
+            editor.setConsoleViewOutputEnabled(enabled);
             IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
             if (activeFile != null) {
                 try {

@@ -23,9 +23,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -72,7 +74,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public String getNodeName() {
-        return project.getName();
+        return project.getDisplayName();
     }
 
     protected String getResourceNodeType() {
@@ -106,7 +108,13 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.PROJECT;
+        DBPImage image = DBIcon.PROJECT;
+
+        if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
+            image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LOCK);
+        }
+
+        return image;
     }
 
     @Override
@@ -187,9 +195,9 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @Override
     protected IResource[] addImplicitMembers(IResource[] members) {
         DBPWorkspace workspace = project.getWorkspace();
-        if (workspace instanceof DBPWorkspaceEclipse) {
-            for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceEclipse)workspace).getAllResourceHandlers()) {
-                IFolder rhDefaultRoot = ((DBPWorkspaceEclipse)workspace).getResourceDefaultRoot(getProject(), rh, false);
+        if (workspace instanceof DBPWorkspaceDesktop) {
+            for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceDesktop)workspace).getAllResourceHandlers()) {
+                IFolder rhDefaultRoot = ((DBPWorkspaceDesktop)workspace).getResourceDefaultRoot(getProject(), rh, false);
                 if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
                     // Add as explicit member
                     members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);

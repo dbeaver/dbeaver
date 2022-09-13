@@ -29,7 +29,11 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -75,18 +79,18 @@ public class DriverUtils {
         outputStream.flush();
     }
 
-    static List<File> extractZipArchives(List<File> files) {
+    static List<Path> extractZipArchives(List<Path> files) {
         if (files.isEmpty()) {
             return files;
         }
-        List<File> jarFiles = new ArrayList<>();
-        for (File inputFile : files) {
+        List<Path> jarFiles = new ArrayList<>();
+        for (Path inputFile : files) {
             jarFiles.add(inputFile);
-            if (!inputFile.getName().toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
+            if (!inputFile.getFileName().toString().toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
                 continue;
             }
             // Seems to be a zip. Let's try it.
-            try (InputStream is = new FileInputStream(inputFile)) {
+            try (InputStream is = Files.newInputStream(inputFile)) {
                 try (ZipInputStream zipStream = new ZipInputStream(is)) {
                     for (; ; ) {
                         ZipEntry zipEntry = zipStream.getNextEntry();
@@ -112,36 +116,41 @@ public class DriverUtils {
 
             } catch (Exception e) {
                 // No a zip
-                log.debug("Error processing zip archive '" + inputFile.getName() + "': " + e.getMessage());
+                log.debug("Error processing zip archive '" + inputFile.getFileName() + "': " + e.getMessage());
             }
         }
 
         return jarFiles;
     }
 
-    private static void checkAndExtractEntry(File sourceFile, InputStream zipStream, ZipEntry zipEntry, List<File> jarFiles) throws IOException {
-        String sourceName = sourceFile.getName();
+    private static void checkAndExtractEntry(Path sourceFile, InputStream zipStream, ZipEntry zipEntry, List<Path> jarFiles) throws IOException {
+        String sourceName = sourceFile.getFileName().toString();
         if (sourceName.endsWith(".zip")) {
             sourceName = sourceName.substring(0, sourceName.length() - 4);
         }
-        File localCacheDir =
-            new File(
-                new File(DriverDescriptor.getCustomDriversHome().toFile(), ZIP_EXTRACT_DIR),
-                sourceName);
-        if (!localCacheDir.exists() && !localCacheDir.mkdirs()) {
-            throw new IOException("Can't create local cache folder '" + localCacheDir.getAbsolutePath() + "'");
+        Path localCacheDir = DriverDescriptor.getCustomDriversHome().resolve(ZIP_EXTRACT_DIR).resolve(sourceName);
+        if (!Files.exists(localCacheDir)) {
+            try {
+                Files.createDirectories(localCacheDir);
+            } catch (IOException e) {
+                throw new IOException("Can't create local cache folder '" + localCacheDir.toAbsolutePath() + "'", e);
+            }
         }
-        File localFile = new File(localCacheDir, zipEntry.getName());
+        Path localFile = localCacheDir.resolve(zipEntry.getName());
         jarFiles.add(localFile);
-        if (localFile.exists()) {
+        if (Files.exists(localFile)) {
             // Already extracted
             return;
         }
-        File localDir = localFile.getParentFile();
-        if (!localDir.exists() && !localDir.mkdirs()) { // in case of localFile located in subdirectory inside zip archive
-            throw new IOException("Can't create local file directory in the cache '" + localDir.getAbsolutePath() + "'");
+        Path localDir = localFile.getParent();
+        if (!Files.exists(localDir)) { // in case of localFile located in subdirectory inside zip archive
+            try {
+                Files.createDirectories(localDir);
+            } catch (IOException e) {
+                throw new IOException("Can't create local file directory in the cache '" + localDir.toAbsolutePath() + "'", e);
+            }
         }
-        try (FileOutputStream os = new FileOutputStream(localFile)) {
+        try (OutputStream os = Files.newOutputStream(localFile)) {
             copyZipStream(zipStream, os);
         }
     }

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -50,6 +51,7 @@ public class DataSourcePropertyTester extends PropertyTester
     public static final String PROP_TRANSACTIONAL = "transactional";
     public static final String PROP_SUPPORTS_TRANSACTIONS = "supportsTransactions";
     public static final String PROP_TRANSACTION_ACTIVE = "transactionActive";
+    public static final String PROP_EDITABLE = "editable";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -99,7 +101,7 @@ public class DataSourcePropertyTester extends PropertyTester
                     DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
                     return txnManager != null && txnManager.isSupportsTransactions();
                 }
-                case PROP_TRANSACTION_ACTIVE:
+                case PROP_TRANSACTION_ACTIVE: {
                     if (context != null && context.isConnected()) {
                         DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
                         return txnManager != null && !txnManager.isAutoCommit();
@@ -107,6 +109,11 @@ public class DataSourcePropertyTester extends PropertyTester
 //                        return Boolean.valueOf(active).equals(expectedValue);
                     }
                     return Boolean.FALSE.equals(expectedValue);
+                }
+                case PROP_EDITABLE: {
+                    return contextProvider instanceof DBNDataSource &&
+                        ((DBNDataSource)contextProvider).getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
+                }
             }
             return false;
         } catch (Exception e) {

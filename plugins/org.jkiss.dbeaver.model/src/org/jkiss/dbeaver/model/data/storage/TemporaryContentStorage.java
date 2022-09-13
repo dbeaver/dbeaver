@@ -24,7 +24,13 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * File content storage
@@ -32,12 +38,11 @@ import java.io.*;
 public class TemporaryContentStorage implements DBDContentStorageLocal {
 
     private final DBPPlatform platform;
-    private File file;
+    private Path file;
     private String charset;
     private boolean deleteFileOnRelease;
 
-    public TemporaryContentStorage(DBPPlatform platform, File file, String charset, boolean deleteFileOnRelease)
-    {
+    public TemporaryContentStorage(DBPPlatform platform, Path file, String charset, boolean deleteFileOnRelease) {
         this.platform = platform;
         this.file = file;
         this.charset = CommonUtils.toString(charset, GeneralUtils.DEFAULT_ENCODING);
@@ -46,40 +51,39 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
 
     @Override
     public InputStream getContentStream()
-        throws IOException
-    {
-        return new FileInputStream(file);
+        throws IOException {
+        return Files.newInputStream(file);
     }
 
     @Override
     public Reader getContentReader()
-        throws IOException
-    {
-        return new InputStreamReader(new FileInputStream(file), this.charset);
+        throws IOException {
+        if (!CommonUtils.isEmpty(this.charset)) {
+            return Files.newBufferedReader(file, Charset.forName(this.charset));
+        } else {
+            return Files.newBufferedReader(file);
+        }
     }
 
     @Override
-    public long getContentLength()
-    {
-        return file.length();
+    public long getContentLength() throws IOException {
+        return Files.size(file);
     }
 
     @Override
-    public String getCharset()
-    {
+    public String getCharset() {
         return this.charset;
     }
 
     @Override
     public DBDContentStorage cloneStorage(DBRProgressMonitor monitor)
-        throws IOException
-    {
+        throws IOException {
         // Create new local storage
-        File tempFile = ContentUtils.createTempContentFile(monitor, platform, "copy" + this.hashCode());
+        Path tempFile = ContentUtils.createTempContentFile(monitor, platform, "copy" + this.hashCode());
         try {
-            try (InputStream is = new FileInputStream(file)) {
-                try (OutputStream os = new FileOutputStream(tempFile)) {
-                    ContentUtils.copyStreams(is, file.length(), os, monitor);
+            try (InputStream is = Files.newInputStream(file)) {
+                try (OutputStream os = Files.newOutputStream(tempFile)) {
+                    ContentUtils.copyStreams(is, Files.size(file), os, monitor);
                 }
             }
         } catch (IOException e) {
@@ -90,16 +94,14 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
     }
 
     @Override
-    public void release()
-    {
+    public void release() {
         if (deleteFileOnRelease) {
             ContentUtils.deleteTempFile(file);
         }
     }
 
     @Override
-    public File getDataFile()
-    {
+    public Path getDataFile() {
         return file;
     }
 }

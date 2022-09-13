@@ -215,9 +215,9 @@ public class ContentValueManager extends BaseValueManager {
             try {
                 DBDContentStorage storage;
                 if (ContentUtils.isTextContent(value)) {
-                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile, GeneralUtils.UTF8_ENCODING);
+                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile.toPath(), GeneralUtils.UTF8_ENCODING);
                 } else {
-                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile);
+                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile.toPath());
                 }
                 value.updateContents(monitor, storage);
                 controller.updateValue(value, true);

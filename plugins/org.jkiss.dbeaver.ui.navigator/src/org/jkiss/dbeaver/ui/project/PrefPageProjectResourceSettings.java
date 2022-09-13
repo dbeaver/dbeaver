@@ -40,10 +40,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -179,7 +179,7 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
     @Override
     protected void performDefaults() {
         resourceTable.removeAll();
-        DBPWorkspaceEclipse workspace = DBPPlatformEclipse.getInstance().getWorkspace();
+        DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
         for (DBPResourceHandlerDescriptor descriptor : workspace.getResourceHandlerDescriptors()) {
             if (!descriptor.isManagable()) {
                 continue;
@@ -204,7 +204,7 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
     }
 
     private DBPProject getProjectMeta() {
-        return DBPPlatformEclipse.getInstance().getWorkspace().getProject(this.project);
+        return DBPPlatformDesktop.getInstance().getWorkspace().getProject(this.project);
     }
 
     @Override

@@ -110,7 +110,7 @@
             class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             namespace="org.jkiss.dbeaver.core.global"
-            properties="standalone,canCreateProject,hasActiveProject,hasMultipleProjects"
+            properties="standalone,hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects"
             type="java.lang.Object"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
@@ -118,6 +118,12 @@
             namespace="org.jkiss.dbeaver.core.object"
             properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter,supportsIndexCreate,supportsConstraintCreate"
             type="org.jkiss.dbeaver.model.DBPNamedObject"/>
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
+                id="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
+                namespace="org.jkiss.dbeaver.model"
+                properties="childOfType,isTableContainer"
+                type="org.jkiss.dbeaver.model.struct.DBSObject"/>
 
         <propertyTester
             class="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"
@@ -335,6 +341,7 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+
                     </iterate>
                 </with>
             </enabledWhen>
