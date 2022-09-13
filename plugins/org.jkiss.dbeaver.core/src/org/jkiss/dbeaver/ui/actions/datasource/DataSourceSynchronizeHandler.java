@@ -40,7 +40,7 @@ public class DataSourceSynchronizeHandler extends AbstractDataSourceHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        final DBCExecutionContext context = getActiveExecutionContext(event, true);
+        final DBCExecutionContext context = getActiveExecutionContext(event, false);
 
         if (context == null) {
             return null;

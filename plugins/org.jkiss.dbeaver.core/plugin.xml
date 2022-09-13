@@ -190,13 +190,6 @@
         <definition id="org.jkiss.dbeaver.core.ui.toolbar.general.visible">
             <reference definitionId="DBeaverPerspectiveActive"/>
         </definition>
-        <definition id="org.jkiss.dbeaver.core.ui.editor.synchronizable">
-            <with variable="activeEditor">
-                <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                    <test property="org.jkiss.dbeaver.core.datasource.synchronizable" value="true"/>
-                </adapt>
-            </with>
-        </definition>
         <definition id="org.jkiss.dbeaver.core.ui.editor.transactional">
             <with variable="activeEditor">
                 <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
@@ -254,6 +247,24 @@
                 <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
                         <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
+                    </adapt>
+                </with>
+            </or>
+        </definition>
+
+        <definition id="org.jkiss.dbeaver.core.datasource.synchronizable">
+            <or>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                            <test property="org.jkiss.dbeaver.core.datasource.synchronizable" value="true"/>
+                        </adapt>
+                    </iterate>
+                </with>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                        <test property="org.jkiss.dbeaver.core.datasource.synchronizable" value="true"/>
                     </adapt>
                 </with>
             </or>
@@ -527,7 +538,7 @@
                     <visibleWhen checkEnabled="true"/>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.connection.synchronize">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.synchronizable"/></visibleWhen>
+                    <visibleWhen checkEnabled="true"/>
                 </command>
                 <separator name="session" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.commit">
@@ -577,7 +588,7 @@
                     <visibleWhen>
                         <and>
                             <reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/>
-                            <reference definitionId="org.jkiss.dbeaver.core.ui.editor.synchronizable"/>
+                            <reference definitionId="org.jkiss.dbeaver.core.datasource.synchronizable"/>
                         </and>
                     </visibleWhen>
                 </command>
