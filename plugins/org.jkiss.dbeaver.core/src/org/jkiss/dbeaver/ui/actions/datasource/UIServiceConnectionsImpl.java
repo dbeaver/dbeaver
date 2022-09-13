@@ -39,7 +39,7 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
 
     @Override
     public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer, String defaultPageName) {
-        if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
+        if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
             EditConnectionDialog.openEditConnectionDialog(UIUtils.getActiveWorkbenchWindow(), dataSourceContainer, defaultPageName);
         } else {
             // Cannot edit connection. Let's open its contents

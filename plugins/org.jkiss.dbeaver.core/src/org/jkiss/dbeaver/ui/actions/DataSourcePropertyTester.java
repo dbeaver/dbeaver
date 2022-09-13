@@ -112,7 +112,7 @@ public class DataSourcePropertyTester extends PropertyTester
                 }
                 case PROP_EDITABLE: {
                     return contextProvider instanceof DBNDataSource &&
-                        ((DBNDataSource)contextProvider).getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
+                        ((DBNDataSource)contextProvider).getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
                 }
             }
             return false;
