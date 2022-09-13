@@ -107,6 +107,12 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @NotNull
     @Override
+    public String getDisplayName() {
+        return getName();
+    }
+
+    @NotNull
+    @Override
     public DBPWorkspace getWorkspace() {
         return workspace;
     }
@@ -278,6 +284,9 @@ public abstract class BaseProjectImpl implements DBPProject {
         }
     }
 
+    ////////////////////////////////////////////////////////
+    // Resources
+
     @NotNull
     @Override
     public String[] findResources(@NotNull Map<String, ?> properties) throws DBException {
@@ -367,6 +376,11 @@ public abstract class BaseProjectImpl implements DBPProject {
         flushMetadata();
     }
 
+    @Override
+    public void refreshProject(DBRProgressMonitor monitor) {
+
+    }
+
     public boolean resetResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
         boolean hadProperties;
@@ -388,6 +402,50 @@ public abstract class BaseProjectImpl implements DBPProject {
     protected void setResourceProperties(Map<String, Map<String, Object>> resourceProperties) {
         this.resourceProperties = resourceProperties;
     }
+
+    void removeResourceFromCache(IPath path) {
+        boolean cacheChanged = false;
+        synchronized (metadataSync) {
+            if (resourceProperties != null) {
+                cacheChanged = (resourceProperties.remove(path.toString()) != null);
+            }
+        }
+        if (cacheChanged) {
+            flushMetadata();
+        }
+    }
+
+    void updateResourceCache(IPath oldPath, IPath newPath) {
+        boolean cacheChanged = false;
+        synchronized (metadataSync) {
+            if (resourceProperties != null) {
+                Map<String, Object> props = resourceProperties.remove(oldPath.toString());
+                if (props != null) {
+                    resourceProperties.put(newPath.toString(), props);
+                    cacheChanged = true;
+                }
+            }
+        }
+        if (cacheChanged) {
+            flushMetadata();
+        }
+    }
+
+    ////////////////////////////////////////////////////////
+    // Realm
+
+    @Override
+    public boolean hasRealmPermission(String permission) {
+        return true;
+    }
+
+    @Override
+    public boolean supportsRealmFeature(String feature) {
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////
+    // Misc
 
     public void dispose() {
         if (dataSourceRegistry != null) {
@@ -480,34 +538,6 @@ public abstract class BaseProjectImpl implements DBPProject {
                 metadataSyncJob = new ProjectSyncJob();
             }
             metadataSyncJob.schedule(100);
-        }
-    }
-
-    void removeResourceFromCache(IPath path) {
-        boolean cacheChanged = false;
-        synchronized (metadataSync) {
-            if (resourceProperties != null) {
-                cacheChanged = (resourceProperties.remove(path.toString()) != null);
-            }
-        }
-        if (cacheChanged) {
-            flushMetadata();
-        }
-    }
-
-    void updateResourceCache(IPath oldPath, IPath newPath) {
-        boolean cacheChanged = false;
-        synchronized (metadataSync) {
-            if (resourceProperties != null) {
-                Map<String, Object> props = resourceProperties.remove(oldPath.toString());
-                if (props != null) {
-                    resourceProperties.put(newPath.toString(), props);
-                    cacheChanged = true;
-                }
-            }
-        }
-        if (cacheChanged) {
-            flushMetadata();
         }
     }
 

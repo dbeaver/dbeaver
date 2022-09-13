@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -46,10 +45,6 @@ public class ModelPropertyTester extends PropertyTester
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
 
         if (!(receiver instanceof DBSObject)) {
-            return false;
-        }
-        Display display = Display.getCurrent();
-        if (display == null) {
             return false;
         }
 

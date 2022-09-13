@@ -152,7 +152,7 @@ public class NativeClientDistributionDescriptor {
                     WebUtils.downloadRemoteFile(monitor,
                         taskName,
                         externalURL,
-                        targetFile,
+                        targetFile.toPath(),
                         null);
                 } catch (IOException e) {
                     log.debug("Error downloading file '" + fileName + "'", e);

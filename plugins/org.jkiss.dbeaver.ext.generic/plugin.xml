@@ -492,9 +492,6 @@
                     description="SQLite JDBC driver"
                     promoted="1"
                     categories="sql,embedded">
-                    <replace provider="generic" driver="sqlite_zentus"/>
-                    <replace provider="generic" driver="sqlite_xerial"/>
-                    <replace provider="generic" driver="sqlite_ch_werner"/>
 
                     <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
                     <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" bundle="drivers.sqlite.xerial"/>

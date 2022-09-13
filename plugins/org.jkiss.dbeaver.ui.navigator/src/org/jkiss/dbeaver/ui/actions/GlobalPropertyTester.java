@@ -18,9 +18,12 @@ package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * GlobalPropertyTester
@@ -30,6 +33,8 @@ public class GlobalPropertyTester extends PropertyTester {
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.global";
     public static final String PROP_STANDALONE = "standalone";
+    public static final String PROP_HAS_PERMISSION = "hasPermission";
+    public static final String PROP_CAN_CREATE_CONNECTION = "canCreateConnection";
     public static final String PROP_HAS_ACTIVE_PROJECT = "hasActiveProject";
     public static final String PROP_HAS_MULTI_PROJECTS = "hasMultipleProjects";
     public static final String PROP_CAN_CREATE_PROJECT = "canCreateProject";
@@ -37,6 +42,8 @@ public class GlobalPropertyTester extends PropertyTester {
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         switch (property) {
+            case PROP_HAS_PERMISSION:
+                return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(CommonUtils.toString(expectedValue));
             case PROP_HAS_MULTI_PROJECTS:
                 return DBWorkbench.getPlatform().getWorkspace().getProjects().size() > 1;
             case PROP_HAS_ACTIVE_PROJECT:
@@ -45,6 +52,15 @@ public class GlobalPropertyTester extends PropertyTester {
                 return DBWorkbench.getPlatform().getApplication().isStandalone();
             case PROP_CAN_CREATE_PROJECT:
                 return !DBWorkbench.getPlatform().getApplication().isDistributed();
+            case PROP_CAN_CREATE_CONNECTION:
+            {
+                for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
+                    if (project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
         return false;
     }

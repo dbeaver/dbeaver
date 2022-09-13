@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.registry;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBFileController;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class LocalFileController implements DBFileController {
@@ -31,22 +34,40 @@ public class LocalFileController implements DBFileController {
     }
 
     @Override
-    public byte[] loadFileData(@NotNull String filePath) throws DBException {
-        return new byte[0];
+    public byte[] loadFileData(@NotNull String fileType, @NotNull String filePath) throws DBException {
+        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        try {
+            return Files.readAllBytes(targetPath);
+        } catch (IOException e) {
+            throw new DBException("Error reading file '" + filePath + "' data", e);
+        }
     }
 
     @Override
-    public void saveFileData(@NotNull String filePath, byte[] fileData) throws DBException {
-
+    public void saveFileData(@NotNull String fileType, @NotNull String filePath, byte[] fileData) throws DBException {
+        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        try {
+            if (!Files.exists(targetPath.getParent())) {
+                Files.createDirectories(targetPath.getParent());
+            }
+            Files.write(targetPath, fileData);
+        } catch (IOException e) {
+            throw new DBException("Error writing file '" + filePath + "' data: " + e.getMessage(), e);
+        }
     }
 
     @Override
-    public String[] listFiles(@NotNull String filePath) throws DBException {
-        return new String[0];
+    public String[] listFiles(@NotNull String fileType, @NotNull String filePath) throws DBException {
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    public void deleteFile(@NotNull String filePath, boolean recursive) throws DBException {
-
+    public void deleteFile(@NotNull String fileType, @NotNull String filePath, boolean recursive) throws DBException {
+        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        try {
+            Files.delete(targetPath);
+        } catch (IOException e) {
+            throw new DBException("Error deleting file '" + filePath + "' data: " + e.getMessage(), e);
+        }
     }
 }

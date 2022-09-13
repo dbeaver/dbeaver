@@ -48,6 +48,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         super(controller);
     }
     
+    @Nullable
     @Override
     protected Browser createControl(Composite editPlaceholder)
     {
@@ -72,6 +73,9 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
+        if (leafletViewer == null) {
+            return;
+        }
         List<DBGeometry> geometries = new ArrayList<>();
         IDataController dataController = valueController.getDataController();
         if (dataController instanceof IResultSetController) {
@@ -142,8 +146,12 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         return true;
     }
 
+    @Nullable
     @Override
     public Object extractEditorValue() throws DBCException {
+        if (leafletViewer == null) {
+            return null;
+        }
         return leafletViewer.getCurrentValue();
     }
 

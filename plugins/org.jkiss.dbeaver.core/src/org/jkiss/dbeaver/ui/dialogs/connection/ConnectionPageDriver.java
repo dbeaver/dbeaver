@@ -108,7 +108,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             bottomPanel.setLayoutData(gd);
             UIUtils.createEmptyLabel(bottomPanel, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            projectSelector = new ProjectSelectorPanel(bottomPanel, NavigatorUtils.getSelectedProject(), SWT.NONE);
+            projectSelector = new ProjectSelectorPanel(bottomPanel, NavigatorUtils.getSelectedProject(), SWT.NONE, true);
             if (projectSelector.getSelectedProject() == null) {
                 setErrorMessage("You need to create a project first");
             }
