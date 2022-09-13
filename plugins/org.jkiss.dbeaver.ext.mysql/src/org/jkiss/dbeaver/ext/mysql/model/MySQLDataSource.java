@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -676,6 +677,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             });
         } else if (adapter == DBCQueryPlanner.class) {
             return adapter.cast(new MySQLPlanAnalyser(this));
+        } else if (adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new MySQLChangeUserPasswordManager(this));
         }
         return super.getAdapter(adapter);
     }
