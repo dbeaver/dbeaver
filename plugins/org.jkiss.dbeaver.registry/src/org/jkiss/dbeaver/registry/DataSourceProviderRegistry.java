@@ -416,9 +416,31 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             new DriverDescriptorSerializerLegacy().serializeDrivers(baos, this.dataSourceProviders);
-            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, baos.toString(StandardCharsets.UTF_8));
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
+                DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME,
+                baos.toString(StandardCharsets.UTF_8));
         } catch (Exception ex) {
             log.error("Error saving drivers", ex);
+        }
+    }
+
+    /**
+     * Resolve all jar files in all enabled drivers.
+     */
+    public void linkDriverFiles(Path targetFileLocation) {
+        boolean didResolve = false;
+        for (DataSourceProviderDescriptor dspd : this.dataSourceProviders) {
+            for (DriverDescriptor driver : dspd.getDrivers()) {
+                if (driver.isDisabled() || driver.isInternalDriver() || driver.getReplacedBy() != null) {
+                    continue;
+                }
+                if (driver.resolveDriverFiles(targetFileLocation)) {
+                    didResolve = true;
+                }
+            }
+        }
+        if (didResolve) {
+            saveDrivers();
         }
     }
 

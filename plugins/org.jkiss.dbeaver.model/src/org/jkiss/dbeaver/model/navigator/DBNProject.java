@@ -72,7 +72,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public String getNodeName() {
-        return project.getName();
+        return project.getDisplayName();
     }
 
     protected String getResourceNodeType() {

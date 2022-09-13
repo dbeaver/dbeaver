@@ -57,6 +57,9 @@ public interface DBPProject extends DBPObject, SMAuthSpace
     String getName();
 
     @NotNull
+    String getDisplayName();
+
+    @NotNull
     UUID getProjectID();
 
     @NotNull
