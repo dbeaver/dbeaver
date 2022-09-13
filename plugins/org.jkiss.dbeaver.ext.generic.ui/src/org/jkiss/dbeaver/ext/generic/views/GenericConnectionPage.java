@@ -243,7 +243,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_PATH, pathText);
             addControlToGroup(GROUP_PATH, buttonsPanel);
         }
-        addAdditionalGeneralControls(settingsGroup);
 
         {
             createAuthPanel(addrGroup, 4);
@@ -254,10 +253,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
         createDriverPanel(addrGroup);
         setControl(addrGroup);
-    }
-
-    protected void addAdditionalGeneralControls(Composite settingsGroup) {
-
     }
 
     @Nullable
@@ -600,9 +595,8 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
-        driverPropertiesDialogPage = new DriverPropertiesDialogPage(this);
         return new IDialogPage[] {
-            driverPropertiesDialogPage
+            new DriverPropertiesDialogPage(this)
         };
     }
 

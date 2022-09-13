@@ -42,8 +42,7 @@ public class GenericMessages extends NLS {
     public static String dialog_connection_server_label;
     public static String dialog_connection_test_connection_button;
     public static String dialog_connection_user_name_label;
-    public static String dialog_connection_page_checkbox_use_ssl;
-    public static String dialog_connection_page_checkbox_tip_use_ssl;
+
 
     static {
         // initialize resource bundle
