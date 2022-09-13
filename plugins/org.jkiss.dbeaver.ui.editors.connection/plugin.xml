@@ -20,7 +20,11 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.driver.DriverManagerDialogHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.driver.DriverManagerDialogHandler">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="driver-manager"/>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.connection.changeCurrentPassword" class="org.jkiss.dbeaver.ui.actions.ChangePasswordDialogHandler">
             <enabledWhen>
                 <with variable="selection">

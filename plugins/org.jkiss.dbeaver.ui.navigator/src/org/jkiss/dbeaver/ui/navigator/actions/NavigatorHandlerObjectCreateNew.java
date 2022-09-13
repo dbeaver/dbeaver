@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -236,7 +237,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         }
 
         if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNDataSource) {
-            createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
+            if (node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
+                createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
+            }
         } else if (node instanceof DBNResource) {
             final DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
             IResource resource = ((DBNResource) node).getResource();
@@ -317,7 +320,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             Class<?> nodeItemClass = node.getObject().getClass();
             DBNNode parentNode = node.getParentNode();
             if (isCreateSupported(
-                parentNode instanceof DBNDatabaseNode ? (DBNDatabaseNode) parentNode : null,
+                parentNode,
                 nodeItemClass))
             {
                 if (site == null) {
@@ -379,9 +382,11 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         return false;
     }
 
-    private static boolean isCreateSupported(DBNDatabaseNode parentNode, Class<?> objectClass) {
+    private static boolean isCreateSupported(DBNNode parentNode, Class<?> objectClass) {
         DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(objectClass, DBEObjectMaker.class);
-        return objectMaker != null && objectMaker.canCreateObject(parentNode == null ? null : parentNode.getValueObject());
+        return objectMaker != null && objectMaker.canCreateObject(
+            parentNode instanceof DBNDatabaseNode ?
+                ((DBNDatabaseNode) parentNode).getValueObject() : parentNode.getOwnerProject());
     }
 
     private static IContributionItem makeCommandContributionItem(@Nullable IWorkbenchPartSite site, String commandId)

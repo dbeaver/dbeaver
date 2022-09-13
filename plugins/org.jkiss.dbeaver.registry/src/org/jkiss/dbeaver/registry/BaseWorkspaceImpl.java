@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
@@ -254,6 +255,23 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
             BaseWorkspaceImpl.writeWorkspaceInfo(GeneralUtils.getMetadataFolder(), workspaceInfo);
         }
         return workspaceId;
+    }
+
+    ////////////////////////////////////////////////////////
+    // Realm
+
+    public boolean isAdmin() {
+        return hasRealmPermission(DBAPermissionRealm.PERMISSION_ADMIN);
+    }
+
+    @Override
+    public boolean hasRealmPermission(String permission) {
+        return true;
+    }
+
+    @Override
+    public boolean supportsRealmFeature(String feature) {
+        return true;
     }
 
 }
