@@ -235,4 +235,11 @@ public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DB
     boolean isForceUseSingleConnection();
     
     void setForceUseSingleConnection(boolean value);
+
+    /**
+     * Returns the type of required external authorization.
+     * Null - if additional authorization is not required
+     */
+    @Nullable
+    String getRequiredExternalAuth();
 }

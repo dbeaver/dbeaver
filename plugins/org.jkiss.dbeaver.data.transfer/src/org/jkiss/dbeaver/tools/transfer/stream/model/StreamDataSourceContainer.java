@@ -412,4 +412,10 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     public void setForceUseSingleConnection(boolean value) {
         throw new IllegalStateException("Not supported");   
     }
+
+    @Nullable
+    @Override
+    public String getRequiredExternalAuth() {
+        return null;
+    }
 }

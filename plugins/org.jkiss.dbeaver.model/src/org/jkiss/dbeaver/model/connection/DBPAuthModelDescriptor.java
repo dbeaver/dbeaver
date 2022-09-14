@@ -59,4 +59,10 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
     @NotNull
     DBPPropertySource createCredentialsSource(@Nullable DBPDataSourceContainer dataSource, @Nullable DBPConnectionConfiguration configuration);
 
+    /**
+     * Returns id of required external authorization.
+     * Null - if additional authorization is not required
+     */
+    @Nullable
+    String getRequiredAuthProviderId();
 }
