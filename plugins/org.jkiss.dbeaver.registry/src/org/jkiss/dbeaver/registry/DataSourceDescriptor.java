@@ -1506,9 +1506,9 @@ public class DataSourceDescriptor
     }
 
     public static boolean askForPassword(
-        @NotNull final DataSourceDescriptor dataSourceContainer,
-        @Nullable final DBWHandlerConfiguration networkHandler,
-        @NotNull final DBWTunnel.AuthCredentials authType
+        @NotNull DataSourceDescriptor dataSourceContainer,
+        @Nullable DBWHandlerConfiguration networkHandler,
+        @NotNull DBWTunnel.AuthCredentials authType
     ) {
         DBPConnectionConfiguration actualConfig = dataSourceContainer.getActualConnectionConfiguration();
         DBPConnectionConfiguration connConfig = dataSourceContainer.getConnectionConfiguration();

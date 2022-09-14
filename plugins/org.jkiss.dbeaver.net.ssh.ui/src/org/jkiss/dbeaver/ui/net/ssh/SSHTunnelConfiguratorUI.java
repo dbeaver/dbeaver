@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -235,26 +234,29 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     @Nullable
-    private static DBPAuthInfo promptCredentialsDialog(@NotNull SSHConstants.AuthType type,
-        @NotNull DBWHandlerConfiguration configuration) {
-        final DBPAuthInfo credentialsToConnectTo;
+    private static DBPAuthInfo promptCredentialsDialog(
+        @NotNull SSHConstants.AuthType type,
+        @NotNull DBWHandlerConfiguration configuration
+    ) {
         try {
-            credentialsToConnectTo = DBWorkbench.getPlatformUI()
-                .promptUserCredentials(SSHUIMessages.model_ssh_dialog_credentials,
-                    SSHUIMessages.model_ssh_dialog_credentials_username,
-                    configuration.getUserName(),
-                    type.equals(SSHConstants.AuthType.PUBLIC_KEY)
+            return DBWorkbench.getPlatformUI().promptUserCredentials(
+                SSHUIMessages.model_ssh_dialog_credentials,
+                SSHUIMessages.model_ssh_dialog_credentials_username,
+                configuration.getUserName(),
+                type.equals(SSHConstants.AuthType.PUBLIC_KEY)
                     ? SSHUIMessages.model_ssh_dialog_credentials_passphrase
                     : SSHUIMessages.model_ssh_dialog_credentials_password,
-                    configuration.getPassword(),
-                    type.equals(SSHConstants.AuthType.PUBLIC_KEY),
-                    false
-                );
+                configuration.getPassword(),
+                type.equals(SSHConstants.AuthType.PUBLIC_KEY),
+                false
+            );
         } catch (Exception e) {
-            log.error(e);
+            DBWorkbench.getPlatformUI().showError(
+                CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                e.getMessage(),
+                e);
             return null;
         }
-        return credentialsToConnectTo;
     }
 
     private void testTunnelConnection() {
@@ -282,7 +284,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 try {
                     monitor.subTask("Initialize tunnel");
                     String authTypeName = configuration.getStringProperty("authType");
-                    SSHConstants.AuthType authType = SSHConstants.AuthType.valueOf(authTypeName);
+                    SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, authTypeName);
                     DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration);
                     if (dbpAuthInfo != null) {
                         if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
