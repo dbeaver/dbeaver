@@ -23,10 +23,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -49,6 +46,7 @@ public class DataSourcePropertyTester extends PropertyTester
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.datasource";
     public static final String PROP_CONNECTED = "connected";
     public static final String PROP_TRANSACTIONAL = "transactional";
+    public static final String PROP_SYNCHRONIZABLE = "synchronizable";
     public static final String PROP_SUPPORTS_TRANSACTIONS = "supportsTransactions";
     public static final String PROP_TRANSACTION_ACTIVE = "transactionActive";
     public static final String PROP_EDITABLE = "editable";
@@ -94,6 +92,13 @@ public class DataSourcePropertyTester extends PropertyTester
                         return false;
                     }
                 }
+                case PROP_SYNCHRONIZABLE:
+                    if (context == null || !context.isConnected()) {
+                        return false;
+                    } else {
+                        return context.getDataSource().getContainer().getDriver()
+                            .getDataSourceProvider() instanceof DBPDataSourceProviderSynchronizable;
+                    }
                 case PROP_SUPPORTS_TRANSACTIONS: {
                     if (context == null || !context.isConnected()) {
                         return false;
