@@ -79,6 +79,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -413,31 +414,33 @@ public class NavigatorUtils {
                             {
                                 String fileName = node.getNodeName();
                                 try {
-                                    File tmpFile = new File(
-                                        DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dnd-files"),
-                                        fileName);
-                                    if (!tmpFile.exists()) {
-                                        if (!tmpFile.createNewFile()) {
-                                            log.error("Can't create new file" + tmpFile.getAbsolutePath());
+                                    Path tmpFile = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dnd-files").resolve(fileName);
+                                    if (!Files.exists(tmpFile)) {
+                                        try {
+                                            Files.createFile(tmpFile);
+                                        } catch (IOException e) {
+                                            log.error("Can't create new file" + tmpFile.toAbsolutePath(), e);
                                             continue;
                                         }
                                         UIUtils.runInProgressService(monitor -> {
                                             try {
                                                 long streamSize = ((DBNStreamData) nextSelected).getStreamSize();
                                                 try (InputStream is = ((DBNStreamData) nextSelected).openInputStream()) {
-                                                    try (OutputStream out = Files.newOutputStream(tmpFile.toPath())) {
+                                                    try (OutputStream out = Files.newOutputStream(tmpFile)) {
                                                         ContentUtils.copyStreams(is, streamSize, out, monitor);
                                                     }
                                                 }
                                             } catch (Exception e) {
-                                                if (!tmpFile.delete()) {
-                                                    log.error("Error deleting temp file " + tmpFile.getAbsolutePath());
+                                                try {
+                                                    Files.delete(tmpFile);
+                                                } catch (IOException ex) {
+                                                    log.error("Error deleting temp file " + tmpFile.toAbsolutePath(), e);
                                                 }
                                                 throw new InvocationTargetException(e);
                                             }
                                         });
                                     }
-                                    nodeName = tmpFile.getAbsolutePath();
+                                    nodeName = tmpFile.toAbsolutePath().toString();
                                 } catch (Exception e) {
                                     log.error(e);
                                     continue;

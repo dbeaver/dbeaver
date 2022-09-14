@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDAttributeDecorator;
 
 /**
  * ResultSet decorator.
@@ -34,8 +36,9 @@ public abstract class ResultSetDecoratorBase implements IResultSetDecorator {
         return null;
     }
 
+    @Nullable
     @Override
-    public IResultSetLabelProvider getDataLabelProvider() {
+    public DBDAttributeDecorator getDataLabelProvider() {
         return null;
     }
 

@@ -16,21 +16,25 @@
  */
 package org.jkiss.dbeaver.parser.common.grammar.nfa;
 
+import org.jkiss.dbeaver.parser.common.TermPatternInfo;
 import org.jkiss.dbeaver.parser.common.grammar.GrammarRule;
 
 public class GrammarNfaOperation {
     private final int exprId;
     private final ParseOperationKind kind;
-    private final String pattern;
+    private final String tag;
+    private final TermPatternInfo pattern;
     private final GrammarRule rule;
     private final Integer minIterations;
     private final Integer maxIterations;
     private final Integer exprPosition;
 
-    private GrammarNfaOperation(int exprId, ParseOperationKind kind, String pattern, GrammarRule ruleName,
-            Integer minIterations, Integer maxIterations, Integer exprPosition) {
+    private GrammarNfaOperation(int exprId, ParseOperationKind kind, String tag, TermPatternInfo pattern, GrammarRule ruleName,
+            Integer minIterations, Integer maxIterations, Integer exprPosition
+    ) {
         this.exprId = exprId;
         this.kind = kind;
+        this.tag = tag;
         this.pattern = pattern;
         this.rule = ruleName;
         this.minIterations = minIterations;
@@ -47,7 +51,11 @@ public class GrammarNfaOperation {
         return kind;
     }
 
-    public String getPattern() {
+    public String getTag() {
+        return tag;
+    }
+
+    public TermPatternInfo getPattern() {
         return pattern;
     }
 
@@ -110,7 +118,7 @@ public class GrammarNfaOperation {
             case RULE_END:
             case CALL:
             case RESUME:
-                result += this.rule;
+                result += this.rule.getName();
                 break;
             case LOOP_ENTER:
             case LOOP_INCREMENT:
@@ -124,7 +132,7 @@ public class GrammarNfaOperation {
                 result += this.minIterations + ".." + this.maxIterations;
                 break;
             case TERM:
-                result += this.pattern;
+                result += this.pattern.pattern;
                 break;
             case NONE:
                 // do nothing
@@ -135,20 +143,20 @@ public class GrammarNfaOperation {
         return result + "]";
     }
 
-    public static GrammarNfaOperation makeRuleOperation(int exprId, ParseOperationKind opKind, GrammarRule rule) {
-        return new GrammarNfaOperation(exprId, opKind, null, rule, null, null, null);
+    public static GrammarNfaOperation makeRuleOperation(int exprId, ParseOperationKind opKind, String tag, GrammarRule rule) {
+        return new GrammarNfaOperation(exprId, opKind, tag, null, rule, null, null, null);
     }
 
     public static GrammarNfaOperation makeSequenceOperation(int exprId, ParseOperationKind opKind, int min, int max,
             Integer exprPosition) {
-        return new GrammarNfaOperation(exprId, opKind, null, null, min, max, exprPosition);
+        return new GrammarNfaOperation(exprId, opKind, null, null, null, min, max, exprPosition);
     }
 
-    public static GrammarNfaOperation makeTerm(int exprId, String pattern) {
-        return new GrammarNfaOperation(exprId, ParseOperationKind.TERM, pattern, null, null, null, null);
+    public static GrammarNfaOperation makeTerm(int exprId, String tag, TermPatternInfo pattern) {
+        return new GrammarNfaOperation(exprId, ParseOperationKind.TERM, tag, pattern, null, null, null, null);
     }
 
     public static GrammarNfaOperation makeEmpty(int exprId) {
-        return new GrammarNfaOperation(exprId, ParseOperationKind.NONE, null, null, null, null, null);
+        return new GrammarNfaOperation(exprId, ParseOperationKind.NONE, null, null, null, null, null, null);
     }
 }

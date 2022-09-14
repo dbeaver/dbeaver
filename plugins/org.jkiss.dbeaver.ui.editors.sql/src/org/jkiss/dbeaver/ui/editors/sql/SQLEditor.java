@@ -57,9 +57,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -113,9 +113,9 @@ import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -263,7 +263,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     public void setConsoleViewOutputEnabled(boolean value) {
-        isResultSetAutoFocusEnabled = value;
+        isResultSetAutoFocusEnabled = !value;
     }
 
     @Override
@@ -304,7 +304,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         IFile file = EditorUtils.getFileFromInput(getEditorInput());
         return file == null ?
-            DBWorkbench.getPlatform().getWorkspace().getActiveProject() : DBPPlatformEclipse.getInstance().getWorkspace().getProject(file.getProject());
+            DBWorkbench.getPlatform().getWorkspace().getActiveProject() : DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
     }
 
     @Nullable
@@ -1606,7 +1606,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     private void setResultTabSelection(CTabItem item) {
-        if (!isResultSetAutoFocusEnabled || resultTabs.getItemCount() == 1 || !(item.getData() instanceof QueryResultsContainer)) {
+        if (isResultSetAutoFocusEnabled || !(item.getData() instanceof QueryResultsContainer)) {
             resultTabs.setSelection(item);
         }
     }
@@ -2453,7 +2453,7 @@ public class SQLEditor extends SQLEditorBase implements
             // 1. The user is not executing query in a new tab
             // 2. The user is executing script that may open several result sets
             //    and replace current tab on single query execution option is not set
-            if (!isResultSetAutoFocusEnabled && !newTab && (!isSingleQuery || (isSingleQuery && !replaceCurrentTab))) {
+            if (isResultSetAutoFocusEnabled && !newTab && (!isSingleQuery || (isSingleQuery && !replaceCurrentTab))) {
                 int tabsClosed = closeExtraResultTabs(null, true, false);
                 if (tabsClosed == IDialogConstants.CANCEL_ID) {
                     return false;
@@ -2744,7 +2744,7 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
-        if (!sqlFile.exists() || ContentUtils.getFileLength(sqlFile) != 0) {
+        if (!sqlFile.exists() || ResourceUtils.getFileLength(sqlFile) != 0) {
             // Not empty
             return;
         }
@@ -2955,7 +2955,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (inputFile != null) {
             return inputFile.getParent();
         }
-        final DBPWorkspaceEclipse workspace = ((DBPWorkspaceEclipse) DBWorkbench.getPlatform().getWorkspace());
+        final DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
         final IFolder root = workspace.getResourceDefaultRoot(workspace.getActiveProject(), ScriptsHandlerImpl.class, false);
         if (root != null) {
             URI locationURI = root.getLocationURI();
@@ -3939,7 +3939,7 @@ public class SQLEditor extends SQLEditorBase implements
                         return;
                     }
                     if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)
-                        && !isResultSetAutoFocusEnabled) {
+                        && isResultSetAutoFocusEnabled) {
                         resultsSash.setMaximizedControl(sqlEditorPanel);
                     }
                     clearProblems(null);

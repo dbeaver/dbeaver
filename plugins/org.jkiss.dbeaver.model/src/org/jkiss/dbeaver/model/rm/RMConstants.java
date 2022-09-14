@@ -30,4 +30,6 @@ public interface RMConstants  {
 
     // RM admin can create/delete projects. It also can assign project permissions.
     String PERMISSION_RM_ADMIN = "rm-admin";
+
+    String PERMISSION_DRIVER_MANAGER = "driver-manager";
 }

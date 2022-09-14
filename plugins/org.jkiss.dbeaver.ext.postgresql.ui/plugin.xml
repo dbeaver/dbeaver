@@ -311,6 +311,4 @@
         </page>
     </extension>
 
-    org.jkiss.dbeaver.ext.postgresql.model.plan
-
 </plugin>

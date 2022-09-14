@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -373,7 +374,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Override
     public DBDDataFormatterProfile getDataFormatterProfile() {
-        return DBWorkbench.getPlatform().getDataFormatterRegistry().getGlobalProfile();
+        return DBPPlatformDesktop.getInstance().getDataFormatterRegistry().getGlobalProfile();
     }
 
     @Override

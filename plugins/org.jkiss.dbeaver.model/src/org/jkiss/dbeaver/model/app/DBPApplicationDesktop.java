@@ -15,18 +15,17 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.swt.graphics.Color;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+/**
+ * DB desktop application.
+ */
+public interface DBPApplicationDesktop extends DBPApplication {
 
-public interface IResultSetLabelProvider {
-
-    @Nullable
-    Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row);
-
-    @Nullable
-    Color getCellBackground(DBDAttributeBinding attribute, ResultSetRow row);
+    /**
+     * Returns last user activity time
+     * @return -1 by default
+     */
+    long getLastUserActivityTime();
 
 }

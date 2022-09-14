@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
@@ -170,15 +171,19 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         //gd.widthHint = 200;
         driverText.setLayoutData(gd);
 
-        Button driverButton = UIUtils.createDialogButton(panel, UIConnectionMessages.dialog_connection_edit_driver_button, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (site.openDriverEditor()) {
-                    updateDriverInfo(site.getDriver());
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DRIVER_MANAGER)) {
+            Button driverButton = UIUtils.createDialogButton(panel, UIConnectionMessages.dialog_connection_edit_driver_button, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (site.openDriverEditor()) {
+                        updateDriverInfo(site.getDriver());
+                    }
                 }
-            }
-        });
-        driverButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            });
+            driverButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        } else {
+            UIUtils.createEmptyLabel(panel, 1, 1);
+        }
     }
 
     protected void updateDriverInfo(DBPDriver driver) {

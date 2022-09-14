@@ -21,21 +21,31 @@ package org.jkiss.dbeaver.parser.common;
  */
 class ParserState {
     private final ParserState prev;
+    private final long id;
     private final ParserFsmNode fsmState;
     private final int position;
     private final ParserFsmStep step;
     private final ParserStack stack;
 
-    private ParserState(ParserState prev, int position, ParserFsmNode fsmState, ParserFsmStep step, ParserStack stack) {
+    private ParserState(ParserState prev, long id, int position, ParserFsmNode fsmState, ParserFsmStep step, ParserStack stack) {
         this.prev = prev;
+        this.id = id;
         this.position = position;
         this.fsmState = fsmState;
         this.step = step;
         this.stack = stack;
     }
-    
+
+    public static ParserState initial(long id, ParserFsmNode state) {
+        return new ParserState(null, id, 0, state, null, ParserStack.initial());
+    }
+
     public ParserState getPrev() {
         return prev;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public ParserFsmNode getFsmState() {
@@ -54,12 +64,8 @@ class ParserState {
         return stack;
     }
 
-    public static ParserState initial(ParserFsmNode state) {
-        return new ParserState(null, 0, state, null, ParserStack.initial());
+    public ParserState capture(long id, int endPos, ParserFsmNode nextState, ParserFsmStep step, ParserStack stack) {
+        ParserState capturedState = new ParserState(this.prev, this.id, this.position, this.fsmState, this.step, null);
+        return new ParserState(capturedState, id, endPos, nextState, step, stack);
     }
-        
-    public ParserState capture(int endPos, ParserFsmNode nextState, ParserFsmStep step, ParserStack stack) {
-        return new ParserState(this, endPos, nextState, step, stack);
-    }
-    
 }

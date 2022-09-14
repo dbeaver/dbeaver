@@ -14,26 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.registry;
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+import org.eclipse.core.resources.IWorkspace;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 
-import org.eclipse.swt.graphics.Color;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+/**
+ * EclipseApplicationImpl
+ */
+public abstract class DesktopApplicationImpl extends BaseApplicationImpl {
 
-public class ResultSetLabelProviderEmpty implements IResultSetLabelProvider {
-
-    public static final ResultSetLabelProviderEmpty INSTANCE = new ResultSetLabelProviderEmpty();
-
-    @Nullable
+    @NotNull
     @Override
-    public Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row) {
-        return null;
+    public DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace) {
+        return new DesktopWorkspaceImpl(platform, eclipseWorkspace);
     }
 
-    @Nullable
-    @Override
-    public Color getCellBackground(DBDAttributeBinding attribute, ResultSetRow row) {
-        return null;
-    }
 }

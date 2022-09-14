@@ -41,16 +41,10 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
-            class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
-            id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
-            namespace="org.jkiss.dbeaver.core.global"
-            properties="standalone,hasActiveProject,hasMultipleProjects"
-            type="java.lang.Object"/>
-        <propertyTester
             class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             namespace="org.jkiss.dbeaver.core.datasource"
-            properties="connected,transactional,transactionActive,supportsTransactions"
+            properties="connected,transactional,transactionActive,supportsTransactions,editable"
             type="org.jkiss.dbeaver.model.DBPContextProvider"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
@@ -70,12 +64,6 @@
             namespace="org.jkiss.dbeaver.runtime.process"
             properties="running"
             type="org.eclipse.ui.IWorkbenchPart"/>
-        <propertyTester
-            class="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
-            id="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
-            namespace="org.jkiss.dbeaver.model"
-            properties="childOfType,isTableContainer"
-            type="org.jkiss.dbeaver.model.struct.DBSObject"/>
     </extension>
 
     <extension point="org.eclipse.ui.views">
@@ -269,14 +257,14 @@
         <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateHandler">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
+                    <test property="org.jkiss.dbeaver.core.global.canCreateConnection"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.new.connection.from.url" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateFromUrlHandler">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
+                    <test property="org.jkiss.dbeaver.core.global.canCreateConnection"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -508,9 +496,15 @@
                 <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
 
                 <separator name="driverGroup" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.new.connection"/>
-                <command commandId="org.jkiss.dbeaver.core.new.connection.from.url"/>
-                <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
+                <command commandId="org.jkiss.dbeaver.core.new.connection">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.new.connection.from.url">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.driver.manager">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
                 <separator name="connection" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.connect"/>
                 <command commandId="org.jkiss.dbeaver.core.invalidate"/>
@@ -552,7 +546,7 @@
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
             <toolbar id="dbeaver-general" label="%toolbar.dbeaver-general.label">
                 <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                    <visibleWhen checkEnabled="true"><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
                 <separator name="connection-tools" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.connect">
@@ -653,7 +647,9 @@
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+                                <test property="org.jkiss.dbeaver.core.datasource.editable"/>
+                            </adapt>
                         </iterate>
                     </with>
                 </visibleWhen>
@@ -844,8 +840,12 @@
 
         <!-- Database Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
-            <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown"/>
-            <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.driver.manager">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <separator name="projects" visible="true"/>
             <menu commandId="org.jkiss.dbeaver.core.project.select" label="%menu.org.jkiss.dbeaver.core.project.select.label">
                 <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorActiveProjectContributor"/>
@@ -858,7 +858,9 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.databaseNavigator">
-            <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <command commandId="org.jkiss.dbeaver.core.new.folder"/>
             <separator name="additions" visible="true"/>
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
@@ -1169,6 +1171,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
+        <handler id="default" class="org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl"/>
         <handler id="projects" class="org.jkiss.dbeaver.ui.resources.ProjectHandlerImpl">
             <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
         </handler>

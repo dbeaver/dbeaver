@@ -29,7 +29,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -108,7 +108,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 StructuredSelection selection = (StructuredSelection) event.getSelection();
                 IResource resource = ((DBNResource) selection.getFirstElement()).getResource();
                 if (resource != null) {
-                    DBPResourceHandler handler = DBPPlatformEclipse.getInstance().getWorkspace().getResourceHandler(resource);
+                    DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resource);
                     if (handler != null) {
                         try {
                             handler.openResource(resource);
@@ -370,7 +370,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 log.debug("Script file '" + filePath + "' not found");
                 continue;
             }
-            DBPProject currentProject = DBPPlatformEclipse.getInstance().getWorkspace().getProject(file.getProject());
+            DBPProject currentProject = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
             if (currentProject == null) {
                 log.debug("Project '" + file.getProject().getName() + "' not found");
                 continue;

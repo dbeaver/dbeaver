@@ -123,6 +123,9 @@ public class DriverDownloadDialog extends WizardDialog
     }
 
     public static boolean downloadDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies, boolean forceDownload) {
+        if (shell == null) {
+            shell = UIUtils.getActiveWorkbenchShell();
+        }
         DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, false, forceDownload);
         dialog.setMinimumPageSize(100, 100);
         dialog.open();

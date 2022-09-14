@@ -32,7 +32,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -65,7 +65,7 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
         if (!selectedScripts.isEmpty()) {
             SelectDataSourceDialog dialog = new SelectDataSourceDialog(
                 activeShell,
-                DBPPlatformEclipse.getInstance().getWorkspace().getProject(selectedScripts.get(0).getProject()),
+                DBPPlatformDesktop.getInstance().getWorkspace().getProject(selectedScripts.get(0).getProject()),
                 null);
             if (dialog.open() == IDialogConstants.CANCEL_ID) {
                 return null;

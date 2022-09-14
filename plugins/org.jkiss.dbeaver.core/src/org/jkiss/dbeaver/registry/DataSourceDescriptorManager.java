@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -41,35 +42,33 @@ import java.util.Map;
 public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourceDescriptor> implements DBEObjectMaker<DataSourceDescriptor, DBPObject> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
+    public long getMakerOptions(DBPDataSource dataSource) {
         return 0;
     }
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, DataSourceDescriptor> getObjectsCache(DataSourceDescriptor object)
-    {
+    public DBSObjectCache<? extends DBSObject, DataSourceDescriptor> getObjectsCache(DataSourceDescriptor object) {
         return null;
     }
 
     @Override
-    public boolean canCreateObject(Object container)
-    {
+    public boolean canCreateObject(Object container) {
+        if (container instanceof DBPProject) {
+            return ((DBPProject) container).hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
+        }
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(DataSourceDescriptor object)
-    {
-        return true;
+    public boolean canDeleteObject(DataSourceDescriptor object) {
+        return object.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
     }
 
     @Override
-    public DataSourceDescriptor createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container, Object copyFrom, Map<String, Object> options)
-    {
+    public DataSourceDescriptor createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container, Object copyFrom, Map<String, Object> options) {
         if (copyFrom != null) {
-            DataSourceDescriptor dsTpl = (DataSourceDescriptor)copyFrom;
+            DataSourceDescriptor dsTpl = (DataSourceDescriptor) copyFrom;
             DBPDataSourceRegistry registry;
             DBPDataSourceFolder folder = null;
             if (container instanceof DataSourceRegistry) {
@@ -112,8 +111,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, final DataSourceDescriptor object, Map<String, Object> options)
-    {
+    public void deleteObject(DBECommandContext commandContext, final DataSourceDescriptor object, Map<String, Object> options) {
         Runnable remover = () -> object.getRegistry().removeDataSource(object);
         if (object.isConnected()) {
             DataSourceHandler.disconnectDataSource(object, remover);
