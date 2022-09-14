@@ -25,15 +25,17 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
-public class VerticaSequence extends GenericSequence implements GenericScriptObject {
+public class VerticaSequence extends GenericSequence implements GenericScriptObject, DBPRefreshableObject {
 
     private static final Log log = Log.getLog(VerticaSequence.class);
 
@@ -176,5 +178,12 @@ public class VerticaSequence extends GenericSequence implements GenericScriptObj
             }
         }
         return source;
+    }
+
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) {
+        source = null;
+        return this;
     }
 }
