@@ -199,10 +199,9 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         if (port == 0) {
             throw new DBException("SSH port not specified");
         }
-        if (CommonUtils.isEmpty(username)) {
+        if (!authType.equals(SSHConstants.AuthType.PUBLIC_KEY) && CommonUtils.isEmpty(username)) {
             throw new DBException("SSH user not specified");
         }
-
         final SSHAuthConfiguration authentication;
         switch (authType) {
             case PUBLIC_KEY: {
