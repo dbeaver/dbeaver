@@ -23,7 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
@@ -98,12 +97,6 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
     @Override
     public DBASecureStorage getSecureStorage() {
         return DefaultSecureStorage.INSTANCE;
-    }
-
-    @NotNull
-    @Override
-    public DBASecureStorage getProjectSecureStorage(DBPProject project) {
-        return new ProjectSecureStorage(project);
     }
 
     @Override

@@ -21,8 +21,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
-import javax.crypto.SecretKey;
-
 public class ProjectSecureStorage implements DBASecureStorage {
     private static final Log log = Log.getLog(ProjectSecureStorage.class);
 
@@ -43,18 +41,8 @@ public class ProjectSecureStorage implements DBASecureStorage {
     }
 
     @Override
-    public boolean useSecurePreferences() {
-        return globalStorage.useSecurePreferences();
-    }
-
-    @Override
     public ISecurePreferences getSecurePreferences() {
         return project.getWorkspace().getPlatform().getApplication().getSecureStorage().getSecurePreferences().node("projects").node(project.getName());
-    }
-
-    @Override
-    public SecretKey getLocalSecretKey() {
-        return globalStorage.getLocalSecretKey();
     }
 
 }

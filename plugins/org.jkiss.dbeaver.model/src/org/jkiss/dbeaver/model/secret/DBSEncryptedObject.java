@@ -15,17 +15,13 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.app;
-
-import org.eclipse.equinox.security.storage.ISecurePreferences;
+package org.jkiss.dbeaver.model.secret;
 
 /**
- * Client security manager.
- * Deprecated, must be replaced with DBSSecretController.
+ * Value encryptor
  */
-@Deprecated
-public interface DBASecureStorage {
+public interface DBSEncryptedObject {
 
-    ISecurePreferences getSecurePreferences();
+    boolean isRequireEncryption();
 
 }

@@ -27,16 +27,17 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
-import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -44,12 +45,10 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptorSerializerModern;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.encode.ContentEncrypter;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import javax.crypto.SecretKey;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -282,8 +281,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
 
         String jsonString = dsConfigBuffer.toString(StandardCharsets.UTF_8);
-        boolean encryptProject = CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBPProject.PROP_SECURE_PROJECT));
-        saveConfigFile(configurationManager, configurationStorage.getStorageName(), jsonString, false, encryptProject);
+        saveConfigFile(
+            configurationManager,
+            configurationStorage.getStorageName(),
+            jsonString,
+            false,
+            registry.getProject().isEncryptedProject());
 
         if (!configurationManager.isSecure()) {
             saveSecureCredentialsFile(configurationManager, configurationStorage);
@@ -300,13 +303,9 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!decrypt) {
             return credBuffer.toString(StandardCharsets.UTF_8);
         } else {
-            SecretKey localSecretKey = registry.getProject().getSecureStorage().getLocalSecretKey();
-            if (localSecretKey == null) {
-                throw new IOException("Can't obtain local secret key");
-            }
-            ContentEncrypter encrypter = new ContentEncrypter(localSecretKey);
+            DBSValueEncryptor encryptor = new DefaultValueEncryptor(registry.getProject().getLocalSecretKey());
             try {
-                return encrypter.decrypt(credBuffer.toByteArray());
+                return new String(encryptor.decryptValue(credBuffer.toByteArray()), StandardCharsets.UTF_8);
             } catch (Exception e) {
                 throw new IOException("Error decrypting encrypted file", e);
             }
@@ -318,8 +317,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
             byte[] binaryContents;
             if (encrypt) {
                 // Serialize and encrypt
-                ContentEncrypter encrypter = new ContentEncrypter(registry.getProject().getSecureStorage().getLocalSecretKey());
-                binaryContents = encrypter.encrypt(contents);
+                DBSValueEncryptor valueEncryptor = new DefaultValueEncryptor(registry.getProject().getLocalSecretKey());
+                binaryContents = valueEncryptor.encryptValue(contents.getBytes(StandardCharsets.UTF_8));
             } else {
                 binaryContents = contents.getBytes(StandardCharsets.UTF_8);
             }
@@ -374,7 +373,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
             }
         }
 
-        boolean decryptProject = CommonUtils.toBoolean(registry.getProject().getProjectProperty(DBPProject.PROP_SECURE_PROJECT));
         InputStream configData;
         if (configurationStorage instanceof DataSourceMemoryStorage) {
             configData = ((DataSourceMemoryStorage) configurationStorage).getInputStream();
@@ -382,7 +380,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             configData = configurationManager.readConfiguration(configurationStorage.getStorageName());
         }
         if (configData != null) {
-            String configJson = loadConfigFile(configData, decryptProject);
+            String configJson = loadConfigFile(configData, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));
 
             Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, new StringReader(configJson));
 
@@ -1110,13 +1108,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable String subNode,
         @NotNull SecureCredentials credentials)
     {
-        final DBASecureStorage secureStorage = project.getSecureStorage();
         {
             try {
                 ISecurePreferences prefNode = dataSource == null ?
                     project.getSecureStorage().getSecurePreferences() :
                     dataSource.getSecurePreferences();
-                if (!secureStorage.useSecurePreferences()) {
+                if (!project.isUseSecretStorage()) {
                     prefNode.removeNode();
                 } else {
                     if (subNode != null) {
@@ -1179,11 +1176,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
     {
         assert dataSource != null || profile != null;
         SecureCredentials creds = new SecureCredentials();
-        final DBASecureStorage secureStorage = dataSource == null ? registry.getProject().getSecureStorage() : dataSource.getProject().getSecureStorage();
+        DBPProject project = registry.getProject();
         {
             try {
-                if (secureStorage.useSecurePreferences() && !passwordReadCanceled) {
-                    ISecurePreferences prefNode = dataSource == null ? secureStorage.getSecurePreferences() : dataSource.getSecurePreferences();
+                if (project.isUseSecretStorage() && !passwordReadCanceled) {
+                    ISecurePreferences prefNode = dataSource == null ? project.getSecureStorage().getSecurePreferences() : dataSource.getSecurePreferences();
                     if (subNode != null) {
                         for (String nodeName : subNode.split("/")) {
                             prefNode = prefNode.node(nodeName);

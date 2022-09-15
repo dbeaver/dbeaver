@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
@@ -42,6 +43,8 @@ import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -68,6 +71,8 @@ public abstract class BaseProjectImpl implements DBPProject {
         .setLenient()
         .serializeNulls()
         .create();
+
+    private static final byte[] LOCAL_KEY_CACHE = new byte[] { -70, -69, 74, -97, 119, 74, -72, 83, -55, 108, 45, 101, 61, -2, 84, 74 };
 
     @NotNull
     private final DBPWorkspace workspace;
@@ -168,6 +173,11 @@ public abstract class BaseProjectImpl implements DBPProject {
         return getFormat() == ProjectFormat.MODERN;
     }
 
+    @Override
+    public boolean isEncryptedProject() {
+        return false;
+    }
+
     @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
@@ -207,10 +217,19 @@ public abstract class BaseProjectImpl implements DBPProject {
     public DBASecureStorage getSecureStorage() {
         synchronized (metadataSync) {
             if (this.secureStorage == null) {
-                this.secureStorage = workspace.getPlatform().getApplication().getProjectSecureStorage(this);
+                this.secureStorage = createSecureStorage();
             }
         }
         return secureStorage;
+    }
+
+    protected DBASecureStorage createSecureStorage() {
+        return new ProjectSecureStorage(this);
+    }
+
+    @Override
+    public SecretKey getLocalSecretKey() {
+        return new SecretKeySpec(LOCAL_KEY_CACHE, DefaultValueEncryptor.KEY_ALGORITHM);
     }
 
     @NotNull

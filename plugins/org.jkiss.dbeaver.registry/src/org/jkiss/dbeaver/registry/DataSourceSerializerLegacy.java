@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
-import org.jkiss.dbeaver.model.app.DBASecureStorage;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
@@ -442,10 +442,10 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
 
         private String[] readSecuredCredentials(Attributes xmlAttrs, DataSourceDescriptor dataSource, String subNode) {
             String[] creds = new String[2];
-            final DBASecureStorage secureStorage = dataSource.getProject().getSecureStorage();
+            DBPProject project = dataSource.getProject();
             {
                 try {
-                    if (secureStorage.useSecurePreferences()) {
+                    if (project.isUseSecretStorage()) {
                         ISecurePreferences prefNode = dataSource.getSecurePreferences();
                         if (subNode != null) {
                             for (String nodeName : subNode.split("/")) {

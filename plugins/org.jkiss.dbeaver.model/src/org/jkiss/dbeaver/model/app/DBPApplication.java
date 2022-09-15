@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.nio.file.Path;
+
 /**
  * DB application.
  * Application implementors may redefine core app behavior and/or settings.
@@ -62,11 +63,9 @@ public interface DBPApplication {
      */
     boolean isDistributed();
 
+    @Deprecated
     @NotNull
     DBASecureStorage getSecureStorage();
-
-    @NotNull
-    DBASecureStorage getProjectSecureStorage(DBPProject project);
 
     /**
      * Application information details.

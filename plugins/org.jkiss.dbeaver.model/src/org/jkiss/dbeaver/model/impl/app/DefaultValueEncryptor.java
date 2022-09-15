@@ -14,8 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.runtime.encode;
+package org.jkiss.dbeaver.model.impl.app;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
 import org.jkiss.utils.IOUtils;
 
 import javax.crypto.Cipher;
@@ -25,24 +28,22 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 
 /**
- * Content encryption/description
+ * Default value encryptor.
+ *
+ * Uses Eclipse secure preferences to read/write secrets.
  */
-public class ContentEncrypter {
+public class DefaultValueEncryptor implements DBSValueEncryptor {
 
     public static final String CIPHER_NAME = "AES/CBC/PKCS5Padding";
     public static final String KEY_ALGORITHM = "AES";
 
-    private SecretKey secretKey;
-    private Cipher cipher;
+    private final SecretKey secretKey;
+    private final Cipher cipher;
 
-    public ContentEncrypter(SecretKey secretKey) {
+    public DefaultValueEncryptor(SecretKey secretKey) {
         this.secretKey = secretKey;
         try {
             this.cipher = Cipher.getInstance(CIPHER_NAME);
@@ -51,20 +52,28 @@ public class ContentEncrypter {
         }
     }
 
-    public byte[] encrypt(String content) throws InvalidKeyException, IOException {
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-        byte[] iv = cipher.getIV();
+    @NotNull
+    @Override
+    public byte[] encryptValue(@NotNull byte[] value) throws DBException {
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] iv = cipher.getIV();
 
-        ByteArrayOutputStream resultBuffer = new ByteArrayOutputStream();
-        try (CipherOutputStream cipherOut = new CipherOutputStream(resultBuffer, cipher)) {
-            resultBuffer.write(iv);
-            cipherOut.write(content.getBytes(StandardCharsets.UTF_8));
+            ByteArrayOutputStream resultBuffer = new ByteArrayOutputStream();
+            try (CipherOutputStream cipherOut = new CipherOutputStream(resultBuffer, cipher)) {
+                resultBuffer.write(iv);
+                cipherOut.write(value);
+            }
+            return resultBuffer.toByteArray();
+        } catch (Exception e) {
+            throw new DBException("Error encrypting value", e);
         }
-        return resultBuffer.toByteArray();
     }
 
-    public String decrypt(byte[] contents) throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        try (InputStream byteStream = new ByteArrayInputStream(contents)) {
+    @NotNull
+    @Override
+    public byte[] decryptValue(@NotNull byte[] value) throws DBException {
+        try (InputStream byteStream = new ByteArrayInputStream(value)) {
             byte[] fileIv = new byte[16];
             byteStream.read(fileIv);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(fileIv));
@@ -72,9 +81,11 @@ public class ContentEncrypter {
             try (CipherInputStream cipherIn = new CipherInputStream(byteStream, cipher)) {
                 ByteArrayOutputStream resultBuffer = new ByteArrayOutputStream();
                 IOUtils.copyStream(cipherIn, resultBuffer);
-                return new String(resultBuffer.toByteArray(), StandardCharsets.UTF_8);
+                return resultBuffer.toByteArray();
             }
 
+        } catch (Exception e) {
+            throw new DBException("Error decrypting value", e);
         }
     }
 

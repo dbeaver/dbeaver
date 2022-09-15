@@ -19,10 +19,6 @@ package org.jkiss.dbeaver.model.impl.app;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
-import org.jkiss.dbeaver.runtime.encode.ContentEncrypter;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  * DefaultSecureStorage
@@ -34,18 +30,8 @@ public class DefaultSecureStorage implements DBASecureStorage {
     public static DefaultSecureStorage INSTANCE = new DefaultSecureStorage();
 
     @Override
-    public boolean useSecurePreferences() {
-        return false;
-    }
-
-    @Override
     public ISecurePreferences getSecurePreferences() {
         return SecurePreferencesFactory.getDefault().node("dbeaver");
-    }
-
-    @Override
-    public SecretKey getLocalSecretKey() {
-        return new SecretKeySpec(LOCAL_KEY_CACHE, ContentEncrypter.KEY_ALGORITHM);
     }
 
 }
