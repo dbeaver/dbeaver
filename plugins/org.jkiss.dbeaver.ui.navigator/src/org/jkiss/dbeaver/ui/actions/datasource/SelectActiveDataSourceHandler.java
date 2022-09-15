@@ -70,20 +70,12 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
         }
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
-        DBPProject activeProject = dataSource == null ? null : dataSource.getProject();
-        if (activeProject == null) {
-            if (activeEditor != null) {
-                IFile curFile = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
-                if (curFile != null) {
-                    activeProject = DBPPlatformDesktop.getInstance().getWorkspace().getProject(curFile.getProject());
-                }
-            }
-        }
+        DBPProject activeProject = DataSourceToolbarUtils.getActiveProject(activeEditor, dataSource);
         openDataSourceSelector(workbenchWindow, activeProject, dataSource);
 
         return null;
     }
-
+    
     public static void openDataSourceSelector(IWorkbenchWindow workbenchWindow, DBPProject activeProject, DBPDataSourceContainer dataSource) {
         IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
         if (!(activeEditor instanceof IDataSourceContainerProviderEx)) {

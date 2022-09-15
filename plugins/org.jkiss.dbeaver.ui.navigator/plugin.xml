@@ -110,13 +110,13 @@
             class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             namespace="org.jkiss.dbeaver.core.global"
-            properties="standalone,hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects"
+            properties="standalone,hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects,canEditResource,canViewResource"
             type="java.lang.Object"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             namespace="org.jkiss.dbeaver.core.object"
-            properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter,supportsIndexCreate,supportsConstraintCreate"
+            properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter,supportsIndexCreate,supportsConstraintCreate,projectResourceEditable"
             type="org.jkiss.dbeaver.model.DBPNamedObject"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
@@ -444,7 +444,10 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
-                            <test property="org.jkiss.dbeaver.core.object.canPaste"/>
+                            <and>
+                                <test property="org.jkiss.dbeaver.core.object.canPaste"/>
+                                <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                            </and>
                         </adapt>
                     </iterate>
                 </with>
@@ -458,7 +461,10 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
-                            <test property="org.jkiss.dbeaver.core.object.canDelete"/>
+                            <and>
+                                <test property="org.jkiss.dbeaver.core.object.canDelete"/>
+                                <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                            </and>
                         </adapt>
                     </iterate>
                 </with>
@@ -471,9 +477,12 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
-                            <test property="org.jkiss.dbeaver.core.object.canDelete"/>
-                        </adapt>
+                        <and>
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
+                                <test property="org.jkiss.dbeaver.core.object.canDelete"/>
+                            </adapt>
+                            <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -485,9 +494,12 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
-                            <test property="org.jkiss.dbeaver.core.object.canRename"/>
-                        </adapt>
+                        <and>
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
+                                <test property="org.jkiss.dbeaver.core.object.canRename"/>
+                            </adapt>
+                            <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -694,9 +706,12 @@
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
-                            <adapt type="org.eclipse.core.resources.IResource">
-                                <test property="org.jkiss.dbeaver.core.resource.canCreateFile"/>
-                            </adapt>
+                            <and>
+                                <adapt type="org.eclipse.core.resources.IResource">
+                                    <test property="org.jkiss.dbeaver.core.resource.canCreateFile"/>
+                                </adapt>
+                                <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                            </and>
                         </iterate>
                     </with>
                 </and>
@@ -709,9 +724,12 @@
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
-                            <adapt type="org.eclipse.core.resources.IResource">
-                                <test property="org.jkiss.dbeaver.core.resource.canCreateFolder"/>
-                            </adapt>
+                            <and>
+                                <adapt type="org.eclipse.core.resources.IResource">
+                                    <test property="org.jkiss.dbeaver.core.resource.canCreateFolder"/>
+                                </adapt>
+                                <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                            </and>
                         </iterate>
                     </with>
                 </and>
@@ -724,9 +742,12 @@
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
-                            <adapt type="org.eclipse.core.resources.IResource">
-                                <test property="org.jkiss.dbeaver.core.resource.canCreateLink"/>
-                            </adapt>
+                            <and>
+                                <adapt type="org.eclipse.core.resources.IResource">
+                                    <test property="org.jkiss.dbeaver.core.resource.canCreateLink"/>
+                                </adapt>
+                                <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                            </and>
                         </iterate>
                     </with>
                 </and>
@@ -739,9 +760,12 @@
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
-                            <adapt type="org.eclipse.core.resources.IResource">
-                                <test property="org.jkiss.dbeaver.core.resource.canCreateLink"/>
-                            </adapt>
+                            <and>
+                                <adapt type="org.eclipse.core.resources.IResource">
+                                    <test property="org.jkiss.dbeaver.core.resource.canCreateLink"/>
+                                </adapt>
+                                <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                            </and>
                         </iterate>
                     </with>
                 </and>
@@ -754,9 +778,12 @@
                     <with variable="selection">
                         <count value="+"/>
                         <iterate operator="and">
-                            <adapt type="org.eclipse.core.resources.IResource">
-                                <test property="org.jkiss.dbeaver.core.resource.type" value="script"/>
-                            </adapt>
+                            <and>
+                                <adapt type="org.eclipse.core.resources.IResource">
+                                    <test property="org.jkiss.dbeaver.core.resource.type" value="script"/>
+                                </adapt>
+                                <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                            </and>
                         </iterate>
                     </with>
                 </and>

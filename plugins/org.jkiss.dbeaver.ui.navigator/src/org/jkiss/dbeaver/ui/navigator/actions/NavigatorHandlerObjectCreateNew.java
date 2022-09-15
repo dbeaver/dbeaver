@@ -247,10 +247,14 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_PROJECT));
             }
             DBPResourceHandler handler = workspace.getResourceHandler(resource);
-            if (handler instanceof DBPResourceCreator && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0) {
+            if (handler instanceof DBPResourceCreator && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0
+                && node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)
+            ) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FILE));
             }
-            if (handler != null && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0) {
+            if (handler != null && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0
+                && node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)
+            ) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
             }
             if (resource instanceof IContainer) {
