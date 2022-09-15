@@ -18,13 +18,11 @@ package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.security.user.SMObjectPermissions;
 import org.jkiss.dbeaver.model.security.user.SMRole;
 import org.jkiss.dbeaver.model.security.user.SMUser;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Admin interface
@@ -34,7 +32,7 @@ public interface SMAdminController extends SMController {
     ///////////////////////////////////////////
     // Users
 
-    void createUser(String userId, Map<String, String> metaParameters) throws DBException;
+    void createUser(String userId, Map<String, String> metaParameters, boolean enabled) throws DBException;
 
     void deleteUser(String userId) throws DBException;
 
