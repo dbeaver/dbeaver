@@ -97,9 +97,6 @@
             <type name="INT256"/>
             <type name="UINT64"/>
             <type name="UINT128"/>
-            <type name="DATETIME64"/>
-            <type name="DATETIME32"/>
-            <type name="DATETIME"/>
             <type name="UINT256"/>
             <type name="BOOL"/>
         </provider>
