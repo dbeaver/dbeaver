@@ -20,7 +20,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -31,14 +30,11 @@ import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.auth.SMSession;
-import org.jkiss.dbeaver.model.auth.SMSessionSecretKeeper;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecretController;
-import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -606,26 +602,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }.schedule();
     }
 
-    @Deprecated
-    @Override
     @NotNull
-    public ISecurePreferences getSecurePreferences() {
-        return DefaultSecureStorage.INSTANCE.getSecurePreferences().node("datasources");
-    }
-
     @Override
     public DBSSecretController getSecretController() {
-        DBSSecretController parentController = DefaultSecretController.INSTANCE;
-
-        SMSession spaceSession = project.getSessionContext().findSpaceSession(project.getWorkspace());
-        SMSessionSecretKeeper secretKeeper = DBUtils.getAdapter(SMSessionSecretKeeper.class, spaceSession);
-        if (secretKeeper != null) {
-            DBSSecretController secretController = secretKeeper.getSecretController();
-            if (secretController != null) {
-                parentController = secretController;
-            }
-        }
-        return new DefaultSecretController(parentController, "datasources");
+        return new DefaultSecretController(
+            DBSSecretController.getSessionSecretController(project.getWorkspaceSession()),
+            "datasources");
     }
 
     @Nullable
@@ -769,7 +751,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                         localDataSources);
                     try {
                         if (!configurationManager.isSecure()) {
-                            getSecurePreferences().flush();
+                            getSecretController().flushChanges();
                         }
                         lastError = null;
                     } catch (Throwable e) {
@@ -867,7 +849,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 localDataSources);
             try {
                 if (!configurationManager.isSecure()) {
-                    getSecurePreferences().flush();
+                    getSecretController().flushChanges();
                 }
                 lastError = null;
             } catch (Throwable e) {

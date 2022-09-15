@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -1436,12 +1435,6 @@ public class DataSourceDescriptor
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
         this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getNavigatorSettings());
-    }
-
-    @Override
-    @NotNull
-    public ISecurePreferences getSecurePreferences() {
-        return registry.getSecurePreferences().node(id);
     }
 
     @Override

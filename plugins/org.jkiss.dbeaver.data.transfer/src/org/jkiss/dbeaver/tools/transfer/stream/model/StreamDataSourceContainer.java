@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.tools.transfer.stream.model;
 
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -302,12 +301,6 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public boolean persistConfiguration() {
         return true;
-    }
-
-    @NotNull
-    @Override
-    public ISecurePreferences getSecurePreferences() {
-        return DBWorkbench.getPlatform().getApplication().getSecureStorage().getSecurePreferences();
     }
 
     @Override

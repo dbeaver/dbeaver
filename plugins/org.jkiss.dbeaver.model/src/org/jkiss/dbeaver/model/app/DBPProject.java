@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
+import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -116,6 +117,10 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
      */
     @NotNull
     SMSessionContext getSessionContext();
+
+    default SMSession getWorkspaceSession() {
+        return getSessionContext().findSpaceSession(getWorkspace());
+    }
 
     Object getProjectProperty(String propName);
 

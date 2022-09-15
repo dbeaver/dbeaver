@@ -26,9 +26,12 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * Default value encryptor.
@@ -50,6 +53,30 @@ public class DefaultValueEncryptor implements DBSValueEncryptor {
         } catch (Exception e) {
             throw new IllegalStateException("Internal error during encrypted init", e);
         }
+    }
+
+    public static SecretKey makeSecretKeyFromPassword(String password) {
+/*
+        UUID projectID = getProjectID();
+        ByteBuffer bb = ByteBuffer.wrap(new byte[8]);
+        bb.putLong(projectID.getMostSignificantBits());
+        byte[] salt = bb.array();
+        PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, 20);
+*/
+
+        //PBEKeySpec spec = new PBEKeySpec(password.toCharArray());
+        byte[] bytes = password.getBytes(StandardCharsets.UTF_8);
+        byte[] passBytes = Arrays.copyOf(bytes, 16);
+        return new SecretKeySpec(passBytes, KEY_ALGORITHM);
+
+/*
+        try {
+            return SecretKeyFactory.getInstance("AES").generateSecret(spec);
+        } catch (Throwable e) {
+            log.error("Error generating secret key for password", e);
+            return null;
+        }
+*/
     }
 
     @NotNull

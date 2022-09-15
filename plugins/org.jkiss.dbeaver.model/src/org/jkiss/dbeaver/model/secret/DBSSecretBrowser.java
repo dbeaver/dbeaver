@@ -29,7 +29,7 @@ import java.util.List;
 public interface DBSSecretBrowser {
 
     @NotNull
-    List<DBSSecret> listSecrets() throws DBException;
+    List<DBSSecret> listSecrets(@Nullable String path) throws DBException;
 
     @Nullable
     DBSSecret getSecret(@NotNull String secretId) throws DBException;

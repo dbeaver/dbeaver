@@ -1115,10 +1115,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 dataSource.getSecretController();
             if (secretController != null) {
                 if (project.isUseSecretStorage()) {
-                    if (subNode == null) {
-                        subNode = "";
-                    }
-                    Path itemPath = Path.of(subNode);
+                    Path itemPath = Path.of(CommonUtils.notEmpty(subNode));
                     secretController.setSecretValue(
                         itemPath.resolve(RegistryConstants.ATTR_USER).toString(), credentials.getUserName());
                     secretController.setSecretValue(
@@ -1188,10 +1185,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
         {
             try {
                 if (project.isUseSecretStorage() && !passwordReadCanceled) {
+                    Path itemPath = Path.of(CommonUtils.notEmpty(subNode));
                     if (secretController instanceof DBSSecretBrowser) {
                         DBSSecretBrowser sBrowser = (DBSSecretBrowser)secretController;
-                        for (DBSSecret secret : sBrowser.listSecrets()) {
-                            String secretId = secret.getId();
+                        for (DBSSecret secret : sBrowser.listSecrets(itemPath.toString())) {
+                            String secretId = secret.getName();
                             switch (secretId) {
                                 case RegistryConstants.ATTR_USER:
                                     creds.setUserName(

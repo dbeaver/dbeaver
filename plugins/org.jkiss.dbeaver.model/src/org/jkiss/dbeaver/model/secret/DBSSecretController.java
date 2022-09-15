@@ -20,6 +20,10 @@ package org.jkiss.dbeaver.model.secret;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.auth.SMSession;
+import org.jkiss.dbeaver.model.auth.SMSessionSecretKeeper;
+import org.jkiss.dbeaver.model.impl.app.DefaultSecretController;
 
 /**
  * Secret manager API
@@ -30,5 +34,22 @@ public interface DBSSecretController {
     String getSecretValue(@NotNull String secretId) throws DBException;
 
     void setSecretValue(@NotNull String secretId, @Nullable String keyValue) throws DBException;
+
+    /**
+     * Syncs any changes with file system/server
+     */
+    void flushChanges() throws DBException;
+
+    @NotNull
+    static DBSSecretController getSessionSecretController(SMSession spaceSession) {
+        SMSessionSecretKeeper secretKeeper = DBUtils.getAdapter(SMSessionSecretKeeper.class, spaceSession);
+        if (secretKeeper != null) {
+            DBSSecretController secretController = secretKeeper.getSecretController();
+            if (secretController != null) {
+                return secretController;
+            }
+        }
+        return DefaultSecretController.INSTANCE;
+    }
 
 }

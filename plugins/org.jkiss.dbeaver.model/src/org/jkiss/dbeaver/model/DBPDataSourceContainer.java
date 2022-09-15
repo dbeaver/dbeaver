@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model;
 
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -214,10 +213,6 @@ public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DB
      * @return false on any error. Actual error can be read in registry.
      */
     boolean persistConfiguration();
-
-    @Deprecated
-    @NotNull
-    ISecurePreferences getSecurePreferences();
 
     @Nullable
     DBSSecretController getSecretController();

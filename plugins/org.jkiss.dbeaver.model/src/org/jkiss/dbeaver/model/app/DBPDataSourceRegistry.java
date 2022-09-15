@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -142,9 +141,6 @@ public interface DBPDataSourceRegistry extends DBPObject {
     void checkForErrors() throws DBException;
 
     void notifyDataSourceListeners(final DBPEvent event);
-
-    @NotNull
-    ISecurePreferences getSecurePreferences();
 
     @Nullable
     DBSSecretController getSecretController();

@@ -22,10 +22,12 @@ import org.eclipse.equinox.security.storage.StorageException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.secret.DBSSecret;
 import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -81,6 +83,15 @@ public class DefaultSecretController implements DBSSecretController, DBSSecretBr
         }
     }
 
+    @Override
+    public void flushChanges() throws DBException {
+        try {
+            SecurePreferencesFactory.getDefault().flush();
+        } catch (IOException e) {
+            throw new DBException("Error flushing secure preferences", e);
+        }
+    }
+
     private static ISecurePreferences getNodeByPath(Path path) {
         ISecurePreferences rootNode = SecurePreferencesFactory.getDefault().node(SECRET_PREFS_ROOT);
         for (Path name : path) {
@@ -91,9 +102,10 @@ public class DefaultSecretController implements DBSSecretController, DBSSecretBr
 
     @NotNull
     @Override
-    public List<DBSSecret> listSecrets() throws DBException {
+    public List<DBSSecret> listSecrets(@Nullable String path) throws DBException {
+        Path keyPath = path == null ? root : root.resolve(path);
         return Arrays.stream(getNodeByPath(root).keys())
-            .map(k -> new DBSSecret(k, k))
+            .map(k -> new DBSSecret(keyPath.resolve(k).toString(), k))
             .collect(Collectors.toList());
     }
 
@@ -107,7 +119,7 @@ public class DefaultSecretController implements DBSSecretController, DBSSecretBr
             if (value == null) {
                 return null;
             }
-            return new DBSSecret(keyId, keyId);
+            return new DBSSecret(keyPath.toString(), keyId);
         } catch (StorageException e) {
             throw new DBException("Error getting secret info '" + secretId + "'", e);
         }
@@ -115,7 +127,7 @@ public class DefaultSecretController implements DBSSecretController, DBSSecretBr
 
     @Override
     public void deleteSecret(@NotNull String secretId) throws DBException {
-
+        throw new DBCFeatureNotSupportedException();
     }
 
     @Override
