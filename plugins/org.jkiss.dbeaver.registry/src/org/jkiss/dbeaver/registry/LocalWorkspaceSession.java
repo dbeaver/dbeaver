@@ -19,15 +19,12 @@ package org.jkiss.dbeaver.registry;
 import com.sun.security.auth.module.NTSystem;
 import com.sun.security.auth.module.UnixSystem;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.auth.SMAuthSpace;
-import org.jkiss.dbeaver.model.auth.SMSession;
-import org.jkiss.dbeaver.model.auth.SMSessionContext;
-import org.jkiss.dbeaver.model.auth.SMSessionPrincipal;
+import org.jkiss.dbeaver.model.auth.*;
 import org.jkiss.dbeaver.model.auth.impl.AbstractSessionPersistent;
+import org.jkiss.dbeaver.model.impl.app.DefaultSecretController;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.security.SMSessionType;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -35,7 +32,7 @@ import org.jkiss.utils.StandardConstants;
 
 import java.time.LocalDateTime;
 
-public class BasicWorkspaceSession extends AbstractSessionPersistent implements SMSession, SMSessionPrincipal {
+public class LocalWorkspaceSession extends AbstractSessionPersistent implements SMSession, SMSessionPrincipal, SMSessionSecretKeeper {
 
     public static final SMSessionType DB_SESSION_TYPE = new SMSessionType("DBeaver");
 
@@ -44,7 +41,7 @@ public class BasicWorkspaceSession extends AbstractSessionPersistent implements 
     private String domainName;
     private final LocalDateTime startTime;
 
-    public BasicWorkspaceSession(@NotNull DBPWorkspace workspace) {
+    public LocalWorkspaceSession(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
         try {
             if (RuntimeUtils.isWindows()) {
@@ -107,17 +104,6 @@ public class BasicWorkspaceSession extends AbstractSessionPersistent implements 
     }
 
     @Override
-    public boolean isApplicationSession() {
-        return true;
-    }
-
-    @Nullable
-    @Override
-    public DBPProject getSingletonProject() {
-        return null;
-    }
-
-    @Override
     public String getUserDomain() {
         return domainName;
     }
@@ -125,5 +111,10 @@ public class BasicWorkspaceSession extends AbstractSessionPersistent implements 
     @Override
     public String getUserName() {
         return userName;
+    }
+
+    @Override
+    public DBSSecretController getSecretController() {
+        return DefaultSecretController.INSTANCE;
     }
 }

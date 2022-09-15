@@ -32,11 +32,21 @@ public class DefaultSecretController implements DBSSecretController {
 
     public static final String SECRET_PREFS_ROOT = "dbeaver";
 
+    public static final DefaultSecretController INSTANCE = new DefaultSecretController("");
+
+    private final String root;
+
+    public DefaultSecretController(String root) {
+        this.root = root.isEmpty() || root.endsWith("/") ? root : root + "/";
+    }
+
     @Nullable
     @Override
     public String getSecretValue(@NotNull String secretId) throws DBException {
         try {
-            return SecurePreferencesFactory.getDefault().node(SECRET_PREFS_ROOT).get(secretId, null);
+            return SecurePreferencesFactory.getDefault()
+                .node(SECRET_PREFS_ROOT)
+                .get(root + secretId, null);
         } catch (StorageException e) {
             throw new DBException("Error getting preference value '" + secretId + "'", e);
         }
@@ -45,7 +55,9 @@ public class DefaultSecretController implements DBSSecretController {
     @Override
     public void setSecretValue(@NotNull String secretId, @Nullable String keyValue) throws DBException {
         try {
-            SecurePreferencesFactory.getDefault().node(SECRET_PREFS_ROOT).put(secretId, keyValue, true);
+            SecurePreferencesFactory.getDefault()
+                .node(SECRET_PREFS_ROOT)
+                .put(root + secretId, keyValue, true);
         } catch (StorageException e) {
             throw new DBException("Error setting preference value '" + secretId + "'", e);
         }

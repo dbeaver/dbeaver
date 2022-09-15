@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
 import javax.crypto.SecretKey;
@@ -106,6 +107,9 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     @NotNull
     DBASecureStorage getSecureStorage();
+
+    @NotNull
+    DBSSecretController getSecretController();
 
     /**
      * Project auth context

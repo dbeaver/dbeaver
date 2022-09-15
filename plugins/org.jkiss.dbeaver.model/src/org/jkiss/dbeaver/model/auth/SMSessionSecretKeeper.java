@@ -17,42 +17,10 @@
 
 package org.jkiss.dbeaver.model.auth;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 
-import java.time.LocalDateTime;
+public interface SMSessionSecretKeeper extends SMSession {
 
-/**
- * Access session.
- */
-public interface SMSession extends DBPObject, AutoCloseable {
+    DBSSecretController getSecretController();
 
-    /**
-     * Session space
-     */
-    @NotNull
-    SMAuthSpace getSessionSpace();
-
-    @NotNull
-    SMSessionContext getSessionContext();
-
-    SMSessionPrincipal getSessionPrincipal();
-
-    /**
-     * Session unique ID
-     */
-    @NotNull
-    String getSessionId();
-
-    /**
-     * Session start datetime
-     */
-    @NotNull
-    LocalDateTime getSessionStart();
-
-    /**
-     * Closes session.
-     * It mustn't throw any errors.
-     */
-    void close();
 }

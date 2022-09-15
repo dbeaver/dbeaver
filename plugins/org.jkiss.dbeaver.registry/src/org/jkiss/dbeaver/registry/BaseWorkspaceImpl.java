@@ -72,7 +72,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
 
     @NotNull
     protected SMSession acquireWorkspaceSession(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return new BasicWorkspaceSession(this);
+        return new LocalWorkspaceSession(this);
     }
 
     public abstract void initializeProjects();

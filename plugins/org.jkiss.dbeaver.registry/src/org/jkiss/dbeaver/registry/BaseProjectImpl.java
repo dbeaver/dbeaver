@@ -35,9 +35,11 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.impl.app.DefaultSecretController;
 import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -221,6 +223,14 @@ public abstract class BaseProjectImpl implements DBPProject {
             }
         }
         return secureStorage;
+    }
+
+    @NotNull
+    @Override
+    public DBSSecretController getSecretController() {
+        return new DefaultSecretController(
+            "projects/" + getId()
+        );
     }
 
     protected DBASecureStorage createSecureStorage() {
