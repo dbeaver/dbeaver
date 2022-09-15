@@ -311,50 +311,6 @@
         </page>
     </extension>
     
-    <extension point="org.eclipse.ui.menus">       
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=generate">
-            <command commandId="org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.plpgsql_check">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-        </menuContribution>
-    </extension>
-    
-    <extension point="org.eclipse.ui.commands">
-        <command 
-            id="org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.plpgsql_check" 
-            name="%db.editor.procedure.check.name" 
-            description="%db.editor.procedure.check.description" 
-            categoryId="org.jkiss.dbeaver.ext.postgresql"/>
-    </extension>
-    
-    <extension point="org.eclipse.ui.handlers">
-        <handler 
-            commandId="org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.plpgsql_check" 
-            class="org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.SQLEditorHandlerCheckProcedureConsole">
-            <enabledWhen>
-                <or>
-                    <with variable="selection">
-                        <count value="+"/>
-                        <iterate operator="and">
-                            <!-- Here and below we use double check - adapt + instanceof.
-                                sing <adapt> with final (PostgreSQL-specific) type will force plugin activation (since E4.6)
-                                see https://bugs.eclipse.org/bugs/show_bug.cgi?id=485569
-                            -->
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
-                                <instanceof value="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
-                            </adapt>
-                        </iterate>
-                    </with>
-                    <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
-                            <instanceof value="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
-                        </adapt>
-                    </with>
-                </or>
-            </enabledWhen>            
-        </handler>
-    </extension>
-    
     <!-- SQL Generators -->
     <extension point="org.jkiss.dbeaver.sqlGenerator">
         <generator id="procedureCheck" class="org.jkiss.dbeaver.ext.postgresql.model.sql.generator.SQLGeneratorProcedureCheck" label="CHECK (via plpgsql_check)" description="Check (via plpgsql_check)" order="2000">
