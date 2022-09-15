@@ -63,10 +63,6 @@ public interface DBPApplication {
      */
     boolean isDistributed();
 
-    @Deprecated
-    @NotNull
-    DBASecureStorage getSecureStorage();
-
     /**
      * Application information details.
      * Like license info or some custom produce info

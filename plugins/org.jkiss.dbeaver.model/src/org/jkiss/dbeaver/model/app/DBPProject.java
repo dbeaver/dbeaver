@@ -107,9 +107,6 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     DBTTaskManager getTaskManager();
 
     @NotNull
-    DBASecureStorage getSecureStorage();
-
-    @NotNull
     DBSSecretController getSecretController();
 
     /**

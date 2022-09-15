@@ -29,7 +29,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -86,7 +85,6 @@ public abstract class BaseProjectImpl implements DBPProject {
     private volatile TaskManagerImpl taskManager;
     private volatile Map<String, Object> properties;
     private volatile Map<String, Map<String, Object>> resourceProperties;
-    private DBASecureStorage secureStorage;
     private UUID projectID;
 
     protected final Object metadataSync = new Object();
@@ -216,25 +214,10 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @NotNull
     @Override
-    public DBASecureStorage getSecureStorage() {
-        synchronized (metadataSync) {
-            if (this.secureStorage == null) {
-                this.secureStorage = createSecureStorage();
-            }
-        }
-        return secureStorage;
-    }
-
-    @NotNull
-    @Override
     public DBSSecretController getSecretController() {
         return new DefaultSecretController(
             "projects/" + getId()
         );
-    }
-
-    protected DBASecureStorage createSecureStorage() {
-        return new ProjectSecureStorage(this);
     }
 
     @Override
