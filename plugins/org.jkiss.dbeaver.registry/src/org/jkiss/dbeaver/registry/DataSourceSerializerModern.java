@@ -20,7 +20,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,6 +36,9 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.secret.DBSSecret;
+import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
@@ -51,6 +53,7 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
 
 class DataSourceSerializerModern implements DataSourceSerializer
@@ -1069,8 +1072,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
         boolean saved = !passwordWriteCanceled && saveCredentialsInSecuredStorage(
             registry.getProject(), dataSource, subNode, credentials);
         if (!saved) {
-            passwordWriteCanceled = true;
-
             String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
             if (subNode == null) subNode = NODE_CONNECTION;
 
@@ -1102,47 +1103,44 @@ class DataSourceSerializerModern implements DataSourceSerializer
      * Save secure config in protected storage.
      * @return true on success (if protected storage is available and configured)
      */
-    private static boolean saveCredentialsInSecuredStorage(
+    private boolean saveCredentialsInSecuredStorage(
         @NotNull DBPProject project,
         @Nullable DataSourceDescriptor dataSource,
         @Nullable String subNode,
-        @NotNull SecureCredentials credentials)
-    {
-        {
-            try {
-                ISecurePreferences prefNode = dataSource == null ?
-                    project.getSecureStorage().getSecurePreferences() :
-                    dataSource.getSecurePreferences();
-                if (!project.isUseSecretStorage()) {
-                    prefNode.removeNode();
-                } else {
-                    if (subNode != null) {
-                        for (String nodeName : subNode.split("/")) {
-                            prefNode = prefNode.node(nodeName);
-                        }
+        @NotNull SecureCredentials credentials
+    ) {
+        try {
+            DBSSecretController secretController = dataSource == null ?
+                project.getSecretController() :
+                dataSource.getSecretController();
+            if (secretController != null) {
+                if (project.isUseSecretStorage()) {
+                    if (subNode == null) {
+                        subNode = "";
                     }
-                    prefNode.put("name", dataSource != null ? dataSource.getName() : project.getName(), false);
-
-                    if (!CommonUtils.isEmpty(credentials.getUserName())) {
-                        prefNode.put(RegistryConstants.ATTR_USER, credentials.getUserName(), true);
-                    } else {
-                        prefNode.remove(RegistryConstants.ATTR_USER);
-                    }
-                    if (!CommonUtils.isEmpty(credentials.getUserPassword())) {
-                        prefNode.put(RegistryConstants.ATTR_PASSWORD, credentials.getUserPassword(), true);
-                    } else {
-                        prefNode.remove(RegistryConstants.ATTR_PASSWORD);
-                    }
+                    Path itemPath = Path.of(subNode);
+                    secretController.setSecretValue(
+                        itemPath.resolve(RegistryConstants.ATTR_USER).toString(), credentials.getUserName());
+                    secretController.setSecretValue(
+                        itemPath.resolve(RegistryConstants.ATTR_PASSWORD).toString(),
+                        credentials.getUserPassword());
                     if (!CommonUtils.isEmpty(credentials.getProperties())) {
                         for (Map.Entry<String, String> prop : credentials.getProperties().entrySet()) {
-                            prefNode.put(prop.getKey(), prop.getValue(), true);
+                            secretController.setSecretValue(
+                                itemPath.resolve(prop.getKey()).toString(),
+                                prop.getValue());
                         }
                     }
                     return true;
+                } else {
+                    if (secretController instanceof DBSSecretBrowser) {
+                        ((DBSSecretBrowser) secretController).clearAllSecrets();
+                    }
                 }
-            } catch (Throwable e) {
-                log.error("Can't save credentials in secure storage", e);
             }
+        } catch (Throwable e) {
+            log.error("Can't save credentials in secure storage", e);
+            passwordWriteCanceled = true;
         }
         return false;
     }
@@ -1175,28 +1173,40 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable String subNode)
     {
         assert dataSource != null || profile != null;
-        SecureCredentials creds = new SecureCredentials();
+
         DBPProject project = registry.getProject();
+
+        DBSSecretController secretController = dataSource == null ?
+            project.getSecretController() :
+            dataSource.getSecretController();
+        SecureCredentials creds = new SecureCredentials();
+        if (secretController == null) {
+            // Just return empty creds
+            return creds;
+        }
+
         {
             try {
                 if (project.isUseSecretStorage() && !passwordReadCanceled) {
-                    ISecurePreferences prefNode = dataSource == null ? project.getSecureStorage().getSecurePreferences() : dataSource.getSecurePreferences();
-                    if (subNode != null) {
-                        for (String nodeName : subNode.split("/")) {
-                            prefNode = prefNode.node(nodeName);
-                        }
-                    }
-                    for (String key : prefNode.keys()) {
-                        switch (key) {
-                            case RegistryConstants.ATTR_USER:
-                                creds.setUserName(prefNode.get(key, null));
-                                break;
-                            case RegistryConstants.ATTR_PASSWORD:
-                                creds.setUserPassword(prefNode.get(key, null));
-                                break;
-                            default:
-                                creds.setSecureProp(key, prefNode.get(key, null));
-                                break;
+                    if (secretController instanceof DBSSecretBrowser) {
+                        DBSSecretBrowser sBrowser = (DBSSecretBrowser)secretController;
+                        for (DBSSecret secret : sBrowser.listSecrets()) {
+                            String secretId = secret.getId();
+                            switch (secretId) {
+                                case RegistryConstants.ATTR_USER:
+                                    creds.setUserName(
+                                        secretController.getSecretValue(secretId));
+                                    break;
+                                case RegistryConstants.ATTR_PASSWORD:
+                                    creds.setUserPassword(
+                                        secretController.getSecretValue(secretId));
+                                    break;
+                                default:
+                                    creds.setSecureProp(
+                                        secretId,
+                                        secretController.getSecretValue(secretId));
+                                    break;
+                            }
                         }
                     }
                 }
@@ -1207,6 +1217,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 passwordReadCanceled = true;
             }
         }
+
         String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
         if (subNode == null) subNode = NODE_CONNECTION;
 

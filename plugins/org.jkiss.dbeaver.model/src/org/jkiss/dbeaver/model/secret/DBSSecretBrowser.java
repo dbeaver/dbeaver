@@ -36,4 +36,6 @@ public interface DBSSecretBrowser {
 
     void deleteSecret(@NotNull String secretId) throws DBException;
 
+    void clearAllSecrets() throws DBException;
+
 }

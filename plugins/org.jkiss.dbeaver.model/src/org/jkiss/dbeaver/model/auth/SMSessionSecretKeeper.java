@@ -17,10 +17,18 @@
 
 package org.jkiss.dbeaver.model.auth;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 
+/**
+ * Provides access to secret controller
+ */
 public interface SMSessionSecretKeeper extends SMSession {
 
+    /**
+     * Associated secret controller
+     */
+    @Nullable
     DBSSecretController getSecretController();
 
 }

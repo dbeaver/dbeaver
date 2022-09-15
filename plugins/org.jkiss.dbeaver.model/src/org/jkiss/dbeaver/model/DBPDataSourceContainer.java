@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -214,8 +215,12 @@ public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DB
      */
     boolean persistConfiguration();
 
+    @Deprecated
     @NotNull
     ISecurePreferences getSecurePreferences();
+
+    @Nullable
+    DBSSecretController getSecretController();
 
     Date getConnectTime();
 

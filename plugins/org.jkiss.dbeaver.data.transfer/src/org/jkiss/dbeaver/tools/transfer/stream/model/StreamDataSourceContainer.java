@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -307,6 +308,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public ISecurePreferences getSecurePreferences() {
         return DBWorkbench.getPlatform().getApplication().getSecureStorage().getSecurePreferences();
+    }
+
+    @Override
+    public DBSSecretController getSecretController() {
+        return null;
     }
 
     @Override

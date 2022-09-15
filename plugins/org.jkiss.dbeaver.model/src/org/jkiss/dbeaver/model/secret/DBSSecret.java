@@ -31,6 +31,14 @@ public class DBSSecret implements DBPNamedObject, DBPObjectWithDescription {
     private String name;
     private String description;
 
+    public DBSSecret() {
+    }
+
+    public DBSSecret(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
     @NotNull
     public String getId() {
         return id;

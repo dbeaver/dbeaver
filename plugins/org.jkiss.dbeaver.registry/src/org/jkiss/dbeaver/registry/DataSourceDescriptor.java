@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
+import org.jkiss.dbeaver.model.impl.app.DefaultSecretController;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
@@ -50,6 +51,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -1440,6 +1442,11 @@ public class DataSourceDescriptor
     @NotNull
     public ISecurePreferences getSecurePreferences() {
         return registry.getSecurePreferences().node(id);
+    }
+
+    @Override
+    public DBSSecretController getSecretController() {
+        return new DefaultSecretController(registry.getSecretController(), id);
     }
 
     @Override

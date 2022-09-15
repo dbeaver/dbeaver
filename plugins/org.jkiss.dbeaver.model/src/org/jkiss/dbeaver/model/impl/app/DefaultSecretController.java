@@ -16,37 +16,54 @@
  */
 package org.jkiss.dbeaver.model.impl.app;
 
+import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.secret.DBSSecret;
+import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Default secret controller.
  *
  * Uses Eclipse secure preferences to read/write secrets.
  */
-public class DefaultSecretController implements DBSSecretController {
+public class DefaultSecretController implements DBSSecretController, DBSSecretBrowser {
 
     public static final String SECRET_PREFS_ROOT = "dbeaver";
 
     public static final DefaultSecretController INSTANCE = new DefaultSecretController("");
 
-    private final String root;
+    private final Path root;
 
     public DefaultSecretController(String root) {
-        this.root = root.isEmpty() || root.endsWith("/") ? root : root + "/";
+        this.root = Path.of(root);
+    }
+
+    public DefaultSecretController(DBSSecretController parent, String path) {
+        if (parent instanceof DefaultSecretController) {
+            this.root = (((DefaultSecretController) parent).root).resolve(path);
+        } else {
+            throw new IllegalArgumentException("Bad parent controller: " + parent);
+        }
     }
 
     @Nullable
     @Override
     public String getSecretValue(@NotNull String secretId) throws DBException {
         try {
-            return SecurePreferencesFactory.getDefault()
-                .node(SECRET_PREFS_ROOT)
-                .get(root + secretId, null);
+            Path keyPath = root.resolve(secretId);
+
+            return getNodeByPath(keyPath.getParent())
+                .get(keyPath.getFileName().toString(), null);
         } catch (StorageException e) {
             throw new DBException("Error getting preference value '" + secretId + "'", e);
         }
@@ -55,12 +72,55 @@ public class DefaultSecretController implements DBSSecretController {
     @Override
     public void setSecretValue(@NotNull String secretId, @Nullable String keyValue) throws DBException {
         try {
-            SecurePreferencesFactory.getDefault()
-                .node(SECRET_PREFS_ROOT)
-                .put(root + secretId, keyValue, true);
+            Path keyPath = root.resolve(secretId);
+
+            getNodeByPath(keyPath.getParent())
+                .put(keyPath.getFileName().toString(), keyValue, true);
         } catch (StorageException e) {
             throw new DBException("Error setting preference value '" + secretId + "'", e);
         }
+    }
+
+    private static ISecurePreferences getNodeByPath(Path path) {
+        ISecurePreferences rootNode = SecurePreferencesFactory.getDefault().node(SECRET_PREFS_ROOT);
+        for (Path name : path) {
+            rootNode = rootNode.node(name.toString());
+        }
+        return rootNode;
+    }
+
+    @NotNull
+    @Override
+    public List<DBSSecret> listSecrets() throws DBException {
+        return Arrays.stream(getNodeByPath(root).keys())
+            .map(k -> new DBSSecret(k, k))
+            .collect(Collectors.toList());
+    }
+
+    @Nullable
+    @Override
+    public DBSSecret getSecret(@NotNull String secretId) throws DBException {
+        try {
+            Path keyPath = root.resolve(secretId);
+            String keyId = keyPath.getFileName().toString();
+            String value = getNodeByPath(keyPath.getParent()).get(keyId, null);
+            if (value == null) {
+                return null;
+            }
+            return new DBSSecret(keyId, keyId);
+        } catch (StorageException e) {
+            throw new DBException("Error getting secret info '" + secretId + "'", e);
+        }
+    }
+
+    @Override
+    public void deleteSecret(@NotNull String secretId) throws DBException {
+
+    }
+
+    @Override
+    public void clearAllSecrets() throws DBException {
+        getNodeByPath(root).removeNode();
     }
 
 }

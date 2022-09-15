@@ -31,12 +31,17 @@ import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.SMSession;
+import org.jkiss.dbeaver.model.auth.SMSessionSecretKeeper;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.app.DefaultSecretController;
+import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
@@ -601,10 +606,26 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }.schedule();
     }
 
+    @Deprecated
     @Override
     @NotNull
     public ISecurePreferences getSecurePreferences() {
-        return DBWorkbench.getPlatform().getApplication().getSecureStorage().getSecurePreferences().node("datasources");
+        return DefaultSecureStorage.INSTANCE.getSecurePreferences().node("datasources");
+    }
+
+    @Override
+    public DBSSecretController getSecretController() {
+        DBSSecretController parentController = DefaultSecretController.INSTANCE;
+
+        SMSession spaceSession = project.getSessionContext().findSpaceSession(project.getWorkspace());
+        SMSessionSecretKeeper secretKeeper = DBUtils.getAdapter(SMSessionSecretKeeper.class, spaceSession);
+        if (secretKeeper != null) {
+            DBSSecretController secretController = secretKeeper.getSecretController();
+            if (secretController != null) {
+                parentController = secretController;
+            }
+        }
+        return new DefaultSecretController(parentController, "datasources");
     }
 
     @Nullable
@@ -810,14 +831,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             }
         } catch (Exception e) {
             log.debug(e);
-        }
-    }
-
-    private void clearSecuredPasswords(DataSourceDescriptor dataSource) {
-        try {
-            dataSource.getSecurePreferences().removeNode();
-        } catch (Throwable e) {
-            log.debug("Error clearing '" + dataSource.getId() + "' secure storage");
         }
     }
 

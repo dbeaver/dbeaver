@@ -113,6 +113,7 @@ public class LocalWorkspaceSession extends AbstractSessionPersistent implements 
         return userName;
     }
 
+    @NotNull
     @Override
     public DBSSecretController getSecretController() {
         return DefaultSecretController.INSTANCE;

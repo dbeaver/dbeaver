@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.util.List;
@@ -144,6 +145,9 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     @NotNull
     ISecurePreferences getSecurePreferences();
+
+    @Nullable
+    DBSSecretController getSecretController();
 
     // Registry auth provider. Null by default.
     @Nullable
