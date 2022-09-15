@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Base for standalone applications. Includes minimum set of plugins -->
+<feature
+        id="org.jkiss.dbeaver.app.local.feature"
+        label="%featureName"
+        version="22.2.0.qualifier"
+        provider-name="%providerName">
+
+    <!-- Quick search. Includes minimized ant bundle. No included in non-local as it uses local FS. -->
+    <plugin id="org.eclipse.text.quicksearch" download-size="0" install-size="0" version="0.0.0"/>
+
+</feature>
