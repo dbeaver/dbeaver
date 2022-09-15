@@ -24,6 +24,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -61,6 +63,7 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_HAS_TOOLS = "hasTools";
     public static final String PROP_SUPPORTS_CREATING_INDEX = "supportsIndexCreate";
     public static final String PROP_SUPPORTS_CREATING_CONSTRAINT = "supportsConstraintCreate";
+    public static final String PROP_PROJECT_RESOURCE_EDITABLE = "projectResourceEditable";
 
     public ObjectPropertyTester() {
         super();
@@ -224,6 +227,9 @@ public class ObjectPropertyTester extends PropertyTester
                 return supportsCreatingColumnObject(node, DBSTableIndex.class);
             case PROP_SUPPORTS_CREATING_CONSTRAINT:
                 return supportsCreatingColumnObject(node, DBSEntityConstraint.class);
+            case PROP_PROJECT_RESOURCE_EDITABLE:
+                DBPProject project = node.getOwnerProject();
+                return project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
         }
         return false;
     }
