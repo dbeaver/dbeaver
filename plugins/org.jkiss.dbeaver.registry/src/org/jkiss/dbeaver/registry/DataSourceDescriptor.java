@@ -812,6 +812,10 @@ public class DataSourceDescriptor
             return false;
         }
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
+        if (getProject().isUseSecretStorage()) {
+            // Resolve secrets
+            resolveSecrets();
+        }
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
 
