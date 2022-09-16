@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.*;
 import org.jkiss.dbeaver.model.auth.impl.AbstractSessionPersistent;
-import org.jkiss.dbeaver.model.impl.app.DefaultSecretController;
+import org.jkiss.dbeaver.model.impl.app.LocalSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.security.SMSessionType;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -116,6 +116,6 @@ public class LocalWorkspaceSession extends AbstractSessionPersistent implements 
     @NotNull
     @Override
     public DBSSecretController getSecretController() {
-        return DefaultSecretController.INSTANCE;
+        return LocalSecretController.INSTANCE;
     }
 }

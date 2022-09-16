@@ -34,19 +34,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Default secret controller.
+ * Default local secret controller.
  *
  * Uses Eclipse secure preferences to read/write secrets.
  */
-public class DefaultSecretController implements DBSSecretController, DBSSecretBrowser {
+public class LocalSecretController implements DBSSecretController, DBSSecretBrowser {
 
     public static final String SECRET_PREFS_ROOT = "dbeaver";
 
-    public static final DefaultSecretController INSTANCE = new DefaultSecretController("");
+    public static final LocalSecretController INSTANCE = new LocalSecretController("");
 
     private final Path root;
 
-    public DefaultSecretController(String root) {
+    public LocalSecretController(String root) {
         this.root = Path.of(root);
     }
 
