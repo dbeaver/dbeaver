@@ -1110,12 +1110,11 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @NotNull SecureCredentials credentials
     ) {
         try {
-            DBSSecretController secretController = dataSource == null ?
-                project.getSecretController() :
-                dataSource.getSecretController();
-            if (secretController != null) {
+            DBSSecretController secretController = DBSSecretController.getSessionSecretController(project.getWorkspaceSession());
+            String keyPrefix = getSecretKeyPrefix(dataSource, project);
+            {
                 if (project.isUseSecretStorage()) {
-                    Path itemPath = Path.of(CommonUtils.notEmpty(subNode));
+                    Path itemPath = Path.of(keyPrefix).resolve(CommonUtils.notEmpty(subNode));
                     secretController.setSecretValue(
                         itemPath.resolve(RegistryConstants.ATTR_USER).toString(), credentials.getUserName());
                     secretController.setSecretValue(
@@ -1173,24 +1172,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
         DBPProject project = registry.getProject();
 
-        DBSSecretController secretController = dataSource == null ?
-            project.getSecretController() :
-            dataSource.getSecretController();
+        DBSSecretController secretController = DBSSecretController.getSessionSecretController(project.getWorkspaceSession());
+        String keyPrefix = getSecretKeyPrefix(dataSource, project);
         SecureCredentials creds = new SecureCredentials();
-        if (secretController == null) {
-            // Just return empty creds
-            return creds;
-        }
 
         {
             try {
                 if (project.isUseSecretStorage() && !passwordReadCanceled) {
-                    Path itemPath = Path.of(CommonUtils.notEmpty(subNode));
+                    Path itemPath = Path.of(keyPrefix).resolve(CommonUtils.notEmpty(subNode));
                     if (secretController instanceof DBSSecretBrowser) {
                         DBSSecretBrowser sBrowser = (DBSSecretBrowser)secretController;
                         for (DBSSecret secret : sBrowser.listSecrets(itemPath.toString())) {
-                            String secretId = secret.getName();
-                            switch (secretId) {
+                            String secretId = secret.getId();
+                            switch (secret.getName()) {
                                 case RegistryConstants.ATTR_USER:
                                     creds.setUserName(
                                         secretController.getSecretValue(secretId));
@@ -1240,6 +1234,17 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
 
         return creds;
+    }
+
+    @NotNull
+    private String getSecretKeyPrefix(@Nullable DataSourceDescriptor dataSource, DBPProject project) {
+        String keyPrefix;
+        if (dataSource == null) {
+            keyPrefix = "projects/" + project.getId();
+        } else {
+            keyPrefix = "datasources/" + dataSource.getId();
+        }
+        return keyPrefix;
     }
 
 }

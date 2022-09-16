@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionSecretKeeper;
-import org.jkiss.dbeaver.model.impl.app.DefaultSecretController;
 
 /**
  * Secret manager API
@@ -49,7 +48,7 @@ public interface DBSSecretController {
                 return secretController;
             }
         }
-        return DefaultSecretController.INSTANCE;
+        throw new IllegalStateException("Session secret controller not found");
     }
 
 }

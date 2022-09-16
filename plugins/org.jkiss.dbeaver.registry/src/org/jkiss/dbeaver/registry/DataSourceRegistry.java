@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.impl.app.DefaultSecretController;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -602,14 +601,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }.schedule();
     }
 
-    @NotNull
-    @Override
-    public DBSSecretController getSecretController() {
-        return new DefaultSecretController(
-            DBSSecretController.getSessionSecretController(project.getWorkspaceSession()),
-            "datasources");
-    }
-
     @Nullable
     @Override
     public DBACredentialsProvider getAuthCredentialsProvider() {
@@ -751,7 +742,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                         localDataSources);
                     try {
                         if (!configurationManager.isSecure()) {
-                            getSecretController().flushChanges();
+                            DBSSecretController
+                                .getSessionSecretController(project.getWorkspaceSession())
+                                .flushChanges();
                         }
                         lastError = null;
                     } catch (Throwable e) {
@@ -849,7 +842,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 localDataSources);
             try {
                 if (!configurationManager.isSecure()) {
-                    getSecretController().flushChanges();
+                    DBSSecretController
+                        .getSessionSecretController(project.getWorkspaceSession())
+                        .flushChanges();
                 }
                 lastError = null;
             } catch (Throwable e) {

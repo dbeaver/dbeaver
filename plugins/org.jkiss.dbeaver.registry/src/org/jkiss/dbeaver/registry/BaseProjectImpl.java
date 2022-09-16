@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.impl.app.DefaultSecretController;
 import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -215,9 +214,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @NotNull
     @Override
     public DBSSecretController getSecretController() {
-        return new DefaultSecretController(
-            "projects/" + getId()
-        );
+        return DBSSecretController.getSessionSecretController(getWorkspaceSession());
     }
 
     @Override

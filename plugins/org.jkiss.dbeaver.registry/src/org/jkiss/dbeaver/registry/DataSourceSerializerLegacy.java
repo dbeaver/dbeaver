@@ -447,13 +447,17 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             {
                 try {
                     if (project.isUseSecretStorage()) {
-                        DBSSecretController secretController = dataSource.getSecretController();
-                        if (secretController != null) {
-                            Path itemPath = Path.of(CommonUtils.notEmpty(subNode));
-
-                            creds[0] = secretController.getSecretValue(itemPath.resolve(RegistryConstants.ATTR_USER).toString());
-                            creds[1] = secretController.getSecretValue(itemPath.resolve(RegistryConstants.ATTR_PASSWORD).toString());
+                        DBSSecretController secretController = DBSSecretController.getSessionSecretController(project.getWorkspaceSession());
+                        String keyPrefix;
+                        if (dataSource == null) {
+                            keyPrefix = "projects/" + project.getId();
+                        } else {
+                            keyPrefix = "datasources/" + dataSource.getId();
                         }
+                        Path itemPath = Path.of(keyPrefix).resolve(CommonUtils.notEmpty(subNode));
+
+                        creds[0] = secretController.getSecretValue(itemPath.resolve(RegistryConstants.ATTR_USER).toString());
+                        creds[1] = secretController.getSecretValue(itemPath.resolve(RegistryConstants.ATTR_PASSWORD).toString());
                     }
                 } catch (Throwable e) {
                     // Most likely user canceled master password enter of failed by some other reason.

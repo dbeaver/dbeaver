@@ -50,14 +50,6 @@ public class DefaultSecretController implements DBSSecretController, DBSSecretBr
         this.root = Path.of(root);
     }
 
-    public DefaultSecretController(DBSSecretController parent, String path) {
-        if (parent instanceof DefaultSecretController) {
-            this.root = (((DefaultSecretController) parent).root).resolve(path);
-        } else {
-            throw new IllegalArgumentException("Bad parent controller: " + parent);
-        }
-    }
-
     @Nullable
     @Override
     public String getSecretValue(@NotNull String secretId) throws DBException {
@@ -94,8 +86,10 @@ public class DefaultSecretController implements DBSSecretController, DBSSecretBr
 
     private static ISecurePreferences getNodeByPath(Path path) {
         ISecurePreferences rootNode = SecurePreferencesFactory.getDefault().node(SECRET_PREFS_ROOT);
-        for (Path name : path) {
-            rootNode = rootNode.node(name.toString());
+        if (path != null) {
+            for (Path name : path) {
+                rootNode = rootNode.node(name.toString());
+            }
         }
         return rootNode;
     }
@@ -104,7 +98,7 @@ public class DefaultSecretController implements DBSSecretController, DBSSecretBr
     @Override
     public List<DBSSecret> listSecrets(@Nullable String path) throws DBException {
         Path keyPath = path == null ? root : root.resolve(path);
-        return Arrays.stream(getNodeByPath(root).keys())
+        return Arrays.stream(getNodeByPath(keyPath).keys())
             .map(k -> new DBSSecret(keyPath.resolve(k).toString(), k))
             .collect(Collectors.toList());
     }
