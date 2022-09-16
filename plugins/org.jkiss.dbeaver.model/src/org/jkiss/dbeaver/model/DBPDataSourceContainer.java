@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -41,7 +42,8 @@ import java.util.Date;
 /**
  * DBPDataSourceContainer
  */
-public interface DBPDataSourceContainer extends DBSObject, DBDFormatSettings, DBPNamedObject2, DBPDataSourcePermissionOwner
+public interface DBPDataSourceContainer extends
+    DBSObject, DBDFormatSettings, DBPNamedObject2, DBPDataSourcePermissionOwner, DBPSecretHolder
 {
     /**
      * Container unique ID

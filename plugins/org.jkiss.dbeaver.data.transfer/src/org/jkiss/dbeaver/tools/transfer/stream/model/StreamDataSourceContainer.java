@@ -405,4 +405,14 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     public void setForceUseSingleConnection(boolean value) {
         throw new IllegalStateException("Not supported");   
     }
+
+    @Override
+    public void persistSecrets() throws DBException {
+
+    }
+
+    @Override
+    public void resolveSecrets() throws DBException {
+
+    }
 }

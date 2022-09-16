@@ -17,9 +17,14 @@
 
 package org.jkiss.dbeaver.model.access;
 
+import org.jkiss.dbeaver.model.DBInfoUtils;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Auth profile.
@@ -77,5 +82,26 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
 
     public DBPAuthModelDescriptor getAuthModel() {
         return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(authModelId);
+    }
+
+    public String saveToSecret() {
+        Map<String, Object> props = new LinkedHashMap<>();
+
+        // Info fields (we don't use them anyhow)
+        props.put("profile-id", getProfileId());
+        props.put("profile-name", getProfileName());
+
+        // Primary props
+        if (getUserName() != null) {
+            props.put("user", getUserName());
+        }
+        if (getUserPassword() != null) {
+            props.put("password", getUserPassword());
+        }
+        // Additional auth props
+        if (!CommonUtils.isEmpty(getProperties())) {
+            props.put("properties", getProperties());
+        }
+        return DBInfoUtils.SECRET_GSON.toJson(props);
     }
 }

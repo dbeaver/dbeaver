@@ -456,6 +456,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public void updateAuthProfile(DBAAuthProfile profile) {
+        // Save secrets
+        if (getProject().isUseSecretStorage()) {
+            try {
+                DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+                secretController.setSecretValue(
+                    SecretKeyConstants.getSecretKeyId(getProject(), profile),
+                    profile.saveToSecret()
+                );
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
+                return;
+            }
+        }
+
         synchronized (authProfiles) {
             authProfiles.put(profile.getProfileId(), profile);
         }
@@ -463,6 +477,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public void removeAuthProfile(DBAAuthProfile profile) {
+        // Remove secrets
+        if (getProject().isUseSecretStorage()) {
+            try {
+                DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+                secretController.setSecretValue(
+                    SecretKeyConstants.getSecretKeyId(getProject(), profile),
+                    null);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing credentials from secret storage", e);
+            }
+        }
         synchronized (authProfiles) {
             authProfiles.remove(profile.getProfileId());
         }

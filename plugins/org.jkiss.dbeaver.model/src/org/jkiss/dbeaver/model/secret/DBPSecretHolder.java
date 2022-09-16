@@ -14,30 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.secret;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 
 /**
- * Configuration files manager
+ * DBPSecretHolder
  */
-public interface DataSourceConfigurationManager {
+public interface DBPSecretHolder {
 
-    boolean isReadOnly();
-
-    boolean isSecure();
-
-    List<DBPDataSourceConfigurationStorage> getConfigurationStorages();
-
-    InputStream readConfiguration(@NotNull String name) throws DBException, IOException;
-
-    void writeConfiguration(@NotNull String name, @Nullable byte[] data) throws DBException, IOException;
+    void persistSecrets() throws DBException;
+    void resolveSecrets() throws DBException;
 
 }

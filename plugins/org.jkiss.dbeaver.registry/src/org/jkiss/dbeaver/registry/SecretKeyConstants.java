@@ -16,25 +16,25 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.access.DBAAuthProfile;
+import org.jkiss.dbeaver.model.app.DBPProject;
 
 /**
  * Data source descriptors constants
  */
 public class SecretKeyConstants {
 
-    public static final String DEFAULT_KEY_PREFIX = "db-";
-    public static final String DATASOURCE_KEY_PREFIX = DEFAULT_KEY_PREFIX + "datasource-";
+    public static final String DATASOURCE_KEY_PREFIX = "/datasources/";
+    public static final String PROFILE_KEY_PREFIX = "/profiles/";
 
-    public static final Gson SECRET_GSON = new GsonBuilder()
-        .setLenient()
-        .serializeNulls()
-        .setPrettyPrinting()
-        .create();
 
-    public static final String getSecretKeyId(DBPDataSourceContainer dataSource) {
-        return DATASOURCE_KEY_PREFIX + dataSource.getProject().getName() + "-" + dataSource.getId();
+    public static String getSecretKeyId(DBPDataSourceContainer dataSource) {
+        return dataSource.getProject().getName() + DATASOURCE_KEY_PREFIX + dataSource.getId();
     }
+
+    public static String getSecretKeyId(DBPProject project, DBAAuthProfile profile) {
+        return project.getName() + PROFILE_KEY_PREFIX + profile.getProfileId();
+    }
+
 }

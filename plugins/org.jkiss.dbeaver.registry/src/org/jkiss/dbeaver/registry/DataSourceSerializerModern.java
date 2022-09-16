@@ -36,9 +36,6 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.model.secret.DBSSecret;
-import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
@@ -53,7 +50,6 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.*;
 
 class DataSourceSerializerModern implements DataSourceSerializer
@@ -317,18 +313,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     private void saveConfigFile(DataSourceConfigurationManager configurationManager, String name, String contents, boolean teamPrivate, boolean encrypt) {
         try {
-            byte[] binaryContents;
-            if (encrypt) {
-                // Serialize and encrypt
-                DBSValueEncryptor valueEncryptor = new DefaultValueEncryptor(registry.getProject().getLocalSecretKey());
-                binaryContents = valueEncryptor.encryptValue(contents.getBytes(StandardCharsets.UTF_8));
-            } else {
-                binaryContents = contents.getBytes(StandardCharsets.UTF_8);
+            byte[] binaryContents = null;
+            if (contents != null) {
+                if (encrypt) {
+                    // Serialize and encrypt
+                    DBSValueEncryptor valueEncryptor = new DefaultValueEncryptor(registry.getProject().getLocalSecretKey());
+                    binaryContents = valueEncryptor.encryptValue(contents.getBytes(StandardCharsets.UTF_8));
+                } else {
+                    binaryContents = contents.getBytes(StandardCharsets.UTF_8);
+                }
             }
 
             // Save result to file
-            configurationManager.writeConfiguration(
-                name, binaryContents);
+            configurationManager.writeConfiguration(name, binaryContents);
         } catch (Exception e) {
             log.error("Error saving configuration file", e);
         }
@@ -338,7 +335,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         String credFile = DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + storage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT;
         try {
             if (secureProperties.isEmpty()) {
-                saveConfigFile(configurationManager, credFile, "", true, true);
+                saveConfigFile(configurationManager, credFile, null, true, true);
             } else {
                 // Serialize and encrypt
                 String jsonString = SECURE_GSON.toJson(secureProperties, Map.class);
@@ -737,7 +734,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
     @Nullable
     private DBWHandlerConfiguration parseNetworkHandlerConfig(
-        DataSourceConfigurationManager configurationManager, @Nullable DataSourceDescriptor dataSource,
+        DataSourceConfigurationManager configurationManager,
+        @Nullable DataSourceDescriptor dataSource,
         @Nullable DBWNetworkProfile profile,
         @NotNull Map.Entry<String, Map<String, Object>> handlerObject)
     {
@@ -1130,43 +1128,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
         DBPProject project = registry.getProject();
 
-        DBSSecretController secretController = DBSSecretController.getSessionSecretController(project.getWorkspaceSession());
-        String keyPrefix = getSecretKeyPrefix(dataSource, project);
         SecureCredentials creds = new SecureCredentials();
-
-        {
-            try {
-                if (project.isUseSecretStorage() && !passwordReadCanceled) {
-                    Path itemPath = Path.of(keyPrefix).resolve(CommonUtils.notEmpty(subNode));
-                    if (secretController instanceof DBSSecretBrowser) {
-                        DBSSecretBrowser sBrowser = (DBSSecretBrowser)secretController;
-                        for (DBSSecret secret : sBrowser.listSecrets(itemPath.toString())) {
-                            String secretId = secret.getId();
-                            switch (secret.getName()) {
-                                case RegistryConstants.ATTR_USER:
-                                    creds.setUserName(
-                                        secretController.getSecretValue(secretId));
-                                    break;
-                                case RegistryConstants.ATTR_PASSWORD:
-                                    creds.setUserPassword(
-                                        secretController.getSecretValue(secretId));
-                                    break;
-                                default:
-                                    creds.setSecureProp(
-                                        secretId,
-                                        secretController.getSecretValue(secretId));
-                                    break;
-                            }
-                        }
-                    }
-                }
-            } catch (Throwable e) {
-                // Most likely user canceled master password enter of failed by some other reason.
-                // Anyhow we won't try it again
-                log.error("Can't read password from secure storage", e);
-                passwordReadCanceled = true;
-            }
-        }
 
         String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
         if (subNode == null) subNode = NODE_CONNECTION;
@@ -1192,17 +1154,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
 
         return creds;
-    }
-
-    @NotNull
-    private String getSecretKeyPrefix(@Nullable DataSourceDescriptor dataSource, DBPProject project) {
-        String keyPrefix;
-        if (dataSource == null) {
-            keyPrefix = "projects/" + project.getId();
-        } else {
-            keyPrefix = "datasources/" + dataSource.getId();
-        }
-        return keyPrefix;
     }
 
 }
