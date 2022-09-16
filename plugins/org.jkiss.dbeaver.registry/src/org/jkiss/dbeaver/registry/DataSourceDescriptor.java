@@ -106,7 +106,11 @@ public class DataSourceDescriptor
     private String id;
     private String name;
     private String description;
+    // Password is saved in configuration
     private boolean savePassword;
+    // Password is shared.
+    // It will be saved in local configuration even if project uses secured storage
+    private boolean sharedPassword;
     private boolean connectionReadOnly;
     private boolean forceUseSingleConnection = false;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
@@ -353,6 +357,14 @@ public class DataSourceDescriptor
     @Override
     public void setSavePassword(boolean savePassword) {
         this.savePassword = savePassword;
+    }
+
+    public boolean isSharedPassword() {
+        return sharedPassword;
+    }
+
+    public void setSharedPassword(boolean sharedPassword) {
+        this.sharedPassword = sharedPassword;
     }
 
     @Override
@@ -1597,6 +1609,52 @@ public class DataSourceDescriptor
             DBPEvent.Action.OBJECT_UPDATE,
             dataSourceDescriptor,
             false));
+    }
+
+    /**
+     * Saves datasource secret credentials to secret value (json)
+     */
+    public String saveToSecret() {
+        Map<String, Object> props = new LinkedHashMap<>();
+
+        // Info fields (we don't use them anyhow)
+        props.put("datasource-id", getId());
+        props.put("datasource-name", getName());
+        props.put("datasource-driver", getDriver().getFullId());
+
+        // Primary props
+        if (connectionInfo.getUserName() != null) {
+            props.put(RegistryConstants.ATTR_USER, connectionInfo.getUserName());
+        }
+        if (connectionInfo.getUserPassword() != null) {
+            props.put(RegistryConstants.ATTR_PASSWORD, connectionInfo.getUserPassword());
+        }
+        // Additional auth props
+        if (!CommonUtils.isEmpty(connectionInfo.getAuthProperties())) {
+            props.put(RegistryConstants.TAG_PROPERTIES, connectionInfo.getAuthProperties());
+        }
+        // Handlers
+        List<Map<String, Object>> handlersConfigs = new ArrayList<>();
+        for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
+            Map<String, Object> handlerProps = new LinkedHashMap<>();
+            if (!CommonUtils.isEmpty(hc.getUserName())) {
+                handlerProps.put(RegistryConstants.ATTR_USER, hc.getUserName());
+            }
+            if (!CommonUtils.isEmpty(hc.getPassword())) {
+                handlerProps.put(RegistryConstants.ATTR_PASSWORD, hc.getPassword());
+            }
+            if (!CommonUtils.isEmpty(hc.getSecureProperties())) {
+                handlerProps.put(RegistryConstants.TAG_PROPERTIES, hc.getSecureProperties());
+            }
+            if (!handlerProps.isEmpty()) {
+                handlerProps.put(RegistryConstants.ATTR_ID, hc.getHandlerDescriptor().getId());
+                handlersConfigs.add(handlerProps);
+            }
+        }
+        if (!handlersConfigs.isEmpty()) {
+            props.put(RegistryConstants.TAG_HANDLERS, handlersConfigs);
+        }
+        return SecretKeyConstants.SECRET_GSON.toJson(props);
     }
 
 }

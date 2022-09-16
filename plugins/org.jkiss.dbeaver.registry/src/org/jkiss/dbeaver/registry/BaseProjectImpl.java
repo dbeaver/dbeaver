@@ -67,7 +67,7 @@ public abstract class BaseProjectImpl implements DBPProject {
         MODERN,     // 6.1+ version
     }
 
-    private static final Gson METADATA_GSON = new GsonBuilder()
+    public static final Gson METADATA_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
         .create();

@@ -1066,19 +1066,19 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @Nullable DataSourceDescriptor dataSource,
         @Nullable DBPConfigurationProfile profile,
         @Nullable String subNode,
-        @NotNull SecureCredentials credentials)
-    {
+        @NotNull SecureCredentials credentials
+    ) {
         assert dataSource != null|| profile != null;
-        boolean saved = !passwordWriteCanceled && saveCredentialsInSecuredStorage(
-            registry.getProject(), dataSource, subNode, credentials);
-        if (!saved) {
-            String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
-            if (subNode == null) subNode = NODE_CONNECTION;
-
-            Map<String, Map<String, String>> nodeMap = secureProperties.computeIfAbsent(topNodeId, s -> new LinkedHashMap<>());
-            Map<String, String> propMap = nodeMap.computeIfAbsent(subNode, s -> new LinkedHashMap<>());
-            saveCredentialsToMap(propMap, credentials);
+        if (registry.getProject().isUseSecretStorage()) {
+            return;
         }
+
+        String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
+        if (subNode == null) subNode = NODE_CONNECTION;
+
+        Map<String, Map<String, String>> nodeMap = secureProperties.computeIfAbsent(topNodeId, s -> new LinkedHashMap<>());
+        Map<String, String> propMap = nodeMap.computeIfAbsent(subNode, s -> new LinkedHashMap<>());
+        saveCredentialsToMap(propMap, credentials);
     }
 
     private void savePlainCredentials(JsonWriter jsonWriter, @NotNull SecureCredentials credentials) throws IOException {
@@ -1097,48 +1097,6 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!CommonUtils.isEmpty(credentials.getProperties())) {
             propMap.putAll(credentials.getProperties());
         }
-    }
-
-    /**
-     * Save secure config in protected storage.
-     * @return true on success (if protected storage is available and configured)
-     */
-    private boolean saveCredentialsInSecuredStorage(
-        @NotNull DBPProject project,
-        @Nullable DataSourceDescriptor dataSource,
-        @Nullable String subNode,
-        @NotNull SecureCredentials credentials
-    ) {
-        try {
-            DBSSecretController secretController = DBSSecretController.getSessionSecretController(project.getWorkspaceSession());
-            String keyPrefix = getSecretKeyPrefix(dataSource, project);
-            {
-                if (project.isUseSecretStorage()) {
-                    Path itemPath = Path.of(keyPrefix).resolve(CommonUtils.notEmpty(subNode));
-                    secretController.setSecretValue(
-                        itemPath.resolve(RegistryConstants.ATTR_USER).toString(), credentials.getUserName());
-                    secretController.setSecretValue(
-                        itemPath.resolve(RegistryConstants.ATTR_PASSWORD).toString(),
-                        credentials.getUserPassword());
-                    if (!CommonUtils.isEmpty(credentials.getProperties())) {
-                        for (Map.Entry<String, String> prop : credentials.getProperties().entrySet()) {
-                            secretController.setSecretValue(
-                                itemPath.resolve(prop.getKey()).toString(),
-                                prop.getValue());
-                        }
-                    }
-                    return true;
-                } else {
-                    if (secretController instanceof DBSSecretBrowser) {
-                        ((DBSSecretBrowser) secretController).clearAllSecrets(keyPrefix);
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            log.error("Can't save credentials in secure storage", e);
-            passwordWriteCanceled = true;
-        }
-        return false;
     }
 
     private SecureCredentials readPlainCredentials(Map<String, Object> propMap) {
