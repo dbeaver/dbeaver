@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -34,13 +35,14 @@ import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
  * DatabaseEditorPropertyTester
  */
-public class DataSourcePropertyTester extends PropertyTester
-{
+public class DataSourcePropertyTester extends PropertyTester {
+
     static protected final Log log = Log.getLog(DataSourcePropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.datasource";
@@ -50,6 +52,8 @@ public class DataSourcePropertyTester extends PropertyTester
     public static final String PROP_SUPPORTS_TRANSACTIONS = "supportsTransactions";
     public static final String PROP_TRANSACTION_ACTIVE = "transactionActive";
     public static final String PROP_EDITABLE = "editable";
+    public static final String PROP_PROJECT_RESOURCE_EDITABLE = "projectResourceEditable";
+    public static final String PROP_PROJECT_RESOURCE_VIEWABLE = "projectResourceViewable";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -61,9 +65,14 @@ public class DataSourcePropertyTester extends PropertyTester
             if (!(receiver instanceof DBPContextProvider)) {
                 return false;
             }
-            DBPContextProvider contextProvider = (DBPContextProvider)receiver;
+            DBPContextProvider contextProvider = (DBPContextProvider) receiver;
             @Nullable
             DBCExecutionContext context = contextProvider.getExecutionContext();
+            @Nullable
+            DBPProject resourceProject = receiver instanceof IEditorPart
+                ? EditorUtils.getFileProject(((IEditorPart)receiver).getEditorInput())
+                : null;
+            
             switch (property) {
                 case PROP_CONNECTED:
                     boolean isConnected;
@@ -76,7 +85,7 @@ public class DataSourcePropertyTester extends PropertyTester
                         isConnected = false;
                     }
                     boolean checkConnected = Boolean.TRUE.equals(expectedValue);
-                    return checkConnected ? isConnected : !isConnected;
+                    return checkConnected == isConnected;
                 case PROP_TRANSACTIONAL: {
                     if (context == null) {
                         return false;
@@ -116,8 +125,13 @@ public class DataSourcePropertyTester extends PropertyTester
                     return Boolean.FALSE.equals(expectedValue);
                 }
                 case PROP_EDITABLE: {
-                    return contextProvider instanceof DBNDataSource &&
-                        ((DBNDataSource)contextProvider).getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
+                    return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
+                }
+                case PROP_PROJECT_RESOURCE_EDITABLE: {
+                    return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
+                }
+                case PROP_PROJECT_RESOURCE_VIEWABLE: {
+                    return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
                 }
             }
             return false;
@@ -157,8 +171,7 @@ public class DataSourcePropertyTester extends PropertyTester
         }
 
         @Override
-        public synchronized void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit)
-        {
+        public synchronized void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit) {
             updateUI(() -> {
                 // Fire transactional mode change
                 DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
@@ -168,8 +181,7 @@ public class DataSourcePropertyTester extends PropertyTester
         }
 
         @Override
-        public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context)
-        {
+        public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context) {
             updateUI(() -> {
                 DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
                 updateEditorsDirtyFlag();
@@ -177,8 +189,7 @@ public class DataSourcePropertyTester extends PropertyTester
         }
 
         @Override
-        public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint)
-        {
+        public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint) {
             updateUI(() -> {
                 DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
                 updateEditorsDirtyFlag();
@@ -186,8 +197,7 @@ public class DataSourcePropertyTester extends PropertyTester
         }
 
         @Override
-        public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement)
-        {
+        public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement) {
             updateUI(() -> DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE));
         }
 

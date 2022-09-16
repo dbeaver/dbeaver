@@ -32,7 +32,15 @@
         <!-- Edit menu -->
         <menuContribution allPopups="false" locationURI="menu:edit">
             <separator name="additions" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add">
+                <visibleWhen>
+                    <with variable="selection">
+                        <iterate operator="and">
+                            <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
         </menuContribution>
 
         <!-- Edit menu -->

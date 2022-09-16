@@ -39,6 +39,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
@@ -226,6 +227,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     // If site is null then we need only item count. BAD CODE.
     public static List<IContributionItem> fillCreateMenuItems(@Nullable IWorkbenchPartSite site, DBNNode node) {
         List<IContributionItem> createActions = new ArrayList<>();
+        DBPProject ownerProject = node == null ? null : node.getOwnerProject();
+        boolean projectResourceEditable = ownerProject == null
+            || ownerProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
 
         if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases) {
             IContributionItem item = makeCreateContributionItem(
@@ -247,17 +251,15 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_PROJECT));
             }
             DBPResourceHandler handler = workspace.getResourceHandler(resource);
-            if (handler instanceof DBPResourceCreator && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0
-                && node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)
-            ) {
+            if (handler instanceof DBPResourceCreator
+                && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0 && projectResourceEditable) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FILE));
             }
-            if (handler != null && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0
-                && node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)
-            ) {
+            if (handler != null
+                && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0  && projectResourceEditable) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
             }
-            if (resource instanceof IContainer) {
+            if (resource instanceof IContainer && projectResourceEditable) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FILE_LINK));
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FOLDER_LINK));
             }

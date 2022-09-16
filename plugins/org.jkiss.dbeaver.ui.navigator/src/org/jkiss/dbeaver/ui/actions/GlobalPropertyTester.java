@@ -38,8 +38,8 @@ public class GlobalPropertyTester extends PropertyTester {
     public static final String PROP_HAS_ACTIVE_PROJECT = "hasActiveProject";
     public static final String PROP_HAS_MULTI_PROJECTS = "hasMultipleProjects";
     public static final String PROP_CAN_CREATE_PROJECT = "canCreateProject";
-    public static final String PROP_CAN_EDIT_RESOURCE= "canEditResource";
-    public static final String PROP_CAN_VIEW_RESOURCE= "canViewResource";
+    public static final String PROP_CAN_EDIT_RESOURCE = "canEditResource";
+    public static final String PROP_CAN_VIEW_RESOURCE = "canViewResource";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -54,8 +54,7 @@ public class GlobalPropertyTester extends PropertyTester {
                 return DBWorkbench.getPlatform().getApplication().isStandalone();
             case PROP_CAN_CREATE_PROJECT:
                 return !DBWorkbench.getPlatform().getApplication().isDistributed();
-            case PROP_CAN_CREATE_CONNECTION:
-            {
+            case PROP_CAN_CREATE_CONNECTION: {
                 for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
                     if (project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
                         return true;
@@ -63,16 +62,13 @@ public class GlobalPropertyTester extends PropertyTester {
                 }
                 return false;
             }
-            case PROP_CAN_EDIT_RESOURCE:
-            {
+            case PROP_CAN_EDIT_RESOURCE: {
                 DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
                 return project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
             }
-            case PROP_CAN_VIEW_RESOURCE:
-            {
+            case PROP_CAN_VIEW_RESOURCE: {
                 DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-                var x = project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
-                return x;
+                return project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
             }
         }
         return false;

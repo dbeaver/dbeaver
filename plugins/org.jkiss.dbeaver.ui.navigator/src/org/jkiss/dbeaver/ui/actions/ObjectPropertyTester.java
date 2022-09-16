@@ -44,8 +44,7 @@ import java.util.List;
 /**
  * ObjectPropertyTester
  */
-public class ObjectPropertyTester extends PropertyTester
-{
+public class ObjectPropertyTester extends PropertyTester {
     //static final Log log = Log.getLog(ObjectPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.object";
@@ -229,7 +228,7 @@ public class ObjectPropertyTester extends PropertyTester
                 return supportsCreatingColumnObject(node, DBSEntityConstraint.class);
             case PROP_PROJECT_RESOURCE_EDITABLE:
                 DBPProject project = node.getOwnerProject();
-                return project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
+                return project == null || project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
         }
         return false;
     }

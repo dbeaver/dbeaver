@@ -31,7 +31,6 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -56,19 +55,6 @@ public class DataSourceToolbarUtils
         }
         return null;
     }
-    
-    public static DBPProject getActiveProject(IEditorPart activeEditor, DBPDataSourceContainer dataSource) { 
-        DBPProject activeProject = dataSource == null ? null : dataSource.getProject();
-        if (activeProject == null) {
-            if (activeEditor != null) {
-                IFile curFile = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
-                if (curFile != null) {
-                    activeProject = DBPPlatformDesktop.getInstance().getWorkspace().getProject(curFile.getProject());
-                }
-            }
-        }
-        return activeProject;
-    }
 
     public static void refreshSelectorToolbar(IWorkbenchWindow window) {
         if (window instanceof WorkbenchWindow) {
@@ -80,8 +66,8 @@ public class DataSourceToolbarUtils
                 showConnectionSelector = true;
                 dataSourceContainer = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
             }
-            DBPProject activeProject = getActiveProject(activeEditor, dataSourceContainer);
-            Boolean connectionChangeable = activeProject == null || activeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
+            DBPProject resourceProj = EditorUtils.getFileProject(activeEditor.getEditorInput());
+            Boolean canChangeConn = resourceProj == null || resourceProj.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
 
             for (MTrimElement element : topTrim.getChildren()) {
                 if (CONNECTION_SELECTOR_TOOLBAR_ID.equals(element.getElementId())) {
@@ -103,7 +89,7 @@ public class DataSourceToolbarUtils
 //                                    }
 //                                }
                                 cc.setBackground(bgColor);
-                                cc.setEnabled(showConnectionSelector && connectionChangeable);
+                                cc.setEnabled(showConnectionSelector && canChangeConn);
                             }
                         }
 

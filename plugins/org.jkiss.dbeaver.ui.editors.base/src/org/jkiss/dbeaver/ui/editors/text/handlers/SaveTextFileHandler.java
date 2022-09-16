@@ -19,19 +19,24 @@ package org.jkiss.dbeaver.ui.editors.text.handlers;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 
-public class SaveTextFileHandler extends AbstractTextHandler
-{
+public class SaveTextFileHandler extends AbstractTextHandler {
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         BaseTextEditor editor = BaseTextEditor.getTextEditor(HandlerUtil.getActiveEditor(event));
         if (editor == null) {
             return null;
         }
-        editor.saveToExternalFile();
+
+        DBPProject resourceProject = EditorUtils.getFileProject(editor.getEditorInput());
+        if (resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+            editor.saveToExternalFile();
+        }
         return null;
     }
 

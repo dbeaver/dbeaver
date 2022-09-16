@@ -73,6 +73,16 @@ public class EditorUtils {
     public static final String COLORS_AND_FONTS_PAGE_ID = "org.eclipse.ui.preferencePages.ColorsAndFonts"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(EditorUtils.class);
+    
+    public static DBPProject getFileProject(IEditorInput editorInput) {
+        if (editorInput != null) {
+            IFile curFile = EditorUtils.getFileFromInput(editorInput);
+            if (curFile != null) {
+                return DBPPlatformDesktop.getInstance().getWorkspace().getProject(curFile.getProject());
+            }
+        }
+        return null;
+    }
 
     @Nullable
     public static IFile getFileFromInput(IEditorInput editorInput) {

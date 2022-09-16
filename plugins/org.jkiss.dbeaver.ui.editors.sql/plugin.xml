@@ -367,12 +367,14 @@
 
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.rename" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile">
             <enabledWhen>
-                <with variable="activePart">
-                    <and>
+                <and>
+                    <with variable="activePart">
                         <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
-                        <test property="org.jkiss.dbeaver.core.global.canEditResource"/>
-                    </and>
-                </with>
+                    </with>
+                    <with variable="activeEditor">
+                        <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
+                    </with>
+                </and>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.deleteThisScript" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerDeleteCurrentFile">
@@ -627,26 +629,19 @@
         <!-- Text editor handlers -->
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" class="org.jkiss.dbeaver.ui.editors.text.handlers.SaveTextFileHandler">
             <enabledWhen>
-                <and>
-                    <with variable="activeEditor">
+                <with variable="activeEditor">
+                    <and>
                         <test property="org.jkiss.dbeaver.ui.editors.text.canSave"/>
-                    </with>
-                    <with variable="activePart">
-                        <test property="org.jkiss.dbeaver.core.global.canEditResource"/>
-                    </with>
-                </and>
+                        <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
+                    </and>
+                </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" class="org.jkiss.dbeaver.ui.editors.text.handlers.LoadTextFileHandler">
             <enabledWhen>
-                <and>
-                    <with variable="activeEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.text.canLoad"/>
-                    </with>
-                    <with variable="activePart">
-                        <test property="org.jkiss.dbeaver.core.global.canViewResource"/>
-                    </with>
-                </and>
+                <with variable="activeEditor">
+                    <test property="org.jkiss.dbeaver.ui.editors.text.canLoad"/>
+                </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.morph.delimited.list" class="org.jkiss.dbeaver.ui.editors.text.handlers.MorphDelimitedListHandler">
@@ -827,7 +822,7 @@
                 <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
 
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
-                    <visibleWhen checkEnabled="false"/>
+                    <visibleWhen checkEnabled="true"/>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
                     <visibleWhen checkEnabled="true"/>
@@ -958,7 +953,14 @@
 
                 <separator name="context" visible="true"/>
 
-                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"><parameter name="noCustomLabel" value="true"/></command>
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection">
+                    <parameter name="noCustomLabel" value="true"/>
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable" />
+                        </with>
+                    </visibleWhen>
+                </command>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"><parameter name="noCustomLabel" value="true"/></command>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection"/>
 
@@ -990,6 +992,11 @@
                 <separator name="additions_active_object" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.connection">
                    <parameter name="noCustomLabel" value="true"/>
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable" />
+                        </with>
+                    </visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.schema">
                     <parameter name="noCustomLabel" value="true"/>
