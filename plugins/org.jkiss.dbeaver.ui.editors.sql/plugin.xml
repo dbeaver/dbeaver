@@ -311,7 +311,7 @@
             </activeWhen>
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.canViewResource"/>                    
+                    <test property="org.jkiss.dbeaver.core.global.canViewResource"/>
                 </with>
             </enabledWhen>
         </handler>

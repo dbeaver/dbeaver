@@ -34,9 +34,11 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -79,24 +81,32 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                 Collection<DBNNode> cbNodes = (Collection<DBNNode>) clipboard.getContents(TreeNodeTransfer.getInstance());
                 if (cbNodes != null) {
                     for (DBNNode nodeObject : cbNodes) {
-                        if (nodeObject instanceof DBNDatabaseNode) {
-                            createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
-                        } else if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
-                            pasteResource((DBNResource) nodeObject, (DBNResource) curNode);
+                        if (nodeObject != null) {
+                            DBPProject nodeProject = nodeObject.getOwnerProject();
+                            if (nodeProject == null || nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                                if (nodeObject instanceof DBNDatabaseNode) {
+                                    createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
+                                } else if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
+                                    pasteResource((DBNResource) nodeObject, (DBNResource) curNode);
+                                }
+                            }
                         }
                     }
                 } else if (curNode instanceof DBNResource) {
-                    String[] files = (String[]) clipboard.getContents(FileTransfer.getInstance());
-                    if (files != null) {
-                        for (String fileName : files) {
-                            final File file = new File(fileName);
-                            if (file.exists()) {
-                                pasteResource(file, (DBNResource) curNode);
+                    DBPProject nodeProject = curNode.getOwnerProject();
+                    if (nodeProject == null || nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                        String[] files = (String[]) clipboard.getContents(FileTransfer.getInstance());
+                        if (files != null) {
+                            for (String fileName : files) {
+                                final File file = new File(fileName);
+                                if (file.exists()) {
+                                    pasteResource(file, (DBNResource) curNode);
+                                }
                             }
+                        } else {
+                            log.debug("Paste error: unsupported clipboard format. File or folder were expected.");
+                            Display.getCurrent().beep();
                         }
-                    } else {
-                        log.debug("Paste error: unsupported clipboard format. File or folder were expected.");
-                        Display.getCurrent().beep();
                     }
                 } else {
                     log.debug("Paste error: clipboard contains data in unsupported format");
