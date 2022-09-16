@@ -168,11 +168,6 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     @Override
-    public boolean isModernProject() {
-        return getFormat() == ProjectFormat.MODERN;
-    }
-
-    @Override
     public boolean isEncryptedProject() {
         return false;
     }

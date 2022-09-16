@@ -1130,7 +1130,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     return true;
                 } else {
                     if (secretController instanceof DBSSecretBrowser) {
-                        ((DBSSecretBrowser) secretController).clearAllSecrets();
+                        ((DBSSecretBrowser) secretController).clearAllSecrets(keyPrefix);
                     }
                 }
             }

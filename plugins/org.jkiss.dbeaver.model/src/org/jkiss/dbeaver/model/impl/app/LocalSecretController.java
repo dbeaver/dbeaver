@@ -125,8 +125,8 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
     }
 
     @Override
-    public void clearAllSecrets() throws DBException {
-        getNodeByPath(root).removeNode();
+    public void clearAllSecrets(String keyPrefix) throws DBException {
+        getNodeByPath(root.resolve(keyPrefix)).removeNode();
     }
 
 }
