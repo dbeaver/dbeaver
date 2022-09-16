@@ -24,9 +24,15 @@ public class RegistryMessages extends NLS {
 
     public static String dialog_connection_auth_title;
     public static String dialog_connection_auth_title_for_handler;
+
     public static String dialog_connection_auth_username;
     public static String dialog_connection_auth_password;
     public static String dialog_connection_auth_passphrase;
+
+    public static String dialog_data_source_synchronization_fail_title;
+    public static String dialog_data_source_synchronization_fail_local_message;
+    public static String dialog_data_source_synchronization_fail_remote_message;
+
 
     static {
         // initialize resource bundle
@@ -34,5 +40,6 @@ public class RegistryMessages extends NLS {
     }
 
     private RegistryMessages() {
+        // prevents instantiation
     }
 }

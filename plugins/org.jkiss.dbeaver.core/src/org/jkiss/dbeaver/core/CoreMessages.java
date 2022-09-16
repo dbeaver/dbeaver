@@ -614,6 +614,10 @@ public class CoreMessages extends NLS {
     public static String notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy;
     public static String notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy_text;
 
+    public static String dialog_data_source_synchronize_title;
+    public static String dialog_data_source_synchronize_message;
+    public static String dialog_data_source_synchronize_reply_keep_local_label;
+    public static String dialog_data_source_synchronize_reply_keep_remote_label;
 
     static {
 		// initialize resource bundle

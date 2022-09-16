@@ -950,7 +950,26 @@ public class DataSourceDescriptor
         if (this.getDriver().isSingleConnection()) {
             this.setForceUseSingleConnection(true);
         }
-        this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
+
+        final DBPDataSourceProvider provider = getDriver().getDataSourceProvider();
+        if (provider instanceof DBPDataSourceProviderSynchronizable) {
+            try {
+                monitor.beginTask("Synchronize local data source", 1);
+                ((DBPDataSourceProviderSynchronizable) provider).syncLocalDataSource(monitor, this);
+                monitor.worked(1);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    RegistryMessages.dialog_data_source_synchronization_fail_title,
+                    NLS.bind(RegistryMessages.dialog_data_source_synchronization_fail_local_message, getName()),
+                    e
+                );
+                throw e;
+            } finally {
+                monitor.done();
+            }
+        }
+
+        this.dataSource = provider.openDataSource(monitor, this);
         this.connectTime = new Date();
         monitor.worked(1);
 
@@ -1038,6 +1057,27 @@ public class DataSourceDescriptor
             processEvents(monitor, DBPConnectionEventType.BEFORE_DISCONNECT);
 
             monitor.worked(1);
+
+            final DBPDataSourceProvider provider = driver.getDataSourceProvider();
+            if (provider instanceof DBPDataSourceProviderSynchronizable) {
+                final DBPDataSourceProviderSynchronizable remoteProvider = (DBPDataSourceProviderSynchronizable) provider;
+                if (!remoteProvider.isLocalDataSourceSynchronized(monitor, this)) {
+                    try {
+                        monitor.beginTask("Synchronize remote data source", 1);
+                        remoteProvider.syncRemoteDataSource(monitor, this);
+                        monitor.worked(1);
+                    } catch (DBException e) {
+                        DBWorkbench.getPlatformUI().showError(
+                            RegistryMessages.dialog_data_source_synchronization_fail_title,
+                            NLS.bind(RegistryMessages.dialog_data_source_synchronization_fail_remote_message, dataSource.getName()),
+                            e
+                        );
+                        throw e;
+                    } finally {
+                        monitor.done();
+                    }
+                }
+            }
 
             // Close datasource
             monitor.subTask("Close connection");
