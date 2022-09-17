@@ -468,7 +468,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "auth-profiles")) {
                 String profileId = vmMap.getKey();
                 Map<String, Object> profileMap = vmMap.getValue();
-                DBAAuthProfile profile = new DBAAuthProfile();
+                DBAAuthProfile profile = new DBAAuthProfile(registry.getProject());
                 profile.setProfileId(profileId);
                 profile.setProfileName(JSONUtils.getString(profileMap, RegistryConstants.ATTR_NAME));
                 profile.setAuthModelId(JSONUtils.getString(profileMap, RegistryConstants.ATTR_AUTH_MODEL));
@@ -1028,7 +1028,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
         JSONUtils.field(json, RegistryConstants.ATTR_TYPE, configuration.getType().name());
         JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
         JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
-        if (!CommonUtils.isEmpty(configuration.getUserName()) || !CommonUtils.isEmpty(configuration.getPassword())) {
+        if (!CommonUtils.isEmpty(configuration.getUserName()) ||
+            !CommonUtils.isEmpty(configuration.getPassword()) ||
+            !CommonUtils.isEmpty(configuration.getSecureProperties())
+        ) {
             final SecureCredentials credentials = new SecureCredentials(configuration);
             credentials.setProperties(configuration.getSecureProperties());
             if (configurationManager.isSecure()) {

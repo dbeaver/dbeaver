@@ -95,6 +95,9 @@ public class DataSourceDescriptor
     public static final String CATEGORY_DRIVER = "Driver";
     public static final String CATEGORY_DRIVER_FILES = "Driver Files";
 
+    // Secret key prefix
+    public static final String DATASOURCE_KEY_PREFIX = "/datasources/";
+
     @NotNull
     private final DBPDataSourceRegistry registry;
     @NotNull
@@ -243,6 +246,10 @@ public class DataSourceDescriptor
         }
 
         this.virtualModel = new DBVModel(this, source.virtualModel);
+    }
+
+    private String getSecretKeyId() {
+        return getProject().getName() + DATASOURCE_KEY_PREFIX + getId();
     }
 
     public boolean isDisposed() {
@@ -778,7 +785,7 @@ public class DataSourceDescriptor
     public void persistSecrets() throws DBException {
         DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
         secretController.setSecretValue(
-            SecretKeyConstants.getSecretKeyId(this),
+            getSecretKeyId(),
             saveToSecret()
         );
     }
@@ -787,7 +794,7 @@ public class DataSourceDescriptor
     public void resolveSecrets() throws DBException {
         DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
         String secretValue = secretController.getSecretValue(
-            SecretKeyConstants.getSecretKeyId(this));
+            getSecretKeyId());
         if (secretValue != null) {
             loadFromSecret(secretValue);
         } else {

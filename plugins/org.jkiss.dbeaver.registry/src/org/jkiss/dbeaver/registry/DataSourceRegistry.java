@@ -459,11 +459,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         // Save secrets
         if (getProject().isUseSecretStorage()) {
             try {
-                DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
-                secretController.setSecretValue(
-                    SecretKeyConstants.getSecretKeyId(getProject(), profile),
-                    profile.saveToSecret()
-                );
+                profile.persistSecrets();
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
                 return;
@@ -482,7 +478,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             try {
                 DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
                 secretController.setSecretValue(
-                    SecretKeyConstants.getSecretKeyId(getProject(), profile),
+                    profile.getSecretKeyId(),
                     null);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing credentials from secret storage", e);

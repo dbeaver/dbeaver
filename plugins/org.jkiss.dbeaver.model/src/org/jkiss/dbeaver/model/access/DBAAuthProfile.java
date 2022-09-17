@@ -17,9 +17,13 @@
 
 package org.jkiss.dbeaver.model.access;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBInfoUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
+import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -30,22 +34,36 @@ import java.util.Map;
  * Auth profile.
  * Authentication properties.
  */
-public class DBAAuthProfile extends DBPConfigurationProfile {
+public class DBAAuthProfile extends DBPConfigurationProfile implements DBPSecretHolder {
 
+    // Secret key prefix
+    public static final String PROFILE_KEY_PREFIX = "/profiles/";
+
+    private final DBPProject project;
     private String authModelId;
     private String userName;
     private String userPassword;
     private boolean savePassword;
 
-    public DBAAuthProfile() {
+    public DBAAuthProfile(DBPProject project) {
+        this.project = project;
     }
 
     public DBAAuthProfile(DBAAuthProfile source) {
         super(source);
+        this.project = source.project;
         this.authModelId = source.authModelId;
         this.userName = source.userName;
         this.userPassword = source.userPassword;
         this.savePassword = source.savePassword;
+    }
+
+    public String getSecretKeyId() {
+        return project.getName() + PROFILE_KEY_PREFIX + getProfileId();
+    }
+
+    public DBPProject getProject() {
+        return project;
     }
 
     public String getAuthModelId() {
@@ -84,6 +102,20 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
         return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(authModelId);
     }
 
+    @Override
+    public void persistSecrets() throws DBException {
+        DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+        secretController.setSecretValue(
+            getSecretKeyId(),
+            saveToSecret()
+        );
+    }
+
+    @Override
+    public void resolveSecrets() throws DBException {
+
+    }
+
     public String saveToSecret() {
         Map<String, Object> props = new LinkedHashMap<>();
 
@@ -104,4 +136,26 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
         }
         return DBInfoUtils.SECRET_GSON.toJson(props);
     }
+
+    public String loadFromSecret(String secretValue) {
+        Map<String, Object> props = new LinkedHashMap<>();
+
+        // Info fields (we don't use them anyhow)
+        props.put("profile-id", getProfileId());
+        props.put("profile-name", getProfileName());
+
+        // Primary props
+        if (getUserName() != null) {
+            props.put("user", getUserName());
+        }
+        if (getUserPassword() != null) {
+            props.put("password", getUserPassword());
+        }
+        // Additional auth props
+        if (!CommonUtils.isEmpty(getProperties())) {
+            props.put("properties", getProperties());
+        }
+        return DBInfoUtils.SECRET_GSON.toJson(props);
+    }
+
 }
