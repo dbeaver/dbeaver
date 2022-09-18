@@ -18,16 +18,23 @@ package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBInfoUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.io.StringReader;
+import java.util.*;
 
 /**
  * Network configuration profile
  */
 public class DBWNetworkProfile extends DBPConfigurationProfile {
+
+    // Secret key prefix
+    public static final String PROFILE_KEY_PREFIX = "/network-profile/";
 
     @NotNull
     private final List<DBWHandlerConfiguration> configurations = new ArrayList<>();
@@ -37,7 +44,8 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         return configurations;
     }
 
-    public DBWNetworkProfile() {
+    public DBWNetworkProfile(DBPProject project) {
+        super(project);
     }
 
     public void updateConfiguration(@NotNull DBWHandlerConfiguration cfg) {
@@ -59,6 +67,66 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
             }
         }
         return null;
+    }
+
+    @Nullable
+    public DBWHandlerConfiguration getConfiguration(String configId) {
+        for (DBWHandlerConfiguration  cfg : configurations) {
+            if (Objects.equals(cfg.getId(), configId)) {
+                return cfg;
+            }
+        }
+        return null;
+    }
+
+    public String getSecretKeyId() {
+        return getProject().getName() + PROFILE_KEY_PREFIX + getProfileId();
+    }
+
+    @Override
+    public void persistSecrets(DBSSecretController secretController) throws DBException {
+        Map<String, Object> props = new LinkedHashMap<>();
+
+        // Info fields (we don't use them anyhow)
+        props.put("profile-id", getProfileId());
+        props.put("profile-name", getProfileName());
+
+        List<Map<String, Object>> handlersConfigs = new ArrayList<>();
+        for (DBWHandlerConfiguration cfg : configurations) {
+            Map<String, Object> hcProps = cfg.saveToMap();
+            if (!hcProps.isEmpty()) {
+                hcProps.put("id", cfg.getId());
+                handlersConfigs.add(hcProps);
+            }
+        }
+        if (!handlersConfigs.isEmpty()) {
+            props.put("handlers", handlersConfigs);
+        }
+
+        String secretValue = DBInfoUtils.SECRET_GSON.toJson(props);
+
+        secretController.setSecretValue(
+            getSecretKeyId(),
+            secretValue);
+    }
+
+    @Override
+    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+        String secretValue = secretController.getSecretValue(getSecretKeyId());
+        if (secretValue == null) {
+            return;
+        }
+
+        Map<String, Object> props = JSONUtils.parseMap(DBInfoUtils.SECRET_GSON, new StringReader(secretValue));
+
+        List<Map<String, Object>> handlerConfigs = JSONUtils.getObjectList(props, "handlers");
+        for (Map<String, Object> hc : handlerConfigs) {
+            String configId = JSONUtils.getString(hc, "id");
+            DBWHandlerConfiguration configuration = getConfiguration(configId);
+            if (configuration != null) {
+                configuration.loadFromMap(hc);
+            }
+        }
     }
 
 }

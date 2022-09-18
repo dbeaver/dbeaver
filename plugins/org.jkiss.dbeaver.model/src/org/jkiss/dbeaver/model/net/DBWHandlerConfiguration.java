@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -199,6 +200,27 @@ public class DBWHandlerConfiguration {
     public void setSecureProperties(@NotNull Map<String, String> secureProperties) {
         this.secureProperties.clear();
         this.secureProperties.putAll(secureProperties);
+    }
+
+    public Map<String, Object> saveToMap() {
+        Map<String, Object> handlerProps = new LinkedHashMap<>();
+        if (!CommonUtils.isEmpty(userName)) {
+            handlerProps.put("user", userName);
+        }
+        if (!CommonUtils.isEmpty(password)) {
+            handlerProps.put("password", password);
+        }
+        if (!CommonUtils.isEmpty(secureProperties)) {
+            handlerProps.put("properties", secureProperties);
+        }
+        return handlerProps;
+    }
+
+    public void loadFromMap(Map<String, Object> handlerMap) {
+        userName = JSONUtils.getString(handlerMap, "user");
+        password = JSONUtils.getString(handlerMap, "password");
+        secureProperties.clear();
+        secureProperties.putAll(JSONUtils.deserializeStringMap(handlerMap, "properties"));
     }
 
     @Override

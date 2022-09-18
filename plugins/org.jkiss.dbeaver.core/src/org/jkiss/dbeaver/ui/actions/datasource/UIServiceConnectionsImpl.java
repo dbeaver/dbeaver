@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
@@ -42,7 +43,8 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
     public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer, String defaultPageName) {
         if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
             try {
-                dataSourceContainer.resolveSecrets();
+                DBSSecretController secretController = DBSSecretController.getSessionSecretController(dataSourceContainer.getProject().getWorkspaceSession());
+                dataSourceContainer.resolveSecrets(secretController);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Secret resolve", "Error loading connection secrets", e);
             }

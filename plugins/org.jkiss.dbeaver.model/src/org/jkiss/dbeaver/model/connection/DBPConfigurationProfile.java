@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
@@ -25,7 +27,9 @@ import java.util.Map;
 /**
  * Configuration profile.
  */
-public class DBPConfigurationProfile {
+public abstract class DBPConfigurationProfile implements DBPSecretHolder {
+
+    private final DBPProject project;
 
     private String profileId;
     private String profileName;
@@ -34,16 +38,22 @@ public class DBPConfigurationProfile {
     // Properties. Basically JSON
     private Map<String, String> properties = new LinkedHashMap<>();
 
-    public DBPConfigurationProfile() {
+    public DBPConfigurationProfile(DBPProject project) {
+        this.project = project;
     }
 
     public DBPConfigurationProfile(DBPConfigurationProfile source) {
+        this.project = source.project;
         this.profileId = source.profileId;
         this.profileName = source.profileName;
         this.profileDescription = source.profileDescription;
         if (!CommonUtils.isEmpty(source.properties)) {
             this.properties = new LinkedHashMap<>(source.properties);
         }
+    }
+
+    public DBPProject getProject() {
+        return project;
     }
 
     public String getProfileId() {

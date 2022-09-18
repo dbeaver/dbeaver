@@ -449,7 +449,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(jsonMap, "network-profiles")) {
                 String profileId = vmMap.getKey();
                 Map<String, Object> profileMap = vmMap.getValue();
-                DBWNetworkProfile profile = new DBWNetworkProfile();
+                DBWNetworkProfile profile = new DBWNetworkProfile(registry.getProject());
                 profile.setProfileName(profileId);
                 profile.setProfileName(profileId);
                 profile.setProperties(JSONUtils.deserializeStringMap(profileMap, "properties"));

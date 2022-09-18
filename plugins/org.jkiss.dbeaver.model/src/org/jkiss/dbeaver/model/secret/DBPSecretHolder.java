@@ -23,7 +23,8 @@ import org.jkiss.dbeaver.DBException;
  */
 public interface DBPSecretHolder {
 
-    void persistSecrets() throws DBException;
-    void resolveSecrets() throws DBException;
+    void persistSecrets(DBSSecretController secretController) throws DBException;
+
+    void resolveSecrets(DBSSecretController secretController) throws DBException;
 
 }

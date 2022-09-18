@@ -764,7 +764,9 @@ public class DataSourceDescriptor
         // Save secrets
         if (getProject().isUseSecretStorage()) {
             try {
-                persistSecrets();
+                DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+
+                persistSecrets(secretController);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
                 return false;
@@ -782,8 +784,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void persistSecrets() throws DBException {
-        DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+    public void persistSecrets(DBSSecretController secretController) throws DBException {
         secretController.setSecretValue(
             getSecretKeyId(),
             saveToSecret()
@@ -791,8 +792,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void resolveSecrets() throws DBException {
-        DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+    public void resolveSecrets(DBSSecretController secretController) throws DBException {
         String secretValue = secretController.getSecretValue(
             getSecretKeyId());
         if (secretValue != null) {
@@ -818,10 +818,12 @@ public class DataSourceDescriptor
             log.debug("Can't connect - already connected");
             return false;
         }
+        DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
         if (getProject().isUseSecretStorage()) {
             // Resolve secrets
-            resolveSecrets();
+            resolveSecrets(secretController);
         }
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
@@ -869,6 +871,7 @@ public class DataSourceDescriptor
                     // Update config from profile
                     DBWNetworkProfile profile = registry.getNetworkProfile(resolvedConnectionInfo.getConfigProfileName());
                     if (profile != null) {
+                        profile.resolveSecrets(secretController);
                         for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
                             if (handlerCfg.isEnabled()) {
                                 resolvedConnectionInfo.updateHandler(new DBWHandlerConfiguration(handlerCfg));
@@ -1689,16 +1692,7 @@ public class DataSourceDescriptor
         // Handlers
         List<Map<String, Object>> handlersConfigs = new ArrayList<>();
         for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
-            Map<String, Object> handlerProps = new LinkedHashMap<>();
-            if (!CommonUtils.isEmpty(hc.getUserName())) {
-                handlerProps.put(RegistryConstants.ATTR_USER, hc.getUserName());
-            }
-            if (!CommonUtils.isEmpty(hc.getPassword())) {
-                handlerProps.put(RegistryConstants.ATTR_PASSWORD, hc.getPassword());
-            }
-            if (!CommonUtils.isEmpty(hc.getSecureProperties())) {
-                handlerProps.put(RegistryConstants.TAG_PROPERTIES, hc.getSecureProperties());
-            }
+            Map<String, Object> handlerProps = hc.saveToMap();
             if (!handlerProps.isEmpty()) {
                 handlerProps.put(RegistryConstants.ATTR_ID, hc.getHandlerDescriptor().getId());
                 handlersConfigs.add(handlerProps);

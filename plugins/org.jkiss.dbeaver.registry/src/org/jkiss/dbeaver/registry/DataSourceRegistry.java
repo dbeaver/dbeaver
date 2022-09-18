@@ -420,6 +420,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public void removeNetworkProfile(DBWNetworkProfile profile) {
+        try {
+            DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+            secretController.setSecretValue(
+                profile.getSecretKeyId(),
+                null);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing network profile credentials from secret storage", e);
+        }
         networkProfiles.remove(profile);
     }
 
@@ -456,16 +464,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public void updateAuthProfile(DBAAuthProfile profile) {
-        // Save secrets
-        if (getProject().isUseSecretStorage()) {
-            try {
-                profile.persistSecrets();
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
-                return;
-            }
-        }
-
         synchronized (authProfiles) {
             authProfiles.put(profile.getProfileId(), profile);
         }
@@ -481,7 +479,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                     profile.getSecretKeyId(),
                     null);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing credentials from secret storage", e);
+                DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing auth profile credentials from secret storage", e);
             }
         }
         synchronized (authProfiles) {
@@ -887,6 +885,32 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 throw (DBException) lastError;
             }
             throw new DBException(lastError.getMessage(), lastError.getCause());
+        }
+    }
+
+    @Override
+    public void persistSecrets(DBSSecretController secretController) throws DBException {
+        for (DBPDataSourceContainer ds : getDataSources()) {
+            ds.persistSecrets(secretController);
+        }
+        for (DBWNetworkProfile np : getNetworkProfiles()) {
+            np.persistSecrets(secretController);
+        }
+        for (DBAAuthProfile ap : getAllAuthProfiles()) {
+            ap.persistSecrets(secretController);
+        }
+    }
+
+    @Override
+    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+        for (DBPDataSourceContainer ds : getDataSources()) {
+            ds.resolveSecrets(secretController);
+        }
+        for (DBWNetworkProfile np : getNetworkProfiles()) {
+            np.resolveSecrets(secretController);
+        }
+        for (DBAAuthProfile ap : getAllAuthProfiles()) {
+            ap.resolveSecrets(secretController);
         }
     }
 

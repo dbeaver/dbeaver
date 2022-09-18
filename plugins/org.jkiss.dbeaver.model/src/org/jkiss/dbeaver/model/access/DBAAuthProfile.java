@@ -22,11 +22,12 @@ import org.jkiss.dbeaver.model.DBInfoUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
-import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.StringReader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -34,24 +35,22 @@ import java.util.Map;
  * Auth profile.
  * Authentication properties.
  */
-public class DBAAuthProfile extends DBPConfigurationProfile implements DBPSecretHolder {
+public class DBAAuthProfile extends DBPConfigurationProfile {
 
     // Secret key prefix
-    public static final String PROFILE_KEY_PREFIX = "/profiles/";
+    public static final String PROFILE_KEY_PREFIX = "/auth-profile/";
 
-    private final DBPProject project;
     private String authModelId;
     private String userName;
     private String userPassword;
     private boolean savePassword;
 
     public DBAAuthProfile(DBPProject project) {
-        this.project = project;
+        super(project);
     }
 
     public DBAAuthProfile(DBAAuthProfile source) {
         super(source);
-        this.project = source.project;
         this.authModelId = source.authModelId;
         this.userName = source.userName;
         this.userPassword = source.userPassword;
@@ -59,11 +58,7 @@ public class DBAAuthProfile extends DBPConfigurationProfile implements DBPSecret
     }
 
     public String getSecretKeyId() {
-        return project.getName() + PROFILE_KEY_PREFIX + getProfileId();
-    }
-
-    public DBPProject getProject() {
-        return project;
+        return getProject().getName() + PROFILE_KEY_PREFIX + getProfileId();
     }
 
     public String getAuthModelId() {
@@ -103,59 +98,43 @@ public class DBAAuthProfile extends DBPConfigurationProfile implements DBPSecret
     }
 
     @Override
-    public void persistSecrets() throws DBException {
-        DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+    public void persistSecrets(DBSSecretController secretController) throws DBException {
+        Map<String, Object> props = new LinkedHashMap<>();
+
+        // Info fields (we don't use them anyhow)
+        props.put("profile-id", getProfileId());
+        props.put("profile-name", getProfileName());
+
+        // Primary props
+        if (getUserName() != null) {
+            props.put("user", getUserName());
+        }
+        if (getUserPassword() != null) {
+            props.put("password", getUserPassword());
+        }
+        // Additional auth props
+        if (!CommonUtils.isEmpty(getProperties())) {
+            props.put("properties", getProperties());
+        }
+        String secretValue = DBInfoUtils.SECRET_GSON.toJson(props);
+
         secretController.setSecretValue(
             getSecretKeyId(),
-            saveToSecret()
-        );
+            secretValue);
     }
 
     @Override
-    public void resolveSecrets() throws DBException {
-
-    }
-
-    public String saveToSecret() {
-        Map<String, Object> props = new LinkedHashMap<>();
-
-        // Info fields (we don't use them anyhow)
-        props.put("profile-id", getProfileId());
-        props.put("profile-name", getProfileName());
-
-        // Primary props
-        if (getUserName() != null) {
-            props.put("user", getUserName());
+    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+        String secretValue = secretController.getSecretValue(
+            getSecretKeyId());
+        if (secretValue == null) {
+            return;
         }
-        if (getUserPassword() != null) {
-            props.put("password", getUserPassword());
-        }
-        // Additional auth props
-        if (!CommonUtils.isEmpty(getProperties())) {
-            props.put("properties", getProperties());
-        }
-        return DBInfoUtils.SECRET_GSON.toJson(props);
-    }
 
-    public String loadFromSecret(String secretValue) {
-        Map<String, Object> props = new LinkedHashMap<>();
-
-        // Info fields (we don't use them anyhow)
-        props.put("profile-id", getProfileId());
-        props.put("profile-name", getProfileName());
-
-        // Primary props
-        if (getUserName() != null) {
-            props.put("user", getUserName());
-        }
-        if (getUserPassword() != null) {
-            props.put("password", getUserPassword());
-        }
-        // Additional auth props
-        if (!CommonUtils.isEmpty(getProperties())) {
-            props.put("properties", getProperties());
-        }
-        return DBInfoUtils.SECRET_GSON.toJson(props);
+        Map<String, Object> props = JSONUtils.parseMap(DBInfoUtils.SECRET_GSON, new StringReader(secretValue));
+        userName = JSONUtils.getString(props, "user");
+        userPassword = JSONUtils.getString(props, "password");
+        setProperties(JSONUtils.deserializeStringMap(props, "properties"));
     }
 
 }
