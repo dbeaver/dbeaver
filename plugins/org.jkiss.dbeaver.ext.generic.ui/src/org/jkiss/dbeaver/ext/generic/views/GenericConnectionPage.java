@@ -85,11 +85,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     private static final String GROUP_PATH = "path"; //$NON-NLS-1$
     private static final String GROUP_LOGIN = "login"; //$NON-NLS-1$
     private boolean activated;
-    private DriverPropertiesDialogPage driverPropertiesDialogPage;
-
-    public DriverPropertiesDialogPage getDriverPropertiesDialogPage() {
-        return driverPropertiesDialogPage;
-    }
 
     @Override
     public void createControl(Composite composite)
