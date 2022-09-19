@@ -28,29 +28,11 @@ import java.util.Set;
  */
 public class RMProject extends RMObject {
 
-    public static final String PREFIX_GLOBAL = "g";
-    public static final String PREFIX_SHARED = "s";
-    public static final String PREFIX_USER = "u";
-    public static final Type[] SHARED_PROJECTS = {Type.GLOBAL, Type.SHARED};
+    private static final RMProjectType[] SHARED_PROJECTS = {RMProjectType.GLOBAL, RMProjectType.SHARED};
 
-    public enum Type {
-        GLOBAL(PREFIX_GLOBAL),
-        SHARED(PREFIX_SHARED),
-        USER(PREFIX_USER);
-
-        private final String prefix;
-
-        Type(String prefix) {
-            this.prefix = prefix;
-        }
-
-        public String getPrefix() {
-            return prefix;
-        }
-    }
     private String id;
     private String description;
-    private Type type;
+    private RMProjectType type;
     private Long createTime;
     private String creator;
     private Set<String> projectPermissions;
@@ -62,7 +44,7 @@ public class RMProject extends RMObject {
         String id,
         String name,
         String description,
-        Type type,
+        RMProjectType type,
         Long createTime,
         String creator,
         Set<String> projectPermissions
@@ -119,11 +101,11 @@ public class RMProject extends RMObject {
     }
 
     @Property
-    public Type getType() {
+    public RMProjectType getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(RMProjectType type) {
         this.type = type;
     }
 

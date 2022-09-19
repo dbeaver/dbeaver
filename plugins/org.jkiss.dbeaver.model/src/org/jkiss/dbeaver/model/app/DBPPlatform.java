@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.task.DBTTaskController;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -98,6 +99,12 @@ public interface DBPPlatform {
      */
     @NotNull
     DBFileController getFileController();
+
+    /**
+     * Task controller can read and change tasks configuration file
+     */
+    @NotNull
+    DBTTaskController getTaskController();
 
     @Deprecated
     @NotNull

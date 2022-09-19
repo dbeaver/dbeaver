@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
@@ -68,6 +69,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private final List<IPluginService> activatedServices = new ArrayList<>();
     private DBConfigurationController configurationController;
     private DBFileController localFileController;
+    private DBTTaskController localTaskController;
 
     protected void initialize() {
         log.debug("Initialize base platform...");
@@ -190,6 +192,25 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @Override
     public Path getLocalConfigurationFile(String fileName) {
         return getProductPlugin().getStateLocation().toFile().toPath().resolve(fileName);
+    }
+
+    @NotNull
+    @Override
+    public DBTTaskController getTaskController() {
+        if (localTaskController == null) {
+            localTaskController = createTaskController();
+        }
+        return localTaskController;
+    }
+
+    @Override
+    public DBTTaskController createTaskController() {
+        DBPApplication application = getApplication();
+        if (application instanceof DBPApplicationConfigurator) {
+            return ((DBPApplicationConfigurator) application).createTaskController();
+        } else {
+            return new LocalTaskController();
+        }
     }
 
     protected abstract Plugin getProductPlugin();

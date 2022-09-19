@@ -14,22 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.rm;
 
-package org.jkiss.dbeaver.model.app;
+import org.jkiss.code.NotNull;
 
-import org.jkiss.dbeaver.model.DBConfigurationController;
-import org.jkiss.dbeaver.model.DBFileController;
-import org.jkiss.dbeaver.model.task.DBTTaskController;
+public enum RMProjectType {
 
-/**
- * DB desktop application.
- */
-public interface DBPApplicationConfigurator {
+    GLOBAL("g"),
+    SHARED("s"),
+    USER("u");
 
-    DBConfigurationController createConfigurationController();
+    private final String prefix;
 
-    DBFileController createFileController();
+    RMProjectType(String prefix) {
+        this.prefix = prefix;
+    }
 
-    DBTTaskController createTaskController();
+    public String getPrefix() {
+        return prefix;
+    }
 
+    public static RMProjectType getByPrefix(@NotNull String prefix) {
+        for (RMProjectType value : values()) {
+            if (value.getPrefix().equals(prefix)) {
+                return value;
+            }
+        }
+        // Default value
+        return USER;
+    }
 }

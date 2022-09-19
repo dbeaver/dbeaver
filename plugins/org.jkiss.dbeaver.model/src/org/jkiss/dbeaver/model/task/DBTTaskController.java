@@ -14,22 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.task;
 
-package org.jkiss.dbeaver.model.app;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPObjectController;
 
-import org.jkiss.dbeaver.model.DBConfigurationController;
-import org.jkiss.dbeaver.model.DBFileController;
-import org.jkiss.dbeaver.model.task.DBTTaskController;
+public interface DBTTaskController extends DBPObjectController {
 
-/**
- * DB desktop application.
- */
-public interface DBPApplicationConfigurator {
+    String loadTaskConfigurationFile(@NotNull String projectId, @NotNull String filePath) throws DBException;
 
-    DBConfigurationController createConfigurationController();
+    void saveTaskConfigurationFile(
+        @NotNull String projectId,
+        @NotNull String filePath,
+        @NotNull String data) throws DBException;
 
-    DBFileController createFileController();
-
-    DBTTaskController createTaskController();
-
+    void deleteFile(@NotNull String projectId, @NotNull String filePath) throws DBException;
 }
