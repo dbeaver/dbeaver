@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.navigator.project;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -106,7 +105,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
             }
         });
         
-        lockPlaceholder = UIUtils.createLabel(treeContainer, UIIcon.SQL_READONLY2);
+        lockPlaceholder = UIUtils.createLabel(treeContainer, UIIcon.READONLY_RESOURCES);
         lockPlaceholder.setAlignment(SWT.CENTER);
         lockPlaceholder.setVisible(false);
         lockPlaceholderLayoutInfo = new GridData(SWT.CENTER, SWT.CENTER, true, true);

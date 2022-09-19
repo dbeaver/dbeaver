@@ -75,7 +75,7 @@ public class EditorUtils {
     private static final Log log = Log.getLog(EditorUtils.class);
 
     @Nullable
-    public static DBPProject getFileProject(IEditorInput editorInput) {
+    public static DBPProject getFileProject(@Nullable IEditorInput editorInput) {
         if (editorInput != null) {
             IFile curFile = EditorUtils.getFileFromInput(editorInput);
             if (curFile != null) {

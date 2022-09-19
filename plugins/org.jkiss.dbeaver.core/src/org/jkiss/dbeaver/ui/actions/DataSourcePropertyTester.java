@@ -70,7 +70,7 @@ public class DataSourcePropertyTester extends PropertyTester {
             DBCExecutionContext context = contextProvider.getExecutionContext();
             @Nullable
             DBPProject resourceProject = receiver instanceof IEditorPart
-                ? EditorUtils.getFileProject(((IEditorPart)receiver).getEditorInput())
+                ? EditorUtils.getFileProject(((IEditorPart) receiver).getEditorInput())
                 : null;
             
             switch (property) {
