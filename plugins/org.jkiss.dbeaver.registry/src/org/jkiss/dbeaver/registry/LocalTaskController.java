@@ -29,15 +29,7 @@ import java.nio.file.Path;
 
 public class LocalTaskController implements DBTTaskController {
 
-    private static final String METADATA_FOLDER = ".dbeaver";
-
-    private Path tasksProjectPath;
-
     public LocalTaskController() {
-    }
-
-    protected void setTasksProjectPath(@NotNull Path tasksProjectPath) {
-        this.tasksProjectPath = tasksProjectPath;
     }
 
     @Override
@@ -81,19 +73,13 @@ public class LocalTaskController implements DBTTaskController {
     }
 
     @NotNull
-    private Path getMetadataFolder(@NotNull String projectId, boolean create) throws DBException {
-        Path parent;
-        if (tasksProjectPath != null) {
-            Path metadataFolder = tasksProjectPath.resolve(METADATA_FOLDER);
-            createFolder(create, metadataFolder);
-            return metadataFolder;
-        }
-        parent = DBWorkbench.getPlatform().getWorkspace().getProject(projectId).getMetadataFolder(create);
+    public Path getMetadataFolder(@NotNull String projectId, boolean create) throws DBException {
+        Path parent = DBWorkbench.getPlatform().getWorkspace().getProject(projectId).getMetadataFolder(create);
         createFolder(create, parent);
         return parent;
     }
 
-    private void createFolder(boolean create, Path metadataFolder) throws DBException {
+    protected void createFolder(boolean create, Path metadataFolder) throws DBException {
         if (create && Files.notExists(metadataFolder)) {
             try {
                 Files.createDirectories(metadataFolder);

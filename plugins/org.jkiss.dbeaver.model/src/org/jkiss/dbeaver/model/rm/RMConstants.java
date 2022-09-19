@@ -32,4 +32,7 @@ public interface RMConstants  {
     String PERMISSION_RM_ADMIN = "rm-admin";
 
     String PERMISSION_DRIVER_MANAGER = "driver-manager";
+
+    String PERMISSION_PROJECT_TASKS_VIEW = "project-task-view";
+    String PERMISSION_PROJECT_TASKS_EDIT = "project-task-edit";
 }

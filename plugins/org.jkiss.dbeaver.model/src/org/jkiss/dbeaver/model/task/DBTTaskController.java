@@ -22,12 +22,36 @@ import org.jkiss.dbeaver.model.DBPObjectController;
 
 public interface DBTTaskController extends DBPObjectController {
 
+    /**
+     * Method to load (read) tasks configuration file (usually tasks.json). Task config can be in the local workspace + project
+     * Or it can be on the remote workspace + project
+     *
+     * @param projectId to find proper project
+     * @param filePath file name + extension
+     * @return data from task configuration file in the String format
+     * @throws DBException returns in case of file loading
+     */
     String loadTaskConfigurationFile(@NotNull String projectId, @NotNull String filePath) throws DBException;
 
+    /**
+     * Method saves task configuration file. After task creation/editing as example
+     *
+     * @param projectId to find proper project task config
+     * @param filePath file name + extension
+     * @param data for update
+     * @throws DBException returns in case of file loading/saving
+     */
     void saveTaskConfigurationFile(
         @NotNull String projectId,
         @NotNull String filePath,
         @NotNull String data) throws DBException;
 
+    /**
+     * This method deletes the task configuration file in a case when we do not have any tasks/tasks folder in the project.
+     *
+     * @param projectId to find proper project task config
+     * @param filePath file name + extension
+     * @throws DBException returns in case of file loading/deleting
+     */
     void deleteFile(@NotNull String projectId, @NotNull String filePath) throws DBException;
 }
