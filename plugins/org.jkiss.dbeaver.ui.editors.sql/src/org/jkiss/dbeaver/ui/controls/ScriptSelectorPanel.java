@@ -38,11 +38,14 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -77,6 +80,8 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
     private final SQLNavigatorContext navigatorContext;
     @NotNull
     private final IFolder rootFolder;
+    @Nullable
+    private final DBPProject project;
 
     @NotNull
     private final List<ResourceInfo> scriptFiles;
@@ -100,8 +105,9 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         this.workbenchWindow = workbenchWindow;
         this.navigatorContext = navigatorContext;
         this.rootFolder = rootFolder;
+        this.project = navigatorContext.getProject();
         try {
-            this.projectScriptFiles = SQLEditorUtils.getScriptsFromProject(navigatorContext.getProject());
+            this.projectScriptFiles = SQLEditorUtils.getScriptsFromProject(this.project);
         } catch (CoreException e) {
             log.error(e);
         }
@@ -160,26 +166,31 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         childComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         composite.setForeground(fg);
         composite.setBackground(bg);
-        Button newButton = new Button(childComposite, SWT.PUSH | SWT.FLAT);
-        Button projectCheckbox = UIUtils.createCheckbox(childComposite, SQLEditorMessages.script_selector_project_scripts, false);
-        newButton.setText(SQLEditorMessages.script_selector_create_script);
-        newButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-
-                IFile scriptFile;
-                try {
-                    scriptFile = SQLEditorUtils.createNewScript(
-                        DBPPlatformDesktop.getInstance().getWorkspace().getProject(rootFolder.getProject()),
-                        rootFolder,
-                        navigatorContext);
-                    SQLEditorHandlerOpenEditor.openResource(scriptFile, navigatorContext);
-                } catch (CoreException ex) {
-                    log.error(ex);
+        if (this.project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+            Button newButton = new Button(childComposite, SWT.PUSH | SWT.FLAT);
+            newButton.setText(SQLEditorMessages.script_selector_create_script);
+            newButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+    
+                    IFile scriptFile;
+                    try {
+                        scriptFile = SQLEditorUtils.createNewScript(
+                            DBPPlatformDesktop.getInstance().getWorkspace().getProject(rootFolder.getProject()),
+                            rootFolder,
+                            navigatorContext);
+                        SQLEditorHandlerOpenEditor.openResource(scriptFile, navigatorContext);
+                    } catch (CoreException ex) {
+                        log.error(ex);
+                    }
+                    cancelPressed();
                 }
-                cancelPressed();
-            }
-        });
+            });
+            closeOnFocusLost(newButton);
+        } else {
+            UIUtils.createPlaceholder(childComposite, 1);
+        }
+        Button projectCheckbox = UIUtils.createCheckbox(childComposite, SQLEditorMessages.script_selector_project_scripts, false);
         ((GridData) UIUtils.createHorizontalLine(composite).getLayoutData()).horizontalSpan = 2;
         Tree scriptTree = new Tree(composite, SWT.SINGLE | SWT.FULL_SELECTION);
         final GridData gd = new GridData(GridData.FILL_BOTH);
@@ -365,7 +376,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             }
         });
 
-        closeOnFocusLost(patternText, scriptViewer.getTree(), newButton);
+        closeOnFocusLost(patternText, scriptViewer.getTree());
 
         useProjectScripts(projectCheckbox.getSelection());
         UIUtils.expandAll(scriptViewer);

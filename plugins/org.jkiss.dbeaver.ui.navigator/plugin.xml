@@ -110,13 +110,13 @@
             class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             namespace="org.jkiss.dbeaver.core.global"
-            properties="standalone,hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects,canEditResource,canViewResource"
+            properties="standalone,hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects,canEditResource,currentProjectResourceEditable,currentProjectResourceViewable"
             type="java.lang.Object"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             namespace="org.jkiss.dbeaver.core.object"
-            properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter,supportsIndexCreate,supportsConstraintCreate,projectResourceEditable"
+            properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter,supportsIndexCreate,supportsConstraintCreate,projectResourceEditable,projectResourceViewable"
             type="org.jkiss.dbeaver.model.DBPNamedObject"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.ModelPropertyTester"
@@ -340,8 +340,16 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
-
+                        <or>
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNNodeWithResource">
+                                <test property="org.jkiss.dbeaver.core.object.projectResourceViewable"/>
+                            </adapt>
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
+                                <not>
+                                    <adapt type="org.jkiss.dbeaver.model.navigator.DBNNodeWithResource"/>
+                                </not>
+                            </adapt>
+                        </or>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -444,10 +452,7 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
-                            <and>
-                                <test property="org.jkiss.dbeaver.core.object.canPaste"/>
-                                <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
-                            </and>
+                            <test property="org.jkiss.dbeaver.core.object.canPaste"/>
                         </adapt>
                     </iterate>
                 </with>
@@ -461,10 +466,7 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
-                            <and>
-                                <test property="org.jkiss.dbeaver.core.object.canDelete"/>
-                                <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
-                            </and>
+                            <test property="org.jkiss.dbeaver.core.object.canDelete"/>
                         </adapt>
                     </iterate>
                 </with>
@@ -494,12 +496,9 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <and>
-                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
-                                <test property="org.jkiss.dbeaver.core.object.canRename"/>
-                            </adapt>
-                            <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
-                        </and>
+                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
+                            <test property="org.jkiss.dbeaver.core.object.canRename"/>
+                        </adapt>
                     </iterate>
                 </with>
             </enabledWhen>

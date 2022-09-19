@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.erd.ui.navigator;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -43,8 +44,9 @@ public class DBNDiagramFolder extends DBNResource {
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
-    public DBPImage getNodeIcon() {
+    public DBPImage getResourceNodeIcon() {
         IResource resource = getResource();
         if (resource != null && isRootResource(resource)) {
             if (image == null) {
@@ -52,7 +54,7 @@ public class DBNDiagramFolder extends DBNResource {
             }
             return image;
         }
-        return super.getNodeIcon();
+        return super.getResourceNodeIcon();
     }
 
     @Override

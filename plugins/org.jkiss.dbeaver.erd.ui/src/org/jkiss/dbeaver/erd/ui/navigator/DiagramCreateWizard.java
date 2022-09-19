@@ -26,6 +26,7 @@ import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.erd.model.DiagramObjectCollector;
 import org.jkiss.dbeaver.erd.ui.internal.ERDUIMessages;
 import org.jkiss.dbeaver.erd.ui.model.DiagramCollectSettingsDefault;
@@ -51,12 +52,15 @@ import java.util.List;
 
 public class DiagramCreateWizard extends Wizard implements INewWizard {
 
+    @Nullable
     private IFolder folder;
     private EntityDiagram diagram = new EntityDiagram(null, "", new ERDContentProviderDecorated(), new ERDDecoratorDefault());
     private DiagramCreateWizardPage pageContent;
 	private String errorMessage;
     private IStructuredSelection entitySelection;
-
+    @Nullable
+    private DBPProject project;
+    
     public DiagramCreateWizard() {
 	}
 
@@ -90,13 +94,16 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
                 }
             }
         }
-        this.folder = diagramFolder;
+        if (diagramFolder != null) {
+            this.folder = diagramFolder;
+            this.project = diagramFolder == null ? null : DBPPlatformDesktop.getInstance().getWorkspace().getProject(diagramFolder.getProject());
+        }
     }
 
     @Override
     public void addPages() {
         super.addPages();
-        pageContent = new DiagramCreateWizardPage(diagram, entitySelection);
+        pageContent = new DiagramCreateWizardPage(diagram, entitySelection, project);
         addPage(pageContent);
         if (getContainer() != null) {
             //WizardDialog call

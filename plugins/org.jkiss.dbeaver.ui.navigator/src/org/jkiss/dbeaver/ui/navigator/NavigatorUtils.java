@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -741,7 +742,10 @@ public class NavigatorUtils {
             return false;
         }
         DBNNode selectedNode = getSelectedNode(navigatorViewer.getSelection());
-        if (!(selectedNode instanceof DBNDatabaseNode)) {
+        DBPProject nodeProject = selectedNode.getOwnerProject();
+        if (!(selectedNode instanceof DBNDatabaseNode)
+            || (nodeProject != null && !nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT))
+        ) {
             return false;
         }
         DBNDatabaseNode databaseNode = (DBNDatabaseNode) selectedNode;
@@ -854,6 +858,11 @@ public class NavigatorUtils {
                 DBCExecutionContext executionContext = ((DBPContextProvider) activePart).getExecutionContext();
                 if (executionContext != null) {
                     activeProject = executionContext.getDataSource().getContainer().getRegistry().getProject();
+                } else if (activePart instanceof IDataSourceContainerProvider) {
+                    DBPDataSourceContainer container = ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+                    if (container != null) {
+                        activeProject = container.getProject();
+                    }
                 }
             }
         }

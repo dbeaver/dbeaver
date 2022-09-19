@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.FileTransfer;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -51,7 +53,10 @@ import org.jkiss.utils.CommonUtils;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCreateBase {
 
@@ -74,43 +79,66 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         DBNNode curNode = NavigatorUtils.getSelectedNode(selection);
+        DBPProject toProject = curNode.getOwnerProject();
         if (curNode != null) {
             Clipboard clipboard = new Clipboard(Display.getDefault());
+            List<String> failedToPasteResources = new LinkedList<>();
             try {
                 @SuppressWarnings("unchecked")
                 Collection<DBNNode> cbNodes = (Collection<DBNNode>) clipboard.getContents(TreeNodeTransfer.getInstance());
                 if (cbNodes != null) {
                     for (DBNNode nodeObject : cbNodes) {
-                        if (nodeObject != null) {
-                            DBPProject nodeProject = nodeObject.getOwnerProject();
-                            if (nodeProject == null || nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
-                                if (nodeObject instanceof DBNDatabaseNode) {
-                                    createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
-                                } else if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
-                                    pasteResource((DBNResource) nodeObject, (DBNResource) curNode);
-                                }
+                        if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
+                            if (toProject != null && !toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                                failedToPasteResources.add(nodeObject.getName());
+                            }
+                        }
+                    }
+                    if (failedToPasteResources.isEmpty()) {
+                        for (DBNNode nodeObject : cbNodes) {
+                            if (nodeObject instanceof DBNDatabaseNode) {
+                                createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
+                            } else if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
+                                pasteResource((DBNResource) nodeObject, (DBNResource) curNode);
                             }
                         }
                     }
                 } else if (curNode instanceof DBNResource) {
-                    DBPProject nodeProject = curNode.getOwnerProject();
-                    if (nodeProject == null || nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
-                        String[] files = (String[]) clipboard.getContents(FileTransfer.getInstance());
-                        if (files != null) {
+                    String[] files = (String[]) clipboard.getContents(FileTransfer.getInstance());
+                    if (files != null) {
+                        for (String fileName : files) {
+                            final File file = new File(fileName);
+                            if (file.exists()) {
+                                if (toProject != null && !toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                                    failedToPasteResources.add(fileName);
+                                }
+                            }
+                        }
+                        if (failedToPasteResources.isEmpty()) {
                             for (String fileName : files) {
                                 final File file = new File(fileName);
                                 if (file.exists()) {
                                     pasteResource(file, (DBNResource) curNode);
                                 }
                             }
-                        } else {
-                            log.debug("Paste error: unsupported clipboard format. File or folder were expected.");
-                            Display.getCurrent().beep();
                         }
+                    } else {
+                        log.debug("Paste error: unsupported clipboard format. File or folder were expected.");
+                        Display.getCurrent().beep();
                     }
                 } else {
                     log.debug("Paste error: clipboard contains data in unsupported format");
                     Display.getCurrent().beep();
+                }
+                if (failedToPasteResources.size() > 0) {
+                    DBWorkbench.getPlatformUI().showError(
+                        UINavigatorMessages.failed_to_paste_due_to_permissions_title,
+                        NLS.bind(
+                            UINavigatorMessages.failed_to_paste_due_to_permissions_message,
+                            toProject.getDisplayName(),
+                            failedToPasteResources.stream().collect(Collectors.joining(",\n"))
+                        )
+                    );
                 }
             } finally {
                 clipboard.dispose();

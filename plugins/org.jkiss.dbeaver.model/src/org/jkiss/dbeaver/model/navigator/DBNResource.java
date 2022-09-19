@@ -24,12 +24,15 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -144,9 +147,21 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         return handler == null || resource == null ? null : handler.getResourceDescription(resource);
     }
 
+    @NotNull
     @Override
-    public DBPImage getNodeIcon()
-    {
+    public DBPImage getNodeIcon() {
+        DBPImage iconImage = this.getResourceNodeIcon();
+
+        DBPProject project = getOwnerProject();
+        if (project != null && !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+            iconImage = new DBIconComposite(iconImage, false, null, null, null, DBIcon.OVER_LOCK);
+        }
+
+        return iconImage;
+    }
+
+    @NotNull
+    protected DBPImage getResourceNodeIcon() {
         if (resourceImage != null) {
             return resourceImage;
         }
@@ -157,7 +172,11 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         }
 */
         if (resource == null) {
-            return null;
+            if (this.hasChildren(false)) {
+                return DBIcon.TREE_FOLDER;
+            } else {
+                return DBIcon.TREE_PAGE;
+            }
         }
         switch (resource.getType()) {
             case IResource.FOLDER: return resource.isLinked() ? DBIcon.TREE_FOLDER_LINK : DBIcon.TREE_FOLDER;

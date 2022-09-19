@@ -311,21 +311,21 @@
             </activeWhen>
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.canViewResource"/>
+                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceViewable"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.sql.editor.recent" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.canEditResource"/>
+                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.sql.editor.create" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.canEditResource"/>
+                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -367,20 +367,19 @@
 
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.rename" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile">
             <enabledWhen>
-                <and>
-                    <with variable="activePart">
-                        <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
-                    </with>
-                    <with variable="activeEditor">
-                        <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
-                    </with>
-                </and>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                    	<test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
+                    </adapt>
+                </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.deleteThisScript" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerDeleteCurrentFile">
             <enabledWhen>
-                <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.canEditResource"/>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                        <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
+                    </adapt>
                 </with>
             </enabledWhen>
         </handler>
@@ -630,10 +629,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" class="org.jkiss.dbeaver.ui.editors.text.handlers.SaveTextFileHandler">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <and>
-                        <test property="org.jkiss.dbeaver.ui.editors.text.canSave"/>
-                        <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
-                    </and>
+                    <test property="org.jkiss.dbeaver.ui.editors.text.canSave"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -773,10 +769,10 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
-                <visibleWhen checkEnabled="true" />
+                <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
-                <visibleWhen checkEnabled="true" />
+                <visibleWhen checkEnabled="true"/>
             </command>
             <separator name="console" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.sql.editor.console"/>
@@ -957,7 +953,9 @@
                     <parameter name="noCustomLabel" value="true"/>
                     <visibleWhen>
                         <with variable="activeEditor">
-                            <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable" />
+                            <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                                <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
+                            </adapt>
                         </with>
                     </visibleWhen>
                 </command>
@@ -994,7 +992,9 @@
                    <parameter name="noCustomLabel" value="true"/>
                     <visibleWhen>
                         <with variable="activeEditor">
-                            <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable" />
+                            <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                                <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
+                            </adapt>
                         </with>
                     </visibleWhen>
                 </command>

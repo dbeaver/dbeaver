@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.dbeaver.Log;
 
 /**
  * An OverlayIcon consists of a main icon and several adornments.
  */
 public class OverlayImageDescriptor extends CompositeImageDescriptor {
 
+    private static final Log log = Log.getLog(OverlayImageDescriptor.class);
 	private Point imageSize = null;
 
     private CachedImageDataProvider baseImageData;
@@ -32,7 +34,11 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
 
     public OverlayImageDescriptor(ImageDescriptor baseImage) {
         this.baseImageData = createCachedImageDataProvider(baseImage);
-        this.imageSize = new Point(baseImageData.getWidth(), baseImageData.getHeight());
+        try {
+            this.imageSize = new Point(baseImageData.getWidth(), baseImageData.getHeight());
+        } catch (Throwable ex) {
+            log.debug(ex);
+        }
 	}
 
     public void setTopLeft(ImageDescriptor[] topLeft)

@@ -74,6 +74,10 @@ public class DBIconComposite implements DBPImage
     public void setBottomRight(DBPImage bottomRight) {
         this.bottomRight = bottomRight;
     }
+    
+    public DBPImage getMain() {
+        return main;
+    }
 
     @Override
     public String getLocation() {

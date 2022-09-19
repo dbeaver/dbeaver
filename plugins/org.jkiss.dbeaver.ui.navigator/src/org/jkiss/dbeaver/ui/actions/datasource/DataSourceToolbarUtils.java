@@ -66,7 +66,7 @@ public class DataSourceToolbarUtils
                 showConnectionSelector = true;
                 dataSourceContainer = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
             }
-            DBPProject resourceProj = EditorUtils.getFileProject(activeEditor.getEditorInput());
+            DBPProject resourceProj = activeEditor == null ? null : EditorUtils.getFileProject(activeEditor.getEditorInput());
             Boolean canChangeConn = resourceProj == null || resourceProj.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
 
             for (MTrimElement element : topTrim.getChildren()) {

@@ -124,15 +124,12 @@ public class DataSourcePropertyTester extends PropertyTester {
                     }
                     return Boolean.FALSE.equals(expectedValue);
                 }
-                case PROP_EDITABLE: {
+                case PROP_EDITABLE:
                     return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
-                }
-                case PROP_PROJECT_RESOURCE_EDITABLE: {
+                case PROP_PROJECT_RESOURCE_EDITABLE:
                     return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
-                }
-                case PROP_PROJECT_RESOURCE_VIEWABLE: {
+                case PROP_PROJECT_RESOURCE_VIEWABLE:
                     return resourceProject == null || resourceProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
-                }
             }
             return false;
         } catch (Exception e) {
