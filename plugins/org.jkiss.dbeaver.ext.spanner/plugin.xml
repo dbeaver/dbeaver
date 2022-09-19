@@ -32,7 +32,7 @@
                     <replace provider="google_spanner" driver="spanner_jdbc"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="omit-schema" value="false"/>
-                    <file type="jar" path="maven:/com.google.cloud:google-cloud-spanner-jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/com.google.cloud:google-cloud-spanner-jdbc:RELEASE[2.7.4]"/>
                 </driver>
                 
                 <driver

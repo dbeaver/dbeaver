@@ -52,11 +52,6 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean supportsClientInfo() {
-        return false;
-    }
-
-    @Override
     public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.r) {
             if (isRelationExternal(dbResult)) {
