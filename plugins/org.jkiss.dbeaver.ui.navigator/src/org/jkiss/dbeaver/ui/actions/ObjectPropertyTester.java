@@ -244,7 +244,7 @@ public class ObjectPropertyTester extends PropertyTester {
     /**
      * Check whether the owner project of the specified node has required permissions
      */
-    public static boolean nodeProjectHasPermission(DBNNode node, String permissionName) {
+    public static boolean nodeProjectHasPermission(@NotNull DBNNode node, @NotNull String permissionName) {
         DBPProject project = node.getOwnerProject();
         return project == null || project.hasRealmPermission(permissionName);        
     }

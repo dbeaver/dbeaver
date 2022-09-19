@@ -56,23 +56,26 @@ public class DBeaverIcons
     }
 
     private static class IconDescriptor {
+        @NotNull
         String id;
+        @NotNull
         Image image;
+        @NotNull
         ImageDescriptor imageDescriptor;
 
-        IconDescriptor(String id, ImageDescriptor imageDescriptor) {
+        IconDescriptor(@NotNull String id, @NotNull ImageDescriptor imageDescriptor) {
             this.id = id;
             this.image = imageDescriptor.createImage(false);
             this.imageDescriptor = imageDescriptor;
         }
 
-        IconDescriptor(String id, Image image) {
+        IconDescriptor(@NotNull String id, @NotNull Image image) {
             this.id = id;
             this.image = image;
             this.imageDescriptor = ImageDescriptor.createFromImage(image);
         }
 
-        IconDescriptor(String id, Image image, ImageDescriptor imageDescriptor) {
+        IconDescriptor(@NotNull String id, @NotNull Image image, @NotNull ImageDescriptor imageDescriptor) {
             this.id = id;
             this.image = image;
             this.imageDescriptor = imageDescriptor;

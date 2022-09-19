@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Image with overlays
  */
@@ -75,6 +77,7 @@ public class DBIconComposite implements DBPImage
         this.bottomRight = bottomRight;
     }
     
+    @NotNull
     public DBPImage getMain() {
         return main;
     }

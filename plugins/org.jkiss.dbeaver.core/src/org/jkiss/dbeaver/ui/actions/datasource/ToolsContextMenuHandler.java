@@ -80,7 +80,7 @@ public class ToolsContextMenuHandler extends AbstractDataSourceHandler
         }
         menuManager.add(new Separator());
         
-        if (part.getSite().getService(ICommandService.class).getCommand(SQLEditorCommands.CMD_SQL_EDITOR_OPEN).isEnabled()) {
+        if (ActionUtils.isCommandEnabled(SQLEditorCommands.CMD_SQL_EDITOR_OPEN, part.getSite())) {
             menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), SQLEditorCommands.CMD_SQL_EDITOR_OPEN));
 /*
             final MenuManager toolsMenu = new MenuManager(
