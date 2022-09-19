@@ -100,8 +100,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         DBRProgressMonitor monitor,
         DataSourceConfigurationManager configurationManager,
         DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources) throws DBException
-    {
+        List<DataSourceDescriptor> localDataSources) throws DBException, IOException {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
@@ -311,24 +310,20 @@ class DataSourceSerializerModern implements DataSourceSerializer
         }
     }
 
-    private void saveConfigFile(DataSourceConfigurationManager configurationManager, String name, String contents, boolean teamPrivate, boolean encrypt) {
-        try {
-            byte[] binaryContents = null;
-            if (contents != null) {
-                if (encrypt) {
-                    // Serialize and encrypt
-                    DBSValueEncryptor valueEncryptor = new DefaultValueEncryptor(registry.getProject().getLocalSecretKey());
-                    binaryContents = valueEncryptor.encryptValue(contents.getBytes(StandardCharsets.UTF_8));
-                } else {
-                    binaryContents = contents.getBytes(StandardCharsets.UTF_8);
-                }
+    private void saveConfigFile(DataSourceConfigurationManager configurationManager, String name, String contents, boolean teamPrivate, boolean encrypt) throws DBException, IOException {
+        byte[] binaryContents = null;
+        if (contents != null) {
+            if (encrypt) {
+                // Serialize and encrypt
+                DBSValueEncryptor valueEncryptor = new DefaultValueEncryptor(registry.getProject().getLocalSecretKey());
+                binaryContents = valueEncryptor.encryptValue(contents.getBytes(StandardCharsets.UTF_8));
+            } else {
+                binaryContents = contents.getBytes(StandardCharsets.UTF_8);
             }
-
-            // Save result to file
-            configurationManager.writeConfiguration(name, binaryContents);
-        } catch (Exception e) {
-            log.error("Error saving configuration file", e);
         }
+
+        // Save result to file
+        configurationManager.writeConfiguration(name, binaryContents);
     }
 
     private void saveSecureCredentialsFile(DataSourceConfigurationManager configurationManager, DBPDataSourceConfigurationStorage storage) {

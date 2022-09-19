@@ -236,7 +236,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
             connectionInfo.setUserPassword(passwordInfo.getNewPassword());
             getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
-            getContainer().getRegistry().flushConfig();
+            getContainer().persistConfiguration();
             return true;
         }
         catch (Exception e) {

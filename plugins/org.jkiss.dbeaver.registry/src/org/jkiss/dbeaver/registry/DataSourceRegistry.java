@@ -760,7 +760,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                         storage,
                         localDataSources);
                     try {
-                        if (!configurationManager.isSecure()) {
+                        if (project.isUseSecretStorage() && !configurationManager.isSecure()) {
                             DBSSecretController
                                 .getProjectSecretController(project)
                                 .flushChanges();
