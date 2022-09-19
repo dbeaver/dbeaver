@@ -195,13 +195,7 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add">
-                <visibleWhen>
-                    <with variable="selection">
-                        <iterate operator="and">
-                            <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
             </command>
             <separator name="additions" visible="true"/>
             <separator name="format" visible="true"/>
