@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -190,15 +191,16 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         } else {
             UIUtils.createPlaceholder(childComposite, 1);
         }
-        Button projCheckbox = UIUtils.createCheckbox(childComposite, SQLEditorMessages.script_selector_project_scripts, false);
-        projCheckbox.addSelectionListener(new SelectionAdapter() {
+        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        Button projectCheckbox = UIUtils.createCheckbox(childComposite, SQLEditorMessages.script_selector_project_scripts, false);
+        projectCheckbox.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_SCRIPT_SELECTOR_SHOW_PROJECT_SCRIPTS, projCheckbox.getSelection());
-            useProjectScripts(projCheckbox.getSelection());
+                preferenceStore.setValue(PREF_SCRIPT_SELECTOR_SHOW_PROJECT_SCRIPTS, projectCheckbox.getSelection());
+                useProjectScripts(projectCheckbox.getSelection());
             }
         });
-        projCheckbox.setSelection(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_SCRIPT_SELECTOR_SHOW_PROJECT_SCRIPTS));
+        projectCheckbox.setSelection(preferenceStore.getBoolean(PREF_SCRIPT_SELECTOR_SHOW_PROJECT_SCRIPTS));
         ((GridData) UIUtils.createHorizontalLine(composite).getLayoutData()).horizontalSpan = 2;
         Tree scriptTree = new Tree(composite, SWT.SINGLE | SWT.FULL_SELECTION);
         final GridData gd = new GridData(GridData.FILL_BOTH);
@@ -378,7 +380,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
 
         closeOnFocusLost(patternText, scriptViewer.getTree());
 
-        useProjectScripts(projCheckbox.getSelection());
+        useProjectScripts(projectCheckbox.getSelection());
         UIUtils.expandAll(scriptViewer);
 
         final Tree tree = scriptViewer.getTree();
