@@ -54,7 +54,7 @@ public abstract class JDBCStructLookupCache<OWNER extends DBSObject, OBJECT exte
         if (cachedObject != null) {
             return cachedObject;
         }
-        if (isFullyCached() || missingNames.contains(name)) {
+        if (isFullyCached() || owner.getDataSource() == null || !owner.getDataSource().getContainer().isConnected() || missingNames.contains(name)) {
             return null;
         }
         // Now cache just one object
