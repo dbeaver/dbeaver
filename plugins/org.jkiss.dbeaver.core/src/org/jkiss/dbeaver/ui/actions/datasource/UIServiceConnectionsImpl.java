@@ -42,11 +42,13 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
     @Override
     public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer, String defaultPageName) {
         if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
-            try {
-                DBSSecretController secretController = DBSSecretController.getProjectSecretController(dataSourceContainer.getProject());
-                dataSourceContainer.resolveSecrets(secretController);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Secret resolve", "Error loading connection secrets", e);
+            if (dataSourceContainer.getProject().isUseSecretStorage()) {
+                try {
+                    DBSSecretController secretController = DBSSecretController.getProjectSecretController(dataSourceContainer.getProject());
+                    dataSourceContainer.resolveSecrets(secretController);
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Secret resolve", "Error loading connection secrets", e);
+                }
             }
             EditConnectionDialog.openEditConnectionDialog(UIUtils.getActiveWorkbenchWindow(), dataSourceContainer, defaultPageName);
         } else {
