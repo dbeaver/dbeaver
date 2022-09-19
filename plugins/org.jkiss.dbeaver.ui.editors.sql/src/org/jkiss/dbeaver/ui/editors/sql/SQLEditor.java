@@ -74,6 +74,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -305,6 +306,21 @@ public class SQLEditor extends SQLEditorBase implements
         IFile file = EditorUtils.getFileFromInput(getEditorInput());
         return file == null ?
             DBWorkbench.getPlatform().getWorkspace().getActiveProject() : DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+    }
+    
+    private boolean isProjectResourceEditable() {
+        DBPProject project = this.getProject();
+        return project == null || project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
+    }
+
+    @Override
+    protected boolean isReadOnly() {
+        return super.isReadOnly() || !this.isProjectResourceEditable();
+    }
+    
+    @Override
+    public boolean isEditable() {
+        return super.isEditable() && this.isProjectResourceEditable();
     }
 
     @Nullable

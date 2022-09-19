@@ -173,10 +173,8 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             newButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-    
-                    IFile scriptFile;
                     try {
-                        scriptFile = SQLEditorUtils.createNewScript(
+                        IFile scriptFile = SQLEditorUtils.createNewScript(
                             DBPPlatformDesktop.getInstance().getWorkspace().getProject(rootFolder.getProject()),
                             rootFolder,
                             navigatorContext);
