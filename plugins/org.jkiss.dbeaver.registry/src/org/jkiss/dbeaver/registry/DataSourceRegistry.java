@@ -421,7 +421,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     @Override
     public void removeNetworkProfile(DBWNetworkProfile profile) {
         try {
-            DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
             secretController.setSecretValue(
                 profile.getSecretKeyId(),
                 null);
@@ -474,7 +474,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         // Remove secrets
         if (getProject().isUseSecretStorage()) {
             try {
-                DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+                DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
                 secretController.setSecretValue(
                     profile.getSecretKeyId(),
                     null);
@@ -762,7 +762,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                     try {
                         if (!configurationManager.isSecure()) {
                             DBSSecretController
-                                .getSessionSecretController(project.getWorkspaceSession())
+                                .getProjectSecretController(project)
                                 .flushChanges();
                         }
                         lastError = null;
@@ -862,7 +862,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             try {
                 if (!configurationManager.isSecure()) {
                     DBSSecretController
-                        .getSessionSecretController(project.getWorkspaceSession())
+                        .getProjectSecretController(project)
                         .flushChanges();
                 }
                 lastError = null;

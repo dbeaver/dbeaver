@@ -216,7 +216,7 @@ public class DBWHandlerConfiguration {
         return handlerProps;
     }
 
-    public void loadFromMap(Map<String, Object> handlerMap) {
+    void loadFromMap(Map<String, Object> handlerMap) {
         userName = JSONUtils.getString(handlerMap, "user");
         password = JSONUtils.getString(handlerMap, "password");
         secureProperties.clear();

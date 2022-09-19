@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.DBInfoUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.secret.DBSSecret;
+import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 
 import java.io.StringReader;
@@ -114,6 +116,8 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
         String secretValue = secretController.getSecretValue(getSecretKeyId());
         if (secretValue == null) {
+            // Backward compatibility
+            loadFromLegacySecret(secretController);
             return;
         }
 
@@ -125,6 +129,37 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
             DBWHandlerConfiguration configuration = getConfiguration(configId);
             if (configuration != null) {
                 configuration.loadFromMap(hc);
+            }
+        }
+    }
+
+    private void loadFromLegacySecret(DBSSecretController secretController) throws DBException {
+        if (!(secretController instanceof DBSSecretBrowser)) {
+            return;
+        }
+        DBSSecretBrowser secretBrowser = (DBSSecretBrowser) secretController;
+        for (DBWHandlerConfiguration cfg : configurations) {
+            String prefix = "projects/" + getProject().getId() + "/network/" + cfg.getId() + "/profile/" + getProfileId();
+            Map<String, String> secureProps = new LinkedHashMap<>();
+            for (DBSSecret secret : secretBrowser.listSecrets(prefix)) {
+                String secretId = secret.getId();
+                switch (secret.getName()) {
+                    case "user":
+                        cfg.setUserName(secretController.getSecretValue(secretId));
+                        break;
+                    case "password":
+                        cfg.setPassword(secretController.getSecretValue(secretId));
+                        break;
+                    case "name":
+                        // Skip it
+                        continue;
+                    default:
+                        secureProps.put(secret.getName(), secretController.getSecretValue(secretId));
+                        break;
+                }
+            }
+            if (!secureProps.isEmpty()) {
+                cfg.setSecureProperties(secureProps);
             }
         }
     }

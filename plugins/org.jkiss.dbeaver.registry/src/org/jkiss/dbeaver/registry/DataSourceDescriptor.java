@@ -764,7 +764,7 @@ public class DataSourceDescriptor
         // Save secrets
         if (getProject().isUseSecretStorage()) {
             try {
-                DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+                DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
 
                 persistSecrets(secretController);
             } catch (DBException e) {
@@ -818,7 +818,7 @@ public class DataSourceDescriptor
             log.debug("Can't connect - already connected");
             return false;
         }
-        DBSSecretController secretController = DBSSecretController.getSessionSecretController(getProject().getWorkspaceSession());
+        DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
 
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
         if (getProject().isUseSecretStorage()) {

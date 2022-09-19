@@ -21,8 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionSecretKeeper;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
  * Secret manager API
@@ -38,6 +40,16 @@ public interface DBSSecretController {
      * Syncs any changes with file system/server
      */
     void flushChanges() throws DBException;
+
+    @NotNull
+    static DBSSecretController getProjectSecretController(DBPProject project) {
+        return getSessionSecretController(project.getWorkspaceSession());
+    }
+
+    @NotNull
+    static DBSSecretController getGlobalSecretController() {
+        return getSessionSecretController(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
+    }
 
     @NotNull
     static DBSSecretController getSessionSecretController(SMSession spaceSession) {

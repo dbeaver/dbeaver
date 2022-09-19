@@ -353,7 +353,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
         profilesTable.removeAll();
         if (projectMeta != null) {
-            DBSSecretController secretController = DBSSecretController.getSessionSecretController(projectMeta.getWorkspaceSession());
+            DBSSecretController secretController = DBSSecretController.getProjectSecretController(projectMeta);
 
             for (DBWNetworkProfile profile : projectMeta.getDataSourceRegistry().getNetworkProfiles()) {
                 try {

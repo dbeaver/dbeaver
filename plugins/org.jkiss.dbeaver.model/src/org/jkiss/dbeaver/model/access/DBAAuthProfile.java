@@ -128,6 +128,8 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
         String secretValue = secretController.getSecretValue(
             getSecretKeyId());
         if (secretValue == null) {
+            // Backward compatibility
+            loadFromLegacySecret(secretController);
             return;
         }
 
@@ -135,6 +137,10 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
         userName = JSONUtils.getString(props, "user");
         userPassword = JSONUtils.getString(props, "password");
         setProperties(JSONUtils.deserializeStringMap(props, "properties"));
+    }
+
+    private void loadFromLegacySecret(DBSSecretController secretController) throws DBException {
+        // Auth profiles were not supported in legacy versions
     }
 
 }

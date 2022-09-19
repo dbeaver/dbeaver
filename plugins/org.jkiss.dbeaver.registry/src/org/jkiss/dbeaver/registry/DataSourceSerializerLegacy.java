@@ -447,7 +447,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
             {
                 try {
                     if (project.isUseSecretStorage()) {
-                        DBSSecretController secretController = DBSSecretController.getSessionSecretController(project.getWorkspaceSession());
+                        DBSSecretController secretController = DBSSecretController.getProjectSecretController(project);
                         String keyPrefix;
                         if (dataSource == null) {
                             keyPrefix = "projects/" + project.getId();
