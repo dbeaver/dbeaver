@@ -97,7 +97,7 @@ public class OracleBaseTableTest {
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "CREATE TABLE TEST_SCHEMA.\"NewTable\" (" + lineBreak +
+        String expectedDDL = "CREATE TABLE TEST_SCHEMA.NEWTABLE (" + lineBreak +
                 "\tCOLUMN1 INTEGER NULL," + lineBreak +
                 "\tCOLUMN2 INTEGER NULL" + lineBreak +
                 ");" + lineBreak;
@@ -133,7 +133,7 @@ public class OracleBaseTableTest {
             actions.toArray(new DBEPersistAction[0]),
             false);
 
-        String expectedDDL = "CREATE TABLE TEST_SCHEMA.\"NewTable\" (" + lineBreak +
+        String expectedDDL = "CREATE TABLE TEST_SCHEMA.NEWTABLE (" + lineBreak +
             "\tCOLUMN1 INTEGER NULL," + lineBreak +
             "\tCOLUMN2 INTEGER NOT NULL" + lineBreak +
             ");" + lineBreak;
@@ -159,7 +159,7 @@ public class OracleBaseTableTest {
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "CREATE TABLE TEST_SCHEMA.\"NewTable\" (" + lineBreak +
+        String expectedDDL = "CREATE TABLE TEST_SCHEMA.NEWTABLE (" + lineBreak +
                 "\tCOLUMN1 INTEGER NULL," + lineBreak +
                 "\tCOLUMN2 INTEGER NULL," + lineBreak +
                 "\tCONSTRAINT NEWTABLE_PK PRIMARY KEY (COLUMN1)" + lineBreak +
@@ -182,12 +182,12 @@ public class OracleBaseTableTest {
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "CREATE TABLE TEST_SCHEMA.\"NewTable\" (" + lineBreak +
+        String expectedDDL = "CREATE TABLE TEST_SCHEMA.NEWTABLE (" + lineBreak +
                 "\tCOLUMN1 INTEGER NULL," + lineBreak +
                 "\tCOLUMN2 INTEGER NULL" + lineBreak +
                 ");" + lineBreak +
-                "COMMENT ON COLUMN TEST_SCHEMA.\"NewTable\".COLUMN1 IS 'Test comment 1';" + lineBreak +
-                "COMMENT ON COLUMN TEST_SCHEMA.\"NewTable\".COLUMN2 IS 'Test comment 2';" + lineBreak;
+                "COMMENT ON COLUMN TEST_SCHEMA.NEWTABLE.COLUMN1 IS 'Test comment 1';" + lineBreak +
+                "COMMENT ON COLUMN TEST_SCHEMA.NEWTABLE.COLUMN2 IS 'Test comment 2';" + lineBreak;
 
         Assert.assertEquals(script, expectedDDL);
     }

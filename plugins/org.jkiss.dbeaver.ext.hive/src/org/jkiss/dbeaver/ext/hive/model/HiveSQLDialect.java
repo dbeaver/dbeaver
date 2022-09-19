@@ -130,4 +130,9 @@ public class HiveSQLDialect extends GenericSQLDialect {
     public boolean supportsAlterTableStatement() {
         return false;
     }
+
+    @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
 }

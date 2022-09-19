@@ -431,7 +431,6 @@ public class CommonUtils {
                 try {
                     return (int)Double.parseDouble(toString(object));
                 } catch (NumberFormatException e1) {
-                    e1.printStackTrace();
                     return defValue;
                 }
             }
@@ -670,7 +669,7 @@ public class CommonUtils {
     }
 
     @Nullable
-    public static <T extends Enum<T>> T valueOf(@Nullable Class<T> type, @Nullable String name, T defValue, boolean underscoreSpaces) {
+    public static <T extends Enum<T>> T valueOf(@NotNull Class<T> type, @Nullable String name, T defValue, boolean underscoreSpaces) {
         if (name == null) {
             return defValue;
         }
