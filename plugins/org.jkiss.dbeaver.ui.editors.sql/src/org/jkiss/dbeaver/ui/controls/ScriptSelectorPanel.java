@@ -190,7 +190,15 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
         } else {
             UIUtils.createPlaceholder(childComposite, 1);
         }
-        Button projectCheckbox = UIUtils.createCheckbox(childComposite, SQLEditorMessages.script_selector_project_scripts, false);
+        Button projCheckbox = UIUtils.createCheckbox(childComposite, SQLEditorMessages.script_selector_project_scripts, false);
+        projCheckbox.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_SCRIPT_SELECTOR_SHOW_PROJECT_SCRIPTS, projCheckbox.getSelection());
+            useProjectScripts(projCheckbox.getSelection());
+            }
+        });
+        projCheckbox.setSelection(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_SCRIPT_SELECTOR_SHOW_PROJECT_SCRIPTS));
         ((GridData) UIUtils.createHorizontalLine(composite).getLayoutData()).horizontalSpan = 2;
         Tree scriptTree = new Tree(composite, SWT.SINGLE | SWT.FULL_SELECTION);
         final GridData gd = new GridData(GridData.FILL_BOTH);
@@ -225,14 +233,6 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
             }
 
         });
-        projectCheckbox.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_SCRIPT_SELECTOR_SHOW_PROJECT_SCRIPTS, projectCheckbox.getSelection());
-                useProjectScripts(projectCheckbox.getSelection());
-            }
-        });
-        projectCheckbox.setSelection(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_SCRIPT_SELECTOR_SHOW_PROJECT_SCRIPTS));
         ViewerColumnController columnController = new ViewerColumnController("scriptSelectorViewer", scriptViewer);
         columnController.addColumn(SQLEditorMessages.script_selector_project_table_name_label, SQLEditorMessages.script_selector_project_table_name_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
@@ -378,7 +378,7 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
 
         closeOnFocusLost(patternText, scriptViewer.getTree());
 
-        useProjectScripts(projectCheckbox.getSelection());
+        useProjectScripts(projCheckbox.getSelection());
         UIUtils.expandAll(scriptViewer);
 
         final Tree tree = scriptViewer.getTree();

@@ -228,8 +228,10 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     // If site is null then we need only item count. BAD CODE.
     public static List<IContributionItem> fillCreateMenuItems(@Nullable IWorkbenchPartSite site, DBNNode node) {
         List<IContributionItem> createActions = new ArrayList<>();
-        boolean projectResourceEditable = node == null || ObjectPropertyTester.nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
-        boolean projectConnectionEditable = node == null || ObjectPropertyTester.nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
+        boolean projectResourceEditable =
+            node == null || ObjectPropertyTester.nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
+        boolean projectConnectionEditable =
+            node == null || ObjectPropertyTester.nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
 
         if ((node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases) && projectConnectionEditable) {
             IContributionItem item = makeCreateContributionItem(

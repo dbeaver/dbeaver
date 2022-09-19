@@ -96,7 +96,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
         }
         if (diagramFolder != null) {
             this.folder = diagramFolder;
-            this.project = diagramFolder == null ? null : DBPPlatformDesktop.getInstance().getWorkspace().getProject(diagramFolder.getProject());
+            this.project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(diagramFolder.getProject());
         }
     }
 

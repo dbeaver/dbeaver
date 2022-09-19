@@ -74,6 +74,9 @@ public class EditorUtils {
 
     private static final Log log = Log.getLog(EditorUtils.class);
 
+    /**
+     * Get project by the specified editor input
+     */
     @Nullable
     public static DBPProject getFileProject(@Nullable IEditorInput editorInput) {
         if (editorInput != null) {

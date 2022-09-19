@@ -116,7 +116,7 @@ public class DBeaverIcons
                 ((DBIconBinary) image).getImageDescriptor()
             );
         } else if (image instanceof DBIconComposite) {
-            IconDescriptor icon = getIconDescriptor(((DBIconComposite)image).getMain());
+            IconDescriptor icon = getIconDescriptor(((DBIconComposite) image).getMain());
             return getCompositeIcon(icon, (DBIconComposite) image);
         } else if (image instanceof DBIcon) {
             IconDescriptor icon = getIconByLocation(image.getLocation());
