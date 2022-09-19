@@ -126,8 +126,10 @@ public class DesktopUI implements DBPPlatformUI {
         new AbstractJob("Workbench listener") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
-                if (PlatformUI.isWorkbenchRunning()) {
-                    contextListener = WorkbenchContextListener.registerInWorkbench();
+                if (PlatformUI.isWorkbenchRunning() && !PlatformUI.getWorkbench().isStarting()) {
+                    UIUtils.asyncExec(() -> {
+                        contextListener = WorkbenchContextListener.registerInWorkbench();
+                    });
                 } else {
                     schedule(50);
                 }
