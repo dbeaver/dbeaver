@@ -116,7 +116,7 @@ public class PostgreValueParser {
                 if (componentType instanceof PostgreDataType) {
                     final String delimiter = arrayDataType instanceof PostgreDataType
                         ? ((PostgreDataType) arrayDataType).getArrayDelimiter()
-                        : ";";
+                        : ",";
                     List<Object> itemStrings = parseArrayString(string, delimiter);
                     return startTransformListOfValuesIntoArray(session, (PostgreDataType) componentType, itemStrings);
                 } else {
