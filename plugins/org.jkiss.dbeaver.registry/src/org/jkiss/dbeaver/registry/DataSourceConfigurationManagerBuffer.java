@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
-import org.jkiss.dbeaver.registry.DataSourceConfigurationManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class DataSourceConfigurationManagerBuffer implements DataSourceConfigura
     }
 
     @Override
-    public void writeConfiguration(@NotNull String name, @NotNull byte[] data) throws DBException, IOException {
+    public void writeConfiguration(@NotNull String name, @Nullable byte[] data) throws DBException, IOException {
         this.data = data;
     }
 

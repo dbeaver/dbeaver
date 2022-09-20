@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -32,7 +33,10 @@ public class NavigatorHandlerShowInExplorer extends NavigatorHandlerObjectBase {
         if (element instanceof DBNResource) {
             final IResource resource = ((DBNResource) element).getResource();
             if (resource != null) {
-                ShellUtils.showInSystemExplorer(resource.getLocation().toString());
+                IPath location = resource.getLocation();
+                if (location != null) {
+                    ShellUtils.showInSystemExplorer(location.toString());
+                }
             }
         }
         return null;

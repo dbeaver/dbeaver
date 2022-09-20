@@ -15,20 +15,13 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.app;
-
-import org.eclipse.equinox.security.storage.ISecurePreferences;
-
-import javax.crypto.SecretKey;
+package org.jkiss.dbeaver.model.secret;
 
 /**
- * Client security manager
+ * Value encryptor
  */
-public interface DBASecureStorage {
+public interface DBSEncryptedObject {
 
-    boolean useSecurePreferences();
+    boolean isRequireEncryption();
 
-    ISecurePreferences getSecurePreferences();
-
-    SecretKey getLocalSecretKey();
 }

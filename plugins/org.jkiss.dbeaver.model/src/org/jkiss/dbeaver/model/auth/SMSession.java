@@ -18,9 +18,7 @@
 package org.jkiss.dbeaver.model.auth;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.app.DBPProject;
 
 import java.time.LocalDateTime;
 
@@ -51,17 +49,6 @@ public interface SMSession extends DBPObject, AutoCloseable {
      */
     @NotNull
     LocalDateTime getSessionStart();
-
-    /**
-     * Application session is a global singleton session
-     */
-    boolean isApplicationSession();
-
-    /**
-     * Singleton session project
-     */
-    @Nullable
-    DBPProject getSingletonProject();
 
     /**
      * Closes session.

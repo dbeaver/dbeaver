@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.e4;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.ui.model.application.ui.MElementContainer;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
@@ -37,7 +38,6 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -52,8 +52,6 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
-
-import java.io.File;
 
 public class DBeaverStackRenderer extends StackRenderer {
 
@@ -120,9 +118,9 @@ public class DBeaverStackRenderer extends StackRenderer {
                 populateEditorMenu(menu, (IDatabaseEditorInput) editorInput);
             }
 
-            File localFile = EditorUtils.getLocalFileFromInput(editorInput);
+            IFile localFile = EditorUtils.getFileFromInput(editorInput);
             if (localFile != null) {
-                populateFileMenu(menu, workbenchPart, EditorUtils.getFileFromInput(editorInput), localFile);
+                populateFileMenu(menu, workbenchPart, localFile);
                 return;
             }
 
@@ -133,30 +131,28 @@ public class DBeaverStackRenderer extends StackRenderer {
         }
     }
 
-    private void populateFileMenu(@NotNull final Menu menu, @NotNull final IWorkbenchPart workbenchPart, @Nullable final IFile inputFile, @NotNull final File file) {
+    private void populateFileMenu(@NotNull final Menu menu, @NotNull final IWorkbenchPart workbenchPart, @NotNull final IFile inputFile) {
         new MenuItem(menu, SWT.SEPARATOR);
         if (workbenchPart instanceof SQLEditor) {
             addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_EDITOR_NEW);
         }
-        {
+        if (inputFile.getParent() instanceof IFolder && inputFile.getParent().getLocation() != null) {
             MenuItem menuItemOpenFolder = new MenuItem(menu, SWT.NONE);
             menuItemOpenFolder.setText(CoreMessages.editor_file_open_in_explorer);
             menuItemOpenFolder.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    if (file.getParentFile().isDirectory()) {
-                        ShellUtils.launchProgram(file.getParentFile().getAbsolutePath());
-                    }
+                    ShellUtils.launchProgram(inputFile.getParent().getLocation().toFile().getAbsolutePath());
                 }
             });
         }
-        {
+        if (inputFile.getLocation() != null) {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
             menuItemOthers.setText(CoreMessages.editor_file_copy_path);
             menuItemOthers.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    String filePath = file.getAbsolutePath();
+                    String filePath = inputFile.getLocation().toFile().getAbsolutePath();
                     UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), filePath);
                 }
             });
@@ -169,7 +165,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                 addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
             }
 
-            if (inputFile != null) {
+            {
                 MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
                 String renameText = CoreMessages.editor_file_rename;
                 if (workbenchPart instanceof SQLEditor) {

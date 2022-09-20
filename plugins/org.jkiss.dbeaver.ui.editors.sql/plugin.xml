@@ -777,7 +777,11 @@
             <separator name="console" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.sql.editor.console"/>
             <separator name="search" visible="true"/>
-            <command commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand"/>
+            <command commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.core.global.bundleInstalled" args="org.eclipse.text.quicksearch"/>
+                </visibleWhen>
+            </command>
             <separator name="settings" visible="true"/>
 
             <menu id="SQLEditorOpenDefaultMenu" label="%menu.sqleditor.open.default">

@@ -26,10 +26,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
+import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
+import javax.crypto.SecretKey;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
@@ -37,11 +40,8 @@ import java.util.UUID;
 /**
  * Project meta information.
  */
-public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm
-{
+public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     String METADATA_FOLDER = ".dbeaver";
-
-    String PROP_SECURE_PROJECT = "secureProject";
 
     @NotNull
     DBPWorkspace getWorkspace();
@@ -82,7 +82,21 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm
 
     boolean isRegistryLoaded();
 
-    boolean isModernProject();
+    /**
+     * Encrypted project configuration files are stored in encrypted form
+     */
+    boolean isEncryptedProject();
+
+    /**
+     * Is secret storage is enabled then all secret credentials are stored there.
+     * Otherwise, credentials are stored locally.
+     */
+    boolean isUseSecretStorage();
+
+    /**
+     * Secret key is used encrypt project data
+     */
+    SecretKey getLocalSecretKey();
 
     @NotNull
     DBPDataSourceRegistry getDataSourceRegistry();
@@ -91,13 +105,17 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm
     DBTTaskManager getTaskManager();
 
     @NotNull
-    DBASecureStorage getSecureStorage();
+    DBSSecretController getSecretController();
 
     /**
      * Project auth context
      */
     @NotNull
     SMSessionContext getSessionContext();
+
+    default SMSession getWorkspaceSession() {
+        return getSessionContext().findSpaceSession(getWorkspace());
+    }
 
     Object getProjectProperty(String propName);
 
