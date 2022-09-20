@@ -187,7 +187,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             }
         } catch (DBException e) {
             log.error("Error generating child object name", e);
-            return baseName;
+            return DBObjectNameCaseTransformer.transformName(container.getDataSource(), baseName);
         }
     }
 

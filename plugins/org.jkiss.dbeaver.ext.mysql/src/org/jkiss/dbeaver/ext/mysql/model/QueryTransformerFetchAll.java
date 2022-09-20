@@ -29,6 +29,12 @@ import java.sql.Statement;
 */
 class QueryTransformerFetchAll implements DBCQueryTransformer {
 
+    final MySQLDataSource dataSource;
+
+    QueryTransformerFetchAll(MySQLDataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     @Override
     public void setParameters(Object... parameters)
     {
@@ -43,7 +49,9 @@ class QueryTransformerFetchAll implements DBCQueryTransformer {
     public void transformStatement(DBCStatement statement, int parameterIndex) throws DBCException {
         // Set fetch size to Integer.MIN_VALUE to enable result set streaming
         try {
-            ((Statement)statement).setFetchSize(Integer.MIN_VALUE);
+            if (!dataSource.isMariaDB()) {
+                ((Statement) statement).setFetchSize(Integer.MIN_VALUE);
+            }
         } catch (SQLException e) {
             throw new DBCException(e, statement.getSession().getExecutionContext());
         }
