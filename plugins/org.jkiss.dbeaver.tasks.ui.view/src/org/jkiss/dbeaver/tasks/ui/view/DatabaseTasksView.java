@@ -181,7 +181,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             boolean isVisible = true;
             DBTTask selectedTask = tasksTree.getSelectedTask();
             if (selectedTask != null) {
-                isVisible = selectedTask.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
+                isVisible = selectedTask.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
             }
             manager.add(ActionUtils.makeCommandContribution(getSite(), RUN_TASK_CMD_ID));
             if (isVisible) {
