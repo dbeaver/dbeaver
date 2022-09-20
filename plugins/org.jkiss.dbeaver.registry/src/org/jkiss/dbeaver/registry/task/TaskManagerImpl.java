@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.BaseProjectImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -278,6 +279,10 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     private void loadConfiguration() {
+        if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_VIEW)) {
+            log.warn("The user has no permission to see tasks for this project: " + getProject().getDisplayName());
+            return;
+        }
         String configFile = null;
         try {
             configFile =
@@ -286,7 +291,6 @@ public class TaskManagerImpl implements DBTTaskManager {
             log.error("Error loading task configuration file.", e);
         }
         if (CommonUtils.isEmpty(configFile)) {
-            // Create new empty file?
             return;
         }
         Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, new StringReader(configFile));

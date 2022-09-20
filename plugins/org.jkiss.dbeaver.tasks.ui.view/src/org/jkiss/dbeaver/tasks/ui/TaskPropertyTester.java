@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tasks.ui;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.DBTScheduler;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
@@ -33,6 +34,7 @@ public class TaskPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.task";
     public static final String PROP_SCHEDULED = "scheduled";
+    public static final String PROP_PROJECT_RESOURCE_EDITABLE = "projectConnectionsEditable";
 
     public TaskPropertyTester() {
         super();
@@ -48,6 +50,8 @@ public class TaskPropertyTester extends PropertyTester
             case PROP_SCHEDULED:
                 DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
                 return (scheduler != null && scheduler.getScheduledTaskInfo(task) != null) == CommonUtils.getBoolean(expectedValue, true);
+            case PROP_PROJECT_RESOURCE_EDITABLE:
+                return task.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
         }
 
         return false;

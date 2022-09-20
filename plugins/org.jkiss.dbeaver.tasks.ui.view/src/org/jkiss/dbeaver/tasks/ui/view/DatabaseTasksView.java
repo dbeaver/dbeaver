@@ -112,7 +112,11 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         getSite().registerContextMenu(TASKS_VIEW_MENU_ID, menuMgr, tasksTree.getViewer());
         getSite().setSelectionProvider(tasksTree.getViewer());
 
-        tasksTree.getViewer().addDoubleClickListener(event -> ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite()));
+        tasksTree.getViewer().addDoubleClickListener(event -> {
+            if (ActionUtils.isCommandEnabled(EDIT_TASK_CMD_ID, getSite())) {
+                ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite());
+            }
+        });
         tasksTree.getViewer().addSelectionChangedListener(event -> loadTaskRuns());
 
         DatabaseTasksTree.addDragAndDropSourceSupport(tasksTree.getViewer());
