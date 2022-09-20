@@ -64,12 +64,12 @@ public class LocalSecretController implements DBSSecretController, DBSSecretBrow
     }
 
     @Override
-    public void setSecretValue(@NotNull String secretId, @Nullable String keyValue) throws DBException {
+    public void setSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException {
         try {
             Path keyPath = root.resolve(secretId);
 
             getNodeByPath(keyPath.getParent())
-                .put(keyPath.getFileName().toString(), keyValue, true);
+                .put(keyPath.getFileName().toString(), secretValue, true);
         } catch (StorageException e) {
             throw new DBException("Error setting preference value '" + secretId + "'", e);
         }

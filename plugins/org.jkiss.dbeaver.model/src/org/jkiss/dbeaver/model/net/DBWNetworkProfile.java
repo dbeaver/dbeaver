@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.secret.DBSSecret;
 import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.io.StringReader;
 import java.util.*;
@@ -116,8 +117,10 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
         String secretValue = secretController.getSecretValue(getSecretKeyId());
         if (secretValue == null) {
-            // Backward compatibility
-            loadFromLegacySecret(secretController);
+            if (!DBWorkbench.getPlatform().getApplication().isDistributed()) {
+                // Backward compatibility
+                loadFromLegacySecret(secretController);
+            }
             return;
         }
 
