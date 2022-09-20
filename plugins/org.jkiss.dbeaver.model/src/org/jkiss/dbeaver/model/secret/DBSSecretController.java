@@ -34,7 +34,7 @@ public interface DBSSecretController {
     @Nullable
     String getSecretValue(@NotNull String secretId) throws DBException;
 
-    void setSecretValue(@NotNull String secretId, @Nullable String keyValue) throws DBException;
+    void setSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException;
 
     /**
      * Syncs any changes with file system/server

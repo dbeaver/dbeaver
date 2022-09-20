@@ -798,8 +798,10 @@ public class DataSourceDescriptor
         if (secretValue != null) {
             loadFromSecret(secretValue);
         } else {
-            // Backward compatibility
-            loadFromLegacySecret(secretController);
+            if (!DBWorkbench.getPlatform().getApplication().isDistributed()) {
+                // Backward compatibility
+                loadFromLegacySecret(secretController);
+            }
         }
     }
 
@@ -818,11 +820,12 @@ public class DataSourceDescriptor
             log.debug("Can't connect - already connected");
             return false;
         }
-        DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+        DBSSecretController secretController = null;
 
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
         if (getProject().isUseSecretStorage()) {
             // Resolve secrets
+            secretController = DBSSecretController.getProjectSecretController(getProject());
             resolveSecrets(secretController);
         }
 
@@ -871,7 +874,9 @@ public class DataSourceDescriptor
                     // Update config from profile
                     DBWNetworkProfile profile = registry.getNetworkProfile(resolvedConnectionInfo.getConfigProfileName());
                     if (profile != null) {
-                        profile.resolveSecrets(secretController);
+                        if (secretController != null) {
+                            profile.resolveSecrets(secretController);
+                        }
                         for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
                             if (handlerCfg.isEnabled()) {
                                 resolvedConnectionInfo.updateHandler(new DBWHandlerConfiguration(handlerCfg));
