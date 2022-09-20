@@ -353,13 +353,18 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
         profilesTable.removeAll();
         if (projectMeta != null) {
-            DBSSecretController secretController = DBSSecretController.getProjectSecretController(projectMeta);
+            DBSSecretController secretController = null;
+            if (projectMeta.isUseSecretStorage()) {
+                secretController = DBSSecretController.getProjectSecretController(projectMeta);
+            }
 
             for (DBWNetworkProfile profile : projectMeta.getDataSourceRegistry().getNetworkProfiles()) {
-                try {
-                    profile.resolveSecrets(secretController);
-                } catch (DBException e) {
-                    log.error("Error resolving secret configuration for profile " + profile.getProfileId());
+                if (secretController != null) {
+                    try {
+                        profile.resolveSecrets(secretController);
+                    } catch (DBException e) {
+                        log.error("Error resolving secret configuration for profile " + profile.getProfileId());
+                    }
                 }
 
                 TableItem item = new TableItem(profilesTable, SWT.NONE);
