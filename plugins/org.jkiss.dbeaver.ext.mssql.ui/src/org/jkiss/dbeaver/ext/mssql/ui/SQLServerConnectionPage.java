@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 public class SQLServerConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
@@ -54,9 +55,6 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     private boolean needsPort;
 
     private boolean activated;
-    
-    private Button typeManualRadio;
-    private Button typeURLRadio;
 
     private final Image LOGO_AZURE;
     private final Image LOGO_BABELFISH;
@@ -96,28 +94,24 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         GridData gd = new GridData(GridData.FILL_BOTH);
         settingsGroup.setLayoutData(gd);
 
-        SelectionAdapter typeSwitcher = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setupConnectionModeSelection(typeURLRadio, typeManualRadio, urlText, typeURLRadio.getSelection());
-                updateUrl();
-            }
-        };
         Group addrGroup = UIUtils.createControlGroup(
             settingsGroup,
-            SQLServerUIMessages.dialog_connection_server_label,
+            UIConnectionMessages.dialog_connection_server_label,
             4,
             GridData.FILL_HORIZONTAL,
             0
         );
-        Label connTypeLabel = UIUtils.createControlLabel(addrGroup, SQLServerUIMessages.dialog_connection_type_label);
-        connTypeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        Composite modeGroup = UIUtils.createComposite(addrGroup, 2);
-        typeManualRadio = UIUtils.createRadioButton(modeGroup, SQLServerUIMessages.dialog_connection_host_label, false, typeSwitcher);
-        typeURLRadio = UIUtils.createRadioButton(modeGroup, SQLServerUIMessages.dialog_connection_url_label, true, typeSwitcher);
-        modeGroup.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).create());
 
-        Label urlLabel = UIUtils.createControlLabel(addrGroup, SQLServerUIMessages.dialog_connection_url_label);
+        SelectionAdapter typeSwitcher = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setupConnectionModeSelection(urlText, typeURLRadio.getSelection());
+                updateUrl();
+            }
+        };
+        createConnectionModeSwitcher(addrGroup, typeSwitcher);
+
+        Label urlLabel = UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
         urlLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         urlText = new Text(addrGroup, SWT.BORDER);
@@ -132,7 +126,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         needsPort = CommonUtils.getBoolean(getSite().getDriver().getDriverParameter("needsPort"), true);
         {
             hostLabel = new Label(addrGroup, SWT.NONE);
-            hostLabel.setText(SQLServerUIMessages.dialog_connection_host_label + ":");
+            hostLabel.setText(SQLServerUIMessages.dialog_connection_host_label);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             addControlToGroup(GROUP_CONNECTION, hostLabel);
 
@@ -289,7 +283,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
         }
-        setupConnectionModeSelection(typeURLRadio, typeManualRadio, urlText, useURL);
+        setupConnectionModeSelection(urlText, useURL);
         updateUrl();
 
         activated = true;

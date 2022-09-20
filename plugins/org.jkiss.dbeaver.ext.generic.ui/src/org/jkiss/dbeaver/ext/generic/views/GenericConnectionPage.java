@@ -71,8 +71,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     private Text pathText;
     // URL
     private Text urlText;
-    private Button typeManualRadio;
-    private Button typeURLRadio;
 
     private boolean isCustom;
     private JDBCURL.MetaURL metaURL;
@@ -85,7 +83,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     private static final String GROUP_DB = "db"; //$NON-NLS-1$
     private static final String GROUP_PATH = "path"; //$NON-NLS-1$
     private static final String GROUP_LOGIN = "login"; //$NON-NLS-1$
-    private static final String GROUP_CONNECTION_MODE = "connectionMode"; //$NON-NLS-1$
     private boolean activated;
 
     @Override
@@ -109,17 +106,12 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             SelectionAdapter typeSwitcher = new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setupConnectionModeSelection(typeURLRadio, typeManualRadio, urlText, typeURLRadio.getSelection());
+                    setupConnectionModeSelection(urlText, typeURLRadio.getSelection());
                     saveAndUpdate();
                 }
             };
-            Label cnnTypeLabel = UIUtils.createControlLabel(settingsGroup, GenericMessages.dialog_connection_type_label);
-            cnnTypeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            Composite modeGroup = UIUtils.createComposite(settingsGroup, 3);
-            typeManualRadio = UIUtils.createRadioButton(modeGroup, GenericMessages.dialog_connection_host_label, false, typeSwitcher);
-            typeURLRadio = UIUtils.createRadioButton(modeGroup, GenericMessages.dialog_connection_jdbc_url_, true, typeSwitcher);
-            modeGroup.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).create());
-            addControlToGroup(GROUP_CONNECTION_MODE, modeGroup);
+            createConnectionModeSwitcher(settingsGroup, typeSwitcher);
+
             
             Label urlLabel = UIUtils.createControlLabel(settingsGroup, GenericMessages.dialog_connection_jdbc_url_);
             urlLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
@@ -137,7 +129,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         }
         {
             Label hostLabel = new Label(settingsGroup, SWT.NONE);
-            hostLabel.setText(GenericMessages.dialog_connection_host_label + ":");
+            hostLabel.setText(GenericMessages.dialog_connection_host_label);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             hostText = new Text(settingsGroup, SWT.BORDER);
@@ -384,7 +376,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         this.parseSampleURL(site.getDriver());
         final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
-        setupConnectionModeSelection(typeURLRadio, typeManualRadio, urlText, useURL);
+        setupConnectionModeSelection(urlText, useURL);
         site.updateButtons();
         if (!isCustom) {
             if (hostText != null) {

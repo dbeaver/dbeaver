@@ -120,9 +120,6 @@ public class PostgreMessages extends NLS {
     public static String dialog_connection_network_postgres_ssl_advanced_use_proxy_tip;
 
     /* PostgreConnectionPage */
-    public static String dialog_setting_connection_server;
-    public static String dialog_setting_connection_type;
-    public static String dialog_setting_connection_url;
     public static String dialog_setting_connection_host;
     public static String dialog_setting_connection_cloud_instance;
     public static String dialog_setting_connection_port;

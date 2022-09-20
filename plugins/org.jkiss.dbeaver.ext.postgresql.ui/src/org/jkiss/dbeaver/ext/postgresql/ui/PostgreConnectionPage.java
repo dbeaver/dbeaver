@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -67,9 +68,6 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     private Text roleText; //TODO: make it a combo and fill it with appropriate roles
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
-    
-    private Button typeManualRadio;
-    private Button typeURLRadio;
 
     @Override
     public void dispose() {
@@ -102,7 +100,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
 
         Group addrGroup = UIUtils.createControlGroup(
             mainGroup,
-            PostgreMessages.dialog_setting_connection_server,
+            UIConnectionMessages.dialog_connection_server_label,
             4,
             GridData.FILL_HORIZONTAL,
             0
@@ -111,17 +109,13 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         SelectionAdapter typeSwitcher = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                setupConnectionModeSelection(typeURLRadio, typeManualRadio, urlText, typeURLRadio.getSelection());
+                setupConnectionModeSelection(urlText, typeURLRadio.getSelection());
                 updateUrl();
             }
         };
-        UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_type);
-        Composite modeGroup = UIUtils.createComposite(addrGroup, 2);
-        typeManualRadio = UIUtils.createRadioButton(modeGroup, PostgreMessages.dialog_setting_connection_host, false, typeSwitcher);
-        typeURLRadio = UIUtils.createRadioButton(modeGroup, PostgreMessages.dialog_setting_connection_url, true, typeSwitcher);
-        modeGroup.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).create());
+        createConnectionModeSwitcher(addrGroup, typeSwitcher);
 
-        UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_url);
+        UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
         urlText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
@@ -261,7 +255,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
         }
-        setupConnectionModeSelection(typeURLRadio, typeManualRadio, urlText, useURL);
+        setupConnectionModeSelection(urlText, useURL);
         updateUrl();
         
         activated = true;
