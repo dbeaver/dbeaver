@@ -431,7 +431,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         boolean didResolve = false;
         for (DataSourceProviderDescriptor dspd : this.dataSourceProviders) {
             for (DriverDescriptor driver : dspd.getDrivers()) {
-                if (driver.isDisabled() || driver.isInternalDriver() || driver.getReplacedBy() != null) {
+                if (driver.isDisabled() || driver.getReplacedBy() != null) {
                     continue;
                 }
                 if (driver.resolveDriverFiles(targetFileLocation)) {

@@ -136,7 +136,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
     {
         if (selectedNode instanceof DBNDataSource) {
             final DBPDataSourceContainer dataSourceContainer = ((DBNDataSource)selectedNode).getDataSourceContainer();
-            if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
+            if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
                 openConnectionEditor(workbenchWindow, dataSourceContainer);
                 return null;
             }
@@ -317,7 +317,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             DBNNode node = NavigatorUtils.getSelectedNode(selection);
             if (node != null) {
                 String actionName = UINavigatorMessages.actions_navigator_open;
-                if (node instanceof DBNDataSource && node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
+                if (node instanceof DBNDataSource && node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
                     actionName = UINavigatorMessages.actions_navigator_edit;
                 } else if (node instanceof DBNDatabaseNode) {
                     DBSObject object = ((DBNDatabaseNode) node).getObject();

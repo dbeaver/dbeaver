@@ -80,7 +80,19 @@
         <manager class="org.jkiss.dbeaver.ext.clickhouse.edit.ClickhouseTableManager" objectType="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTable"/>
         <manager class="org.jkiss.dbeaver.ext.clickhouse.edit.ClickhouseViewManager" objectType="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseView"/>
     </extension>
-
+    <extension point="org.jkiss.dbeaver.networkHandler">
+        <handler
+                type="config"
+                id="clickhouse-ssl"
+                codeName="SSL"
+                label="SSL"
+                description="SSL settings"
+                secured="false"
+                order="100"
+                handlerClass="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSSLImpl">
+            <objectType name="org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataSourceProvider"/>
+        </handler>
+    </extension>
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
                 id="org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseValueHandlerProvider"

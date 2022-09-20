@@ -194,7 +194,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         boolean passHidden = (passwordText.getStyle() & SWT.PASSWORD) == SWT.PASSWORD;
         if (passHidden) {
             if (!serviceSecurity.validatePassword(
-                dataSource.getProject().getSecureStorage(),
+                dataSource.getProject(),
                 "Enter project password",
                 "Enter project master password to unlock connection password view",
                 true))

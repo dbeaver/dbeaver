@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.tools.transfer.stream.model;
 
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -303,12 +303,6 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
         return true;
     }
 
-    @NotNull
-    @Override
-    public ISecurePreferences getSecurePreferences() {
-        return DBWorkbench.getPlatform().getApplication().getSecureStorage().getSecurePreferences();
-    }
-
     @Override
     public Date getConnectTime() {
         return inputFile == null ? new Date() : new Date(inputFile.lastModified());
@@ -411,6 +405,16 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public void setForceUseSingleConnection(boolean value) {
         throw new IllegalStateException("Not supported");   
+    }
+
+    @Override
+    public void persistSecrets(DBSSecretController secretController) throws DBException {
+
+    }
+
+    @Override
+    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+
     }
 
     @Nullable

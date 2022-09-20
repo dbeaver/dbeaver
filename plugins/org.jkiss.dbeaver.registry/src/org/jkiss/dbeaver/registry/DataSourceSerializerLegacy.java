@@ -16,14 +16,13 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
-import org.jkiss.dbeaver.model.app.DBASecureStorage;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
@@ -31,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -46,6 +46,7 @@ import org.xml.sax.Attributes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -442,18 +443,21 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
 
         private String[] readSecuredCredentials(Attributes xmlAttrs, DataSourceDescriptor dataSource, String subNode) {
             String[] creds = new String[2];
-            final DBASecureStorage secureStorage = dataSource.getProject().getSecureStorage();
+            DBPProject project = dataSource.getProject();
             {
                 try {
-                    if (secureStorage.useSecurePreferences()) {
-                        ISecurePreferences prefNode = dataSource.getSecurePreferences();
-                        if (subNode != null) {
-                            for (String nodeName : subNode.split("/")) {
-                                prefNode = prefNode.node(nodeName);
-                            }
+                    if (project.isUseSecretStorage()) {
+                        DBSSecretController secretController = DBSSecretController.getProjectSecretController(project);
+                        String keyPrefix;
+                        if (dataSource == null) {
+                            keyPrefix = "projects/" + project.getId();
+                        } else {
+                            keyPrefix = "datasources/" + dataSource.getId();
                         }
-                        creds[0] = prefNode.get(RegistryConstants.ATTR_USER, null);
-                        creds[1] = prefNode.get(RegistryConstants.ATTR_PASSWORD, null);
+                        Path itemPath = Path.of(keyPrefix).resolve(CommonUtils.notEmpty(subNode));
+
+                        creds[0] = secretController.getSecretValue(itemPath.resolve(RegistryConstants.ATTR_USER).toString());
+                        creds[1] = secretController.getSecretValue(itemPath.resolve(RegistryConstants.ATTR_PASSWORD).toString());
                     }
                 } catch (Throwable e) {
                     // Most likely user canceled master password enter of failed by some other reason.

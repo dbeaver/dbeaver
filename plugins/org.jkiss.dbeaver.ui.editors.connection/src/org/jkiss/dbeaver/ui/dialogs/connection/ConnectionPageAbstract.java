@@ -252,7 +252,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         boolean passHidden = (passwordText.getStyle() & SWT.PASSWORD) == SWT.PASSWORD;
         if (passHidden) {
             if (!serviceSecurity.validatePassword(
-                site.getProject().getSecureStorage(),
+                site.getProject(),
                 "Enter project password",
                 "Enter project master password to unlock connection password view",
                 true))

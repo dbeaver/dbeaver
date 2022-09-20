@@ -218,12 +218,6 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
     @NotNull
     @Override
-    public DBASecureStorage getSecureStorage() {
-        return getApplication().getSecureStorage();
-    }
-
-    @NotNull
-    @Override
     public DBPExternalFileManager getExternalFileManager() {
         return workspace;
     }
