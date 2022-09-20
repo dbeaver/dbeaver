@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.netezza;singleton:=true
-Bundle-Version: 1.0.154.qualifier
-Bundle-Release-Date: 20220905
+Bundle-Version: 1.0.155.qualifier
+Bundle-Release-Date: 20220926
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
