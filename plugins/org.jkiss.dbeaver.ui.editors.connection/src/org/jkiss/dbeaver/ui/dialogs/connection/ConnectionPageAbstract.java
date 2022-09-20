@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -50,7 +51,7 @@ import java.util.Map;
 public abstract class ConnectionPageAbstract extends DialogPage implements IDataSourceConnectionEditor {
 
     protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
-    protected Map<String, List<Control>> propGroupMap = new HashMap<>();
+    protected final Map<String, List<Control>> propGroupMap = new HashMap<>();
 
     protected IDataSourceConnectionEditorSite site;
     // Driver name
@@ -291,7 +292,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         return imageDescriptor == null ? null : imageDescriptor.createImage();
     }
     
-    protected void setupConnectionModeSelection(Button typeURLRadio, Button typeManualRadio, Text urlText, boolean useUrl) {
+    protected void setupConnectionModeSelection(@NotNull Button typeURLRadio, @NotNull Button typeManualRadio, @NotNull Text urlText, boolean useUrl) {
         typeURLRadio.setSelection(useUrl);
         typeManualRadio.setSelection(!useUrl);
         urlText.setEditable(useUrl);
@@ -304,9 +305,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }
     }
 
-    protected void addControlToGroup(String group, Control control) {
-        List<Control> controlList = propGroupMap.computeIfAbsent(group, k -> new ArrayList<>());
-        controlList.add(control);
+    protected void addControlToGroup(@NotNull String group, @NotNull Control control) {
+        propGroupMap
+            .computeIfAbsent(group, k -> new ArrayList<>())
+            .add(control);
     }
 
 }
