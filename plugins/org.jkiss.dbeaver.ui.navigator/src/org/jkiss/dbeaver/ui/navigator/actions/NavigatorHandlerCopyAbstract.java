@@ -20,6 +20,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.FileTransfer;
@@ -116,7 +117,10 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                 if (node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFile) {
                     final IFile file = (IFile) ((DBNResource) node).getResource();
                     if (file != null) {
-                        selectedFiles.add(file.getLocation().makeAbsolute().toFile().getAbsolutePath());
+                        IPath location = file.getLocation();
+                        if (location != null) {
+                            selectedFiles.add(location.makeAbsolute().toFile().getAbsolutePath());
+                        }
                     }
                 }
                 if (dbObject != null) {
@@ -138,7 +142,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                     clipboardData.addTransfer(DatabaseObjectTransfer.getInstance(), selectedObjects);
                 }
                 if (!selectedFiles.isEmpty() && !clipboardData.hasTransfer(FileTransfer.getInstance())) {
-                    clipboardData.addTransfer(FileTransfer.getInstance(), selectedFiles.toArray(new String[selectedFiles.size()]));
+                    clipboardData.addTransfer(FileTransfer.getInstance(), selectedFiles.toArray(new String[0]));
                 }
             }
         }

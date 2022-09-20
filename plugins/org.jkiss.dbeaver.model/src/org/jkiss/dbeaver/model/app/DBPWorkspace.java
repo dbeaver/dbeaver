@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
+import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 
 import java.nio.file.Path;
@@ -58,9 +58,10 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
     @NotNull
     SMSessionContext getAuthContext();
 
-    @Nullable
-    DBPDataSourceRegistry getDefaultDataSourceRegistry();
-
     void dispose();
+
+    default SMSession getWorkspaceSession() {
+        return getAuthContext().findSpaceSession(this);
+    }
 
 }

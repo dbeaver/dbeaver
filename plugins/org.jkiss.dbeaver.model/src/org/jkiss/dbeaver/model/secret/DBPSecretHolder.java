@@ -14,23 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.secret;
 
-package org.jkiss.dbeaver.runtime.ui;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.DBException;
 
 /**
- * Security UI Service
+ * DBPSecretHolder
  */
-public interface UIServiceSecurity {
+public interface DBPSecretHolder {
 
-    String askForPassword(@NotNull String title, String message, @Nullable String defPassword, boolean emptyPasswordAllowed);
+    void persistSecrets(DBSSecretController secretController) throws DBException;
 
-    String askForNewPassword(@NotNull String title, @Nullable String defPassword);
+    void resolveSecrets(DBSSecretController secretController) throws DBException;
 
-    String askForPasswordChange(@NotNull String title, @NotNull String currentPassword);
-
-    boolean validatePassword(DBPProject project, String title, String message, boolean forceEncryption);
 }

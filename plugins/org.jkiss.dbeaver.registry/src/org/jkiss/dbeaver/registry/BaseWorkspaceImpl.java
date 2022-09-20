@@ -24,7 +24,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPProjectListener;
+import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
@@ -69,7 +72,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
 
     @NotNull
     protected SMSession acquireWorkspaceSession(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return new BasicWorkspaceSession(this);
+        return new LocalWorkspaceSession(this);
     }
 
     public abstract void initializeProjects();
@@ -208,11 +211,6 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
         } catch (CoreException e) {
             throw new DBException("Error saving Eclipse workspace", e);
         }
-    }
-
-    @Override
-    public DBPDataSourceRegistry getDefaultDataSourceRegistry() {
-        return activeProject == null ? null : activeProject.getDataSourceRegistry();
     }
 
     protected void fireActiveProjectChange(DBPProject oldActiveProject, DBPProject activeProject) {
