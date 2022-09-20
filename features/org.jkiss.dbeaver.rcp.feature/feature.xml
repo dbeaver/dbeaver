@@ -118,10 +118,6 @@
     <plugin id="org.eclipse.jsch.core" download-size="0" install-size="0" version="0.0.0"/>
     <plugin id="org.eclipse.jsch.ui" download-size="0" install-size="0" version="0.0.0"/>
 
-    <!-- Quick search. Includes minimized ant bundle. -->
-
-    <plugin id="org.eclipse.text.quicksearch" download-size="0" install-size="0" version="0.0.0"/>
-
     <!-- IDE plugin -->
 
     <plugin id="org.eclipse.ui.ide" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

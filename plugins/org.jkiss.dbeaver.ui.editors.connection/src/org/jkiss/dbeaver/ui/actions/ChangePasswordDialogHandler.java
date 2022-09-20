@@ -69,7 +69,7 @@ public class ChangePasswordDialogHandler extends AbstractHandler {
                                         UIConnectionMessages.dialog_user_password_change_question_label,
                                         UIConnectionMessages.dialog_user_password_change_question_message)) {
                                         connectionInfo.setUserPassword(newPassword);
-                                        dataSourceContainer.getRegistry().flushConfig();
+                                        dataSourceContainer.persistConfiguration();
                                     }
                                 } catch (DBException e) {
                                     DBWorkbench.getPlatformUI().showError("Change user password", "Password change error for user: " + userName, e);

@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-class SecureCredentials {
+public class SecureCredentials {
 
     @Nullable
     private String userName;
