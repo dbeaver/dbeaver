@@ -32,8 +32,10 @@ import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -67,6 +69,7 @@ import java.util.Locale;
  * SSH tunnel configuration
  */
 public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
+    private static final Log log = Log.getLog(SSHTunnelConfiguratorUI.class);
 
     private DBWHandlerConfiguration savedConfiguration;
 
@@ -230,6 +233,32 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         text.setLayoutData(gdt);
     }
 
+    @Nullable
+    private static DBPAuthInfo promptCredentialsDialog(
+        @NotNull SSHConstants.AuthType type,
+        @NotNull DBWHandlerConfiguration configuration
+    ) {
+        try {
+            return DBWorkbench.getPlatformUI().promptUserCredentials(
+                SSHUIMessages.model_ssh_dialog_credentials,
+                SSHUIMessages.model_ssh_dialog_credentials_username,
+                configuration.getUserName(),
+                type.equals(SSHConstants.AuthType.PUBLIC_KEY)
+                    ? SSHUIMessages.model_ssh_dialog_credentials_passphrase
+                    : SSHUIMessages.model_ssh_dialog_credentials_password,
+                configuration.getPassword(),
+                type.equals(SSHConstants.AuthType.PUBLIC_KEY),
+                false
+            );
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(
+                CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                e.getMessage(),
+                e);
+            return null;
+        }
+    }
+
     private void testTunnelConnection() {
         DBWHandlerConfiguration configuration = new DBWHandlerConfiguration(savedConfiguration);
         configuration.setProperties(Collections.emptyMap());
@@ -254,6 +283,15 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 connectionConfig.setHostPort(configuration.getStringProperty(DBWHandlerConfiguration.PROP_PORT));
                 try {
                     monitor.subTask("Initialize tunnel");
+                    String authTypeName = configuration.getStringProperty("authType");
+                    SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, authTypeName);
+                    DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration);
+                    if (dbpAuthInfo != null) {
+                        if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
+                            configuration.setUserName(dbpAuthInfo.getUserName());
+                        }
+                        configuration.setPassword(dbpAuthInfo.getUserPassword());
+                    }
                     tunnel.initializeHandler(monitor, configuration, connectionConfig);
                     monitor.worked(1);
                     // Get info
@@ -496,6 +534,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
                 if (showSavePasswordCheckbox) {
                     savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
+                    savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            passwordText.setEnabled(savePasswordCheckbox.getSelection());
+                        }
+                    });
                     savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 } else {
                     savePasswordCheckbox = null;
@@ -516,15 +560,21 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             privateKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH)));
             if (prefix.isEmpty()) {
                 userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
-                passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 if (savePasswordCheckbox != null) {
                     savePasswordCheckbox.setSelection(configuration.isSavePassword());
+                    passwordText.setEnabled(savePasswordCheckbox.getSelection());
+                }
+                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
+                    passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 }
             } else {
                 userNameText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + RegistryConstants.ATTR_NAME)));
                 passwordText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD)));
                 if (savePasswordCheckbox != null) {
                     savePasswordCheckbox.setSelection(configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD));
+                }
+                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
+                    passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 }
             }
             updateAuthMethodVisibility();
@@ -538,15 +588,20 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
             if (prefix.isEmpty()) {
                 configuration.setUserName(userNameText.getText().trim());
-                configuration.setPassword(passwordText.getText());
+
                 if (savePasswordCheckbox != null) {
                     configuration.setSavePassword(savePasswordCheckbox.getSelection());
                 }
+                if (savePasswordCheckbox == null || configuration.isSavePassword()) {
+                    configuration.setPassword(passwordText.getText());
+                }
             } else {
                 configuration.setProperty(prefix + RegistryConstants.ATTR_NAME, userNameText.getText().trim());
-                configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
                 if (savePasswordCheckbox != null) {
                     configuration.setProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD, savePasswordCheckbox.getSelection());
+                }
+                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
+                    configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
                 }
             }
         }

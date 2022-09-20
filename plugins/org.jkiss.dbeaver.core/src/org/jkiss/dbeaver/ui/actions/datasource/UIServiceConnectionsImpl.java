@@ -41,7 +41,7 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
 
     @Override
     public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer, String defaultPageName) {
-        if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
+        if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
             if (dataSourceContainer.getProject().isUseSecretStorage()) {
                 try {
                     DBSSecretController secretController = DBSSecretController.getProjectSecretController(dataSourceContainer.getProject());
