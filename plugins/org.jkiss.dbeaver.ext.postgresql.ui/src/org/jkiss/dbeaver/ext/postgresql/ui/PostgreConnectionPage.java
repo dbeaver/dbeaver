@@ -27,7 +27,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -112,8 +111,8 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         SelectionAdapter typeSwitcher = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean useUrl = typeURLRadio.getSelection();
-                setupConnectionModeSelection(useUrl);
+                setupConnectionModeSelection(typeURLRadio, typeManualRadio, urlText, typeURLRadio.getSelection());
+                updateUrl();
             }
         };
         UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_type);
@@ -140,31 +139,37 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
                 ? PostgreMessages.dialog_setting_connection_cloud_instance
                 : PostgreMessages.dialog_setting_connection_host
         );
+        addControlToGroup(GROUP_CONNECTION, hostLabel);
         hostText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
+        addControlToGroup(GROUP_CONNECTION, hostText);
 
         if (serverType.needsPort()) {
             portLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_port);
+            addControlToGroup(GROUP_CONNECTION, portLabel);
             portText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
             gd.widthHint = UIUtils.getFontHeight(portText) * 7;
             portText.setLayoutData(gd);
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
+            addControlToGroup(GROUP_CONNECTION, portText);
         } else {
             gd.horizontalSpan = 3;
         }
 
         dbLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_database);
+        addControlToGroup(GROUP_CONNECTION, dbLabel);
         dbText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
+        addControlToGroup(GROUP_CONNECTION, dbText);
 
         createAuthPanel(mainGroup, 1);
 
@@ -252,11 +257,12 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             homesSelector.populateHomes(driver, connectionInfo.getClientHomeId(), site.isNew());
         }
         
-        boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
+        final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
         }
-        setupConnectionModeSelection(useURL);
+        setupConnectionModeSelection(typeURLRadio, typeManualRadio, urlText, useURL);
+        updateUrl();
         
         activated = true;
     }
@@ -300,21 +306,6 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     @Override
     protected boolean isCustomURL() {
         return typeURLRadio.getSelection();
-    }
-    
-    private void setupConnectionModeSelection(boolean useUrl) {
-        typeURLRadio.setSelection(useUrl);
-        typeManualRadio.setSelection(!useUrl);
-        urlText.setEditable(useUrl);
-        
-        for (Control control : new Control[] { hostLabel, hostText, portLabel, portText, dbLabel, dbText }) {
-            control.setEnabled(!useUrl);
-            if (control instanceof Text) {
-                ((Text) control).setEditable(!useUrl);
-            }
-        }
-        
-        updateUrl();
     }
     
     private void updateUrl() {
