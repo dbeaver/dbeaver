@@ -110,7 +110,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     public DBPImage getNodeIcon() {
         DBPImage image = DBIcon.PROJECT;
 
-        if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
+        if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
             image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LOCK);
         }
 

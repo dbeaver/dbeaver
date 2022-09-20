@@ -110,7 +110,7 @@
             class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
             namespace="org.jkiss.dbeaver.core.global"
-            properties="standalone,hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects"
+            properties="standalone,distributed,bundleInstalled,hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects"
             type="java.lang.Object"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"

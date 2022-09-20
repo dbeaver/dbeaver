@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -33,6 +34,8 @@ public class GlobalPropertyTester extends PropertyTester {
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.global";
     public static final String PROP_STANDALONE = "standalone";
+    public static final String PROP_DISTRIBUTED = "distributed";
+    public static final String PROP_BUNDLE_INSTALLED = "bundleInstalled";
     public static final String PROP_HAS_PERMISSION = "hasPermission";
     public static final String PROP_CAN_CREATE_CONNECTION = "canCreateConnection";
     public static final String PROP_HAS_ACTIVE_PROJECT = "hasActiveProject";
@@ -50,12 +53,16 @@ public class GlobalPropertyTester extends PropertyTester {
                 return DBWorkbench.getPlatform().getWorkspace().getActiveProject() != null;
             case PROP_STANDALONE:
                 return DBWorkbench.getPlatform().getApplication().isStandalone();
+            case PROP_DISTRIBUTED:
+                return DBWorkbench.getPlatform().getApplication().isDistributed();
+            case PROP_BUNDLE_INSTALLED:
+                return Platform.getBundle((String)args[0]) != null;
             case PROP_CAN_CREATE_PROJECT:
                 return !DBWorkbench.getPlatform().getApplication().isDistributed();
             case PROP_CAN_CREATE_CONNECTION:
             {
                 for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
-                    if (project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
+                    if (project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
                         return true;
                     }
                 }

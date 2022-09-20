@@ -627,7 +627,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 }
             }
         }
-        bindings[0].getDataSource().getContainer().getRegistry().flushConfig();
+        bindings[0].getDataSource().getContainer().persistConfiguration();
     }
 
     private void updateControlsVisibility() {
