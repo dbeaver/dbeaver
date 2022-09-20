@@ -15,22 +15,27 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.ui;
+package org.jkiss.dbeaver.model.secret;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.DBException;
+
+import java.util.List;
 
 /**
- * Security UI Service
+ * Secret manager API
  */
-public interface UIServiceSecurity {
+public interface DBSSecretBrowser {
 
-    String askForPassword(@NotNull String title, String message, @Nullable String defPassword, boolean emptyPasswordAllowed);
+    @NotNull
+    List<DBSSecret> listSecrets(@Nullable String path) throws DBException;
 
-    String askForNewPassword(@NotNull String title, @Nullable String defPassword);
+    @Nullable
+    DBSSecret getSecret(@NotNull String secretId) throws DBException;
 
-    String askForPasswordChange(@NotNull String title, @NotNull String currentPassword);
+    void deleteSecret(@NotNull String secretId) throws DBException;
 
-    boolean validatePassword(DBPProject project, String title, String message, boolean forceEncryption);
+    void clearAllSecrets(String keyPrefix) throws DBException;
+
 }

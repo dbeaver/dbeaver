@@ -44,10 +44,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -126,26 +123,19 @@ public class DesktopUI implements DBPPlatformUI {
     private void initialize() {
         this.trayItem = new TrayIconHandler();
 
-        if (DesktopPlatform.isStandalone()) {
-            //Policy.setErrorSupportProvider(new ApplicationErrorSupportProvider());
-        }
-
-
-        // Register context listener
-        UIUtils.asyncExec(() -> {
-            if (PlatformUI.isWorkbenchRunning()) {
-                contextListener = WorkbenchContextListener.registerInWorkbench();
-            }
-        });
-
-/*      // Global focus lister for debug
-        Display.getCurrent().addFilter(SWT.FocusIn, new Listener() {
+        new AbstractJob("Workbench listener") {
             @Override
-            public void handleEvent(Event event) {
-                System.out.println("FOCUS TO: " + event.widget);
+            protected IStatus run(DBRProgressMonitor monitor) {
+                if (PlatformUI.isWorkbenchRunning() && !PlatformUI.getWorkbench().isStarting()) {
+                    UIUtils.asyncExec(() -> {
+                        contextListener = WorkbenchContextListener.registerInWorkbench();
+                    });
+                } else {
+                    schedule(50);
+                }
+                return Status.OK_STATUS;
             }
-        });
-*/
+        }.schedule();
     }
 
     public void refreshPartContexts(IWorkbenchPart part) {
@@ -489,6 +479,10 @@ public class DesktopUI implements DBPPlatformUI {
 
     @Override
     public boolean readAndDispatchEvents() {
+        if (contextListener == null) {
+            // UI not initialized
+            return false;
+        }
         Display currentDisplay = Display.getCurrent();
         if (currentDisplay != null) {
             if (!currentDisplay.readAndDispatch()) {

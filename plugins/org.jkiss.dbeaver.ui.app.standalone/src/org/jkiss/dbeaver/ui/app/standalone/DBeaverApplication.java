@@ -39,10 +39,8 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
-import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseWorkspaceImpl;
@@ -750,12 +748,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     @Override
     public void setHeadlessMode(boolean headlessMode) {
         this.headlessMode = headlessMode;
-    }
-
-    @NotNull
-    @Override
-    public DBASecureStorage getSecureStorage() {
-        return DefaultSecureStorage.INSTANCE;
     }
 
     @Override
