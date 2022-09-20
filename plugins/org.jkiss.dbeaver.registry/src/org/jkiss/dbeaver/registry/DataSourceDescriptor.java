@@ -874,7 +874,9 @@ public class DataSourceDescriptor
                     // Update config from profile
                     DBWNetworkProfile profile = registry.getNetworkProfile(resolvedConnectionInfo.getConfigProfileName());
                     if (profile != null) {
-                        profile.resolveSecrets(secretController);
+                        if (secretController != null) {
+                            profile.resolveSecrets(secretController);
+                        }
                         for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
                             if (handlerCfg.isEnabled()) {
                                 resolvedConnectionInfo.updateHandler(new DBWHandlerConfiguration(handlerCfg));
