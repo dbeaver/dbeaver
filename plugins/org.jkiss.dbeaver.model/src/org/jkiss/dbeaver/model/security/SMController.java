@@ -147,4 +147,9 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
         @NotNull String objectId,
         @NotNull SMObjectType objectType
     ) throws DBException;
+
+    void deleteAllObjectPermissions(
+        @NotNull String objectId,
+        @NotNull SMObjectType objectType
+    ) throws DBException;
 }
