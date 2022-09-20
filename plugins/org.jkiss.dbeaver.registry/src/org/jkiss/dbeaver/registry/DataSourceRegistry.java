@@ -20,7 +20,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
@@ -420,6 +420,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public void removeNetworkProfile(DBWNetworkProfile profile) {
+        try {
+            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+            secretController.setSecretValue(
+                profile.getSecretKeyId(),
+                null);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing network profile credentials from secret storage", e);
+        }
         networkProfiles.remove(profile);
     }
 
@@ -463,6 +471,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public void removeAuthProfile(DBAAuthProfile profile) {
+        // Remove secrets
+        if (getProject().isUseSecretStorage()) {
+            try {
+                DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+                secretController.setSecretValue(
+                    profile.getSecretKeyId(),
+                    null);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing auth profile credentials from secret storage", e);
+            }
+        }
         synchronized (authProfiles) {
             authProfiles.remove(profile.getProfileId());
         }
@@ -599,12 +618,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 return Status.OK_STATUS;
             }
         }.schedule();
-    }
-
-    @Override
-    @NotNull
-    public ISecurePreferences getSecurePreferences() {
-        return DBWorkbench.getPlatform().getApplication().getSecureStorage().getSecurePreferences().node("datasources");
     }
 
     @Nullable
@@ -747,8 +760,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                         storage,
                         localDataSources);
                     try {
-                        if (!configurationManager.isSecure()) {
-                            getSecurePreferences().flush();
+                        if (project.isUseSecretStorage() && !configurationManager.isSecure()) {
+                            DBSSecretController
+                                .getProjectSecretController(project)
+                                .flushChanges();
                         }
                         lastError = null;
                     } catch (Throwable e) {
@@ -813,14 +828,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }
     }
 
-    private void clearSecuredPasswords(DataSourceDescriptor dataSource) {
-        try {
-            dataSource.getSecurePreferences().removeNode();
-        } catch (Throwable e) {
-            log.debug("Error clearing '" + dataSource.getId() + "' secure storage");
-        }
-    }
-
     @Override
     public DBPProject getProject() {
         return project;
@@ -854,7 +861,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 localDataSources);
             try {
                 if (!configurationManager.isSecure()) {
-                    getSecurePreferences().flush();
+                    DBSSecretController
+                        .getProjectSecretController(project)
+                        .flushChanges();
                 }
                 lastError = null;
             } catch (Throwable e) {
@@ -876,6 +885,32 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 throw (DBException) lastError;
             }
             throw new DBException(lastError.getMessage(), lastError.getCause());
+        }
+    }
+
+    @Override
+    public void persistSecrets(DBSSecretController secretController) throws DBException {
+        for (DBPDataSourceContainer ds : getDataSources()) {
+            ds.persistSecrets(secretController);
+        }
+        for (DBWNetworkProfile np : getNetworkProfiles()) {
+            np.persistSecrets(secretController);
+        }
+        for (DBAAuthProfile ap : getAllAuthProfiles()) {
+            ap.persistSecrets(secretController);
+        }
+    }
+
+    @Override
+    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+        for (DBPDataSourceContainer ds : getDataSources()) {
+            ds.resolveSecrets(secretController);
+        }
+        for (DBWNetworkProfile np : getNetworkProfiles()) {
+            np.resolveSecrets(secretController);
+        }
+        for (DBAAuthProfile ap : getAllAuthProfiles()) {
+            ap.resolveSecrets(secretController);
         }
     }
 

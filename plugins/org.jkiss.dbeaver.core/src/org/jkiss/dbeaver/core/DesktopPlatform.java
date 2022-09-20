@@ -339,12 +339,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     @NotNull
     @Override
-    public DBASecureStorage getSecureStorage() {
-        return getApplication().getSecureStorage();
-    }
-
-    @NotNull
-    @Override
     public DBPExternalFileManager getExternalFileManager() {
         return workspace;
     }

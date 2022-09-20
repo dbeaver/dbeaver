@@ -29,19 +29,22 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -64,10 +67,12 @@ public abstract class BaseProjectImpl implements DBPProject {
         MODERN,     // 6.1+ version
     }
 
-    private static final Gson METADATA_GSON = new GsonBuilder()
+    public static final Gson METADATA_GSON = new GsonBuilder()
         .setLenient()
         .serializeNulls()
         .create();
+
+    private static final byte[] LOCAL_KEY_CACHE = new byte[] { -70, -69, 74, -97, 119, 74, -72, 83, -55, 108, 45, 101, 61, -2, 84, 74 };
 
     @NotNull
     private final DBPWorkspace workspace;
@@ -79,7 +84,6 @@ public abstract class BaseProjectImpl implements DBPProject {
     private volatile TaskManagerImpl taskManager;
     private volatile Map<String, Object> properties;
     private volatile Map<String, Map<String, Object>> resourceProperties;
-    private DBASecureStorage secureStorage;
     private UUID projectID;
 
     protected final Object metadataSync = new Object();
@@ -164,8 +168,8 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     @Override
-    public boolean isModernProject() {
-        return getFormat() == ProjectFormat.MODERN;
+    public boolean isEncryptedProject() {
+        return false;
     }
 
     @NotNull
@@ -204,13 +208,13 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @NotNull
     @Override
-    public DBASecureStorage getSecureStorage() {
-        synchronized (metadataSync) {
-            if (this.secureStorage == null) {
-                this.secureStorage = workspace.getPlatform().getApplication().getProjectSecureStorage(this);
-            }
-        }
-        return secureStorage;
+    public DBSSecretController getSecretController() {
+        return DBSSecretController.getSessionSecretController(getWorkspaceSession());
+    }
+
+    @Override
+    public SecretKey getLocalSecretKey() {
+        return new SecretKeySpec(LOCAL_KEY_CACHE, DefaultValueEncryptor.KEY_ALGORITHM);
     }
 
     @NotNull
