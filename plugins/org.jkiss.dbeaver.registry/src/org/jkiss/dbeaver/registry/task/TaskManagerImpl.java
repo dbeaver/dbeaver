@@ -31,17 +31,14 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.BaseProjectImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -381,7 +378,7 @@ public class TaskManagerImpl implements DBTTaskManager {
         DBPProject project = getProject();
         try {
             if (tasks.isEmpty() && CommonUtils.isEmpty(tasksFolders)) {
-                DBWorkbench.getPlatform().getTaskController().deleteFile(project.getId(), TaskConstants.CONFIG_FILE);
+                DBWorkbench.getPlatform().getTaskController().saveTaskConfigurationFile(project.getId(), TaskConstants.CONFIG_FILE, null);
                 return;
             }
         } catch (Exception e) {

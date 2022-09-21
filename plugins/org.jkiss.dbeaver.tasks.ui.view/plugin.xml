@@ -25,7 +25,7 @@
             class="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             id="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             namespace="org.jkiss.dbeaver.task"
-            properties="scheduled,projectConnectionsEditable"
+            properties="scheduled,taskEditable"
             type="org.jkiss.dbeaver.model.task.DBTTask"/>
     </extension>
 
@@ -60,7 +60,7 @@
             <with variable="selection">
                 <count value="1"/>
                 <iterate operator="and">
-                    <test property="org.jkiss.dbeaver.task.projectConnectionsEditable" value="true"/>
+                    <test property="org.jkiss.dbeaver.task.taskEditable" value="true"/>
                 </iterate>
             </with>
         </definition>
@@ -111,7 +111,7 @@
                     <count value="1"/>
                     <iterate operator="and">
                         <and>
-                            <test property="org.jkiss.dbeaver.task.projectConnectionsEditable"/>
+                            <test property="org.jkiss.dbeaver.task.taskEditable"/>
                             <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
                         </and>
                     </iterate>

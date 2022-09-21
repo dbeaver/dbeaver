@@ -34,7 +34,7 @@ public class TaskPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.task";
     public static final String PROP_SCHEDULED = "scheduled";
-    public static final String PROP_PROJECT_RESOURCE_EDITABLE = "projectConnectionsEditable";
+    public static final String TASK_EDITABLE = "taskEditable";
 
     public TaskPropertyTester() {
         super();
@@ -50,7 +50,7 @@ public class TaskPropertyTester extends PropertyTester
             case PROP_SCHEDULED:
                 DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
                 return (scheduler != null && scheduler.getScheduledTaskInfo(task) != null) == CommonUtils.getBoolean(expectedValue, true);
-            case PROP_PROJECT_RESOURCE_EDITABLE:
+            case TASK_EDITABLE:
                 return task.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
         }
 

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.task;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
 
@@ -38,20 +39,12 @@ public interface DBTTaskController extends DBPObjectController {
      *
      * @param projectId to find proper project task config
      * @param filePath file name + extension
-     * @param data for update
+     * @param data for update. Can be null in case of purpose of delete file
      * @throws DBException returns in case of file loading/saving
      */
     void saveTaskConfigurationFile(
         @NotNull String projectId,
         @NotNull String filePath,
-        @NotNull String data) throws DBException;
+        @Nullable String data) throws DBException;
 
-    /**
-     * This method deletes the task configuration file in a case when we do not have any tasks/tasks folder in the project.
-     *
-     * @param projectId to find proper project task config
-     * @param filePath file name + extension
-     * @throws DBException returns in case of file loading/deleting
-     */
-    void deleteFile(@NotNull String projectId, @NotNull String filePath) throws DBException;
 }

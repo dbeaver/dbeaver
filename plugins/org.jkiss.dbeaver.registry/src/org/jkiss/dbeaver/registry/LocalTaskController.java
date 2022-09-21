@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -49,26 +50,27 @@ public class LocalTaskController implements DBTTaskController {
     public void saveTaskConfigurationFile(
         @NotNull String projectId,
         @NotNull String filePath,
-        @NotNull String data
+        @Nullable String data
     ) throws DBException {
         Path localPath = getMetadataFolder(projectId, true).resolve(filePath);
         if (Files.exists(localPath)) {
             ContentUtils.makeFileBackup(localPath);
         }
+        if (data == null && Files.exists(localPath)) {
+            try {
+                Files.delete(localPath);
+            } catch (IOException e) {
+                throw new DBException("Error deleting task configuration file '" + filePath + "'", e);
+            }
+            return;
+        }
+        if (data == null) {
+            throw new DBException("Error saving task configuration file '" + filePath + "'");
+        }
         try {
             Files.writeString(localPath, data, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new DBException("Error writing task configuration file '" + filePath + "'", e);
-        }
-    }
-
-    @Override
-    public void deleteFile(@NotNull String projectId, @NotNull String filePath) throws DBException {
-        Path localPath = getMetadataFolder(projectId, false).resolve(filePath);
-        try {
-            Files.delete(localPath);
-        } catch (IOException e) {
-            throw new DBException("Error deleting task configuration file '" + filePath + "' data: " + e.getMessage(), e);
         }
     }
 
