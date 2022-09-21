@@ -181,7 +181,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         final SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, configuration.getStringProperty(prefix + SSHConstants.PROP_AUTH_TYPE), SSHConstants.AuthType.PASSWORD);
         final String hostname = configuration.getStringProperty(prefix + DBWHandlerConfiguration.PROP_HOST);
         final int port = configuration.getIntProperty(prefix + DBWHandlerConfiguration.PROP_PORT);
-        final String username;
+        String username;
         final String password;
         final boolean savePassword = configuration.isSavePassword();
 
@@ -199,8 +199,8 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         if (port == 0) {
             throw new DBException("SSH port not specified");
         }
-        if (!authType.equals(SSHConstants.AuthType.PUBLIC_KEY) && CommonUtils.isEmpty(username)) {
-            throw new DBException("SSH user not specified");
+        if (CommonUtils.isEmpty(username)) {
+            username = System.getProperty("user.name");
         }
         final SSHAuthConfiguration authentication;
         switch (authType) {
