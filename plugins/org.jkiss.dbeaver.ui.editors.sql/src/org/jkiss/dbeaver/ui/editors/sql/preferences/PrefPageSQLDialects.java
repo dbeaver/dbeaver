@@ -200,6 +200,7 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
 
         //store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ, bindEmbeddedReadCheck.getSelection());
 
+        SQLDialectRegistry.getInstance().saveDialects();
         PrefUtils.savePreferenceStore(store);
 
         return super.performOk();

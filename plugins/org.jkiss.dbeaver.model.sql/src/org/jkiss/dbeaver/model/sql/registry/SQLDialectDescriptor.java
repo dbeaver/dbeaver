@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectDescriptorSerializer;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -41,11 +42,11 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
 
     private static final Log log = Log.getLog(SQLDialectDescriptor.class);
 
-    private final String id;
-    private final String label;
-    private final String description;
-    private final ObjectType implClass;
-    private final DBPImage icon;
+    private String id;
+    private String label;
+    private String description;
+    private ObjectType implClass;
+    private DBPImage icon;
     private boolean isAbstract;
     private boolean isHidden;
     private SQLDialectDescriptor parentDialect;
@@ -64,6 +65,11 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     private List<String> insertMethodNames;
     private DBDInsertReplaceMethod[] insertReplaceMethods;
     private List<SQLInsertReplaceMethodDescriptor> insertMethodDescriptors;
+
+    public SQLDialectDescriptor(String id) {
+        super("org.jkiss.dbeaver.registry");
+        this.id = id;
+    }
 
     SQLDialectDescriptor(IConfigurationElement config) {
         super(config);
@@ -209,6 +215,10 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         return ";";
     }
 
+    public ObjectType getImplClass() {
+        return implClass;
+    }
+
     @Override
     public Object getProperty(String name) {
         return properties == null ? null : properties.get(name);
@@ -220,7 +230,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         return parentDialect;
     }
 
-    void setParentDialect(SQLDialectDescriptor parentDialect) {
+    public void setParentDialect(SQLDialectDescriptor parentDialect) {
         this.parentDialect = parentDialect;
 
         List<SQLDialectDescriptor> psd = parentDialect.subDialects;
@@ -274,6 +284,74 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         }
 
         return insertMethodDescriptors;
+    }
+
+    public void setSubDialects(List<SQLDialectDescriptor> subDialects) {
+        this.subDialects = subDialects;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
+    }
+
+    public void setKeywords(List<String> keywords) {
+        this.keywords = keywords;
+    }
+
+    public void setDdlKeywords(List<String> ddlKeywords) {
+        this.ddlKeywords = ddlKeywords;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setImplClass(String implClass) {
+        this.implClass = new ObjectType(implClass);
+    }
+
+    public void setIcon(DBPImage icon) {
+        this.icon = icon;
+    }
+
+    public void setDmlKeywords(List<String> dmlKeywords) {
+        this.dmlKeywords = dmlKeywords;
+    }
+
+    public void setExecKeywords(List<String> execKeywords) {
+        this.execKeywords = execKeywords;
+    }
+
+    public void setTxnKeywords(List<String> txnKeywords) {
+        this.txnKeywords = txnKeywords;
+    }
+
+    public void setTypes(List<String> types) {
+        this.types = types;
+    }
+
+    public void setFunctions(List<String> functions) {
+        this.functions = functions;
+    }
+
+    public void setInsertMethodNames(List<String> insertMethodNames) {
+        this.insertMethodNames = insertMethodNames;
+    }
+
+    public void setInsertReplaceMethods(DBDInsertReplaceMethod[] insertReplaceMethods) {
+        this.insertReplaceMethods = insertReplaceMethods;
+    }
+
+    public void setInsertMethodDescriptors(List<SQLInsertReplaceMethodDescriptor> insertMethodDescriptors) {
+        this.insertMethodDescriptors = insertMethodDescriptors;
     }
 
     @Override
