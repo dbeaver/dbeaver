@@ -132,7 +132,7 @@ public class ObjectPropertyTester extends PropertyTester {
             }
             case PROP_CAN_DELETE: {
                 if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
-                    return nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
+                    return nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
                 }
 
                 if (DBNUtils.isReadOnly(node)) {

@@ -231,7 +231,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         boolean projectResourceEditable =
             node == null || ObjectPropertyTester.nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
         boolean projectConnectionEditable =
-            node == null || ObjectPropertyTester.nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
+            node == null || ObjectPropertyTester.nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
 
         if ((node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases) && projectConnectionEditable) {
             IContributionItem item = makeCreateContributionItem(

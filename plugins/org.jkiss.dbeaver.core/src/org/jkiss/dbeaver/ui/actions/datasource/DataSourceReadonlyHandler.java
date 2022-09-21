@@ -52,7 +52,7 @@ public class DataSourceReadonlyHandler extends AbstractDataSourceHandler impleme
         final DataSourceDescriptor dataSourceContainer = currentDescriptor;
         if (dataSourceContainer != null) {
             dataSourceContainer.setConnectionReadOnly(!dataSourceContainer.isConnectionReadOnly());
-            if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT)) {
+            if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
                 dataSourceContainer.persistConfiguration();
             }
             if (dataSourceContainer.isConnected()) {
