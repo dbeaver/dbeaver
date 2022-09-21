@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -57,6 +58,10 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
 
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+        if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
+            return connectionInfo.getUrl();
+        }
+        
         StringBuilder url = new StringBuilder();
         boolean isJtds = SQLServerUtils.isDriverJtds(driver);
         boolean isSqlServer = SQLServerUtils.isDriverSqlServer(driver);
