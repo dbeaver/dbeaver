@@ -133,6 +133,11 @@ public class LocalProjectImpl extends BaseProjectImpl {
         setFormat(ProjectFormat.MODERN);
     }
 
+    @Override
+    public boolean isUseSecretStorage() {
+        return false;
+    }
+
     /**
      * Validates project files structure.
      * If project was created in older DBeaver version then converts it to newer format

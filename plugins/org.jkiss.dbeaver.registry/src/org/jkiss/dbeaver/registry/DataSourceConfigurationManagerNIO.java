@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -122,11 +123,11 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
     }
 
     @Override
-    public void writeConfiguration(@NotNull String name, @NotNull byte[] data) throws IOException {
+    public void writeConfiguration(@NotNull String name, @Nullable byte[] data) throws IOException {
         Path configFile = getConfigurationPath(true).resolve(name);
         ContentUtils.makeFileBackup(configFile);
 
-        if (data.length == 0) {
+        if (data == null || data.length == 0) {
             if (Files.exists(configFile)) {
                 try {
                     Files.delete(configFile);

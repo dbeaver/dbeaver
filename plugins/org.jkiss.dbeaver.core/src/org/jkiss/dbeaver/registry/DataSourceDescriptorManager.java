@@ -55,14 +55,14 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     @Override
     public boolean canCreateObject(Object container) {
         if (container instanceof DBPProject) {
-            return ((DBPProject) container).hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
+            return ((DBPProject) container).hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
         }
         return true;
     }
 
     @Override
     public boolean canDeleteObject(DataSourceDescriptor object) {
-        return object.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT);
+        return object.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
     }
 
     @Override

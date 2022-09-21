@@ -158,10 +158,9 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        super.refreshObject(monitor);
         this.schemas = null;
         this.isInitialized = false;
-        return this;
+        return super.refreshObject(monitor);
     }
 
 }

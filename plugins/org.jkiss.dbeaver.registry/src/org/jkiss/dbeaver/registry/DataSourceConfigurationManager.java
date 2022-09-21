@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 
@@ -37,6 +38,6 @@ public interface DataSourceConfigurationManager {
 
     InputStream readConfiguration(@NotNull String name) throws DBException, IOException;
 
-    void writeConfiguration(@NotNull String name, @NotNull byte[] data) throws DBException, IOException;
+    void writeConfiguration(@NotNull String name, @Nullable byte[] data) throws DBException, IOException;
 
 }

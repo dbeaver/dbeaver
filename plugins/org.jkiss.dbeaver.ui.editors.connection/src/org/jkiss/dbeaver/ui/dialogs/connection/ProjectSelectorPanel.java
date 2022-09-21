@@ -53,7 +53,7 @@ public class ProjectSelectorPanel {
 
         final List<DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
         if (showOnlyEditable) {
-            projects.removeIf(p -> !p.hasRealmPermission(RMConstants.PERMISSION_PROJECT_CONNECTIONS_EDIT));
+            projects.removeIf(p -> !p.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT));
         }
         if (projects.size() == 1) {
             selectedProject = projects.get(0);

@@ -411,8 +411,9 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        final boolean needsStructureCaching = !getTableCache().isEmpty();
+
         this.tableCache.clearCache();
         this.indexCache.clearCache();
         this.constraintKeysCache.clearCache();
@@ -425,6 +426,11 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         this.procedures = null;
         this.sequences = null;
         this.synonyms = null;
+
+        if (needsStructureCaching) {
+            cacheStructure(monitor, STRUCT_ALL);
+        }
+
         return this;
     }
 

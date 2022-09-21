@@ -73,7 +73,7 @@ public class ResourcePropertyTester extends PropertyTester
                 final DBPResourceHandler resourceHandler = workspace.getResourceHandler(resource);
                 return resourceHandler != null && expectedValue.equals(resourceHandler.getTypeName(resource));
             case PROP_IS_LOCAL_FS:
-                return !(resource instanceof NIOResource);
+                return !(resource instanceof NIOResource) && resource.getLocation() != null;
         }
         return false;
     }

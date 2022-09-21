@@ -86,12 +86,15 @@ public class QueryTransformerTop implements DBCQueryTransformer, DBCQueryTransfo
     @Override
     public boolean isApplicableTo(SQLQuery query) {
         // TOP cannot be used with OFFSET. See #13594
+        // and for queries without FROM (See #16526)
         if (query.isPlainSelect()) {
             final Statement statement = query.getStatement();
             if (statement instanceof Select) {
-                final SelectBody body = ((Select) statement).getSelectBody();
-                if (body instanceof PlainSelect) {
-                    return ((PlainSelect) body).getOffset() == null;
+                final SelectBody selectBody = ((Select) statement).getSelectBody();
+                if (selectBody instanceof PlainSelect) {
+                    PlainSelect body = (PlainSelect) selectBody;
+                    return ((PlainSelect) body).getOffset() == null && body.getLimit() == null && body.getTop() == null
+                        && body.getFromItem() != null && CommonUtils.isEmpty(body.getIntoTables()) && !body.isForUpdate();
                 }
             }
         }
