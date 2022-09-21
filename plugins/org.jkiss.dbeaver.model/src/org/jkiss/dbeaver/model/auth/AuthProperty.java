@@ -27,9 +27,7 @@ import java.lang.annotation.Target;
  */
 @Target(value = {ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AuthProperty
-{
+public @interface AuthProperty {
     // Property value can be provided by context
-    boolean contextProvided() default false;
-
+    String authContextType() default "";
 }

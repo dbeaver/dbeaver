@@ -140,7 +140,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         procedures.clear();
-        return this;
+        return super.refreshObject(monitor);
     }
 
     public boolean isNameFromCatalog()
