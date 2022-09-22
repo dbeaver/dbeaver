@@ -39,7 +39,7 @@ public class LocalFileController implements DBFileController {
         try {
             return Files.readAllBytes(targetPath);
         } catch (IOException e) {
-            throw new DBException("Error reading file '" + filePath + "' data", e);
+            throw new DBException("Error reading file '" + targetPath.toAbsolutePath() + "' data", e);
         }
     }
 
@@ -52,7 +52,7 @@ public class LocalFileController implements DBFileController {
             }
             Files.write(targetPath, fileData);
         } catch (IOException e) {
-            throw new DBException("Error writing file '" + filePath + "' data: " + e.getMessage(), e);
+            throw new DBException("Error writing file '" + targetPath.toAbsolutePath() + "' data: " + e.getMessage(), e);
         }
     }
 
@@ -67,7 +67,7 @@ public class LocalFileController implements DBFileController {
         try {
             Files.delete(targetPath);
         } catch (IOException e) {
-            throw new DBException("Error deleting file '" + filePath + "' data: " + e.getMessage(), e);
+            throw new DBException("Error deleting file '" + targetPath.toAbsolutePath() + "' data: " + e.getMessage(), e);
         }
     }
 }
