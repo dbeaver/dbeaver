@@ -359,7 +359,7 @@
                     iconBig="icons/db2_icon_big.png"
                     defaultPort="50000"
                     webURL="https://www-01.ibm.com/support/docview.wss?uid=swg21363866"
-                    propertiesURL="https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.apdv.java.doc/src/tpc/imjcc_r0052038.html"
+                    propertiesURL="https://www.ibm.com/docs/en/db2/latest?topic=pdsdjs-common-data-server-driver-jdbc-sqlj-properties-all-database-products"
                     description="DB2 for Linux/Unix/Windows driver"
                     promoted="1"
                     categories="sql">
@@ -372,7 +372,7 @@
                     
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
 
-                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.0.0]" bundle="!drivers.db2"/>
+                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.7.0]" bundle="!drivers.db2"/>
 
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
                     <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
