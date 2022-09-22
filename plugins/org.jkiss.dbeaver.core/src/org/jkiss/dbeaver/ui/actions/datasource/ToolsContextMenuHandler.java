@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreCommands;
@@ -78,7 +79,8 @@ public class ToolsContextMenuHandler extends AbstractDataSourceHandler
             }
         }
         menuManager.add(new Separator());
-        {
+        
+        if (ActionUtils.isCommandEnabled(SQLEditorCommands.CMD_SQL_EDITOR_OPEN, part.getSite())) {
             menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), SQLEditorCommands.CMD_SQL_EDITOR_OPEN));
 /*
             final MenuManager toolsMenu = new MenuManager(

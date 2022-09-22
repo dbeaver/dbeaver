@@ -267,6 +267,9 @@ public class UINavigatorMessages extends NLS {
     public static String datasource_list_action_empty;
     public static String filter_connection_name_placeholder;
 
+    public static String failed_to_paste_due_to_permissions_title;
+    public static String failed_to_paste_due_to_permissions_message;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UINavigatorMessages.class);

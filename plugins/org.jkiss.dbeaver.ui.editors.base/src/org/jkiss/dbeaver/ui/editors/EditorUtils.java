@@ -74,6 +74,20 @@ public class EditorUtils {
 
     private static final Log log = Log.getLog(EditorUtils.class);
 
+    /**
+     * Get project by the specified editor input
+     */
+    @Nullable
+    public static DBPProject getFileProject(@Nullable IEditorInput editorInput) {
+        if (editorInput != null) {
+            IFile curFile = EditorUtils.getFileFromInput(editorInput);
+            if (curFile != null) {
+                return DBPPlatformDesktop.getInstance().getWorkspace().getProject(curFile.getProject());
+            }
+        }
+        return null;
+    }
+
     @Nullable
     public static IFile getFileFromInput(IEditorInput editorInput) {
         if (editorInput == null) {

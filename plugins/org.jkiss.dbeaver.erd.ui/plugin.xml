@@ -460,7 +460,13 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.erd.ui.navigator.CreateDiagramHandler"/>
+        <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.erd.ui.navigator.CreateDiagramHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                </with>
+            </enabledWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -473,7 +479,7 @@
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">
             <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
-                <visibleWhen>
+                <visibleWhen checkEnabled="true">
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
@@ -488,7 +494,7 @@
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=generate">
             <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
-                <visibleWhen>
+                <visibleWhen checkEnabled="true">
                     <with variable="selection">
                         <count value="(1-"/>
                         <iterate operator="and">
@@ -501,7 +507,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
             <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
-                <visibleWhen>
+                <visibleWhen checkEnabled="true">
                     <with variable="selection">
                         <count value="+"/>
                         <iterate operator="and">

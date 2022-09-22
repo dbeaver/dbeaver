@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.erd.ui.navigator;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -40,9 +41,9 @@ public class DBNDiagram extends DBNResource
         super(parentNode, resource, handler);
     }
 
+    @NotNull
     @Override
-    public DBPImage getNodeIcon()
-    {
+    public DBPImage getResourceNodeIcon() {
         if (image == null) {
             image = DIAGRAM_ICON;
         }
