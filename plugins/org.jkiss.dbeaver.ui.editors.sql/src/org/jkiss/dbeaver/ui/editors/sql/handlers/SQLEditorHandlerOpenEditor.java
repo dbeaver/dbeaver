@@ -34,7 +34,10 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
@@ -277,8 +280,12 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
                 openResourceEditor(workbenchWindow, res, editorContext);
             }
         } else {
-            IFile scriptFile = SQLEditorUtils.createNewScript(project, scriptFolder, editorContext);
-            openResource(scriptFile, editorContext);
+            if (project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                IFile scriptFile = SQLEditorUtils.createNewScript(project, scriptFolder, editorContext);
+                openResource(scriptFile, editorContext);
+            } else {
+                openSQLConsole(workbenchWindow, editorContext, editorContext.getDataSourceContainer().getName(), "");
+            }
         }
     }
 
