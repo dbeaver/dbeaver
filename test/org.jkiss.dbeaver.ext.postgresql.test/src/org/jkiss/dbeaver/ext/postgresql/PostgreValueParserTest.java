@@ -240,6 +240,7 @@ public class PostgreValueParserTest {
 //        Mockito.when(arrayIntItemType.getFullTypeName()).thenReturn("test_arrayIntItemType");
         Mockito.when(arrayIntItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
         Mockito.when(arrayIntItemType.getComponentType(session.getProgressMonitor())).thenReturn(intItemType);
+        Mockito.when(arrayIntItemType.getArrayDelimiter()).thenReturn(",");
 
 //        Mockito.when(doubleItemType.getFullTypeName()).thenReturn("test_doubleItemType");
         Mockito.when(doubleItemType.getDataKind()).thenReturn(DBPDataKind.NUMERIC);
@@ -248,6 +249,7 @@ public class PostgreValueParserTest {
         Mockito.when(arrayDoubleItemType.getFullTypeName()).thenReturn("test_arrayDoubleItemType");
         Mockito.when(arrayDoubleItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
         Mockito.when(arrayDoubleItemType.getComponentType(session.getProgressMonitor())).thenReturn(doubleItemType);
+        Mockito.when(arrayDoubleItemType.getArrayDelimiter()).thenReturn(",");
 
 //        Mockito.when(stringItemType.getFullTypeName()).thenReturn("test_stringItemType");
         Mockito.when(stringItemType.getDataKind()).thenReturn(DBPDataKind.STRING);
@@ -257,6 +259,7 @@ public class PostgreValueParserTest {
 //        Mockito.when(arrayStringItemType.getFullTypeName()).thenReturn("test_arrayStringItemType");
         Mockito.when(arrayStringItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
         Mockito.when(arrayStringItemType.getComponentType(session.getProgressMonitor())).thenReturn(stringItemType);
+        Mockito.when(arrayStringItemType.getArrayDelimiter()).thenReturn(",");
 
 //        Mockito.when(structItemType.getFullTypeName()).thenReturn("test_structItemType");
 //        Mockito.when(structItemType.getDataKind()).thenReturn(DBPDataKind.STRUCT);
@@ -273,6 +276,7 @@ public class PostgreValueParserTest {
 //        Mockito.when(arrayBooleanItemType.getFullTypeName()).thenReturn("test_arrayBooleanItemType");
         Mockito.when(arrayBooleanItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
         Mockito.when(arrayBooleanItemType.getComponentType(session.getProgressMonitor())).thenReturn(booleanItemType);
+        Mockito.when(arrayBooleanItemType.getArrayDelimiter()).thenReturn(",");
 
 //        Mockito.when(dataFormatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, doubleItemType)).thenReturn(numberDataFormatter);
 

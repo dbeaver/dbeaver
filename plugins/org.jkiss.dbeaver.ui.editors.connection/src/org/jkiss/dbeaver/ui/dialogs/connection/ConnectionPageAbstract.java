@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ResourceLocator;
 import org.eclipse.swt.SWT;
@@ -26,6 +27,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -40,12 +43,21 @@ import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * ConnectionPageAbstract
  */
+public abstract class ConnectionPageAbstract extends DialogPage implements IDataSourceConnectionEditor {
 
-public abstract class ConnectionPageAbstract extends DialogPage implements IDataSourceConnectionEditor
-{
+    protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
+    protected static final String GROUP_CONNECTION_MODE = "connectionMode"; //$NON-NLS-1$
+    @NotNull
+    protected final Map<String, List<Control>> propGroupMap = new HashMap<>();
+
     protected IDataSourceConnectionEditorSite site;
     // Driver name
     protected Text driverText;
@@ -53,6 +65,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected Button savePasswordCheck;
     protected ToolBar userManagementToolbar;
     private VariablesHintLabel variablesHintLabel;
+    @Nullable
+    protected Button typeManualRadio;
+    @Nullable
+    protected Button typeURLRadio;
 
     private ImageDescriptor curImageDescriptor;
 
@@ -287,6 +303,35 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected Image createImage(String imageFilePath) {
         ImageDescriptor imageDescriptor = ResourceLocator.imageDescriptorFromBundle(getClass(), imageFilePath).orElse(null);
         return imageDescriptor == null ? null : imageDescriptor.createImage();
+    }
+
+    protected void createConnectionModeSwitcher(Composite parent, SelectionAdapter typeSwitcher) {
+        Label cnnTypeLabel = UIUtils.createControlLabel(parent, UIConnectionMessages.dialog_connection_mode_label);
+        cnnTypeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        Composite modeGroup = UIUtils.createComposite(parent, 3);
+        typeManualRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_host_label, false, typeSwitcher);
+        typeURLRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_url_label, true, typeSwitcher);
+        modeGroup.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).create());
+        addControlToGroup(GROUP_CONNECTION_MODE, modeGroup);
+    }
+
+    protected void setupConnectionModeSelection(@NotNull Text urlText, boolean useUrl) {
+        typeURLRadio.setSelection(useUrl);
+        typeManualRadio.setSelection(!useUrl);
+        urlText.setEditable(useUrl);
+
+        for (Control control : propGroupMap.get(GROUP_CONNECTION)) {
+            control.setEnabled(!useUrl);
+            if (control instanceof Text) {
+                ((Text) control).setEditable(!useUrl);
+            }
+        }
+    }
+
+    protected void addControlToGroup(@NotNull String group, @NotNull Control control) {
+        propGroupMap
+            .computeIfAbsent(group, k -> new ArrayList<>())
+            .add(control);
     }
 
 }

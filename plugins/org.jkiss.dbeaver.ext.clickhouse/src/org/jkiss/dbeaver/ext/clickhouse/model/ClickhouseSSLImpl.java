@@ -14,20 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ext.clickhouse.model;
 
-package org.jkiss.dbeaver.model.auth;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class ClickhouseSSLImpl extends SSLHandlerImpl {
 
-/**
- * Auth Property
- */
-@Target(value = {ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface AuthProperty {
-    // Property value can be provided by context
-    String authContextType() default "";
 }

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.fs.DBFRemoteFileStore;
 import org.jkiss.dbeaver.model.fs.nio.NIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -289,12 +291,12 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
         return this;
     }
 
-    @NotNull
     protected void refreshThisResource(DBRProgressMonitor monitor) throws DBException {
         if (resource == null) {
             return;
         }
         try {
+            refreshFileStore(monitor);
             resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
 
             IPath resourceLocation = resource.getLocation();
@@ -304,6 +306,15 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
             }
         } catch (CoreException e) {
             throw new DBException("Can't refresh resource", e);
+        }
+    }
+
+    protected void refreshFileStore(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (resource instanceof Resource) {
+            final DBFRemoteFileStore remoteFileStore = GeneralUtils.adapt(((Resource) resource).getStore(), DBFRemoteFileStore.class);
+            if (remoteFileStore != null) {
+                remoteFileStore.refresh(monitor);
+            }
         }
     }
 
@@ -403,6 +414,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
                                         true,
                                         monitor.getNestedMonitor());
                                 }
+                                refreshFileStore(monitor);
                                 resource.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
                             } catch (CoreException e) {
                                 throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName(), e);

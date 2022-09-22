@@ -14,20 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ext.clickhouse;
 
-package org.jkiss.dbeaver.model.auth;
+public class ClickhouseConstants {
+    public static final String SSL_PARAM = "ssl"; //$NON-NLS-1$
+    public static final String SSL_PATH = "sslcert"; //$NON-NLS-1$
+    public static final String SSL_KEY_PASSWORD = "sslkey"; //$NON-NLS-1$
+    public static final String SSL_MODE_CONF = "ssl.mode"; //$NON-NLS-1$
+    public static final String SSL_MODE = "sslmode"; //$NON-NLS-1$
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-/**
- * Auth Property
- */
-@Target(value = {ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface AuthProperty {
-    // Property value can be provided by context
-    String authContextType() default "";
+    public static final String SSL_ROOT_CERTIFICATE = "sslrootcert"; //$NON-NLS-1$
 }
