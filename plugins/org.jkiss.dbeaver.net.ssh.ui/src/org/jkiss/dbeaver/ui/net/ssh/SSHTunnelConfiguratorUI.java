@@ -285,12 +285,14 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     monitor.subTask("Initialize tunnel");
                     String authTypeName = configuration.getStringProperty("authType");
                     SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, authTypeName);
-                    DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration);
-                    if (dbpAuthInfo != null) {
-                        if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
-                            configuration.setUserName(dbpAuthInfo.getUserName());
+                    if (!configuration.isSavePassword()) {
+                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration);
+                        if (dbpAuthInfo != null) {
+                            if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
+                                configuration.setUserName(dbpAuthInfo.getUserName());
+                            }
+                            configuration.setPassword(dbpAuthInfo.getUserPassword());
                         }
-                        configuration.setPassword(dbpAuthInfo.getUserPassword());
                     }
                     tunnel.initializeHandler(monitor, configuration, connectionConfig);
                     monitor.worked(1);
