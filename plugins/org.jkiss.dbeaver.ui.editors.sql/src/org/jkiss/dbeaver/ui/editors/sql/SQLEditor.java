@@ -309,8 +309,11 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     private boolean isProjectResourceEditable() {
-        DBPProject project = this.getProject();
-        return project == null || project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
+        if (getEditorInput() instanceof IFileEditorInput) {
+            DBPProject project = this.getProject();
+            return project == null || project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
+        }
+        return true;
     }
 
     @Override
