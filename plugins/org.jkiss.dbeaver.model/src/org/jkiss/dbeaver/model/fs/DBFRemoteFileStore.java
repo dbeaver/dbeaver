@@ -14,20 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.fs;
 
-package org.jkiss.dbeaver.model.auth;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.eclipse.core.filesystem.IFileStore;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * Auth Property
+ * An {@link IFileStore} that supports explicit refresh.
  */
-@Target(value = {ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface AuthProperty {
-    // Property value can be provided by context
-    String authContextType() default "";
+public interface DBFRemoteFileStore extends IFileStore {
+
+    /**
+     * Refreshes this file store
+     *
+     * @param monitor progress monitor for tracking refresh progress
+     * @throws DBException if an error occurred during refresh
+     */
+    void refresh(@NotNull DBRProgressMonitor monitor) throws DBException;
+
 }

@@ -508,6 +508,7 @@ public class DBPConnectionConfiguration implements DBPObject {
                 CommonUtils.equalOrEmptyStrings(this.userName, source.userName) &&
                 CommonUtils.equalOrEmptyStrings(this.userPassword, source.userPassword) &&
                 CommonUtils.equalOrEmptyStrings(this.url, source.url) &&
+                CommonUtils.equalObjects(this.configurationType, source.configurationType) &&
                 CommonUtils.equalObjects(this.clientHomeId, source.clientHomeId) &&
                 CommonUtils.equalObjects(this.configProfileName, source.configProfileName) &&
                 CommonUtils.equalObjects(this.authModelId, source.authModelId) &&
