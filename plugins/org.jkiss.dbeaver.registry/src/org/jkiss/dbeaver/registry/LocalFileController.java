@@ -35,7 +35,7 @@ public class LocalFileController implements DBFileController {
 
     @Override
     public byte[] loadFileData(@NotNull String fileType, @NotNull String filePath) throws DBException {
-        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        Path targetPath = dataFolder.resolve(fileType).resolve(Path.of(filePath));
         try {
             return Files.readAllBytes(targetPath);
         } catch (IOException e) {
@@ -45,7 +45,7 @@ public class LocalFileController implements DBFileController {
 
     @Override
     public void saveFileData(@NotNull String fileType, @NotNull String filePath, byte[] fileData) throws DBException {
-        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        Path targetPath = dataFolder.resolve(fileType).resolve(Path.of(filePath));
         try {
             if (!Files.exists(targetPath.getParent())) {
                 Files.createDirectories(targetPath.getParent());
@@ -63,7 +63,7 @@ public class LocalFileController implements DBFileController {
 
     @Override
     public void deleteFile(@NotNull String fileType, @NotNull String filePath, boolean recursive) throws DBException {
-        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        Path targetPath = dataFolder.resolve(fileType).resolve(Path.of(filePath));
         try {
             Files.delete(targetPath);
         } catch (IOException e) {
