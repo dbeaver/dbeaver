@@ -23,7 +23,6 @@ import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -98,11 +97,9 @@ public class LocalProjectImpl extends BaseProjectImpl {
         if (!project.isOpen()) {
             NullProgressMonitor monitor = new NullProgressMonitor();
             try {
+                project.open(monitor);
                 if (!DBWorkbench.getPlatform().getApplication().isDistributed()) {
-                    project.open(monitor);
                     project.refreshLocal(IFile.DEPTH_ONE, monitor);
-                } else {
-                    project.open(IResource.BACKGROUND_REFRESH, monitor);
                 }
             } catch (CoreException e) {
                 if (getWorkspace().getPlatform().getApplication().isStandalone() &&
