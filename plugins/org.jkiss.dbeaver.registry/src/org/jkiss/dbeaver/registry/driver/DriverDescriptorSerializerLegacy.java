@@ -244,6 +244,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 }
                 case RegistryConstants.TAG_DRIVER: {
                     curDriver = null;
+                    String idAttr = atts.getValue(RegistryConstants.ATTR_ID);
                     if (curProvider == null) {
                         String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
                         if (!CommonUtils.isEmpty(providerId)) {
@@ -253,11 +254,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             }
                         }
                         if (curProvider == null) {
-                            log.warn("Driver outside of datasource provider");
+                            log.warn("Driver '" + idAttr + "' outside of datasource provider");
                             return;
                         }
                     }
-                    String idAttr = atts.getValue(RegistryConstants.ATTR_ID);
                     curDriver = curProvider.getDriver(idAttr);
                     if (curDriver == null) {
                         curDriver = new DriverDescriptor(curProvider, idAttr);
