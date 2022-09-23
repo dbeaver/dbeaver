@@ -339,12 +339,12 @@
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="mysql" parent="basic" class="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" label="MySQL" description="MySQL dialect." icon="icons/mysql_icon.png">
             <property name="insertMethods" value="mysqlInsertIgnore,mysqlReplaceIgnore,mysqlReplaceIgnoreUpdate"/>
-            <keywords value=""/>
-            <execKeywords value=""/>
-            <ddlKeywords value=""/>
-            <dmlKeywords value=""/>
-            <functions value=""/>
-            <types value=""/>
+            <property name="keywords" value=""/>
+            <property name="execKeywords" value=""/>
+            <property name="ddlKeywords" value=""/>
+            <property name="dmlKeywords" value=""/>
+            <property name="functions" value=""/>
+            <property name="types" value=""/>
 
             <property name="" value=""/>
         </dialect>
