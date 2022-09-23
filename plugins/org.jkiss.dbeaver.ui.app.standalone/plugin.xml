@@ -194,7 +194,9 @@
             <command commandId="org.eclipse.ui.edit.findReplace" label="%command.org.jkiss.dbeaver.core.edit.findreplace.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <separator name="additions" visible="true"/>
             <separator name="format" visible="true"/>
                 <menu id="format" label="%menu.format">

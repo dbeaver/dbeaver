@@ -322,28 +322,34 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     public void setHandlers(@NotNull List<DBWHandlerConfiguration> handlers) {
-        this.handlers.clear();
-        this.handlers.addAll(handlers);
+        synchronized (this.handlers) {
+            this.handlers.clear();
+            this.handlers.addAll(handlers);
+        }
     }
 
     public void updateHandler(DBWHandlerConfiguration handler) {
-        for (int i = 0; i < handlers.size(); i++) {
-            if (handlers.get(i).getId().equals(handler.getId())) {
-                handlers.set(i, handler);
-                return;
+        synchronized (handlers) {
+            for (int i = 0; i < handlers.size(); i++) {
+                if (handlers.get(i).getId().equals(handler.getId())) {
+                    handlers.set(i, handler);
+                    return;
+                }
             }
+            this.handlers.add(handler);
         }
-        this.handlers.add(handler);
     }
 
     @Nullable
     public DBWHandlerConfiguration getHandler(String id) {
-        for (DBWHandlerConfiguration cfg : handlers) {
-            if (cfg.getId().equals(id)) {
-                return cfg;
+        synchronized (handlers) {
+            for (DBWHandlerConfiguration cfg : handlers) {
+                if (cfg.getId().equals(id)) {
+                    return cfg;
+                }
             }
+            return null;
         }
-        return null;
     }
 
     ////////////////////////////////////////////////////
@@ -508,6 +514,7 @@ public class DBPConnectionConfiguration implements DBPObject {
                 CommonUtils.equalOrEmptyStrings(this.userName, source.userName) &&
                 CommonUtils.equalOrEmptyStrings(this.userPassword, source.userPassword) &&
                 CommonUtils.equalOrEmptyStrings(this.url, source.url) &&
+                CommonUtils.equalObjects(this.configurationType, source.configurationType) &&
                 CommonUtils.equalObjects(this.clientHomeId, source.clientHomeId) &&
                 CommonUtils.equalObjects(this.configProfileName, source.configProfileName) &&
                 CommonUtils.equalObjects(this.authModelId, source.authModelId) &&

@@ -195,9 +195,6 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                                     activeProject = projectMetadata;
                                     fireActiveProjectChange(null, activeProject);
                                 }
-                            } else {
-                                // Project not found - report an error
-                                log.error("Project '" + delta.getResource().getName() + "' not found in workspace");
                             }
                         } else {
                             if (delta.getKind() == IResourceDelta.REMOVED) {

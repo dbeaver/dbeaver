@@ -289,6 +289,11 @@ public class UIConnectionMessages extends NLS {
     public static String driver_labal_provider_tip_saved_connections;
     public static String driver_labal_provider_tip_no_saved_connections;
 
+    public static String dialog_connection_server_label;
+    public static String dialog_connection_mode_label;
+    public static String dialog_connection_url_label;
+    public static String dialog_connection_host_label;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIConnectionMessages.class);

@@ -56,19 +56,29 @@ public class DBeaverIcons
     }
 
     private static class IconDescriptor {
+        @NotNull
         String id;
+        @NotNull
         Image image;
+        @NotNull
         ImageDescriptor imageDescriptor;
 
-        IconDescriptor(String id, ImageDescriptor imageDescriptor) {
+        IconDescriptor(@NotNull String id, @NotNull ImageDescriptor imageDescriptor) {
             this.id = id;
             this.image = imageDescriptor.createImage(false);
             this.imageDescriptor = imageDescriptor;
         }
-        IconDescriptor(String id, Image image) {
+
+        IconDescriptor(@NotNull String id, @NotNull Image image) {
             this.id = id;
             this.image = image;
             this.imageDescriptor = ImageDescriptor.createFromImage(image);
+        }
+
+        IconDescriptor(@NotNull String id, @NotNull Image image, @NotNull ImageDescriptor imageDescriptor) {
+            this.id = id;
+            this.image = image;
+            this.imageDescriptor = imageDescriptor;
         }
     }
 
@@ -79,22 +89,7 @@ public class DBeaverIcons
 
     @NotNull
     public static Image getImage(@NotNull DBPImage image) {
-        if (image == null) {
-            return getImage(DBIcon.TYPE_UNKNOWN);
-        }
-        if (image instanceof DBIconBinary) {
-            return ((DBIconBinary) image).getImage();
-        } else {
-            IconDescriptor icon = getIconByLocation(image.getLocation());
-            if (icon == null) {
-                log.error("Image '" + image.getLocation() + "' not found");
-                return getImage(DBIcon.TYPE_UNKNOWN);
-            } else if (image instanceof DBIconComposite) {
-                return getCompositeIcon(icon, (DBIconComposite) image).image;
-            } else {
-                return icon.image;
-            }
-        }
+        return getIconDescriptor(image).image;
     }
 
     @Nullable
@@ -107,23 +102,33 @@ public class DBeaverIcons
     }
 
     @NotNull
-    public static ImageDescriptor getImageDescriptor(@NotNull DBPImage image)
-    {
+    public static ImageDescriptor getImageDescriptor(@NotNull DBPImage image) {
+        return getIconDescriptor(image).imageDescriptor; 
+    }
+    
+    private static IconDescriptor getIconDescriptor(DBPImage image) {
         if (image == null) {
-            return getImageDescriptor(DBIcon.TYPE_UNKNOWN);
-        }
-        if (image instanceof DBIconBinary) {
-            return ((DBIconBinary) image).getImageDescriptor();
-        } else {
+            return getIconDescriptor(DBIcon.TYPE_UNKNOWN);
+        } else if (image instanceof DBIconBinary) {
+            return new IconDescriptor(
+                "[" + image.getLocation() + "]",
+                ((DBIconBinary) image).getImage(),
+                ((DBIconBinary) image).getImageDescriptor()
+            );
+        } else if (image instanceof DBIconComposite) {
+            IconDescriptor icon = getIconDescriptor(((DBIconComposite) image).getMain());
+            return getCompositeIcon(icon, (DBIconComposite) image);
+        } else if (image instanceof DBIcon) {
             IconDescriptor icon = getIconByLocation(image.getLocation());
             if (icon == null) {
                 log.error("Image '" + image.getLocation() + "' not found");
-                return getImageDescriptor(DBIcon.TYPE_UNKNOWN);
-            } else if (image instanceof DBIconComposite) {
-                return getCompositeIcon(icon, (DBIconComposite) image).imageDescriptor;
+                return getIconDescriptor(DBIcon.TYPE_UNKNOWN);
             } else {
-                return icon.imageDescriptor;
+                return icon;
             }
+        } else {
+            log.error("Unexpected image of type " + image.getClass());
+            return getIconDescriptor(DBIcon.TYPE_UNKNOWN);
         }
     }
 

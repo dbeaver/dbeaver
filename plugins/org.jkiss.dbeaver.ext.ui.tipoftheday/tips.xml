@@ -80,7 +80,7 @@
 	</tip>
 	<tip>While working with the Data Editor you can apply filtering using the value from the clipboard. Just copy the value you need from any source, right-click on the cell, go to Filter &amp;rArr; Clipboard and select the appropriate option.</tip>
 	<tip>If you are afraid to change the important data in the table by mistake, this problem can be easily solved. Just turn on read-only mode and view the table without the editing function.</tip>
-	<tip>An easy way to find repeated values in your data is to highlight them. You can enable this feature by ticking the <b>Mark occurrences of selected cell's value</b> checkbox <a href="href://org.jkiss.dbeaver.preferences.main.resultset">here</a>.</tip>
+	<tip>An easy way to find repeated values in your data is to highlight them. You can enable this feature by ticking the <b>Mark occurrences of selected cell's value</b> checkbox <a href="prefs://org.jkiss.dbeaver.preferences.main.sql.codeeditor">here</a>.</tip>
 	<tip>You can edit date and time fields in your tables using a convenient calendar. Open the Value panel and click on the icon with the clock to switch the editor to a calendar view. You can also find a corresponding checkbox in the Preferences.</tip>
 	<tip>Using the Filter field located above the grid you can enter an SQL expression to filter the results.
 		<br/>Click the expand button (<b>&#9660;</b>) on the right side to see the filter history.

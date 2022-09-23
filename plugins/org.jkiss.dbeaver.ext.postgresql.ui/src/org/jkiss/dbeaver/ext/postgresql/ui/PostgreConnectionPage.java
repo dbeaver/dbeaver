@@ -17,13 +17,18 @@
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -34,6 +39,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
@@ -41,6 +47,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -51,8 +58,12 @@ import java.util.Locale;
 public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
     private static final Log log = Log.getLog(PostgreConnectionPage.class);
 
+    private Text urlText;
+    private Label hostLabel;
     private Text hostText;
+    private Label portLabel;
     private Text portText;
+    private Label dbLabel;
     private Text dbText;
     private Text roleText; //TODO: make it a combo and fill it with appropriate roles
     private ClientHomesSelector homesSelector;
@@ -75,49 +86,84 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     public void createControl(Composite composite) {
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
-        ModifyListener textListener = e -> {
+        final ModifyListener textListener = e -> {
             if (activated) {
+                updateUrl();
                 site.updateButtons();
             }
         };
-        
-        final DBPDriver driver = site.getDriver();
-        PostgreServerType serverType = PostgreUtils.getServerType(driver);
 
         Composite mainGroup = new Composite(composite, SWT.NONE);
         mainGroup.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);
         mainGroup.setLayoutData(gd);
 
-        Group addrGroup = UIUtils.createControlGroup(mainGroup, "Server", 4, GridData.FILL_HORIZONTAL, 0);
+        Group addrGroup = UIUtils.createControlGroup(
+            mainGroup,
+            UIConnectionMessages.dialog_connection_server_label,
+            4,
+            GridData.FILL_HORIZONTAL,
+            0
+        );
 
-        hostText = UIUtils.createLabelText(
+        SelectionAdapter typeSwitcher = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setupConnectionModeSelection(urlText, typeURLRadio.getSelection());
+                updateUrl();
+            }
+        };
+        createConnectionModeSwitcher(addrGroup, typeSwitcher);
+
+        UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
+        urlText = new Text(addrGroup, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        gd.grabExcessHorizontalSpace = true;
+        gd.widthHint = 355;
+        urlText.setLayoutData(gd);
+        urlText.addModifyListener(e -> site.updateButtons());
+
+        final DBPDriver driver = site.getDriver();
+        PostgreServerType serverType = PostgreUtils.getServerType(driver);
+
+        hostLabel = UIUtils.createControlLabel(
             addrGroup,
-            serverType.isCloudServer() ? PostgreMessages.dialog_setting_connection_cloud_instance : PostgreMessages.dialog_setting_connection_host,
-            null,
-            SWT.BORDER);
+            serverType.isCloudServer()
+                ? PostgreMessages.dialog_setting_connection_cloud_instance
+                : PostgreMessages.dialog_setting_connection_host
+        );
+        addControlToGroup(GROUP_CONNECTION, hostLabel);
+        hostText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
+        addControlToGroup(GROUP_CONNECTION, hostText);
 
         if (serverType.needsPort()) {
-	        portText = UIUtils.createLabelText(addrGroup, PostgreMessages.dialog_setting_connection_port, null, SWT.BORDER);
-	        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-	        gd.widthHint = UIUtils.getFontHeight(portText) * 7;
-	        portText.setLayoutData(gd);
-	        portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-	        portText.addModifyListener(textListener);
+            portLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_port);
+            addControlToGroup(GROUP_CONNECTION, portLabel);
+            portText = new Text(addrGroup, SWT.BORDER);
+            gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+            gd.widthHint = UIUtils.getFontHeight(portText) * 7;
+            portText.setLayoutData(gd);
+            portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+            portText.addModifyListener(textListener);
+            addControlToGroup(GROUP_CONNECTION, portText);
         } else {
-        	gd.horizontalSpan = 3;
+            gd.horizontalSpan = 3;
         }
 
-        dbText = UIUtils.createLabelText(addrGroup, PostgreMessages.dialog_setting_connection_database, null, SWT.BORDER);
+        dbLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_database);
+        addControlToGroup(GROUP_CONNECTION, dbLabel);
+        dbText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
+        addControlToGroup(GROUP_CONNECTION, dbText);
 
         createAuthPanel(mainGroup, 1);
 
@@ -132,9 +178,9 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
                 roleText.setLayoutData(gd);
             }
 
-            if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConstants.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION) &&
-                serverType.supportsClient())
-            {
+            if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConstants.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION)
+                && serverType.supportsClient()
+            ) {
                 homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
                 gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
                 homesSelector.getPanel().setLayoutData(gd);
@@ -151,10 +197,14 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
 
     @Override
     public boolean isComplete() {
-        return super.isComplete() &&
-            hostText != null &&
-            !CommonUtils.isEmpty(hostText.getText()) &&
-            (portText == null || !CommonUtils.isEmpty(portText.getText()));
+        if (isCustomURL()) {
+            return !CommonUtils.isEmpty(urlText.getText());
+        } else {
+            return super.isComplete() &&
+                hostText != null &&
+                !CommonUtils.isEmpty(hostText.getText()) &&
+                (portText == null || !CommonUtils.isEmpty(portText.getText()));
+        }
     }
 
     @Override
@@ -200,13 +250,23 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         if (homesSelector != null) {
             homesSelector.populateHomes(driver, connectionInfo.getClientHomeId(), site.isNew());
         }
-
+        
+        final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
+        if (useURL) {
+            urlText.setText(connectionInfo.getUrl());
+        }
+        setupConnectionModeSelection(urlText, useURL);
+        updateUrl();
+        
         activated = true;
     }
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
+        connectionInfo.setConfigurationType(
+            typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
+        
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
         }
@@ -222,6 +282,9 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         if (homesSelector != null) {
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
+        if (typeURLRadio.getSelection()) {
+            connectionInfo.setUrl(urlText.getText());
+        }
 
         super.saveSettings(dataSource);
     }
@@ -232,5 +295,20 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             new PostgreConnectionPageAdvanced(),
             new DriverPropertiesDialogPage(this)
         };
+    }
+    
+    @Override
+    protected boolean isCustomURL() {
+        return typeURLRadio.getSelection();
+    }
+    
+    private void updateUrl() {
+        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
+        saveSettings(dataSourceContainer);
+        if (typeURLRadio.getSelection()) {
+            urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
+        } else {
+            urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
+        }
     }
 }

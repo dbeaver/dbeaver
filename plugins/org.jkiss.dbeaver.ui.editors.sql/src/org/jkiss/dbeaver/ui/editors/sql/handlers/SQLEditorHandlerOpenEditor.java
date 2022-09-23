@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -111,15 +112,22 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
             }
         }
         try {
+            DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
             switch (actionId) {
                 case SQLEditorCommands.CMD_SQL_EDITOR_OPEN:
-                    openEditor(event);
+                    if (activeProject == null || activeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW)) {
+                        openEditor(event);
+                    }
                     break;
                 case SQLEditorCommands.CMD_SQL_EDITOR_NEW:
-                    openNewEditor(event);
+                    if (activeProject == null || activeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                        openNewEditor(event);
+                    }
                     break;
                 case SQLEditorCommands.CMD_SQL_EDITOR_RECENT:
-                    openRecentEditor(event);
+                    if (activeProject == null || activeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW)) {
+                        openRecentEditor(event);
+                    }
                     break;
             }
         } catch (InterruptedException e) {
@@ -272,8 +280,12 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
                 openResourceEditor(workbenchWindow, res, editorContext);
             }
         } else {
-            IFile scriptFile = SQLEditorUtils.createNewScript(project, scriptFolder, editorContext);
-            openResource(scriptFile, editorContext);
+            if (project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                IFile scriptFile = SQLEditorUtils.createNewScript(project, scriptFolder, editorContext);
+                openResource(scriptFile, editorContext);
+            } else {
+                openSQLConsole(workbenchWindow, editorContext, editorContext.getDataSourceContainer().getName(), "");
+            }
         }
     }
 

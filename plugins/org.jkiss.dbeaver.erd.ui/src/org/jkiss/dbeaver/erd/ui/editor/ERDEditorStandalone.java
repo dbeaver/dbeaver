@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -81,9 +82,18 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     }
 
     @Override
-    public boolean isReadOnly()
-    {
-        return false;
+    public boolean isReadOnly() {
+        return !this.isProjectResourceEditable();
+    }
+    
+    @Override
+    public boolean isModelEditEnabled() {
+        return super.isModelEditEnabled() && this.isProjectResourceEditable();
+    }
+    
+    private boolean isProjectResourceEditable() {
+        DBPProject project = this.getDiagramProject();
+        return project == null || project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
     }
 
     @Override
