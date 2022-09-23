@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.DBTScheduler;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskFolder;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.utils.CommonUtils;
@@ -42,6 +43,9 @@ public class TaskPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+        if (receiver instanceof DBTTaskFolder && TASK_EDITABLE.equals(property)) {
+            return ((DBTTaskFolder) receiver).getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+        }
         if (!(receiver instanceof DBTTask)) {
             return false;
         }
