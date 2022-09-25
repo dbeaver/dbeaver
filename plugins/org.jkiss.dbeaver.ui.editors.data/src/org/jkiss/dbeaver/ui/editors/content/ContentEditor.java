@@ -324,7 +324,10 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         IEditorPart[] editorParts = getEditorInput().getEditors();
         if (editorParts != null) {
             for (IEditorPart editorPart : editorParts) {
-                contentParts.add(new ContentPartInfo(editorPart, editorPart == getEditorInput().getDefaultEditor()));
+                contentParts.add(new ContentPartInfo(
+                    new ContentPagePart(editorPart),
+                    editorPart == getEditorInput().getDefaultEditor()
+                ));
                 //editorPart.init(site, input);
             }
         }
