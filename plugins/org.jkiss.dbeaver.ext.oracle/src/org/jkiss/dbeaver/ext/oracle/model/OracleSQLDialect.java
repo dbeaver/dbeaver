@@ -370,6 +370,12 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     }
 
     @Override
+    protected void loadDataTypesFromDatabase(JDBCDataSource dataSource) {
+        super.loadDataTypesFromDatabase(dataSource);
+        addDataTypes(OracleDataType.PREDEFINED_TYPES.keySet());
+    }
+
+    @Override
     public String[][] getBlockBoundStrings() {
         return ORACLE_BEGIN_END_BLOCK;
     }
@@ -535,6 +541,16 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         String localDataType = null, dataTypeModifies = null;
 
         switch (externalTypeName) {
+            case "VARCHAR":
+                //We don't want to use a VARCHAR it's not recommended
+                //See https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Data-Types.html#GUID-DF7E10FC-A461-4325-A295-3FD4D150809E
+                localDataType = OracleConstants.TYPE_NAME_VARCHAR2;
+                if (sourceTypedObject.getMaxLength() > 0
+                    && sourceTypedObject.getMaxLength() != Integer.MAX_VALUE
+                    && sourceTypedObject.getMaxLength() != Long.MAX_VALUE) {
+                    dataTypeModifies = String.valueOf(sourceTypedObject.getMaxLength());
+                }
+                break;
             case "XML":
             case "XMLTYPE":
                 localDataType = OracleConstants.TYPE_FQ_XML;
@@ -652,5 +668,10 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Override
     public boolean hasCaseSensitiveFiltration() {
         return true;
+    }
+
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
     }
 }

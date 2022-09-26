@@ -18,37 +18,31 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPExternalFileManager;
+import org.jkiss.dbeaver.model.DBConfigurationController;
+import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.qm.QMController;
+import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
 /**
  * DBPPlatform
  */
-public interface DBPPlatform
-{
+public interface DBPPlatform {
+
     @NotNull
     DBPApplication getApplication();
 
     @NotNull
     DBPWorkspace getWorkspace();
-
-    @NotNull
-    DBPResourceHandler getDefaultResourceHandler();
-
-    @NotNull
-    DBPPlatformLanguage getLanguage();
 
     @NotNull
     DBNModel getNavigatorModel();
@@ -59,8 +53,11 @@ public interface DBPPlatform
     @NotNull
     OSDescriptor getLocalSystem();
 
+    /**
+     * Returns global QM registry
+     */
     @NotNull
-    QMController getQueryManager();
+    QMRegistry getQueryManager();
 
     @NotNull
     DBDRegistry getValueHandlerRegistry();
@@ -71,11 +68,6 @@ public interface DBPPlatform
     @NotNull
     DBFRegistry getFileSystemRegistry();
 
-    DBPGlobalEventManager getGlobalEventManager();
-
-    @NotNull
-    DBPDataFormatterRegistry getDataFormatterRegistry();
-
     @NotNull
     DBPPreferenceStore getPreferenceStore();
 
@@ -83,24 +75,30 @@ public interface DBPPlatform
     DBACertificateStorage getCertificateStorage();
 
     @NotNull
-    DBASecureStorage getSecureStorage();
+    Path getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
+    /**
+     * Platform configuration controller.
+     * Keeps application configuration which can be shared with other users.
+     */
     @NotNull
-    DBPExternalFileManager getExternalFileManager();
+    DBConfigurationController getConfigurationController();
 
+    /**
+     * Local config files are used to store some configuration specific to local machine only.
+     */
     @NotNull
-    File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
+    Path getLocalConfigurationFile(String fileName);
 
+    /**
+     * File controller allows to read/write binary files (e.g. custom driver libraries)
+     */
     @NotNull
-    File getApplicationConfiguration();
+    DBFileController getFileController();
 
+    @Deprecated
     @NotNull
-    File getConfigurationFile(String fileName);
-
-    @NotNull
-    Path getCustomDriversHome();
-
-    boolean isReadOnly();
+    Path getApplicationConfiguration();
 
     boolean isShuttingDown();
 

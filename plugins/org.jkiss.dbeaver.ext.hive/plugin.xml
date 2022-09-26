@@ -34,9 +34,11 @@
 
                 <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar" bundle="!drivers.hive"/>
                 <file type="jar" path="drivers/hive" bundle="drivers.hive"/>
-
+                <parameter name="supports-delimiter-in-views" value="false"/>
                 <parameter name="supports-limits" value="false"/>
                 <parameter name="supports-references" value="false"/>
+                <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                <parameter name="query-set-active-db" value="USE ?"/>
             </driver>
 
             <treeInjection path="generic/catalog/schema/table"

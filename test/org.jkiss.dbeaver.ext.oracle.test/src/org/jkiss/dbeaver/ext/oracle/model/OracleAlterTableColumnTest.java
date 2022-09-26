@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
@@ -67,7 +67,6 @@ public class OracleAlterTableColumnTest {
     public void setUp() throws DBException {
         DBPPlatform dbpPlatform = DBWorkbench.getPlatform();
         Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(dbpPlatform.getDataSourceProviderRegistry().findDriver("oracle"));
-        Mockito.when(mockDataSourceContainer.getPlatform()).thenReturn(dbpPlatform);
 
         testDataSource = new OracleDataSource(mockDataSourceContainer);
 
@@ -97,7 +96,7 @@ public class OracleAlterTableColumnTest {
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE ADD COLUMN4 INTEGER;" + lineBreak;
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE ADD COLUMN4 INTEGER NULL;" + lineBreak;
 
         Assert.assertEquals(script, expectedDDL);
     }
@@ -146,7 +145,8 @@ public class OracleAlterTableColumnTest {
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) DEFAULT 'Test value';" + lineBreak;
+        String expectedDDL =
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) DEFAULT 'Test value' NULL;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 
@@ -162,7 +162,8 @@ public class OracleAlterTableColumnTest {
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,0) DEFAULT 42;" + lineBreak;
+        String expectedDDL =
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,0) DEFAULT 42 NULL;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 
@@ -179,7 +180,8 @@ public class OracleAlterTableColumnTest {
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(50) DEFAULT 'Test value';" + lineBreak;
+        String expectedDDL =
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(50) DEFAULT 'Test value' NULL;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 
@@ -195,7 +197,7 @@ public class OracleAlterTableColumnTest {
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN3 CHAR(33);" + lineBreak;
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN3 CHAR(33) NULL;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 
@@ -211,7 +213,7 @@ public class OracleAlterTableColumnTest {
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,0);" + lineBreak;
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,0) NULL;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 
@@ -228,7 +230,8 @@ public class OracleAlterTableColumnTest {
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,17) DEFAULT 42;" + lineBreak;
+        String expectedDDL =
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,17) DEFAULT 42 NULL;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 

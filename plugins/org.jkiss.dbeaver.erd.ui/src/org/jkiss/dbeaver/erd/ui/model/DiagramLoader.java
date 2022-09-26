@@ -19,7 +19,6 @@
  */
 package org.jkiss.dbeaver.erd.ui.model;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.draw2dl.AbsoluteBendpoint;
 import org.eclipse.draw2dl.Bendpoint;
 import org.eclipse.draw2dl.IFigure;
@@ -35,7 +34,6 @@ import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.part.*;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -112,16 +110,11 @@ public class DiagramLoader extends ERDPersistedState {
         List<ERDEntity> entities = new ArrayList<>();
     }
 
-    public static void load(DBRProgressMonitor monitor, IProject project, DiagramPart diagramPart, Reader reader)
+    public static void load(DBRProgressMonitor monitor, DBPProject projectMeta, DiagramPart diagramPart, Reader reader)
         throws XMLException, DBException
     {
         monitor.beginTask("Parse diagram", 1);
         final EntityDiagram diagram = diagramPart.getDiagram();
-
-        DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(project);
-        if (projectMeta == null) {
-            throw new DBException("Cannot find datasource registry for project '" + project.getName() + "'");
-        }
 
         final Document document = XMLUtils.parseDocument(reader);
         monitor.done();

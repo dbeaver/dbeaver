@@ -59,7 +59,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -126,9 +126,9 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         List<ResultSetRow> rsSelectedRows = rsSelection.getSelectedRows();
         List<DBDAttributeBinding> rsSelectedAttributes = rsSelection.getSelectedAttributes();
         if (rsSelectedRows.size() > 1 || rsSelectedAttributes.size() > 1) {
-            List<Long> selectedRows = new ArrayList<>();
+            List<Integer> selectedRows = new ArrayList<>();
             for (ResultSetRow selectedRow : rsSelectedRows) {
-                selectedRows.add((long) selectedRow.getRowNumber());
+                selectedRows.add(selectedRow.getRowNumber());
             }
 
             options.setSelectedRows(selectedRows);
@@ -158,10 +158,10 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
-                    File tempDir = DBWorkbench.getPlatform().getTempFolder(monitor, "data-files");
-                    File tempFile = new File(tempDir, new SimpleDateFormat(
+                    Path tempDir = DBWorkbench.getPlatform().getTempFolder(monitor, "data-files");
+                    Path tempFile = tempDir.resolve(new SimpleDateFormat(
                         "yyyyMMdd-HHmmss").format(System.currentTimeMillis()) + "." + processor.getAppFileExtension());
-                    tempFile.deleteOnExit();
+                    tempFile.toFile().deleteOnExit();
 
                     IDataTransferProcessor processorInstance = processor.getInstance();
                     if (!(processorInstance instanceof IStreamDataExporter)) {
@@ -173,8 +173,8 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     StreamConsumerSettings settings = new StreamConsumerSettings();
 
                     settings.setOutputEncodingBOM(false);
-                    settings.setOutputFolder(tempDir.getAbsolutePath());
-                    settings.setOutputFilePattern(tempFile.getName());
+                    settings.setOutputFolder(tempDir.toAbsolutePath().toString());
+                    settings.setOutputFilePattern(tempFile.getFileName().toString());
 
                     Map<String, Object> properties = new HashMap<>();
                     // Default values from wizard
@@ -214,10 +214,10 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     consumer.finishTransfer(monitor, false);
 
                     UIUtils.asyncExec(() -> {
-                        if (!ShellUtils.launchProgram(tempFile.getAbsolutePath())) {
+                        if (!ShellUtils.launchProgram(tempFile.toAbsolutePath().toString())) {
                             DBWorkbench.getPlatformUI().showError(
                                 "Open " + processor.getAppName(),
-                                "Can't open " + processor.getAppFileExtension() + " file '" + tempFile.getAbsolutePath() + "'");
+                                "Can't open " + processor.getAppFileExtension() + " file '" + tempFile.toAbsolutePath() + "'");
                         }
                     });
                 } catch (Exception e) {

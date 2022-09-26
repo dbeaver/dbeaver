@@ -16,8 +16,13 @@
  */
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * DBCStatement meta info
@@ -44,6 +49,14 @@ public class QMMStatementInfo extends QMMObject {
         this.previous = null;
     }
 
+    private QMMStatementInfo(Builder builder) {
+        super(builder.openTime, builder.closeTime);
+        connection = builder.connection;
+        purpose = builder.purpose;
+        previous = builder.previous;
+        reference = builder.reference;
+    }
+
     @Override
     public void close()
     {
@@ -56,12 +69,40 @@ public class QMMStatementInfo extends QMMObject {
         return connection.getText();
     }
 
+    @Override
+    public ObjectType getObjectType() {
+        return ObjectType.StatementInfo;
+    }
+
     DBCStatement getReference() {
         return reference;
     }
 
     public QMMConnectionInfo getConnection() {
         return connection;
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> serializedInfo = new LinkedHashMap<>();
+        serializedInfo.put("connection", connection.toMap());
+        serializedInfo.put("openTime", getOpenTime());
+        serializedInfo.put("closeTime", getCloseTime());
+        serializedInfo.put("purposeId", getPurpose().getId());
+        return serializedInfo;
+    }
+
+    public static QMMStatementInfo fromMap(Map<String, Object> objectMap) {
+        QMMConnectionInfo connectionInfo = QMMConnectionInfo.fromMap(JSONUtils.getObject(objectMap, "connection"));
+        DBCExecutionPurpose purpose = DBCExecutionPurpose.getById(CommonUtils.toInt(objectMap.get("purposeId")));
+        long openTime = CommonUtils.toLong(objectMap.get("openTime"));
+        long closeTime = CommonUtils.toLong(objectMap.get("closeTime"));
+        return builder()
+            .setConnection(connectionInfo)
+            .setPurpose(purpose)
+            .setOpenTime(openTime)
+            .setCloseTime(closeTime)
+            .build();
     }
 
     public DBCExecutionPurpose getPurpose() {
@@ -78,4 +119,61 @@ public class QMMStatementInfo extends QMMObject {
         return "STATEMENT";
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    private static final class Builder {
+        private QMMConnectionInfo connection;
+        private DBCExecutionPurpose purpose;
+        private QMMStatementInfo previous;
+        private DBCStatement reference;
+        private long openTime;
+        private long closeTime;
+
+        public Builder() {
+        }
+
+        public Builder(QMMStatementInfo copy) {
+            this.connection = copy.getConnection();
+            this.purpose = copy.getPurpose();
+            this.previous = copy.getPrevious();
+            this.reference = copy.getReference();
+        }
+
+        public Builder setConnection(QMMConnectionInfo connection) {
+            this.connection = connection;
+            return this;
+        }
+
+        public Builder setPurpose(DBCExecutionPurpose purpose) {
+            this.purpose = purpose;
+            return this;
+        }
+
+        public Builder setPrevious(QMMStatementInfo previous) {
+            this.previous = previous;
+            return this;
+        }
+
+        public Builder setReference(DBCStatement reference) {
+            this.reference = reference;
+            return this;
+        }
+
+
+        public Builder setOpenTime(long openTime) {
+            this.openTime = openTime;
+            return this;
+        }
+
+        public Builder setCloseTime(long closeTime) {
+            this.closeTime = closeTime;
+            return this;
+        }
+
+        public QMMStatementInfo build() {
+            return new QMMStatementInfo(this);
+        }
+    }
 }

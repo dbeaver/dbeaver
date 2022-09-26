@@ -22,6 +22,8 @@ import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -54,21 +56,31 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
     private static final Log log = Log.getLog(BinaryPanelEditor.class);
 
     @Override
-    public HexEditControl createControl(IValueController valueController){
-    	
-    	HexEditControl hControl = new HexEditControl(valueController.getEditPlaceholder(), SWT.BORDER | SWT.READ_ONLY);
-		DBPPreferenceListener preferencesChangeListener = new DBPPreferenceListener() {
-			@Override
-			public void preferenceChange(PreferenceChangeEvent event) {
+    public HexEditControl createControl(IValueController valueController) {
+        HexEditControl hControl = new HexEditControl(valueController.getEditPlaceholder(), SWT.BORDER | SWT.READ_ONLY);
+        DBPPreferenceListener preferencesChangeListener = new DBPPreferenceListener() {
+            @Override
+            public void preferenceChange(PreferenceChangeEvent event) {
 
-				if (HexPreferencesPage.PROP_DEF_WIDTH.equals(event.getProperty())) {
-					String defValue = (String) event.getNewValue();
-					hControl.setDefWidth(Integer.valueOf(defValue));
-				}
-			}
-		};
-		DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-		store.addPropertyChangeListener(preferencesChangeListener);
+                if (HexPreferencesPage.PROP_DEF_WIDTH.equals(event.getProperty())) {
+                    String defValue = (String) event.getNewValue();
+                    hControl.setDefWidth(Integer.valueOf(defValue));
+                }
+            }
+        };
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.addPropertyChangeListener(preferencesChangeListener);
+        
+        DBPDataSourceContainer dsContainer = valueController.getExecutionContext().getDataSource().getContainer();
+        DBPEventListener dataSourceRegistryListener = e -> {
+            hControl.setReadOnly(dsContainer.isConnectionReadOnly());
+        };
+        dsContainer.getRegistry().addDataSourceListener(dataSourceRegistryListener);
+        
+        hControl.addDisposeListener(e -> {
+            dsContainer.getRegistry().removeDataSourceListener(dataSourceRegistryListener);
+            store.removePropertyChangeListener(preferencesChangeListener);
+        });
         return hControl;
     }
 
@@ -101,7 +113,7 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
             }
             UIUtils.syncExec(() -> {
                 control.setContent(byteData, finalCharset, false);
-                control.setReadOnly(false);
+                control.setReadOnly(value.getDataSource().getContainer().isConnectionReadOnly());
             });
         } catch (IOException e) {
             throw new DBException("Error reading stream value", e);
@@ -139,6 +151,11 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
 
     @Override
     public void contributeSettings(@NotNull IContributionManager manager, @NotNull HexEditControl control) throws DBCException {
+
+    }
+
+    @Override
+    public void disposeEditor() {
 
     }
 

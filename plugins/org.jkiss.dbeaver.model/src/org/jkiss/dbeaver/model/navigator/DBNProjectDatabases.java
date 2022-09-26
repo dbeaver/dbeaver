@@ -49,12 +49,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
         List<? extends DBPDataSourceContainer> projectDataSources = this.dataSourceRegistry.getDataSources();
         for (DBPDataSourceContainer ds : projectDataSources) {
-            if (ds.isTemplate()) {
-                // Skip templates
-                continue;
-            }
             addDataSource(ds, false, false);
         }
+    }
+
+    @Override
+    public boolean isDisposed() {
+        return dataSourceRegistry == null;
     }
 
     @Override
@@ -224,7 +225,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     @Override
     public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath();
+        return getParentNode().getNodeItemPath() + "/" + getNodeName();
     }
 
     public DBNLocalFolder getFolderNode(DBPDataSourceFolder folder)
@@ -265,6 +266,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     private DBNDataSource addDataSource(@NotNull DBPDataSourceContainer descriptor, boolean reflect, boolean reveal)
     {
+        if (descriptor.isTemplate()) {
+            // Skip templates
+            return null;
+        }
         DBNDataSource newNode = new DBNDataSource(this, descriptor);
         if (!getModel().isNodeVisible(newNode)) {
             return null;
@@ -428,6 +433,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean hasChildren(boolean navigableOnly) {
+        return true;
     }
 
 }

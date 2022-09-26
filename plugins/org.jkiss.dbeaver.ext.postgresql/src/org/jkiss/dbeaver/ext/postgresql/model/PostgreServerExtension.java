@@ -55,6 +55,8 @@ public interface PostgreServerExtension {
 
     boolean supportsRules();
 
+    boolean supportsRowLevelSecurity();
+
     boolean supportsExtensions();
 
     boolean supportsEncodings();
@@ -64,6 +66,8 @@ public interface PostgreServerExtension {
     boolean supportsTablespaces();
 
     boolean supportsSequences();
+
+    PostgreSequence createSequence(@NotNull PostgreSchema schema);
 
     boolean supportsRoles();
 

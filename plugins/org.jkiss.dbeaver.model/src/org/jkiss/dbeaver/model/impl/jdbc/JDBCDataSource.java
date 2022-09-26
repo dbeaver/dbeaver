@@ -33,10 +33,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.AbstractDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -58,9 +58,8 @@ import java.util.*;
 /**
  * JDBC data source
  */
-public abstract class JDBCDataSource
+public abstract class JDBCDataSource extends AbstractDataSource
     implements
-        DBPDataSource,
         DBPDataTypeProvider,
         DBPErrorAssistant,
         DBPRefreshableObject,
@@ -74,8 +73,6 @@ public abstract class JDBCDataSource
 
     private static final boolean REFRESH_CREDENTIALS_ON_CONNECT = false;
 
-    @NotNull
-    private final DBPDataSourceContainer container;
     @NotNull
     protected volatile DBPDataSourceInfo dataSourceInfo;
     protected final SQLDialect sqlDialect;
@@ -103,10 +100,16 @@ public abstract class JDBCDataSource
     }
 
     protected JDBCDataSource(@NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect) {
+        super(container);
         this.dataSourceInfo = new JDBCDataSourceInfo(container);
         this.sqlDialect = dialect;
         this.jdbcFactory = createJdbcFactory();
-        this.container = container;
+    }
+
+    @NotNull
+    @Override
+    public JDBCDataSource getDataSource() {
+        return this;
     }
 
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -362,21 +365,9 @@ public abstract class JDBCDataSource
 
     @NotNull
     @Override
-    public DBPDataSourceContainer getContainer()
-    {
-        return container;
-    }
-
-    @NotNull
-    @Override
     public DBPDataSourceInfo getInfo()
     {
         return dataSourceInfo;
-    }
-
-    @Override
-    public Object getDataSourceFeature(String featureId) {
-        return null;
     }
 
     @NotNull
@@ -488,33 +479,6 @@ public abstract class JDBCDataSource
             log.debug("Can't obtain driver instance", e);
             return false;
         }
-    }
-
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName()
-    {
-        return container.getName();
-    }
-
-    @Nullable
-    @Override
-    public String getDescription()
-    {
-        return container.getDescription();
-    }
-
-    @Override
-    public DBSObject getParentObject()
-    {
-        return container;
-    }
-
-    @Override
-    public boolean isPersisted()
-    {
-        return true;
     }
 
     @Override
@@ -659,7 +623,7 @@ public abstract class JDBCDataSource
     }
 
     @NotNull
-    private String getStandardSQLDataTypeName(@NotNull DBPDataKind dataKind) {
+    protected String getStandardSQLDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
             case BOOLEAN: return "BOOLEAN";
             case NUMERIC: return "NUMERIC";

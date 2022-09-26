@@ -17,11 +17,18 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Base dialog with title and image
@@ -31,6 +38,7 @@ public class BaseDialog extends Dialog
 
     private String title;
     private DBPImage icon;
+    protected int buttonBarPlaceholderColumns = 2;
 
     public BaseDialog(Shell parentShell, String title, @Nullable DBPImage icon)
     {
@@ -75,5 +83,40 @@ public class BaseDialog extends Dialog
             getShell().setImage(DBeaverIcons.getImage(icon));
         }
 
+    }
+
+    @Override
+    protected Control createButtonBar(Composite parent) {
+        final Composite composite = UIUtils.createPlaceholder(parent, this.buttonBarPlaceholderColumns, 0);
+        composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+        createButtonsForButtonBar(createButtonBarComposite(composite, SWT.LEAD), SWT.LEAD);
+        createButtonsForButtonBar(createButtonBarComposite(composite, SWT.TRAIL), SWT.TRAIL);
+
+        return composite;
+    }
+
+    protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
+        if (alignment == SWT.TRAIL) {
+            createButtonsForButtonBar(parent);
+        }
+    }
+
+    @NotNull
+    protected Composite createButtonBarComposite(@NotNull Composite parent, int alignment) {
+        final GridLayout layout = new GridLayout(0, true);
+        layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
+        layout.marginHeight = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
+        layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
+        layout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
+
+        final GridData data = new GridData(alignment, SWT.CENTER, true, false);
+
+        final Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(layout);
+        composite.setLayoutData(data);
+        composite.setFont(parent.getFont());
+
+        return composite;
     }
 }

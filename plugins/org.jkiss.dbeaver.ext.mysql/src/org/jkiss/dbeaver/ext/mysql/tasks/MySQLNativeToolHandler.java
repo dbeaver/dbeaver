@@ -29,25 +29,29 @@ import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolHandler;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
-        extends AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> {
+    extends AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> {
 
-    private File config;
+    private Path config;
 
     @Override
     protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log) throws DBException, InterruptedException {
         try {
             return super.doExecute(monitor, task, settings, log);
         } finally {
-            if (config != null && !config.delete()) {
-                log.debug("Failed to delete configuration file");
+            if (config != null) {
+                try {
+                    Files.delete(config);
+                } catch (IOException e) {
+                    log.debug("Failed to delete configuration file", e);
+                }
             }
         }
     }
@@ -86,7 +90,7 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
 
         if (isOverrideCredentials(settings)) {
             config = createCredentialsFile(toolUserName, toolUserPassword);
-            cmd.add(1, "--defaults-file=" + config.getAbsolutePath());
+            cmd.add(1, "--defaults-file=" + config.toAbsolutePath());
         } else {
             cmd.add("-u");
             cmd.add(toolUserName);
@@ -101,12 +105,12 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         return cmd;
     }
 
-    private static File createCredentialsFile(String username, String password) throws IOException {
-        File dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler"); //$NON-NLS-1$
-        File cnf = new File(dir, ".my.cnf"); //$NON-NLS-1$
-        cnf.deleteOnExit();
+    private static Path createCredentialsFile(String username, String password) throws IOException {
+        Path dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler"); //$NON-NLS-1$
+        Path cnf = dir.resolve(".my.cnf"); //$NON-NLS-1$
+        cnf.toFile().deleteOnExit();
 
-        try (Writer writer = new FileWriter(cnf)) {
+        try (Writer writer = Files.newBufferedWriter(cnf)) {
             writer.write("[client]"); //$NON-NLS-1$
             writer.write("\nuser=" + CommonUtils.notEmpty(username)); //$NON-NLS-1$
             writer.write("\npassword=" + CommonUtils.notEmpty(password)); //$NON-NLS-1$

@@ -21,9 +21,15 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * File content storage
@@ -33,15 +39,15 @@ public class ExternalContentStorage implements DBDContentStorage {
     @NotNull
     private final DBPPlatform platform;
     @NotNull
-    private File file;
+    private Path file;
     private String charset;
 
-    public ExternalContentStorage(@NotNull DBPPlatform platform, @NotNull File file)
+    public ExternalContentStorage(@NotNull DBPPlatform platform, @NotNull Path file)
     {
         this(platform, file, null);
     }
 
-    public ExternalContentStorage(@NotNull DBPPlatform platform, @NotNull File file, String charset)
+    public ExternalContentStorage(@NotNull DBPPlatform platform, @NotNull Path file, String charset)
     {
         this.platform = platform;
         this.file = file;
@@ -49,7 +55,7 @@ public class ExternalContentStorage implements DBDContentStorage {
     }
 
     @NotNull
-    public File getFile() {
+    public Path getFile() {
         return file;
     }
 
@@ -58,7 +64,7 @@ public class ExternalContentStorage implements DBDContentStorage {
     public InputStream getContentStream()
         throws IOException
     {
-        return new FileInputStream(file);
+        return Files.newInputStream(file);
     }
 
     @NotNull
@@ -67,16 +73,15 @@ public class ExternalContentStorage implements DBDContentStorage {
         throws IOException
     {
         if (charset == null) {
-            return new InputStreamReader(new FileInputStream(file), GeneralUtils.DEFAULT_ENCODING);
+            return Files.newBufferedReader(file, StandardCharsets.UTF_8);
         } else {
-            return new InputStreamReader(new FileInputStream(file), charset);
+            return Files.newBufferedReader(file, Charset.forName(charset));
         }
     }
 
     @Override
-    public long getContentLength()
-    {
-        return file.length();
+    public long getContentLength() throws IOException {
+        return Files.size(file);
     }
 
     @Override
@@ -90,11 +95,11 @@ public class ExternalContentStorage implements DBDContentStorage {
         throws IOException
     {
         // Create new local storage
-        File tempFile = ContentUtils.createTempContentFile(monitor, platform, "copy" + this.hashCode());
+        Path tempFile = ContentUtils.createTempContentFile(monitor, platform, "copy" + this.hashCode());
         try {
-            try (InputStream is = new FileInputStream(file)) {
-                try (OutputStream os = new FileOutputStream(tempFile)) {
-                    ContentUtils.copyStreams(is, file.length(), os, monitor);
+            try (InputStream is = Files.newInputStream(file)) {
+                try (OutputStream os = Files.newOutputStream(tempFile)) {
+                    ContentUtils.copyStreams(is, Files.size(file), os, monitor);
                 }
             }
         } catch (IOException e) {

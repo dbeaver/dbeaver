@@ -36,6 +36,7 @@ import org.eclipse.ui.internal.commands.CommandImageService;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -297,7 +298,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                         try {
                             Bundle actionBundle = Platform.getBundle(action.getContributor().getName());
                             Class<?> actionClass = actionBundle.loadClass(actionClassName);
-                            convertLDMenu.add((IAction)actionClass.newInstance());
+                            convertLDMenu.add((IAction)actionClass.getConstructor().newInstance());
                         } catch (Throwable e) {
                             log.error(e);
                         }
@@ -345,9 +346,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             helpMenu.add(showHelpAction);
             helpMenu.add(new Separator());
             helpMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.help.installationDialog"));
-            helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             helpMenu.add(new Separator());
             helpMenu.add(new GroupMarker("installation_help"));
+            helpMenu.add(new Separator());
+            helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 /*
             if (showAltHelp) {
                 //helpMenu.add(searchHelpAction);
@@ -379,28 +381,40 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         //coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_DATASOURCE));
     }
 
+    private void updateTimezoneItem(StatusLineContributionItemEx tzItem) {
+        TimeZone tzDefault = TimeZone.getDefault();
+        tzItem.setText(tzDefault.getDisplayName(false, TimeZone.SHORT));
+        tzItem.setToolTip(tzDefault.getDisplayName(false, TimeZone.LONG));
+    }
+
     @Override
     protected void fillStatusLine(IStatusLineManager statusLine) {
         {
             StatusLineContributionItemEx tzItem = new StatusLineContributionItemEx("Time Zone");
-            TimeZone tzDefault = TimeZone.getDefault();
-            tzItem.setText(tzDefault.getDisplayName(false, TimeZone.SHORT));
-            tzItem.setToolTip(tzDefault.getDisplayName(false, TimeZone.LONG));
+            updateTimezoneItem(tzItem);
+
+            DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(event -> {
+                if (event.getProperty().equals(ModelPreferences.CLIENT_TIMEZONE)) {
+                    updateTimezoneItem(tzItem);
+                }
+            });
+
             tzItem.setDoubleClickListener(() -> {
-                UIUtils.showMessageBox(null, "Time zone", "You can change time zone by adding parameter\n" +
-                    "-D" + StandardConstants.ENV_USER_TIMEZONE  + "=<TimeZone>\n" +
-                    "in the end of file '" + DBWorkbench.getPlatform().getApplicationConfiguration().getAbsolutePath() + "'", SWT.ICON_INFORMATION);
+                UIUtils.showMessageBox(null, "Time zone", "You can change time zone by changing 'client timezone' in 'Settings' -> 'User Interface' or by adding parameter:\n" +
+                        "-D" + StandardConstants.ENV_USER_TIMEZONE + "=<TimeZone>\n" +
+                        "in the end of file'\n" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath().toString() + "'\n" , SWT.ICON_INFORMATION
+                );
             });
             statusLine.add(tzItem);
         }
         {
-            StatusLineContributionItemEx localeItem = new StatusLineContributionItemEx("Locale");
+            StatusLineContributionItemEx localeItem =  new StatusLineContributionItemEx("Locale");
             localeItem.setText(Locale.getDefault().toString());
             localeItem.setToolTip(Locale.getDefault().getDisplayName());
             localeItem.setDoubleClickListener(() -> {
                 UIUtils.showMessageBox(null, "Locale", "You can change locale by adding parameters\n" +
                     "-nl\n<language_iso_code>\n" +
-                    "in file '" + DBWorkbench.getPlatform().getApplicationConfiguration().getAbsolutePath() + "'.\n" +
+                    "in file '" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath().toString() + "'.\n" +
                     "Or by passing command line parameter -nl <language_iso_code>", SWT.ICON_INFORMATION);
             });
             statusLine.add(localeItem);

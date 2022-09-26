@@ -24,16 +24,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.qm.QMEventAction;
-import org.jkiss.dbeaver.model.qm.QMMCollector;
-import org.jkiss.dbeaver.model.qm.QMMetaEvent;
-import org.jkiss.dbeaver.model.qm.QMMetaListener;
+import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -69,13 +68,11 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private List<QMMetaEvent> pastEvents = new ArrayList<>();
     private boolean running = true;
 
-    public QMMCollectorImpl()
-    {
+    public QMMCollectorImpl() {
         new EventDispatcher().schedule(EVENT_DISPATCH_PERIOD);
     }
 
-    public synchronized void dispose()
-    {
+    public synchronized void dispose() {
         if (!connectionMap.isEmpty()) {
             List<QMMConnectionInfo> openSessions = new ArrayList<>();
             for (QMMConnectionInfo connection : connectionMap.values()) {
@@ -96,27 +93,23 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         running = false;
     }
 
-    boolean isRunning()
-    {
+    boolean isRunning() {
         return running;
     }
 
     @NotNull
     @Override
-    public String getHandlerName()
-    {
+    public String getHandlerName() {
         return "Meta info collector";
     }
 
-    public void addListener(QMMetaListener listener)
-    {
+    public void addListener(QMMetaListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
         }
     }
 
-    public void removeListener(QMMetaListener listener)
-    {
+    public void removeListener(QMMetaListener listener) {
         synchronized (listeners) {
             if (!listeners.remove(listener)) {
                 log.warn("Listener '" + listener + "' is not registered in QM meta collector");
@@ -124,8 +117,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         }
     }
 
-    private List<QMMetaListener> getListeners()
-    {
+    private List<QMMetaListener> getListeners() {
         synchronized (listeners) {
             if (listeners.isEmpty()) {
                 return Collections.emptyList();
@@ -141,18 +133,25 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         try {
             DBRProgressMonitor monitor = new LoggingProgressMonitor();
             DBPProject project = context.getDataSource().getContainer().getProject();
-            SMSession session = project.getSessionContext().getSpaceSession(monitor, project, false);
+            SMSessionContext projectAuthContext = project.getSessionContext();
+            SMAuthSpace projectPrimaryAuthSpace = projectAuthContext.getPrimaryAuthSpace();
+
+            SMSession session = null;
+            if (projectPrimaryAuthSpace != null) {
+                session = project.getSessionContext().getSpaceSession(monitor, projectPrimaryAuthSpace, false);
+            }
             if (session == null) {
                 DBPWorkspace workspace = project.getWorkspace();
                 session = workspace.getAuthContext().getSpaceSession(monitor, workspace, false);
             }
+
             SMSessionPersistent sessionPersistent = DBUtils.getAdapter(SMSessionPersistent.class, session);
             if (sessionPersistent == null) {
                 log.warn("Session persistent not found");
                 return;
             }
 
-            eventPool.add(new QMMetaEvent(object, action, sessionPersistent));
+            eventPool.add(new QMMetaEvent(object, action, sessionPersistent.getAttribute(QMConstants.QM_SESSION_ID_ATTR)));
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }
@@ -203,8 +202,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleContextClose(@NotNull DBCExecutionContext context)
-    {
+    public synchronized void handleContextClose(@NotNull DBCExecutionContext context) {
         QMMConnectionInfo session = getConnectionInfo(context);
         if (session != null) {
             session.close();
@@ -214,8 +212,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit)
-    {
+    public synchronized void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit) {
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.changeTransactional(!autoCommit);
@@ -227,8 +224,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context)
-    {
+    public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context) {
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.commit();
@@ -239,8 +235,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint)
-    {
+    public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint) {
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMObject oldTxn = sessionInfo.rollback(savepoint);
@@ -251,8 +246,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementOpen(@NotNull DBCStatement statement)
-    {
+    public synchronized void handleStatementOpen(@NotNull DBCStatement statement) {
         QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementInfo stat = session.openStatement(statement);
@@ -261,8 +255,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementClose(@NotNull DBCStatement statement, long rows)
-    {
+    public synchronized void handleStatementClose(@NotNull DBCStatement statement, long rows) {
         QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementInfo stat = session.closeStatement(statement, rows);
@@ -275,8 +268,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement)
-    {
+    public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement) {
         QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginExecution(statement);
@@ -287,8 +279,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error)
-    {
+    public synchronized void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error) {
         QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endExecution(statement, rows, error);
@@ -299,8 +290,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleResultSetOpen(@NotNull DBCResultSet resultSet)
-    {
+    public synchronized void handleResultSetOpen(@NotNull DBCResultSet resultSet) {
         QMMConnectionInfo session = getConnectionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginFetch(resultSet);
@@ -311,8 +301,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount)
-    {
+    public synchronized void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount) {
         QMMConnectionInfo session = getConnectionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endFetch(resultSet, rowCount);
@@ -324,16 +313,14 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     private class EventDispatcher extends AbstractJob {
 
-        protected EventDispatcher()
-        {
+        protected EventDispatcher() {
             super("QM meta events dispatcher");
             setUser(false);
             setSystem(true);
         }
 
         @Override
-        protected IStatus run(DBRProgressMonitor monitor)
-        {
+        protected IStatus run(DBRProgressMonitor monitor) {
             final List<QMMetaEvent> events;
             List<Long> sessionsToClose;
             synchronized (QMMCollectorImpl.this) {

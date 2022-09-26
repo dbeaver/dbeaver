@@ -229,6 +229,14 @@ public class ModelMessages extends NLS {
 	public static String tasks_restore_confirmation_title;
 	public static String tasks_restore_confirmation_cancelled_message;
     public static String tasks_restore_confirmation_message;
+	public static String tasks_restore_readonly_title;
+	public static String tasks_restore_readonly_message;
+
+	public static String project_shared_display_name;
+	public static String project_private_display_name;
+
+    public static String jdbc_content_view_error_message_title;
+    public static String jdbc_content_view_error_message_hint;
 
 	static {
 		// initialize resource bundle

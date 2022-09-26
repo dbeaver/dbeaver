@@ -100,6 +100,6 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject {
 
     public abstract void fromMap(@NotNull ERDContext context, Map<String, Object> map);
 
-    public abstract Map<String, Object> toMap(@NotNull ERDContext context);
+    public abstract Map<String, Object> toMap(@NotNull ERDContext context, boolean fullInfo);
 
 }

@@ -40,13 +40,15 @@ public interface DBSDictionary
 
     /**
      * Gets enumeration values
+     *
      * @param monitor session
      * @param keyColumn enumeration column.
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
-     * @param sortByValue sort results by value
-     * @param sortAsc ascending sorting (irrelevant is @sortByValue is false)
      * @param caseInsensitiveSearch use case-insensitive search for {@code keyPattern}
+     * @param sortAsc ascending sorting (irrelevant is {@code sortByValue} is false)
+     * @param sortByValue sort results by value
+     * @param offset enumeration values offset in result set
      * @param maxResults maximum enumeration values in result set
      * @return statement with result set which contains valid enumeration values.
      */
@@ -56,11 +58,12 @@ public interface DBSDictionary
         @NotNull DBSEntityAttribute keyColumn,
         Object keyPattern,
         @Nullable List<DBDAttributeValue> preceedingKeys,
-        boolean sortByValue,
-        boolean sortAsc,
         boolean caseInsensitiveSearch,
-        int maxResults)
-        throws DBException;
+        boolean sortAsc,
+        boolean sortByValue,
+        int offset,
+        int maxResults
+    ) throws DBException;
 
     @NotNull
     List<DBDLabelValuePair> getDictionaryValues(
@@ -69,7 +72,7 @@ public interface DBSDictionary
         @NotNull List<Object> keyValues,
         @Nullable List<DBDAttributeValue> preceedingKeys,
         boolean sortByValue,
-        boolean sortAsc)
-        throws DBException;
+        boolean sortAsc
+    ) throws DBException;
 
 }

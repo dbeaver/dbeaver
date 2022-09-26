@@ -24,7 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -43,8 +43,7 @@ import java.util.List;
 public abstract class AbstractResourceHandler implements DBPResourceHandler {
 
     @Override
-    public int getFeatures(IResource resource)
-    {
+    public int getFeatures(IResource resource) {
         if (resource instanceof IFolder) {
             if (resource.getParent() instanceof IFolder) {
                 return FEATURE_DELETE | FEATURE_MOVE_INTO | FEATURE_RENAME | FEATURE_CREATE_FOLDER;
@@ -56,8 +55,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
 
     @NotNull
     @Override
-    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
-    {
+    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException {
         return new DBNResource(parentNode, resource, this);
     }
 
@@ -68,8 +66,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     }
 
     @Override
-    public void openResource(@NotNull IResource resource) throws CoreException, DBException
-    {
+    public void openResource(@NotNull IResource resource) throws CoreException, DBException {
         if (resource instanceof IFolder) {
             DBNResource node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByResource(resource);
             if (node != null) {
@@ -84,21 +81,18 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
 
     @NotNull
     @Override
-    public String getTypeName(@NotNull IResource resource)
-    {
+    public String getTypeName(@NotNull IResource resource) {
         return "resource";
     }
 
     @Override
-    public String getResourceDescription(@NotNull IResource resource)
-    {
+    public String getResourceDescription(@NotNull IResource resource) {
         return resource.getName();
     }
 
     @Nullable
     @Override
-    public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource)
-    {
+    public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
         return null;
     }
 
@@ -109,12 +103,12 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     }
 
     protected IFolder getDefaultRoot(DBPProject project) {
-        return DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(project, getClass(), false);
+        return DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(project, getClass(), false);
     }
 
     protected IFolder getDefaultRoot(IProject project) {
         return getDefaultRoot(
-            DBPPlatformEclipse.getInstance().getWorkspace().getProject(project));
+            DBPPlatformDesktop.getInstance().getWorkspace().getProject(project));
     }
 
 }

@@ -71,6 +71,15 @@ public class SessionContextImpl implements SMSessionContext {
 
     @Nullable
     @Override
+    public SMAuthSpace getPrimaryAuthSpace() {
+        if (CommonUtils.isEmpty(sessions)) {
+            return null;
+        }
+        return sessions.get(0).getSessionSpace();
+    }
+
+    @Nullable
+    @Override
     public SMSession findSpaceSession(@NotNull SMAuthSpace space) {
         for (SMSession session : sessions) {
             if (CommonUtils.equalObjects(session.getSessionSpace(), space)) {

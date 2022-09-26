@@ -32,7 +32,7 @@ public interface SMAdminController extends SMController {
     ///////////////////////////////////////////
     // Users
 
-    void createUser(String userId, Map<String, String> metaParameters) throws DBException;
+    void createUser(String userId, Map<String, String> metaParameters, boolean enabled) throws DBException;
 
     void deleteUser(String userId) throws DBException;
 
@@ -68,5 +68,16 @@ public interface SMAdminController extends SMController {
     // Permissions
     void setSubjectPermissions(String subjectId, List<String> permissionIds, String grantorId) throws DBException;
 
-    void setSubjectConnectionAccess(@NotNull String subjectId, @NotNull List<String> connectionIds, String grantor) throws DBException;
+    /**
+     * Delete all assigned object permissions for subject
+     */
+    void deleteAllSubjectObjectPermissions(
+        @NotNull String subjectId,
+        @NotNull SMObjectType objectType
+    ) throws DBException;
+
+    List<SMObjectPermissionsGrant> getSubjectObjectPermissionGrants(
+        @NotNull String subjectId,
+        @NotNull SMObjectType smObjectType
+    ) throws DBException;
 }

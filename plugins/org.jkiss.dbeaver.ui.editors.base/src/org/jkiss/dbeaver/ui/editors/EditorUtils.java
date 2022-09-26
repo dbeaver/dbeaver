@@ -38,41 +38,55 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * EditorUtils
  */
 public class EditorUtils {
 
-    public static final String PROP_SQL_DATA_SOURCE_ID = "sql-editor-data-source-id";
-    private static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id";
-    private static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource";
-    private static final String PROP_CONTEXT_DEFAULT_CATALOG = "default-catalog";
-    private static final String PROP_CONTEXT_DEFAULT_SCHEMA = "default-schema";
+    public static final String PROP_SQL_DATA_SOURCE_ID = "sql-editor-data-source-id"; //$NON-NLS-1$
+    private static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id"; //$NON-NLS-1$
 
-    private static final String PROP_SQL_DATA_SOURCE_CONTAINER = "sql-editor-data-source-container";
-    private static final String PROP_EDITOR_CONTEXT = "database-editor-context";
-    private static final String PROP_EXECUTION_CONTEXT = "sql-editor-execution-context";
+    public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource"; //$NON-NLS-1$
+    private static final String PROP_CONTEXT_DEFAULT_CATALOG = "default-catalog"; //$NON-NLS-1$
+    private static final String PROP_CONTEXT_DEFAULT_SCHEMA = "default-schema"; //$NON-NLS-1$
 
-    public static final String PROP_NAMESPACE = "org.jkiss.dbeaver";
+    private static final String PROP_SQL_DATA_SOURCE_CONTAINER = "sql-editor-data-source-container"; //$NON-NLS-1$
+    private static final String PROP_EDITOR_CONTEXT = "database-editor-context"; //$NON-NLS-1$
+    private static final String PROP_EXECUTION_CONTEXT = "sql-editor-execution-context"; //$NON-NLS-1$
+
+    public static final String PROP_NAMESPACE = "org.jkiss.dbeaver"; //$NON-NLS-1$
+
+    public static final String COLORS_AND_FONTS_PAGE_ID = "org.eclipse.ui.preferencePages.ColorsAndFonts"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(EditorUtils.class);
+
+    /**
+     * Get project by the specified editor input
+     */
+    @Nullable
+    public static DBPProject getFileProject(@Nullable IEditorInput editorInput) {
+        if (editorInput != null) {
+            IFile curFile = EditorUtils.getFileFromInput(editorInput);
+            if (curFile != null) {
+                return DBPPlatformDesktop.getInstance().getWorkspace().getProject(curFile.getProject());
+            }
+        }
+        return null;
+    }
 
     @Nullable
     public static IFile getFileFromInput(IEditorInput editorInput) {
@@ -82,7 +96,7 @@ public class EditorUtils {
             return ((IFileEditorInput) editorInput).getFile();
         } else if (editorInput instanceof IPathEditorInput) {
             final IPath path = ((IPathEditorInput) editorInput).getPath();
-            return path == null ? null : ContentUtils.convertPathToWorkspaceFile(path);
+            return path == null ? null : ResourceUtils.convertPathToWorkspaceFile(path);
         } else if (editorInput instanceof IURIEditorInput) {
             // Most likely it is an external file
             return null;
@@ -91,7 +105,7 @@ public class EditorUtils {
         final IPathEditorInput pathInput = editorInput.getAdapter(IPathEditorInput.class);
         if (pathInput != null) {
             final IPath path = pathInput.getPath();
-            return path == null ? null : ContentUtils.convertPathToWorkspaceFile(path);
+            return path == null ? null : ResourceUtils.convertPathToWorkspaceFile(path);
         }
 
         try {
@@ -177,18 +191,18 @@ public class EditorUtils {
             } else {
                 File localFile = getLocalFileFromInput(editorInput);
                 if (localFile != null) {
-                    final DBPExternalFileManager efManager = DBWorkbench.getPlatform().getExternalFileManager();
+                    final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
                     String dataSourceId = (String) efManager.getFileProperty(localFile, PROP_SQL_DATA_SOURCE_ID);
                     String projectName = (String) efManager.getFileProperty(localFile, PROP_SQL_PROJECT_ID);
                     if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectName)) {
                         return null;
                     }
-                    final IProject project = DBPPlatformEclipse.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
+                    final IProject project = DBPPlatformDesktop.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
                     if (project == null || !project.exists()) {
                         log.error("Can't locate project '" + projectName + "' in workspace");
                         return null;
                     }
-                    DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(project);
+                    DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
                     return projectMeta == null ? null : projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
 
                 } else {
@@ -212,7 +226,7 @@ public class EditorUtils {
         } else {
             IFile file = getFileFromInput(editorInput);
             if (file != null) {
-                DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(file.getProject());
+                DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
                 if (projectMeta != null) {
                     defaultDatasource = (String) projectMeta.getResourceProperty(file, PROP_CONTEXT_DEFAULT_DATASOURCE);
                     defaultCatalogName = (String) projectMeta.getResourceProperty(file, PROP_CONTEXT_DEFAULT_CATALOG);
@@ -221,7 +235,7 @@ public class EditorUtils {
             } else {
                 File localFile = getLocalFileFromInput(editorInput);
                 if (localFile != null) {
-                    final DBPExternalFileManager efManager = DBWorkbench.getPlatform().getExternalFileManager();
+                    final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
                     defaultDatasource = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_DATASOURCE);
                     defaultCatalogName = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_CATALOG);
                     defaultSchema= (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_SCHEMA);
@@ -240,9 +254,9 @@ public class EditorUtils {
         if (!file.exists()) {
             return null;
         }
-        DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(file.getProject());
+        DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
-            Object dataSourceId = projectMeta.getResourceProperty(file, PROP_SQL_DATA_SOURCE_ID);
+            Object dataSourceId = projectMeta.getResourceProperty(file, PROP_CONTEXT_DEFAULT_DATASOURCE);
             if (dataSourceId != null) {
                 DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
                 if (dataSource == null) {
@@ -298,7 +312,7 @@ public class EditorUtils {
     }
 
     public static void setFileDataSource(@NotNull File localFile, @NotNull DatabaseEditorContext context) {
-        final DBPExternalFileManager efManager = DBWorkbench.getPlatform().getExternalFileManager();
+        final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
         DBPDataSourceContainer dataSourceContainer = context.getDataSourceContainer();
         efManager.setFileProperty(
             localFile,
@@ -319,22 +333,19 @@ public class EditorUtils {
     }
 
     public static void setFileDataSource(@NotNull IFile file, @NotNull DatabaseEditorContext context) {
-        DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(file.getProject());
+        DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta == null) {
             return;
         }
         DBPDataSourceContainer dataSourceContainer = context.getDataSourceContainer();
-        Map<String, Object> fileProps = new LinkedHashMap<>();
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
-        fileProps.put(PROP_SQL_DATA_SOURCE_ID, dataSourceId);
+
+        String resourcePath = projectMeta.getResourcePath(file);
+        projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
         if (!isDefaultContextSettings(context)) {
-            fileProps.put(PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
-            String catalogName = getDefaultCatalogName(context);
-            if (catalogName != null) fileProps.put(PROP_CONTEXT_DEFAULT_CATALOG, catalogName);
-            String schemaName = getDefaultSchemaName(context);
-            if (catalogName != null || schemaName != null) fileProps.put(PROP_CONTEXT_DEFAULT_SCHEMA, schemaName);
+            projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
+            projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_SCHEMA, getDefaultSchemaName(context));
         }
-        projectMeta.setResourceProperties(file, fileProps);
     }
 
     private static boolean isDefaultContextSettings(DatabaseEditorContext context) {

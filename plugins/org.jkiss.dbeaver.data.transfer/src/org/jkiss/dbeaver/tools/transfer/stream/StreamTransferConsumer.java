@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
@@ -361,8 +362,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             truncate = true;
         }
 
-        this.statStream = new StatOutputStream(new FileOutputStream(outputFile, !truncate));
-        this.outputStream = new BufferedOutputStream(statStream, OUT_FILE_BUFFER_SIZE);
+        this.outputStream = new BufferedOutputStream(new FileOutputStream(outputFile, !truncate), OUT_FILE_BUFFER_SIZE);
+        this.outputStream = this.statStream = new StatOutputStream(outputStream);
+
         if (settings.isCompressResults()) {
             this.zipStream = new ZipOutputStream(this.outputStream);
             this.zipStream.putNextEntry(new ZipEntry(getOutputFileName()));
@@ -516,6 +518,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return true;
     }
 
+    public boolean isBeforeFirstRow() {
+        return firstRow;
+    }
+
     @NotNull
     public String getOutputFolder() {
         return translatePattern(settings.getOutputFolder(), null);
@@ -595,12 +601,24 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 }
                 case VARIABLE_TABLE: {
                     if (settings.isUseSingleFile()) {
-                        return "export";
+                        return DTConstants.DEFAULT_TABLE_NAME_EXPORT;
                     }
                     if (dataContainer == null) {
                         return null;
                     }
-                    String tableName = DTUtils.getTableName(dataContainer.getDataSource(), dataContainer, true);
+                    String tableName;
+                    if (dataContainer instanceof SQLQueryContainer) {
+                        tableName = DTUtils.getTableNameFromQueryContainer(dataContainer.getDataSource(), (SQLQueryContainer) dataContainer);
+                    } else {
+                        tableName = DTUtils.getTableName(dataContainer.getDataSource(), dataContainer, true);
+                    }
+                    if (CommonUtils.isEmpty(tableName)) {
+                        if (parameters.orderNumber > 0) {
+                            tableName = DTConstants.DEFAULT_TABLE_NAME_EXPORT + "_" + parameters.orderNumber;
+                        } else {
+                            tableName = DTConstants.DEFAULT_TABLE_NAME_EXPORT;
+                        }
+                    }
                     return stripObjectName(tableName);
                 }
                 case VARIABLE_TIMESTAMP:

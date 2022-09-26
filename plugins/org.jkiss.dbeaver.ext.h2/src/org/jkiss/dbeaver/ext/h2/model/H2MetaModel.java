@@ -70,24 +70,8 @@ public class H2MetaModel extends GenericMetaModel
 
     @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
-        GenericDataSource dataSource = sourceObject.getDataSource();
-        if (!dataSource.isServerVersionAtLeast(2, 0)) { // There is no TABLE DEFINITION in H2 Version 2 unfortunately
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read H2 table source")) {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT SQL FROM INFORMATION_SCHEMA.TABLES " +
-                        "WHERE TABLE_SCHEMA=? AND TABLE_NAME=?")) {
-                    dbStat.setString(1, sourceObject.getContainer().getName());
-                    dbStat.setString(2, sourceObject.getName());
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        if (dbResult.nextRow()) {
-                            return dbResult.getString(1);
-                        }
-                    }
-                }
-            } catch (SQLException e) {
-                throw new DBException(e, dataSource);
-            }
-        }
+        // We tried here using SELECT SQL FROM INFORMATION_SCHEMA.TABLES, but it is not good
+        // And this SQL result does not have info about keys or indexes
         return super.getTableDDL(monitor, sourceObject, options);
     }
 
@@ -123,7 +107,8 @@ public class H2MetaModel extends GenericMetaModel
         if (!owner.getDataSource().isServerVersionAtLeast(2, 0)) {
             JDBCPreparedStatement dbStat;
             dbStat = session.prepareStatement("SELECT c.*, c.CONSTRAINT_NAME AS PK_NAME FROM INFORMATION_SCHEMA.\"CONSTRAINTS\" c \n" +
-                "WHERE c.CONSTRAINT_SCHEMA = ? " + (forParent != null ? "AND c.TABLE_NAME = ?" : ""));
+                "WHERE c.CONSTRAINT_TYPE <> 'REFERENTIAL' AND c.CONSTRAINT_SCHEMA = ? "
+                + (forParent != null ? "AND c.TABLE_NAME = ?" : ""));
             dbStat.setString(1, owner.getName());
             if (forParent != null) {
                 dbStat.setString(2, forParent.getName());
@@ -134,7 +119,8 @@ public class H2MetaModel extends GenericMetaModel
             dbStat = session.prepareStatement("SELECT tc.*, tc.CONSTRAINT_NAME AS PK_NAME, ccu.COLUMN_NAME, cc.CHECK_CLAUSE AS CHECK_EXPRESSION FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc LEFT JOIN\n" +
                 "INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE ccu ON tc.CONSTRAINT_SCHEMA = ccu.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = ccu.CONSTRAINT_NAME\n" +
                 "LEFT JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc ON tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME\n" +
-                "WHERE tc.CONSTRAINT_SCHEMA = ?" + (forParent != null ? "AND tc.TABLE_NAME = ?" : ""));
+                "WHERE tc.CONSTRAINT_TYPE <> 'REFERENTIAL' AND tc.CONSTRAINT_SCHEMA = ?"
+                + (forParent != null ? "AND tc.TABLE_NAME = ?" : ""));
             dbStat.setString(1, owner.getName());
             if (forParent != null) {
                 dbStat.setString(2, forParent.getName());
@@ -211,8 +197,12 @@ public class H2MetaModel extends GenericMetaModel
     }
 
     @Override
-    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
-        return session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SEQUENCES");
+    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container)
+        throws SQLException {
+        JDBCPreparedStatement statement = session.prepareStatement(
+            "SELECT * FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_SCHEMA=?");
+        statement.setString(1, container.getSchema().getName());
+        return statement;
     }
 
     @Override

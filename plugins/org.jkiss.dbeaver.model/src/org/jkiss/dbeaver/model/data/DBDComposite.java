@@ -37,6 +37,10 @@ public interface DBDComposite extends DBDComplexValue {
     @NotNull
     DBSAttributeBase[] getAttributes();
 
+    default int getAttributeCount() {
+        return getAttributes().length;
+    }
+
     @Nullable
     Object getAttributeValue(@NotNull DBSAttributeBase attribute)
         throws DBCException;

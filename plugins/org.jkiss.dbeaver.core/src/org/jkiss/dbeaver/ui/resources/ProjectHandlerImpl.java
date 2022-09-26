@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.resources;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -41,10 +41,14 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
 
     @Override
     public int getFeatures(IResource resource) {
-        int features = FEATURE_CREATE_FOLDER | FEATURE_RENAME;
-        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (activeProject == null || resource != activeProject.getEclipseProject()) {
-            features |= FEATURE_DELETE;
+        boolean distributed = DBWorkbench.getPlatform().getApplication().isDistributed();
+        int features = FEATURE_CREATE_FOLDER;
+        if (!distributed) {
+            features |= FEATURE_RENAME;
+            DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+            if (activeProject == null || resource != activeProject.getEclipseProject()) {
+                features |= FEATURE_DELETE;
+            }
         }
         return features;
     }
@@ -54,13 +58,13 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
     public DBNProject makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) {
         return new DBNProject(
             parentNode,
-            DBPPlatformEclipse.getInstance().getWorkspace().getProject((IProject) resource),
+            DBPPlatformDesktop.getInstance().getWorkspace().getProject((IProject) resource),
             this);
     }
 
     @Override
     public void openResource(@NotNull IResource resource) {
-        DBPProject project = DBPPlatformEclipse.getInstance().getWorkspace().getProject((IProject) resource);
+        DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject((IProject) resource);
         if (project == null) {
             DBWorkbench.getPlatformUI().showError("No project", "Can't get project metadata for resource " + resource.getName());
             return;

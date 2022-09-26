@@ -36,9 +36,14 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
 import org.eclipse.ui.texteditor.*;
@@ -47,6 +52,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -55,10 +61,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
-import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
-import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
-import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
-import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.sql.parser.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
@@ -316,8 +319,55 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
 
         if (sourceViewer != null) {
+            final StyledText widget = sourceViewer.getTextWidget();
+
             // Context listener
-            EditorUtils.trackControlContext(getSite(), sourceViewer.getTextWidget(), SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
+            EditorUtils.trackControlContext(getSite(), widget, SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
+
+            // Mouse listener that moves cursor upon clicking with the right mouse button
+            widget.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseUp(MouseEvent e) {
+                    if (e.button != 3) {
+                        return;
+                    }
+
+                    final StyledText widget = sourceViewer.getTextWidget();
+                    final ISelectionProvider selectionProvider = sourceViewer.getSelectionProvider();
+                    final ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
+
+                    int offset = widget.getOffsetAtPoint(new Point(e.x, e.y));
+
+                    if (offset < 0) {
+                        offset = widget.getOffsetAtLine(widget.getLineIndex(e.y));
+                    }
+
+                    if (offset < 0) {
+                        return;
+                    }
+
+                    boolean withinExistingSelection = false;
+
+                    if (selection instanceof IBlockTextSelection) {
+                        for (IRegion region : ((IBlockTextSelection) selection).getRegions()) {
+                            if (within(region, offset)) {
+                                withinExistingSelection = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        withinExistingSelection = within(new Region(selection.getOffset(), selection.getLength()), offset);
+                    }
+
+                    if (!withinExistingSelection) {
+                        selectionProvider.setSelection(new TextSelection(offset, 0));
+                    }
+                }
+
+                private boolean within(@NotNull IRegion region, int index) {
+                    return region.getOffset() <= index && index < region.getOffset() + region.getLength();
+                }
+            });
         }
     }
 
@@ -811,7 +861,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             if (pos.position >= 0) {
                                 // Only position
                                 errorOffset = queryStartOffset + pos.position;
-                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(errorOffset, queryLength - pos.position))) {
+                                final SQLWordPartDetector detector = new SQLWordPartDetector(getDocument(), getSyntaxManager(), errorOffset);
+                                final int length = detector.getLength() > 0
+                                    ? detector.getLength()
+                                    : queryLength - pos.position;
+                                if (addProblem(GeneralUtils.getFirstMessage(error), new Position(errorOffset, length))) {
                                     scrolled = true;
                                 } else if (index == 0) {
                                     getSelectionProvider().setSelection(new TextSelection(errorOffset, 0));
@@ -923,7 +977,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (query == null) {
             final IResource resource = GeneralUtils.adapt(getEditorInput(), IResource.class);
 
-            if (resource != null) {
+            if (resource != null && resource.exists()) {
                 try {
                     resource.deleteMarkers(SQLProblemAnnotation.MARKER_TYPE, false, IResource.DEPTH_ONE);
                 } catch (CoreException e) {
@@ -1016,6 +1070,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             case SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR:
             case SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION:
                 occurrencesHighlighter.updateInput(getEditorInput());
+            case SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS:
+            case SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY:
+            case SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE:
+            case ModelPreferences.SQL_FORMAT_KEYWORD_CASE:
+            case ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA:
+            case ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET:
+            case ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES:
+            case AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH:
+            case AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS:
+                reloadSyntaxRules();
         }
     }
 

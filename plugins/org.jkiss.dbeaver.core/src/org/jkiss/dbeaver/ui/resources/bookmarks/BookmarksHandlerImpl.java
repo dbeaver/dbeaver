@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.resources.bookmarks;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -27,7 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -37,7 +36,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -58,7 +57,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
     public static IFolder getBookmarksFolder(DBPProject project, boolean forceCreate)
     {
-        return DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(project, BookmarksHandlerImpl.class, forceCreate);
+        return DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(project, BookmarksHandlerImpl.class, forceCreate);
     }
 
     @Override
@@ -78,16 +77,6 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             return "bookmark folder"; //$NON-NLS-1$
         } else {
             return "bookmark"; //$NON-NLS-1$
-        }
-    }
-
-    @NotNull
-    @Override
-    public String getResourceNodeName(@NotNull IResource resource) {
-        if (resource.getParent() instanceof IProject) {
-            return "Bookmarks";
-        } else {
-            return super.getResourceNodeName(resource);
         }
     }
 
@@ -228,9 +217,9 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         if (folder == null) {
             throw new DBException("Can't detect folder for bookmark");
         }
-        ContentUtils.checkFolderExists(folder);
+        ResourceUtils.checkFolderExists(folder);
 
-        IFile file = ContentUtils.getUniqueFile(
+        IFile file = ResourceUtils.getUniqueFile(
             folder,
             CommonUtils.escapeFileName(title),
             BOOKMARK_EXT);

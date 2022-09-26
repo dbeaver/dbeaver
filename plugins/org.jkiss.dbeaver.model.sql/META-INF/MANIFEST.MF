@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.model.sql;singleton:=true
-Bundle-Version: 1.0.72.qualifier
-Bundle-Release-Date: 20220523
+Bundle-Version: 1.0.80.qualifier
+Bundle-Release-Date: 20220926
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.model.sql.internal.SQLModelActivator
@@ -37,7 +37,6 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.resources,
  com.google.gson,
  org.eclipse.text;visibility:=reexport,
- org.eclipse.jface.text;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model.sql

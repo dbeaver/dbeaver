@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLInsertReplaceMethodRegistry;
 import org.jkiss.dbeaver.model.struct.*;
@@ -307,7 +308,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 if (column.sourceAttr instanceof DBDAttributeBindingCustom) {
                     attrValue = DBUtils.getAttributeValue(column.sourceAttr, sourceBindings, rowValues);
                 } else {
-                    attrValue = column.sourceValueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i);
+                    attrValue = column.sourceValueHandler.fetchValueObject(
+                        session,
+                        resultSet,
+                        column.sourceAttr,
+                        column.sourceAttr.getOrdinalPosition());
                 }
             } else {
                 // No value handler - get raw value
@@ -652,16 +657,23 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             throw new DBException("No target container selected");
         }
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
-            if (containerMapping.getMappingType() == DatabaseMappingType.recreate || containerMapping.getMappingType() == DatabaseMappingType.create) {
+            if (containerMapping.hasNewTargetObject()) {
                 DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, containerMapping.getTarget() != null);
             }
             return true;
         } else {
-            DBEPersistAction[] actions = DatabaseTransferUtils.generateTargetTableDDL(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping);
+            DBEPersistAction[] actions = DatabaseTransferUtils.generateTargetTableDDL(
+                session.getProgressMonitor(),
+                session.getExecutionContext(),
+                schema,
+                containerMapping,
+                containerMapping.getChangedPropertiesMap());
             try {
                 DatabaseTransferUtils.executeDDL(session, actions);
             } catch (DBCException e) {
-                throw new DBCException("Can't create or update target table:\n" + Arrays.toString(actions), e);
+                throw new DBCException(
+                    "Can't create or update target table:\n" +
+                        SQLUtils.generateScript(session.getDataSource(), actions, false), e);
             }
             return actions.length > 0;
         }

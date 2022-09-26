@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
-import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCockroachDB;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach.PostgreServerCockroachDB;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;

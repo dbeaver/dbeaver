@@ -15,7 +15,7 @@
                 parent="generic"
                 label="Azure Databricks"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon.png"
-                dialect="databricks">
+                dialect="basic">
             <drivers managable="true">
 
                 <driver
@@ -33,6 +33,7 @@
                     <file type="jar" path="drivers/databricks" bundle="drivers.databricks"/>
 
                     <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-multi-insert" value="true"/>
                 </driver>
 
             </drivers>

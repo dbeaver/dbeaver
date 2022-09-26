@@ -33,6 +33,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
@@ -200,7 +201,7 @@ public class NavigatorObjectsDeleter {
                         ((IFolder)resource).delete(true, true, monitor);
                     } else if (resource instanceof IProject) {
                         // Delete project
-                        DBWorkbench.getPlatform().getGlobalEventManager().fireGlobalEvent(
+                        DBPPlatformDesktop.getInstance().getGlobalEventManager().fireGlobalEvent(
                             DBTTaskRegistry.EVENT_BEFORE_PROJECT_DELETE,
                             Map.of(DBTTaskRegistry.EVENT_PARAM_PROJECT, resource.getName())
                         );

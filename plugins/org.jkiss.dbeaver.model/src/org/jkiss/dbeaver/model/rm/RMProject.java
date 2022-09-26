@@ -16,24 +16,68 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
-import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * Resource manager API
  */
-public class RMProject implements DBPObject {
-    private String id;
-    private String name;
-    private String description;
-    private boolean shared;
+public class RMProject extends RMObject {
 
-    private OffsetDateTime createTime;
+    public static final String PREFIX_GLOBAL = "g";
+    public static final String PREFIX_SHARED = "s";
+    public static final String PREFIX_USER = "u";
+    public static final Type[] SHARED_PROJECTS = {Type.GLOBAL, Type.SHARED};
+
+    public enum Type {
+        GLOBAL(PREFIX_GLOBAL),
+        SHARED(PREFIX_SHARED),
+        USER(PREFIX_USER);
+
+        private final String prefix;
+
+        Type(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+    }
+    private String id;
+    private String description;
+    private Type type;
+    private Long createTime;
     private String creator;
+    private Set<String> projectPermissions;
 
     public RMProject() {
+    }
+
+    public RMProject(
+        String id,
+        String name,
+        String description,
+        Type type,
+        Long createTime,
+        String creator,
+        Set<String> projectPermissions
+    ) {
+        super(name);
+        this.id = id;
+        this.description = description;
+        this.type = type;
+        this.createTime = createTime;
+        this.creator = creator;
+        this.projectPermissions = projectPermissions;
+    }
+
+    public RMProject(String name) {
+        super(name);
     }
 
     @Property
@@ -45,12 +89,25 @@ public class RMProject implements DBPObject {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getDisplayName() {
+        switch (type) {
+            case GLOBAL:
+                return ModelMessages.project_shared_display_name;
+            case USER:
+                return ModelMessages.project_private_display_name;
+            default:
+                return getName();
+        }
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public boolean isFolder() {
+        return true;
+    }
+
+    @Property
+    public boolean isShared() {
+        return ArrayUtils.contains(SHARED_PROJECTS, getType());
     }
 
     public String getDescription() {
@@ -62,19 +119,19 @@ public class RMProject implements DBPObject {
     }
 
     @Property
-    public boolean isShared() {
-        return shared;
+    public Type getType() {
+        return type;
     }
 
-    public void setShared(boolean shared) {
-        this.shared = shared;
+    public void setType(Type type) {
+        this.type = type;
     }
 
-    public OffsetDateTime getCreateTime() {
+    public Long getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(OffsetDateTime createTime) {
+    public void setCreateTime(Long createTime) {
         this.createTime = createTime;
     }
 
@@ -84,5 +141,28 @@ public class RMProject implements DBPObject {
 
     public void setCreator(String creator) {
         this.creator = creator;
+    }
+
+    @Override
+    public String toString() {
+        return id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id == null ? 0 : id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof RMProject && CommonUtils.equalObjects(id, ((RMProject) obj).id);
+    }
+
+    public void setProjectPermissions(Set<String> projectPermissions) {
+        this.projectPermissions = projectPermissions;
+    }
+
+    public Set<String> getProjectPermissions() {
+        return projectPermissions;
     }
 }

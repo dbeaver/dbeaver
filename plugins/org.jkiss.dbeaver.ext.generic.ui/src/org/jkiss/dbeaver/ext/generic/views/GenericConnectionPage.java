@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.generic.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -57,8 +59,7 @@ import java.util.*;
 /**
  * GenericConnectionPage
  */
-public class GenericConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider
-{
+public class GenericConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
     private static final Log log = Log.getLog(GenericConnectionPage.class);
 
     // Host/port
@@ -76,8 +77,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
     private Composite settingsGroup;
 
-    private Map<String, List<Control>> propGroupMap = new HashMap<>();
-
     private static final String GROUP_URL = "url"; //$NON-NLS-1$
     private static final String GROUP_HOST = "host"; //$NON-NLS-1$
     private static final String GROUP_SERVER = "server"; //$NON-NLS-1$
@@ -87,8 +86,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     private boolean activated;
 
     @Override
-    public void createControl(Composite composite)
-    {
+    public void createControl(Composite composite) {
         ModifyListener textListener = e -> {
             if (activated) {
                 saveAndUpdate();
@@ -105,10 +103,18 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         settingsGroup.setLayout(gl);
 
         {
-            Label urlLabel = new Label(settingsGroup, SWT.NONE);
-            urlLabel.setText(GenericMessages.dialog_connection_jdbc_url_);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            urlLabel.setLayoutData(gd);
+            SelectionAdapter typeSwitcher = new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    setupConnectionModeSelection(urlText, typeURLRadio.getSelection());
+                    saveAndUpdate();
+                }
+            };
+            createConnectionModeSwitcher(settingsGroup, typeSwitcher);
+
+            
+            Label urlLabel = UIUtils.createControlLabel(settingsGroup, GenericMessages.dialog_connection_jdbc_url_);
+            urlLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             urlText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -147,6 +153,10 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_HOST, hostText);
             addControlToGroup(GROUP_HOST, portLabel);
             addControlToGroup(GROUP_HOST, portText);
+            addControlToGroup(GROUP_CONNECTION, hostLabel);
+            addControlToGroup(GROUP_CONNECTION, hostText);
+            addControlToGroup(GROUP_CONNECTION, portLabel);
+            addControlToGroup(GROUP_CONNECTION, portText);
         }
 
         {
@@ -166,6 +176,9 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_SERVER, serverLabel);
             addControlToGroup(GROUP_SERVER, serverText);
             addControlToGroup(GROUP_SERVER, emptyLabel);
+            addControlToGroup(GROUP_CONNECTION, serverLabel);
+            addControlToGroup(GROUP_CONNECTION, serverText);
+            addControlToGroup(GROUP_CONNECTION, emptyLabel);
         }
 
         {
@@ -186,6 +199,9 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_DB, dbLabel);
             addControlToGroup(GROUP_DB, dbText);
             addControlToGroup(GROUP_DB, emptyLabel);
+            addControlToGroup(GROUP_CONNECTION, dbLabel);
+            addControlToGroup(GROUP_CONNECTION, dbText);
+            addControlToGroup(GROUP_CONNECTION, emptyLabel);
         }
 
         // Path
@@ -237,6 +253,9 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_PATH, pathLabel);
             addControlToGroup(GROUP_PATH, pathText);
             addControlToGroup(GROUP_PATH, buttonsPanel);
+            addControlToGroup(GROUP_CONNECTION, pathLabel);
+            addControlToGroup(GROUP_CONNECTION, pathText);
+            addControlToGroup(GROUP_CONNECTION, buttonsPanel);
         }
 
         {
@@ -305,9 +324,8 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     }
 
     @Override
-    public boolean isComplete()
-    {
-        if (isCustom) {
+    public boolean isComplete() {
+        if (isCustomURL()) {
             return !CommonUtils.isEmpty(urlText.getText());
         } else {
             if (metaURL == null) {
@@ -328,9 +346,8 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     }
 
     @Override
-    protected boolean isCustomURL()
-    {
-        return isCustom;
+    protected boolean isCustomURL() {
+        return isCustom || typeURLRadio.getSelection();
     }
 
     @Override
@@ -352,13 +369,15 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     }
 
     @Override
-    public void loadSettings()
-    {
+    public void loadSettings() {
         super.loadSettings();
 
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         this.parseSampleURL(site.getDriver());
+        final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
+        setupConnectionModeSelection(urlText, useURL);
+        site.updateButtons();
         if (!isCustom) {
             if (hostText != null) {
                 if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
@@ -434,10 +453,12 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         final Set<String> properties = metaURL == null ? Collections.emptySet() : metaURL.getAvailableProperties();
+
+        connectionInfo.setConfigurationType(
+            typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
 
         if (hostText != null && properties.contains(JDBCConstants.PROP_HOST)) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -457,7 +478,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
         super.saveSettings(dataSource);
 
-        if (isCustom) {
+        if (isCustomURL()) {
             if (urlText != null) {
                 connectionInfo.setUrl(urlText.getText().trim());
             }
@@ -468,8 +489,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         }
     }
 
-    private void parseSampleURL(DBPDriver driver)
-    {
+    private void parseSampleURL(DBPDriver driver) {
         metaURL = null;
 
         if (!CommonUtils.isEmpty(driver.getSampleURL())) {
@@ -486,12 +506,14 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             showControlGroup(GROUP_SERVER, properties.contains(JDBCConstants.PROP_SERVER));
             showControlGroup(GROUP_DB, properties.contains(JDBCConstants.PROP_DATABASE));
             showControlGroup(GROUP_PATH, properties.contains(JDBCConstants.PROP_FOLDER) || properties.contains(JDBCConstants.PROP_FILE));
+            showControlGroup(GROUP_CONNECTION_MODE, true);
         } else {
             isCustom = true;
             showControlGroup(GROUP_HOST, false);
             showControlGroup(GROUP_SERVER, false);
             showControlGroup(GROUP_DB, false);
             showControlGroup(GROUP_PATH, false);
+            showControlGroup(GROUP_CONNECTION_MODE, false);
             urlText.setEditable(true);
         }
         UIUtils.fixReadonlyTextBackground(urlText);
@@ -553,16 +575,14 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         }
     }
 
-    private void saveAndUpdate()
-    {
+    private void saveAndUpdate() {
         // Save settings to update URL
         saveSettings(site.getActiveDataSource());
         // Update buttons
         site.updateButtons();
     }
 
-    private void showControlGroup(String group, boolean show)
-    {
+    private void showControlGroup(String group, boolean show) {
         List<Control> controlList = propGroupMap.get(group);
         if (controlList != null) {
             for (Control control : controlList) {
@@ -579,17 +599,8 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         }
     }
 
-    private void addControlToGroup(String group, Control control)
-    {
-        List<Control> controlList = propGroupMap.computeIfAbsent(
-            group,
-            k -> new ArrayList<>());
-        controlList.add(control);
-    }
-
     @Override
-    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
-    {
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] {
             new DriverPropertiesDialogPage(this)
         };

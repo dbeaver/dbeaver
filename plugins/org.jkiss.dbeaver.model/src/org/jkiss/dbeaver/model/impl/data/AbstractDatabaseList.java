@@ -25,7 +25,7 @@ import java.util.AbstractList;
  *
  * @author Serge Rider
  */
-public abstract class AbstractDatabaseList extends AbstractList implements DBDCollection {
+public abstract class AbstractDatabaseList extends AbstractList<Object> implements DBDCollection {
 
     @Override
     public Object get(int index) {

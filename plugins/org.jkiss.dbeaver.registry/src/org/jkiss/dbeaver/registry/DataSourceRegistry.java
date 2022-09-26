@@ -20,15 +20,14 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
@@ -37,12 +36,12 @@ import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -50,11 +49,11 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class DataSourceRegistry implements DBPDataSourceRegistry {
+public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePersistentRegistry {
     @Deprecated
     public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
     @Deprecated
@@ -68,10 +67,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 
-    private final DBPPlatform platform;
     private final DBPProject project;
+    private final DataSourceConfigurationManager configurationManager;
 
-    private final Map<Path, DataSourceStorage> storages = new LinkedHashMap<>();
+    private final List<DBPDataSourceConfigurationStorage> storages = new ArrayList<>();
     private final Map<String, DataSourceDescriptor> dataSources = new LinkedHashMap<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
@@ -83,22 +82,38 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
     private volatile ConfigSaver configSaver;
     private DBACredentialsProvider authCredentialsProvider;
-    private Throwable lastLoadError;
+    protected Throwable lastError;
 
-    public DataSourceRegistry(DBPPlatform platform, DBPProject project) {
-        this.platform = platform;
+    public DataSourceRegistry(DBPProject project) {
+        this(project, new DataSourceConfigurationManagerNIO(project));
+    }
+
+    public DataSourceRegistry(@NotNull DBPProject project, DataSourceConfigurationManager configurationManager) {
         this.project = project;
+        this.configurationManager = configurationManager;
 
         loadDataSources(true);
-        DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
 
-        addDataSourceListener(modelChangeListener);
+        if (!isVirtual()) {
+            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
+
+            addDataSourceListener(modelChangeListener);
+        }
+    }
+
+    // Virtual registry:
+    // - doesn't register listeners
+    // -
+    private boolean isVirtual() {
+        return project.isVirtual();
     }
 
     @Override
     public void dispose() {
-        removeDataSourceListener(modelChangeListener);
-        DataSourceProviderRegistry.getInstance().fireRegistryChange(this, false);
+        if (!isVirtual()) {
+            removeDataSourceListener(modelChangeListener);
+            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, false);
+        }
         synchronized (dataSourceListeners) {
             if (!this.dataSourceListeners.isEmpty()) {
                 log.warn("Some data source listeners are still registered: " + dataSourceListeners);
@@ -141,37 +156,33 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    DataSourceStorage getDefaultStorage() {
+    @NotNull
+    DBPDataSourceConfigurationStorage getDefaultStorage() {
         synchronized (storages) {
-            for (DataSourceStorage storage : storages.values()) {
+            for (DBPDataSourceConfigurationStorage storage : storages) {
                 if (storage.isDefault()) {
                     return storage;
                 }
             }
-            Path defFile = getModernConfigFile();
-            if (!Files.exists(defFile)) {
-                Path legacyFile = getLegacyConfigFile();
-                if (Files.exists(legacyFile)) {
-                    defFile = legacyFile;
+            List<DBPDataSourceConfigurationStorage> storages = getConfigurationManager().getConfigurationStorages();
+            for (DBPDataSourceConfigurationStorage storage : storages) {
+                if (storage.isDefault()) {
+                    this.storages.add(storage);
+                    return storage;
                 }
             }
-            DataSourceStorage storage = new DataSourceStorage(defFile, true);
-            storages.put(defFile, storage);
-            return storage;
+            // No default storage. Seems to be an internal error
+            log.warn("no default storage in registry " + this);
+            try {
+                java.nio.file.Path configPath = this.getProject().getMetadataFolder(false).resolve(MODERN_CONFIG_FILE_NAME);
+                Files.createFile(configPath);
+                DBPDataSourceConfigurationStorage defaultStorage = new DataSourceFileStorage(configPath, false, true);
+                this.storages.add(defaultStorage);
+                return defaultStorage;
+            } catch (IOException e) {
+                throw new IllegalStateException("Unable to create a default storage in registry " + this, e);
+            }
         }
-    }
-
-    private Path getLegacyConfigFile() {
-        return project.getAbsolutePath().resolve(LEGACY_CONFIG_FILE_NAME);
-    }
-
-    private Path getModernConfigFile() {
-        return project.getMetadataFolder(false).resolve(MODERN_CONFIG_FILE_NAME);
-    }
-
-    @NotNull
-    public DBPPlatform getPlatform() {
-        return platform;
     }
 
     ////////////////////////////////////////////////////
@@ -409,6 +420,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     @Override
     public void removeNetworkProfile(DBWNetworkProfile profile) {
+        try {
+            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+            secretController.setSecretValue(
+                profile.getSecretKeyId(),
+                null);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing network profile credentials from secret storage", e);
+        }
         networkProfiles.remove(profile);
     }
 
@@ -452,6 +471,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
 
     @Override
     public void removeAuthProfile(DBAAuthProfile profile) {
+        // Remove secrets
+        if (getProject().isUseSecretStorage()) {
+            try {
+                DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+                secretController.setSecretValue(
+                    profile.getSecretKeyId(),
+                    null);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing auth profile credentials from secret storage", e);
+            }
+        }
         synchronized (authProfiles) {
             authProfiles.remove(profile.getProfileId());
         }
@@ -464,7 +494,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         addDataSourceToList(descriptor);
         if (!descriptor.isDetached()) {
-            this.saveDataSources();
+            persistDataSourceUpdate(dataSource);
         }
         notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
     }
@@ -472,6 +502,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     void addDataSourceToList(@NotNull DataSourceDescriptor descriptor) {
         synchronized (dataSources) {
             this.dataSources.put(descriptor.getId(), descriptor);
+            DBPDataSourceConfigurationStorage storage = descriptor.getStorage();
+            if (!storages.contains(storage) && !descriptor.isDetached()) {
+                storages.add(storage);
+            }
         }
     }
 
@@ -481,7 +515,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             this.dataSources.remove(descriptor.getId());
         }
         if (!descriptor.isDetached()) {
-            this.saveDataSources();
+            persistDataSourceDelete(dataSource);
         }
         try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
@@ -498,10 +532,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
             addDataSource(dataSource);
         } else {
             if (!((DataSourceDescriptor) dataSource).isDetached()) {
-                this.saveDataSources();
+                persistDataSourceUpdate(dataSource);
             }
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
+    }
+
+    protected void persistDataSourceUpdate(@NotNull DBPDataSourceContainer container) {
+        saveDataSources();
+    }
+
+    protected void persistDataSourceDelete(@NotNull DBPDataSourceContainer container) {
+        saveDataSources();
     }
 
     @Override
@@ -524,8 +566,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     @Override
-    public Throwable getLastLoadError() {
-        return lastLoadError;
+    public Throwable getLastError() {
+        Throwable error = this.lastError;
+        this.lastError = null;
+        return error;
+    }
+
+    @Override
+    public boolean hasError() {
+        return this.lastError != null;
     }
 
     @Override
@@ -571,32 +620,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }.schedule();
     }
 
-    @Override
-    @NotNull
-    public ISecurePreferences getSecurePreferences() {
-        return platform.getApplication().getSecureStorage().getSecurePreferences().node("datasources");
-    }
-
     @Nullable
     @Override
     public DBACredentialsProvider getAuthCredentialsProvider() {
         return authCredentialsProvider;
     }
 
+    @Override
     public void setAuthCredentialsProvider(DBACredentialsProvider authCredentialsProvider) {
         this.authCredentialsProvider = authCredentialsProvider;
-    }
-
-    /**
-     * @return true if there is at least one project which was initialized.
-     */
-    public static boolean isProjectsInitialized() {
-        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
-            if (project.isRegistryLoaded()) {
-                return true;
-            }
-        }
-        return false;
     }
 
 
@@ -611,15 +643,33 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         return result;
     }
 
-    @NotNull
     @Override
-    public List<? extends DBPDataSourceContainer> loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull Path fromPath) {
-        ParseResults parseResults = new ParseResults();
-        loadDataSources(fromPath, false, true, parseResults, configurationStorage);
-        return new ArrayList<>(parseResults.addedDataSources);
+    public Set<DBPDataSourceFolder> getTemporaryFolders() {
+        Set<DBPDataSourceFolder> result = new HashSet<>(Collections.emptySet());
+        Set<DBPDataSourceFolder> folders = getDataSources().stream()
+            .filter(DBPDataSourceContainer::isTemporary)
+            .map(DBPDataSourceContainer::getFolder)
+            .collect(Collectors.toSet());
+        for (DBPDataSourceFolder folder : folders) {
+            while (folder != null) {
+                result.add(folder);
+                folder = folder.getParent();
+            }
+        }
+        return result;
     }
 
     private void loadDataSources(boolean refresh) {
+        loadDataSources(configurationManager.getConfigurationStorages(), configurationManager, refresh, true);
+    }
+
+    @Override
+    public void loadDataSources(
+        @NotNull List<DBPDataSourceConfigurationStorage> storages,
+        @NotNull DataSourceConfigurationManager manager,
+        boolean refresh,
+        boolean purgeUntouched
+    ) {
         if (!project.isOpen() || project.isInMemory()) {
             return;
         }
@@ -630,60 +680,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         ParseResults parseResults = new ParseResults();
 
         // Modern way - search json configs in metadata folder
-        boolean modernFormat = false;
-        Path metadataFolder = project.getMetadataFolder(false);
-        if (Files.exists(metadataFolder)) {
-            try {
-                List<Path> mdFiles = Files.list(metadataFolder)
-                    .filter(path -> !Files.isDirectory(path) && Files.exists(path))
-                    .collect(Collectors.toList());
-                for (Path res : mdFiles) {
-                    String fileName = res.getFileName().toString();
-                    if (fileName.startsWith(MODERN_CONFIG_FILE_PREFIX) && fileName.endsWith(MODERN_CONFIG_FILE_EXT)) {
-                        loadDataSources(res, refresh, true, parseResults);
-                        modernFormat = true;
-                    }
-                }
-            } catch (IOException e) {
-                log.error("Error during project files read", e);
-            }
-        }
-        if (!modernFormat) {
-            if (Files.exists(project.getAbsolutePath())) {
-                try {
-                    // Logacy way (search config.xml in project folder)
-                    List<Path> mdFiles = Files.list(project.getAbsolutePath())
-                        .filter(path -> !Files.isDirectory(path) && Files.exists(path))
-                        .collect(Collectors.toList());
-                    for (Path res : mdFiles) {
-                        String fileName = res.getFileName().toString();
-                        if (fileName.startsWith(LEGACY_CONFIG_FILE_PREFIX) && fileName.endsWith(LEGACY_CONFIG_FILE_EXT)) {
-                            loadDataSources(res, refresh, false, parseResults);
-                        }
-                    }
-                } catch (IOException e) {
-                    log.error("Error during legacy project files read", e);
-                }
-            }
-            if (!storages.isEmpty()) {
-                // Save config immediately in the new format
-                flushConfig();
-            }
-        }
-
-        {
-            // Call external configurations
-            Map<String, Object> searchOptions = new LinkedHashMap<>();
-            for (DataSourceConfigurationStorageDescriptor cfd : DataSourceProviderRegistry.getInstance().getDataSourceConfigurationStorages()) {
-                try {
-                    List<? extends DBPDataSourceContainer> loadedDS = cfd.getInstance().loadDataSources(this, searchOptions);
-                    if (!loadedDS.isEmpty()) {
-                        parseResults.addedDataSources.addAll(loadedDS);
-                    }
-                } catch (Exception e) {
-                    log.error("Error loading data sources from storage '" + cfd.getName() + "'", e);
-                }
-            }
+        for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
+            loadDataSources(cfgStorage, manager, false, parseResults);
         }
 
         // Reflect changes
@@ -692,56 +690,52 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, ds);
             }
             for (DBPDataSourceContainer ds : parseResults.addedDataSources) {
+                addDataSourceToList((DataSourceDescriptor) ds);
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, ds);
             }
 
-            List<DataSourceDescriptor> removedDataSource = new ArrayList<>();
-            for (DataSourceDescriptor ds : dataSources.values()) {
-                if (!parseResults.addedDataSources.contains(ds) && !parseResults.updatedDataSources.contains(ds) &&
-                    !ds.isProvided() && !ds.isExternallyProvided() && !ds.isDetached())
-                {
-                    removedDataSource.add(ds);
+            if (purgeUntouched) {
+                List<DataSourceDescriptor> removedDataSource = new ArrayList<>();
+                for (DataSourceDescriptor ds : dataSources.values()) {
+                    if (!parseResults.addedDataSources.contains(ds) && !parseResults.updatedDataSources.contains(ds) &&
+                        !ds.isProvided() && !ds.isExternallyProvided() && !ds.isDetached())
+                    {
+                        removedDataSource.add(ds);
+                    }
+                }
+                for (DataSourceDescriptor ds : removedDataSource) {
+                    this.dataSources.remove(ds.getId());
+                    this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, ds);
+                    ds.dispose();
                 }
             }
-            for (DataSourceDescriptor ds : removedDataSource) {
-                this.dataSources.remove(ds.getId());
-                this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, ds);
-                ds.dispose();
-            }
         }
     }
 
-    private void loadDataSources(@NotNull Path path, boolean refresh, boolean modern, @NotNull ParseResults parseResults) {
-        boolean extraConfig = !path.getFileName().toString().equalsIgnoreCase(modern ? MODERN_CONFIG_FILE_NAME : LEGACY_CONFIG_FILE_NAME);
-        DataSourceStorage storage;
-        synchronized (storages) {
-            storage = storages.get(path);
-            if (storage == null) {
-                storage = new DataSourceStorage(path, !extraConfig);
-                storages.put(path, storage);
-            }
-        }
-        loadDataSources(path, refresh, modern, parseResults, storage);
-    }
-
-    private void loadDataSources(@NotNull Path fromFile, boolean refresh, boolean modern, @NotNull ParseResults parseResults, @NotNull DBPDataSourceConfigurationStorage configurationStorage) {
-        if (!Files.exists(fromFile)) {
-            return;
-        }
-
+    private void loadDataSources(
+        @NotNull DBPDataSourceConfigurationStorage storage,
+        @NotNull DataSourceConfigurationManager manager,
+        boolean refresh,
+        @NotNull ParseResults parseResults
+    ) {
         try {
-            DataSourceSerializer serializer = modern ? new DataSourceSerializerModern(this) : new DataSourceSerializerLegacy(this);
-            serializer.parseDataSources(fromFile, configurationStorage, refresh, parseResults);
+            DataSourceSerializer serializer;
+            if (storage instanceof DataSourceFileStorage && ((DataSourceFileStorage) storage).isLegacy()) {
+                serializer = new DataSourceSerializerLegacy(this);
+            } else {
+                serializer = new DataSourceSerializerModern(this);
+            }
+            serializer.parseDataSources(storage, manager, parseResults, refresh);
             updateProjectNature();
-
-            lastLoadError = null;
+            lastError = null;
         } catch (Exception ex) {
-            lastLoadError = ex;
-            log.error("Error loading datasource config from " + fromFile.toAbsolutePath(), ex);
+            lastError = ex;
+            log.error("Error loading datasource config from " + storage.getStorageId(), ex);
         }
     }
 
-    private void saveDataSources() {
+    @Override
+    public void saveDataSources() {
         if (project.isInMemory()) {
             return;
         }
@@ -750,59 +744,35 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         final DBRProgressMonitor monitor = new VoidProgressMonitor();
         saveInProgress = true;
         try {
-            for (DataSourceStorage storage : storages.values()) {
+            for (DBPDataSourceConfigurationStorage storage : storages) {
+                if (storage instanceof DataSourceFileStorage && ((DataSourceFileStorage) storage).isLegacy()) {
+                    // Legacy storage. We must save it in the modern format
+                    ((DataSourceFileStorage) storage).convertToModern(project);
+                }
+
                 List<DataSourceDescriptor> localDataSources = getDataSources(storage);
 
-                Path configFile = storage.getSourceFile();
-
-                if (storage.isDefault()) {
-                    if (project.isModernProject()) {
-                        configFile = getModernConfigFile();
-                    } else {
-                        configFile = getLegacyConfigFile();
-                    }
-                } else {
-                    String configFileName = configFile.getFileName().toString();
-                    if (configFileName.startsWith(LEGACY_CONFIG_FILE_PREFIX) && configFileName.endsWith(".xml")) {
-                        // Legacy configuration - move to metadata folder as json
-                        String newFileName = MODERN_CONFIG_FILE_PREFIX + configFileName.substring(LEGACY_CONFIG_FILE_PREFIX.length());
-                        int divPos = newFileName.lastIndexOf(".");
-                        newFileName = newFileName.substring(0, divPos) + ".json";
-                        configFile = project.getMetadataFolder(false).resolve(newFileName);
-                    }
-                }
                 try {
-                    ContentUtils.makeFileBackup(configFile);
-
-                    if (localDataSources.isEmpty()) {
-                        if (Files.exists(configFile)) {
-                            try {
-                                Files.delete(configFile);
-                            } catch (IOException e) {
-                                log.error("Error deleting file '" + configFile.toAbsolutePath() + "'", e);
-                            }
-                        }
-                    } else {
-                        DataSourceSerializer serializer;
-                        if (!project.isModernProject()) {
-                            serializer = new DataSourceSerializerLegacy(this);
-                        } else {
-                            serializer = new DataSourceSerializerModern(this);
-                        }
-                        project.getMetadataFolder(true);
-                        serializer.saveDataSources(
-                            monitor,
-                            storage,
-                            localDataSources,
-                            configFile);
-                    }
+                    DataSourceSerializer serializer = new DataSourceSerializerModern(this);
+                    serializer.saveDataSources(
+                        monitor,
+                        configurationManager,
+                        storage,
+                        localDataSources);
                     try {
-                        getSecurePreferences().flush();
+                        if (project.isUseSecretStorage() && !configurationManager.isSecure()) {
+                            DBSSecretController
+                                .getProjectSecretController(project)
+                                .flushChanges();
+                        }
+                        lastError = null;
                     } catch (Throwable e) {
                         log.error("Error saving secured preferences", e);
+                        lastError = e;
                     }
                 } catch (Exception ex) {
                     log.error("Error saving datasources configuration", ex);
+                    lastError = ex;
                 }
             }
         } finally {
@@ -810,11 +780,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    private List<DataSourceDescriptor> getDataSources(DataSourceStorage storage) {
+    private List<DataSourceDescriptor> getDataSources(DBPDataSourceConfigurationStorage storage) {
         List<DataSourceDescriptor> result = new ArrayList<>();
         synchronized (dataSources) {
             for (DataSourceDescriptor ds : dataSources.values()) {
-                if (ds.getStorage() == storage) {
+                if (CommonUtils.equalObjects(ds.getStorage(), storage)) {
                     result.add(ds);
                 }
             }
@@ -824,26 +794,31 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
     }
 
     private void updateProjectNature() {
+        if (isVirtual()) {
+            return;
+        }
         try {
             IProject eclipseProject = project.getEclipseProject();
-            final IProjectDescription description = eclipseProject.getDescription();
-            if (description != null) {
-                String[] natureIds = description.getNatureIds();
-                if (dataSources.isEmpty()) {
-                    // Remove nature
-                    if (ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
-                        description.setNatureIds(ArrayUtils.remove(String.class, natureIds, DBeaverNature.NATURE_ID));
-                        eclipseProject.setDescription(description, new NullProgressMonitor());
-                    }
-
-                } else {
-                    // Add nature
-                    if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
-                        description.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));
-                        try {
+            if (eclipseProject != null) {
+                final IProjectDescription description = eclipseProject.getDescription();
+                if (description != null) {
+                    String[] natureIds = description.getNatureIds();
+                    if (dataSources.isEmpty()) {
+                        // Remove nature
+                        if (ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
+                            description.setNatureIds(ArrayUtils.remove(String.class, natureIds, DBeaverNature.NATURE_ID));
                             eclipseProject.setDescription(description, new NullProgressMonitor());
-                        } catch (CoreException e) {
-                            log.debug("Can't set project nature", e);
+                        }
+
+                    } else {
+                        // Add nature
+                        if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
+                            description.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));
+                            try {
+                                eclipseProject.setDescription(description, new NullProgressMonitor());
+                            } catch (CoreException e) {
+                                log.debug("Can't set project nature", e);
+                            }
                         }
                     }
                 }
@@ -853,22 +828,90 @@ public class DataSourceRegistry implements DBPDataSourceRegistry {
         }
     }
 
-    private void clearSecuredPasswords(DataSourceDescriptor dataSource) {
-        try {
-            dataSource.getSecurePreferences().removeNode();
-        } catch (Throwable e) {
-            log.debug("Error clearing '" + dataSource.getId() + "' secure storage");
-        }
-    }
-
     @Override
     public DBPProject getProject() {
         return project;
     }
 
+    public DataSourceConfigurationManager getConfigurationManager() {
+        return configurationManager;
+    }
+
     @Override
     public String toString() {
         return project.getName() + " (" + getClass().getSimpleName() + ")";
+    }
+
+    public void saveConfigurationToManager(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @Nullable Predicate<DBPDataSourceContainer> filter
+    ) {
+        List<DataSourceDescriptor> localDataSources = getDataSources();
+        if (filter != null) {
+            localDataSources.removeIf(filter.negate());
+        }
+
+        try {
+            DataSourceSerializer serializer = new DataSourceSerializerModern(this);
+            serializer.saveDataSources(
+                monitor,
+                configurationManager,
+                getDefaultStorage(),
+                localDataSources);
+            try {
+                if (!configurationManager.isSecure()) {
+                    DBSSecretController
+                        .getProjectSecretController(project)
+                        .flushChanges();
+                }
+                lastError = null;
+            } catch (Throwable e) {
+                lastError = e;
+                log.error("Error saving secured preferences", e);
+            }
+        } catch (Exception ex) {
+            lastError = ex;
+            log.error("Error saving datasources configuration", ex);
+        }
+
+    }
+
+    @Override
+    public void checkForErrors() throws DBException {
+        Throwable lastError = getLastError();
+        if (lastError != null) {
+            if (lastError instanceof DBException) {
+                throw (DBException) lastError;
+            }
+            throw new DBException(lastError.getMessage(), lastError.getCause());
+        }
+    }
+
+    @Override
+    public void persistSecrets(DBSSecretController secretController) throws DBException {
+        for (DBPDataSourceContainer ds : getDataSources()) {
+            ds.persistSecrets(secretController);
+        }
+        for (DBWNetworkProfile np : getNetworkProfiles()) {
+            np.persistSecrets(secretController);
+        }
+        for (DBAAuthProfile ap : getAllAuthProfiles()) {
+            ap.persistSecrets(secretController);
+        }
+    }
+
+    @Override
+    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+        for (DBPDataSourceContainer ds : getDataSources()) {
+            ds.resolveSecrets(secretController);
+        }
+        for (DBWNetworkProfile np : getNetworkProfiles()) {
+            np.resolveSecrets(secretController);
+        }
+        for (DBAAuthProfile ap : getAllAuthProfiles()) {
+            ap.resolveSecrets(secretController);
+        }
     }
 
     static class ParseResults {

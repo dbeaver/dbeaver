@@ -31,9 +31,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -109,7 +113,11 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
                                                       @NotNull ObjectsSearchParams params) throws DBException {
         List<DB2ObjectType> db2ObjectTypes = new ArrayList<>(params.getObjectTypes().length);
         for (DBSObjectType dbsObjectType : params.getObjectTypes()) {
-            db2ObjectTypes.add((DB2ObjectType) dbsObjectType);
+            if (dbsObjectType instanceof DB2ObjectType) {
+                db2ObjectTypes.add((DB2ObjectType) dbsObjectType);
+            } else if (dbsObjectType == RelationalObjectType.TYPE_PROCEDURE) {
+                db2ObjectTypes.add(DB2ObjectType.ROUTINE);
+            }
         }
 
         DB2Schema schema = params.getParentObject() instanceof DB2Schema ? (DB2Schema) params.getParentObject() : null;
@@ -374,7 +382,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         }
     }
 
-    private class DB2ObjectReference extends AbstractObjectReference {
+    private class DB2ObjectReference extends AbstractObjectReference<DBSObject> {
 
         private DB2ObjectReference(String objectName, DB2Schema db2Schema, DB2ObjectType objectType)
         {

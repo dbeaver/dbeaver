@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
 /**
  * Direct object reference
  */
-public class DirectObjectReference extends AbstractObjectReference {
+public class DirectObjectReference extends AbstractObjectReference<DBSObject> {
 
     private final DBSObject object;
 

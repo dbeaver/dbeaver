@@ -17,25 +17,26 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthProfile;
 import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
-import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Datasource registry.
  * Extends DBPObject to support datasources ObjectManager
  */
-public interface DBPDataSourceRegistry extends DBPObject {
+public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     String LEGACY_CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
     String LEGACY_CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
@@ -46,9 +47,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
     String MODERN_CONFIG_FILE_NAME = MODERN_CONFIG_FILE_PREFIX + MODERN_CONFIG_FILE_EXT;
     String CREDENTIALS_CONFIG_FILE_PREFIX = "credentials-config"; //$NON-NLS-1$
     String CREDENTIALS_CONFIG_FILE_EXT = ".json"; //$NON-NLS-1$
+    String CREDENTIALS_CONFIG_FILE_NAME = CREDENTIALS_CONFIG_FILE_PREFIX + CREDENTIALS_CONFIG_FILE_EXT;
 
-    @NotNull
-    DBPPlatform getPlatform();
     /**
      * Owner project.
      */
@@ -84,9 +84,6 @@ public interface DBPDataSourceRegistry extends DBPObject {
     void removeDataSource(@NotNull DBPDataSourceContainer dataSource);
 
     void updateDataSource(@NotNull DBPDataSourceContainer dataSource);
-
-    @NotNull
-    List<? extends DBPDataSourceContainer> loadDataSourcesFromFile(@NotNull DBPDataSourceConfigurationStorage configurationStorage, @NotNull Path fromPath);
 
     @NotNull
     List<? extends DBPDataSourceFolder> getAllFolders();
@@ -131,16 +128,33 @@ public interface DBPDataSourceRegistry extends DBPObject {
     void flushConfig();
     void refreshConfig();
 
-    Throwable getLastLoadError();
+    /**
+     * Returns and nullifies last registry save/load error.
+     */
+    Throwable getLastError();
+
+    boolean hasError();
+
+    /**
+     * Throws lasty occured load/save error
+     */
+    void checkForErrors() throws DBException;
 
     void notifyDataSourceListeners(final DBPEvent event);
-
-    @NotNull
-    ISecurePreferences getSecurePreferences();
 
     // Registry auth provider. Null by default.
     @Nullable
     DBACredentialsProvider getAuthCredentialsProvider();
+
+    /**
+     * Sets auth credentials provider to the registry.
+     */
+    void setAuthCredentialsProvider(DBACredentialsProvider authCredentialsProvider);
+
+    /**
+     * Returns all folders having temporary connections.
+     */
+    Set<DBPDataSourceFolder> getTemporaryFolders();
 
     void dispose();
 

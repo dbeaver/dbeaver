@@ -20,16 +20,17 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPMessageType;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -43,39 +44,44 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
-* ResultSetValueController
-*/
+ * ResultSetValueController
+ */
 public class ResultSetValueController implements IAttributeController, IRowController {
 
     protected final IResultSetController controller;
     protected Composite inlinePlaceholder;
     protected EditType editType;
-    protected ResultSetRow curRow;
-    protected DBDAttributeBinding binding;
+    protected ResultSetCellLocation cellLocation;
 
     public ResultSetValueController(
         @NotNull IResultSetController controller,
-        @NotNull DBDAttributeBinding binding,
-        @Nullable ResultSetRow row,
+        @NotNull ResultSetCellLocation cellLocation,
         @NotNull EditType editType,
-        @Nullable Composite inlinePlaceholder)
-    {
+        @Nullable Composite inlinePlaceholder) {
         this.controller = controller;
-        this.binding = binding;
-        this.curRow = row;
+        this.cellLocation = cellLocation;
         this.editType = editType;
         this.inlinePlaceholder = inlinePlaceholder;
     }
 
+    public void setCellLocation(ResultSetCellLocation cellLocation) {
+        this.cellLocation = cellLocation;
+    }
+
     public ResultSetRow getCurRow() {
-        return curRow;
+        return cellLocation.getRow();
     }
 
-    public void setCurRow(ResultSetRow curRow)
-    {
-        this.curRow = curRow;
+    public void setCurRow(ResultSetRow curRow, int[] rowIndexes) {
+        this.cellLocation = new ResultSetCellLocation(
+            cellLocation.getAttribute(),
+            curRow,
+            rowIndexes);
     }
 
+    public int[] getRowIndexes() {
+        return cellLocation.getRowIndexes();
+    }
 
     @Nullable
     @Override
@@ -90,15 +96,13 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     }
 
     @Override
-    public String getValueName()
-    {
-        return binding.getName();
+    public String getValueName() {
+        return getBinding().getName();
     }
 
     @Override
-    public DBSTypedObject getValueType()
-    {
-        return binding.getPresentationAttribute();
+    public DBSTypedObject getValueType() {
+        return getBinding().getPresentationAttribute();
     }
 
     @NotNull
@@ -109,25 +113,27 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @NotNull
     @Override
-    public DBDAttributeBinding getBinding()
-    {
-        return binding;
+    public DBDAttributeBinding getBinding() {
+        return cellLocation.getAttribute();
     }
 
     public void setBinding(DBDAttributeBinding binding) {
-        this.binding = binding;
+        this.cellLocation = new ResultSetCellLocation(
+            binding,
+            this.cellLocation.getRow(),
+            this.cellLocation.getRowIndexes());
     }
 
     @NotNull
     @Override
     public String getColumnId() {
         DBCExecutionContext context = getExecutionContext();
-        DBSAttributeBase metaAttribute = binding.getMetaAttribute();
+        DBSAttributeBase metaAttribute = getBinding().getMetaAttribute();
         if (metaAttribute == null) {
-            metaAttribute = binding.getAttribute();
+            metaAttribute = getBinding().getAttribute();
         }
         if (metaAttribute == null) {
-            return binding.getName();
+            return getBinding().getName();
         }
         return DBUtils.getSimpleQualifiedName(
             context == null ? null : context.getDataSource().getContainer().getName(),
@@ -136,17 +142,15 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     }
 
     @Override
-    public Object getValue()
-    {
-        return controller.getModel().getCellValue(binding, curRow);
+    public Object getValue() {
+        return controller.getModel().getCellValue(cellLocation);
     }
 
     @Override
-    public void updateValue(@Nullable Object value, boolean updatePresentation)
-    {
+    public void updateValue(@Nullable Object value, boolean updatePresentation) {
         boolean updated;
         try {
-            updated = controller.getModel().updateCellValue(binding, curRow, value);
+            updated = controller.getModel().updateCellValue(cellLocation, value);
         } catch (Exception e) {
             UIUtils.asyncExec(() -> {
                 DBWorkbench.getPlatformUI().showError("Value update", "Error updating value: " + e.getMessage(), e);
@@ -157,7 +161,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
             // Update controls
             UIUtils.syncExec(() -> controller.updatePanelsContent(false));
             if (controller instanceof ResultSetViewer) {
-                ((ResultSetViewer)controller).fireResultSetChange();
+                ((ResultSetViewer) controller).fireResultSetChange();
             }
         }
     }
@@ -169,15 +173,13 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @Nullable
     @Override
-    public DBDRowIdentifier getRowIdentifier()
-    {
-        return binding.getRowIdentifier();
+    public DBDRowIdentifier getRowIdentifier() {
+        return getBinding().getRowIdentifier();
     }
 
     @Override
-    public DBDValueHandler getValueHandler()
-    {
-        return binding.getValueHandler();
+    public DBDValueHandler getValueHandler() {
+        return getBinding().getValueHandler();
     }
 
     private DBPDataSourceContainer getDataSourceContainer() {
@@ -192,9 +194,29 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @Override
     public IValueManager getValueManager() {
-        DBSAttributeBase valueType = binding.getPresentationAttribute();
+        DBSTypedObject valueType = getBinding().getPresentationAttribute();
+        DBDValueHandler valueHandler = getBinding().getValueHandler();
+        if (valueType.getDataKind() == DBPDataKind.ARRAY && cellLocation.getRowIndexes() != null) {
+            try {
+                // Get component data type
+                DBRProgressMonitor monitor = new VoidProgressMonitor();
+                DBSDataType arrayDataType = DBUtils.getDataType(valueType);
+                if (arrayDataType == null) {
+                    arrayDataType = DBUtils.resolveDataType(monitor, getBinding().getDataSource(), getBinding().getFullTypeName());
+                }
+                if (arrayDataType != null) {
+                    DBSDataType componentType = arrayDataType.getComponentType(monitor);
+                    if (componentType != null) {
+                        valueType = componentType;
+                        valueHandler = DBUtils.findValueHandler(getBinding().getDataSource(), valueType);
+                    }
+                }
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Data type resolve", "Error resolving component data type", e);
+            }
+        }
         final DBCExecutionContext executionContext = getExecutionContext();
-        Class<?> valueObjectType = binding.getValueHandler().getValueObjectType(valueType);
+        Class<?> valueObjectType = valueHandler.getValueObjectType(valueType);
         if (valueObjectType == Object.class) {
             // Try to get type from value itself
             Object value = getValue();
@@ -209,8 +231,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     }
 
     @Override
-    public EditType getEditType()
-    {
+    public EditType getEditType() {
         return editType;
     }
 
@@ -219,21 +240,22 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     }
 
     @Override
-    public boolean isReadOnly()
-    {
-        return controller.getAttributeReadOnlyStatus(binding) != null;
+    public boolean isReadOnly() {
+        DBSTypedObject valueType = getBinding().getPresentationAttribute();
+        // TODO: 8/26/2022 Add support for editing internal array rows
+        return controller.getAttributeReadOnlyStatus(getBinding()) != null || (valueType.getDataKind() != null
+            && valueType.getDataKind() == DBPDataKind.ARRAY
+            && cellLocation.getRowIndexes() != null);
     }
 
     @Override
-    public IWorkbenchPartSite getValueSite()
-    {
+    public IWorkbenchPartSite getValueSite() {
         return controller.getSite();
     }
 
     @Nullable
     @Override
-    public Composite getEditPlaceholder()
-    {
+    public Composite getEditPlaceholder() {
         return inlinePlaceholder;
     }
 
@@ -249,16 +271,14 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @NotNull
     @Override
-    public List<DBDAttributeBinding> getRowAttributes()
-    {
+    public List<DBDAttributeBinding> getRowAttributes() {
         return Arrays.asList(controller.getModel().getAttributes());
     }
 
     @Nullable
     @Override
-    public Object getAttributeValue(DBDAttributeBinding attribute)
-    {
-        return controller.getModel().getCellValue(attribute, curRow);
+    public Object getAttributeValue(DBDAttributeBinding attribute) {
+        return controller.getModel().getCellValue(cellLocation);
     }
 
 }

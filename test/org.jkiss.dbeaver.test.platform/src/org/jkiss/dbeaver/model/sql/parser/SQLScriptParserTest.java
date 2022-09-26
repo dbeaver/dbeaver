@@ -20,6 +20,7 @@ import org.eclipse.jface.text.Document;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -37,7 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,16 +57,19 @@ public class SQLScriptParserTest {
     private JDBCSession session;
     @Mock
     private JDBCDatabaseMetaData databaseMetaData;
+    @Mock
+    private DBPDriver driver;
 
     @Before
     public void init() {
         DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         Mockito.when(dataSource.getContainer()).thenReturn(dataSourceContainer);
-        Mockito.when(dataSourceContainer.getConnectionConfiguration()).thenReturn(connectionConfiguration);
+        Mockito.lenient().when(dataSourceContainer.getConnectionConfiguration()).thenReturn(connectionConfiguration);
         Mockito.when(dataSourceContainer.getActualConnectionConfiguration()).thenReturn(connectionConfiguration);
         Mockito.when(dataSourceContainer.getPreferenceStore()).thenReturn(preferenceStore);
-        Mockito.when(executionContext.getDataSource()).thenReturn(dataSource);
+        Mockito.lenient().when(executionContext.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSourceContainer.getDriver()).thenReturn(driver);
     }
 
     @Test
@@ -495,7 +499,34 @@ public class SQLScriptParserTest {
     	SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 15, false, false);
     	Assert.assertEquals("@set col1 = '1'", element.getText());
     }
-   
+    
+    @Test
+    public void parseBeginTransaction() throws DBException {
+        String[] dialects = new String[] {"postgresql", "sqlserver"};
+        for (String dialect : dialects) {
+            assertParse(dialect,
+                "begin transaction;\nselect 1 from dual;",
+                new String[]{"begin transaction", "select 1 from dual"}
+            );
+        }
+    }
+    
+    @Test
+    public void parseFromCursorPositionBeginTransaction() throws DBException {
+        String[] dialects = new String[] {"postgresql", "sqlserver"};
+        String query = "begin transaction;\nselect 1 from dual;";
+        SQLScriptElement element;
+        SQLParserContext context;
+        for (String dialect : dialects) {
+            context = createParserContext(setDialect(dialect), query);
+            int[] positions = new int[]{4, 18};
+            for (int pos : positions) {
+                element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
+                Assert.assertEquals("begin transaction", element.getText());
+            }
+        }
+    }
+    
     private void assertParse(String dialectName, String[] expected) throws DBException {
     	String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
     	List<String> expectedParts = new ArrayList<>(expected.length);
@@ -507,7 +538,7 @@ public class SQLScriptParserTest {
     			expectedParts.add(expected[i]);
     		}
     	}
-        assertParse(dialectName, source, expectedParts.toArray(new String[0]));    
+        assertParse(dialectName, source, expectedParts.toArray(new String[0]));
     }
 
     private void assertParse(String dialectName, String query, String[] expected) throws DBException {
@@ -530,9 +561,14 @@ public class SQLScriptParserTest {
 
     private SQLDialect setDialect(String name) throws DBException {
         SQLDialectRegistry registry = SQLDialectRegistry.getInstance();
+        if (name.equals("oracle")) {
+            Mockito.when(dataSource.isServerVersionAtLeast(12, 1)).thenReturn(true);
+        }
+        if (name.equals("sqlserver")) {
+            Mockito.when(driver.getSampleURL()).thenReturn("jdbc:sqlserver://localhost;user=MyUserName;password=*****;");
+        }
         SQLDialect dialect = registry.getDialect(name).createInstance();
-        Mockito.when(dataSource.isServerVersionAtLeast(12, 1)).thenReturn(true);
-        ((JDBCSQLDialect)dialect).initDriverSettings(session, dataSource, databaseMetaData);
+        ((JDBCSQLDialect) dialect).initDriverSettings(session, dataSource, databaseMetaData);
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
         return dialect;
     }

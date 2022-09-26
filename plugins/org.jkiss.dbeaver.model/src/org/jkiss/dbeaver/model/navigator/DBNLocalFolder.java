@@ -134,7 +134,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
 
     @Override
     public String getNodeItemPath() {
-        return NodePathType.folder.getPrefix() + getParentNode().getDataSourceRegistry().getProject().getName() + "/" + folder.getFolderPath();
+        return NodePathType.folder.getPrefix() + getOwnerProject().getId() + "/" + folder.getFolderPath();
     }
 
     @Override

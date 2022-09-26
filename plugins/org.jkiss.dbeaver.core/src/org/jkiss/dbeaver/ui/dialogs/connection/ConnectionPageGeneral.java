@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
@@ -45,15 +46,19 @@ import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.ConnectionFolderSelector;
 import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * General connection page (common for all connection types)
@@ -129,6 +134,11 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
     }
 
+    
+    protected boolean wasActivated() {
+        return this.activated;
+    }
+
     @Override
     public void dispose()
     {
@@ -144,14 +154,14 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
 
         if (connectionNameText != null) {
+            ConnectionPageSettings settings = wizard.getPageSettings();
+
             if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
                 connectionNameText.setText(dataSourceDescriptor.getName());
-                connectionNameChanged = true;
             } else {
-                ConnectionPageSettings settings = wizard.getPageSettings();
                 if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
-                    String newName = generateConnectionName(settings);
-                    if (newName != null) {
+                    String newName = generateConnectionName(settings, ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+                    if (!newName.isEmpty()) {
                         connectionNameText.setText(newName);
                     }
                     connectionNameChanged = false;
@@ -230,35 +240,17 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
     }
 
-    private String generateConnectionName(ConnectionPageSettings settings) {
+    private String generateConnectionName(ConnectionPageSettings settings, String usedName) {
         String newName;
+        String resultName = usedName;
         if (settings != null) {
+            if (resultName.isBlank()) {
+                resultName = GeneralUtils.variablePattern(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE);
+            }
             DataSourceDescriptor dataSource = settings.getActiveDataSource();
             DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-            newName = dataSourceDescriptor == null ? "" : dataSource.getName(); //$NON-NLS-1$
-            if (CommonUtils.isEmpty(newName)) {
-                newName = connectionInfo.getDatabaseName();
-                if (CommonUtils.isEmpty(newName) || newName.length() < 3 || CommonUtils.isInt(newName)) {
-                    // Database name is too short or not a string
-                    newName = connectionInfo.getHostName();
-                }
-                if (CommonUtils.isEmpty(newName)) {
-                    newName = connectionInfo.getServerName();
-                }
-                if (CommonUtils.isEmpty(newName)) {
-                    newName = dataSource.getDriver().getName();
-                }
-                if (CommonUtils.isEmpty(newName)) {
-                    newName = CoreMessages.dialog_connection_wizard_final_default_new_connection_name;
-                }
-                StringTokenizer st = new StringTokenizer(newName, "/\\:,?=%$#@!^&*()"); //$NON-NLS-1$
-                while (st.hasMoreTokens()) {
-                    newName = st.nextToken();
-                }
-                //newName = settings.getDriver().getName() + " - " + newName; //$NON-NLS-1$
-                newName = CommonUtils.truncateString(newName, 50);
-            }
-
+            final ConnectionNameResolver resolver = new ConnectionNameResolver(dataSource, connectionInfo, dataSourceDescriptor);
+            newName = GeneralUtils.replaceVariables(resultName, resolver);
             String baseName = newName;
             for (int i = 2; ; i++) {
                 if (settings.getDataSourceRegistry().findDataSourceByName(newName) != null) {
@@ -298,9 +290,18 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
             connectionNameText = UIUtils.createLabelText(miscGroup, CoreMessages.dialog_connection_wizard_final_label_connection_name, CommonUtils.toString(connectionName));
             connectionNameText.addModifyListener(e -> {
-                connectionNameChanged = true;
-                ConnectionPageGeneral.this.getContainer().updateButtons();
+                if (dataSourceDescriptor == null || !connectionNameText.getText().equals(connectionName)) {
+                    connectionNameChanged = true;
+                    getContainer().updateButtons();
+                }
             });
+            ContentAssistUtils.installContentProposal(
+                connectionNameText,
+                new SmartTextContentAdapter(),
+                new StringContentProposalProvider(Arrays.stream(ConnectionNameResolver.getConnectionVariables()).map(GeneralUtils::variablePattern).toArray(String[]::new))
+            );
+            UIUtils.setContentProposalToolTip(connectionNameText, "Connection name patterns",
+                ConnectionNameResolver.getConnectionVariables());
 
             {
                 connectionTypeCombo = createConnectionTypeCombo(miscGroup);
@@ -562,8 +563,17 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             return;
         }
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
+        final String name;
 
-        String name = connectionNameChanged ? connectionNameText.getText() : generateConnectionName(getWizard().getPageSettings());
+        if (connectionNameChanged) {
+            name = generateConnectionName(getWizard().getPageSettings(), connectionNameText.getText());
+        } else if (dataSourceDescriptor != null) {
+            name = dataSourceDescriptor.getName();
+        } else {
+            name = generateConnectionName(getWizard().getPageSettings(),
+                ModelPreferences.getPreferences().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+        }
+
         dataSource.setName(name);
         if (folderSelector.isEmpty()) {
             dataSource.setFolder(curDataSourceFolder);

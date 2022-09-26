@@ -30,9 +30,7 @@
         <setEntry value="com.google.guava*27.1.0.v20190517-1946@default:default"/>
         <setEntry value="com.ibm.icu@default:default"/>
         <setEntry value="com.jcraft.jsch@default:default"/>
-        <setEntry value="com.sun.jna*4.5.1.v20190425-1842@default:default"/>
         <setEntry value="com.sun.jna*5.8.0.v20210503-0343@default:default"/>
-        <setEntry value="com.sun.jna.platform*4.5.1.v20190425-1842@default:default"/>
         <setEntry value="com.sun.jna.platform*5.8.0.v20210406-1004@default:default"/>
         <setEntry value="javaewah@default:default"/>
         <setEntry value="javax.annotation@default:default"/>
@@ -40,12 +38,9 @@
         <setEntry value="javax.xml@default:default"/>
         <setEntry value="net.i2p.crypto.eddsa@default:default"/>
         <setEntry value="org.apache.batik.constants@default:default"/>
-        <setEntry value="org.apache.batik.css*1.14.0.v20210324-0332@default:default"/>
-        <setEntry value="org.apache.batik.css*1.6.0.v201011041432@default:default"/>
+        <setEntry value="org.apache.batik.css@default:default"/>
         <setEntry value="org.apache.batik.i18n@default:default"/>
-        <setEntry value="org.apache.batik.util*1.14.0.v20210324-0332@default:default"/>
-        <setEntry value="org.apache.batik.util*1.6.0.v201011041432@default:default"/>
-        <setEntry value="org.apache.batik.util.gui@default:default"/>
+        <setEntry value="org.apache.batik.util@default:default"/>
         <setEntry value="org.apache.commons.cli@default:default"/>
         <setEntry value="org.apache.commons.codec@default:default"/>
         <setEntry value="org.apache.commons.io@default:default"/>
@@ -207,7 +202,7 @@
         <setEntry value="org.jkiss.bundle.gis@default:default"/>
         <setEntry value="org.jkiss.bundle.jfreechart@default:default"/>
         <setEntry value="org.jkiss.bundle.sshj@default:default"/>
-        <setEntry value="org.objectweb.asm@default:default"/>
+        <setEntry value="org.objectweb.asm*9.2.0.v20210813-1119@default:default"/>
         <setEntry value="org.sat4j.core@default:default"/>
         <setEntry value="org.sat4j.pb@default:default"/>
         <setEntry value="org.slf4j.api@default:default"/>
@@ -237,7 +232,6 @@
         <setEntry value="org.jkiss.dbeaver.ext.bigquery.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.bigquery@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.clickhouse@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.ext.databricks@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.datavirtuality.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.datavirtuality@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.db2.i@default:default"/>
@@ -297,6 +291,7 @@
         <setEntry value="org.jkiss.dbeaver.net.ssh.sshj@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.parser.common@default:default"/>
         <setEntry value="org.jkiss.dbeaver.registry@default:default"/>
         <setEntry value="org.jkiss.dbeaver.slf4j@default:false"/>
         <setEntry value="org.jkiss.dbeaver.tasks.native.ui@default:default"/>

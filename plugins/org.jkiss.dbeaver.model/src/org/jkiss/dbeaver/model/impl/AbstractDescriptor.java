@@ -226,16 +226,16 @@ public abstract class AbstractDescriptor {
         }
         intCache = new HashMap<>();
         classInfoCache.put(clazz.getName(), intCache);
-        for (Class sc = clazz; sc != null && sc != Object.class; sc = sc.getSuperclass()) {
+        for (Class<?> sc = clazz; sc != null && sc != Object.class; sc = sc.getSuperclass()) {
             collectInterface(sc, intCache);
         }
 
         return intCache;
     }
 
-    private static void collectInterface(Class clazz, Map<String, Boolean> intCache) {
+    private static void collectInterface(Class<?> clazz, Map<String, Boolean> intCache) {
         intCache.put(clazz.getName(), Boolean.TRUE);
-        for (Class i : clazz.getInterfaces()) {
+        for (Class<?> i : clazz.getInterfaces()) {
             collectInterface(i, intCache);
         }
     }

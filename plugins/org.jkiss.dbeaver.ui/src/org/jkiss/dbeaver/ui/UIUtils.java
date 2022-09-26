@@ -34,10 +34,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.*;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -535,11 +532,13 @@ public class UIUtils {
         return modifyFont(normalFont, SWT.BOLD);
     }
 
-    public static Font modifyFont(Font normalFont, int style)
-    {
-        FontData[] fontData = normalFont.getFontData();
-        fontData[0].setStyle(fontData[0].getStyle() | style);
-        return new Font(normalFont.getDevice(), fontData[0]);
+    @NotNull
+    public static Font modifyFont(@NotNull Font normalFont, int style) {
+        final FontData[] data = normalFont.getFontData();
+        for (FontData fd : data) {
+            fd.setStyle(fd.getStyle() | style);
+        }
+        return new Font(normalFont.getDevice(), data);
     }
 
     public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint)
@@ -1936,15 +1935,28 @@ public class UIUtils {
         return item;
     }
 
-    public static void resizeShell(Shell shell) {
-        Point shellSize = shell.getSize();
-        Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-        //compSize.y += 20;
-        //compSize.x += 20;
-        if (shellSize.y < compSize.y || shellSize.x < compSize.x) {
-            compSize.x = Math.max(shellSize.x, compSize.x);
-            compSize.y = Math.max(shellSize.y, compSize.y);
-            shell.setSize(compSize);
+    public static void resizeShell(@NotNull Shell shell) {
+        final Rectangle displayArea = shell.getDisplay().getClientArea();
+        final Point shellLocation = shell.getLocation();
+        final Point shellSize = shell.getSize();
+        final Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+        boolean needsLayout = false;
+
+        if (shellSize.x < compSize.x || shellSize.y < compSize.y) {
+            shellSize.x = Math.max(shellSize.x, compSize.x);
+            shellSize.y = Math.max(shellSize.y, compSize.y);
+            shell.setSize(shellSize);
+            needsLayout = true;
+        }
+
+        if (shellLocation.x + shellSize.x > displayArea.width || shellLocation.y + shellSize.y > displayArea.height) {
+            shellLocation.x = CommonUtils.clamp(displayArea.width - shellSize.x, 0, shellLocation.x);
+            shellLocation.y = CommonUtils.clamp(displayArea.height - shellSize.y, 0, shellLocation.y);
+            shell.setLocation(shellLocation.x, shellLocation.y);
+            needsLayout = true;
+        }
+
+        if (needsLayout) {
             shell.layout(true);
         }
     }
@@ -2135,7 +2147,17 @@ public class UIUtils {
     }
 
     public static void installMacOSFocusLostSubstitution(@NotNull Widget widget, @NotNull Runnable onFocusLost) {
-        if (RuntimeUtils.isMacOS()) {
+        if (!RuntimeUtils.isMacOS()) {
+            return;
+        }
+        if (widget instanceof Combo || widget instanceof CCombo) {
+            widget.addListener(SWT.Selection, new TypedListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    onFocusLost.run();
+                }
+            }));
+        } else {
             widget.addDisposeListener(e -> onFocusLost.run());
         }
     }

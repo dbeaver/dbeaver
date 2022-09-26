@@ -22,12 +22,14 @@ import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -56,6 +58,9 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     protected boolean dirty;
     protected boolean autoSaveEnabled;
 
+    @Nullable
+    private Consumer<TraverseEvent> additionalTraverseActions;
+
     protected BaseValueEditor(final IValueController valueController)
     {
         this.valueController = valueController;
@@ -79,6 +84,11 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     @Override
     public boolean isReadOnly() {
         return valueController.isReadOnly();
+    }
+
+    @Override
+    public void dispose() {
+
     }
 
     public void setControl(T control) {
@@ -119,25 +129,35 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             //inlineControl.setFocus();
 
             if (valueController instanceof IMultiController) { // In dialog it also should handle all standard stuff because we have params dialog
-                 inlineControl.addTraverseListener(e -> {
-                     if (e.detail == SWT.TRAVERSE_RETURN) {
-                         if (!valueController.isReadOnly()) {
-                             saveValue();
-                         }
-                         ((IMultiController) valueController).closeInlineEditor();
-                         e.doit = false;
-                         e.detail = SWT.TRAVERSE_NONE;
+                inlineControl.addTraverseListener(e -> {
+                    if (e.detail == SWT.TRAVERSE_RETURN) {
+                        if (!valueController.isReadOnly()) {
+                            saveValue();
+                        }
+                        ((IMultiController) valueController).closeInlineEditor();
+                        if (additionalTraverseActions != null) {
+                            additionalTraverseActions.accept(e);
+                        }
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
                      } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                         ((IMultiController) valueController).closeInlineEditor();
-                         e.doit = false;
-                         e.detail = SWT.TRAVERSE_NONE;
+                        ((IMultiController) valueController).closeInlineEditor();
+                        if (additionalTraverseActions != null) {
+                            additionalTraverseActions.accept(e);
+                        }
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
                      } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
-                         saveValue();
-                         ((IMultiController) valueController).nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
-                         e.doit = false;
-                         e.detail = SWT.TRAVERSE_NONE;
+                        saveValue();
+                        ((IMultiController) valueController).nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
+                        if (additionalTraverseActions != null) {
+                            additionalTraverseActions.accept(e);
+                        }
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
                      }
-                   });
+
+                });
                  if (!UIUtils.isInDialog(inlineControl)) {
                      if (inlineControl instanceof Composite) {
                          for (Control childControl : ((Composite) inlineControl).getChildren()) {
@@ -256,6 +276,10 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
     public void setAutoSaveEnabled(boolean autoSaveEnabled) {
         this.autoSaveEnabled = autoSaveEnabled;
+    }
+
+    public void addAdditionalTraverseActions(@NotNull Consumer<TraverseEvent> method) {
+        this.additionalTraverseActions = method;
     }
 
     private class ControlModifyListener implements Listener {

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -83,7 +84,7 @@ public final class DBStructUtils {
     }
 
     public static String generateTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, Map<String, Object> options, boolean addComments) throws DBException {
-        final DBERegistry editorsRegistry = table.getDataSource().getContainer().getPlatform().getEditorsRegistry();
+        final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
         final SQLObjectEditor<?, ?> entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);
         if (entityEditor instanceof SQLTableManager) {
             DBEPersistAction[] ddlActions = ((SQLTableManager) entityEditor).getTableDDL(monitor, table, options);
@@ -94,7 +95,7 @@ public final class DBStructUtils {
     }
 
     public static String generateObjectDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, Map<String, Object> options, boolean addComments) throws DBException {
-        final DBERegistry editorsRegistry = object.getDataSource().getContainer().getPlatform().getEditorsRegistry();
+        final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
         final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(object.getClass(), SQLObjectEditor.class);
         if (entityEditor != null) {
             SQLObjectEditor.ObjectCreateCommand createCommand = entityEditor.makeCreateCommand(object, options);
@@ -276,7 +277,8 @@ public final class DBStructUtils {
                 isBindingWithEntityAttr = true;
             }
         }
-        if (objectContainer != null && (srcTypedObject instanceof DBSEntityAttribute || isBindingWithEntityAttr)) {
+        if (objectContainer != null && (srcTypedObject instanceof DBSEntityAttribute || isBindingWithEntityAttr || (
+                srcTypedObject instanceof DBSObject &&  objectContainer.getDataSource() == ((DBSObject) srcTypedObject).getDataSource()))) {
             // If source and target datasources have the same type then just return the same type name
             DBPDataSource srcDataSource = ((DBSObject) srcTypedObject).getDataSource();
             DBPDataSource tgtDataSource = objectContainer.getDataSource();

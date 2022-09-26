@@ -25,8 +25,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
-import org.jkiss.dbeaver.model.text.parser.TPRule;
-import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.text.parser.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -56,6 +57,23 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
                 dataSource == null || dataSource.getPreferenceStore().getBoolean(SnowflakeConstants.PROP_DD_STRING)
             ));
         }
+        if (position == RulePosition.KEYWORDS) {
+            final TPTokenDefault keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);
+            rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "TRANSACTION"}, keywordToken));
+        }
     }
 
+    @NotNull
+    @Override
+    public String getSearchStringEscape() {
+        // Without escaping of wildcards Snowflake reads all metadata directly from database and ignores specified objects names
+        // #9875
+        return "\\";
+    }
+
+    @NotNull
+    @Override
+    public MultiValueInsertMode getDefaultMultiValueInsertMode() {
+        return MultiValueInsertMode.GROUP_ROWS;
+    }
 }

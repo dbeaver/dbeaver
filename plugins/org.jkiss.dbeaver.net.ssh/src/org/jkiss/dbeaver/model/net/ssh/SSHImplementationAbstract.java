@@ -23,7 +23,6 @@ import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
@@ -35,8 +34,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,7 +57,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
     protected AgentProxy agentProxy = null;
 
     @Override
-    public DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    public DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
     {
     	String dbPortString = connectionInfo.getHostPort();
@@ -77,8 +77,8 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         if (sshLocalPort == 0) {
             if (savedLocalPort != 0) {
                 sshLocalPort = savedLocalPort;
-            } else if (platform != null) {
-                sshLocalPort = SSHUtils.findFreePort(platform);
+            } else {
+                sshLocalPort = SSHUtils.findFreePort();
             }
         }
         if (CommonUtils.isEmpty(sshRemoteHost)) {
@@ -181,7 +181,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         final SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, configuration.getStringProperty(prefix + SSHConstants.PROP_AUTH_TYPE), SSHConstants.AuthType.PASSWORD);
         final String hostname = configuration.getStringProperty(prefix + DBWHandlerConfiguration.PROP_HOST);
         final int port = configuration.getIntProperty(prefix + DBWHandlerConfiguration.PROP_PORT);
-        final String username;
+        String username;
         final String password;
         final boolean savePassword = configuration.isSavePassword();
 
@@ -200,9 +200,8 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             throw new DBException("SSH port not specified");
         }
         if (CommonUtils.isEmpty(username)) {
-            throw new DBException("SSH user not specified");
+            username = System.getProperty("user.name");
         }
-
         final SSHAuthConfiguration authentication;
         switch (authType) {
             case PUBLIC_KEY: {
@@ -214,8 +213,8 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
                     }
                     authentication = SSHAuthConfiguration.usingKey(privKeyValue, password, savePassword);
                 } else {
-                    final File file = new File(path);
-                    if (!file.exists()) {
+                    final Path file = Path.of(path);
+                    if (!Files.exists(file)) {
                         throw new DBException("Private key file '" + path + "' does not exist");
                     }
                     authentication = SSHAuthConfiguration.usingKey(file, password, savePassword);

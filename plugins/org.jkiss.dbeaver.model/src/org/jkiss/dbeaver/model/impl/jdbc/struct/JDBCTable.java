@@ -139,16 +139,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBDPseudoAttribute rowIdAttribute = (flags & FLAG_READ_PSEUDO) != 0 ?
             DBUtils.getRowIdAttribute(this) : null;
 
-        // Always use alias if we have criteria or ROWID.
+        // Always use alias if we have data filter or ROWID.
         // Some criteria doesn't work without alias
-        // (e.g. structured attributes in Oracle requires table alias)
+        // (e.g. structured attributes in Oracle or composite types in PostgreSQL requires table alias)
         String tableAlias = null;
-        if ((dataFilter != null && dataFilter.hasConditions()) || rowIdAttribute != null) {
-            {
-                if (dataSource.getSQLDialect().supportsAliasInSelect()) {
-                    tableAlias = DEFAULT_TABLE_ALIAS;
-                }
-            }
+        if ((dataFilter != null || rowIdAttribute != null) && dataSource.getSQLDialect().supportsAliasInSelect()) {
+            tableAlias = DEFAULT_TABLE_ALIAS;
         }
 
         if (rowIdAttribute != null && tableAlias == null) {
@@ -363,7 +359,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     if (tableAlias != null) {
                         query.append(tableAlias).append(dialect.getStructSeparator());
                     }
-                    query.append(getAttributeName(attribute)).append("="); //$NON-NLS-1$
+                    query.append(getAttributeName(attribute, DBPAttributeReferencePurpose.UPDATE_TARGET)).append("="); //$NON-NLS-1$
                     DBDValueHandler valueHandler = handlers[i];
                     if (valueHandler instanceof DBDValueBinder) {
                         query.append(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[i]));
@@ -476,14 +472,16 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     /**
      * Returns prepared statements for enumeration fetch
+     *
      * @param monitor execution context
      * @param keyColumn enumeration column.
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
-     * @param sortByValue sort results by eky value. If false then sort by description
-     * @param sortAsc sort ascending/descending
      * @param caseInsensitiveSearch use case-insensitive search for {@code keyPattern}
-     * @param maxResults maximum enumeration values in result set     @return  @throws DBException
+     * @param sortAsc sort ascending/descending
+     * @param sortByValue sort results by eky value. If false then sort by description
+     * @param offset enumeration values offset in result set
+     * @param maxResults maximum enumeration values in result set
      */
     @NotNull
     @Override
@@ -491,14 +489,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntityAttribute keyColumn,
         Object keyPattern,
-        List<DBDAttributeValue> preceedingKeys,
-        boolean sortByValue,
-        boolean sortAsc,
+        @Nullable List<DBDAttributeValue> preceedingKeys,
         boolean caseInsensitiveSearch,
-        int maxResults)
-        throws DBException
-    {
-        // Use default one
+        boolean sortAsc,
+        boolean sortByValue,
+        int offset,
+        int maxResults
+    ) throws DBException {
         return readKeyEnumeration(
             monitor,
             keyColumn,
@@ -507,7 +504,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             sortByValue,
             sortAsc,
             caseInsensitiveSearch,
-            maxResults);
+            maxResults,
+            offset
+        );
     }
 
     @NotNull
@@ -590,7 +589,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         boolean sortByValue,
         boolean sortAsc,
         boolean caseInsensitiveSearch,
-        int maxResults)
+        int maxResults,
+        int offset)
         throws DBException
     {
         if (keyColumn.getParentObject() != this) {
@@ -603,9 +603,17 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         if (keyPattern != null) {
             if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
-                if (keyPattern instanceof Number) {
-                    // Subtract gap value to see some values before specified
-                    int gapSize = maxResults / 2;
+                if (keyPattern instanceof Number && maxResults > 0) {
+                    int gapSize;
+                    if (maxResults == 1) {
+                        if (offset == 0) {
+                            gapSize = 0;
+                        } else {
+                            gapSize = offset >= 0 ? -1 : 1;
+                        }
+                    } else {
+                        gapSize = Math.max(Math.round((float) maxResults / 2), 1) - offset;
+                    }
                     boolean allowNegative = ((Number) keyPattern).longValue() < 0;
                     if (keyPattern instanceof Integer) {
                         int intValue = (Integer) keyPattern;
@@ -655,7 +663,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 */
 
         StringBuilder query = new StringBuilder();
-        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn));
+        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn, DBPAttributeReferencePurpose.DATA_SELECTION));
 
         String descColumns = DBVUtils.getDictionaryDescriptionColumns(monitor, keyColumn);
         Collection<DBSEntityAttribute> descAttributes = null;
@@ -828,8 +836,25 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         SQLDialect dialect = session.getDataSource().getSQLDialect();
         return dialect instanceof JDBCSQLDialect && ((JDBCSQLDialect) dialect).supportsUpsertStatement();
     }
+    
+    /**
+     * Get name of the attribute
 
+     * @param attribute to get name of
+     * @return attribute name
+     */
     public String getAttributeName(@NotNull DBSAttributeBase attribute) {
+        return getAttributeName(attribute, DBPAttributeReferencePurpose.UNSPECIFIED);
+    }
+    
+    /**
+     * Get name of the attribute
+
+     * @param attribute to get name of
+     * @param purpose of the name usage
+     * @return attribute name
+     */
+    public String getAttributeName(@NotNull DBSAttributeBase attribute, DBPAttributeReferencePurpose purpose) {
         if (attribute instanceof DBDAttributeBindingMeta) {
             // For top-level query bindings we need to use table columns name instead of alias.
             // For nested attributes we should use aliases
@@ -842,7 +867,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         }
         // Do not quote pseudo attribute name
-        return DBUtils.isPseudoAttribute(attribute) ? attribute.getName() : DBUtils.getObjectFullName(getDataSource(), attribute, DBPEvaluationContext.DML);
+        return DBUtils.isPseudoAttribute(attribute) 
+            ? attribute.getName() 
+            : DBUtils.getObjectFullName(getDataSource(), attribute, DBPEvaluationContext.DML, purpose);
     }
 
     private void appendAttributeCriteria(@Nullable String tableAlias, SQLDialect dialect, StringBuilder query, DBSAttributeBase attribute, Object value) {
@@ -864,7 +891,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (tableAlias != null) {
                 query.append(tableAlias).append(dialect.getStructSeparator());
             }
-            query.append(dialect.getCastedAttributeName(attribute));
+            query.append(dialect.getCastedAttributeName(attribute, getAttributeName(attribute)));
         }
         if (DBUtils.isNullValue(value)) {
             query.append(" IS NULL"); //$NON-NLS-1$

@@ -34,6 +34,10 @@ public class SQLEditorMessages extends NLS {
     public static String confirm_dangerous_sql_message;
     public static String confirm_dangerous_sql_toggleMessage;
 
+    public static String confirm_drop_sql_title;
+    public static String confirm_drop_sql_message;
+    public static String confirm_drop_sql_toggleMessage;
+
     public static String confirm_mass_parallel_sql_title;
     public static String confirm_mass_parallel_sql_message;
     public static String confirm_mass_parallel_sql_toggleMessage;
@@ -54,8 +58,9 @@ public class SQLEditorMessages extends NLS {
     public static String editor_file_delete_confirm_delete_title;
 
     public static String editor_query_log_viewer_draw_text_type_qury_part;
-
-	public static String editor_sql_preference;
+    public static String editor_query_log_viewer_reexecute_query_button_text;
+    
+    public static String editor_sql_preference;
     public static String editors_sql_data_grid;
     public static String editors_sql_description;
     public static String editors_sql_error_cant_execute_query_message;
@@ -154,6 +159,7 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_results_orientation;
     public static String pref_page_sql_editor_label_results_orientation_tip;
     public static String pref_page_sql_editor_link_text_editor;
+    public static String pref_page_sql_editor_link_colors_and_fonts;
     public static String pref_page_sql_editor_new_script_template_group;
     public static String pref_page_sql_editor_new_script_template_enable_checkbox;
     public static String pref_page_sql_editor_new_script_template_variables;
@@ -342,6 +348,10 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_title_tooltip_database;
     public static String sql_editor_title_tooltip_schema;
 
+    public static String sql_generator_title_text;
+    public static String sql_generator_no_obj_container_text;
+    public static String sql_generator_no_ddl_text;
+    public static String sql_generator_nonsql_text;
 
     static {
         // initialize resource bundle

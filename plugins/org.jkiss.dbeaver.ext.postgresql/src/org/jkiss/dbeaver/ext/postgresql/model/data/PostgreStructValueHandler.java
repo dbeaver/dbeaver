@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -25,8 +26,10 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDComposite;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -35,8 +38,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
@@ -44,6 +46,7 @@ import java.sql.Struct;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.StringJoiner;
 
 /**
  * PostgreArrayValueHandler
@@ -111,14 +114,65 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
     @NotNull
     @Override
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        if (format == DBDDisplayFormat.NATIVE && value instanceof DBDComposite && column instanceof DBSObject) {
-            final DBDComposite struct = (DBDComposite) value;
-            if (!struct.isNull() && struct instanceof JDBCComposite) {
-                final Object[] values = ((JDBCComposite) struct).getValues();
-                return SQLUtils.quoteString((DBSObject) column, PostgreValueParser.generateObjectString(values));
+        if (!DBUtils.isNullValue(value) && value instanceof JDBCComposite) {
+            final JDBCComposite composite = (JDBCComposite) value;
+            final StringJoiner output = new StringJoiner(",", "(", ")");
+
+            for (DBSAttributeBase attribute : composite.getAttributes()) {
+                final DBDValueHandler handler = DBUtils.findValueHandler(composite.getDataType().getDataSource(), attribute);
+                final Object item = composite.getAttributeValue(attribute);
+                final String member = getStructMemberDisplayString(attribute, handler, item, format);
+
+                output.add(member);
+            }
+
+            return output.toString();
+        }
+
+        return super.getValueDisplayString(column, value, format);
+    }
+
+    @NotNull
+    private static String getStructMemberDisplayString(
+        @NotNull DBSTypedObject type,
+        @NotNull DBDValueHandler handler,
+        @Nullable Object value,
+        DBDDisplayFormat format) {
+        if (DBUtils.isNullValue(value)) {
+            return "";
+        }
+
+        final String string = handler.getValueDisplayString(type, value, DBDDisplayFormat.NATIVE);
+
+        if (format == DBDDisplayFormat.NATIVE && isQuotingRequired(string)) {
+            return '"' + string.replace("\"", "\"\"") + '"';
+        }
+
+        return string;
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/rowtypes.html#ROWTYPES-IO-SYNTAX">8.16.6. Composite Type Input and Output Syntax</a>
+     */
+    private static boolean isQuotingRequired(@NotNull String value) {
+        if (value.isEmpty()) {
+            return true;
+        }
+
+        for (int index = 0; index < value.length(); index++) {
+            switch (value.charAt(index)) {
+                case '(':
+                case ')':
+                case '"':
+                case ',':
+                case '\\':
+                    return true;
+                default:
+                    break;
             }
         }
-        return super.getValueDisplayString(column, value, format);
+
+        return false;
     }
 
     private JDBCCompositeStatic convertStringToStruct(@NotNull DBCSession session, @NotNull PostgreDataType compType, @NotNull String value) throws DBException {

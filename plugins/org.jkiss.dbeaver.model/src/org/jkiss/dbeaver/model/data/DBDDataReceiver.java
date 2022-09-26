@@ -51,6 +51,7 @@ public interface DBDDataReceiver extends AutoCloseable {
      */
     void close();
 
+    // FIXME: we should keep in variable or do not keep it at all (use separate interface)
     @NotNull
     default DBCStatistics getStatistics() {
         return new DBCStatistics();

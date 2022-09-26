@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleDecorator;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -81,6 +82,8 @@ public class PropertyTreeViewer extends TreeViewer {
     }
 
     private static final String CATEGORY_GENERAL = UIMessages.ui_properties_tree_viewer_category_general;
+    private static final int NAME_COLUMN_WIDTH = 100;
+    private static final int VALUE_COLUMN_WIDTH = 300;
 
     private boolean expandSingleRoot = true;
     private boolean namesEditable = false;
@@ -118,6 +121,10 @@ public class PropertyTreeViewer extends TreeViewer {
         //treeControl.setLinesVisible(true);
         treeControl.addListener(SWT.PaintItem, new PaintListener());
         this.boldFont = UIUtils.makeBoldFont(treeControl.getFont());
+
+        treeControl.addDisposeListener(e -> {
+            UIUtils.dispose(boldFont);
+        });
 
         new DefaultViewerToolTipSupport(this);
 
@@ -258,7 +265,7 @@ public class PropertyTreeViewer extends TreeViewer {
                     case FIRST:
                         Object root = getInput();
                         if (root instanceof Collection) {
-                            Collection rootItems = (Collection) root;
+                            Collection<?> rootItems = (Collection<?>) root;
                             if (!rootItems.isEmpty()) {
                                 Object first = rootItems.iterator().next();
                                 PropertyTreeViewer.this.collapseAll();
@@ -273,6 +280,32 @@ public class PropertyTreeViewer extends TreeViewer {
                 tree.setRedraw(true);
             }
         });
+    }
+
+    /**
+     * Change size of columns if their width are smaller
+     * First column will be smaller then others because usually it's just a name
+     */
+    public void changeColumnsWidth() {
+        Tree tree = getTree();
+        if (tree != null && !tree.isDisposed()) {
+            UIUtils.asyncExec(() -> {
+                tree.setRedraw(false);
+                TreeColumn[] columns = tree.getColumns();
+                if (!ArrayUtils.isEmpty(columns) && columns.length > 1) {
+                    for (int i = 0; i < columns.length; i++) {
+                        if (i == 0) {
+                            if (columns[0].getWidth() < NAME_COLUMN_WIDTH) {
+                                columns[0].setWidth(NAME_COLUMN_WIDTH);
+                            }
+                        } else if (columns[i].getWidth() < VALUE_COLUMN_WIDTH) {
+                            columns[i].setWidth(VALUE_COLUMN_WIDTH);
+                        }
+                    }
+                }
+                tree.setRedraw(true);
+            });
+        }
     }
 
     private Map<String, TreeNode> loadTreeNodes(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
@@ -438,21 +471,23 @@ public class PropertyTreeViewer extends TreeViewer {
                     selectedColumn = -1;
                     if (newPropertiesAllowed) {
                         TreeItem[] allItems = treeControl.getItems();
-                        TreeItem lastItem = allItems[allItems.length - 1];
-                        if (lastItem.getData() instanceof TreeNode) {
-                            TreeNode lastNode = (TreeNode) lastItem.getData();
-                            if (!CommonUtils.isEmpty(lastNode.children)) {
-                                lastNode = lastNode.children.get(lastNode.children.size() - 1);
+                        if (allItems.length > 0) {
+                            TreeItem lastItem = allItems[allItems.length - 1];
+                            if (lastItem.getData() instanceof TreeNode) {
+                                TreeNode lastNode = (TreeNode) lastItem.getData();
+                                if (!CommonUtils.isEmpty(lastNode.children)) {
+                                    lastNode = lastNode.children.get(lastNode.children.size() - 1);
+                                }
+                                if (lastNode.property != null && CommonUtils.isEmpty(lastNode.property.getDisplayName())) {
+                                    return;
+                                }
+                                if (lastNode.parent != null) lastNode = lastNode.parent;
+                                addProperty(lastNode, new PropertyDescriptor(lastNode.category, "prop" + lastNode.children.size(), "", "", false, String.class, "", null), true);
+                                allItems = treeControl.getItems();
+                                TreeItem newItem = allItems[allItems.length - 1];
+                                treeControl.setSelection(newItem);
+                                selectedColumn = UIUtils.getColumnAtPos(newItem, e.x, e.y);
                             }
-                            if (lastNode.property != null && CommonUtils.isEmpty(lastNode.property.getDisplayName())) {
-                                return;
-                            }
-                            if (lastNode.parent != null) lastNode = lastNode.parent;
-                            addProperty(lastNode, new PropertyDescriptor(lastNode.category, "prop" + lastNode.children.size(), "", "", false, String.class, "", null), true);
-                            allItems = treeControl.getItems();
-                            TreeItem newItem = allItems[allItems.length - 1];
-                            treeControl.setSelection(newItem);
-                            selectedColumn = UIUtils.getColumnAtPos(newItem, e.x, e.y);
                         }
                     }
                 }
@@ -800,7 +835,7 @@ public class PropertyTreeViewer extends TreeViewer {
     public Object getCategoryNode(String category) {
         Object input = getInput();
         if (input instanceof Collection) {
-            for (Object element : (Collection)input) {
+            for (Object element : (Collection<?>)input) {
                 if (element instanceof TreeNode && category.equals(((TreeNode) element).category)) {
                     return element;
                 }
@@ -934,7 +969,7 @@ public class PropertyTreeViewer extends TreeViewer {
         public Object[] getChildren(Object parent)
         {
             if (parent instanceof Collection) {
-                return ((Collection) parent).toArray();
+                return ((Collection<?>) parent).toArray();
             } else if (parent instanceof TreeNode) {
                 // Add all available property groups
                 return ((TreeNode) parent).children.toArray();
@@ -994,7 +1029,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         str.append("[");
                         if (propertyValue instanceof Collection) {
                             int i = 0;
-                            for (Object item : (Collection) propertyValue) {
+                            for (Object item : (Collection<?>) propertyValue) {
                                 if (i > 0) str.append(",");
                                 str.append(GeneralUtils.makeDisplayString(item));
                                 i++;

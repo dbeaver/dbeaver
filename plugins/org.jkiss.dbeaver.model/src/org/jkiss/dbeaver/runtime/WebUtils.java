@@ -29,8 +29,12 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.Base64;
 
@@ -119,13 +123,25 @@ public class WebUtils {
         return connection;
     }
 
-    public static long downloadRemoteFile(@NotNull DBRProgressMonitor monitor, String taskName, String externalURL, File localFile, DBPAuthInfo authInfo) throws IOException, InterruptedException {
-        try (final OutputStream outputStream = new FileOutputStream(localFile)) {
+    public static long downloadRemoteFile(
+        @NotNull DBRProgressMonitor monitor,
+        String taskName,
+        String externalURL,
+        Path localFile,
+        DBPAuthInfo authInfo
+    ) throws IOException, InterruptedException {
+        try (final OutputStream outputStream = Files.newOutputStream(localFile)) {
             return downloadRemoteFile(monitor, taskName, externalURL, outputStream, authInfo);
         }
     }
 
-    public static long downloadRemoteFile(@NotNull DBRProgressMonitor monitor, String taskName, String externalURL, OutputStream outputStream, DBPAuthInfo authInfo) throws IOException, InterruptedException {
+    public static long downloadRemoteFile(
+        @NotNull DBRProgressMonitor monitor,
+        String taskName,
+        String externalURL,
+        OutputStream outputStream,
+        DBPAuthInfo authInfo
+    ) throws IOException, InterruptedException {
         final URLConnection connection = openConnection(externalURL, authInfo, null);
         final int contentLength = connection.getContentLength();
         final byte[] buffer = new byte[8192];

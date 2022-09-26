@@ -37,11 +37,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
@@ -131,7 +132,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                                     }
                                     break;
                                 }
-                                DBWNetworkProfile newProfile = new DBWNetworkProfile();
+                                DBWNetworkProfile newProfile = new DBWNetworkProfile(projectMeta);
                                 newProfile.setProfileName(profileName);
                                 projectMeta.getDataSourceRegistry().updateNetworkProfile(newProfile);
                                 projectMeta.getDataSourceRegistry().flushConfig();
@@ -352,7 +353,19 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
         profilesTable.removeAll();
         if (projectMeta != null) {
+            DBSSecretController secretController = null;
+            if (projectMeta.isUseSecretStorage()) {
+                secretController = DBSSecretController.getProjectSecretController(projectMeta);
+            }
+
             for (DBWNetworkProfile profile : projectMeta.getDataSourceRegistry().getNetworkProfiles()) {
+                if (secretController != null) {
+                    try {
+                        profile.resolveSecrets(secretController);
+                    } catch (DBException e) {
+                        log.error("Error resolving secret configuration for profile " + profile.getProfileId());
+                    }
+                }
 
                 TableItem item = new TableItem(profilesTable, SWT.NONE);
                 item.setText(profile.getProfileName());
@@ -401,7 +414,7 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         } else {
             this.project = GeneralUtils.adapt(element, IProject.class);
         }
-        this.projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(this.project);
+        this.projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(this.project);
     }
 
 }

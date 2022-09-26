@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <manager class="org.jkiss.dbeaver.ext.clickhouse.ui.ClickhouseEnumValueManager" id="org.jkiss.dbeaver.ext.clickhouse.ui.ClickhouseEnumValueManager">
+            <supports dataSource="clickhouse" typeName="ENUM8"/>
+            <supports dataSource="clickhouse" typeName="ENUM16"/>
+        </manager>
+    </extension>
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSSLImpl" uiClass="org.jkiss.dbeaver.ext.clickhouse.ui.ClickhouseSSLConfigurator"/>
+    </extension>
+</plugin>

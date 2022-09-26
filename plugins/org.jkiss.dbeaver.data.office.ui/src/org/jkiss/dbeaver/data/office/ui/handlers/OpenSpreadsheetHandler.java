@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,9 +63,9 @@ public class OpenSpreadsheetHandler extends AbstractHandler
         IResultSetSelection rsSelection = resultSet.getSelection();
         List<ResultSetRow> rsSelectedRows = rsSelection.getSelectedRows();
         if (rsSelectedRows.size() > 1) {
-            List<Long> selectedRows = new ArrayList<>();
+            List<Integer> selectedRows = new ArrayList<>();
             for (ResultSetRow selectedRow : rsSelectedRows) {
-                selectedRows.add((long) selectedRow.getRowNumber());
+                selectedRows.add(selectedRow.getRowNumber());
             }
 
             options.setSelectedRows(selectedRows);
@@ -88,11 +88,11 @@ public class OpenSpreadsheetHandler extends AbstractHandler
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
-                    File tempDir = DBWorkbench.getPlatform().getTempFolder(monitor, "office-files");
-                    File tempFile = new File(tempDir,
+                    Path tempDir = DBWorkbench.getPlatform().getTempFolder(monitor, "office-files");
+                    Path tempFile = tempDir.resolve(
                         CommonUtils.escapeFileName(CommonUtils.truncateString(dataContainer.getName(), 32)) +
                             "." + new SimpleDateFormat("yyyyMMdd-HHmmss").format(System.currentTimeMillis()) + ".xlsx");
-                    tempFile.deleteOnExit();
+                    tempFile.toFile().deleteOnExit();
 
                     StreamExporterAbstract exporter = new DataExporterXLSX();
 
@@ -100,8 +100,8 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     StreamConsumerSettings settings = new StreamConsumerSettings();
 
                     settings.setOutputEncodingBOM(false);
-                    settings.setOutputFolder(tempDir.getAbsolutePath());
-                    settings.setOutputFilePattern(tempFile.getName());
+                    settings.setOutputFolder(tempDir.toAbsolutePath().toString());
+                    settings.setOutputFilePattern(tempFile.getFileName().toString());
 
                     Map<String, Object> properties = DataExporterXLSX.getDefaultProperties();
                     consumer.initTransfer(dataContainer, settings, new IDataTransferConsumer.TransferParameters(true, false), exporter, properties);
@@ -119,8 +119,8 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     consumer.finishTransfer(monitor, false);
 
                     UIUtils.asyncExec(() -> {
-                        if (!ShellUtils.launchProgram(tempFile.getAbsolutePath())) {
-                            DBWorkbench.getPlatformUI().showError("Open XLSX", "Can't open XLSX file '" + tempFile.getAbsolutePath() + "'");
+                        if (!ShellUtils.launchProgram(tempFile.toAbsolutePath().toString())) {
+                            DBWorkbench.getPlatformUI().showError("Open XLSX", "Can't open XLSX file '" + tempFile.toAbsolutePath() + "'");
                         }
                     });
                 } catch (Exception e) {

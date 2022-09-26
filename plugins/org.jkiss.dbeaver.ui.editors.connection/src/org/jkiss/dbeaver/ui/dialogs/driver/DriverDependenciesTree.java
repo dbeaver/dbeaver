@@ -39,9 +39,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -159,8 +160,8 @@ class DriverDependenciesTree {
         // Check missing files
         int missingFiles = 0;
         for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryList()) {
-            File localFile = node.library.getLocalFile();
-            if (localFile == null || !localFile.exists()) {
+            Path localFile = node.library.getLocalFile();
+            if (localFile == null || !Files.exists(localFile)) {
                 missingFiles++;
             }
         }
@@ -192,6 +193,9 @@ class DriverDependenciesTree {
     }
 
     public void resizeTree() {
+        if (filesTree.isDisposed()) {
+            return;
+        }
         Shell shell = filesTree.getShell();
         Point curSize = shell.getSize();
         int itemHeight = filesTree.getItemHeight();

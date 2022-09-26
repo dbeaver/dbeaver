@@ -44,6 +44,12 @@
                     <parameter name="read-only-meta-data" value="true"/>
                 </driver>
 
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="AwsRegion" label="Region" type="string" description="Athena AWS Region" defaultValue="us-west-1" validValues="us-east-1,us-east-2,us-west-1,us-west-2,ca-central-1,eu-central-1,eu-west-1,eu-west-2,eu-west-3,ap-northeast-1,ap-northeast-2,ap-northeast-3,ap-southeast-1,ap-southeast-2,ap-south-1,sa-east-1,cn-north-1,cn-northwest-1"/>
+                        <property id="S3OutputLocation" label="S3 Location" type="string" description="Athena AWS S3 Location"/>
+                    </propertyGroup>
+                </provider-properties>
             </drivers>
 
         </datasource>

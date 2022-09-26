@@ -47,11 +47,29 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
     static final String PROP_UNIT = "unit";
     static final String ZONE_ID = "zoneId";
 
+    private static final int GIGA = 1_000_000_000;
+    private static final int TEN_MEGA = 10_000_000;
+    private static final int TICKS_TO_NANOS = 100;
+    private static final long DOTNET_TICKS_OFFSET = 621_355_968_000_000_000L;  // DateTime.UnixEpoch.Ticks
+    private static final long W32_FILETIME_OFFSET = 116_444_736_000_000_000L;  // DateTime.UnixEpoch.ToFileTimeUtc()
+    private static final double OADATE_OFFSET = 25569.0;  // DateTime.UnixEpoch.ToOADate()
+    private static final double SQLITE_JULIAN_OFFSET = 2440587.5;  // select julianday(0, "unixepoch")
+    private static final int SECONDS_IN_DAY = 24 * 3600;
+
+    private static final DateTimeFormatter SECONDS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+    private static final DateTimeFormatter MILLIS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
+    // 10 us precision
+    private static final DateTimeFormatter SQLITE_JULIAN_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnn", Locale.ENGLISH);
+    // 100 ns precision
+    private static final DateTimeFormatter DOTNET_TICKS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnn", Locale.ENGLISH);
+    private static final DateTimeFormatter NANOS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnnnn",Locale.ENGLISH);
+
     private enum EpochUnit {
         seconds {
             @Override
-            Instant toInstant(long rawValue) {
-                return Instant.ofEpochSecond(rawValue);
+            Instant toInstant(Number value) {
+                long longValue = value.longValue();
+                return Instant.ofEpochSecond(longValue);
             }
 
             @Override
@@ -60,15 +78,16 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             }
 
             @Override
-            long toRawValue(Instant instant) {
+            Long toRawValue(Instant instant) {
                 return instant.getEpochSecond();
             }
         },
 
         milliseconds {
             @Override
-            Instant toInstant(long rawValue) {
-                return Instant.ofEpochMilli(rawValue);
+            Instant toInstant(Number value) {
+                long longValue = value.longValue();
+                return Instant.ofEpochMilli(longValue);
             }
 
             @Override
@@ -77,15 +96,16 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             }
 
             @Override
-            long toRawValue(Instant instant) {
+            Long toRawValue(Instant instant) {
                 return instant.toEpochMilli();
             }
         },
 
         nanoseconds {
             @Override
-            Instant toInstant(long rawValue) {
-                return Instant.ofEpochSecond(rawValue / 1_000_000_000, rawValue % 1_000_000_000);
+            Instant toInstant(Number value) {
+                long longValue = value.longValue();
+                return Instant.ofEpochSecond(longValue / GIGA, longValue % GIGA);
             }
 
             @Override
@@ -94,20 +114,110 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             }
 
             @Override
-            long toRawValue(Instant instant) {
-                return instant.getEpochSecond() * 1_000_000_000 + instant.getNano();
+            Long toRawValue(Instant instant) {
+                return instant.getEpochSecond() * GIGA + instant.getNano();
+            }
+        },
+
+        // https://docs.microsoft.com/en-us/dotnet/api/system.datetime.ticks?view=net-6.0#remarks
+        dotnet {
+            @Override
+            Instant toInstant(Number value) {
+                return ticksToInstant(value.longValue(), DOTNET_TICKS_OFFSET);
+            }
+
+            @Override
+            DateTimeFormatter getFormatter() {
+                return DOTNET_TICKS_FORMATTER;
+            }
+
+            @Override
+            Long toRawValue(Instant instant) {
+                return instantToTicks(instant, DOTNET_TICKS_OFFSET);
+            }
+        },
+
+        // https://docs.microsoft.com/en-us/dotnet/api/system.datetime.fromfiletimeutc?view=net-6.0#system-datetime-fromfiletimeutc(system-int64)
+        w32filetime {
+            @Override
+            Instant toInstant(Number value) {
+                return ticksToInstant(value.longValue(), W32_FILETIME_OFFSET);
+            }
+
+            @Override
+            DateTimeFormatter getFormatter() {
+                return DOTNET_TICKS_FORMATTER;
+            }
+
+            @Override
+            Long toRawValue(Instant instant) {
+                return instantToTicks(instant, W32_FILETIME_OFFSET);
+            }
+        },
+
+        // https://docs.microsoft.com/en-us/dotnet/api/system.datetime.fromoadate?view=net-6.0#system-datetime-fromoadate(system-double)
+        oadate {
+            @Override
+            Instant toInstant(Number value) {
+                return daysToInstant(value.doubleValue(), OADATE_OFFSET);
+            }
+
+            @Override
+            DateTimeFormatter getFormatter() {
+                return NANOS_FORMATTER;
+            }
+
+            @Override
+            Double toRawValue(Instant instant) {
+                return instantToDays(instant, OADATE_OFFSET);
+            }
+        },
+
+        // https://www.sqlite.org/lang_datefunc.html
+        sqliteJulian {
+            @Override
+            Instant toInstant(Number value) {
+                return daysToInstant(value.doubleValue(), SQLITE_JULIAN_OFFSET);
+            }
+
+            @Override
+            DateTimeFormatter getFormatter() {
+                return SQLITE_JULIAN_FORMATTER;
+            }
+
+            @Override
+            Double toRawValue(Instant instant) {
+                return instantToDays(instant, SQLITE_JULIAN_OFFSET);
             }
         };
 
-        private static final DateTimeFormatter SECONDS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
-        private static final DateTimeFormatter MILLIS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
-        private static final DateTimeFormatter NANOS_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.nnnnnnnnn",Locale.ENGLISH);
+        private static Instant ticksToInstant(long rawValue, long offset) {
+            long sinceUnixEpoch = rawValue - offset;
+            return Instant.ofEpochSecond(sinceUnixEpoch / TEN_MEGA, sinceUnixEpoch % TEN_MEGA * TICKS_TO_NANOS);
+        }
 
-        abstract Instant toInstant(long rawValue);
+        private static long instantToTicks(Instant instant, long offset) {
+            return instant.getEpochSecond() * TEN_MEGA + instant.getNano() / TICKS_TO_NANOS + offset;
+        }
+
+        private static Instant daysToInstant(double rawValue, double offset) {
+            double daysSinceUnixEpoch = rawValue - offset;
+            long wholeDaysSinceUnixEpoch = (long)daysSinceUnixEpoch;
+            double fractionalDay = daysSinceUnixEpoch - wholeDaysSinceUnixEpoch;
+            long fractionalDayNanos = (long)(fractionalDay * SECONDS_IN_DAY * GIGA);
+            return Instant.ofEpochSecond(wholeDaysSinceUnixEpoch * SECONDS_IN_DAY, fractionalDayNanos);
+        }
+
+        private static double instantToDays(Instant instant, double offset) {
+            double daysSinceUnixEpoch = (instant.getEpochSecond() + 1e-9 * instant.getNano()) / SECONDS_IN_DAY;
+            return daysSinceUnixEpoch + offset;
+        }
+
+        abstract Instant toInstant(Number value);
 
         abstract DateTimeFormatter getFormatter();
 
-        abstract long toRawValue(Instant instant);
+        abstract Number toRawValue(Instant instant);
     }
 
     @Override
@@ -152,8 +262,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             if (!(value instanceof Number)) {
                 return DBValueFormatting.getDefaultValueDisplayString(value, format);
             }
-            long rawValue = ((Number) value).longValue();
-            Instant instant = unit.toInstant(rawValue);
+            Instant instant = unit.toInstant((Number)value);
             ZonedDateTime dateTime = ZonedDateTime.ofInstant(instant, getZoneId());
             return unit.getFormatter().format(dateTime);
         }

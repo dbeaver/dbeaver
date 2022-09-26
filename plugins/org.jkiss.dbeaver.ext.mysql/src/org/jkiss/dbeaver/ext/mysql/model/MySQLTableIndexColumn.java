@@ -72,7 +72,7 @@ public class MySQLTableIndexColumn extends AbstractTableIndexColumn
         return index;
     }
 
-    //@Property(name = "Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     @NotNull
     @Override
     public String getName()
@@ -82,7 +82,7 @@ public class MySQLTableIndexColumn extends AbstractTableIndexColumn
 
     @Nullable
     @Override
-    @Property(id = "name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public MySQLTableColumn getTableColumn()
     {
         return tableColumn;

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.impl.app.CertificateGenHelper;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -54,7 +55,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
      * Creates certificates and adds them into trust store
      */
     public static void initializeTrustStore(DBRProgressMonitor monitor, DBPDataSource dataSource, DBWHandlerConfiguration sslConfig) throws DBException, IOException {
-        final DBACertificateStorage securityManager = dataSource.getContainer().getPlatform().getCertificateStorage();
+        final DBACertificateStorage securityManager = DBWorkbench.getPlatform().getCertificateStorage();
 
         final String caCertProp = sslConfig.getStringProperty(PROP_SSL_CA_CERT);
         final String clientCertProp = sslConfig.getStringProperty(PROP_SSL_CLIENT_CERT);
@@ -89,7 +90,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     }
 
     public static Map<String, String> setGlobalTrustStore(DBPDataSource dataSource) {
-        final DBACertificateStorage securityManager = dataSource.getContainer().getPlatform().getCertificateStorage();
+        final DBACertificateStorage securityManager = DBWorkbench.getPlatform().getCertificateStorage();
 
         String keyStorePath = securityManager.getKeyStorePath(dataSource.getContainer(), CERT_TYPE).getAbsolutePath();
         String keyStoreType = securityManager.getKeyStoreType(dataSource.getContainer());
@@ -122,7 +123,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     }
 
     public static SSLContext createTrustStoreSslContext(DBPDataSource dataSource, DBWHandlerConfiguration sslConfig) throws Exception {
-        final DBACertificateStorage securityManager = dataSource.getContainer().getPlatform().getCertificateStorage();
+        final DBACertificateStorage securityManager = DBWorkbench.getPlatform().getCertificateStorage();
         KeyStore trustStore = securityManager.getKeyStore(dataSource.getContainer(), CERT_TYPE);
         char[] keyStorePass = securityManager.getKeyStorePassword(dataSource.getContainer(), CERT_TYPE);
 

@@ -31,6 +31,7 @@ public class DBConstants {
     /////////////////////////////////
     // Standard properties
 
+    public static final String DEFAULT_TIMEZONE = "Default";
     public static final String PROP_ID_NAME = "name"; //NON-NLS-1
     public static final String PROP_ID_DESCRIPTION = "description"; //NON-NLS-1
     public static final String PROP_ID_DATA_TYPE = "dataType"; //NON-NLS-1
@@ -52,6 +53,7 @@ public class DBConstants {
 
     /////////////////////////////////
     // Misc
+    public static final String IS_WINDOWS_STORE_APP = "dbeaver.windows.store.app";
 
     public static final int METADATA_FETCH_SIZE = 1000;
 
@@ -141,4 +143,6 @@ public class DBConstants {
     public static final String HOST_LOCALHOST = "localhost";
 
     public static final String PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION = "simpleDatabaseAdministration";
+
+
 }

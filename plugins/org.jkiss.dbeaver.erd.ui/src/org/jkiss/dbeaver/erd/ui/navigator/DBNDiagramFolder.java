@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.erd.ui.navigator;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -30,39 +30,35 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 /**
  * DBNDiagramFolder
  */
-public class DBNDiagramFolder extends DBNResource
-{
+public class DBNDiagramFolder extends DBNResource {
     private static final DBIcon FOLDER_ICON = new DBIcon(ERDUIConstants.ICON_LOCATION_PREFIX + "erd_folder.png");
 
     private DBPImage image;
 
-    public DBNDiagramFolder(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException
-    {
+    public DBNDiagramFolder(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException {
         super(parentNode, resource, handler);
     }
 
     @Override
-    protected void dispose(boolean reflect)
-    {
+    protected void dispose(boolean reflect) {
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
-    public DBPImage getNodeIcon()
-    {
+    public DBPImage getResourceNodeIcon() {
         IResource resource = getResource();
-        if (resource != null && resource.getParent() instanceof IProject) {
+        if (resource != null && isRootResource(resource)) {
             if (image == null) {
                 image = FOLDER_ICON;
             }
             return image;
         }
-        return super.getNodeIcon();
+        return super.getResourceNodeIcon();
     }
 
     @Override
-    public boolean supportsDrop(DBNNode otherNode)
-    {
+    public boolean supportsDrop(DBNNode otherNode) {
         return otherNode instanceof DBNDiagram || super.supportsDrop(otherNode);
     }
 

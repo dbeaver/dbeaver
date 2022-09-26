@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorRegistry;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -116,46 +115,48 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                 return;
             }
 
-            if (IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID.equals(editorDesc.getId())) {
-                try {
-                    UIUtils.runInProgressService(monitor -> {
-                        try {
-                            final Path target = Files.createTempFile(
-                                DBWorkbench.getPlatform().getTempFolder(monitor, "external-files").toPath(),
-                                null,
-                                fileStore.getName()
-                            );
+            try {
+                final Path[] target = new Path[1];
 
-                            try (InputStream is = fileStore.openInputStream(EFS.NONE, null)) {
-                                try (OutputStream os = Files.newOutputStream(target)) {
-                                    final IFileInfo info = fileStore.fetchInfo(EFS.NONE, null);
-                                    ContentUtils.copyStreams(is, info.getLength(), os, monitor);
-                                }
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        target[0] = Files.createTempFile(
+                            DBWorkbench.getPlatform().getTempFolder(monitor, "external-files"),
+                            null,
+                            fileStore.getName()
+                        );
+
+                        try (InputStream is = fileStore.openInputStream(EFS.NONE, null)) {
+                            try (OutputStream os = Files.newOutputStream(target[0])) {
+                                final IFileInfo info = fileStore.fetchInfo(EFS.NONE, null);
+                                ContentUtils.copyStreams(is, info.getLength(), os, monitor);
                             }
-
-                            // Here we could potentially start a new process
-                            // and wait for it to finish, this will allow us to:
-                            //  1. Delete the temporary file right away
-                            //  2. Detect changes made by an external editor
-                            // But for now it's okay, I assume.
-
-                            Program.launch(target.toString());
-                        } catch (Exception e) {
-                            throw new InvocationTargetException(e);
                         }
-                    });
-                } catch (InvocationTargetException e) {
-                    DBWorkbench.getPlatformUI().showError("Error opening resource", "Can't open resource using external editor", e.getTargetException());
-                } catch (InterruptedException ignored) {
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+
+                if (IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID.equals(editorDesc.getId())) {
+                    // Here we could potentially start a new process
+                    // and wait for it to finish, this will allow us to:
+                    //  1. Delete the temporary file right away
+                    //  2. Detect changes made by an external editor
+                    // But for now it's okay, I assume.
+
+                    Program.launch(target[0].toString());
+                } else {
+                    IDE.openEditor(
+                        UIUtils.getActiveWorkbenchWindow().getActivePage(),
+                        target[0].toUri(),
+                        editorDesc.getId(),
+                        true
+                    );
                 }
-
-                return;
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError("Error opening resource", "Can't open resource using external editor", e.getTargetException());
+            } catch (InterruptedException ignored) {
             }
-
-            IDE.openEditor(
-                UIUtils.getActiveWorkbenchWindow().getActivePage(),
-                new FileStoreEditorInput(fileStore),
-                editorDesc.getId());
         } else if (resource instanceof IFile) {
             IDE.openEditor(UIUtils.getActiveWorkbenchWindow().getActivePage(), (IFile) resource);
         } else if (resource instanceof IFolder) {

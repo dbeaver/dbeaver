@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.ui.config;
 
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
@@ -26,22 +27,22 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 public class OracleAuthOSConfigurator implements IObjectPropertyConfigurator<Object, DBPDataSourceContainer> {
 
     @Override
-    public void createControl(Composite authPanel, Object object, Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite authPanel, Object object, @NotNull Runnable propertyChangeListener) {
         //OracleAuthDatabaseNativeConfigurator.createRoleCombo(authPanel);
     }
 
     @Override
-    public void loadSettings(DBPDataSourceContainer configuration) {
+    public void loadSettings(@NotNull DBPDataSourceContainer configuration) {
 
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer configuration) {
+    public void saveSettings(@NotNull DBPDataSourceContainer configuration) {
 
     }
 
     @Override
-    public void resetSettings(DBPDataSourceContainer configuration) {
+    public void resetSettings(@NotNull DBPDataSourceContainer configuration) {
 
     }
 

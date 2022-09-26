@@ -31,11 +31,16 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentLOB;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.BeanUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * BFILE content
@@ -136,7 +141,7 @@ public class OracleContentBFILE extends JDBCContentLOB {
             try {
                 openFile();
                 long contentLength = getContentLength();
-                DBPPlatform platform = executionContext.getDataSource().getContainer().getPlatform();
+                DBPPlatform platform = DBWorkbench.getPlatform();
                 if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                     try {
                         try (InputStream bs = getInputStream()) {
@@ -150,13 +155,13 @@ public class OracleContentBFILE extends JDBCContentLOB {
                     }
                 } else {
                     // Create new local storage
-                    File tempFile;
+                    Path tempFile;
                     try {
                         tempFile = ContentUtils.createTempContentFile(monitor, platform, "blob" + bfile.hashCode());
                     } catch (IOException e) {
                         throw new DBCException("Can't create temporary file", e);
                     }
-                    try (OutputStream os = new FileOutputStream(tempFile)) {
+                    try (OutputStream os = Files.newOutputStream(tempFile)) {
                         try (InputStream bs = getInputStream()) {
                             ContentUtils.copyStreams(bs, contentLength, os, monitor);
                         }

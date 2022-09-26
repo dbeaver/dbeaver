@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -96,7 +97,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
             Group connectionsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
             ((GridData)connectionsGroup.getLayoutData()).horizontalSpan = 2;
             editorSeparateConnectionCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor, false);
-
+            if (getDataSourceContainer() != null && getDataSourceContainer().isForceUseSingleConnection()) {
+                editorSeparateConnectionCheck.setEnabled(false);
+            }
             connectOnActivationCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_editor_activation, false);
             connectOnExecuteCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_query_execute, false);
         }
@@ -128,10 +131,16 @@ public class PrefPageSQLEditor extends TargetPrefPage
         }
 
         {
-            new PreferenceLinkArea(composite, SWT.NONE,
+            Composite linksGroup = UIUtils.createControlGroup(composite, "", 1, GridData.FILL_HORIZONTAL, 0);
+
+            new PreferenceLinkArea(linksGroup, SWT.NONE,
                 PrefPageSQLEditor.TEXT_EDITOR_PAGE_ID,
                 "<a>''{0}''</a> " + SQLEditorMessages.pref_page_sql_editor_link_text_editor,
                 (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
+            new PreferenceLinkArea(linksGroup, SWT.NONE,
+                EditorUtils.COLORS_AND_FONTS_PAGE_ID,
+                SQLEditorMessages.pref_page_sql_editor_link_colors_and_fonts,
+                (IWorkbenchPreferenceContainer) getContainer(), null);
 
         }
         return composite;

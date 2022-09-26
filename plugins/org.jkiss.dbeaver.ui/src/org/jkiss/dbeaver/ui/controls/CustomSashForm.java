@@ -70,6 +70,9 @@ public class CustomSashForm extends SashForm {
 
     private static final int NO_WEIGHT = -1;
     private static final int NO_ARROW = -1;
+    
+    protected Color arrowColor;
+    protected Color borderColor;
 
     private class SashInfo {
         public Sash sash;
@@ -87,7 +90,6 @@ public class CustomSashForm extends SashForm {
         }
     }
 
-    ;
 
     public interface ICustomSashFormListener {
         void dividerMoved(int firstControlWeight, int secondControlWeight);
@@ -109,8 +111,7 @@ public class CustomSashForm extends SashForm {
             UP_HIDE_ARROW = 1,
             DOWN_RESTORE_ARROW = 2,
             DOWN_HIDE_ARROW = 3,
-
-    HIDE_ARROWS = 4;
+            HIDE_ARROWS = 4;
 
     protected static final int
             ARROW_TYPE_INDEX = 0,
@@ -122,11 +123,9 @@ public class CustomSashForm extends SashForm {
 
     // These are for the up/down arrow. Just swap them for left/right arrow.
     protected static final int
-            ARROW_WIDTH = 8,
-            ARROW_HEIGHT = 8,
-            ARROW_MARGIN = 3;    // Margin on each side of arrow
-
-    protected Color arrowColor, borderColor;
+            ARROW_WIDTH = 12,
+            ARROW_HEIGHT = 5,
+            ARROW_MARGIN = 5;    // Margin on each side of arrow
 
 
     public CustomSashForm(Composite parent, int style) {
@@ -149,16 +148,17 @@ public class CustomSashForm extends SashForm {
             }
         });
 
+        sashBorders = new boolean[]{true, true};
         noHideUp = ((customStyle & NO_HIDE_UP) != 0);
         noHideDown = ((customStyle & NO_HIDE_DOWN) != 0);
 
         if (noHideUp & noHideDown)
             return;    // If you can't hide up or down, there there is no need for arrows.
 
-        SASH_WIDTH = 3 + getOrientation() == SWT.VERTICAL ? ARROW_HEIGHT : ARROW_WIDTH;
+        SASH_WIDTH = (3 + getOrientation() == SWT.VERTICAL ? ARROW_HEIGHT : ARROW_HEIGHT) + ARROW_MARGIN;
 
-        arrowColor = new Color(parent.getDisplay(), 99, 101, 156);
-        borderColor = new Color(parent.getDisplay(), 132, 130, 132);
+        arrowColor = new Color(parent.getDisplay(), 51, 142, 204);
+        borderColor = new Color(parent.getDisplay(), 205, 205, 205);
 
         addDisposeListener(new DisposeListener() {
             /**
@@ -343,25 +343,11 @@ public class CustomSashForm extends SashForm {
                     Color oldFg = gc.getForeground();
                     Color oldBg = gc.getBackground();
 
-/*
-                    gc.setBackground(borderColor);
-                    gc.setFillRule(SWT.FILL_EVEN_ODD);
-                    Point bounds = currentSashInfo.sash.getSize();
-                    gc.fillRectangle(1, 1, bounds.x - 2, bounds.y - 2);
-*/
-/*
-                    Point size = currentSashInfo.sash.getSize();
-                    gc.setLineStyle(SWT.LINE_DOT);
-                    if (getOrientation() == SWT.HORIZONTAL) {
-                        gc.drawLine(size.x / 2, 0, size.x / 2, size.y);
-                    } else {
-                        gc.drawLine(0, size.y / 2, size.x, size.y / 2);
+                    boolean isTwoArrows = currentSashInfo.sashLocs.length > 1;
+                    drawArrow(gc, currentSashInfo.sashLocs[0], currentSashInfo.cursorOver == 0, isTwoArrows);    // Draw first arrow
+                    if (isTwoArrows) {
+                        drawArrow(gc, currentSashInfo.sashLocs[1], currentSashInfo.cursorOver == 1, isTwoArrows);    // Draw second arrow
                     }
-*/
-
-                    drawArrow(gc, currentSashInfo.sashLocs[0], currentSashInfo.cursorOver == 0);    // Draw first arrow
-                    if (currentSashInfo.sashLocs.length > 1)
-                        drawArrow(gc, currentSashInfo.sashLocs[1], currentSashInfo.cursorOver == 1);    // Draw second arrow
 
                     if (currentSashInfo.sashBorderLeft)
                         drawSashBorder(gc, currentSashInfo.sash, true);
@@ -402,6 +388,7 @@ public class CustomSashForm extends SashForm {
                     currentSashInfo = null;
                 }
             });
+
 
             // This is a kludge because we can't override the set cursor hit test.
             newSash.addMouseMoveListener(new MouseMoveListener() {
@@ -841,7 +828,10 @@ public class CustomSashForm extends SashForm {
         }
     }
 
-    protected void drawArrow(GC gc, int[] sashLoc, boolean selected) {
+    protected void drawArrow(GC gc, int[] sashLoc, boolean selected, boolean isSlammed) {
+        int oldAntialias = gc.getAntialias();
+        gc.setAntialias(SWT.ON);
+
         int indent = 0;
         if (selected) {
             if (!inMouseClick) {
@@ -869,155 +859,91 @@ public class CustomSashForm extends SashForm {
                 gc.drawLine(sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
             }
         }
+
         if (getOrientation() == SWT.VERTICAL) {
             switch (sashLoc[ARROW_DRAWN_INDEX]) {
                 case UP_RESTORE_ARROW:
-                    drawUpRestoreArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
+                case DOWN_HIDE_ARROW:
+                    drawUpArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
                     break;
                 case DOWN_RESTORE_ARROW:
-                    drawDownRestoreArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
-                    break;
                 case UP_HIDE_ARROW:
-                    drawUpHideArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
-                    break;
-                case DOWN_HIDE_ARROW:
-                    drawDownHideArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
+                    drawDownArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
                     break;
             }
         } else {
             switch (sashLoc[ARROW_DRAWN_INDEX]) {
                 case UP_RESTORE_ARROW:
-                    drawLeftRestoreArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
+                case DOWN_HIDE_ARROW:
+                    drawLeftArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
                     break;
                 case DOWN_RESTORE_ARROW:
-                    drawRightRestoreArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
-                    break;
                 case UP_HIDE_ARROW:
-                    drawLeftHideArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
-                    break;
-                case DOWN_HIDE_ARROW:
-                    drawRightHideArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
+                    drawRightArrow(gc, sashLoc[X_INDEX] + indent, sashLoc[Y_INDEX] + indent);
                     break;
             }
+        }
+
+        if (oldAntialias != SWT.ON) {
+            gc.setAntialias(oldAntialias);
         }
     }
 
     // Draw at the given x/y (upper left corner of arrow area).
-    protected void drawUpRestoreArrow(GC gc, int x, int y) {
+    protected void drawUpArrow(GC gc, int x, int y) {
         gc.setForeground(arrowColor);
+        gc.setBackground(arrowColor);
+        int[] triangle = new int[] {
+            x + ARROW_MARGIN, y + ARROW_HEIGHT - 1,
+            x + ARROW_MARGIN + ARROW_WIDTH, y + ARROW_HEIGHT - 1,
+            x + ARROW_MARGIN + ARROW_WIDTH/2, y + 1
+        };
 
-        x += ARROW_MARGIN;
-        gc.drawLine(x + 4, y + 2, x + 7, y + 5);
-        gc.drawLine(x + 3, y + 2, x + 3, y + 2);
-
-        gc.drawLine(x + 2, y + 3, x + 4, y + 3);
-        gc.drawLine(x + 1, y + 4, x + 5, y + 4);
-        gc.drawLine(x, y + 5, x + 6, y + 5);
+        gc.drawPolygon(triangle);
+        gc.fillPolygon(triangle);
     }
 
     // Draw at the given x/y (upper left corner of arrow area).
-    protected void drawUpHideArrow(GC gc, int x, int y) {
+    protected void drawDownArrow(GC gc, int x, int y) {
         gc.setForeground(arrowColor);
+        gc.setBackground(arrowColor);
+        int[] triangle = new int[] {
+            x + ARROW_MARGIN - 1, y + 1,
+            x + ARROW_MARGIN + ARROW_WIDTH - 1, y + 1,
+            x + ARROW_MARGIN + ARROW_WIDTH/2 - 1, y + ARROW_HEIGHT - 1
+        };
 
-        x += ARROW_MARGIN;
-        gc.drawLine(x, y, x + 7, y);
-        gc.drawLine(x, y + 1, x + 7, y + 1);
-
-        gc.drawLine(x + 4, y + 2, x + 7, y + 5);
-        gc.drawLine(x + 3, y + 2, x + 3, y + 2);
-
-        gc.drawLine(x + 2, y + 3, x + 4, y + 3);
-        gc.drawLine(x + 1, y + 4, x + 5, y + 4);
-        gc.drawLine(x, y + 5, x + 6, y + 5);
+        gc.drawPolygon(triangle);
+        gc.fillPolygon(triangle);
     }
 
     // Draw at the given x/y (upper left corner of arrow area).
-    protected void drawDownRestoreArrow(GC gc, int x, int y) {
+    protected void drawLeftArrow(GC gc, int x, int y) {
         gc.setForeground(arrowColor);
+        gc.setBackground(arrowColor);
+        int[] triangle = new int[] {
+            x + ARROW_HEIGHT - 1, y + ARROW_MARGIN,
+            x + ARROW_HEIGHT - 1, y + ARROW_MARGIN + ARROW_WIDTH,
+            x + 1, y + ARROW_MARGIN + ARROW_WIDTH/2
+        };
 
-        x += ARROW_MARGIN;
-        gc.drawLine(x, y + 2, x + 3, y + 5);
-        gc.drawLine(x + 4, y + 5, x + 4, y + 5);
-
-        gc.drawLine(x + 3, y + 4, x + 5, y + 4);
-        gc.drawLine(x + 1, y + 3, x + 6, y + 3);
-        gc.drawLine(x + 1, y + 2, x + 7, y + 2);
+        gc.drawPolygon(triangle);
+        gc.fillPolygon(triangle);
     }
 
     // Draw at the given x/y (upper left corner of arrow area).
-    protected void drawDownHideArrow(GC gc, int x, int y) {
+    protected void drawRightArrow(GC gc, int x, int y) {
         gc.setForeground(arrowColor);
+        gc.setBackground(arrowColor);
+        int[] triangle = new int[] {
+            x + 1, y + ARROW_MARGIN,
+            x + 1, y + ARROW_MARGIN + ARROW_WIDTH,
+            x + ARROW_HEIGHT - 1, y + ARROW_MARGIN + ARROW_WIDTH/2
+        };
 
-        x += ARROW_MARGIN;
-        gc.drawLine(x, y + 6, x + 7, y + 6);
-        gc.drawLine(x, y + 7, x + 7, y + 7);
-
-        gc.drawLine(x, y + 2, x + 3, y + 5);
-        gc.drawLine(x + 4, y + 5, x + 4, y + 5);
-
-        gc.drawLine(x + 3, y + 4, x + 5, y + 4);
-        gc.drawLine(x + 1, y + 3, x + 6, y + 3);
-        gc.drawLine(x + 1, y + 2, x + 7, y + 2);
+        gc.drawPolygon(triangle);
+        gc.fillPolygon(triangle);
     }
-
-    // Draw at the given x/y (upper left corner of arrow area).
-    protected void drawLeftRestoreArrow(GC gc, int x, int y) {
-        gc.setForeground(arrowColor);
-
-        y += ARROW_MARGIN;
-        gc.drawLine(x + 2, y + 4, x + 5, y + 7);
-        gc.drawLine(x + 2, y + 3, x + 2, y + 3);
-
-        gc.drawLine(x + 3, y + 2, x + 3, y + 4);
-        gc.drawLine(x + 4, y + 1, x + 4, y + 5);
-        gc.drawLine(x + 5, y, x + 5, y + 6);
-    }
-
-    // Draw at the given x/y (upper left corner of arrow area).
-    protected void drawLeftHideArrow(GC gc, int x, int y) {
-        gc.setForeground(arrowColor);
-
-        y += ARROW_MARGIN;
-        gc.drawLine(x, y, x, y + 7);
-        gc.drawLine(x + 1, y, x + 1, y + 7);
-
-        gc.drawLine(x + 2, y + 4, x + 5, y + 7);
-        gc.drawLine(x + 2, y + 3, x + 2, y + 3);
-
-        gc.drawLine(x + 3, y + 2, x + 3, y + 4);
-        gc.drawLine(x + 4, y + 1, x + 4, y + 5);
-        gc.drawLine(x + 5, y, x + 5, y + 6);
-    }
-
-    // Draw at the given x/y (upper left corner of arrow area).
-    protected void drawRightRestoreArrow(GC gc, int x, int y) {
-        gc.setForeground(arrowColor);
-
-        y += ARROW_MARGIN;
-        gc.drawLine(x + 2, y, x + 5, y + 3);
-        gc.drawLine(x + 5, y + 4, x + 5, y + 4);
-
-        gc.drawLine(x + 4, y + 3, x + 4, y + 5);
-        gc.drawLine(x + 3, y + 1, x + 3, y + 6);
-        gc.drawLine(x + 2, y + 1, x + 2, y + 7);
-    }
-
-    // Draw at the given x/y (upper left corner of arrow area).
-    protected void drawRightHideArrow(GC gc, int x, int y) {
-        gc.setForeground(arrowColor);
-
-        y += ARROW_MARGIN;
-        gc.drawLine(x + 6, y, x + 6, y + 7);
-        gc.drawLine(x + 7, y, x + 7, y + 7);
-
-        gc.drawLine(x + 2, y, x + 5, y + 3);
-        gc.drawLine(x + 5, y + 4, x + 5, y + 4);
-
-        gc.drawLine(x + 4, y + 3, x + 4, y + 5);
-        gc.drawLine(x + 3, y + 1, x + 3, y + 6);
-        gc.drawLine(x + 2, y + 1, x + 2, y + 7);
-    }
-
 
     public int getRestoreWeight() {
         if (currentSashInfo != null)

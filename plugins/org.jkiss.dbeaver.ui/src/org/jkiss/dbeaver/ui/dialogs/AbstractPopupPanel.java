@@ -75,7 +75,7 @@ public abstract class AbstractPopupPanel extends Dialog {
     public void setModeless(boolean modeless) {
         this.modeless = modeless;
         if (modeless) {
-            setShellStyle(SWT.RESIZE | (isShowTitle() ? (SWT.CLOSE | SWT.TITLE | SWT.MIN | SWT.MAX) : SWT.NONE));
+            setShellStyle(SWT.RESIZE | (isShowTitle() ? (SWT.CLOSE | SWT.TITLE | SWT.MAX) : SWT.NONE));
         } else {
             setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
         }

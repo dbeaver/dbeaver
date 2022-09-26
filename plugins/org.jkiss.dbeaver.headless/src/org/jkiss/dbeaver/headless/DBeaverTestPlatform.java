@@ -19,20 +19,23 @@ package org.jkiss.dbeaver.headless;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
-import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.qm.QMController;
+import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BaseApplicationImpl;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
+import org.jkiss.dbeaver.registry.GlobalEventManagerImpl;
+import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
+import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
+import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -42,11 +45,13 @@ import org.osgi.framework.Bundle;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Locale;
 
 /**
  * DBeaverTestPlatform
  */
-public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatformEclipse {
+public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatformDesktop {
 
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.headless"; //$NON-NLS-1$
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
@@ -61,7 +66,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     private DBeaverTestWorkspace workspace;
 
     private static boolean disposed = false;
-    private QMControllerImpl qmController;
+    private QMRegistryImpl qmController;
     private DefaultCertificateStorage defaultCertificateStorage;
 
     public static DBeaverTestPlatform getInstance() {
@@ -131,7 +136,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         this.workspace.initializeProjects();
 
         QMUtils.initApplication(this);
-        this.qmController = new QMControllerImpl();
+        this.qmController = new QMRegistryImpl();
 
         super.initialize();
 
@@ -167,14 +172,14 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
     @NotNull
     @Override
-    public DBPWorkspaceEclipse getWorkspace() {
+    public DBPWorkspaceDesktop getWorkspace() {
         return workspace;
     }
 
     @NotNull
     @Override
-    public DBPResourceHandler getDefaultResourceHandler() {
-        return TestResourceHandler.INSTANCE;
+    public DBPPlatformLanguage getLanguage() {
+        return PlatformLanguageRegistry.getInstance().getLanguage(Locale.ENGLISH);
     }
 
     @NotNull
@@ -184,8 +189,19 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     }
 
     @NotNull
-    public QMController getQueryManager() {
+    public QMRegistry getQueryManager() {
         return qmController;
+    }
+
+    @Override
+    public DBPGlobalEventManager getGlobalEventManager() {
+        return GlobalEventManagerImpl.getInstance();
+    }
+
+    @NotNull
+    @Override
+    public DBPDataFormatterRegistry getDataFormatterRegistry() {
+        return DataFormatterRegistry.getInstance();
     }
 
     @NotNull
@@ -202,18 +218,12 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
     @NotNull
     @Override
-    public DBASecureStorage getSecureStorage() {
-        return getApplication().getSecureStorage();
-    }
-
-    @NotNull
-    @Override
     public DBPExternalFileManager getExternalFileManager() {
         return workspace;
     }
 
     @NotNull
-    public File getTempFolder(DBRProgressMonitor monitor, String name) {
+    public Path getTempFolder(DBRProgressMonitor monitor, String name) {
         if (tempFolder == null) {
             // Make temp folder
             monitor.subTask("Create temp folder");
@@ -240,13 +250,12 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         if (!tempFolder.exists() && !tempFolder.mkdirs()) {
             log.error("Can't create temp directory " + tempFolder.getAbsolutePath());
         }
-        return tempFolder;
+        return tempFolder.toPath();
     }
 
-    @NotNull
     @Override
-    public File getConfigurationFile(String fileName) {
-        return DBeaverTestActivator.getConfigurationFile(fileName);
+    protected Plugin getProductPlugin() {
+        return DBeaverTestActivator.getInstance();
     }
 
     @Override
@@ -254,10 +263,4 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         return isClosing();
     }
 
-    private static class TestPreferenceStore extends SimplePreferenceStore {
-        @Override
-        public void save() {
-
-        }
-    }
 }

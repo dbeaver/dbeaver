@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -31,8 +32,10 @@ import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -66,6 +69,7 @@ import java.util.Locale;
  * SSH tunnel configuration
  */
 public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> {
+    private static final Log log = Log.getLog(SSHTunnelConfiguratorUI.class);
 
     private DBWHandlerConfiguration savedConfiguration;
 
@@ -85,13 +89,21 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     private VariablesHintLabel variablesHintLabel;
 
     @Override
-    public void createControl(Composite parent, Object object, Runnable propertyChangeListener)
+    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener)
     {
-        final Composite composite = new Composite(parent, SWT.NONE);
-        //gd.minimumHeight = 200;
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
+        scrolledComposite.setLayout(new GridLayout(1, false));
+        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+        final Composite composite = new Composite(scrolledComposite, SWT.NONE);
+        final GridData gridData = new GridData(GridData.FILL_BOTH);
+        gridData.widthHint = UIUtils.getFontHeight(composite) * 80;
+        composite.setLayoutData(gridData);
         composite.setLayout(new GridLayout(1, false));
 
+        scrolledComposite.setContent(composite);
+        scrolledComposite.setExpandHorizontal(true);
+        scrolledComposite.setExpandVertical(true);
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
             credentialsPanel = new CredentialsPanel(settingsGroup, true);
@@ -102,6 +114,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
+                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });
@@ -130,6 +143,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             group.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
+                    scrolledComposite.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     UIUtils.resizeShell(parent.getShell());
                 }
             });
@@ -184,13 +198,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
 
         {
-            Composite sc = new Composite(composite, SWT.NONE);
+            Composite sc = new Composite(parent, SWT.NONE);
             sc.setLayout(new GridLayout());
             sc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         }
 
         {
-            Composite controlGroup = UIUtils.createComposite(composite, 3);
+            Composite controlGroup = UIUtils.createComposite(parent, 3);
             controlGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createDialogButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, new SelectionAdapter() {
@@ -200,7 +214,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 }
             });
             String hint = SSHUIMessages.model_ssh_configurator_variables_hint_label;
-            variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DBPConnectionConfiguration.CONNECT_VARIABLES, false);
+            variablesHintLabel = new VariablesHintLabel(controlGroup, hint, hint, DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES,
+                false);
 
             UIUtils.createLink(controlGroup, SSHUIMessages.model_ssh_configurator_ssh_documentation_link, new SelectionAdapter() {
                 @Override
@@ -218,16 +233,40 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         text.setLayoutData(gdt);
     }
 
+    @Nullable
+    private static DBPAuthInfo promptCredentialsDialog(
+        @NotNull SSHConstants.AuthType type,
+        @NotNull DBWHandlerConfiguration configuration
+    ) {
+        try {
+            return DBWorkbench.getPlatformUI().promptUserCredentials(
+                SSHUIMessages.model_ssh_dialog_credentials,
+                SSHUIMessages.model_ssh_dialog_credentials_username,
+                configuration.getUserName(),
+                type.equals(SSHConstants.AuthType.PUBLIC_KEY)
+                    ? SSHUIMessages.model_ssh_dialog_credentials_passphrase
+                    : SSHUIMessages.model_ssh_dialog_credentials_password,
+                configuration.getPassword(),
+                type.equals(SSHConstants.AuthType.PUBLIC_KEY),
+                false
+            );
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(
+                CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                e.getMessage(),
+                e);
+            return null;
+        }
+    }
+
     private void testTunnelConnection() {
         DBWHandlerConfiguration configuration = new DBWHandlerConfiguration(savedConfiguration);
         configuration.setProperties(Collections.emptyMap());
         saveSettings(configuration);
         DBPDataSourceContainer dataSource = configuration.getDataSource();
         if (dataSource != null) {
-            configuration.resolveDynamicVariables(
-                new DataSourceVariableResolver(
-                    dataSource,
-                    dataSource.getConnectionConfiguration()));
+            configuration.resolveDynamicVariables(new DataSourceVariableResolver(dataSource,
+                dataSource.getConnectionConfiguration()));
         } else {
             configuration.resolveDynamicVariables(SystemVariablesResolver.INSTANCE);
         }
@@ -244,7 +283,18 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 connectionConfig.setHostPort(configuration.getStringProperty(DBWHandlerConfiguration.PROP_PORT));
                 try {
                     monitor.subTask("Initialize tunnel");
-                    tunnel.initializeHandler(monitor, DBWorkbench.getPlatform(), configuration, connectionConfig);
+                    String authTypeName = configuration.getStringProperty("authType");
+                    SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, authTypeName);
+                    if (!configuration.isSavePassword()) {
+                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration);
+                        if (dbpAuthInfo != null) {
+                            if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
+                                configuration.setUserName(dbpAuthInfo.getUserName());
+                            }
+                            configuration.setPassword(dbpAuthInfo.getUserPassword());
+                        }
+                    }
+                    tunnel.initializeHandler(monitor, configuration, connectionConfig);
                     monitor.worked(1);
                     // Get info
                     tunnelVersions[0] = tunnel.getImplementation().getClientVersion();
@@ -291,7 +341,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     @Override
-    public void loadSettings(DBWHandlerConfiguration configuration)
+    public void loadSettings(@NotNull DBWHandlerConfiguration configuration)
     {
         credentialsPanel.loadSettings(configuration, "");
 
@@ -302,7 +352,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         String implType = configuration.getStringProperty(SSHConstants.PROP_IMPLEMENTATION);
         if (CommonUtils.isEmpty(implType)) {
-            tunnelImplCombo.select(0);
+            // Try SSHJ by default
+            tunnelImplCombo.setText("SSHJ");
+            if (tunnelImplCombo.getSelectionIndex() == -1) {
+                tunnelImplCombo.select(0);
+            }
         } else {
             SSHImplementationDescriptor desc = SSHImplementationRegistry.getInstance().getDescriptor(implType);
             if (desc != null) {
@@ -350,7 +404,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     @Override
-    public void saveSettings(DBWHandlerConfiguration configuration)
+    public void saveSettings(@NotNull DBWHandlerConfiguration configuration)
     {
         credentialsPanel.saveSettings(configuration, "");
 
@@ -400,7 +454,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     @Override
-    public void resetSettings(DBWHandlerConfiguration configuration) {
+    public void resetSettings(@NotNull DBWHandlerConfiguration configuration) {
 
     }
 
@@ -482,6 +536,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
                 if (showSavePasswordCheckbox) {
                     savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
+                    savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            passwordText.setEnabled(savePasswordCheckbox.getSelection());
+                        }
+                    });
                     savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 } else {
                     savePasswordCheckbox = null;
@@ -502,15 +562,21 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             privateKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH)));
             if (prefix.isEmpty()) {
                 userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
-                passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 if (savePasswordCheckbox != null) {
                     savePasswordCheckbox.setSelection(configuration.isSavePassword());
+                    passwordText.setEnabled(savePasswordCheckbox.getSelection());
+                }
+                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
+                    passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 }
             } else {
                 userNameText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + RegistryConstants.ATTR_NAME)));
                 passwordText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD)));
                 if (savePasswordCheckbox != null) {
                     savePasswordCheckbox.setSelection(configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD));
+                }
+                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
+                    passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 }
             }
             updateAuthMethodVisibility();
@@ -524,15 +590,20 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
             if (prefix.isEmpty()) {
                 configuration.setUserName(userNameText.getText().trim());
-                configuration.setPassword(passwordText.getText());
+
                 if (savePasswordCheckbox != null) {
                     configuration.setSavePassword(savePasswordCheckbox.getSelection());
                 }
+                if (savePasswordCheckbox == null || configuration.isSavePassword()) {
+                    configuration.setPassword(passwordText.getText());
+                }
             } else {
                 configuration.setProperty(prefix + RegistryConstants.ATTR_NAME, userNameText.getText().trim());
-                configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
                 if (savePasswordCheckbox != null) {
                     configuration.setProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD, savePasswordCheckbox.getSelection());
+                }
+                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
+                    configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
                 }
             }
         }

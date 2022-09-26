@@ -22,22 +22,24 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SQLServerGenericTableManager
  */
 public class SQLServerGenericTableManager extends GenericTableManager {
 
-    private static final Class<?>[] CHILD_TYPES = {
+    private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         SQLServerGenericTableColumn.class,
         GenericUniqueKey.class,
         GenericTableForeignKey.class,
         GenericTableIndex.class
-    };
+    );
 
     @NotNull
     @Override
-    public Class<?>[] getChildTypes() {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return CHILD_TYPES;
     }
 

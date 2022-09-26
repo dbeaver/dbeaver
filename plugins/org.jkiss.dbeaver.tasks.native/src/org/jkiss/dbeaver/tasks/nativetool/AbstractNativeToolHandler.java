@@ -67,6 +67,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         SETTINGS settings = createTaskSettings(runnableContext, task);
         settings.setLogWriter(logStream);
         if (!validateTaskParameters(task, settings, log)) {
+            listener.taskFinished(task, null, new InterruptedException("Task parameters validation failed"), settings);
+            log.error("Task parameters validation failed");
             return new DBTTaskRunStatus();
         }
         try {
@@ -261,12 +263,12 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                     isSuccess = false;
                 }
             }
-            DBPDataSourceContainer dataSourceContainer = settings.getDataSourceContainer();
+
             boolean refreshObjects = isSuccess && !monitor.isCanceled();
             if (refreshObjects && needsModelRefresh()) {
                 // Refresh navigator node (script execution can change everything inside)
                 for (BASE_OBJECT object : settings.getDatabaseObjects()) {
-                    final DBNDatabaseNode node = dataSourceContainer.getPlatform().getNavigatorModel().findNode(object);
+                    final DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(object);
                     if (node != null) {
                         node.refreshNode(monitor, this);
                     }

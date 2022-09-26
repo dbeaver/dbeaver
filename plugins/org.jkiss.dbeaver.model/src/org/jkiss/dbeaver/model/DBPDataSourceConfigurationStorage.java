@@ -16,12 +16,6 @@
  */
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-
-import java.util.List;
-import java.util.Map;
-
 /**
  * Provided data source configuration storage
  */
@@ -29,15 +23,22 @@ public interface DBPDataSourceConfigurationStorage {
 
     String getStorageId();
 
+    default String getStorageName() {
+        return getStorageId();
+    }
+
     boolean isValid();
 
     boolean isDefault();
 
+    /**
+     * Checks if configuration storage is virtual
+     */
+    boolean isVirtual();
+
     String getStatus();
 
-    List<? extends DBPDataSourceContainer> loadDataSources(DBPDataSourceRegistry registry, Map<String, Object> options)
-        throws DBException;
-
     // Used for secure credentials save/load (it is a prt of credentials file name)
-    String getConfigurationFileSuffix();
+    String getStorageSubId();
+
 }

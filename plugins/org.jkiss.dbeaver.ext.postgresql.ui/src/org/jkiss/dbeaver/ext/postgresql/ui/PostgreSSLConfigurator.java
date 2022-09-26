@@ -21,12 +21,15 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
@@ -53,7 +56,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     private boolean sslClassesResolved;
 
     @Override
-    public void createControl(Composite parent, Object object, Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
         final Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -87,7 +90,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     }
 
     @Override
-    public void loadSettings(final DBWHandlerConfiguration configuration) {
+    public void loadSettings(@NotNull final DBWHandlerConfiguration configuration) {
         super.loadSettings(configuration);
 
         if (CommonUtils.isEmpty(configuration.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
@@ -102,39 +105,46 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
             useProxyService.setSelection(configuration.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY));
         }
 
-        if (!sslClassesResolved) {
-            sslClassesResolved = true;
-            final Job resolveJob = new Job("Find factories") {
-                {
-                    setUser(true);
-                }
+        PaintListener paintListener = new PaintListener() {
+            @Override
+            public void paintControl(PaintEvent e) {
+                if (!sslClassesResolved) {
+                    sslClassesResolved = true;
+                    sslFactoryCombo.removePaintListener(this);
+                    final Job resolveJob = new Job("Find factories") {
+                        {
+                            setUser(true);
+                        }
 
-                @Override
-                protected IStatus run(IProgressMonitor monitor) {
-                    final DriverClassFindJob finder = new DriverClassFindJob(
-                        configuration.getDriver(),
-                        SSLSocketFactory.class.getName(),
-                        false);
-                    finder.run(new DefaultProgressMonitor(monitor));
-                    UIUtils.syncExec(() -> {
-                        sslFactoryCombo.removeAll();
-                        for (String cn : finder.getDriverClassNames()) {
-                            sslFactoryCombo.add(cn);
+                        @Override
+                        protected IStatus run(IProgressMonitor monitor) {
+                            final DriverClassFindJob finder = new DriverClassFindJob(
+                                configuration.getDriver(),
+                                SSLSocketFactory.class.getName(),
+                                false);
+                            finder.run(new DefaultProgressMonitor(monitor));
+                            UIUtils.syncExec(() -> {
+                                sslFactoryCombo.removeAll();
+                                for (String cn : finder.getDriverClassNames()) {
+                                    sslFactoryCombo.add(cn);
+                                }
+                                final String factoryValue = configuration.getStringProperty(PostgreConstants.PROP_SSL_FACTORY);
+                                if (!CommonUtils.isEmpty(factoryValue)) {
+                                    sslFactoryCombo.setText(factoryValue);
+                                }
+                            });
+                            return Status.OK_STATUS;
                         }
-                        final String factoryValue = configuration.getStringProperty(PostgreConstants.PROP_SSL_FACTORY);
-                        if (!CommonUtils.isEmpty(factoryValue)) {
-                            sslFactoryCombo.setText(factoryValue);
-                        }
-                    });
-                    return Status.OK_STATUS;
+                    };
+                    resolveJob.schedule();
                 }
-            };
-            resolveJob.schedule();
-        }
+            }
+        };
+        sslFactoryCombo.addPaintListener(paintListener);
     }
 
     @Override
-    public void saveSettings(DBWHandlerConfiguration configuration) {
+    public void saveSettings(@NotNull DBWHandlerConfiguration configuration) {
         super.saveSettings(configuration);
 
         configuration.setProperty(PostgreConstants.PROP_SSL_MODE, sslModeCombo.getText());

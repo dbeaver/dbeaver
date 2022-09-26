@@ -98,6 +98,29 @@ public class DTUtils {
         }
     }
 
+
+    /**
+     * Use this method for the export cases. E.g. if "table" used as a pattern
+     * and you do not want to see all statement for query with JOINs etc. instead of clear table name.
+     * Methods returns default value in this case.
+     *
+     * @param dataSource dataSource
+     * @param queryContainer not nullable query container
+     * @return table name founded in the query or {@code null}
+     */
+    @Nullable
+    public static String getTableNameFromQueryContainer(DBPDataSource dataSource, @NotNull SQLQueryContainer queryContainer) {
+        if (dataSource == null) {
+            return null;
+        }
+        String nameFromQuery = DTUtils.getTableNameFromQuery(dataSource, queryContainer, true);
+        if (CommonUtils.isEmpty(nameFromQuery)) {
+            // Use default pattern name for this case, not the all statement
+            return null;
+        }
+        return nameFromQuery;
+    }
+
     public static String getTableNameFromQuery(DBPDataSource dataSource, SQLQueryContainer queryContainer, boolean shortName) {
         SQLScriptElement query = queryContainer.getQuery();
         if (query instanceof SQLQuery) {
@@ -135,26 +158,6 @@ public class DTUtils {
         }
         DBPIdentifierCase identifierCase = dialect.storesUnquotedCase();
         return identifierCase.transform(name);
-    }
-
-    @NotNull
-    public static List<DBSAttributeBase> getSourceAndTargetAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity target, @NotNull DBSDataContainer container, @NotNull Object controller) throws DBException {
-        // In some cases, we need a list of target columns with the list of source columns
-        final List<DBSAttributeBase> attributes = new ArrayList<>();
-        for (DBSEntityAttribute attr : CommonUtils.safeList(target.getAttributes(monitor))) {
-            if (DBUtils.isHiddenObject(attr)) {
-                continue;
-            }
-            attributes.add(attr);
-        }
-        List<DBSAttributeBase> sourceAttributes = getAttributes(monitor, container, controller);
-        for (DBSAttributeBase attribute : sourceAttributes) {
-            boolean match = attributes.stream().anyMatch(attr -> attr.getName().equalsIgnoreCase(attribute.getName())); // Usually we ignore attributes names case in Data Transfer process
-            if (!match) {
-                attributes.add(attribute);
-            }
-        }
-        return attributes;
     }
 
     @NotNull

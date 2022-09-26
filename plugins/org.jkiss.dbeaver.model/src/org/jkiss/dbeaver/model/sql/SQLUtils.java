@@ -47,6 +47,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * SQL Utils
@@ -57,6 +58,10 @@ public final class SQLUtils {
 
     public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
     public static final Pattern PATTERN_SIMPLE_NAME = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
+    public static final Pattern PATTERN_COLUMN_NAME = Pattern.compile(
+        "(([a-z_][a-z0-9_]*)|(\\\"([a-z_][a-z0-9_]*)\\\"))(\\.(([a-z_][a-z0-9_]*)|(\\\"([a-z_][a-z0-9_]*)\\\")))*",
+        Pattern.CASE_INSENSITIVE
+    );
 
     private static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile("(CREATE (:OR REPLACE)?).+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
@@ -463,9 +468,24 @@ public final class SQLUtils {
     {
         appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria, false);
     }
+    
+    public static void appendConditionString(
+        @NotNull DBDDataFilter filter,
+        @NotNull DBPDataSource dataSource,
+        @Nullable String conditionTable,
+        @NotNull StringBuilder query, 
+        boolean inlineCriteria, 
+        boolean subQuery
+    ) {
+        final List<DBDAttributeConstraint> constraints = filter.getConstraints().stream()
+            .filter(x -> x.getCriteria() != null || x.getOperator() != null)
+            .collect(Collectors.toList());
+        appendConditionString(filter, constraints, dataSource, conditionTable, query, inlineCriteria, false);
+    }
 
     public static void appendConditionString(
         @NotNull DBDDataFilter filter,
+        @NotNull List<DBDAttributeConstraint> constraints,
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
@@ -473,25 +493,18 @@ public final class SQLUtils {
         boolean subQuery)
     {
         final String operator = filter.isAnyConstraint() ? " OR " : " AND ";  //$NON-NLS-1$ $NON-NLS-2$
-        final DBDAttributeConstraint[] constraints = filter.getConstraints().stream()
-            .filter(x -> x.getCriteria() != null || x.getOperator() != null)
-            .toArray(DBDAttributeConstraint[]::new);
 
-        for (int index = 0; index < constraints.length; index++) {
-            final DBDAttributeConstraint constraint = constraints[index];
+        for (int index = 0; index < constraints.size(); index++) {
+            final DBDAttributeConstraint constraint = constraints.get(index);
             if (index > 0) {
                 query.append(operator);
             }
-            if (constraints.length > 1) {
+            if (constraints.size() > 1) {
                 // Add parenthesis for the sake of sanity
                 // Constraint may consist of several conditions and we don't want to break operator precedence
                 query.append('(');
             }
-            if (constraint.getEntityAlias() != null) {
-                query.append(constraint.getEntityAlias()).append('.');
-            } else if (conditionTable != null) {
-                query.append(conditionTable).append('.');
-            }
+
             // Attribute name could be an expression. So check if this is a real attribute
             // and generate full/quoted name for it.
             String attrName;
@@ -503,7 +516,14 @@ public final class SQLUtils {
                     binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
                     binding instanceof DBDAttributeBindingType)
                 {
-                    attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
+                    if (binding.getEntityAttribute() instanceof DBSContextBoundAttribute) {
+                        DBSContextBoundAttribute entityAttribute = (DBSContextBoundAttribute) binding.getEntityAttribute();
+                        attrName = entityAttribute.formatMemberReference(true, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION);
+                    } else {
+                        attrName = DBUtils.getObjectFullName(
+                            dataSource, binding, DBPEvaluationContext.DML, DBPAttributeReferencePurpose.DATA_SELECTION
+                        );
+                    }
                 } else {
                     if (binding.getMetaAttribute() == null || binding.getEntityAttribute() != null) {
                         // Seems to a reference on a table column.
@@ -516,18 +536,21 @@ public final class SQLUtils {
                     }
                 }
             } else if (cAttr != null) {
-                attrName = DBUtils.getObjectFullName(dataSource, cAttr, DBPEvaluationContext.DML);
+                attrName = DBUtils.getObjectFullName(
+                    dataSource, cAttr, DBPEvaluationContext.DML, DBPAttributeReferencePurpose.DATA_SELECTION
+                );
             } else {
                 attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
             }
+            
             query.append(attrName).append(' ').append(getConstraintCondition(dataSource, constraint, conditionTable, inlineCriteria));
-            if (constraints.length > 1) {
+            if (constraints.size() > 1) {
                 query.append(')');
             }
         }
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
-            if (constraints.length > 0) {
+            if (constraints.size() > 0) {
                 query.append(operator).append('(').append(filter.getWhere()).append(')');
             } else {
                 query.append(filter.getWhere());
@@ -550,10 +573,21 @@ public final class SQLUtils {
             if (co.isPlainNameReference() || co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta || co.getAttribute() instanceof DBDAttributeBindingType) {
                 String orderColumn = subQuery ? co.getAttributeLabel() : co.getAttributeName();
                 if (canOrderByName(dataSource, co, orderColumn) && !filter.hasNameDuplicates(orderColumn)) {
-                    // It is a simple column.
-                    orderString = co.getFullAttributeName();
-                    if (conditionTable != null) {
-                        orderString = conditionTable + '.' + orderString;
+                    DBSAttributeBase attr = co.getAttribute();
+                    if (attr instanceof DBDAttributeBinding
+                        && ((DBDAttributeBinding) attr).getEntityAttribute() instanceof DBSContextBoundAttribute
+                    ) {
+                        DBDAttributeBinding attrBinding = (DBDAttributeBinding) attr;
+                        DBSContextBoundAttribute entityAttribute = (DBSContextBoundAttribute) attrBinding.getEntityAttribute();
+                        orderString = entityAttribute.formatMemberReference(
+                            true, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION
+                        );
+                    } else {
+                        // It is a simple column.
+                        orderString = co.getFullAttributeName();
+                        if (conditionTable != null) {
+                            orderString = conditionTable + '.' + orderString;
+                        }
                     }
                 }
             }
@@ -585,7 +619,7 @@ public final class SQLUtils {
         if (!dataSource.getSQLDialect().supportsOrderByIndex()) {
             return true;
         }
-        return PATTERN_SIMPLE_NAME
+        return PATTERN_COLUMN_NAME // we should assume columns of composite type like comp.x
             .matcher(constraintName)
             .matches();
     }
@@ -619,25 +653,30 @@ public final class SQLUtils {
                 conString.append("NOT ");
             }
             if (operator.getArgumentCount() > 0) {
-                conString.append(operator.getExpression());
-                for (int i = 0; i < operator.getArgumentCount(); i++) {
-                    if (i > 0) {
-                        conString.append(" AND");
-                    }
-                    String strValue;
-                    if (constraint.getAttribute() == null) {
-                        // We have only attribute name
-                        if (value instanceof CharSequence) {
-                            strValue = dataSource.getSQLDialect().getQuotedString(value.toString());
-                        } else {
-                            strValue = CommonUtils.toString(value);
+
+                if (operator.equals(DBCLogicalOperator.EQUALS) && value instanceof Object[]) {
+                    // Special case for multiple values for IN
+                    // Generate series of ORed conditions
+                    Object[] array = ((Object[]) value);
+                    for (int i = 0; i < array.length; i++) {
+                        if (i > 0) {
+                            conString.append(" OR");
+                            conString.append(' ').append(DBUtils.getQuotedIdentifier(dataSource,
+                                constraint.getAttributeLabel())).append(' ');
                         }
-                    } else if (inlineCriteria) {
-                        strValue = convertValueToSQL(dataSource, constraint.getAttribute(), value);
-                    } else {
-                        strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true);
+                        conString.append(operator.getExpression());
+                        String strValue = getStringValue(dataSource, constraint, inlineCriteria, array[i]);
+                        conString.append(' ').append(strValue);
                     }
-                    conString.append(' ').append(strValue);
+                } else {
+                    conString.append(operator.getExpression());
+                    for (int i = 0; i < operator.getArgumentCount(); i++) {
+                        if (i > 0) {
+                            conString.append(" AND");
+                        }
+                        String strValue = getStringValue(dataSource, constraint, inlineCriteria, value);
+                        conString.append(' ').append(strValue);
+                    }
                 }
             } else if (operator.getArgumentCount() < 0) {
                 // Multiple arguments
@@ -657,14 +696,26 @@ public final class SQLUtils {
                 }
                 if (hasNull) {
                     conString.append("IS NULL OR ");
-                    
-                    if (constraint.getEntityAlias() != null) {
-                    	conString.append(constraint.getEntityAlias()).append('.');
-                    } else if (conditionTable != null) {
-                    	conString.append(conditionTable).append('.');
+                    DBSAttributeBase attr = constraint.getAttribute();
+                    if (attr instanceof DBDAttributeBinding
+                        && ((DBDAttributeBinding) attr).getEntityAttribute() instanceof DBSContextBoundAttribute
+                    ) {
+                        DBDAttributeBinding attrBinding = (DBDAttributeBinding) attr;
+                        DBSContextBoundAttribute entityAttribute = (DBSContextBoundAttribute) attrBinding.getEntityAttribute();
+                        conString.append(entityAttribute.formatMemberReference(
+                            true, conditionTable, DBPAttributeReferencePurpose.DATA_SELECTION
+                        ));
+                    } else {
+                        if (constraint.getEntityAlias() != null) {
+                            conString.append(constraint.getEntityAlias()).append('.');
+                        } else if (conditionTable != null) {
+                            conString.append(conditionTable).append('.');
+                        }
+                        conString.append(DBUtils.getObjectFullName(
+                            dataSource, constraint.getAttribute(), DBPEvaluationContext.DML, DBPAttributeReferencePurpose.DATA_SELECTION
+                        ));
                     }
-                    
-                    conString.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute(), DBPEvaluationContext.DML)).append(" ");
+                    conString.append(" ");
                 }
 
                 Pair<String, String> brackets = dataSource.getSQLDialect().getInClauseParentheses();
@@ -695,6 +746,23 @@ public final class SQLUtils {
         } else {
             return null;
         }
+    }
+
+    private static String getStringValue(@NotNull DBPDataSource dataSource, @NotNull DBDAttributeConstraint constraint, boolean inlineCriteria, Object value) {
+        String strValue;
+        if (constraint.getAttribute() == null) {
+            // We have only attribute name
+            if (value instanceof CharSequence) {
+                strValue = dataSource.getSQLDialect().getQuotedString(value.toString());
+            } else {
+                strValue = CommonUtils.toString(value);
+            }
+        } else if (inlineCriteria) {
+            strValue = convertValueToSQL(dataSource, constraint.getAttribute(), value);
+        } else {
+            strValue = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), "?", true);
+        }
+        return strValue;
     }
 
     public static int getConstraintOrderIndex(@NotNull DBDDataFilter dataFilter, @NotNull DBDAttributeConstraint constraint) {

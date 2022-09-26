@@ -32,8 +32,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.ui.model.DiagramLoader;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -46,7 +47,10 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ResourceBundle;
 
 /**
@@ -78,9 +82,18 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     }
 
     @Override
-    public boolean isReadOnly()
-    {
-        return false;
+    public boolean isReadOnly() {
+        return !this.isProjectResourceEditable();
+    }
+    
+    @Override
+    public boolean isModelEditEnabled() {
+        return super.isModelEditEnabled() && this.isProjectResourceEditable();
+    }
+    
+    private boolean isProjectResourceEditable() {
+        DBPProject project = this.getDiagramProject();
+        return project == null || project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
     }
 
     @Override
@@ -176,7 +189,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     public DBPProject getDiagramProject() {
         final IFile resource = getEditorFile();
         if (resource != null) {
-            return DBPPlatformEclipse.getInstance().getWorkspace().getProject(resource.getProject());
+            return DBPPlatformDesktop.getInstance().getWorkspace().getProject(resource.getProject());
         }
         return DBWorkbench.getPlatform().getWorkspace().getActiveProject();
     }
@@ -184,8 +197,10 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     private EntityDiagram loadContentFromFile(DBRProgressMonitor progressMonitor)
         throws DBException
     {
-        final IProject project = getDiagramProject().getEclipseProject();
-        final File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
+        final IFile localFile = EditorUtils.getFileFromInput(getEditorInput());
+        if (localFile == null) {
+            throw new DBException("Can not get file from editor input " + getEditorInput());
+        }
 
         final DiagramPart diagramPart = getDiagramPart();
         EntityDiagram entityDiagram = new EntityDiagram(null, localFile.getName(), getContentProvider(), getDecorator());
@@ -194,8 +209,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         entityDiagram.setLayoutManualDesired(true);
         diagramPart.setModel(entityDiagram);
 
-        try (final InputStreamReader isr = new InputStreamReader(new FileInputStream(localFile), GeneralUtils.UTF8_CHARSET)) {
-            DiagramLoader.load(progressMonitor, project, diagramPart, isr);
+        try (final InputStreamReader isr = new InputStreamReader(localFile.getContents(), GeneralUtils.UTF8_CHARSET)) {
+            DiagramLoader.load(progressMonitor, getDiagramProject(), diagramPart, isr);
         } catch (Exception e) {
             log.error("Error loading ER diagram from '" + localFile.getName() + "'", e);
         }

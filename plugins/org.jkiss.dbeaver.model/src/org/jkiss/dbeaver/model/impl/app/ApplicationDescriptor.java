@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.app;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,6 +37,8 @@ public class ApplicationDescriptor extends AbstractDescriptor {
     private ApplicationDescriptor parent;
     private boolean finalApplication = true;
 
+    private ObjectType implClass;
+
     ApplicationDescriptor(IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute("id");
@@ -51,6 +54,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
             this.umbrellaProductIds = new String[0];
         }
         this.serverApplication = CommonUtils.toBoolean(config.getAttribute("server"));
+        this.implClass = new ObjectType(config, "class");
     }
 
     public String getId() {
@@ -88,6 +92,10 @@ public class ApplicationDescriptor extends AbstractDescriptor {
 
     public boolean isServerApplication() {
         return serverApplication;
+    }
+
+    public Class<? extends DBPApplication> getImplClass() {
+        return implClass.getObjectClass(DBPApplication.class);
     }
 
     boolean isFinalApplication() {

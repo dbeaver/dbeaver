@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -185,7 +186,11 @@ public class ERDEntity extends ERDElement<DBSEntity> {
         if (!CommonUtils.isEmpty(attributes)) {
             attributes.clear();
         }
-        diagram.getContentProvider().fillEntityFromObject(new VoidProgressMonitor(), diagram, Collections.emptyList(), this);
+        try {
+            diagram.getContentProvider().fillEntityFromObject(new VoidProgressMonitor(), diagram, Collections.emptyList(), this);
+        } catch (DBCException e) {
+            log.debug("Can't reload attributes", e);
+        }
     }
 
     public boolean isPrimary() {
@@ -296,7 +301,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
     }
 
     @Override
-    public Map<String, Object> toMap(@NotNull ERDContext context) {
+    public Map<String, Object> toMap(@NotNull ERDContext context, boolean fullInfo) {
         DBSEntity dbsEntity = getObject();
 
         Map<String, Object> entityMap = new LinkedHashMap<>();
@@ -309,15 +314,17 @@ public class ERDEntity extends ERDElement<DBSEntity> {
         if (!CommonUtils.isEmpty(this.getAlias())) {
             entityMap.put("alias", this.getAlias());
         }
-        if (dbsEntity != null) {
+        if (dbsEntity != null && fullInfo) {
             if (dbsEntity instanceof DBPQualifiedObject) {
                 entityMap.put("fqn", ((DBPQualifiedObject) dbsEntity).getFullyQualifiedName(DBPEvaluationContext.UI));
             }
         }
 
-        entityMap.put("iconIndex", context.getIconIndex(DBValueFormatting.getObjectImage(dbsEntity)));
+        if (fullInfo) {
+            entityMap.put("iconIndex", context.getIconIndex(DBValueFormatting.getObjectImage(dbsEntity)));
+        }
 
-        entityMap.put("attributes", this.getAttributes().stream().map(a -> a.toMap(context)).collect(Collectors.toList()));
+        entityMap.put("attributes", this.getAttributes().stream().map(a -> a.toMap(context, fullInfo)).collect(Collectors.toList()));
 
         return entityMap;
     }

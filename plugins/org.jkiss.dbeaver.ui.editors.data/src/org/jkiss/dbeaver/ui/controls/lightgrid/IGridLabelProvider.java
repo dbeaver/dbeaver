@@ -17,25 +17,90 @@
 
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.eclipse.jface.viewers.IColorProvider;
-import org.eclipse.jface.viewers.IFontProvider;
-import org.eclipse.jface.viewers.IToolTipProvider;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public interface IGridLabelProvider extends IColorProvider, IFontProvider, IToolTipProvider {
+public interface IGridLabelProvider {
 
     String OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC = "OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC";
 
     @NotNull
-    String getText(Object element);
+    String getText(@NotNull IGridItem element);
 
     @Nullable
-    String getDescription(Object element);
+    String getDescription(IGridItem element);
 
     @Nullable
-    Image getImage(Object element);
+    Image getImage(IGridItem element);
+
+    /**
+     * Provides a foreground color for the given element.
+     *
+     * @param element the element
+     * @return	the foreground color for the element, or <code>null</code>
+     *   to use the default foreground color
+     */
+    Color getForeground(IGridItem element);
+
+    /**
+     * Provides a background color for the given element.
+     *
+     * @param element the element
+     * @return	the background color for the element, or <code>null</code>
+     *   to use the default background color
+     */
+    Color getBackground(IGridItem element);
+
+    /**
+     * Provides a foreground color for the header of the given {@code item}.
+     *
+     * @param item     the item for which the color should be returned
+     * @param selected whether the selection color should be returned instead or not
+     * @return the foreground color for the {@code item}
+     */
+    @NotNull
+    Color getHeaderForeground(@Nullable IGridItem item, boolean selected);
+
+    /**
+     * Provides a background color for the header of the given {@code item}.
+     *
+     * @param item     the item for which the color should be returned
+     * @param selected whether the selection color should be returned instead or not
+     * @return the background color for the {@code item}
+     */
+    @NotNull
+    Color getHeaderBackground(@Nullable IGridItem item, boolean selected);
+
+    /**
+     * Provides a border color for the header of the given {@code item}.
+     *
+     * @param item the item for which the color should be returned
+     * @return the border color for the {@code item}
+     */
+    @NotNull
+    Color getHeaderBorder(@Nullable IGridItem item);
+
+    /**
+     * Provides a font for the given element.
+     *
+     * @param element the element
+     * @return the font for the element, or <code>null</code>
+     *   to use the default font
+     */
+    Font getFont(IGridItem element);
+
+    /**
+     * Get the text displayed in the tool tip for object.
+     *
+     * @param element
+     *            the element for which the tool tip is shown
+     * @return the {@link String} or <code>null</code> if there is not text to
+     *         display
+     */
+    String getToolTipText(IGridItem element);
 
     Object getGridOption(String option);
 

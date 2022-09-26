@@ -207,7 +207,7 @@
                         description="Driver for MySQL 8 and later"
                         promoted="1"
                         categories="sql">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.17]" bundle="!drivers.mysql"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.29]" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
@@ -255,7 +255,7 @@
                     description="MariaDB JDBC driver"
                     promoted="1"
                     categories="sql">
-                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[2.7.1]" bundle="!drivers.mariadb"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.0.7]" bundle="!drivers.mariadb"/>
 
                     <file type="license" path="drivers/mariadb/LICENSE.txt" bundle="drivers.mariadb"/>
                     <file type="jar" path="drivers/mariadb" bundle="drivers.mariadb"/>
@@ -268,6 +268,14 @@
 
             <nativeClients>
                 <client id="mysql_client" label="MySQL Binaries">
+                    <dist os="win32" targetPath="clients/mysql_8/win" remotePath="repo:/drivers/mysql/client_8/win" resourcePath="clients/mysql_8/win">
+                        <file type="exec" name="mysql.exe"/>
+                        <file type="exec" name="mysqldump.exe"/>
+                        <file type="lib" name="libssl-1_1-x64.dll"/>
+                        <file type="lib" name="libcrypto-1_1-x64.dll"/>
+                    </dist>
+                </client>
+                <client id="mysql5_client" label="MySQL 5 Binaries">
                     <dist os="win32" targetPath="clients/mysql/win" remotePath="repo:/drivers/mysql/client/win" resourcePath="clients/mysql/win">
                         <file type="exec" name="mysql.exe"/>
                         <file type="exec" name="mysqldump.exe"/>

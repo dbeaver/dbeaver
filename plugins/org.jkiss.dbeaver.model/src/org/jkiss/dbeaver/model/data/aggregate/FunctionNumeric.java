@@ -42,7 +42,7 @@ public abstract class FunctionNumeric implements IAggregateFunction {
         return null;
     }
 
-    protected static Comparable getComparable(Object value, boolean aggregateAsStrings) {
+    protected static Comparable<?> getComparable(Object value, boolean aggregateAsStrings) {
         if (!aggregateAsStrings) {
             Number num = FunctionNumeric.getNumeric(value);
             if (num != null) {
@@ -50,7 +50,7 @@ public abstract class FunctionNumeric implements IAggregateFunction {
             }
         }
         if (value instanceof Comparable) {
-            return (Comparable)value;
+            return (Comparable<?>)value;
         }
         return null;
     }

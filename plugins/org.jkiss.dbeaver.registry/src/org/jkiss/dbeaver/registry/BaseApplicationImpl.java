@@ -19,12 +19,10 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
+import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
+import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,7 +44,19 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
 
     public static DBPApplication getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new EclipsePluginApplicationImpl();
+            DBPApplication instance = null;
+            ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
+            if (application != null && application.getImplClass() != null) {
+                try {
+                    instance = application.getImplClass().getConstructor().newInstance();
+                } catch (Throwable e) {
+                    log.error(e);
+                }
+            }
+            if (instance == null) {
+                instance = new EclipsePluginApplicationImpl();
+            }
+            INSTANCE = instance;
         }
         return INSTANCE;
     }
@@ -75,30 +85,14 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
         return false;
     }
 
-    @NotNull
     @Override
-    public DBASecureStorage getSecureStorage() {
-        return DefaultSecureStorage.INSTANCE;
-    }
-
-    @NotNull
-    @Override
-    public DBASecureStorage getProjectSecureStorage(DBPProject project) {
-        return new ProjectSecureStorage(project);
+    public boolean isDistributed() {
+        return false;
     }
 
     @Override
     public String getInfoDetails(DBRProgressMonitor monitor) {
         return "N/A";
-    }
-
-    /**
-     * Returns last user activity time
-     * @return -1 by default
-     */
-    @Override
-    public long getLastUserActivityTime() {
-        return -1;
     }
 
     @Override

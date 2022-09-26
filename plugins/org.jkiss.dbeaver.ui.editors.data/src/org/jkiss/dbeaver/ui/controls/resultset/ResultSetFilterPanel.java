@@ -392,7 +392,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filterExpandPanel.setEnabled(enable);
             refreshButton.setEnabled(enable);
             historyPanel.setEnabled(enable);
-            filtersText.setEditable(enable && viewer.supportsDataFilter());
+            filtersText.setEditable(viewer.supportsDataFilter());
             executePanel.setEnabled(enable);
         } finally {
             setRedraw(true);
@@ -432,7 +432,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         if (dataContainer instanceof DBSEntity) {
             DBPDataSource dataSource = viewer.getDataContainer().getDataSource();
             if (dataSource != null) {
-                DBNDatabaseNode dcNode = dataSource.getContainer().getPlatform().getNavigatorModel().findNode(dataContainer);
+                DBNDatabaseNode dcNode = DBWorkbench.getPlatform().getNavigatorModel().findNode(dataContainer);
                 if (dcNode != null) {
                     return dcNode.getNodeIcon();
                 }
@@ -708,6 +708,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             //setLayoutData(new GridData(GridData.FILL_BOTH));
 
             this.sizingGC = new GC(this);
+            this.addDisposeListener(e -> sizingGC.dispose());
             this.addMouseListener(new DoubleClickMouseAdapter() {
                 @Override
                 public void onMouseDoubleClick(@NotNull MouseEvent e) {

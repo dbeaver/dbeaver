@@ -28,11 +28,16 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDDLFormat;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 
 public class OracleEditorUtils {
 
-    public static void addDDLControl(IContributionManager contributionManager, OracleTableBase sourceObject, SQLSourceViewer source) {
+    public static void addDDLControl(IContributionManager contributionManager, DBSObject sourceObject, SQLSourceViewer source) {
+        if (!(sourceObject instanceof OracleTableBase)) {
+            return;
+        }
+
         contributionManager.add(new Separator());
         contributionManager.add(new ControlContribution("DDLFormat") {
             @Override

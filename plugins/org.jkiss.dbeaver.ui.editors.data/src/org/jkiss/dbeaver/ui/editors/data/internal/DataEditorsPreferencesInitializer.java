@@ -62,6 +62,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING, true);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN, true);
@@ -77,7 +78,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS, false);
-
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_INLINE_ENTER, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME, true);

@@ -165,12 +165,14 @@ public class ResultSetModel {
         return singleSourceEntity;
     }
 
-    public void resetCellValue(DBDAttributeBinding attr, ResultSetRow row) {
+    public void resetCellValue(ResultSetCellLocation cellLocation) {
+        ResultSetRow row = cellLocation.getRow();
+        DBDAttributeBinding attr = cellLocation.getAttribute();
         if (row.getState() == ResultSetRow.STATE_REMOVED) {
             row.setState(ResultSetRow.STATE_NORMAL);
         } else if (row.changes != null && row.changes.containsKey(attr)) {
-            DBUtils.resetValue(getCellValue(attr, row));
-            updateCellValue(attr, row, row.changes.get(attr), false);
+            DBUtils.resetValue(getCellValue(cellLocation));
+            updateCellValue(cellLocation, row.changes.get(attr), false);
             row.resetChange(attr);
             if (row.getState() == ResultSetRow.STATE_NORMAL) {
                 changesCount--;
@@ -376,23 +378,65 @@ public class ResultSetModel {
     }
 
     @Nullable
+    public Object getCellValue(@NotNull ResultSetCellLocation cellLocation) {
+        return DBUtils.getAttributeValue(
+            cellLocation.getAttribute(),
+            attributes,
+            cellLocation.getRow().values,
+            cellLocation.getRowIndexes());
+    }
+
+    @Nullable
     public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
-        return DBUtils.getAttributeValue(attribute, attributes, row.values);
+        return DBUtils.getAttributeValue(
+            attribute,
+            attributes,
+            row.values,
+            null);
+    }
+
+    @Nullable
+    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
+        return DBUtils.getAttributeValue(
+            attribute,
+            attributes,
+            row.values,
+            rowIndexes);
     }
 
     /**
      * Updates cell value. Saves previous value.
      *
-     * @param attr  Attribute
-     * @param row   row index
+     * @param cellLocation cell location
      * @param value new value
      * @return true on success
      */
-    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable Object value) {
-        return updateCellValue(attr, row, value, true);
+    public boolean updateCellValue(
+        @NotNull ResultSetCellLocation cellLocation,
+        @Nullable Object value)
+    {
+        return updateCellValue(cellLocation, value, true);
     }
 
-    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable Object value, boolean updateChanges) {
+    public boolean updateCellValue(
+        @NotNull ResultSetCellLocation cellLocation,
+        @Nullable Object value,
+        boolean updateChanges) {
+        return updateCellValue(
+            cellLocation.getAttribute(),
+            cellLocation.getRow(),
+            cellLocation.getRowIndexes(),
+            value,
+            updateChanges);
+    }
+
+    public boolean updateCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        @Nullable Object value,
+        boolean updateChanges)
+    {
         int depth = attr.getLevel();
         int rootIndex;
         if (depth == 0) {
@@ -400,6 +444,7 @@ public class ResultSetModel {
         } else {
             rootIndex = attr.getTopParent().getOrdinalPosition();
         }
+        int rowIndex = 0;
         Object rootValue = row.values[rootIndex];
         Object ownerValue = depth > 0 ? rootValue : null;
         {
@@ -416,7 +461,9 @@ public class ResultSetModel {
                 DBDAttributeBinding ownerAttr = attr.getParent(depth - i - 1);
                 assert ownerAttr != null;
                 try {
-                    Object nestedValue = ownerAttr.extractNestedValue(ownerValue);
+                    Object nestedValue = ownerAttr.extractNestedValue(
+                        ownerValue,
+                        rowIndexes == null ? 0 : rowIndexes[rowIndex++]);
                     if (nestedValue == null) {
                         // Try to create nested value
                         DBCExecutionContext context = DBUtils.getDefaultContext(ownerAttr, false);
@@ -455,7 +502,9 @@ public class ResultSetModel {
         Object oldValue = rootValue;
         if (ownerValue != null) {
             try {
-                oldValue = attr.extractNestedValue(ownerValue);
+                oldValue = attr.extractNestedValue(
+                    ownerValue,
+                    rowIndexes == null ? 0 : rowIndexes[rowIndex++]);
             } catch (DBCException e) {
                 log.error("Error getting [" + attr.getName() + "] value", e);
             }
@@ -632,6 +681,13 @@ public class ResultSetModel {
             CommonUtils.equalObjects(ent1.getEntityName(), ent2.getEntityName());
     }
 
+    void resetMetaData() {
+        this.attributes = new DBDAttributeBinding[0];
+        this.visibleAttributes.clear();
+        this.documentAttribute = null;
+        this.singleSourceEntity = null;
+    }
+
     void updateDataFilter() {
         // Init data filter
         if (metadataChanged) {
@@ -732,34 +788,39 @@ public class ResultSetModel {
                 }
 
                 for (ResultSetRow row : rows) {
+                    ResultSetCellLocation cellLocation = new ResultSetCellLocation(entry.getKey(), row);
                     for (AttributeColorSettings acs : entry.getValue()) {
                         Color background = null, foreground = null;
                         if (acs.rangeCheck) {
                             if (acs.attributeValues != null && acs.attributeValues.length > 1) {
                                 double minValue = DBExecUtils.makeNumericValue(acs.attributeValues[0]);
                                 double maxValue = DBExecUtils.makeNumericValue(acs.attributeValues[1]);
-                                if (acs.colorBackground != null && acs.colorBackground2 != null) {
-                                    final DBDAttributeBinding binding = entry.getKey();
-                                    final Object cellValue = getCellValue(binding, row);
-                                    double value = DBExecUtils.makeNumericValue(cellValue);
-                                    if (value >= minValue && value <= maxValue) {
-                                        foreground = acs.colorForeground;
-                                        RGB rowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
-                                        background = UIUtils.getSharedColor(rowRGB);
+                                final Object cellValue = getCellValue(cellLocation);
+                                double value = DBExecUtils.makeNumericValue(cellValue);
+                                if (value >= minValue && value <= maxValue) {
+                                    if (acs.colorBackground != null && acs.colorBackground2 != null && value >= minValue && value <= maxValue) {
+                                            RGB bgRowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
+                                            background = UIUtils.getSharedColor(bgRowRGB);
+                                            
+                                        // FIXME: coloring value before and after range. Maybe we need an option for this.
+                                        /* else if (value < minValue) {
+                                            foreground = acs.colorForeground;
+                                            background = acs.colorBackground;
+                                        } else if (value > maxValue) {
+                                            foreground = acs.colorForeground2;
+                                            background = acs.colorBackground2;
+                                        }*/
                                     }
-                                    // FIXME: coloring value before and after range. Maybe we need an option for this.
-                                    /* else if (value < minValue) {
-                                        foreground = acs.colorForeground;
-                                        background = acs.colorBackground;
-                                    } else if (value > maxValue) {
-                                        foreground = acs.colorForeground2;
-                                        background = acs.colorBackground2;
-                                    }*/
+                                    if (acs.colorForeground != null && acs.colorForeground2 != null) {
+                                        RGB fgRowRGB1 = ResultSetUtils.makeGradientValue(acs.colorForeground.getRGB(), acs.colorForeground2.getRGB(), minValue, maxValue, value);
+                                        foreground = UIUtils.getSharedColor(fgRowRGB1);
+                                    } else if (acs.colorForeground != null || acs.colorForeground2 != null) {
+                                        foreground = acs.colorForeground != null ? acs.colorForeground : acs.colorForeground2;
+                                    }
                                 }
                             }
                         } else {
-                            final DBDAttributeBinding binding = entry.getKey();
-                            final Object cellValue = getCellValue(binding, row);
+                            final Object cellValue = getCellValue(cellLocation);
                             if (acs.evaluate(cellValue)) {
                                 foreground = acs.colorForeground;
                                 background = acs.colorBackground;
@@ -1059,8 +1120,8 @@ public class ResultSetModel {
                     if (binding == null) {
                         continue;
                     }
-                    Object cell1 = getCellValue(binding, row1);
-                    Object cell2 = getCellValue(binding, row2);
+                    Object cell1 = getCellValue(new ResultSetCellLocation(binding, row1));
+                    Object cell2 = getCellValue(new ResultSetCellLocation(binding, row2));
                     result = DBUtils.compareDataValues(cell1, cell2);
                     if (co.isOrderDescending()) {
                         result = -result;

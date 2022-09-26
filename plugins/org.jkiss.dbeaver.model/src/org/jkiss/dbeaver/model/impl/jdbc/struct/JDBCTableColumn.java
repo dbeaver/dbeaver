@@ -181,7 +181,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         boolean formatValues,
         boolean caseInsensitiveSearch) throws DBException
     {
-        final String identifier = DBUtils.getQuotedIdentifier(this);
+        final String identifier = DBUtils.getQuotedIdentifier(this, DBPAttributeReferencePurpose.DATA_SELECTION);
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ");
@@ -244,7 +244,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
     @Override
     public Long getDistinctValuesCount(@NotNull DBCSession session) throws DBException {
         final String query
-            = "SELECT COUNT(DISTINCT " + DBUtils.getQuotedIdentifier(this) + ")\n"
+            = "SELECT COUNT(DISTINCT " + DBUtils.getQuotedIdentifier(this, DBPAttributeReferencePurpose.DATA_SELECTION) + ")\n"
             + "FROM " + DBUtils.getObjectFullName(getTable(), DBPEvaluationContext.DML);
 
         try (DBCStatement stmt = session.prepareStatement(DBCStatementType.QUERY, query, false, false, false)) {

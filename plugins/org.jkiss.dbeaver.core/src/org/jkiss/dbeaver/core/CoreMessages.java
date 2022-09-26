@@ -75,6 +75,10 @@ public class CoreMessages extends NLS {
 	public static String confirm_disconnect_txn_message;
 	public static String confirm_disconnect_txn_toggleMessage;
 
+	public static String confirm_reconnect_txn_title;
+	public static String confirm_reconnect_txn_message;
+	public static String confirm_reconnect_txn_toggleMessage;
+
 	public static String confirm_driver_download_title;
 	public static String confirm_driver_download_message;
 	public static String confirm_driver_download_toggleMessage;
@@ -339,11 +343,17 @@ public class CoreMessages extends NLS {
 	public static String pref_page_query_manager_log_file_hint;
 
 	public static String pref_page_ui_general_checkbox_automatic_updates;
-	public static String pref_page_ui_general_combo_language;
-	public static String pref_page_ui_general_combo_language_tip;
+    public static String pref_page_ui_general_group_browser;
+    public static String pref_page_ui_general_combo_browser;
+    public static String pref_page_ui_general_combo_browser_tip;
+    public static String pref_page_ui_general_combo_language;
+    public static String pref_page_ui_general_combo_timezone;
+    public static String pref_page_ui_general_combo_timezone_tip;
+    public static String pref_page_ui_general_combo_language_tip;
 	public static String pref_page_ui_general_keep_database_editors;
 	public static String pref_page_ui_general_refresh_editor_on_open;
 	public static String pref_page_ui_general_group_general;
+    public static String pref_page_ui_general_group_regional;
 	public static String pref_page_ui_general_group_language;
 	public static String pref_page_ui_general_group_editors;
 	public static String pref_page_eclipse_ui_general_group_general;
@@ -354,9 +364,9 @@ public class CoreMessages extends NLS {
 	public static String runtime_jobs_connect_name;
 	public static String runtime_jobs_connect_status_connected;
 	public static String runtime_jobs_connect_status_error;
+    public static String runtime_jobs_disconnect_name;
 	public static String runtime_jobs_connect_thread_name;
 	public static String runtime_jobs_disconnect_error;
-	public static String runtime_jobs_disconnect_name;
 
 	public static String toolbar_editors_sql_run_statement_name;
 	public static String toolbar_editors_sql_run_statementNew_name;
@@ -366,6 +376,7 @@ public class CoreMessages extends NLS {
 
 	public static String editor_file_open_in_explorer;
 	public static String editor_file_copy_path;
+	public static String editor_file_copy_object_name;
 	public static String editor_file_rename;
 
 	// New Connection Wizard
@@ -480,6 +491,13 @@ public class CoreMessages extends NLS {
 	public static String pref_page_connection_label_general;
 	public static String pref_page_connection_label_use_environment;
     public static String pref_page_connections_application_name_text;
+	public static String pref_page_connection_label_default_connection_name_pattern;
+	public static String pref_page_connection_label_default_connection_name_pattern_tip;
+	public static String pref_page_connection_label_default_connection_name_pattern_sample_tip;
+	public static String pref_page_connection_label_default_connection_name_pattern_sample;
+	public static String pref_page_connection_label_default_connection_template_variables;
+	public static String pref_page_connection_label_default_connection_template_variables_tip;
+
 
 	public static String pref_page_connection_label_default_settings;
 
@@ -591,8 +609,17 @@ public class CoreMessages extends NLS {
 
 	public static String driver_connection_sort_by;
 	public static String monitor_panel_transaction_monitor_tip;
+	public static String variable_host_or_database;
 
-	static {
+    public static String notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy;
+    public static String notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy_text;
+
+    public static String dialog_data_source_synchronize_title;
+    public static String dialog_data_source_synchronize_message;
+    public static String dialog_data_source_synchronize_reply_keep_local_label;
+    public static String dialog_data_source_synchronize_reply_keep_remote_label;
+
+    static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
 	}

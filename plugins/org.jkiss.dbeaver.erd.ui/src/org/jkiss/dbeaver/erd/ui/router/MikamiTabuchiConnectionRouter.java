@@ -69,6 +69,9 @@
             if (!this.ignoreInvalidate) {
                 this.staleConnections.add(connection);
                 this.isDirty = true;
+                if (connectionToPath.get(connection) != null) {
+                    connectionToPath.get(connection).setDirty(true);
+                }
             }
         }
 
@@ -77,6 +80,7 @@
                 try {
                     this.ignoreInvalidate = true;
                     this.connectionToPath.keySet().iterator().next().revalidate();
+                    this.connectionToPath.values().forEach(it -> it.setDirty(true));
                 } finally {
                     this.ignoreInvalidate = false;
                 }
@@ -111,7 +115,7 @@
                 }
 
                 final List<?> constraint = CommonUtils.safeList((List<?>) getConstraint(conn));
-                //may brake idk why
+
                 Point start = conn.getSourceAnchor().getReferencePoint().getCopy();
                 Point end = conn.getTargetAnchor().getReferencePoint().getCopy();
                 this.container.translateToRelative(start);

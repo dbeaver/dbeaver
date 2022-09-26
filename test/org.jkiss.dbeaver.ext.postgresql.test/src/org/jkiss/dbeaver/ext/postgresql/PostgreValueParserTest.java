@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreArrayValueHandler;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -37,13 +37,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PostgreValueParserTest {
@@ -120,10 +119,10 @@ public class PostgreValueParserTest {
                 new Object[]{innerCollection1, innerCollection2});
         Assert.assertArrayEquals(new Object[]{ innerCollection3, innerCollection3 },
                 (Object[]) PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},{3.3,44.44}},{{1.1,22.22},{3.3,44.44}}}"));
-        Assert.assertEquals("{{{1.1,22.22},{3.3,44.44}},{1.1,22.22},{3.3,44.44}}}",
-                PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},{3.3,44.44}},{1.1,22.22},{3.3,44.44}}}"));
 
         //Bad input data tests
+        Assert.assertEquals("{{{1.1,22.22},{3.3,44.44}},{1.1,22.22},{3.3,44.44}}}",
+            PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},{3.3,44.44}},{1.1,22.22},{3.3,44.44}}}"));
         Assert.assertEquals("{{{1.1,22.22},3.3,44.44}},{1.1,22.22},{3.3,44.44}",
                 PostgreValueParser.convertStringToValue(session, arrayDoubleItemType, "{{{1.1,22.22},3.3,44.44}},{1.1,22.22},{3.3,44.44}"));
         Assert.assertEquals("{{1.1,22.22},3.3,44.44}},{1.1,22.22},{3.3,",
@@ -170,16 +169,21 @@ public class PostgreValueParserTest {
 
     @Test
     public void convertArrayToString() {
-        PostgreArrayValueHandler arrayVH = new PostgreArrayValueHandler();
-        String[] stringItems = new String[] {
-            "one", "two", " four with spaces ", "f{i,v}e"
-        };
-        JDBCCollection array = new JDBCCollection(session.getProgressMonitor(), stringItemType, arrayVH, stringItems);
-        JDBCCollection array3D = new JDBCCollection(session.getProgressMonitor(), stringItemType, arrayVH, new Object[] { array, array});
-        String arrayString = arrayVH.getValueDisplayString(arrayStringItemType, array, DBDDisplayFormat.NATIVE);
-        Assert.assertEquals("'{\"one\",\"two\",\" four with spaces \",\"f{i,v}e\"}'", arrayString);
-        String arrayString3D = arrayVH.getValueDisplayString(arrayStringItemType, array3D, DBDDisplayFormat.NATIVE);
-        Assert.assertEquals("'{{\"one\",\"two\",\" four with spaces \",\"f{i,v}e\"},{\"one\",\"two\",\" four with spaces \",\"f{i,v}e\"}}'", arrayString3D);
+        final Function<String[], DBDCollection> make2d = values ->
+            new JDBCCollection(session.getProgressMonitor(), stringItemType, PostgreArrayValueHandler.INSTANCE, values);
+
+        final Function<String[][], DBDCollection> make3d = values ->
+            new JDBCCollection(session.getProgressMonitor(), arrayStringItemType, PostgreArrayValueHandler.INSTANCE, Arrays.stream(values).map(make2d).toArray());
+
+        final BiConsumer<String, DBDCollection> tester = (expected, collection) ->
+            Assert.assertEquals(expected, PostgreArrayValueHandler.INSTANCE.getValueDisplayString(collection.getComponentType(), collection, DBDDisplayFormat.NATIVE));
+
+        tester.accept("NULL", make2d.apply(null));
+        tester.accept("{}", make2d.apply(new String[]{}));
+        tester.accept("{NULL,\"NULL\"}", make2d.apply(new String[]{null, "NULL"}));
+        tester.accept("{one,two,\" four with spaces \",\"f{i,v}e\"}", make2d.apply(new String[]{"one", "two", " four with spaces ", "f{i,v}e"}));
+        tester.accept("{{a,b,c},{d,e,f}}", make3d.apply(new String[][]{{"a", "b", "c"}, {"d", "e", "f"}}));
+        tester.accept("{{\"\"},{\"{}\"},{\"\\\"\"}}", make3d.apply(new String[][]{{""}, {"{}"}, {"\""}}));
     }
 
     @Test
@@ -226,53 +230,57 @@ public class PostgreValueParserTest {
     }
 
     private void setupGeneralWhenMocks() throws Exception {
-        Mockito.when(dataSource.getSQLDialect()).thenReturn(sqlDialect);
+//        Mockito.when(dataSource.getSQLDialect()).thenReturn(sqlDialect);
         Mockito.when(session.getProgressMonitor()).thenReturn(new VoidProgressMonitor());
 
-        Mockito.when(intItemType.getFullTypeName()).thenReturn("test_intItemType");
+//        Mockito.when(intItemType.getFullTypeName()).thenReturn("test_intItemType");
         Mockito.when(intItemType.getDataKind()).thenReturn(DBPDataKind.ANY);
         Mockito.when(intItemType.getTypeID()).thenReturn(Types.INTEGER);
 
-        Mockito.when(arrayIntItemType.getFullTypeName()).thenReturn("test_arrayIntItemType");
+//        Mockito.when(arrayIntItemType.getFullTypeName()).thenReturn("test_arrayIntItemType");
         Mockito.when(arrayIntItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
         Mockito.when(arrayIntItemType.getComponentType(session.getProgressMonitor())).thenReturn(intItemType);
+        Mockito.when(arrayIntItemType.getArrayDelimiter()).thenReturn(",");
 
-        Mockito.when(doubleItemType.getFullTypeName()).thenReturn("test_doubleItemType");
+//        Mockito.when(doubleItemType.getFullTypeName()).thenReturn("test_doubleItemType");
         Mockito.when(doubleItemType.getDataKind()).thenReturn(DBPDataKind.NUMERIC);
         Mockito.when(doubleItemType.getTypeID()).thenReturn(Types.DOUBLE);
 
         Mockito.when(arrayDoubleItemType.getFullTypeName()).thenReturn("test_arrayDoubleItemType");
         Mockito.when(arrayDoubleItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
         Mockito.when(arrayDoubleItemType.getComponentType(session.getProgressMonitor())).thenReturn(doubleItemType);
+        Mockito.when(arrayDoubleItemType.getArrayDelimiter()).thenReturn(",");
 
-        Mockito.when(stringItemType.getFullTypeName()).thenReturn("test_stringItemType");
+//        Mockito.when(stringItemType.getFullTypeName()).thenReturn("test_stringItemType");
         Mockito.when(stringItemType.getDataKind()).thenReturn(DBPDataKind.STRING);
         Mockito.when(stringItemType.getTypeID()).thenReturn(Types.VARCHAR);
-        Mockito.when(stringItemType.getDataSource()).thenReturn(dataSource);
+//        Mockito.when(stringItemType.getDataSource()).thenReturn(dataSource);
 
-        Mockito.when(arrayStringItemType.getFullTypeName()).thenReturn("test_arrayStringItemType");
+//        Mockito.when(arrayStringItemType.getFullTypeName()).thenReturn("test_arrayStringItemType");
         Mockito.when(arrayStringItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
         Mockito.when(arrayStringItemType.getComponentType(session.getProgressMonitor())).thenReturn(stringItemType);
+        Mockito.when(arrayStringItemType.getArrayDelimiter()).thenReturn(",");
 
-        Mockito.when(structItemType.getFullTypeName()).thenReturn("test_structItemType");
-        Mockito.when(structItemType.getDataKind()).thenReturn(DBPDataKind.STRUCT);
-        Mockito.when(structItemType.getTypeID()).thenReturn(Types.STRUCT);
+//        Mockito.when(structItemType.getFullTypeName()).thenReturn("test_structItemType");
+//        Mockito.when(structItemType.getDataKind()).thenReturn(DBPDataKind.STRUCT);
+//        Mockito.when(structItemType.getTypeID()).thenReturn(Types.STRUCT);
 
-        Mockito.when(arrayStructItemType.getFullTypeName()).thenReturn("test_arrayStructItemType");
-        Mockito.when(arrayStructItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
-        Mockito.when(arrayStructItemType.getComponentType(session.getProgressMonitor())).thenReturn(structItemType);
+//        Mockito.when(arrayStructItemType.getFullTypeName()).thenReturn("test_arrayStructItemType");
+//        Mockito.when(arrayStructItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
+//        Mockito.when(arrayStructItemType.getComponentType(session.getProgressMonitor())).thenReturn(structItemType);
 
-        Mockito.when(booleanItemType.getFullTypeName()).thenReturn("test_booleanItemType");
+//        Mockito.when(booleanItemType.getFullTypeName()).thenReturn("test_booleanItemType");
         Mockito.when(booleanItemType.getDataKind()).thenReturn(DBPDataKind.BOOLEAN);
         Mockito.when(booleanItemType.getTypeID()).thenReturn(Types.BOOLEAN);
 
-        Mockito.when(arrayBooleanItemType.getFullTypeName()).thenReturn("test_arrayBooleanItemType");
+//        Mockito.when(arrayBooleanItemType.getFullTypeName()).thenReturn("test_arrayBooleanItemType");
         Mockito.when(arrayBooleanItemType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
         Mockito.when(arrayBooleanItemType.getComponentType(session.getProgressMonitor())).thenReturn(booleanItemType);
+        Mockito.when(arrayBooleanItemType.getArrayDelimiter()).thenReturn(",");
 
-        Mockito.when(dataFormatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, doubleItemType)).thenReturn(numberDataFormatter);
+//        Mockito.when(dataFormatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, doubleItemType)).thenReturn(numberDataFormatter);
 
-        Mockito.when(dbdFormatSettings.getDataFormatterProfile()).thenReturn(dataFormatterProfile);
+//        Mockito.when(dbdFormatSettings.getDataFormatterProfile()).thenReturn(dataFormatterProfile);
     }
 
 }

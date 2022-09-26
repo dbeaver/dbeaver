@@ -19,6 +19,7 @@ package org.jkiss.dbeaver;
 
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -40,9 +41,13 @@ import java.util.Locale;
 public final class ModelPreferences
 {
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
+    public static final String CLIENT_TIMEZONE = "java.client.timezone";
+    public static final String CLIENT_BROWSER = "swt.client.browser";
 
     public static final String NOTIFICATIONS_ENABLED = "notifications.enabled"; //$NON-NLS-1$
     public static final String NOTIFICATIONS_CLOSE_DELAY_TIMEOUT = "notifications.closeDelay"; //$NON-NLS-1$
+
+    public static final String DICTIONARY_MAX_ROWS = "dictionary.max.rows";
 
     public static final String QUERY_ROLLBACK_ON_ERROR = "query.rollback-on-error"; //$NON-NLS-1$
 
@@ -50,6 +55,7 @@ public final class ModelPreferences
     public static final String EXECUTE_RECOVER_RETRY_COUNT = "execute.recover.retryCount"; //$NON-NLS-1$
     public static final String EXECUTE_CANCEL_CHECK_TIMEOUT = "execute.cancel.checkTimeout"; //$NON-NLS-1$
 
+    public static final String DEFAULT_CONNECTION_NAME_PATTERN = "navigator.settings.default.connectionPattern";
     public static final String CONNECTION_OPEN_TIMEOUT = "connection.open.timeout"; //$NON-NLS-1$
     public static final String CONNECTION_VALIDATION_TIMEOUT = "connection.validation.timeout"; //$NON-NLS-1$
     public static final String CONNECTION_CLOSE_TIMEOUT = "connection.close.timeout"; //$NON-NLS-1$
@@ -174,13 +180,15 @@ public final class ModelPreferences
         // Notifications
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT, 3000L);
-
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_MAX_ROWS, 200);
         // Common
         PrefUtils.setDefaultPreferenceValue(store, QUERY_ROLLBACK_ON_ERROR, false);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_RETRY_COUNT, 1);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_CANCEL_CHECK_TIMEOUT, 0);
-
+        PrefUtils.setDefaultPreferenceValue(store, DEFAULT_CONNECTION_NAME_PATTERN, GeneralUtils.variablePattern(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE));
+        PrefUtils.setDefaultPreferenceValue(store, CLIENT_TIMEZONE, DBConstants.DEFAULT_TIMEZONE);
+        PrefUtils.setDefaultPreferenceValue(store, CLIENT_BROWSER, "");
         PrefUtils.setDefaultPreferenceValue(store, CONNECTION_OPEN_TIMEOUT, 0);
         PrefUtils.setDefaultPreferenceValue(store, CONNECTION_VALIDATION_TIMEOUT, 10000);
         PrefUtils.setDefaultPreferenceValue(store, CONNECTION_CLOSE_TIMEOUT, 5000);

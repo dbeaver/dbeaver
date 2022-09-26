@@ -47,7 +47,7 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
         this(site, resultTabs, new MessageConsole("sql-output", null));
     }
 
-    private SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, CTabFolder resultTabs, MessageConsole console) {
+    protected SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, CTabFolder resultTabs, MessageConsole console) {
         super(resultTabs, console);
         this.console = console;
         this.getText().setMargins(5, 5, 5, 5);

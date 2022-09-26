@@ -200,7 +200,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
         referenceKeys.clear();
 
         UIUtils.syncExec(() -> {
-            dataViewer.clearData();
+            dataViewer.clearData(false);
             fkCombo.removeAll();
             dataViewer.showEmptyPresentation();
         });
@@ -234,7 +234,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
             if (vEntityOwner != null) {
                 Object activeAssociations = vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
                 if (activeAssociations instanceof Collection) {
-                    for (Object refKeyMemoMap : (Collection)activeAssociations) {
+                    for (Object refKeyMemoMap : (Collection<?>)activeAssociations) {
                         if (refKeyMemoMap instanceof Map) {
                             refKeyMemos.add(new ReferenceKeyMemo((Map) refKeyMemoMap));
                         }
@@ -385,7 +385,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                     lastSelectedRows = selectedRows;
                     if (selectedRows.isEmpty()) {
                         UIUtils.asyncExec(() -> {
-                            dataViewer.clearData();
+                            dataViewer.clearData(false);
                             dataViewer.showEmptyPresentation();
                         });
                     } else {

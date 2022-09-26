@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.rcp.feature"
       label="%featureName"
-      version="2.1.157.qualifier"
+      version="2.1.165.qualifier"
       provider-name="%providerName">
 
     <description>
@@ -38,8 +38,6 @@
 
     <plugin id="org.apache.batik.css" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.apache.batik.util" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
-    <plugin id="org.apache.commons.io" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <plugin id="org.eclipse.compare.core" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.core.commands" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -120,13 +118,6 @@
     <plugin id="org.eclipse.jsch.core" download-size="0" install-size="0" version="0.0.0"/>
     <plugin id="org.eclipse.jsch.ui" download-size="0" install-size="0" version="0.0.0"/>
 
-    <!-- Quick search. Includes minimized ant bundle. -->
-
-<!--    <plugin id="org.apache.ant" download-size="0" install-size="0" version="0.0.0"/>-->
-    <plugin id="org.eclipse.text.quicksearch" download-size="0" install-size="0" version="0.0.0"/>
-
-    <!-- GEF -->
-
     <!-- IDE plugin -->
 
     <plugin id="org.eclipse.ui.ide" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -137,6 +128,7 @@
     <plugin id="org.eclipse.e4.core.di.annotations" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.e4.emf.xpath" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.apache.commons.jxpath" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.apache.commons.io" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- OS dependent -->
 
@@ -155,10 +147,5 @@
     <plugin id="org.eclipse.swt.cocoa.macosx.aarch64" os="macosx" ws="cocoa" arch="aarch64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
     <plugin id="org.eclipse.ui.cocoa" os="macosx" ws="cocoa" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
 
-    <!-- JNA explicit version deps -->
-<!--
-    <plugin id="com.sun.jna" download-size="0" install-size="0" version="5.8.0.v20210503-0343" unpack="false"/>
-    <plugin id="com.sun.jna.platform" download-size="0" install-size="0" version="5.8.0.v20210406-1004" unpack="false"/>
--->
 
 </feature>

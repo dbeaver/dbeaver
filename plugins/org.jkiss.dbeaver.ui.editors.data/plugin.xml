@@ -1044,6 +1044,13 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.selected.background.description</description>
         </colorDefinition>
         <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.border.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.header.border"
+                value="COLOR_WIDGET_DARK_SHADOW">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.border.description</description>
+        </colorDefinition>
+        <colorDefinition
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.null.foreground.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.null.foreground"
@@ -1091,6 +1098,15 @@
             value="0, 0, 0">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.string.foreground.description</description>
         </colorDefinition>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+            id="org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable"
+            title="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.title"
+            message="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.message"
+            toggleMessage="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.toggleMessage"
+            group="Object editor"/>
     </extension>
 
 </plugin>

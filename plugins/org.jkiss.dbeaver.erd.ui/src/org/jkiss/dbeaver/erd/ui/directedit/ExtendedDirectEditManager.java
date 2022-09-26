@@ -43,10 +43,10 @@ import org.jkiss.dbeaver.erd.ui.figures.NoteFigure;
 public class ExtendedDirectEditManager extends DirectEditManager {
 
     private VerifyListener verifyListener;
-    private IFigure figure;
+    private final IFigure figure;
     private String originalValue;
     private boolean committing = false;
-    private ICellEditorValidator validator;
+    private final ICellEditorValidator validator;
 
     /**
      * Creates a new ActivityDirectEditManager with the given attributes.
@@ -55,7 +55,7 @@ public class ExtendedDirectEditManager extends DirectEditManager {
      * @param editorType type of editor
      * @param locator    the CellEditorLocator
      */
-    public ExtendedDirectEditManager(GraphicalEditPart source, Class editorType, CellEditorLocator locator,
+    public ExtendedDirectEditManager(GraphicalEditPart source, Class<?> editorType, CellEditorLocator locator,
                                      IFigure figure, ICellEditorValidator validator) {
         super(source, editorType, locator);
         this.figure = figure;

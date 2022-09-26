@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.LocalFileStorage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.IStatefulEditorInput;
@@ -193,13 +194,14 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
     private void prepareContent(DBRProgressMonitor monitor)
         throws DBException
     {
-        Object value = getValue();
+        final Object[] value = new Object[1];
+        UIUtils.syncExec(() -> value[0] = getValue());
         DBDContent content;
-        if (value instanceof DBDContent) {
-            content = (DBDContent) value;
+        if (value[0] instanceof DBDContent) {
+            content = (DBDContent) value[0];
         } else {
             // No need to do init
-            stringStorage = new StringEditorInput(getName(), CommonUtils.toString(value), isReadOnly(), fileCharset).getStorage();
+            stringStorage = new StringEditorInput(getName(), CommonUtils.toString(value[0]), isReadOnly(), fileCharset).getStorage();
             return;
         }
 
@@ -211,7 +213,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         }
         if (storage instanceof DBDContentStorageLocal) {
             // User content's storage directly
-            contentFile = ((DBDContentStorageLocal)storage).getDataFile();
+            contentFile = ((DBDContentStorageLocal)storage).getDataFile().toFile();
             contentDetached = true;
         } else {
             // Copy content to local file
@@ -225,7 +227,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
                         valueId = valueController.getValueName();
                     }
 
-                    contentFile = ContentUtils.createTempContentFile(monitor, DBWorkbench.getPlatform(), valueId);
+                    contentFile = ContentUtils.createTempContentFile(monitor, DBWorkbench.getPlatform(), valueId).toFile();
                 }
 
                 // Write value to file
@@ -270,7 +272,9 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
     @Override
     public IPath getPath()
     {
-        return contentFile == null ? null : new Path(contentFile.getAbsolutePath());
+        return contentFile == null ?
+            new Path("fake_path") : // To avoid NPE from the Eclipse
+            new Path(contentFile.getAbsolutePath());
     }
 
     public boolean isReadOnly() {
@@ -306,7 +310,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
             if (value instanceof DBDContent) {
                 ((DBDContent)value).updateContents(
                     new DefaultProgressMonitor(monitor),
-                    new ExternalContentStorage(DBWorkbench.getPlatform(), extFile));
+                    new ExternalContentStorage(DBWorkbench.getPlatform(), extFile.toPath()));
             } else {
                 updateStringValueFromFile(extFile);
             }
@@ -392,7 +396,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
                 }
             } else {
                 // Create new storage and pass it to content
-                storage = new TemporaryContentStorage(DBWorkbench.getPlatform(), contentFile, fileCharset, false);
+                storage = new TemporaryContentStorage(DBWorkbench.getPlatform(), contentFile.toPath(), fileCharset, false);
                 contentDetached = content.updateContents(monitor, storage);
             }
         } else if (stringStorage != null) {

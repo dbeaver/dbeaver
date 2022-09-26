@@ -235,7 +235,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
 
     @Override
     public boolean isTemporary() {
-        return TaskManagerImpl.TEMPORARY_ID.equals(id);
+        return TaskConstants.TEMPORARY_ID.equals(id);
     }
 
     @NotNull

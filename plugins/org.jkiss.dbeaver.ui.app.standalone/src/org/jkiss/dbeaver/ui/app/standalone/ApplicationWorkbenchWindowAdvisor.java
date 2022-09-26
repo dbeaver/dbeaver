@@ -76,7 +76,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             refreshProjects();
         }
 
-        DBPPlatformEclipse.getInstance().getWorkspace().addProjectListener(this);
+        DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(this);
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
@@ -104,7 +104,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         // Remove project listener
         DBPPlatform platform = DBWorkbench.getPlatform();
         if (platform != null) {
-            DBPWorkspaceEclipse workspace = DBPPlatformEclipse.getInstance().getWorkspace();
+            DBPWorkspaceEclipse workspace = DBPPlatformDesktop.getInstance().getWorkspace();
             workspace.removeProjectListener(this);
         }
 

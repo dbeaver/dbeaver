@@ -122,7 +122,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
     public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart != null) {
             IWorkbenchPartSite site = activePart.getSite();
-            if (site != null && !Workbench.getInstance().isClosing()) {
+            if (site != null && site.getPart() != null && !Workbench.getInstance().isClosing()) {
                 Shell shell = site.getShell();
                 if (shell != null) {
                     for (Control focusControl = shell.getDisplay().getFocusControl(); focusControl != null; focusControl = focusControl.getParent()) {
@@ -251,8 +251,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                     if (row != null && attr != null && !DBExecUtils.isAttributeReadOnly(attr)) {
                         ResultSetValueController valueController = new ResultSetValueController(
                             rsv,
-                            attr,
-                            row,
+                            new ResultSetCellLocation(attr, row, selection.getElementRowIndexes(cell)),
                             IValueController.EditType.NONE,
                             null);
                         if (actionId.equals(CMD_CELL_SET_NULL)) {
@@ -267,7 +266,9 @@ public class ResultSetHandlerMain extends AbstractHandler {
                                 }
                             }
                         } else {
-                            rsv.getModel().resetCellValue(attr, row);
+                            rsv.getModel().resetCellValue(
+                                new ResultSetCellLocation(
+                                    attr, row, selection.getElementRowIndexes(cell)));
                         }
                     }
                 }
@@ -486,9 +487,9 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_EXPORT: {
-                List<Long> selectedRows = new ArrayList<>();
+                List<Integer> selectedRows = new ArrayList<>();
                 for (ResultSetRow selectedRow : rsv.getSelection().getSelectedRows()) {
-                    selectedRows.add(Long.valueOf(selectedRow.getRowNumber()));
+                    selectedRows.add(selectedRow.getRowNumber());
                 }
 
                 ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();

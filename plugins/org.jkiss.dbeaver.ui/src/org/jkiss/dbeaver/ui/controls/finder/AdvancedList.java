@@ -26,7 +26,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
@@ -41,16 +40,14 @@ import java.util.List;
  * AdvancedList
  */
 public class AdvancedList extends Canvas {
-    private static final Log log = Log.getLog(AdvancedList.class);
-    public static final int ITEM_SPACING = 5;
 
     private Point itemSize = new Point(64, 64);
 
-    private List<AdvancedListItem> items = new ArrayList<>();
+    private final List<AdvancedListItem> items = new ArrayList<>();
     private AdvancedListItem selectedItem;
     private AdvancedListItem hoverItem;
 
-    private Color backgroundColor, selectionBackgroundColor, foregroundColor, selectionForegroundColor, hoverBackgroundColor;
+    private final Color backgroundColor, selectionBackgroundColor, foregroundColor, selectionForegroundColor, hoverBackgroundColor;
     private final Point textSize;
     private final ScrollBar vScroll;
     private int topRowIndex;
@@ -74,7 +71,12 @@ public class AdvancedList extends Canvas {
         fontData[0].height -= 1.3;
         Font smallFont = new Font(normalFont.getDevice(), fontData[0]);
         setFont(smallFont);
-        addDisposeListener(e -> smallFont.dispose());
+        addDisposeListener(e -> {
+            smallFont.dispose();
+            for (AdvancedListItem item : items) {
+                item.dispose();
+            }
+        });
 
         if (parent.getLayout() instanceof GridLayout) {
             setLayoutData(new GridData(GridData.FILL_BOTH));

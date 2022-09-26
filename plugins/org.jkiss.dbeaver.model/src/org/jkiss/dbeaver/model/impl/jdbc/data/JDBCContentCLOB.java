@@ -33,11 +33,17 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -83,41 +89,44 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         throws DBCException
     {
         if (storage == null && clob != null) {
-            long contentLength = getContentLength();
-            DBPPlatform platform = executionContext.getDataSource().getContainer().getPlatform();
-            if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
-                try {
-                    String subString = clob.getSubString(1, (int) contentLength);
-                    storage = new JDBCContentChars(executionContext, subString);
-                } catch (Exception e) {
-                    log.debug("Can't get CLOB as substring", e);
+            try {
+                long contentLength = getContentLength();
+                DBPPlatform platform = DBWorkbench.getPlatform();
+                if (contentLength < platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                     try {
-                        storage = StringContentStorage.createFromReader(clob.getCharacterStream(), contentLength);
-                    } catch (IOException e1) {
-                        throw new DBCException("IO error while reading content", e);
-                    } catch (Throwable e1) {
+                        String subString = clob.getSubString(1, (int) contentLength);
+                        storage = new JDBCContentChars(executionContext, subString);
+                    } catch (Exception e) {
+                        log.debug("Can't get CLOB as substring", e);
+                        try {
+                            storage = StringContentStorage.createFromReader(clob.getCharacterStream(), contentLength);
+                        } catch (IOException e1) {
+                            throw new DBCException("IO error while reading content", e);
+                        } catch (Throwable e1) {
+                            throw new DBCException(e, executionContext);
+                        }
+                    }
+                } else {
+                    // Create new local storage
+                    Path tempFile;
+                    try {
+                        tempFile = ContentUtils.createTempContentFile(monitor, platform, "clob" + clob.hashCode());
+                    } catch (IOException e) {
+                        throw new DBCException("Can't create temp file", e);
+                    }
+                    try (Writer os = Files.newBufferedWriter(tempFile, Charset.forName(getDefaultEncoding()))) {
+                        ContentUtils.copyStreams(clob.getCharacterStream(), contentLength, os, monitor);
+                    } catch (IOException e) {
+                        ContentUtils.deleteTempFile(tempFile);
+                        throw new DBCException("IO error while copying content", e);
+                    } catch (Throwable e) {
+                        ContentUtils.deleteTempFile(tempFile);
                         throw new DBCException(e, executionContext);
                     }
+                    this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding(), true);
                 }
-            } else {
-                // Create new local storage
-                File tempFile;
-                try {
-                    tempFile = ContentUtils.createTempContentFile(monitor, platform, "clob" + clob.hashCode());
-                }
-                catch (IOException e) {
-                    throw new DBCException("Can't create temp file", e);
-                }
-                try (Writer os = new OutputStreamWriter(new FileOutputStream(tempFile), getDefaultEncoding())) {
-                    ContentUtils.copyStreams(clob.getCharacterStream(), contentLength, os, monitor);
-                } catch (IOException e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw new DBCException("IO error while copying content", e);
-                } catch (Throwable e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw new DBCException(e, executionContext);
-                }
-                this.storage = new TemporaryContentStorage(platform, tempFile, getDefaultEncoding(), true);
+            } catch (DBCException e) {
+                handleContentReadingException(e);
             }
             // Free lob - we don't need it anymore
             releaseClob();
@@ -234,7 +243,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 return CommonUtils.toString(((DBDContentCached) storage).getCachedValue());
             } else {
                 if (storage instanceof ExternalContentStorage) {
-                    return "[" + ((ExternalContentStorage) storage).getFile().getName() + "]";
+                    return "[" + ((ExternalContentStorage) storage).getFile().getFileName() + "]";
                 }
             }
         }

@@ -21,8 +21,6 @@ package org.jkiss.dbeaver.registry;
  */
 public class RegistryConstants {
 
-
-    public static final String DRIVERS_FILE_NAME = "drivers.xml"; //$NON-NLS-1$
     public static final String CONNECTION_TYPES_FILE_NAME = "connection-types.xml"; //$NON-NLS-1$
 
     public static final String TAG_DRIVERS = "drivers"; //$NON-NLS-1$
@@ -89,6 +87,7 @@ public class RegistryConstants {
     public static final String ATTR_ANONYMOUS = "anonymous"; //$NON-NLS-1$
     public static final String ATTR_LICENSE_REQUIRED = "licenseRequired"; //$NON-NLS-1$
     public static final String ATTR_EMBEDDED = "embedded"; //$NON-NLS-1$
+    public static final String ATTR_SINGLE_CONNECTION = "singleConnection"; //$NON-NLS-1$
     public static final String ATTR_CUSTOM_DRIVER_LOADER = "customDriverLoader"; //$NON-NLS-1$
     public static final String ATTR_USE_URL_TEMPLATE = "useURL"; //$NON-NLS-1$
     public static final String ATTR_CUSTOM_ENDPOINT = "customEndpoint"; //$NON-NLS-1$
@@ -216,4 +215,7 @@ public class RegistryConstants {
     public static final String ATTR_PAUSE_AFTER_EXECUTE = "pauseAfterExecute";
     public static final String ATTR_WORKING_DIRECTORY = "workingDirectory";
     public static final String ATTR_COMMAND = "command";
+    public static final String ATTR_SUPPORTED_CONFIGURATION_TYPES = "supportedConfigurationTypes";
+    public static final String ATTR_CONFIGURATION_TYPE = "configurationType";
+
 }

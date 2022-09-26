@@ -46,7 +46,7 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
 
     public NativeToolWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
         super(window, wizard);
-        setShellStyle(SWT.CLOSE | SWT.MAX | SWT.MIN | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
+        setShellStyle(SWT.CLOSE | SWT.MAX | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
         setHelpAvailable(false);
         setFinishButtonLabel(UIMessages.button_start);
     }
@@ -143,7 +143,9 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
         protected void okPressed() {
             String selectedHome = homesSelector.getSelectedHome();
             dataSource.getConnectionConfiguration().setClientHomeId(selectedHome);
-            dataSource.persistConfiguration();
+            if (!dataSource.persistConfiguration()) {
+                return;
+            }
             super.okPressed();
         }
     }

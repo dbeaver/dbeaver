@@ -148,7 +148,7 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
                     }
                     ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
                     references.add(
-                            new AbstractObjectReference(columnName, tableSchema, null, ExasolTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
+                            new AbstractObjectReference<DBSObject>(columnName, tableSchema, null, ExasolTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
                                 @Override
                                 public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                                     if (tableSchema == null) {
@@ -224,7 +224,7 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
                     }
                     ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
                     references.add(
-                            new AbstractObjectReference(scriptName, tableSchema,null, ExasolScript.class, RelationalObjectType.TYPE_PROCEDURE) {
+                            new AbstractObjectReference<>(scriptName, tableSchema,null, ExasolScript.class, RelationalObjectType.TYPE_PROCEDURE) {
                                 @Override
                                 public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                                     if (tableSchema == null) {
@@ -275,7 +275,7 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
                         throw new DBException("Unkown constraint type" + constType);
                     }
 
-                    references.add(new AbstractObjectReference(constName, dataSource.getSchema(monitor, schemaName), null, classType, RelationalObjectType.TYPE_CONSTRAINT) {
+                    references.add(new AbstractObjectReference<DBSObject>(constName, dataSource.getSchema(monitor, schemaName), null, classType, RelationalObjectType.TYPE_CONSTRAINT) {
 
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
@@ -341,7 +341,7 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
                     }
                     ExasolSchema exasolSchema = dataSource.getSchema(monitor, schemaName);
                     references.add(
-                            new AbstractObjectReference(tableName, exasolSchema, null, ExasolTable.class, RelationalObjectType.TYPE_TABLE) {
+                            new AbstractObjectReference<DBSObject>(tableName, exasolSchema, null, ExasolTable.class, RelationalObjectType.TYPE_TABLE) {
                                 @Override
                                 public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                                     ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);

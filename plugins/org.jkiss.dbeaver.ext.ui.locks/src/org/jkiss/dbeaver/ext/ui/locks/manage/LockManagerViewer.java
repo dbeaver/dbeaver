@@ -21,8 +21,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ColumnViewer;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -225,7 +223,7 @@ public class LockManagerViewer {
 
         @Nullable
         @Override
-        protected Class[] getListBaseTypes(Collection<DBAServerLock> items) {
+        protected Class<?>[] getListBaseTypes(Collection<DBAServerLock> items) {
             return new Class[] { locksType };
         }
 

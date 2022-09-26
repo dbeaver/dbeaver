@@ -68,7 +68,14 @@ public class PropertySourceCustom implements DBPPropertySource {
                 for (DBPPropertyDescriptor prop : props) {
                     if (prop.getId().equals(value.getKey())) {
                         if (propValue instanceof String) {
-                            propValue = GeneralUtils.convertString((String) value.getValue(), prop.getDataType());
+                            Class<?> dataType = prop.getDataType();
+                            if ((dataType == null || CharSequence.class.isAssignableFrom(dataType))
+                                && ((String) propValue).isEmpty()) {
+                                // Do nothing let it be empty, because if we will store here null value
+                                // It will turn into default value
+                            } else {
+                                propValue = GeneralUtils.convertString((String) propValue, dataType);
+                            }
                         }
                         originalValues.put(value.getKey(), propValue);
                         break;

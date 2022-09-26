@@ -125,12 +125,42 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
         // General settings
         {
-            Composite commonGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_common, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite commonGroup = UIUtils.createControlGroup(
+                composite,
+                SQLEditorMessages.pref_page_sql_editor_group_common,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
             {
-                invalidateBeforeExecuteCheck = UIUtils.createCheckbox(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_invalidate_before_execute, null, false, 2);
-                soundOnQueryEnd = UIUtils.createCheckbox(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_sound_on_query_end, null, false, 2);
-                updateDefaultAfterExecute = UIUtils.createCheckbox(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute, SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute_tip, false, 2);
-                clearOutputBeforeExecute = UIUtils.createCheckbox(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute, SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute_tip, false, 2);
+                invalidateBeforeExecuteCheck = UIUtils.createCheckbox(
+                    commonGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_invalidate_before_execute,
+                    null,
+                    false,
+                    2
+                );
+                soundOnQueryEnd = UIUtils.createCheckbox(
+                    commonGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_sound_on_query_end,
+                    null,
+                    false,
+                    2
+                );
+                updateDefaultAfterExecute = UIUtils.createCheckbox(
+                    commonGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute,
+                    SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute_tip,
+                    false,
+                    2
+                );
+                clearOutputBeforeExecute = UIUtils.createCheckbox(
+                    commonGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute,
+                    SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute_tip,
+                    false,
+                    2
+                );
 
                 UIUtils.createControlLabel(commonGroup, SQLEditorMessages.pref_page_sql_editor_label_sql_timeout + UIMessages.label_sec);
                 executeTimeoutText = new Spinner(commonGroup, SWT.BORDER);

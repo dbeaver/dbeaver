@@ -43,6 +43,7 @@ public class PrefPageDataViewer extends TargetPrefPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.dataviewer";
 
     private List refPanelDescColumnKeywords;
+    private Text maxAmountText;
 
     public PrefPageDataViewer() {
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
@@ -51,7 +52,8 @@ public class PrefPageDataViewer extends TargetPrefPage {
     @Override
     protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer container) {
         final DBPPreferenceStore store = container.getPreferenceStore();
-        return store.contains(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS);
+        return store.contains(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS)
+            || store.contains(ModelPreferences.DICTIONARY_MAX_ROWS);
     }
 
     @Override
@@ -116,8 +118,23 @@ public class PrefPageDataViewer extends TargetPrefPage {
                 }
             });
         }
-
+        {
+            final Group group = UIUtils.createControlGroup(composite,
+                ResultSetMessages.pref_page_data_viewer_dictionary_panel_group, 1, GridData.FILL_HORIZONTAL, 0);
+            maxAmountText = UIUtils.createLabelText(group,
+                ResultSetMessages.getPref_page_data_viewer_dictionary_panel_results_max_size, "200");
+            maxAmountText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
+            maxAmountText.addModifyListener((event) -> {
+                updateApplyButton();
+                getContainer().updateButtons();
+            });
+        }
         return composite;
+    }
+
+    @Override
+    public boolean isValid() {
+        return super.isValid() && !maxAmountText.getText().isEmpty();
     }
 
     @Override
@@ -127,6 +144,7 @@ public class PrefPageDataViewer extends TargetPrefPage {
             refPanelDescColumnKeywords.add(pattern);
         }
         refPanelDescColumnKeywords.notifyListeners(SWT.Selection, new Event());
+        maxAmountText.setText(store.getString(ModelPreferences.DICTIONARY_MAX_ROWS));
     }
 
     @Override
@@ -136,11 +154,13 @@ public class PrefPageDataViewer extends TargetPrefPage {
             buffer.add(pattern);
         }
         store.setValue(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS, buffer.toString());
+        store.setValue(ModelPreferences.DICTIONARY_MAX_ROWS, maxAmountText.getText());
     }
 
     @Override
     protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(ModelPreferences.RESULT_REFERENCE_DESCRIPTION_COLUMN_PATTERNS);
+        store.setToDefault(ModelPreferences.DICTIONARY_MAX_ROWS);
     }
 
     @Override

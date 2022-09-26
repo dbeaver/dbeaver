@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -163,7 +164,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     private void initSSL(DBRProgressMonitor monitor, Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
         monitor.subTask("Install SSL certificates");
-        final DBACertificateStorage securityManager = getContainer().getPlatform().getCertificateStorage();
+        final DBACertificateStorage securityManager = DBWorkbench.getPlatform().getCertificateStorage();
 
         props.put("useSSL", "true");
         if (isMariaDB()) {
@@ -364,7 +365,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             catalogCache.getAllObjects(monitor, this);
             //activeCatalogName = MySQLUtils.determineCurrentDatabase(session);
 
-            if (getDataSource().supportsInformationSchema()) {
+            if (supportsInformationSchema()) {
                 // Check check constraints in base
                 try {
                     String resultSet = JDBCUtils.queryString(session, "SELECT * FROM information_schema.TABLES t\n" +
@@ -407,27 +408,23 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    public Collection<? extends MySQLCatalog> getChildren(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
+    public Collection<? extends MySQLCatalog> getChildren(@NotNull DBRProgressMonitor monitor) {
         return getCatalogs();
     }
 
     @Override
-    public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
-        throws DBException {
+    public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) {
         return getCatalog(childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
-        throws DBException {
+    public Class<? extends MySQLCatalog> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return MySQLCatalog.class;
     }
 
     @Override
-    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-        throws DBException {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) {
 
     }
 
@@ -650,7 +647,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
             return new QueryTransformerLimit();
         } else if (type == DBCQueryTransformType.FETCH_ALL_TABLE) {
-            return new QueryTransformerFetchAll();
+            return new QueryTransformerFetchAll(this);
         }
         return super.createQueryTransformer(type);
     }
@@ -681,12 +678,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             return adapter.cast(new MySQLPlanAnalyser(this));
         }
         return super.getAdapter(adapter);
-    }
-
-    @NotNull
-    @Override
-    public MySQLDataSource getDataSource() {
-        return this;
     }
 
     @Override

@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.erd.ui.navigator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.part.FileEditorInput;
@@ -32,7 +31,7 @@ import org.jkiss.dbeaver.erd.ui.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.erd.ui.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -41,7 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -63,7 +62,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
 
     public static IFolder getDiagramsFolder(DBPProject project, boolean forceCreate) throws CoreException
     {
-        return DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(project, ERDResourceHandler.class, forceCreate);
+        return DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(project, ERDResourceHandler.class, forceCreate);
     }
 
     @Override
@@ -87,16 +86,6 @@ public class ERDResourceHandler extends AbstractResourceHandler {
             return "diagram folder";
         } else {
             return "diagram";
-        }
-    }
-
-    @NotNull
-    @Override
-    public String getResourceNodeName(@NotNull IResource resource) {
-        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProject()))) {
-            return "ER Diagrams";
-        } else {
-            return super.getResourceNodeName(resource);
         }
     }
 
@@ -142,9 +131,9 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         if (folder == null) {
             throw new DBException("Can't detect folder for diagram");
         }
-        ContentUtils.checkFolderExists(folder, monitor);
+        ResourceUtils.checkFolderExists(folder, monitor);
 
-        final IFile file = ContentUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), ERD_EXT);
+        final IFile file = ResourceUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), ERD_EXT);
 
         try {
             DBRRunnableWithProgress runnable = monitor1 -> {
@@ -182,13 +171,17 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
         if (resource.getResource() instanceof IFile) {
             try {
-                DBPProject projectMeta = DBPPlatformEclipse.getInstance().getWorkspace().getProject(
-                    resource.getResource().getProject());
+                IResource iResource = resource.getResource();
+                DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(
+                    iResource.getProject());
                 if (projectMeta == null) {
                     return Collections.emptyList();
                 }
-                return ERDPersistedState.extractContainers(projectMeta,
-                    resource.getResource().getRawLocation().toFile().toPath());
+                if (iResource instanceof IFile) {
+                    try (InputStream is = ((IFile) iResource).getContents()) {
+                        return ERDPersistedState.extractContainers(projectMeta, is);
+                    }
+                }
             } catch (Exception e) {
                 log.error(e);
                 return null;

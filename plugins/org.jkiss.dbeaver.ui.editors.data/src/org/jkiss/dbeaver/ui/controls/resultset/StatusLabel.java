@@ -40,6 +40,9 @@ import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Status label
  */
@@ -103,16 +106,27 @@ class StatusLabel extends Composite {
     protected void showDetails() {
         DBDDataReceiver dataReceiver = viewer.getDataReceiver();
         if (dataReceiver instanceof ResultSetDataReceiver) {
+            ResultSetDataReceiver rsdr = (ResultSetDataReceiver) dataReceiver;
+            List<Throwable> errorList = rsdr.getErrorList();
+            if (errorList.isEmpty()) {
+                if (viewer.getModel().getStatistics() != null && viewer.getModel().getStatistics().getError() != null) {
+                    errorList = Collections.singletonList(viewer.getModel().getStatistics().getError());
+                }
+            }
             StatusDetailsDialog dialog = new StatusDetailsDialog(
                 viewer.getSite().getShell(),
                 getMessage(),
-                ((ResultSetDataReceiver) dataReceiver).getErrorList());
+                errorList);
             dialog.open();
         }
     }
 
     public void setStatus(String message) {
         this.setStatus(message, DBPMessageType.INFORMATION);
+    }
+
+    public void setStatusTooltip(String message) {
+        this.statusText.setToolTipText(message);
     }
 
     public void setStatus(String message, DBPMessageType messageType)

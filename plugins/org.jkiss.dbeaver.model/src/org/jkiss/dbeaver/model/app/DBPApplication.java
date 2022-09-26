@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.nio.file.Path;
+
 /**
  * DB application.
  * Application implementors may redefine core app behavior and/or settings.
@@ -57,24 +58,16 @@ public interface DBPApplication {
      */
     boolean isMultiuser();
 
-    @NotNull
-    DBASecureStorage getSecureStorage();
-
-    @NotNull
-    DBASecureStorage getProjectSecureStorage(DBPProject project);
+    /**
+     * Distributed application requires remote server.
+     */
+    boolean isDistributed();
 
     /**
      * Application information details.
      * Like license info or some custom produce info
-     * @param monitor
      */
     String getInfoDetails(DBRProgressMonitor monitor);
-
-    /**
-     * Returns last user activity time
-     * @return -1 by default
-     */
-    long getLastUserActivityTime();
 
     /**
      * Default project name, e.g. 'General'.

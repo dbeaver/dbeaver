@@ -138,6 +138,8 @@ public class PostgreMessages extends NLS {
     public static String dialog_setting_connection_database_statistics_tip;
     public static String dialog_setting_connection_read_all_data_types;
     public static String dialog_setting_connection_read_all_data_types_tip;
+    public static String dialog_setting_connection_read_keys_with_columns;
+    public static String dialog_setting_connection_read_keys_with_columns_tip;
     public static String dialog_setting_group_sql;
     public static String dialog_setting_sql_dd_plain_label;
     public static String dialog_setting_sql_dd_plain_tip;
@@ -188,6 +190,25 @@ public class PostgreMessages extends NLS {
 
     public static String dialog_trigger_edit_page_label_trigger_function;
     public static String dialog_trigger_edit_page_select_function_title;
+
+    public static String dialog_query_planner_settings_title;
+    public static String dialog_query_planner_settings_control_label;
+    public static String dialog_query_planner_settings_analyze;
+    public static String dialog_query_planner_settings_analyze_tip;
+    public static String dialog_query_planner_settings_verbose;
+    public static String dialog_query_planner_settings_verbose_tip;
+    public static String dialog_query_planner_settings_costs;
+    public static String dialog_query_planner_settings_costs_tip;
+    public static String dialog_query_planner_settings;
+    public static String dialog_query_planner_settings_tip;
+    public static String dialog_query_planner_settings_buffers;
+    public static String dialog_query_planner_settings_buffers_tip;
+    public static String dialog_query_planner_settings_wal;
+    public static String dialog_query_planner_settings_wal_tip;
+    public static String dialog_query_planner_settings_timing;
+    public static String dialog_query_planner_settings_timing_tip;
+    public static String dialog_query_planner_settings_summary;
+    public static String dialog_query_planner_settings_summary_tip;
 
     static {
         // initialize resource bundle

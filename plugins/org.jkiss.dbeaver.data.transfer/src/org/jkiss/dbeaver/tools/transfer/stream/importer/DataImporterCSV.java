@@ -220,12 +220,15 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     int maxRows = site.getSettings().getMaxRows();
                     int targetAttrSize = entityMapping.getStreamColumns().size();
                     boolean headerRead = false;
-                    for (int lineNum = 0; ; ) {
+                    for (long lineNum = 0; ; ) {
                         if (monitor.isCanceled()) {
                             break;
                         }
                         String[] line = csvReader.readNext();
                         if (line == null) {
+                            if (csvReader.getParser().isPending()) {
+                                throw new IOException("Un-terminated quote sequence was detected");
+                            }
                             break;
                         }
                         if (line.length == 0) {
@@ -274,7 +277,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         lineNum++;
 
                         if (DBFetchProgress.monitorFetchProgress(lineNum)) {
-                            monitor.subTask(lineNum + " rows processed");
+                            monitor.subTask(Long.toUnsignedString(lineNum) + " rows processed");
                         }
                     }
                 }

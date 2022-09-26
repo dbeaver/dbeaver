@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 
@@ -140,8 +140,8 @@ public class SQLFormatterTokenizedTest {
         String expectedString = getExpectedStringWithLineBreakBeforeBraces();
         String inputString = "SELECT (SELECT thecol FROM thetable) FROM dual";
 
-        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA))).thenReturn(false);
-        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
+        Mockito.lenient().when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA))).thenReturn(false);
+        Mockito.lenient().when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
 
         //when
         String formattedString = format(inputString);
@@ -157,8 +157,8 @@ public class SQLFormatterTokenizedTest {
         String expectedString = "SELECT"+lineBreak + "\tmy_field" + lineBreak + "FROM" + lineBreak + "\tmy_table";
         String inputString = "SELECT my_field FROM my_table";
 
-        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA))).thenReturn(false);
-        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
+        Mockito.lenient().when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA))).thenReturn(false);
+        Mockito.lenient().when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
 
         //when
         String formattedString = format(inputString);
@@ -546,7 +546,7 @@ public class SQLFormatterTokenizedTest {
             "\t\tELSE City" + lineBreak +
             "\tEND)";
 
-        Mockito.when(configuration.isFunction("AVG")).thenReturn(true);
+        Mockito.lenient().when(configuration.isFunction("AVG")).thenReturn(true);
 
         //when
         String formattedString = format(inputString);

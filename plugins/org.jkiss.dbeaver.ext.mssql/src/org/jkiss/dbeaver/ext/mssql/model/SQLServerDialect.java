@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.parser.rules.SQLVariableRule;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLVariableRule;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -40,12 +40,7 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
 
@@ -266,7 +261,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
         int maxParamLength = getMaxParameterLength(parameters, inParameters);
         String schemaName = proc.getContainer().getParentObject().getName();
         sql.append("USE [").append(schemaName).append("]\n");
-        sql.append("GO\n\n");
+        //sql.append("GO\n\n");
         sql.append("DECLARE	@return_value int\n\n");
         sql.append("EXEC\t@return_value = [").append(proc.getContainer().getName()).append("].[").append(proc.getName()).append("]\n");
         for (int i = 0; i < inParameters.size(); i++) {
@@ -282,7 +277,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
             sql.append(CommonUtils.fixedLengthString("-- put the " + name + " parameter value instead of '?' (" + typeName + ")\n", width));
         }
         sql.append("\nSELECT\t'Return Value' = @return_value\n\n");
-        sql.append("GO\n\n");
+        //sql.append("GO\n\n");
     }
 
     @Override
@@ -352,5 +347,10 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public boolean supportsInsertAllDefaultValuesStatement() {
         return isSqlServer; // Sybase throws a syntax error on "DEFAULT" keyword
+    }
+
+    @Override
+    public boolean supportsAliasInConditions() {
+        return false;
     }
 }

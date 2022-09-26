@@ -106,6 +106,8 @@ public class OracleConstants {
     public static final String TYPE_NAME_CFILE = "CFILE";
     public static final String TYPE_CONTENT_POINTER = "CONTENT POINTER";
     public static final String TYPE_NAME_DATE = "DATE";
+    public static final String TYPE_NAME_ROWID = "ROWID";
+    public static final String TYPE_NAME_VARCHAR2 = "VARCHAR2";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
     public static final String TYPE_NUMBER = "NUMBER";
     public static final String TYPE_DECIMAL = "DECIMAL";
@@ -115,6 +117,9 @@ public class OracleConstants {
     public static final String TYPE_OCTET = "OCTET";
     public static final String TYPE_INTERVAL_YEAR_MONTH = "INTERVAL YEAR TO MONTH";
     public static final String TYPE_INTERVAL_DAY_SECOND = "INTERVAL DAY TO SECOND";
+    public static final String TYPE_NAME_BOOLEAN = "BOOLEAN";
+    public static final String TYPE_NAME_BLOB = "BLOB";
+    public static final String TYPE_NAME_NUMERIC = "NUMERIC";
 
     public static final int TIMESTAMP_TYPE_LENGTH = 13;
     public static final int DATE_TYPE_LENGTH = 7;
@@ -176,6 +181,7 @@ public class OracleConstants {
     public static final int EC_FEATURE_NOT_SUPPORTED = 17023;
     public static final int EC_NO_RESULTSET_AVAILABLE = 17283;
     public static final int EC_PASSWORD_EXPIRED = 28001;
+    public static final int EC_PASSWORD_WILL_EXPIRE = 28002;
     public static final int NUMERIC_MAX_PRECISION = 38;
     public static final int INTERVAL_DEFAULT_SECONDS_PRECISION = 6;
     public static final int INTERVAL_DEFAULT_YEAR_DAY_PRECISION = 2;

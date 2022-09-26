@@ -285,7 +285,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         }
         try {
             final Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
-            if (params.isEmpty()) {
+            if (CommonUtils.isEmpty(params)) {
                 return Collections.emptyList();
             }
             final List<DBSProcedureParameter> outputParams = new ArrayList<>();

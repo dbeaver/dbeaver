@@ -25,7 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -35,8 +35,8 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayInputStream;
@@ -73,7 +73,7 @@ public class SQLEditorUtils {
     		IStatus status = new Status(IStatus.ERROR, SQLEditorActivator.PLUGIN_ID, "No active project to locate Script Folder");
 			throw new CoreException(status);
 		}
-        return DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
+        return DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
     }
 
     @Nullable
@@ -89,9 +89,12 @@ public class SQLEditorUtils {
         long recentTimestamp = 0L;
         ResourceInfo recentFile = null;
         for (ResourceInfo file : scripts) {
-            if (file.localFile.lastModified() > recentTimestamp) {
-                recentTimestamp = file.localFile.lastModified();
-                recentFile = file;
+            if (file.resource != null) {
+                long lastModified = ResourceUtils.getResourceLastModified(file.resource);
+                if (lastModified > recentTimestamp) {
+                    recentTimestamp = lastModified;
+                    recentFile = file;
+                }
             }
         }
         return recentFile;
@@ -102,19 +105,15 @@ public class SQLEditorUtils {
             return;
         }
         try {
-            for (Map.Entry<String, Map<String, Object>> rp : project.getResourceProperties().entrySet()) {
-                Map<String, Object> props = rp.getValue();
-                Object dsId = props.get(EditorUtils.PROP_SQL_DATA_SOURCE_ID);
-                if (CommonUtils.equalObjects(container.getId(), dsId)) {
-                    IResource resource = project.getEclipseProject().findMember(rp.getKey());
-                    if (resource instanceof IFile) {
-                        result.add(new ResourceInfo((IFile) resource, container));
-                    }
+            for (String path : project.findResources(Map.of(EditorUtils.PROP_CONTEXT_DEFAULT_DATASOURCE, container.getId()))) {
+                final IResource resource = project.getRootResource().findMember(path);
+                if (resource instanceof IFile) {
+                    result.add(new ResourceInfo((IFile) resource, container));
                 }
             }
 
             // Search in external files
-            for (Map.Entry<String, Map<String, Object>> fileEntry : DBWorkbench.getPlatform().getExternalFileManager().getAllFiles().entrySet()) {
+            for (Map.Entry<String, Map<String, Object>> fileEntry : DBPPlatformDesktop.getInstance().getExternalFileManager().getAllFiles().entrySet()) {
                 if (container.getId().equals(fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE_ID))) {
                     File extFile = new File(fileEntry.getKey());
                     if (extFile.exists()) {
@@ -136,7 +135,7 @@ public class SQLEditorUtils {
 
     @NotNull
     public static List<ResourceInfo> getScriptsFromProject(@NotNull DBPProject dbpProject) throws CoreException {
-        IFolder resourceDefaultRoot = DBPPlatformEclipse.getInstance().getWorkspace().getResourceDefaultRoot(dbpProject, ScriptsHandlerImpl.class, false);
+        IFolder resourceDefaultRoot = DBPPlatformDesktop.getInstance().getWorkspace().getResourceDefaultRoot(dbpProject, ScriptsHandlerImpl.class, false);
         if (resourceDefaultRoot != null) {
             return getScriptsFromFolder(resourceDefaultRoot);
         } else {
@@ -223,7 +222,7 @@ public class SQLEditorUtils {
 
 
         // Make new script file
-        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder,
+        IFile tempFile = ResourceUtils.getUniqueFile(scriptsFolder,
                 CommonUtils.isEmpty(filename) ? "Script" : CommonUtils.escapeFileName(filename),
                 SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(getResolvedNewScriptTemplate(dataSourceContainer).getBytes(StandardCharsets.UTF_8)), true, progressMonitor);
@@ -279,6 +278,7 @@ public class SQLEditorUtils {
 
     public static class ResourceInfo {
         private final IResource resource;
+        @Deprecated
         private final File localFile;
         private final DBPDataSourceContainer dataSource;
         private final List<ResourceInfo> children;
@@ -286,13 +286,15 @@ public class SQLEditorUtils {
 
         ResourceInfo(IFile file, DBPDataSourceContainer dataSource) {
             this.resource = file;
-            this.localFile = file.getLocation().toFile();
+            IPath location = file.getLocation();
+            this.localFile = location == null ? null : location.toFile();
             this.dataSource = dataSource;
             this.children = null;
         }
         public ResourceInfo(IFolder folder) {
             this.resource = folder;
-            this.localFile = folder.getLocation().toFile();
+            IPath location = folder.getLocation();
+            this.localFile = location == null ? null : location.toFile();
             this.dataSource = null;
             this.children = new ArrayList<>();
         }

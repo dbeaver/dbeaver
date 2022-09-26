@@ -102,6 +102,8 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_status_rows_size;
     public static String controls_resultset_viewer_status_rows_time;
     public static String controls_resultset_viewer_status_rows_time_fetch;
+    public static String controls_resultset_viewer_status_rows_time_long;
+    public static String controls_resultset_viewer_status_rows_time_fetch_long;
     public static String controls_resultset_viewer_value;
     public static String controls_resultset_viewer_calculate_row_count;
     public static String controls_resultset_viewer_pin_column;
@@ -278,6 +280,10 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_data_viewer_reference_panel_desc_column_keywords_remove_button;
     public static String pref_page_data_viewer_reference_panel_desc_column_keywords_edit_button;
 
+    public static String pref_page_data_viewer_dictionary_panel_group;
+    public static String getPref_page_data_viewer_dictionary_panel_results_max_size;
+
+
     public static String dialog_data_format_profiles_button_delete_profile;
     public static String dialog_data_format_profiles_button_new_profile;
     public static String dialog_data_format_profiles_confirm_delete_message;
@@ -441,6 +447,9 @@ public class ResultSetMessages extends NLS {
 
     public static String filter_panel_filters_history_text;
     public static String filter_panel_expand_panel_text;
+
+    public static String generate_ddl_by_result_set_name;
+    public static String generate_ddl_by_result_set_tip;
 
     static {
         // initialize resource bundle

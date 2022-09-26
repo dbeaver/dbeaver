@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -49,8 +50,9 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
         DROP
     }
 
+    @NotNull
     @Override
-    public Class<?>[] getChildTypes() {
+    public Class<? extends DBSObject>[] getChildTypes() {
         return new Class[0];
     }
 
@@ -95,7 +97,8 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
     {
         SQLServerDatabase procDatabase = view.getContainer().getDatabase();
         SQLServerDatabase defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
-        if (defaultDatabase != procDatabase) {
+        boolean addUse = defaultDatabase != null && procDatabase != null && defaultDatabase != procDatabase;
+        if (addUse) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
         }
 
@@ -111,7 +114,7 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
                 break;
         }
 
-        if (defaultDatabase != procDatabase) {
+        if (addUse) {
             actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$
         }
     }

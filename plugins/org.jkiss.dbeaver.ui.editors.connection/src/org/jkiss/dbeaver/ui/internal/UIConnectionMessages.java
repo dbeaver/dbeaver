@@ -32,6 +32,9 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_driver;
     public static String dialog_connection_edit_driver_button;
 
+    public static String dialog_connection_pgpass_hostname_override;
+    public static String dialog_connection_pgpass_hostname_override_tip;
+    public static String dialog_connection_pgpass_hostname;
     public static String dialog_connection_wizard_final_checkbox_save_password_locally;
 
     public static String controls_client_home_selector_browse;
@@ -285,6 +288,11 @@ public class UIConnectionMessages extends NLS {
 
     public static String driver_labal_provider_tip_saved_connections;
     public static String driver_labal_provider_tip_no_saved_connections;
+
+    public static String dialog_connection_server_label;
+    public static String dialog_connection_mode_label;
+    public static String dialog_connection_url_label;
+    public static String dialog_connection_host_label;
 
     static {
         // initialize resource bundle

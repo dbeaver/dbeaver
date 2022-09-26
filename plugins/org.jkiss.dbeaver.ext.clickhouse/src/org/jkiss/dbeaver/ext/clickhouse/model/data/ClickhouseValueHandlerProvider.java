@@ -21,15 +21,28 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCUUIDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+
+import java.util.Locale;
 
 public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject type) {
-        if (type.getDataKind() == DBPDataKind.ARRAY) {
+        String lowerTypeName = type.getTypeName().toLowerCase(Locale.ENGLISH);
+        if ("enum8".equals(lowerTypeName) || "enum16".equals(lowerTypeName)) {
+            return ClickhouseEnumValueHandler.INSTANCE;
+        } else if (type.getDataKind() == DBPDataKind.ARRAY) {
             return ClickhouseArrayValueHandler.INSTANCE;
         } else if (type.getDataKind() == DBPDataKind.STRUCT) {
             return ClickhouseStructValueHandler.INSTANCE;
+        } else if ("int128".equals(lowerTypeName) || "int256".equals(lowerTypeName)
+            || "uint64".equals(lowerTypeName) || "uint128".equals(lowerTypeName) || "uint256".equals(lowerTypeName)) {
+            return new ClickhouseBigNumberValueHandler(type, preferences);
+        } else if ("bool".equals(lowerTypeName)) {
+            return ClickhouseBoolValueHandler.INSTANCE;
+        } else if ("uuid".equals(lowerTypeName)) {
+            return JDBCUUIDValueHandler.INSTANCE;
         } else {
             return null;
         }

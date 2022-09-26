@@ -49,6 +49,8 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.SimpleTypedObject;
+import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -72,10 +74,10 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Structure object editor
@@ -318,7 +320,12 @@ public class ComplexObjectEditor extends TreeViewer {
     private String getValueText(@NotNull DBDValueHandler valueHandler, @NotNull DBSTypedObject type, @Nullable Object value, @NotNull DBDDisplayFormat format)
     {
         if (value instanceof CollectionElement) {
-            return "[" + ((CollectionElement) value).source.getComponentType().getName() + " - " + ((CollectionElement) value).items.size() + "]";
+            final CollectionElement element = (CollectionElement) value;
+            if (element.source instanceof DBDCollection) {
+                return "[" + ((DBDCollection) element.source).getComponentType().getName() + " - " + element.items.size() + "]";
+            } else {
+                return "[" + element.items.size() + "]";
+            }
         } else if (value instanceof CompositeElement) {
             return "[" + ((CompositeElement) value).type.getName() + "]";
         } else if (value instanceof ReferenceElement) {
@@ -508,8 +515,8 @@ public class ComplexObjectEditor extends TreeViewer {
             return cache.get(object);
         }
 
-        if (object instanceof DBDCollection) {
-            final DBDCollection collection = (DBDCollection) object;
+        if (object instanceof Collection<?>) {
+            final Collection<?> collection = (Collection<?>) object;
             final CollectionElement element;
 
             if (parent == null) {
@@ -841,10 +848,10 @@ public class ComplexObjectEditor extends TreeViewer {
 
     private static class CollectionElement implements ComplexElement {
         private final Object parent;
-        private final DBDCollection source;
+        private final Collection<?> source;
         protected final List<Item> items;
 
-        public CollectionElement(@Nullable Object parent, @NotNull DBDCollection source) {
+        public CollectionElement(@Nullable Object parent, @NotNull Collection<?> source) {
             this.parent = parent;
             this.source = source;
             this.items = new ArrayList<>();
@@ -853,7 +860,7 @@ public class ComplexObjectEditor extends TreeViewer {
         @NotNull
         @Override
         public Object extract(@NotNull DBRProgressMonitor monitor) {
-            DBDCollection collection = source;
+            Collection<?> collection = source;
 
             if (collection instanceof DBDValueCloneable) {
                 try {
@@ -863,7 +870,15 @@ public class ComplexObjectEditor extends TreeViewer {
                 }
             }
 
-            collection.setContents(items.stream().map(ComplexObjectEditor::unwrap).toArray());
+            final Stream<Object> values = items.stream().map(ComplexObjectEditor::unwrap);
+
+            if (collection instanceof DBDCollection) {
+                ((DBDCollection) collection).setContents(values.toArray());
+            } else if (collection instanceof Set) {
+                return values.collect(Collectors.toSet());
+            } else {
+                return values.collect(Collectors.toList());
+            }
 
             return collection;
         }
@@ -891,19 +906,27 @@ public class ComplexObjectEditor extends TreeViewer {
             @NotNull
             @Override
             public String getName() {
-                return String.valueOf(collection.items.indexOf(this));
+                return String.valueOf(collection.items.indexOf(this) + 1);
             }
 
             @NotNull
             @Override
             public DBSTypedObject getDataType() {
-                return collection.source.getComponentType();
+                if (collection.source instanceof DBDCollection) {
+                    return ((DBDCollection) collection.source).getComponentType();
+                } else {
+                    return SimpleTypedObject.DEFAULT_TYPE;
+                }
             }
 
             @NotNull
             @Override
             public DBDValueHandler getValueHandler() {
-                return collection.source.getComponentValueHandler();
+                if (collection.source instanceof DBDCollection) {
+                    return ((DBDCollection) collection.source).getComponentValueHandler();
+                } else {
+                    return DefaultValueHandler.INSTANCE;
+                }
             }
 
             @NotNull
@@ -915,7 +938,7 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     private static class CollectionRootElement extends CollectionElement {
-        public CollectionRootElement(@NotNull DBDCollection source) {
+        public CollectionRootElement(@NotNull Collection<?> source) {
             super(null, source);
         }
 
@@ -933,7 +956,7 @@ public class ComplexObjectEditor extends TreeViewer {
             @NotNull
             @Override
             public String getName() {
-                return "<root>";
+                return DataEditorsMessages.complex_object_editor_root_element_name;
             }
         }
     }

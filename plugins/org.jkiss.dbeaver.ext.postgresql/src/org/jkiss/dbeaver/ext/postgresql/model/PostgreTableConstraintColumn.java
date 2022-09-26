@@ -39,7 +39,7 @@ public class PostgreTableConstraintColumn extends AbstractTableConstraintColumn
         this.ordinalPosition = ordinalPosition;
     }
 
-    //@Property(name = "Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     @NotNull
     @Override
     public String getName()
@@ -49,8 +49,8 @@ public class PostgreTableConstraintColumn extends AbstractTableConstraintColumn
 
     @NotNull
     @Override
-    @Property(id = "name", viewable = true, order = 1)
-    public PostgreAttribute getAttribute()
+    @Property(viewable = true, order = 1)
+    public PostgreAttribute<?> getAttribute()
     {
         return tableColumn;
     }

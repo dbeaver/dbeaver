@@ -49,7 +49,7 @@ public class DataElementFactory implements CreationFactory
 	{
 		try
 		{
-			return ((Class<?>) template).newInstance();
+			return ((Class<?>) template).getConstructor().newInstance();
 		}
 		catch (Exception e)
 		{

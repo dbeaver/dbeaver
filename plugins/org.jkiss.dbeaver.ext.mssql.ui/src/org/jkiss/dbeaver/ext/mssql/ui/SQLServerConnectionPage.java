@@ -17,7 +17,11 @@
 package org.jkiss.dbeaver.ext.mssql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -26,18 +30,25 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 public class SQLServerConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
+    private Label hostLabel;
     private Text hostText;
+    private Label portLabel;
     private Text portText;
+    private Label dbLabel;
     private Text dbText;
+    private Text urlText;
 
+    private Button showAllDatabases;
     private Button showAllSchemas;
     private Button encryptPassword;
 
@@ -58,8 +69,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
         UIUtils.dispose(LOGO_AZURE);
         UIUtils.dispose(LOGO_BABELFISH);
@@ -68,72 +78,119 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     }
 
     @Override
-    public void createControl(Composite composite)
-    {
+    public void createControl(Composite composite) {
+        ModifyListener textListener = e -> {
+            if (activated) {
+                updateUrl();
+                site.updateButtons();
+            }
+        };
+        
         boolean isSqlServer = isSqlServer();
         boolean isDriverAzure = isSqlServer && isDriverAzure();
 
         Composite settingsGroup = new Composite(composite, SWT.NONE);
-        GridLayout gl = new GridLayout(4, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
-        settingsGroup.setLayout(gl);
+        settingsGroup.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);
         settingsGroup.setLayoutData(gd);
 
+        Group addrGroup = UIUtils.createControlGroup(
+            settingsGroup,
+            UIConnectionMessages.dialog_connection_server_label,
+            4,
+            GridData.FILL_HORIZONTAL,
+            0
+        );
+
+        SelectionAdapter typeSwitcher = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setupConnectionModeSelection(urlText, typeURLRadio.getSelection());
+                updateUrl();
+            }
+        };
+        createConnectionModeSwitcher(addrGroup, typeSwitcher);
+
+        Label urlLabel = UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
+        urlLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+        urlText = new Text(addrGroup, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
+        gd.grabExcessHorizontalSpace = true;
+        gd.widthHint = 355;
+        urlText.setLayoutData(gd);
+        urlText.addModifyListener(e -> site.updateButtons());
+
+
         needsPort = CommonUtils.getBoolean(getSite().getDriver().getDriverParameter("needsPort"), true);
         {
-            Label hostLabel = new Label(settingsGroup, SWT.NONE);
+            hostLabel = new Label(addrGroup, SWT.NONE);
             hostLabel.setText(SQLServerUIMessages.dialog_connection_host_label);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            addControlToGroup(GROUP_CONNECTION, hostLabel);
 
-            hostText = new Text(settingsGroup, SWT.BORDER);
+            hostText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
+            hostText.addModifyListener(textListener);
+            addControlToGroup(GROUP_CONNECTION, hostText);
 
             if (isDriverAzure || !needsPort) {
                 // no port number for Azure
                 gd.horizontalSpan = 3;
             } else {
-                Label portLabel = new Label(settingsGroup, SWT.NONE);
+                portLabel = new Label(addrGroup, SWT.NONE);
                 portLabel.setText(SQLServerUIMessages.dialog_connection_port_label);
                 portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+                addControlToGroup(GROUP_CONNECTION, portLabel);
 
-                portText = new Text(settingsGroup, SWT.BORDER);
+                portText = new Text(addrGroup, SWT.BORDER);
                 gd = new GridData(GridData.CENTER);
                 gd.widthHint = UIUtils.getFontHeight(portText) * 7;
                 portText.setLayoutData(gd);
+                portText.addModifyListener(textListener);
+                addControlToGroup(GROUP_CONNECTION, portText);
             }
         }
 
         {
-            Label dbLabel = new Label(settingsGroup, SWT.NONE);
+            dbLabel = new Label(addrGroup, SWT.NONE);
             dbLabel.setText(SQLServerUIMessages.dialog_connection_database_schema_label);
             dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            addControlToGroup(GROUP_CONNECTION, dbLabel);
 
-            dbText = new Text(settingsGroup, SWT.BORDER);
+            dbText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             //gd.widthHint = 270;
             gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
+            dbText.addModifyListener(textListener);
+            addControlToGroup(GROUP_CONNECTION, dbText);
         }
 
         {
-            createAuthPanel(settingsGroup, 4);
+            createAuthPanel(settingsGroup, 1);
         }
 
         {
             Group secureGroup = new Group(settingsGroup, SWT.NONE);
             secureGroup.setText(SQLServerUIMessages.dialog_setting_connection_settings);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 4;
-            secureGroup.setLayoutData(gd);
+            secureGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             secureGroup.setLayout(new GridLayout(1, false));
 
             if (!isSqlServer) {
                 encryptPassword = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_encrypt_password, SQLServerUIMessages.dialog_setting_encrypt_password_tip, false, 2);
+            }
+            if (isDriverAzure || isDriverBabelfish()) {
+                showAllDatabases = UIUtils.createCheckbox(
+                    secureGroup,
+                    SQLServerUIMessages.dialog_setting_show_all_databases,
+                    SQLServerUIMessages.dialog_setting_show_all_databases_tip,
+                    false,
+                    2);
             }
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 2);
         }
@@ -143,9 +200,12 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     }
 
     @Override
-    public boolean isComplete()
-    {
-        return hostText != null && !CommonUtils.isEmpty(hostText.getText());
+    public boolean isComplete() {
+        if (isCustomURL()) {
+            return !CommonUtils.isEmpty(urlText.getText());
+        } else {
+            return hostText != null && !CommonUtils.isEmpty(hostText.getText());
+        }
     }
 
     @Override
@@ -154,11 +214,9 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         if (isSqlServer()) {
             if (isDriverAzure()) {
                 logo = LOGO_AZURE;
-            }
-            else if (isDriverBabelfish()) {
+            } else if (isDriverBabelfish()) {
                 logo = LOGO_BABELFISH;
-            }
-            else {
+            } else {
                 logo = LOGO_SQLSERVER;
             }
         }
@@ -178,8 +236,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
     }
 
     @Override
-    public void loadSettings()
-    {
+    public void loadSettings() {
         super.loadSettings();
 
         boolean isDriverAzure = isSqlServer() && isDriverAzure();
@@ -213,19 +270,32 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             }
             dbText.setText(CommonUtils.notEmpty(databaseName));
         }
+        if (showAllDatabases != null) {
+            showAllDatabases.setSelection(
+                CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_DATABASES)));
+        }
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
 
         if (!isSqlServer()) {
             encryptPassword.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD)));
         }
+        boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
+        if (useURL) {
+            urlText.setText(connectionInfo.getUrl());
+        }
+        setupConnectionModeSelection(urlText, useURL);
+        updateUrl();
 
         activated = true;
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
+        
+        connectionInfo.setConfigurationType(
+            typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
+        
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
         }
@@ -234,6 +304,11 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         }
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
+        }
+
+        if (showAllDatabases != null) {
+            connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_DATABASES,
+                String.valueOf(showAllDatabases.getSelection()));
         }
 
         if (showAllSchemas != null) {
@@ -245,16 +320,32 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD,
                 String.valueOf(encryptPassword.getSelection()));
         }
+        if (typeURLRadio.getSelection()) {
+            connectionInfo.setUrl(urlText.getText());
+        }
 
         super.saveSettings(dataSource);
     }
 
     @Override
-    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
-    {
-        return new IDialogPage[] {
-                new DriverPropertiesDialogPage(this)
-        };
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
+        return new IDialogPage[] { new DriverPropertiesDialogPage(this) };
+    }
+    
+    
+    @Override
+    protected boolean isCustomURL() {
+        return typeURLRadio.getSelection();
+    }
+
+    private void updateUrl() {
+        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
+        saveSettings(dataSourceContainer);
+        if (typeURLRadio.getSelection()) {
+            urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
+        } else {
+            urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
+        }
     }
 
 }

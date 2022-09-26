@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.db.ui.feature"
       label="%featureName"
-      version="1.0.73.qualifier"
+      version="1.0.81.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -92,6 +92,13 @@
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
+   <plugin
+           id="org.jkiss.dbeaver.ext.clickhouse.ui"
+           download-size="0"
+           install-size="0"
+           version="0.0.0"
+           unpack="false"/>
 
    <plugin
          id="org.jkiss.dbeaver.ext.bigquery.ui"

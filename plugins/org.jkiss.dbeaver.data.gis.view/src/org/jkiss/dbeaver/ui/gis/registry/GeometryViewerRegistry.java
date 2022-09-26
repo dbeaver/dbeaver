@@ -34,7 +34,11 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -64,33 +68,37 @@ public class GeometryViewerRegistry {
     }
 
     private GeometryViewerRegistry(@NotNull IExtensionRegistry registry) {
-        Collection<String> notVisiblePredefinedTilesIds = new HashSet<>();
-        populateFromConfig(notVisiblePredefinedTilesIds, userDefinedTiles);
+        try {
+            Collection<String> notVisiblePredefinedTilesIds = new HashSet<>();
+            populateFromConfig(notVisiblePredefinedTilesIds, userDefinedTiles);
 
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(GeometryViewerDescriptor.EXTENSION_ID);
-        for (IConfigurationElement ext : extElements) {
-            GeometryViewerDescriptor type = new GeometryViewerDescriptor(ext);
-            viewers.put(type.getId(), type);
-        }
-
-        extElements = registry.getConfigurationElementsFor(LeafletTilesDescriptor.EXTENSION_ID);
-        for (IConfigurationElement ext : extElements) {
-            LeafletTilesDescriptor descriptor = LeafletTilesDescriptor.createPredefined(ext);
-            if (notVisiblePredefinedTilesIds.contains(descriptor.getId())) {
-                descriptor = descriptor.withFlippedVisibility();
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(GeometryViewerDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extElements) {
+                GeometryViewerDescriptor type = new GeometryViewerDescriptor(ext);
+                viewers.put(type.getId(), type);
             }
-            predefinedTiles.add(descriptor);
-        }
 
-        String defTilesId = GISViewerActivator.getDefault().getPreferences().getString(GeometryViewerConstants.PREF_DEFAULT_LEAFLET_TILES);
-        if (!CommonUtils.isEmpty(defTilesId)) {
-            defaultLeafletTiles = Stream.concat(predefinedTiles.stream(), userDefinedTiles.stream())
+            extElements = registry.getConfigurationElementsFor(LeafletTilesDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extElements) {
+                LeafletTilesDescriptor descriptor = LeafletTilesDescriptor.createPredefined(ext);
+                if (notVisiblePredefinedTilesIds.contains(descriptor.getId())) {
+                    descriptor = descriptor.withFlippedVisibility();
+                }
+                predefinedTiles.add(descriptor);
+            }
+
+            String defTilesId = GISViewerActivator.getDefault().getPreferences().getString(GeometryViewerConstants.PREF_DEFAULT_LEAFLET_TILES);
+            if (!CommonUtils.isEmpty(defTilesId)) {
+                defaultLeafletTiles = Stream.concat(predefinedTiles.stream(), userDefinedTiles.stream())
                     .filter(tile -> tile.getId().equals(defTilesId))
                     .findAny()
                     .orElse(null);
-        }
-        if (defaultLeafletTiles == null) {
-            autoAssignDefaultLeafletTiles();
+            }
+            if (defaultLeafletTiles == null) {
+                autoAssignDefaultLeafletTiles();
+            }
+        } catch (Throwable e) {
+            log.error("Error initializing registry", e);
         }
     }
 
@@ -102,11 +110,11 @@ public class GeometryViewerRegistry {
     }
 
     private static void populateFromConfig(@NotNull Collection<String> notVisiblePredefinedTilesIds, @NotNull Collection<LeafletTilesDescriptor> userDefinedTiles) {
-        File cfg = getConfigFile();
-        if (!cfg.exists()) {
+        Path cfg = getConfigFile();
+        if (!Files.exists(cfg)) {
             return;
         }
-        try (InputStream in = new FileInputStream(cfg)) {
+        try (InputStream in = Files.newInputStream(cfg)) {
             SAXReader saxReader = new SAXReader(in);
             saxReader.parse(new SAXListener.BaseListener() {
                 private final StringBuilder buffer = new StringBuilder();
@@ -184,8 +192,8 @@ public class GeometryViewerRegistry {
     }
 
     @NotNull
-    private static File getConfigFile() {
-        return DBWorkbench.getPlatform().getConfigurationFile("geometry_registry_config.xml");
+    private static Path getConfigFile() {
+        return DBWorkbench.getPlatform().getLocalConfigurationFile("geometry_registry_config.xml");
     }
 
     //viewers are read only, so it's ok to not synchronize access
@@ -250,7 +258,7 @@ public class GeometryViewerRegistry {
     }
 
     private void flushConfig() {
-        try (OutputStream out = new FileOutputStream(getConfigFile())) {
+        try (OutputStream out = Files.newOutputStream(getConfigFile())) {
             XMLBuilder xmlBuilder = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
             xmlBuilder.setButify(true);
             try (XMLBuilder.Element ignored = xmlBuilder.startElement(KEY_ROOT)) {

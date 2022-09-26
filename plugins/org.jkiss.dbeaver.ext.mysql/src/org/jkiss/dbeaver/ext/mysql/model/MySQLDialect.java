@@ -33,11 +33,12 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.regex.Pattern;
 
 /**
 * MySQL dialect
 */
-class MySQLDialect extends JDBCSQLDialect {
+public class MySQLDialect extends JDBCSQLDialect {
 
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
@@ -52,7 +53,8 @@ class MySQLDialect extends JDBCSQLDialect {
         "DATABASES",
         "COLUMNS",
         "ALGORITHM",
-        "REPAIR"
+        "REPAIR",
+        "ENGINE"
     };
 
     public static final String[][] MYSQL_QUOTE_STRINGS = {
@@ -192,6 +194,14 @@ class MySQLDialect extends JDBCSQLDialect {
         return lowerCaseTableNames != 0;
     }
 
+    @Override
+    public boolean mustBeQuoted(String str, boolean forceCaseSensitive) {
+        if (Pattern.matches("[0-9]+", str)) { // we should quote numeric names
+            return true;
+        }
+        return super.mustBeQuoted(str, forceCaseSensitive);
+    }
+    
     @NotNull
     @Override
     public String escapeString(String string) {
@@ -258,5 +268,10 @@ class MySQLDialect extends JDBCSQLDialect {
             return '\'' + escapeString(strValue) + '\'';
         }
         return super.escapeScriptValue(attribute, value, strValue);
+    }
+
+    @Override
+    public boolean validIdentifierStart(char c) {
+        return Character.isLetterOrDigit(c);
     }
 }

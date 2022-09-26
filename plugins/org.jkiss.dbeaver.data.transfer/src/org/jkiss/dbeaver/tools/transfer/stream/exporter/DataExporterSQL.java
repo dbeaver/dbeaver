@@ -26,9 +26,11 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
@@ -42,7 +44,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * SQL Exporter
@@ -186,7 +187,14 @@ public class DataExporterSQL extends StreamExporterAbstract implements IAppendab
         }
         columns = getSite().getAttributes();
         DBPNamedObject source = getSite().getSource();
-        tableName = DTUtils.getTableName(session.getDataSource(), source, omitSchema);
+        if (source instanceof SQLQueryContainer) {
+            tableName = DTUtils.getTableNameFromQueryContainer(session.getDataSource(), (SQLQueryContainer) source);
+        } else {
+            tableName = DTUtils.getTableName(session.getDataSource(), source, omitSchema);
+        }
+        if (CommonUtils.isEmpty(tableName)) {
+            tableName = DTConstants.DEFAULT_TABLE_NAME_EXPORT;
+        }
 
         rowCount = 0;
     }

@@ -123,7 +123,10 @@
                     <property id="supports-indexes" label="Driver supports indexes" description="Driver supports table indexes" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-table-constraints" label="Driver supports constraints" description="Driver supports table constraints (primary keys)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-stored-code" label="Driver supports stored code" description="Whether this driver supports stored code (procedures, functions, packages, etc)" type="boolean" required="false" defaultValue="true"/>
+                    <property id="stored-quoted-case" label="Quoted string case" description="Letter capitalization of quoted strings (mixed/upper/lower)" type="string" required="false" defaultValue=""/>
+                    <property id="stored-unquoted-case" label="Unquoted string case" description="Letter capitalization of unquoted strings (mixed/upper/lower)" type="string" required="false" defaultValue=""/>
                     <property id="supports-references" label="Driver supports references" description="Driver supports table references (foreign keys)" type="boolean" required="false" defaultValue="true"/>
+                    <property id="supports-delimiter-in-views" label="Delimiter in source view" description="Driver supports delimiter in view ddl" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-select-count" label="Driver supports SELECT count(*) clause" description="Driver supports SELECT count(*) clause" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-views" label="Driver supports views" description="Driver supports table views" type="boolean" required="false" defaultValue="true"/>
                     <property id="split-procedures-and-functions" label="Split procedures and functions" description="Show procedures and functions in different folders" type="boolean" required="false" defaultValue="false"/>
@@ -148,6 +151,7 @@
                     <property id="supports-truncate" label="Driver supports TRUNCATE operation" description="Driver supports TRUNCATE command. It is much faster than DELETE without criteria." type="boolean" required="false" defaultValue="true"/>
                     <property id="read-only-data" label="Driver cannot modify data" description="Driver does not support data (e.g. in table) editing." type="boolean" required="false" defaultValue="false"/>
                     <property id="read-only-meta-data" label="Driver cannot modify meta data" description="Driver does not support meta data (e.g. table or column creating) editing." type="boolean" required="false" defaultValue="false"/>
+                    <property id="supports-multi-insert" label="Driver supports multi insert mode" description="Driver supports multi insert mode: INSERT VALUES(,,)(,,). Used for the multi insert data import" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
@@ -311,8 +315,8 @@
                     <file type="jar" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
                     <file type="lib" os="win32" arch="x86_64" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/x64/JdbcOdbc.dll" bundle="!drivers.odbc"/>
 
-                    <file type="jar" path="drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64/JdbcOdbc.dll" bundle="drivers.odbc"/>
+                    <file type="jar" path="drivers/odbc" bundle="drivers.odbc"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64" bundle="drivers.odbc"/>
                 </driver>
                 <driver
                     id="derby"
@@ -327,9 +331,9 @@
                     description="Derby (Java DB) embedded driver"
                     categories="sql,embedded">
 
-                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
 
                     <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
@@ -341,6 +345,7 @@
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
                     <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
+                    <parameter name="supports-multi-insert" value="true"/>
                 </driver>
                 <driver
                     id="derby_server"
@@ -355,10 +360,10 @@
                     description="Derby (Java DB) server driver"
                     categories="sql">
 
-                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
@@ -366,6 +371,7 @@
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
                     <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
+                    <parameter name="supports-multi-insert" value="true"/>
                 </driver>
                 <driver
                     id="mimer"
@@ -486,9 +492,6 @@
                     description="SQLite JDBC driver"
                     promoted="1"
                     categories="sql,embedded">
-                    <replace provider="generic" driver="sqlite_zentus"/>
-                    <replace provider="generic" driver="sqlite_xerial"/>
-                    <replace provider="generic" driver="sqlite_ch_werner"/>
 
                     <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
                     <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
@@ -684,7 +687,8 @@
                     webURL="http://phoenix.apache.org/"
                     description="Thin driver for Apache Phoenix HBase Database"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
                     <parameter name="omit-type-cache" value="true"/>
                     <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE[4.14.1-HBase-1.4]" ignore-dependencies="true"/>
                 </driver>
@@ -699,7 +703,8 @@
                     description="Pivotal GemfireXD"
                     webURL="http://blog.pivotal.io/tag/gemfire-xd"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
                     <file type="jar" path="maven:/io.snappydata:gemfirexd-client:RELEASE"/>
                 </driver>
                 <driver
@@ -713,7 +718,8 @@
                     description="Pivotal GemfireXD"
                     webURL="https://snappydatainc.github.io/snappydata/"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
                     <file type="jar" path="maven:/io.snappydata:snappydata-store-client:RELEASE"/>
                     <!--<file type="jar" path="https://github.com/SnappyDataInc/snappydata/releases/download/v0.8/snappydata-client-1.5.4.jar"/>-->
                 </driver>
@@ -729,13 +735,16 @@
                     description="Apache Hive JDBC"
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
 
                     <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar" bundle="!drivers.hive"/>
                     <file type="jar" path="drivers/hive" bundle="drivers.hive"/>
 
                     <parameter name="supports-limits" value="false"/>
                     <parameter name="supports-references" value="false"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                    <parameter name="query-set-active-db" value="USE ?"/>
                 </driver>
                 <driver
                     id="spark_hive"
@@ -748,9 +757,29 @@
                     description="Spark Thrift Server connector"
                     webURL="https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-sql-thrift-server.html"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
                     <file type="jar" path="maven:/org.spark-project.hive:hive-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
+
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                </driver>
+                <driver
+                    id="kyuubi_hive"
+                    label="Apache Kyuubi (Incubating)"
+                    icon="icons/kyuubi_hive_icon.png"
+                    iconBig="icons/kyuubi_hive_icon_big.png"
+                    class="org.apache.kyuubi.jdbc.KyuubiHiveDriver"
+                    sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
+                    defaultPort="10009"
+                    description="Kyuubi Thrift Server connector"
+                    webURL="https://kyuubi.apache.org/"
+                    category="Hadoop"
+                    categories="hadoop"
+                    singleConnection="true">
+                    <file type="jar" path="maven:/org.apache.kyuubi:kyuubi-hive-jdbc-shaded:RELEASE" bundle="!drivers.kyuubi"/>
+                    <file type="jar" path="drivers/kyuubi" bundle="drivers.kyuubi"/>
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
@@ -765,7 +794,8 @@
                     description="Apache Drill JDBC"
                     webURL="http://drill.apache.org/docs/using-the-jdbc-driver/"
                     category="Hadoop"
-                    categories="hadoop">
+                    categories="hadoop"
+                    singleConnection="true">
                     <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
 
                     <parameter name="supports-truncate" value="false"/>
@@ -957,6 +987,7 @@
                     <parameter name="use-search-string-escape" value="true"/>
                     <parameter name="krb5.show-service" value="true"/>
                     <parameter name="krb5.show-ssl-jks" value="true"/>
+                    <parameter name="supports-multi-insert" value="true"/>
                 </driver>
 
                 <!-- CUBRID -->
@@ -1179,6 +1210,8 @@
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-table-constraints" value="false"/>
+                    <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
                 </driver>
 
                 <!-- Apache Kylin -->
@@ -1196,11 +1229,13 @@
                     categories="sql">
                     <file type="jar" path="maven:/org.apache.kylin:kylin-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/javax.xml.bind:jaxb-api:RELEASE"/>
-
+                    <parameter name="stored-unquoted-case" value="mixed"/>
                     <parameter name="omit-catalog-name" value="true"/>
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-table-constraints" value="false"/>
+                    <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
                 </driver>
 
 

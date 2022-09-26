@@ -180,6 +180,7 @@ public class UIIcon {
     public static final DBIcon LINK2 = new DBIcon("link2", "misc/link2.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CURSOR = new DBIcon("cursor", "misc/cursor.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SECURITY = new DBIcon("security", "security.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon READONLY_RESOURCES = new DBIcon("readonly", "readonly_resources.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon GEN_DATABASE = new DBIcon("gen_database", "database.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon GEN_DATABASE_TYPE = new DBIcon("gen_database_type", "database_type.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -187,6 +188,7 @@ public class UIIcon {
     public static final DBIcon SQL_NEW_CONNECTION = new DBIcon("sql_new_connection", "database_connect.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_CONNECT = new DBIcon("sql_connect", "sql/connect.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_DISCONNECT = new DBIcon("sql_disconnect", "sql/disconnect.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_READONLY = new DBIcon("readonly", "sql/readonly.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_SCRIPT = new DBIcon("sql_script", "sql/sql_script.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_CONSOLE = new DBIcon("sql_console", "sql/sql_console.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_EXECUTE = new DBIcon("sql_exec", "sql/sql_exec.png"); //$NON-NLS-1$ //$NON-NLS-2$

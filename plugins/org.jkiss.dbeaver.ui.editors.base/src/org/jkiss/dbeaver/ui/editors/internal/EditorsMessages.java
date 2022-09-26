@@ -22,8 +22,8 @@ public class EditorsMessages extends NLS {
 	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.internal.EditorsResources"; //$NON-NLS-1$
 
 	public static String dialog_struct_attribute_edit_page_header_edit_attribute;
-	public static String dialog_struct_attribute_edit_page_label_text_name;
-	public static String dialog_struct_attribute_edit_page_label_text_properties;
+	public static String dialog_struct_label_text_name;
+	public static String dialog_struct_label_text_properties;
 	public static String dialog_struct_columns_select_error_load_columns_message;
 	public static String dialog_struct_columns_select_error_load_columns_title;
 	public static String dialog_struct_columns_select_group_columns;
@@ -59,6 +59,10 @@ public class EditorsMessages extends NLS {
 	public static String dialog_struct_edit_index_label_type;
 
 	public static String dialog_struct_edit_dictionary_tip;
+	public static String dialog_struct_edit_dictionary_custom_criteria;
+	public static String dialog_struct_edit_dictionary_custom_criteria_tip;
+	public static String dialog_struct_edit_dictionary_column_delimiter;
+	public static String dialog_struct_edit_dictionary_column_delimiter_tip;
 
 	public static String dialog_struct_columns_select_column;
 	public static String dialog_struct_columns_type;

@@ -111,6 +111,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         //createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_EDIT_CLOSE);
         createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_FETCH_ALL);
         createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_TXN_DISCONNECT);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_TXN_RECONNECT);
         createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD);
         createConfirmItem(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_VERSION_CHECK);
 
@@ -120,6 +121,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REVERT);
         createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, rsvBundle, ResultSetPreferences.CONFIRM_KEEP_STATEMENT_OPEN);
         createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_DANGER_SQL);
+        createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_DROP_SQL);
         createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL);
         createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE);
         createConfirmItem(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE);

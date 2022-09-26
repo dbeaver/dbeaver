@@ -46,6 +46,7 @@ public class PostgreConstants {
     public static final String PROP_SHOW_UNAVAILABLE_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-unavailable-db@";
     public static final String PROP_SHOW_TEMPLATES_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-template-db@";
     public static final String PROP_READ_ALL_DATA_TYPES = DBConstants.INTERNAL_PROP_PREFIX + "read-all-data-types-db@";
+    public static final String PROP_READ_KEYS_WITH_COLUMNS = "read-keys-with-columns";
     public static final String PROP_USE_PREPARED_STATEMENTS = DBConstants.INTERNAL_PROP_PREFIX + "use-prepared-statements-db@";
     public static final String PROP_DD_PLAIN_STRING = "postgresql.dd.plain.string";
     public static final String PROP_DD_TAG_STRING = "postgresql.dd.tag.string";
@@ -145,6 +146,7 @@ public class PostgreConstants {
     public static final String PSQL_EXCEPTION_CLASS_NAME = "org.postgresql.util.PSQLException";
     public static final String COLLATION_DEFAULT = "default";
     public static final String DEFAULT_ARRAY_DELIMITER = " ";
+    public static final String PG_PASS_HOSTNAME = "overriddenUsername";
 
     static {
         DATA_TYPE_ALIASES.put("boolean", TYPE_BOOL);

@@ -17,11 +17,13 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OracleQueryPlanner;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.*;
@@ -78,6 +80,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     private boolean useRuleHint;
     private boolean resolveGeometryAsStruct = true;
     private boolean hasStatistics;
+    private boolean isPasswordExpireWarningShown;
 
     private final Map<String, Boolean> availableViews = new HashMap<>();
 
@@ -165,7 +168,20 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 */
 
         try {
-            return super.openConnection(monitor, context, purpose);
+            Connection connection = super.openConnection(monitor, context, purpose);
+            try {
+                for (SQLWarning warninig = connection.getWarnings();
+                    warninig != null && !isPasswordExpireWarningShown;
+                    warninig = warninig.getNextWarning()
+                ) {
+                    if (checkForPasswordWillExpireWarning(warninig)) {
+                        isPasswordExpireWarningShown = true;
+                    }
+                }
+            } catch (SQLException e) {
+                log.debug("Can't get connection warnings", e);
+            }
+            return connection;
         } catch (DBCException e) {
             if (e.getErrorCode() == OracleConstants.EC_PASSWORD_EXPIRED) {
                 // Here we could try to ask for expired password change
@@ -177,6 +193,17 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             }
             throw e;
         }
+    }
+    
+    private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
+        if (warning != null && warning.getErrorCode() == OracleConstants.EC_PASSWORD_WILL_EXPIRE) {
+            DBWorkbench.getPlatformUI().showWarningMessageBox(
+                OracleMessages.oracle_password_will_expire_warn_name,
+                NLS.bind(OracleMessages.oracle_password_will_expire_warn_description, warning.getMessage())
+            );
+            return true;
+        }
+        return false;
     }
 
     private boolean changeExpiredPassword(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
@@ -209,7 +236,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
             connectionInfo.setUserPassword(passwordInfo.getNewPassword());
             getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
-            getContainer().getRegistry().flushConfig();
+            getContainer().persistConfiguration();
             return true;
         }
         catch (Exception e) {
@@ -568,12 +595,6 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @NotNull
     @Override
-    public OracleDataSource getDataSource() {
-        return this;
-    }
-
-    @NotNull
-    @Override
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
         if ((typeName.equals(OracleConstants.TYPE_NAME_XML) || typeName.equals(OracleConstants.TYPE_FQ_XML))) {
             return DBPDataKind.CONTENT;
@@ -797,7 +818,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                     "\tF.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME AND S.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME")) {
                     while (dbResult.next()) {
                         String tsName = dbResult.getString(1);
-                        OracleTablespace tablespace = tablespaceCache.getObject(monitor, getDataSource(), tsName);
+                        OracleTablespace tablespace = tablespaceCache.getObject(monitor, OracleDataSource.this, tsName);
                         if (tablespace != null) {
                             tablespace.fetchSizes(dbResult);
                         }
@@ -925,7 +946,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             return session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM " +
+                "SELECT " + OracleUtils.getSysCatalogHint(owner) + " * FROM " +
                     OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner, "TYPES") + " WHERE OWNER IS NULL ORDER BY TYPE_NAME");
         }
 
@@ -1012,4 +1033,18 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
+    @NotNull
+    @Override
+    protected String getStandardSQLDataTypeName(@NotNull DBPDataKind dataKind) {
+        switch (dataKind) {
+            case BOOLEAN: return OracleConstants.TYPE_NAME_BOOLEAN;
+            case NUMERIC: return OracleConstants.TYPE_NAME_NUMERIC;
+            case DATETIME: return OracleConstants.TYPE_NAME_TIMESTAMP;
+            case BINARY:
+            case CONTENT:
+                return OracleConstants.TYPE_NAME_BLOB;
+            case ROWID: return OracleConstants.TYPE_NAME_ROWID;
+            default: return OracleConstants.TYPE_NAME_VARCHAR2;
+        }
+    }
 }

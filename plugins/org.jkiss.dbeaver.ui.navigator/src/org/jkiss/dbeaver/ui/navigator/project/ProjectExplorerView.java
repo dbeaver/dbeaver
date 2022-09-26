@@ -17,27 +17,31 @@
 package org.jkiss.dbeaver.ui.navigator.project;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatformEclipse;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
-import org.jkiss.utils.ByteNumberFormat;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -52,10 +56,15 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
     private ViewerColumnController columnController;
-    private final NumberFormat sizeFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
+    private final NumberFormat sizeFormat = new DecimalFormat();
+    
+    private Composite treeContainer;
+    private Label lockPlaceholder;
+    private GridData lockPlaceholderLayoutInfo;
+    private GridData treeViewLayoutInfo;
 
     public ProjectExplorerView() {
-        DBPPlatformEclipse.getInstance().getWorkspace().addProjectListener(this);
+        DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(this);
     }
 
     @Override
@@ -66,11 +75,12 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     @Override
     public void createPartControl(Composite parent) {
-        super.createPartControl(parent);
+        treeContainer = UIUtils.createComposite(parent, 1);
+        super.createPartControl(treeContainer);
 
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_EXPLORER);
-
-        final TreeViewer viewer = getNavigatorViewer();
+        
+        TreeViewer viewer = getNavigatorViewer();
         viewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
@@ -94,6 +104,16 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                 return true;
             }
         });
+        
+        lockPlaceholder = UIUtils.createLabel(treeContainer, UIIcon.READONLY_RESOURCES);
+        lockPlaceholder.setAlignment(SWT.CENTER);
+        lockPlaceholder.setVisible(false);
+        lockPlaceholderLayoutInfo = new GridData(SWT.CENTER, SWT.CENTER, true, true);
+        lockPlaceholderLayoutInfo.exclude = true;
+        lockPlaceholder.setLayoutData(lockPlaceholderLayoutInfo);
+        treeViewLayoutInfo = new GridData(SWT.FILL, SWT.FILL, true, true);
+        getNavigatorTree().setLayoutData(treeViewLayoutInfo);
+        updateRepresentation();
     }
 
     private void createColumns(final TreeViewer viewer) {
@@ -212,8 +232,8 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                     public String getText(Object element) {
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
-                            if (resource instanceof IFile) {
-                                return sizeFormat.format(resource.getLocation().toFile().length());
+                            if (resource instanceof IFile && resource.exists()) {
+                                return sizeFormat.format(ResourceUtils.getFileLength(resource));
                             }
                         }
                         return "";
@@ -229,8 +249,8 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                     public String getText(Object element) {
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
-                            if (resource instanceof IFile || resource instanceof IFolder) {
-                                long lastModified = resource.getLocation().toFile().lastModified();
+                            if (resource != null && resource.exists()) {
+                                long lastModified = ResourceUtils.getResourceLastModified(resource);
                                 if (lastModified <= 0) {
                                     return "";
                                 }
@@ -248,9 +268,11 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                     public String getText(Object element) {
                         if (element instanceof DBNResource) {
                             IResource resource = ((DBNResource) element).getResource();
-                            ProgramInfo program = ProgramInfo.getProgram(resource);
-                            if (program != null) {
-                                return program.getProgram().getName();
+                            if (resource.exists()) {
+                                ProgramInfo program = ProgramInfo.getProgram(resource);
+                                if (program != null) {
+                                    return program.getProgram().getName();
+                                }
                             }
                         }
                         return "";
@@ -266,7 +288,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     @Override
     public void dispose() {
-        DBPPlatformEclipse.getInstance().getWorkspace().removeProjectListener(this);
+        DBPPlatformDesktop.getInstance().getWorkspace().removeProjectListener(this);
         super.dispose();
     }
 
@@ -282,9 +304,19 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     @Override
     public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
+        updateRepresentation();
+    }
+    
+    private void updateRepresentation() {
         UIExecutionQueue.queueExec(() -> {
             getNavigatorTree().reloadTree(getRootNode());
             updateTitle();
+            boolean viewable = ObjectPropertyTester.nodeProjectHasPermission(getRootNode(), RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
+            getNavigatorTree().setVisible(viewable);
+            treeViewLayoutInfo.exclude = !viewable;
+            lockPlaceholder.setVisible(!viewable);
+            lockPlaceholderLayoutInfo.exclude = viewable;
+            treeContainer.layout(true, true);
         });
         //columnController.autoSizeColumns();
     }

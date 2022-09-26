@@ -25,10 +25,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -39,6 +36,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.menus.IMenuService;
+import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.progress.WorkbenchJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -56,10 +54,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.AbstractUIJob;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.LinuxKeyboardArrowsListener;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
@@ -93,6 +89,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private boolean filterShowConnected = false;
     private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
     private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
+    private volatile PaintListener treeLoadingListener;
 
     public static DatabaseNavigatorTree getFromShell(Display display) {
         if (display == null) {
@@ -153,6 +150,40 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         Tree tree = treeViewer.getTree();
         tree.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         treeViewer.setUseHashlookup(true);
+
+        if (rootNode == null) {
+            treeLoadingListener = new PaintListener() {
+                int drawCount = 0;
+
+                @Override
+                public void paintControl(PaintEvent e) {
+                    if (treeLoadingListener == null) {
+                        return;
+                    }
+                    drawCount++;
+                    Image image = DBeaverIcons.getImage(ProgressLoaderVisualizer.PROGRESS_IMAGES[drawCount % ProgressLoaderVisualizer.PROGRESS_IMAGES.length]);
+                    Rectangle bounds = tree.getBounds();
+                    Rectangle imageBounds = image.getBounds();
+                    e.gc.drawImage(
+                        image,
+                        (bounds.x + bounds.width / 2) - imageBounds.width / 2,
+                        (bounds.y + bounds.height / 2) - imageBounds.height - 5);
+                    new UIJob("Repaint") {
+                        {
+                            setSystem(true);
+                        }
+                        @Override
+                        public IStatus runInUIThread(IProgressMonitor monitor) {
+                            if (!tree.isDisposed()) {
+                                tree.redraw();
+                            }
+                            return Status.OK_STATUS;
+                        }
+                    }.schedule(200);
+                }
+            };
+            tree.addPaintListener(treeLoadingListener);
+        }
 
         DatabaseNavigatorLabelProvider labelProvider = createLabelProvider(this);
         treeViewer.setLabelProvider(labelProvider);
@@ -281,6 +312,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     }
 
     public void setInput(DBNNode rootNode) {
+        if (treeLoadingListener != null) {
+            treeViewer.getTree().removePaintListener(treeLoadingListener);
+            treeLoadingListener = null;
+        }
         treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 

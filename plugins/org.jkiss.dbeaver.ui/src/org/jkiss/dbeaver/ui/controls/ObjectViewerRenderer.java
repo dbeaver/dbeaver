@@ -84,6 +84,10 @@ public abstract class ObjectViewerRenderer {
 
         itemsViewer.getControl().setCursor(arrowCursor);
 
+        itemsViewer.getControl().addDisposeListener(e -> {
+            linkLayout.dispose();
+        });
+
         if (trackInput) {
             final CellTrackListener actionsListener = new CellTrackListener();
             SelectionAdapter selectionAdapter = new SelectionAdapter() {
@@ -242,7 +246,7 @@ public abstract class ObjectViewerRenderer {
                         String strValue = booleanStyle.getText();
                         Point textExtent = gc.textExtent(strValue);
                         booleanValueWith = textExtent.x;
-                        Rectangle columnBounds = isTree ? ((TreeItem) item).getBounds(columnIndex) : ((TableItem) item).getBounds(columnIndex);
+                        Rectangle columnBounds = getColumnBounds((Item) item, columnIndex);
                         //gc.setBackground(getControl().getBackground());
                         gc.setForeground(UIUtils.getSharedColor(booleanStyle.getColor()));
                         switch (getBooleanAlignment(value)) {
@@ -269,7 +273,7 @@ public abstract class ObjectViewerRenderer {
                     final Rectangle imageBounds = image.getBounds();
                     booleanValueWith = imageBounds.width;
 
-                    Rectangle columnBounds = isTree ? ((TreeItem)item).getBounds(columnIndex) : ((TableItem)item).getBounds(columnIndex);
+                    Rectangle columnBounds = getColumnBounds((Item) item, columnIndex);
 
                     gc.setBackground(getControl().getBackground());
                     switch (getBooleanAlignment(value)) {
@@ -303,6 +307,21 @@ public abstract class ObjectViewerRenderer {
                 linkLayout.draw(gc, textBounds.x, textBounds.y);
             }
         }
+    }
+
+    public void paintInvalidCell(@NotNull Event e, @NotNull Widget item, int columnIndex) {
+        final Rectangle bounds = getColumnBounds((Item) item, columnIndex);
+        final int w = bounds.width / 2;
+        final int h = bounds.height;
+
+        final GC gc = e.gc;
+        gc.setForeground(item.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+        gc.drawLine(e.x + w - 5, e.y + h / 2, e.x + w + 5, e.y + h / 2);
+    }
+
+    @NotNull
+    private Rectangle getColumnBounds(@NotNull Item item, int columnIndex) {
+        return isTree ? ((TreeItem) item).getBounds(columnIndex) : ((TableItem) item).getBounds(columnIndex);
     }
 
     @NotNull

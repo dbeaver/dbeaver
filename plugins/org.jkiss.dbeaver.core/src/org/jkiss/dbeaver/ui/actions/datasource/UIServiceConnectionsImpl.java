@@ -18,12 +18,16 @@
 package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBServiceConnections;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
@@ -37,7 +41,20 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
 
     @Override
     public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer, String defaultPageName) {
-        EditConnectionDialog.openEditConnectionDialog(UIUtils.getActiveWorkbenchWindow(), dataSourceContainer, defaultPageName);
+        if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
+            if (dataSourceContainer.getProject().isUseSecretStorage()) {
+                try {
+                    DBSSecretController secretController = DBSSecretController.getProjectSecretController(dataSourceContainer.getProject());
+                    dataSourceContainer.resolveSecrets(secretController);
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Secret resolve", "Error loading connection secrets", e);
+                }
+            }
+            EditConnectionDialog.openEditConnectionDialog(UIUtils.getActiveWorkbenchWindow(), dataSourceContainer, defaultPageName);
+        } else {
+            // Cannot edit connection. Let's open its contents
+            DBWorkbench.getPlatformUI().openEntityEditor(dataSourceContainer);
+        }
     }
 
     @Override
@@ -62,7 +79,7 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
 
     @Override
     public boolean checkAndCloseActiveTransaction(@NotNull DBCExecutionContext[] contexts) {
-        return DataSourceHandler.checkAndCloseActiveTransaction(contexts);
+        return DataSourceHandler.checkAndCloseActiveTransaction(contexts, false);
     }
 
     @Override

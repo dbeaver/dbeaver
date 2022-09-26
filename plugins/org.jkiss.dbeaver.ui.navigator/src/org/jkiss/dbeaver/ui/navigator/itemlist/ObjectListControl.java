@@ -39,11 +39,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -750,9 +746,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      * Gets property descriptor by column and object value (NB! not OBJECT_TYPE but real object value).
      */
     @Nullable
-    private static ObjectPropertyDescriptor getPropertyByObject(ObjectColumn column, Object objectValue) {
+    private static ObjectPropertyDescriptor getPropertyByObject(@NotNull ObjectColumn column, @Nullable Object objectValue) {
+        if (objectValue == null) {
+            return null;
+        }
         ObjectPropertyDescriptor prop = null;
-        for (Class valueClass = objectValue.getClass(); prop == null && valueClass != Object.class; valueClass = valueClass.getSuperclass()) {
+        for (Class<?> valueClass = objectValue.getClass(); prop == null && valueClass != Object.class; valueClass = valueClass.getSuperclass()) {
             prop = column.propMap.get(valueClass);
         }
         if (prop == null) {
@@ -1233,14 +1232,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             if (!lazyLoadCanceled) {
                                 addLazyObject(object, objectColumn);
                             }
-                        } else if (cellValue != null) {
-                            ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
-                            if (prop != null) {
-                                if (itemsViewer.isCellEditorActive() && isFocusCell) {
-                                    // Do not paint over active editor
-                                    return;
-                                }
+                        } else {
+                            final ObjectPropertyDescriptor prop = getPropertyByObject(objectColumn, objectValue);
+                            if (itemsViewer.isCellEditorActive() && isFocusCell) {
+                                // Do not paint over active editor
+                                return;
+                            }
+                            if (cellValue != null && prop != null) {
                                 renderer.paintCell(e, object, cellValue, e.item, prop.getDataType(), e.index, prop.isEditable(objectValue), (e.detail & SWT.SELECTED) == SWT.SELECTED);
+                            } else if (prop == null) {
+                                renderer.paintInvalidCell(e, e.item, e.index);
                             }
                         }
                         break;

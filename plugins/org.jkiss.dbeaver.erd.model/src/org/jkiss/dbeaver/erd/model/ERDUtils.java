@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -127,7 +128,15 @@ public class ERDUtils
     public static ERDEntity makeEntityFromObject(DBRProgressMonitor monitor, ERDDiagram diagram, List<ERDEntity> otherEntities, DBSEntity entity, Object userData) {
         ERDEntity erdEntity = new ERDEntity(entity);
         erdEntity.setUserData(userData);
-        diagram.getContentProvider().fillEntityFromObject(monitor, diagram, otherEntities, erdEntity);
+        try {
+            diagram.getContentProvider().fillEntityFromObject(monitor, diagram, otherEntities, erdEntity);
+        } catch (DBCException e) {
+            // Something goes wrong
+            DBWorkbench.getPlatformUI().showError(
+                "Can't create entity",
+                e.getMessage());
+            return null;
+        }
         return erdEntity;
     }
 
