@@ -1015,7 +1015,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             boolean supportsCommentsOnRole = owner.getDataSource().getServerType().supportsCommentsOnRole();
             String sql = "SELECT a.oid,a.*" + (supportsCommentsOnRole ? ",pd.description" : "") +
                 " FROM pg_catalog.pg_roles a " +
-                (supportsCommentsOnRole? "\nleft join pg_catalog.pg_shdescription pd on a.oid = pd.objoid" : "") +
+                (supportsCommentsOnRole ? "\nleft join pg_catalog.pg_shdescription pd on a.oid = pd.objoid" : "") +
                 "\nORDER BY a.rolname";
             return session.prepareStatement(sql);
         }

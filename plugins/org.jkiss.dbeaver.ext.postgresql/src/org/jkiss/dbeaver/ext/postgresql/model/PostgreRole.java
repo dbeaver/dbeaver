@@ -151,7 +151,7 @@ public class PostgreRole implements
         editable = true,
         updatable = true,
         length = PropertyLength.MULTILINE, order = 50,
-        visibleIf = DescriptionValidator.class)
+        visibleIf = CommentsOnRolesSupportedValidator.class)
     public String getDescription() {
         return description;
     }
@@ -653,7 +653,7 @@ public class PostgreRole implements
         }
     }
 
-    public static class DescriptionValidator implements IPropertyValueValidator<PostgreRole, Object> {
+    public static class CommentsOnRolesSupportedValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
         public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsCommentsOnRole();

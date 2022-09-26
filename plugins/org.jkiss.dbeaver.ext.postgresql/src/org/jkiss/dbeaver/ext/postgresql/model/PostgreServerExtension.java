@@ -159,7 +159,7 @@ public interface PostgreServerExtension {
     boolean supportsRoleBypassRLS();
 
     /**
-     * @return true if database supports syntax like "COMMENT ON ROLE roleName IS 'comment'"
+     * Determines whether the database supports syntax like {@code COMMENT ON ROLE roleName IS 'comment'} or not
      */
     boolean supportsCommentsOnRole();
 

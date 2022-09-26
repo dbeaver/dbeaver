@@ -154,7 +154,13 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreRole, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    protected void addObjectExtraActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        NestedObjectCommand<PostgreRole, PropertyHandler> command,
+        Map<String, Object> options)
+    {
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             PostgreRole role = command.getObject();
             actions.add(new SQLDatabasePersistAction(
