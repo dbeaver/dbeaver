@@ -39,6 +39,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
@@ -55,6 +56,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -226,8 +228,12 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     // If site is null then we need only item count. BAD CODE.
     public static List<IContributionItem> fillCreateMenuItems(@Nullable IWorkbenchPartSite site, DBNNode node) {
         List<IContributionItem> createActions = new ArrayList<>();
+        boolean projectResourceEditable =
+            node == null || ObjectPropertyTester.nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
+        boolean projectConnectionEditable =
+            node == null || ObjectPropertyTester.nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
 
-        if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases) {
+        if ((node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases) && projectConnectionEditable) {
             IContributionItem item = makeCreateContributionItem(
                 site, DBPDataSourceContainer.class.getName(), ModelMessages.model_navigator_Connection, UIIcon.SQL_NEW_CONNECTION, false);
             createActions.add(item);
@@ -236,10 +242,10 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             addDatabaseNodeCreateItems(site, createActions, (DBNDatabaseNode) node);
         }
 
-        if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNDataSource) {
-            if (node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
-                createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
-            }
+        if ((node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNDataSource)
+            && projectConnectionEditable
+        ) {
+            createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
         } else if (node instanceof DBNResource) {
             final DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
             IResource resource = ((DBNResource) node).getResource();
@@ -247,13 +253,17 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_PROJECT));
             }
             DBPResourceHandler handler = workspace.getResourceHandler(resource);
-            if (handler instanceof DBPResourceCreator && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0) {
+            if (handler instanceof DBPResourceCreator
+                && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0 && projectResourceEditable
+            ) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FILE));
             }
-            if (handler != null && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0) {
+            if (handler != null
+                && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0  && projectResourceEditable
+            ) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
             }
-            if (resource instanceof IContainer) {
+            if (resource instanceof IContainer && projectResourceEditable) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FILE_LINK));
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FOLDER_LINK));
             }

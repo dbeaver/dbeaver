@@ -160,7 +160,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         new MenuItem(menu, SWT.SEPARATOR);
 
-        {
+        if (!inputFile.isReadOnly()) {
             if (workbenchPart instanceof SQLEditor) {
                 addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
             }

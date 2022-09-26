@@ -180,6 +180,7 @@ public class UIIcon {
     public static final DBIcon LINK2 = new DBIcon("link2", "misc/link2.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CURSOR = new DBIcon("cursor", "misc/cursor.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SECURITY = new DBIcon("security", "security.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon READONLY_RESOURCES = new DBIcon("readonly", "readonly_resources.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon GEN_DATABASE = new DBIcon("gen_database", "database.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon GEN_DATABASE_TYPE = new DBIcon("gen_database_type", "database_type.png"); //$NON-NLS-1$ //$NON-NLS-2$

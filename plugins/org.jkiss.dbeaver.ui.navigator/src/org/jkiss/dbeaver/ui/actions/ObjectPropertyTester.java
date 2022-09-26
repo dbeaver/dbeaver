@@ -24,6 +24,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -42,8 +44,7 @@ import java.util.List;
 /**
  * ObjectPropertyTester
  */
-public class ObjectPropertyTester extends PropertyTester
-{
+public class ObjectPropertyTester extends PropertyTester {
     //static final Log log = Log.getLog(ObjectPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.object";
@@ -61,6 +62,8 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_HAS_TOOLS = "hasTools";
     public static final String PROP_SUPPORTS_CREATING_INDEX = "supportsIndexCreate";
     public static final String PROP_SUPPORTS_CREATING_CONSTRAINT = "supportsConstraintCreate";
+    public static final String PROP_PROJECT_RESOURCE_EDITABLE = "projectResourceEditable";
+    public static final String PROP_PROJECT_RESOURCE_VIEWABLE = "projectResourceViewable";
 
     public ObjectPropertyTester() {
         super();
@@ -129,10 +132,13 @@ public class ObjectPropertyTester extends PropertyTester
             }
             case PROP_CAN_DELETE: {
                 if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
-                    return node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+                    return nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
                 }
 
                 if (DBNUtils.isReadOnly(node)) {
+                    return false;
+                }
+                if (node instanceof DBNNodeWithResource && !nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
                     return false;
                 }
 
@@ -153,6 +159,9 @@ public class ObjectPropertyTester extends PropertyTester
                 break;
             }
             case PROP_CAN_RENAME: {
+                if (node instanceof DBNNodeWithResource && !nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                    return false;
+                }
                 if (node.supportsRename()) {
                     return true;
                 }
@@ -224,8 +233,20 @@ public class ObjectPropertyTester extends PropertyTester
                 return supportsCreatingColumnObject(node, DBSTableIndex.class);
             case PROP_SUPPORTS_CREATING_CONSTRAINT:
                 return supportsCreatingColumnObject(node, DBSEntityConstraint.class);
+            case PROP_PROJECT_RESOURCE_EDITABLE:
+                return nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
+            case PROP_PROJECT_RESOURCE_VIEWABLE:
+                return nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
         }
         return false;
+    }
+
+    /**
+     * Check whether the owner project of the specified node has required permissions
+     */
+    public static boolean nodeProjectHasPermission(@NotNull DBNNode node, @NotNull String permissionName) {
+        DBPProject project = node.getOwnerProject();
+        return project == null || project.hasRealmPermission(permissionName);        
     }
 
     public static boolean canCreateObject(DBNNode node, Boolean onlySingle) {

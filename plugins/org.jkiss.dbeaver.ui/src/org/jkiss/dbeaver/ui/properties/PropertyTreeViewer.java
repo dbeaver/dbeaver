@@ -471,21 +471,23 @@ public class PropertyTreeViewer extends TreeViewer {
                     selectedColumn = -1;
                     if (newPropertiesAllowed) {
                         TreeItem[] allItems = treeControl.getItems();
-                        TreeItem lastItem = allItems[allItems.length - 1];
-                        if (lastItem.getData() instanceof TreeNode) {
-                            TreeNode lastNode = (TreeNode) lastItem.getData();
-                            if (!CommonUtils.isEmpty(lastNode.children)) {
-                                lastNode = lastNode.children.get(lastNode.children.size() - 1);
+                        if (allItems.length > 0) {
+                            TreeItem lastItem = allItems[allItems.length - 1];
+                            if (lastItem.getData() instanceof TreeNode) {
+                                TreeNode lastNode = (TreeNode) lastItem.getData();
+                                if (!CommonUtils.isEmpty(lastNode.children)) {
+                                    lastNode = lastNode.children.get(lastNode.children.size() - 1);
+                                }
+                                if (lastNode.property != null && CommonUtils.isEmpty(lastNode.property.getDisplayName())) {
+                                    return;
+                                }
+                                if (lastNode.parent != null) lastNode = lastNode.parent;
+                                addProperty(lastNode, new PropertyDescriptor(lastNode.category, "prop" + lastNode.children.size(), "", "", false, String.class, "", null), true);
+                                allItems = treeControl.getItems();
+                                TreeItem newItem = allItems[allItems.length - 1];
+                                treeControl.setSelection(newItem);
+                                selectedColumn = UIUtils.getColumnAtPos(newItem, e.x, e.y);
                             }
-                            if (lastNode.property != null && CommonUtils.isEmpty(lastNode.property.getDisplayName())) {
-                                return;
-                            }
-                            if (lastNode.parent != null) lastNode = lastNode.parent;
-                            addProperty(lastNode, new PropertyDescriptor(lastNode.category, "prop" + lastNode.children.size(), "", "", false, String.class, "", null), true);
-                            allItems = treeControl.getItems();
-                            TreeItem newItem = allItems[allItems.length - 1];
-                            treeControl.setSelection(newItem);
-                            selectedColumn = UIUtils.getColumnAtPos(newItem, e.x, e.y);
                         }
                     }
                 }

@@ -35,24 +35,24 @@ public class LocalFileController implements DBFileController {
 
     @Override
     public byte[] loadFileData(@NotNull String fileType, @NotNull String filePath) throws DBException {
-        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        Path targetPath = dataFolder.resolve(fileType).resolve(Path.of(filePath));
         try {
             return Files.readAllBytes(targetPath);
         } catch (IOException e) {
-            throw new DBException("Error reading file '" + filePath + "' data", e);
+            throw new DBException("Error reading file '" + targetPath.toAbsolutePath() + "' data", e);
         }
     }
 
     @Override
     public void saveFileData(@NotNull String fileType, @NotNull String filePath, byte[] fileData) throws DBException {
-        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        Path targetPath = dataFolder.resolve(fileType).resolve(Path.of(filePath));
         try {
             if (!Files.exists(targetPath.getParent())) {
                 Files.createDirectories(targetPath.getParent());
             }
             Files.write(targetPath, fileData);
         } catch (IOException e) {
-            throw new DBException("Error writing file '" + filePath + "' data: " + e.getMessage(), e);
+            throw new DBException("Error writing file '" + targetPath.toAbsolutePath() + "' data: " + e.getMessage(), e);
         }
     }
 
@@ -63,11 +63,11 @@ public class LocalFileController implements DBFileController {
 
     @Override
     public void deleteFile(@NotNull String fileType, @NotNull String filePath, boolean recursive) throws DBException {
-        Path targetPath = dataFolder.resolve(fileType).resolve(filePath);
+        Path targetPath = dataFolder.resolve(fileType).resolve(Path.of(filePath));
         try {
             Files.delete(targetPath);
         } catch (IOException e) {
-            throw new DBException("Error deleting file '" + filePath + "' data: " + e.getMessage(), e);
+            throw new DBException("Error deleting file '" + targetPath.toAbsolutePath() + "' data: " + e.getMessage(), e);
         }
     }
 }

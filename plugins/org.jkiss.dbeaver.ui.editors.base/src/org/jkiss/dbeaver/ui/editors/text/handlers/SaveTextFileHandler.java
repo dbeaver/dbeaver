@@ -21,12 +21,10 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 
-public class SaveTextFileHandler extends AbstractTextHandler
-{
+public class SaveTextFileHandler extends AbstractTextHandler {
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         BaseTextEditor editor = BaseTextEditor.getTextEditor(HandlerUtil.getActiveEditor(event));
         if (editor == null) {
             return null;

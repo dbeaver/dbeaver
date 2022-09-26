@@ -95,6 +95,7 @@ class PostgreFDWConfigWizardPageConfig extends ActiveWizardPage<PostgreFDWConfig
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().setSelectedFDW(fdwList.get(fdwCombo.getSelectionIndex()));
                     refreshFDWProperties();
+                    updatePageCompletion();
                 }
             });
             UIUtils.createEmptyLabel(fdwGroup, 1, 1);
