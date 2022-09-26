@@ -37,6 +37,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
@@ -96,6 +97,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     private static final String PROP_EXIT_DATA = IApplicationContext.EXIT_DATA_PROPERTY; //$NON-NLS-1$
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
+
+    private static final String PROP_TRUST_STORE_TYPE = "javax.net.ssl.trustStoreType"; //$NON-NLS-1$
+    private static final String WIN_TRUST_STORE = "WINDOWS-ROOT"; //$NON-NLS-1$
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
 
@@ -273,6 +277,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             SWTBrowserRegistry.overrideBrowser();
         }
         TimezoneRegistry.overrideTimezone();
+
+        if (RuntimeUtils.isWindows() &&
+            ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+        ) {
+            System.setProperty(PROP_TRUST_STORE_TYPE, WIN_TRUST_STORE);
+        }
 
         // Prefs default
         PlatformUI.getPreferenceStore().setDefault(

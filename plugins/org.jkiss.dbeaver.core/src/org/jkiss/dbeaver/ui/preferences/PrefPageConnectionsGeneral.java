@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionNameResolver;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral;
 import org.jkiss.dbeaver.ui.dialogs.connection.NavigatorSettingsStorage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.Arrays;
 
@@ -64,6 +65,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     private DBNBrowseSettings defaultNavigatorSettings;
     private Text sampleConnectionName;
     private ConnectionNameResolver fakeConnectionNameResolver;
+    private Button useWinTrustStoreCheck;
 
     public PrefPageConnectionsGeneral() {
         super();
@@ -113,6 +115,22 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             );
         }
 
+        if (RuntimeUtils.isWindows()) {
+            Group settings = UIUtils.createControlGroup(
+                composite,
+                CoreMessages.pref_page_connections_group_security,
+                2,
+                GridData.FILL_HORIZONTAL,
+                300
+            );
+            useWinTrustStoreCheck = UIUtils.createCheckbox(
+                settings,
+                CoreMessages.pref_page_connections_use_win_cert_label,
+                ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+            );
+            useWinTrustStoreCheck.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_tip);
+        }
+        
         {
             Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_eclipse_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             Label descLabel = new Label(groupObjects, SWT.WRAP);
@@ -183,6 +201,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         connectionDefaultNamePatternText.setText(ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
         sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
         connectionNamePattern = ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
+        useWinTrustStoreCheck.setSelection(ModelPreferences.getPreferences().getDefaultBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE));
         updateCombosAndSettings();
     }
 
@@ -208,7 +227,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             DataSourceNavigatorSettings.setDefaultSettings(defaultNavigatorSettings);
         }
         ModelPreferences.getPreferences().setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
-
+        ModelPreferences.getPreferences().setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
         return super.performOk();
     }
 
