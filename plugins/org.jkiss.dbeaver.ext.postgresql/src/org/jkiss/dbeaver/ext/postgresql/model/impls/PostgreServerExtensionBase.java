@@ -487,6 +487,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsCommentsOnRole() {
+        return supportsRoles();
+    }
+
+    @Override
     public boolean supportSerialTypes() {
         return true;
     }

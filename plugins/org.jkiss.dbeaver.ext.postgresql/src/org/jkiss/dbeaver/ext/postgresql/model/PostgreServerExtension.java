@@ -158,6 +158,11 @@ public interface PostgreServerExtension {
      * */
     boolean supportsRoleBypassRLS();
 
+    /**
+     * @return true if database supports syntax like "COMMENT ON ROLE roleName IS 'comment'"
+     */
+    boolean supportsCommentsOnRole();
+
     /** True if supports serials - serial types are auto-incrementing integer data types */
     boolean supportSerialTypes();
 

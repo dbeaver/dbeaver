@@ -277,6 +277,11 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsCommentsOnRole() {
+        return false;
+    }
+
+    @Override
     public boolean supportsKeyAndIndexRename() {
         return true;
     }

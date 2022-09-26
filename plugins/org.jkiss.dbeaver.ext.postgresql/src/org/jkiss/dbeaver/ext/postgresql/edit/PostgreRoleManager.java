@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach.PostgreServerCockroachDB;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
@@ -75,13 +77,15 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
-        final PostgreRole role = command.getObject();
-        final StringBuilder script = new StringBuilder("ALTER ROLE " + DBUtils.getQuotedIdentifier(role));
-        addRoleOptions(script, role, command, false);
+        if (!command.hasProperty(DBConstants.PROP_ID_DESCRIPTION) || command.getProperties().size() > 1) {
+            final PostgreRole role = command.getObject();
+            final StringBuilder script = new StringBuilder("ALTER ROLE " + DBUtils.getQuotedIdentifier(role));
+            addRoleOptions(script, role, command, false);
 
-        actionList.add(
-            new SQLDatabasePersistAction("Alter role", script.toString()) //$NON-NLS-2$
-        );
+            actionList.add(
+                new SQLDatabasePersistAction("Alter role", script.toString()) //$NON-NLS-2$
+            );
+        }
     }
 
     @Override
@@ -147,5 +151,16 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
             script.append(" WITH");
         }
         script.append(options);
+    }
+
+    @Override
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreRole, PropertyHandler> command, Map<String, Object> options) throws DBException {
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+            PostgreRole role = command.getObject();
+            actions.add(new SQLDatabasePersistAction(
+                "Comment role",
+                "COMMENT ON ROLE " + DBUtils.getQuotedIdentifier(role.getDataSource(), role.getName()) +
+                    " IS " + SQLUtils.quoteString(role, CommonUtils.notEmpty(role.getDescription()))));
+        }
     }
 }
