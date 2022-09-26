@@ -24,8 +24,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLDialectDescriptorSerializer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.xml.SAXReader;
-import org.jkiss.utils.xml.XMLException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
@@ -55,6 +53,7 @@ public class SQLDialectRegistry
     }
 
     private final Map<String, SQLDialectDescriptor> dialects = new LinkedHashMap<>();
+    private final Map<String, SQLDialectDescriptor> customDialects = new LinkedHashMap<>();
 
     private SQLDialectRegistry()
     {
@@ -69,7 +68,7 @@ public class SQLDialectRegistry
                 this.dialects.put(dialectDescriptor.getId(), dialectDescriptor);
             }
         }
-        loadDialects(SQLDialectDescriptorSerializer.DIALECTS_FILE_NAME, false);
+        loadCustomDialects(SQLDialectDescriptorSerializer.DIALECTS_FILE_NAME, false);
         for (IConfigurationElement ext : extConfigs) {
             if (TAG_DIALECT.equals(ext.getName())) {
                 String dialectId = ext.getAttribute("id");
@@ -85,7 +84,16 @@ public class SQLDialectRegistry
         }
     }
 
-    private void loadDialects(@NotNull String configFileName, boolean provided) {
+    /**
+     * Reloads existing dialects
+     */
+    public synchronized void reloadDialects() {
+        dialects.clear();
+        customDialects.clear();
+        loadDialects(Platform.getExtensionRegistry());
+    }
+
+    private void loadCustomDialects(@NotNull String configFileName, boolean provided) {
         try {
             String driversConfig;
             if (provided) {
@@ -102,17 +110,17 @@ public class SQLDialectRegistry
                 SQLDialectDescriptorSerializer.parseDialects(is);
             }
         } catch (Exception ex) {
-            log.warn("Error loading drivers from " + configFileName, ex);
+            log.warn("Error loading custom dialects from " + configFileName, ex);
         }
     }
 
     /**
      * Saves dialects to config file
      */
-    public void saveDialects() {
+    public void saveCustomDialects() {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            SQLDialectDescriptorSerializer.serializeDialects(baos, this.dialects.values());
+            SQLDialectDescriptorSerializer.serializeDialects(baos, this.customDialects.values());
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
                 SQLDialectDescriptorSerializer.DIALECTS_FILE_NAME,
                 baos.toString(StandardCharsets.UTF_8));
@@ -130,12 +138,28 @@ public class SQLDialectRegistry
         return new ArrayList<>(dialects.values());
     }
 
+    public Map<String, SQLDialectDescriptor> getCustomDialects() {
+        return customDialects;
+    }
+
+    public SQLDialectDescriptor getCustomDialect(String id) {
+        return customDialects.get(id);
+    }
+
     public SQLDialectDescriptor getDialect(String id) {
         return dialects.get(id);
     }
 
-    public void updateDialect(SQLDialectDescriptor dialectDescriptor) {
-        dialects.put(dialectDescriptor.getId(), dialectDescriptor);
+    public void applyDialectCustomisation(SQLDialectDescriptor dialectDescriptor) {
+        customDialects.put(dialectDescriptor.getId(), dialectDescriptor);
+        SQLDialectDescriptor originalDescriptor = dialects.get(dialectDescriptor.getId());
+        originalDescriptor.getDMLKeywords().addAll(dialectDescriptor.getDMLKeywords());
+        originalDescriptor.getDDLKeywords().addAll(dialectDescriptor.getDDLKeywords());
+        originalDescriptor.getDataTypes().addAll(dialectDescriptor.getDataTypes());
+        originalDescriptor.getFunctions().addAll(dialectDescriptor.getFunctions());
+        originalDescriptor.getExecuteKeywords().addAll(dialectDescriptor.getExecuteKeywords());
+        originalDescriptor.getTransactionKeywords().addAll(dialectDescriptor.getTransactionKeywords());
+        originalDescriptor.setScriptDelimiter(originalDescriptor.getScriptDelimiter());
     }
 
     public List<SQLDialectDescriptor> getRootDialects() {

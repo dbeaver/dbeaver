@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * SQLDialectMetadata
@@ -46,25 +47,25 @@ public interface SQLDialectMetadata {
     SQLDialect createInstance() throws DBException;
 
     @NotNull
-    List<String> getReservedWords();
+    Set<String> getReservedWords();
 
     @NotNull
-    List<String> getDataTypes();
+    Set<String> getDataTypes();
 
     @NotNull
-    List<String> getFunctions();
+    Set<String> getFunctions();
 
     @NotNull
-    List<String> getDDLKeywords();
+    Set<String> getDDLKeywords();
 
     @NotNull
-    List<String> getDMLKeywords();
+    Set<String> getDMLKeywords();
 
     @NotNull
-    List<String> getExecuteKeywords();
+    Set<String> getExecuteKeywords();
 
     @NotNull
-    List<String> getTransactionKeywords();
+    Set<String> getTransactionKeywords();
 
     @NotNull
     String getScriptDelimiter();
@@ -75,7 +76,7 @@ public interface SQLDialectMetadata {
     SQLDialectMetadata getParentDialect();
 
     @NotNull
-    List<SQLDialectMetadata> getSubDialects(boolean addNested);
+    Set<SQLDialectMetadata> getSubDialects(boolean addNested);
 
     DBDInsertReplaceMethod[] getSupportedInsertReplaceMethods();
 

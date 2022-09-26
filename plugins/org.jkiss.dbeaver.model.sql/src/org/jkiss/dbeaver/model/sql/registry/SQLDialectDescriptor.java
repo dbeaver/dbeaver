@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLDialectDescriptorSerializer;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -50,17 +49,18 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     private boolean isAbstract;
     private boolean isHidden;
     private SQLDialectDescriptor parentDialect;
-    private List<SQLDialectDescriptor> subDialects = null;
+    private Set<SQLDialectDescriptor> subDialects = null;
 
     private Map<String, Object> properties;
 
-    private List<String> keywords;
-    private List<String> ddlKeywords;
-    private List<String> dmlKeywords;
-    private List<String> execKeywords;
-    private List<String> txnKeywords;
-    private List<String> types;
-    private List<String> functions;
+    private Set<String> keywords = new HashSet<>();
+    private Set<String> ddlKeywords = new HashSet<>();
+    private Set<String> dmlKeywords = new HashSet<>();
+    private Set<String> execKeywords = new HashSet<>();
+    private Set<String> txnKeywords = new HashSet<>();
+    private Set<String> types = new HashSet<>();
+    private Set<String> functions = new HashSet<>();
+    private String scriptDelimiter;
 
     private List<String> insertMethodNames;
     private DBDInsertReplaceMethod[] insertReplaceMethods;
@@ -90,25 +90,25 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
             }
             switch (propName) {
                 case "keywords":
-                    this.keywords = loadList(propValue);
+                    this.keywords = loadSet(propValue);
                     break;
                 case "ddlKeywords":
-                    this.ddlKeywords = loadList(propValue);
+                    this.ddlKeywords = loadSet(propValue);
                     break;
                 case "dmlKeywords":
-                    this.dmlKeywords = loadList(propValue);
+                    this.dmlKeywords = loadSet(propValue);
                     break;
                 case "execKeywords":
-                    this.execKeywords = loadList(propValue);
+                    this.execKeywords = loadSet(propValue);
                     break;
                 case "txnKeywords":
-                    this.txnKeywords = loadList(propValue);
+                    this.txnKeywords = loadSet(propValue);
                     break;
                 case "types":
-                    this.types = loadList(propValue);
+                    this.types = loadSet(propValue);
                     break;
                 case "functions":
-                    this.functions = loadList(propValue);
+                    this.functions = loadSet(propValue);
                     break;
                 case "insertMethods":
                     insertMethodNames = loadList(propValue);
@@ -123,6 +123,12 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         }
     }
 
+    private Set<String> loadSet(String str) {
+        List<String> list = loadList(str);
+        return new HashSet<>(list);
+    }
+
+    @NotNull
     private List<String> loadList(String str) {
         List<String> list = Arrays.asList(str.split(","));
         for (int i = 0; i < list.size(); i++) {
@@ -169,50 +175,50 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
 
     @Override
     @NotNull
-    public List<String> getReservedWords() {
-        return CommonUtils.safeList(keywords);
+    public Set<String> getReservedWords() {
+        return keywords;
     }
 
     @Override
     @NotNull
-    public List<String> getDataTypes() {
-        return CommonUtils.safeList(types);
+    public Set<String> getDataTypes() {
+        return types;
     }
 
     @Override
     @NotNull
-    public List<String> getFunctions() {
-        return CommonUtils.safeList(functions);
+    public Set<String> getFunctions() {
+        return functions;
     }
 
     @Override
     @NotNull
-    public List<String> getDDLKeywords() {
-        return CommonUtils.safeList(ddlKeywords);
+    public Set<String> getDDLKeywords() {
+        return ddlKeywords;
     }
 
     @NotNull
     @Override
-    public List<String> getDMLKeywords() {
-        return CommonUtils.safeList(dmlKeywords);
+    public Set<String> getDMLKeywords() {
+        return dmlKeywords;
     }
 
     @NotNull
     @Override
-    public List<String> getExecuteKeywords() {
-        return CommonUtils.safeList(execKeywords);
+    public Set<String> getExecuteKeywords() {
+        return execKeywords;
     }
 
     @Override
     @NotNull
-    public List<String> getTransactionKeywords() {
-        return CommonUtils.safeList(txnKeywords);
+    public Set<String> getTransactionKeywords() {
+        return txnKeywords;
     }
 
     @Override
     @NotNull
     public String getScriptDelimiter() {
-        return ";";
+        return CommonUtils.isEmpty(scriptDelimiter) ? ";" : scriptDelimiter;
     }
 
     public ObjectType getImplClass() {
@@ -233,9 +239,9 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     public void setParentDialect(SQLDialectDescriptor parentDialect) {
         this.parentDialect = parentDialect;
 
-        List<SQLDialectDescriptor> psd = parentDialect.subDialects;
+        Set<SQLDialectDescriptor> psd = parentDialect.subDialects;
         if (psd == null) {
-            psd = new ArrayList<>();
+            psd = new HashSet<>();
             parentDialect.subDialects = psd;
         }
         psd.add(this);
@@ -243,11 +249,11 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
 
     @NotNull
     @Override
-    public List<SQLDialectMetadata> getSubDialects(boolean addNested) {
+    public Set<SQLDialectMetadata> getSubDialects(boolean addNested) {
         if (subDialects == null) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
-        List<SQLDialectMetadata> subs = new ArrayList<>();
+        Set<SQLDialectMetadata> subs = new HashSet<>();
         for (SQLDialectDescriptor sd : subDialects) {
             if (sd.isHidden) {
                 subs.addAll(sd.getSubDialects(false));
@@ -286,7 +292,11 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         return insertMethodDescriptors;
     }
 
-    public void setSubDialects(List<SQLDialectDescriptor> subDialects) {
+    public void setScriptDelimiter(String scriptDelimiter) {
+        this.scriptDelimiter = scriptDelimiter;
+    }
+
+    public void setSubDialects(Set<SQLDialectDescriptor> subDialects) {
         this.subDialects = subDialects;
     }
 
@@ -294,11 +304,11 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         this.properties = properties;
     }
 
-    public void setKeywords(List<String> keywords) {
+    public void setKeywords(Set<String> keywords) {
         this.keywords = keywords;
     }
 
-    public void setDdlKeywords(List<String> ddlKeywords) {
+    public void setDdlKeywords(Set<String> ddlKeywords) {
         this.ddlKeywords = ddlKeywords;
     }
 
@@ -322,23 +332,23 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         this.icon = icon;
     }
 
-    public void setDmlKeywords(List<String> dmlKeywords) {
+    public void setDmlKeywords(Set<String> dmlKeywords) {
         this.dmlKeywords = dmlKeywords;
     }
 
-    public void setExecKeywords(List<String> execKeywords) {
+    public void setExecKeywords(Set<String> execKeywords) {
         this.execKeywords = execKeywords;
     }
 
-    public void setTxnKeywords(List<String> txnKeywords) {
+    public void setTxnKeywords(Set<String> txnKeywords) {
         this.txnKeywords = txnKeywords;
     }
 
-    public void setTypes(List<String> types) {
+    public void setTypes(Set<String> types) {
         this.types = types;
     }
 
-    public void setFunctions(List<String> functions) {
+    public void setFunctions(Set<String> functions) {
         this.functions = functions;
     }
 

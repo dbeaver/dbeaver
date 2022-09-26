@@ -35,18 +35,13 @@ import java.util.Map;
 public class SQLDialectDescriptorSerializer {
     private static final Log log = Log.getLog(SQLDialectDescriptorSerializer.class);
 
-    public static final String ATTR_DIALECTS_ROOT = "dialects"; //$NON-NLS-1$
-    public static final String ATTR_DIALECTS_PARENT = "parent"; //$NON-NLS-1$
-    public static final String ATTR_DIALECTS_ID = "id"; //$NON-NLS-1$
-    public static final String ATTR_DIALECTS_LABEL = "label"; //$NON-NLS-1$
-    public static final String ATTR_DIALECTS_CLASS = "class"; //$NON-NLS-1$
-    public static final String ATTR_DIALECTS_DESCRIPTION = "description"; //$NON-NLS-1$
-    public static final String ATTR_DIALECTS_ICON = "icon"; //$NON-NLS-1$
+
     public static final String ATTR_DIALECTS_VALUE_KEYWORDS = "keywords"; //$NON-NLS-1$
-    public static final String ATTR_DIALECTS_VALUE = "values";
-    public static final String ATTR_DIALECTS_VALUE_EXECKEYWORDS = "execKeywords"; //$NON-NLS-1$
-    public static final String ATTR_DIALECTS_VALUE_DDLKEYWORDS = "ddlKeywords"; //$NON-NLS-1$
-    public static final String ATTR_DIALECTS_VALUE_DMLKEYWORDS = "dmlKeywords"; //$NON-NLS-1$
+    public static final String ATTR_DIALECTS_VALUE_KEYWORDS_EXEC = "execKeywords"; //$NON-NLS-1$
+    public static final String ATTR_DIALECTS_VALUE_KEYWORDS_DDL = "ddlKeywords"; //$NON-NLS-1$
+    public static final String ATTR_DIALECTS_TXN_KEYWORDS = "txnKeywords"; //$NON-NLS-1$
+    public static final String ATTR_DIALECTS_VALUE_KEYWORDS_DML = "dmlKeywords"; //$NON-NLS-1$
+    public static final String ATTR_DIALECTS_VALUE_SCRIPT_SEPARATOR = "scriptSeparator";
     public static final String ATTR_DIALECTS_VALUE_FUNCTIONS = "functions"; //$NON-NLS-1$
     public static final String ATTR_DIALECTS_VALUE_TYPES = "types"; //$NON-NLS-1$
 
@@ -61,6 +56,7 @@ public class SQLDialectDescriptorSerializer {
 
     /**
      * Serializes the list of SQLDialectDescriptors to JSON format
+     *
      * @param os Output stream to write into
      * @param dialects dialect list
      */
@@ -84,55 +80,57 @@ public class SQLDialectDescriptorSerializer {
             IOException {
         jsonWriter.name(dialectDescriptor.getId());
         jsonWriter.beginObject();
-        JSONUtils.field(jsonWriter, ATTR_DIALECTS_ID, dialectDescriptor.getId());
-        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_LABEL, dialectDescriptor.getLabel());
-        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_DESCRIPTION, dialectDescriptor.getDescription());
-        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_PARENT, dialectDescriptor.getParentDialect() != null ?
-                                                          dialectDescriptor.getParentDialect().getId() : "");
-        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_CLASS, dialectDescriptor.getImplClass().getImplName());
-        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_ICON, dialectDescriptor.getIcon().getLocation());
-        jsonWriter.name(ATTR_DIALECTS_VALUE);
-        jsonWriter.beginObject();
+//        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_DESCRIPTION, dialectDescriptor.getDescription());
+//        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_PARENT, dialectDescriptor.getParentDialect() != null ?
+//                                                          dialectDescriptor.getParentDialect().getId() : "");
+//        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_CLASS, dialectDescriptor.getImplClass().getImplName());
+//        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_ICON, dialectDescriptor.getIcon().getLocation());
+
+        JSONUtils.field(jsonWriter, ATTR_DIALECTS_VALUE_SCRIPT_SEPARATOR, dialectDescriptor.getScriptDelimiter());
         JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS, dialectDescriptor.getReservedWords());
-        JSONUtils.serializeStringList(jsonWriter,
-            ATTR_DIALECTS_VALUE_EXECKEYWORDS,
+        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS_EXEC,
             dialectDescriptor.getReservedWords()
         );
-        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_DDLKEYWORDS, dialectDescriptor.getDDLKeywords());
-        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_DMLKEYWORDS, dialectDescriptor.getDMLKeywords());
+        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS_DDL, dialectDescriptor.getDDLKeywords());
+        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS_DML, dialectDescriptor.getDMLKeywords());
         JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_FUNCTIONS, dialectDescriptor.getFunctions());
         JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_TYPES, dialectDescriptor.getDataTypes());
-        jsonWriter.endObject();
+        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_TXN_KEYWORDS, dialectDescriptor.getTransactionKeywords());
         jsonWriter.endObject();
     }
 
     /**
      * Update SQLDialectRegistry from config file
+     *
      * @param config configuration file
      */
     public static void parseDialects(@NotNull StringReader config) {
         SQLDialectRegistry instance = SQLDialectRegistry.getInstance();
-        Map<String, Object> stringObjectMap = JSONUtils.parseMap(CONFIG_GSON, config);
-        for (Map<String, Object> dialect : JSONUtils.getObjectList(stringObjectMap, ATTR_DIALECTS_ROOT)) {
+        for (Map.Entry<String, Object> dialect : JSONUtils.parseMap(CONFIG_GSON, config).entrySet()) {
             SQLDialectDescriptor sqlDialectDescriptor =
-                new SQLDialectDescriptor(JSONUtils.getString(dialect, ATTR_DIALECTS_ID));
-            sqlDialectDescriptor.setDescription(JSONUtils.getString(dialect, ATTR_DIALECTS_DESCRIPTION));
-            sqlDialectDescriptor.setLabel(JSONUtils.getString(dialect, ATTR_DIALECTS_LABEL));
-            sqlDialectDescriptor.setImplClass(JSONUtils.getString(dialect, ATTR_DIALECTS_CLASS));
-
-            sqlDialectDescriptor.setIcon(sqlDialectDescriptor.iconToImage(JSONUtils.getString(dialect, ATTR_DIALECTS_ICON)));
-            Map<String, Object> descriptorValues = JSONUtils.getObject(dialect, ATTR_DIALECTS_VALUE);
-            sqlDialectDescriptor.setExecKeywords(JSONUtils.getStringList(descriptorValues,
-                ATTR_DIALECTS_VALUE_EXECKEYWORDS));
-            sqlDialectDescriptor.setDdlKeywords(JSONUtils.getStringList(descriptorValues,
-                ATTR_DIALECTS_VALUE_DDLKEYWORDS));
-            sqlDialectDescriptor.setDmlKeywords(JSONUtils.getStringList(descriptorValues,
-                ATTR_DIALECTS_VALUE_DMLKEYWORDS));
-            sqlDialectDescriptor.setFunctions(JSONUtils.getStringList(descriptorValues,
+                new SQLDialectDescriptor(dialect.getKey());
+            sqlDialectDescriptor.setKeywords(JSONUtils.getObjectProperty(dialect.getValue(),
+                ATTR_DIALECTS_VALUE_KEYWORDS
+            ));
+            sqlDialectDescriptor.setExecKeywords(JSONUtils.getObjectProperty(dialect.getValue(),
+                ATTR_DIALECTS_VALUE_KEYWORDS_EXEC
+            ));
+            sqlDialectDescriptor.setDdlKeywords(JSONUtils.getObjectProperty(dialect.getValue(),
+                ATTR_DIALECTS_VALUE_KEYWORDS_DDL
+            ));
+            sqlDialectDescriptor.setDmlKeywords(JSONUtils.getObjectProperty(dialect.getValue(),
+                ATTR_DIALECTS_VALUE_KEYWORDS_DML
+            ));
+            sqlDialectDescriptor.setFunctions(JSONUtils.getObjectProperty(dialect.getValue(),
                 ATTR_DIALECTS_VALUE_FUNCTIONS));
-            sqlDialectDescriptor.setTypes(JSONUtils.getStringList(descriptorValues,
+            sqlDialectDescriptor.setTypes(JSONUtils.getObjectProperty(dialect.getValue(),
                 ATTR_DIALECTS_VALUE_TYPES));
-            instance.updateDialect(sqlDialectDescriptor);
+            sqlDialectDescriptor.setTxnKeywords(JSONUtils.getObjectProperty(dialect.getValue(),
+                ATTR_DIALECTS_TXN_KEYWORDS));
+            sqlDialectDescriptor.setScriptDelimiter(JSONUtils.getObjectProperty(dialect.getValue(), ATTR_DIALECTS_VALUE_SCRIPT_SEPARATOR));
+            instance.applyDialectCustomisation(sqlDialectDescriptor);
+            instance.getCustomDialects().put(sqlDialectDescriptor.getId(),
+                sqlDialectDescriptor);
         }
     }
 
