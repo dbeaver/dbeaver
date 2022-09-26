@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentTypeMatcher;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -213,8 +214,12 @@ public final class NIOProject extends NIOContainer implements IProject {
     }
 
     /**
-     * @author Eike Stepper
+     * Eclipse 2022-09 additions
      */
+    public String getDefaultLineSeparator() {
+        return GeneralUtils.getDefaultLineSeparator();
+    }
+
     public final class Description implements IProjectDescription {
         private String name;
 

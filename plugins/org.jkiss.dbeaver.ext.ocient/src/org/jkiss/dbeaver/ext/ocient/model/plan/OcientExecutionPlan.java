@@ -64,7 +64,8 @@ public class OcientExecutionPlan extends AbstractExecutionPlan {
 
     @Override
     public String getPlanQueryString() {
-        return "explain json" + query;
+        // Adds "explain json" to front of query with proper spacing
+        return "explain json " + query;
     }
 
     @Override
