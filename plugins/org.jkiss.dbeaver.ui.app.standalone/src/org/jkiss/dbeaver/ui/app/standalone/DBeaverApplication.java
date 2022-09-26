@@ -99,7 +99,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
     private static final String PROP_TRUST_STORE_TYPE = "javax.net.ssl.trustStoreType"; //$NON-NLS-1$
-    private static final String WIN_TRUST_STORE = "WINDOWS-ROOT"; //$NON-NLS-1$
+    private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
 
@@ -278,10 +278,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
         TimezoneRegistry.overrideTimezone();
 
-        if (RuntimeUtils.isWindows() &&
-            ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
-        ) {
-            System.setProperty(PROP_TRUST_STORE_TYPE, WIN_TRUST_STORE);
+        if (RuntimeUtils.isWindows() && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
+            System.setProperty(PROP_TRUST_STORE_TYPE, VALUE_TRUST_STRORE_TYPE_WINDOWS);
         }
 
         // Prefs default
