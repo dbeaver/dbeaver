@@ -393,15 +393,15 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                 } else if (entityAssociation != null) {
                     ERDEntity erdEntity = diagram.getEntity(entity);
                     ERDEntity targetEntity = diagram.getEntity(entityAssociation.getAssociatedEntity());
-                    if (erdEntity != null &&
-                        erdEntity.getAssociation(entityAssociation) == null &&
-                        erdEntity.getReferenceAssociation(entityAssociation) == null)
-                    {
-                        DBSEntityAssociation addedAssociation = entityAssociation;
-                        UIUtils.asyncExec(() -> {
+                    DBSEntityAssociation addedAssociation = entityAssociation;
+                    UIUtils.asyncExec(() -> {
+                        if (erdEntity != null &&
+                            erdEntity.getAssociation(addedAssociation) == null &&
+                            erdEntity.getReferenceAssociation(addedAssociation) == null)
+                        {
                             new ERDAssociation(addedAssociation, erdEntity, targetEntity, true);
-                        });
-                    }
+                        }
+                    });
                 } else {
                     // New entity. Add it if it has the same object container
                     // or if this entity was created from the same editor
