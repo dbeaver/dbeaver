@@ -35,7 +35,7 @@ public class TaskPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.task";
     public static final String PROP_SCHEDULED = "scheduled";
-    public static final String TASK_EDITABLE = "taskEditable";
+    public static final String TASK_EDITABLE = "editable";
 
     public TaskPropertyTester() {
         super();

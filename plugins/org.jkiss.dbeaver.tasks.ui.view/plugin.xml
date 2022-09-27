@@ -25,7 +25,7 @@
             class="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             id="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             namespace="org.jkiss.dbeaver.task"
-            properties="scheduled,taskEditable"
+            properties="scheduled,editable"
             type="org.jkiss.dbeaver.model.task.DBTTask"/>
     </extension>
 
@@ -60,7 +60,9 @@
             <with variable="selection">
                 <count value="1"/>
                 <iterate operator="and">
-                    <test property="org.jkiss.dbeaver.task.taskEditable" value="true"/>
+                    <instanceof value="org.jkiss.dbeaver.model.task.DBTTask">
+                        <test property="org.jkiss.dbeaver.task.editable" value="true"/>
+                    </instanceof>
                 </iterate>
             </with>
         </definition>
@@ -110,10 +112,9 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <and>
-                            <test property="org.jkiss.dbeaver.task.taskEditable"/>
-                            <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
-                        </and>
+                        <instanceof value="org.jkiss.dbeaver.model.task.DBTTask">
+                            <test property="org.jkiss.dbeaver.task.editable"/>
+                        </instanceof>
                     </iterate>
                 </with>
             </enabledWhen>
