@@ -120,7 +120,7 @@ public class DataSourceDescriptor
     private boolean savePassword;
     // Password is shared.
     // It will be saved in local configuration even if project uses secured storage
-    private boolean sharedPassword;
+    private boolean sharedCredentials;
 
     private boolean connectionReadOnly;
     private boolean forceUseSingleConnection = false;
@@ -376,12 +376,12 @@ public class DataSourceDescriptor
         this.savePassword = savePassword;
     }
 
-    public boolean isSharedPassword() {
-        return sharedPassword;
+    public boolean isSharedCredentials() {
+        return sharedCredentials;
     }
 
-    public void setSharedPassword(boolean sharedPassword) {
-        this.sharedPassword = sharedPassword;
+    public void setSharedCredentials(boolean sharedCredentials) {
+        this.sharedCredentials = sharedCredentials;
     }
 
     @Override

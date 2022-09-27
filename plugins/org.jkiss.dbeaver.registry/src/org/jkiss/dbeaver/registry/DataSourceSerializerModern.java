@@ -865,7 +865,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 JSONUtils.fieldNE(json, RegistryConstants.ATTR_CONFIGURATION_TYPE, connectionInfo.getConfigurationType().toString());
             }
 
-            if (configurationManager.isSecure()) {
+            if (dataSource.getProject().isUseSecretStorage()) {
+                // For secured projects save only shared credentials
+                // Others are stored in secret storage
+                if (dataSource.isSharedCredentials()) {
+                    savePlainCredentials(json, new SecureCredentials(dataSource));
+                }
+            } else if (configurationManager.isSecure()) {
+                // Secure manager == save to buffer
                 savePlainCredentials(json, new SecureCredentials(dataSource));
             } else {
                 saveSecuredCredentials(
@@ -1029,7 +1036,16 @@ class DataSourceSerializerModern implements DataSourceSerializer
         ) {
             final SecureCredentials credentials = new SecureCredentials(configuration);
             credentials.setProperties(configuration.getSecureProperties());
-            if (configurationManager.isSecure()) {
+
+            DBPProject project = dataSource != null ? dataSource.getProject() : profile.getProject();
+
+            if (project.isUseSecretStorage()) {
+                // For secured projects save only shared credentials
+                // Others are stored in secret storage
+                if (dataSource == null || dataSource.isSharedCredentials()) {
+                    savePlainCredentials(json, credentials);
+                }
+            } else if (configurationManager.isSecure()) {
                 savePlainCredentials(
                     json,
                     credentials);
@@ -1075,6 +1091,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
         Map<String, Map<String, String>> nodeMap = secureProperties.computeIfAbsent(topNodeId, s -> new LinkedHashMap<>());
         Map<String, String> propMap = nodeMap.computeIfAbsent(subNode, s -> new LinkedHashMap<>());
         saveCredentialsToMap(propMap, credentials);
+        if (propMap.isEmpty()) {
+            nodeMap.remove(subNode);
+        }
+        if (nodeMap.isEmpty()) {
+            secureProperties.remove(topNodeId);
+        }
     }
 
     private void savePlainCredentials(JsonWriter jsonWriter, @NotNull SecureCredentials credentials) throws IOException {
