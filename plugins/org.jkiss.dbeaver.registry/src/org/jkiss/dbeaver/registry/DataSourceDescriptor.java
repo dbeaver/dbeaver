@@ -761,19 +761,20 @@ public class DataSourceDescriptor
 
     @Override
     public boolean persistConfiguration() {
-        // Save secrets
-        if (getProject().isUseSecretStorage()) {
-            try {
-                DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+        try {
+            persistSecretIfNeeded(false);
 
-                persistSecrets(secretController);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
-                return false;
-            }
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
+            return false;
+        }
+        try {
+            registry.updateDataSource(this);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Datasource update error", "Error updating datasource", e);
+            return false;
         }
 
-        registry.updateDataSource(this);
         Throwable lastError = registry.getLastError();
         if (lastError != null) {
             DBWorkbench.getPlatformUI().showError("Save error", "Error saving datasource configuration", lastError);
@@ -783,12 +784,33 @@ public class DataSourceDescriptor
         return true;
     }
 
+    boolean persistSecretIfNeeded(boolean force) throws DBException {
+        // Save only if secrets were already resolved or it is a new connection
+        if (secretsResolved || (force && getProject().isUseSecretStorage())) {
+            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+
+            persistSecrets(secretController);
+        }
+        return true;
+    }
+
+    void removeSecretIfNeeded() throws DBException {
+        // Delete secrets (on connection delete)
+        if (getProject().isUseSecretStorage()) {
+            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+
+            secretController.setSecretValue(getSecretKeyId(), null);
+        }
+    }
+
     @Override
     public void persistSecrets(DBSSecretController secretController) throws DBException {
         secretController.setSecretValue(
             getSecretKeyId(),
             saveToSecret()
         );
+
+        secretsResolved = true;
     }
 
     @Override
@@ -803,6 +825,7 @@ public class DataSourceDescriptor
                 loadFromLegacySecret(secretController);
             }
         }
+        secretsResolved = true;
     }
 
     @Override
@@ -1691,8 +1714,12 @@ public class DataSourceDescriptor
                     connConfig.setUserPassword(authInfo.getUserPassword());
                 }
             }
-            // Update connection properties
-            dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
+            try {
+                // Update connection properties
+                dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Error saving datasource", null, e);
+            }
         }
 
         return true;

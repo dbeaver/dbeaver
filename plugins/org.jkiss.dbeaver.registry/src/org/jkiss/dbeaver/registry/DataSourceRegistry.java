@@ -490,12 +490,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     ////////////////////////////////////////////////////
     // Data sources
 
-    public void addDataSource(@NotNull DBPDataSourceContainer dataSource) {
+    public void addDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         addDataSourceToList(descriptor);
         if (!descriptor.isDetached()) {
             persistDataSourceUpdate(dataSource);
         }
+        descriptor.persistSecretIfNeeded(true);
         notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
     }
 
@@ -518,13 +519,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             persistDataSourceDelete(dataSource);
         }
         try {
+            descriptor.removeSecretIfNeeded();
+        } catch (DBException e) {
+            log.error("Error deleting old secrets", e);
+        }
+        try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
             descriptor.dispose();
         }
     }
 
-    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) {
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         if (!(dataSource instanceof DataSourceDescriptor)) {
             return;
         }
