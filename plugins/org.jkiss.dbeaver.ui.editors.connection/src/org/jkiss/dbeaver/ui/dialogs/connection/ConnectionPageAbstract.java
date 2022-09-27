@@ -316,8 +316,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     protected void setupConnectionModeSelection(@NotNull Text urlText, boolean useUrl) {
-        typeURLRadio.setSelection(useUrl);
-        typeManualRadio.setSelection(!useUrl);
+        if (typeURLRadio != null) typeURLRadio.setSelection(useUrl);
+        if (typeManualRadio != null) typeManualRadio.setSelection(!useUrl);
         urlText.setEditable(useUrl);
 
         for (Control control : propGroupMap.get(GROUP_CONNECTION)) {

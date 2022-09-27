@@ -591,7 +591,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             JSONUtils.getString(cfgObject, RegistryConstants.ATTR_TYPE), DBPConnectionType.DEFAULT_TYPE));
                     String configurationType = JSONUtils.getString(cfgObject, RegistryConstants.ATTR_CONFIGURATION_TYPE);
                     if (!CommonUtils.isEmpty(configurationType)) {
-                        config.setConfigurationType(DBPDriverConfigurationType.valueOf(configurationType));
+                        config.setConfigurationType(CommonUtils.valueOf(DBPDriverConfigurationType.class, configurationType, DBPDriverConfigurationType.MANUAL));
                     }
                     String colorValue = JSONUtils.getString(cfgObject, RegistryConstants.ATTR_COLOR);
                     if (!CommonUtils.isEmpty(colorValue)) {
@@ -861,7 +861,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_SERVER, connectionInfo.getServerName());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_DATABASE, connectionInfo.getDatabaseName());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_URL, connectionInfo.getUrl());
-            if (connectionInfo.getConfigurationType() != null) {
+            if (!connectionInfo.getConfigurationType().isDefault()) {
                 JSONUtils.fieldNE(json, RegistryConstants.ATTR_CONFIGURATION_TYPE, connectionInfo.getConfigurationType().toString());
             }
 

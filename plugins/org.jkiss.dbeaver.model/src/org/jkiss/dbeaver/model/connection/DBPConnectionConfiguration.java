@@ -368,7 +368,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         return configurationType;
     }
 
-    public void setConfigurationType(DBPDriverConfigurationType configurationType) {
+    public void setConfigurationType(@NotNull DBPDriverConfigurationType configurationType) {
         this.configurationType = configurationType;
     }
 
