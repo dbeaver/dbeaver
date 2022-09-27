@@ -30,6 +30,9 @@ public interface DBPApplicationConfigurator {
 
     DBFileController createFileController();
 
+    /**
+     * Returns task controller. Task controller helps to work with task: load and save configuration file for different type of projects
+     */
     DBTTaskController createTaskController();
 
 }

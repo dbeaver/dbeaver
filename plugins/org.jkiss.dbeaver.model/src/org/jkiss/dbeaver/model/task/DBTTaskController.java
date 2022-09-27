@@ -21,6 +21,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
 
+/**
+ * Helps to work properly with tasks: read and save configuration file in different type of DBeaver applications.
+ */
 public interface DBTTaskController extends DBPObjectController {
 
     /**

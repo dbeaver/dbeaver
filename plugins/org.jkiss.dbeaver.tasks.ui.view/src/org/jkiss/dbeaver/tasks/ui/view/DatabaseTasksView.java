@@ -186,12 +186,16 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             manager.add(ActionUtils.makeCommandContribution(getSite(), RUN_TASK_CMD_ID));
             if (isVisible) {
                 manager.add(ActionUtils.makeCommandContribution(getSite(), EDIT_TASK_CMD_ID));
-                //manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES, "Task properties", null));
                 manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_TASK_CMD_ID));
             }
             manager.add(ActionUtils.makeCommandContribution(getSite(), COPY_TASK_CMD_ID));
             if (isVisible) {
-                manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, TaskUIViewMessages.db_tasks_view_context_menu_command_delete_task, null));
+                manager.add(
+                    ActionUtils.makeCommandContribution(
+                        getSite(),
+                        IWorkbenchCommandConstants.EDIT_DELETE,
+                        TaskUIViewMessages.db_tasks_view_context_menu_command_delete_task,
+                        null));
                 manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_TASK_CMD_ID));
                 manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_RENAME_CMD_ID));
             }

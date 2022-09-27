@@ -337,7 +337,15 @@ public class TaskManagerImpl implements DBTTaskManager {
                     }
 
                     TaskFolderImpl taskFolder = searchTaskFolderByName(taskFolderName);
-                    TaskImpl taskConfig = new TaskImpl(projectMetadata, taskDescriptor, id, label, description, createTime, updateTime, taskFolder);
+                    TaskImpl taskConfig = new TaskImpl(
+                        projectMetadata,
+                        taskDescriptor,
+                        id,
+                        label,
+                        description,
+                        createTime,
+                        updateTime,
+                        taskFolder);
                     taskConfig.setProperties(state);
                     if (taskFolder != null) {
                         taskFolder.addTaskToFolder(taskConfig);

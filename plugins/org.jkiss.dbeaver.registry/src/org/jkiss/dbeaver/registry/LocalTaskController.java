@@ -74,6 +74,14 @@ public class LocalTaskController implements DBTTaskController {
         }
     }
 
+    /**
+     * Return path to metadata folder with tasks file inside
+     *
+     * @param projectId unique project name
+     * @param create will create metadata folder if true
+     * @return path to metadata folder
+     * @throws DBException on case of folder creation exception
+     */
     @NotNull
     public Path getMetadataFolder(@NotNull String projectId, boolean create) throws DBException {
         Path parent = DBWorkbench.getPlatform().getWorkspace().getProject(projectId).getMetadataFolder(create);

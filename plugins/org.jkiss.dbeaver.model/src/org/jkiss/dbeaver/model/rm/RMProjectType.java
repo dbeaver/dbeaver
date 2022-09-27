@@ -34,6 +34,12 @@ public enum RMProjectType {
         return prefix;
     }
 
+    /**
+     * Helps to find RMProjectType by prefix
+     *
+     * @param prefix project prefix char
+     * @return RMProjectType by prefix
+     */
     public static RMProjectType getByPrefix(@NotNull String prefix) {
         for (RMProjectType value : values()) {
             if (value.getPrefix().equals(prefix)) {
