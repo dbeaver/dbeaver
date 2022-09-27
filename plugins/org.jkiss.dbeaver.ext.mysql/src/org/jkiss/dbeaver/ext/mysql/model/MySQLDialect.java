@@ -274,4 +274,14 @@ public class MySQLDialect extends JDBCSQLDialect {
     public boolean validIdentifierStart(char c) {
         return Character.isLetterOrDigit(c);
     }
+    
+    @NotNull
+    @Override
+    public String getTypeCastClause(@NotNull DBSTypedObject attribute, @NotNull String expression, boolean isInCondition) {
+        if (isInCondition && attribute.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_JSON)) {
+            return "CAST(" + expression + " AS JSON)";
+        } else {
+            return super.getTypeCastClause(attribute, expression, isInCondition);
+        }
+    }
 }
