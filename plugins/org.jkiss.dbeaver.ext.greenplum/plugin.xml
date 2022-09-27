@@ -69,6 +69,8 @@
                     <parameter name="serverType" value="greenplum"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
+                    <property name="prepareThreshold" value="0"/>
+                    <property name="preferQueryMode" value="simple"/>
                 </driver>
 
                 <provider-properties drivers="*">

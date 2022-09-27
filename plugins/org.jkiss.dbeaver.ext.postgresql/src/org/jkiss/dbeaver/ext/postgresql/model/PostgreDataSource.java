@@ -255,9 +255,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return new PostgreDatabase(monitor, this, name, owner, templateName, tablespace, encoding);
     }
 
-        @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
-    {
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(
+        DBRProgressMonitor monitor,
+        DBPDriver driver,
+        JDBCExecutionContext context,
+        String purpose,
+        DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Map<String, String> props = new LinkedHashMap<>(PostgreDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(PostgreConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
@@ -279,6 +284,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             && !CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
             // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
             props.put("prepareThreshold", "0");
+            props.put("preferQueryMode", "simple");
         }
 
         if (getContainer().isConnectionReadOnly()) {
