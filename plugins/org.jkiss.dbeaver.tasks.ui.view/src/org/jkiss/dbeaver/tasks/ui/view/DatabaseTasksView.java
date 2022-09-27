@@ -42,6 +42,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -112,7 +113,11 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         getSite().registerContextMenu(TASKS_VIEW_MENU_ID, menuMgr, tasksTree.getViewer());
         getSite().setSelectionProvider(tasksTree.getViewer());
 
-        tasksTree.getViewer().addDoubleClickListener(event -> ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite()));
+        tasksTree.getViewer().addDoubleClickListener(event -> {
+            if (ActionUtils.isCommandEnabled(EDIT_TASK_CMD_ID, getSite())) {
+                ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite());
+            }
+        });
         tasksTree.getViewer().addSelectionChangedListener(event -> loadTaskRuns());
 
         DatabaseTasksTree.addDragAndDropSourceSupport(tasksTree.getViewer());
@@ -173,14 +178,27 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         final MenuManager menuMgr = new MenuManager();
         menuMgr.setRemoveAllWhenShown(true);
         menuMgr.addMenuListener(manager -> {
+            boolean isVisible = true;
+            DBTTask selectedTask = tasksTree.getSelectedTask();
+            if (selectedTask != null) {
+                isVisible = selectedTask.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+            }
             manager.add(ActionUtils.makeCommandContribution(getSite(), RUN_TASK_CMD_ID));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), EDIT_TASK_CMD_ID));
-            //manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES, "Task properties", null));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_TASK_CMD_ID));
+            if (isVisible) {
+                manager.add(ActionUtils.makeCommandContribution(getSite(), EDIT_TASK_CMD_ID));
+                manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_TASK_CMD_ID));
+            }
             manager.add(ActionUtils.makeCommandContribution(getSite(), COPY_TASK_CMD_ID));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), IWorkbenchCommandConstants.EDIT_DELETE, TaskUIViewMessages.db_tasks_view_context_menu_command_delete_task, null));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_TASK_CMD_ID));
-            manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_RENAME_CMD_ID));
+            if (isVisible) {
+                manager.add(
+                    ActionUtils.makeCommandContribution(
+                        getSite(),
+                        IWorkbenchCommandConstants.EDIT_DELETE,
+                        TaskUIViewMessages.db_tasks_view_context_menu_command_delete_task,
+                        null));
+                manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_TASK_CMD_ID));
+                manager.add(ActionUtils.makeCommandContribution(getSite(), CREATE_FOLDER_RENAME_CMD_ID));
+            }
             manager.add(new Separator());
             manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
             manager.add(new Separator());

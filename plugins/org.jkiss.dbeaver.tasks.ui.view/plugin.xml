@@ -25,7 +25,7 @@
             class="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             id="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             namespace="org.jkiss.dbeaver.task"
-            properties="scheduled"
+            properties="scheduled,taskEditable"
             type="org.jkiss.dbeaver.model.task.DBTTask"/>
     </extension>
 
@@ -54,6 +54,14 @@
         <definition id="org.jkiss.dbeaver.tasks.part.active">
             <with variable="activePartId">
                 <equals value="org.jkiss.dbeaver.tasks"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.tasks.editable">
+            <with variable="selection">
+                <count value="1"/>
+                <iterate operator="and">
+                    <test property="org.jkiss.dbeaver.task.taskEditable" value="true"/>
+                </iterate>
             </with>
         </definition>
     </extension>
@@ -102,12 +110,19 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
+                        <and>
+                            <test property="org.jkiss.dbeaver.task.taskEditable"/>
+                            <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.task.create" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerCreate"/>
+        <handler commandId="org.jkiss.dbeaver.task.create" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerCreate">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.tasks.editable"/>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.task.copy" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerCopy">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
             <enabledWhen>
@@ -166,9 +181,21 @@
             <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.type.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"><parameter name="group" value="type"/></command>
             <separator name="additions" visible="true"/>
             <command commandId="org.jkiss.dbeaver.task.run"/>
-            <command commandId="org.jkiss.dbeaver.task.create"/>
-            <command commandId="org.jkiss.dbeaver.folder.task.create"/>
-            <command commandId="org.eclipse.ui.edit.delete"/>
+            <command commandId="org.jkiss.dbeaver.task.create">
+                <visibleWhen>
+                    <reference definitionId="org.jkiss.dbeaver.tasks.editable"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.folder.task.create">
+                <visibleWhen>
+                    <reference definitionId="org.jkiss.dbeaver.tasks.editable"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.eclipse.ui.edit.delete">
+                <visibleWhen>
+                    <reference definitionId="org.jkiss.dbeaver.tasks.editable"/>
+                </visibleWhen>
+            </command>
             <separator name="additions" visible="true"/>
         </menuContribution>
 
@@ -186,7 +213,11 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.menu.tasks">
-            <command commandId="org.jkiss.dbeaver.task.create"/>
+            <command commandId="org.jkiss.dbeaver.task.create">
+                <visibleWhen>
+                    <reference definitionId="org.jkiss.dbeaver.tasks.editable"/>
+                </visibleWhen>
+            </command>
             <command commandId="org.eclipse.ui.views.showView" icon="icons/task_list.png" label="%view.tasks.title" style="pulldown" id="org.jkiss.dbeaver.menu.tasks">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.tasks"/>
             </command>

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
+import org.jkiss.dbeaver.model.task.DBTTaskController;
 
 /**
  * DB desktop application.
@@ -28,5 +29,10 @@ public interface DBPApplicationConfigurator {
     DBConfigurationController createConfigurationController();
 
     DBFileController createFileController();
+
+    /**
+     * Returns task controller. Task controller helps to work with task: load and save configuration file for different type of projects
+     */
+    DBTTaskController createTaskController();
 
 }
