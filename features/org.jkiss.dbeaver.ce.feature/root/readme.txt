@@ -58,4 +58,4 @@ Web
   Source code: https://github.com/dbeaver/dbeaver
   Issue tracker: https://github.com/dbeaver/dbeaver/issues
 
-  Please use out issue tracker for technical support, feature suggestions and any other questions
+  Please use our issue tracker for technical support, feature suggestions and any other questions

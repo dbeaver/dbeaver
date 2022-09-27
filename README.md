@@ -72,11 +72,11 @@ Binaries are in `product/community/target/products`
 
 ## Contribution: help the Beaver!
 
-Hooray, we have reached 20k of stars on GitHub and continue to grow!  
-That's really cool, we are glad that you like DBeaver.
+Hooray, we have reached 28k+ stars on GitHub and continue to grow!  
+That's really cool, and we are glad that you like DBeaver.
 
-- We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team just be brave and take a ticket.
-- You can buy <a href="https://dbeaver.com/buy/">one of our commercial versions</a>. They include NoSQL databases support, additional extensions, and official online support. Also, licensed users have priorities in bug fixes and new features development.
+- We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team, just be brave and take a ticket.
+- You can buy <a href="https://dbeaver.com/buy/">one of our commercial versions</a>. They include NoSQL databases support, additional extensions, and official online support. Also, licensed users have priorities in bug fixes and the development of new features.
 
 Thank you!  
 
