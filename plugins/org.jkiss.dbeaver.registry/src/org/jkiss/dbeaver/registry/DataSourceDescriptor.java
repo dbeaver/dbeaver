@@ -1611,6 +1611,18 @@ public class DataSourceDescriptor
         this.forceUseSingleConnection = value;
     }
 
+    @Nullable
+    @Override
+    public String getRequiredExternalAuth() {
+        if (origin instanceof DBPDataSourceOriginExternal) {
+            var externalOrigin = (DBPDataSourceOriginExternal) origin;
+            return externalOrigin.getSubType();
+        }
+
+        var reqAuthProvider = getConnectionConfiguration().getAuthModelDescriptor().getRequiredAuthProviderId();
+        return CommonUtils.isEmpty(reqAuthProvider) ? null : reqAuthProvider;
+    }
+
     public static boolean askForPassword(
         @NotNull DataSourceDescriptor dataSourceContainer,
         @Nullable DBWHandlerConfiguration networkHandler,

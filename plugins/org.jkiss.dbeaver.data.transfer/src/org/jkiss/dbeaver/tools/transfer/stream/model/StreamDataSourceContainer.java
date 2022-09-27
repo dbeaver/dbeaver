@@ -416,4 +416,10 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
 
     }
+
+    @Nullable
+    @Override
+    public String getRequiredExternalAuth() {
+        return null;
+    }
 }
