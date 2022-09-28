@@ -54,10 +54,13 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
@@ -174,27 +177,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             props.put("requireSSL", sslConfig.getStringProperty(MySQLConstants.PROP_REQUIRE_SSL));
         }
 
-        final String caCertProp;
-        final String clientCertProp;
-        final String clientCertKeyProp;
-
-        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
-            // Backward compatibility
-            caCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CA_CERT);
-            clientCertProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_CERT);
-            clientCertKeyProp = sslConfig.getStringProperty(MySQLConstants.PROP_SSL_CLIENT_KEY);
-        } else {
-            caCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
-            clientCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
-            clientCertKeyProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
-        }
-
         {
             // Trust keystore
-            if (!CommonUtils.isEmpty(caCertProp) || !CommonUtils.isEmpty(clientCertProp)) {
-                byte[] caCertData = CommonUtils.isEmpty(caCertProp) ? null : IOUtils.readFileToBuffer(new File(caCertProp));
-                byte[] clientCertData = CommonUtils.isEmpty(clientCertProp) ? null : IOUtils.readFileToBuffer(new File(clientCertProp));
-                byte[] keyData = CommonUtils.isEmpty(clientCertKeyProp) ? null : IOUtils.readFileToBuffer(new File(clientCertKeyProp));
+            byte[] caCertData = readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT, MySQLConstants.PROP_SSL_CA_CERT);
+            byte[] clientCertData = readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT, MySQLConstants.PROP_SSL_CLIENT_CERT);
+            byte[] keyData = readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, MySQLConstants.PROP_SSL_CLIENT_KEY);
+            if (caCertData != null || clientCertData != null) {
                 securityManager.addCertificate(getContainer(), "ssl", caCertData, clientCertData, keyData);
             } else {
                 securityManager.deleteCertificate(getContainer(), "ssl");
@@ -223,6 +211,21 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         if (sslConfig.getBooleanProperty(MySQLConstants.PROP_SSL_DEBUG)) {
             System.setProperty("javax.net.debug", "all");
         }
+    }
+
+    private byte[] readCertificate(DBWHandlerConfiguration configuration, String basePropName, String legacyPropName) throws IOException {
+        String filePath = configuration.getStringProperty(basePropName);
+        if (CommonUtils.isEmpty(filePath)) {
+            filePath = configuration.getStringProperty(legacyPropName);
+        }
+        if (!CommonUtils.isEmpty(filePath)) {
+            return Files.readAllBytes(Path.of(filePath));
+        }
+        String certValue = configuration.getSecureProperty(basePropName + SSLHandlerTrustStoreImpl.CERT_VALUE_SUFFIX);
+        if (!CommonUtils.isEmpty(certValue)) {
+            return certValue.getBytes(StandardCharsets.UTF_8);
+        }
+        return null;
     }
 
     private String makeKeyStorePath(File keyStorePath) throws MalformedURLException {

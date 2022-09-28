@@ -40,10 +40,17 @@ import java.util.Map;
 public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
     public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
+    public static final String CERT_VALUE_SUFFIX = ".value";
+    public static final String PROP_SSL_CA_CERT_VALUE = PROP_SSL_CA_CERT + CERT_VALUE_SUFFIX;
     public static final String PROP_SSL_CLIENT_CERT = "ssl.client.cert";
+    public static final String PROP_SSL_CLIENT_CERT_VALUE = PROP_SSL_CLIENT_CERT + CERT_VALUE_SUFFIX;
     public static final String PROP_SSL_CLIENT_KEY = "ssl.client.key";
-    public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
+    public static final String PROP_SSL_CLIENT_KEY_VALUE = PROP_SSL_CLIENT_KEY + CERT_VALUE_SUFFIX;
+
     public static final String PROP_SSL_KEYSTORE = "ssl.keystore";
+    public static final String PROP_SSL_KEYSTORE_VALUE = PROP_SSL_KEYSTORE + CERT_VALUE_SUFFIX;
+
+    public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
     public static final String PROP_SSL_METHOD = "ssl.method";
     public static final String PROP_SSL_FORCE_TLS12 = "ssl.forceTls12";
     public static final String CERT_TYPE = "ssl";
