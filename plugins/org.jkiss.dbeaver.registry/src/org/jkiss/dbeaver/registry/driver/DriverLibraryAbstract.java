@@ -228,5 +228,15 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         return getDisplayName();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DriverLibraryAbstract && ((DriverLibraryAbstract) obj).getId().equals(getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getId().hashCode();
+    }
+
     public abstract DBPDriverLibrary copyLibrary(DriverDescriptor driverDescriptor);
 }
