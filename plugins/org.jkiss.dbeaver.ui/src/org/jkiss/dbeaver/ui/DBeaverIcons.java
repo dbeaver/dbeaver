@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -182,14 +183,14 @@ public class DBeaverIcons
     ) {
         DBPImage base = image.getMain();
         if (base instanceof DBIconComposite) {
-            ArrayList<ImageDescriptor> decorations = new ArrayList<>();
+            List<ImageDescriptor> decorations = new ArrayList<>();
             decorations.add(getImageDescriptor(map.apply(image)));
             do {
                 image = (DBIconComposite) base;
                 decorations.add(getImageDescriptor(map.apply(image)));
                 base = image.getMain();
             } while (base instanceof DBIconComposite);
-            return decorations.toArray(new ImageDescriptor[decorations.size()]);
+            return decorations.toArray(ImageDescriptor[]::new);
         } else {
             return new ImageDescriptor[]{getImageDescriptor(map.apply(image))};
         }
