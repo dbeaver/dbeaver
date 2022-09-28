@@ -99,7 +99,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     public static Map<String, String> setGlobalTrustStore(DBPDataSource dataSource) {
         final DBACertificateStorage securityManager = DBWorkbench.getPlatform().getCertificateStorage();
 
-        String keyStorePath = securityManager.getKeyStorePath(dataSource.getContainer(), CERT_TYPE).getAbsolutePath();
+        String keyStorePath = securityManager.getKeyStorePath(dataSource.getContainer(), CERT_TYPE).toAbsolutePath().toString();
         String keyStoreType = securityManager.getKeyStoreType(dataSource.getContainer());
         char[] keyStorePass = securityManager.getKeyStorePassword(dataSource.getContainer(), CERT_TYPE);
 

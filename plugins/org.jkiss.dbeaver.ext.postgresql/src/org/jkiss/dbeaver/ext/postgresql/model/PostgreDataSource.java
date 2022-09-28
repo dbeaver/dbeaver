@@ -49,11 +49,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -295,34 +299,53 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return props;
     }
 
-    private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) {
+    private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws DBException {
         props.put(PostgreConstants.PROP_SSL, "true");
 
-        final String rootCertProp;
-        final String clientCertProp;
-        final String keyCertProp;
+        if (!DBWorkbench.isDistributed()) {
+            // Local FS mode
+            final String rootCertProp;
+            final String clientCertProp;
+            final String keyCertProp;
 
-        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
-            // Backward compatibility
-            rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
-            clientCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT);
-            keyCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY);
+            if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+                // Backward compatibility
+                rootCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_ROOT_CERT);
+                clientCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_CERT);
+                keyCertProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_CLIENT_KEY);
+            } else {
+                rootCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
+                clientCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
+                keyCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+            }
+
+            if (!CommonUtils.isEmpty(rootCertProp)) {
+                props.put("sslrootcert", rootCertProp);
+            }
+            if (!CommonUtils.isEmpty(clientCertProp)) {
+                props.put("sslcert", clientCertProp);
+            }
+            if (!CommonUtils.isEmpty(keyCertProp)) {
+                props.put("sslkey", keyCertProp);
+            }
         } else {
-            rootCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
-            clientCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
-            keyCertProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
-        }
+            try {
+                String rootCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT_VALUE);
+                if (!CommonUtils.isEmpty(rootCertProp)) {
+                    props.put("sslrootcert", saveCertificateToFile(rootCertProp));
+                }
+                String clientCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT_VALUE);
+                if (!CommonUtils.isEmpty(clientCertProp)) {
+                    props.put("sslcert", saveCertificateToFile(clientCertProp));
+                }
+                String keyCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY_VALUE);
+                if (!CommonUtils.isEmpty(keyCertProp)) {
+                    props.put("sslkey", saveCertificateToFile(keyCertProp));
+                }
+            } catch (IOException e) {
+                throw new DBException("Can not configure SSL", e);
+            }
 
-        if (!CommonUtils.isEmpty(rootCertProp)) {
-            props.put("sslrootcert", rootCertProp);
-        }
-
-        if (!CommonUtils.isEmpty(clientCertProp)) {
-            props.put("sslcert", clientCertProp);
-        }
-
-        if (!CommonUtils.isEmpty(keyCertProp)) {
-            props.put("sslkey", keyCertProp);
         }
 
         final String modeProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_MODE);
@@ -334,6 +357,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             props.put("sslfactory", factoryProp);
         }
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
+    }
+
+    private String saveCertificateToFile(String rootCertProp) throws IOException {
+        Path certPath = Files.createTempFile(
+            DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
+            "pg-ssl-" + getContainer().getId(),
+            ".cert");
+        Files.writeString(certPath, rootCertProp);
+        trackTempFile(certPath);
+        return certPath.toAbsolutePath().toString();
     }
 
     private void initProxySSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) {

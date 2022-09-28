@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
@@ -228,11 +227,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return null;
     }
 
-    private String makeKeyStorePath(File keyStorePath) throws MalformedURLException {
+    private String makeKeyStorePath(Path keyStorePath) throws MalformedURLException {
         if (isMariaDB()) {
-            return keyStorePath.getAbsolutePath();
+            return keyStorePath.toAbsolutePath().toString();
         } else {
-            return keyStorePath.toURI().toURL().toString();
+            return keyStorePath.toUri().toURL().toString();
         }
     }
 
