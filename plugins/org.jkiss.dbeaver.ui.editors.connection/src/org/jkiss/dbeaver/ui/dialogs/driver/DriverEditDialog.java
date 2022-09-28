@@ -114,8 +114,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
 
-    private final boolean isDistributed = DBWorkbench.getPlatform().getApplication().isDistributed();
-
     static int getDialogCount() {
         return dialogCount;
     }
@@ -504,7 +502,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         });
 
-        if (!isDistributed) {
+        if (!DBWorkbench.isDistributed()) {
             UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_add_artifact, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -809,7 +807,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     @Override
     protected void okPressed() {
 
-        if (isDistributed) {
+        if (DBWorkbench.isDistributed()) {
             try {
                 syncDriverLibraries();
             } catch (DBException e) {

@@ -820,7 +820,7 @@ public class DataSourceDescriptor
         if (secretValue != null) {
             loadFromSecret(secretValue);
         } else {
-            if (!DBWorkbench.getPlatform().getApplication().isDistributed()) {
+            if (!DBWorkbench.isDistributed()) {
                 // Backward compatibility
                 loadFromLegacySecret(secretController);
             }
@@ -1735,19 +1735,15 @@ public class DataSourceDescriptor
     /**
      * Saves datasource secret credentials to secret value (json)
      */
+    @Nullable
     private String saveToSecret() {
         Map<String, Object> props = new LinkedHashMap<>();
 
-        // Info fields (we don't use them anyhow)
-        props.put("datasource-id", getId());
-        props.put("datasource-name", getName());
-        props.put("datasource-driver", getDriver().getFullId());
-
         // Primary props
-        if (connectionInfo.getUserName() != null) {
+        if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
             props.put(RegistryConstants.ATTR_USER, connectionInfo.getUserName());
         }
-        if (connectionInfo.getUserPassword() != null) {
+        if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
             props.put(RegistryConstants.ATTR_PASSWORD, connectionInfo.getUserPassword());
         }
         // Additional auth props
@@ -1766,7 +1762,20 @@ public class DataSourceDescriptor
         if (!handlersConfigs.isEmpty()) {
             props.put(RegistryConstants.TAG_HANDLERS, handlersConfigs);
         }
-        return DBInfoUtils.SECRET_GSON.toJson(props);
+        if (props.isEmpty()) {
+            return null;
+        }
+
+        // Info fields (we don't use them anyhow)
+        // Add them only if we have real props
+        // Add them first (just to make secret easy-to-read during debugging)
+        Map<String, Object> propsFull = new LinkedHashMap<>();
+        propsFull.put("datasource-id", getId());
+        propsFull.put("datasource-name", getName());
+        propsFull.put("datasource-driver", getDriver().getFullId());
+        propsFull.putAll(props);
+
+        return DBInfoUtils.SECRET_GSON.toJson(propsFull);
     }
 
     private void loadFromSecret(String secretValue) {

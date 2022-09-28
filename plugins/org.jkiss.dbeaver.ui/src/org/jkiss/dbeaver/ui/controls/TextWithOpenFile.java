@@ -20,10 +20,15 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.util.Base64;
 
 /**
  * TextWithOpen
@@ -33,17 +38,23 @@ public class TextWithOpenFile extends TextWithOpen
     private final String title;
     private final String[] filterExt;
     private final int style;
+    private final boolean binary;
     private boolean openFolder = false;
 
-    public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style) {
+    public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary) {
         super(parent);
         this.title = title;
         this.filterExt = filterExt;
         this.style = style;
+        this.binary = binary;
     }
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt) {
-        this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN);
+        this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN, false);
+    }
+
+    public TextWithOpenFile(Composite parent, String title, String[] filterExt, boolean binary) {
+        this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN, binary);
     }
 
     public void setOpenFolder(boolean openFolder) {
@@ -70,6 +81,20 @@ public class TextWithOpenFile extends TextWithOpen
                 DialogUtils.setCurDialogFolder(directory);
             }
             selected = DialogUtils.openFileDialog(fd);
+
+            if (selected != null && isPlainTextEditor()) {
+                Path filePath = Path.of(selected);
+                try {
+                    if (binary) {
+                        byte[] bytes = Files.readAllBytes(filePath);
+                        selected = Base64.getEncoder().encodeToString(bytes);
+                    } else {
+                        selected = Files.readString(filePath);
+                    }
+                } catch (IOException e) {
+                    DBWorkbench.getPlatformUI().showError("File read error", "Can't read file '" + filePath + "' contents", e);
+                }
+            }
         }
         if (selected != null) {
             setText(selected);

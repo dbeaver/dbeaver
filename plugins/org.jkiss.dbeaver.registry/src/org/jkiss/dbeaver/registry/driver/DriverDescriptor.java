@@ -681,7 +681,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.driverClass = null;
         this.isLoaded = false;
 
-        if (!isDistributedMode()) {
+        if (!DBWorkbench.isDistributed()) {
             this.resolvedFiles.clear();
         }
     }
@@ -1272,7 +1272,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     private List<Path> validateFilesPresence(boolean resetVersions) {
-        if (isDistributedMode()) {
+        if (DBWorkbench.isDistributed()) {
             // We are in distributed mode
             return syncDistributedDependencies();
         }
@@ -1779,10 +1779,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
         return libraries.toArray(new String[0]);
-    }
-
-    static boolean isDistributedMode() {
-        return DBWorkbench.getPlatform().getApplication().isDistributed();
     }
 
 }

@@ -57,7 +57,7 @@ public class SSHUtils {
         return IOUtils.findFreePort(minPort, maxPort);
     }
 
-    public static boolean isKeyEncrypted(String privKeyPath) {
+    public static boolean isKeyFileEncrypted(String privKeyPath) {
             // Check whether this key is encrypted
         if (privKeyPath != null) {
             // Determine whether public key is encrypted

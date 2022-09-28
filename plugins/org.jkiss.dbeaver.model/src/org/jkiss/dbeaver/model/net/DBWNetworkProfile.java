@@ -117,7 +117,7 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
         String secretValue = secretController.getSecretValue(getSecretKeyId());
         if (secretValue == null) {
-            if (!DBWorkbench.getPlatform().getApplication().isDistributed()) {
+            if (!DBWorkbench.isDistributed()) {
                 // Backward compatibility
                 loadFromLegacySecret(secretController);
             }
