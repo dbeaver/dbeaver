@@ -934,7 +934,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public void setDriverLibraries(List<? extends DBPDriverLibrary> libs) {
+        List<DBPDriverLibrary> deletedLibs = new ArrayList<>();
+        for (DBPDriverLibrary lib : this.libraries) {
+            if (!lib.isCustom() && !libs.contains(lib)) {
+                lib.setDisabled(true);
+                deletedLibs.add(lib);
+            }
+        }
         this.libraries.clear();
+        this.libraries.addAll(deletedLibs);
         this.libraries.addAll(libs);
     }
 
