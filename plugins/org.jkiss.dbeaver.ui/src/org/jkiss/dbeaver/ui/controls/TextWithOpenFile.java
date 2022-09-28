@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -107,7 +108,7 @@ public class TextWithOpenFile extends TextWithOpen
             return null;
         }
         try {
-            String dirPath = CommonUtils.getDirectoryPath(text);
+            String dirPath = IOUtils.getDirectoryPath(text);
             if (CommonUtils.isNotEmpty(dirPath)) {
                 return dirPath;
             }

@@ -61,7 +61,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
     }
 
     @Override
-    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelPgPassCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
+    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull AuthModelPgPassCredentials credentials, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
         if (credentials.getParseError() != null) {
             throw new DBCException("Couldn't get password from PGPASS file", credentials.getParseError());
         }

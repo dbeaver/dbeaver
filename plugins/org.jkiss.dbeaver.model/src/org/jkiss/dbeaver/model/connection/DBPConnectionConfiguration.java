@@ -489,7 +489,11 @@ public class DBPConnectionConfiguration implements DBPObject {
         if (authProperties == null) {
             authProperties = new HashMap<>();
         }
-        this.authProperties.put(name, value);
+        if (value == null) {
+            this.authProperties.remove(name);
+        } else {
+            this.authProperties.put(name, value);
+        }
     }
 
     ///////////////////////////////////////////////////////////

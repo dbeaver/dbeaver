@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SecurityManagerUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -425,7 +426,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
         if (tempFiles != null) {
             for (Path tmpFile : tempFiles) {
                 try {
-                    Files.delete(tmpFile);
+                    if (Files.isDirectory(tmpFile)) {
+                        IOUtils.deleteDirectory(tmpFile);
+                    } else {
+                        Files.delete(tmpFile);
+                    }
                 } catch (IOException e) {
                     log.debug("Error deleting temp file for '" + getContainer().getName() + "'", e);
                 }
@@ -771,7 +776,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return certPath.toAbsolutePath().toString();
     }
 
-    protected void trackTempFile(Path file) {
+    public void trackTempFile(Path file) {
         if (this.tempFiles == null) {
             this.tempFiles = new ArrayList<>();
         }
