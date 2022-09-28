@@ -742,12 +742,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public void saveDataSources() {
+        saveDataSources(new VoidProgressMonitor());
+    }
+
+    protected void saveDataSources(DBRProgressMonitor monitor) {
         if (project.isInMemory()) {
             return;
         }
 
         updateProjectNature();
-        final DBRProgressMonitor monitor = new VoidProgressMonitor();
         saveInProgress = true;
         try {
             for (DBPDataSourceConfigurationStorage storage : storages) {
@@ -972,7 +975,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         protected IStatus run(DBRProgressMonitor monitor) {
             synchronized (DataSourceRegistry.this) {
                 //log.debug("Save column config " + System.currentTimeMillis());
-                saveDataSources();
+                saveDataSources(monitor);
             }
             return Status.OK_STATUS;
         }

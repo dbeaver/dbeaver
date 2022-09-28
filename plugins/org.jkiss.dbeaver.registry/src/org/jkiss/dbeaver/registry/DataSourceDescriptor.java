@@ -1750,17 +1750,19 @@ public class DataSourceDescriptor
         if (!CommonUtils.isEmpty(connectionInfo.getAuthProperties())) {
             props.put(RegistryConstants.TAG_PROPERTIES, connectionInfo.getAuthProperties());
         }
-        // Handlers
-        List<Map<String, Object>> handlersConfigs = new ArrayList<>();
-        for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
-            Map<String, Object> handlerProps = hc.saveToMap();
-            if (!handlerProps.isEmpty()) {
-                handlerProps.put(RegistryConstants.ATTR_ID, hc.getHandlerDescriptor().getId());
-                handlersConfigs.add(handlerProps);
+        if (CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
+            // Handlers. If config profile is set then props are saved there
+            List<Map<String, Object>> handlersConfigs = new ArrayList<>();
+            for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
+                Map<String, Object> handlerProps = hc.saveToMap();
+                if (!handlerProps.isEmpty()) {
+                    handlerProps.put(RegistryConstants.ATTR_ID, hc.getHandlerDescriptor().getId());
+                    handlersConfigs.add(handlerProps);
+                }
             }
-        }
-        if (!handlersConfigs.isEmpty()) {
-            props.put(RegistryConstants.TAG_HANDLERS, handlersConfigs);
+            if (!handlersConfigs.isEmpty()) {
+                props.put(RegistryConstants.TAG_HANDLERS, handlersConfigs);
+            }
         }
         if (props.isEmpty()) {
             return null;
@@ -1770,7 +1772,6 @@ public class DataSourceDescriptor
         // Add them only if we have real props
         // Add them first (just to make secret easy-to-read during debugging)
         Map<String, Object> propsFull = new LinkedHashMap<>();
-        propsFull.put("datasource-id", getId());
         propsFull.put("datasource-name", getName());
         propsFull.put("datasource-driver", getDriver().getFullId());
         propsFull.putAll(props);
