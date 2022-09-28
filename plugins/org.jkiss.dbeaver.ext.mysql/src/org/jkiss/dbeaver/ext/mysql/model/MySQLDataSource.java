@@ -55,10 +55,7 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -178,9 +175,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
         {
             // Trust keystore
-            byte[] caCertData = readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT, MySQLConstants.PROP_SSL_CA_CERT);
-            byte[] clientCertData = readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT, MySQLConstants.PROP_SSL_CLIENT_CERT);
-            byte[] keyData = readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, MySQLConstants.PROP_SSL_CLIENT_KEY);
+            byte[] caCertData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT, MySQLConstants.PROP_SSL_CA_CERT);
+            byte[] clientCertData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT, MySQLConstants.PROP_SSL_CLIENT_CERT);
+            byte[] keyData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, MySQLConstants.PROP_SSL_CLIENT_KEY);
             if (caCertData != null || clientCertData != null) {
                 securityManager.addCertificate(getContainer(), "ssl", caCertData, clientCertData, keyData);
             } else {
@@ -210,21 +207,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         if (sslConfig.getBooleanProperty(MySQLConstants.PROP_SSL_DEBUG)) {
             System.setProperty("javax.net.debug", "all");
         }
-    }
-
-    private byte[] readCertificate(DBWHandlerConfiguration configuration, String basePropName, String legacyPropName) throws IOException {
-        String filePath = configuration.getStringProperty(basePropName);
-        if (CommonUtils.isEmpty(filePath)) {
-            filePath = configuration.getStringProperty(legacyPropName);
-        }
-        if (!CommonUtils.isEmpty(filePath)) {
-            return Files.readAllBytes(Path.of(filePath));
-        }
-        String certValue = configuration.getSecureProperty(basePropName + SSLHandlerTrustStoreImpl.CERT_VALUE_SUFFIX);
-        if (!CommonUtils.isEmpty(certValue)) {
-            return certValue.getBytes(StandardCharsets.UTF_8);
-        }
-        return null;
     }
 
     private String makeKeyStorePath(Path keyStorePath) throws MalformedURLException {

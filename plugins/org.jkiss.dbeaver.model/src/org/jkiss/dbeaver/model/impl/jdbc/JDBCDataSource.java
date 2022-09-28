@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSInstanceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SecurityManagerUtils;
@@ -758,6 +759,16 @@ public abstract class JDBCDataSource extends AbstractDataSource
         catch (SQLException e) {
             throw new DBException(e, this);
         }
+    }
+
+    protected String saveCertificateToFile(String rootCertProp) throws IOException {
+        Path certPath = Files.createTempFile(
+            DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
+            getContainer().getDriver().getId() + "-" + getContainer().getId(),
+            ".cert");
+        Files.writeString(certPath, rootCertProp);
+        trackTempFile(certPath);
+        return certPath.toAbsolutePath().toString();
     }
 
     protected void trackTempFile(Path file) {

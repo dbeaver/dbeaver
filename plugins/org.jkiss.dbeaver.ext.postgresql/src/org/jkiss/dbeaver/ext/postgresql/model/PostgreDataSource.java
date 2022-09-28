@@ -56,8 +56,6 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -357,16 +355,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             props.put("sslfactory", factoryProp);
         }
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
-    }
-
-    private String saveCertificateToFile(String rootCertProp) throws IOException {
-        Path certPath = Files.createTempFile(
-            DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
-            "pg-ssl-" + getContainer().getId(),
-            ".cert");
-        Files.writeString(certPath, rootCertProp);
-        trackTempFile(certPath);
-        return certPath.toAbsolutePath().toString();
     }
 
     private void initProxySSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) {
