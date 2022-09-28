@@ -40,8 +40,9 @@ import java.util.Map;
  */
 public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
-    public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
     public static final String CERT_VALUE_SUFFIX = ".value";
+
+    public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
     public static final String PROP_SSL_CA_CERT_VALUE = PROP_SSL_CA_CERT + CERT_VALUE_SUFFIX;
     public static final String PROP_SSL_CLIENT_CERT = "ssl.client.cert";
     public static final String PROP_SSL_CLIENT_CERT_VALUE = PROP_SSL_CLIENT_CERT + CERT_VALUE_SUFFIX;

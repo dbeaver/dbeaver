@@ -114,6 +114,10 @@ public class ClickhouseDataSource extends GenericDataSource {
                     if (!CommonUtils.isEmpty(clientKeyProp)) {
                         properties.put(ClickhouseConstants.SSL_KEY_PASSWORD, saveCertificateToFile(clientKeyProp));
                     }
+                    String caCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
+                    if (!CommonUtils.isEmpty(caCertProp)) {
+                        properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE, saveCertificateToFile(caCertProp));
+                    }
                 } catch (IOException e) {
                     throw new DBException("Can not configure SSL", e);
                 }
@@ -122,6 +126,8 @@ public class ClickhouseDataSource extends GenericDataSource {
                     sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT));
                 properties.put(ClickhouseConstants.SSL_KEY_PASSWORD,
                     sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY));
+                properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE,
+                    sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT));
             }
             properties.put(ClickhouseConstants.SSL_MODE, sslConfig.getStringProperty(ClickhouseConstants.SSL_MODE_CONF));
         } else {
@@ -131,8 +137,6 @@ public class ClickhouseDataSource extends GenericDataSource {
                 properties.put(ClickhouseConstants.SSL_MODE, mode.toLowerCase());
             }
         }
-        properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE,
-            sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT));
     }
 
     @Nullable
