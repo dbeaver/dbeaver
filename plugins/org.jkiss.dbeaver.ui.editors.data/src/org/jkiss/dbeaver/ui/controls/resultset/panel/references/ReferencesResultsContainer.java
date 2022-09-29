@@ -26,6 +26,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,6 +39,8 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -48,6 +52,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -85,7 +90,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
         this.mainComposite = UIUtils.createComposite(parent, 1);
 
-        Composite keySelectorPanel = UIUtils.createComposite(this.mainComposite, 2);
+        Composite keySelectorPanel = UIUtils.createComposite(this.mainComposite, 3);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 5;
         keySelectorPanel.setLayoutData(gd);
@@ -116,6 +121,30 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
             }
         });
+
+        final ToolBar toolbar = new ToolBar(keySelectorPanel, SWT.HORIZONTAL | SWT.FLAT | SWT.RIGHT);
+        UIUtils.createToolItem(
+            toolbar,
+            ResultSetMessages.refs_open_target,
+            ResultSetMessages.refs_open_target_tip,
+            DBIcon.TREE_TABLE,
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (activeReferenceKey == null || activeReferenceKey.targetEntity == null) {
+                        return;
+                    }
+                    UIUtils.runUIJob("Open object editor", monitor -> {
+                        final DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, activeReferenceKey.targetEntity, true);
+                        if (node != null) {
+                            NavigatorUtils.openNavigatorNode(node, UIUtils.getActiveWorkbenchWindow());
+                        }
+                    });
+                }
+            });
+
+        final Label separator = new Label(keySelectorPanel, SWT.SEPARATOR | SWT.HORIZONTAL);
+        separator.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false, 3, 1));
 
         {
             Composite viewerContainer = new Composite(mainComposite, SWT.NONE);
