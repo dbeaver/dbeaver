@@ -97,6 +97,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             }
         }
 
+        Path platformFile = null;
         try {
             Path libraryFile = Path.of(localFilePath);
             if (Files.exists(libraryFile)) {
@@ -104,7 +105,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             }
 
             // Try to get local file
-            Path platformFile = detectLocalFile();
+            platformFile = detectLocalFile();
             if (platformFile != null && Files.exists(platformFile)) {
                 // Relative file do not exists - use plain one
                 return platformFile;
@@ -139,7 +140,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             }
         }
 
-        return null;
+        return platformFile;
     }
 
     @Nullable
