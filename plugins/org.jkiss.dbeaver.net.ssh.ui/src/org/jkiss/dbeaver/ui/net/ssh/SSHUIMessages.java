@@ -23,7 +23,8 @@ public class SSHUIMessages extends NLS {
 
 	public static String model_ssh_configurator_group_settings;
 	public static String model_ssh_configurator_group_advanced;
-	public static String model_ssh_configurator_checkbox_save_pass;
+	public static String model_ssh_configurator_checkbox_save_password;
+	public static String model_ssh_configurator_checkbox_save_passphrase;
 	public static String model_ssh_configurator_combo_auth_method;
 	public static String model_ssh_configurator_combo_password;
 	public static String model_ssh_configurator_combo_pub_key;

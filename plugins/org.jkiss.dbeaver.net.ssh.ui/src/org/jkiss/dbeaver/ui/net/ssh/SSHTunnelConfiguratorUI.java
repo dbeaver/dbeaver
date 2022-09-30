@@ -601,15 +601,23 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             switch (authMethodCombo.getSelectionIndex()) {
                 case 0:
                     showPrivateKeyField(false);
-                    showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_password);
+                    showPasswordField(
+                        true,
+                        SSHUIMessages.model_ssh_configurator_label_password,
+                        SSHUIMessages.model_ssh_configurator_checkbox_save_password
+                    );
                     break;
                 case 1:
                     showPrivateKeyField(true);
-                    showPasswordField(true, SSHUIMessages.model_ssh_configurator_label_passphrase);
+                    showPasswordField(
+                        true,
+                        SSHUIMessages.model_ssh_configurator_label_passphrase,
+                        SSHUIMessages.model_ssh_configurator_checkbox_save_passphrase
+                    );
                     break;
                 case 2:
                     showPrivateKeyField(false);
-                    showPasswordField(false, null);
+                    showPasswordField(false, null, null);
                     break;
                 default:
                     break;
@@ -618,12 +626,16 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             getParent().getParent().getParent().layout(true, true);
         }
 
-        private void showPasswordField(boolean show, String passwordLabelText) {
+        private void showPasswordField(boolean show, @Nullable String passwordLabelText, @Nullable String savePasswordCheckboxText) {
             UIUtils.setControlVisible(passwordLabel, show);
             UIUtils.setControlVisible(passwordText.getParent(), show);
 
             if (passwordLabelText != null) {
                 passwordLabel.setText(passwordLabelText);
+            }
+            
+            if (savePasswordCheckboxText != null) {
+                savePasswordCheckbox.setText(savePasswordCheckboxText);
             }
         }
 
