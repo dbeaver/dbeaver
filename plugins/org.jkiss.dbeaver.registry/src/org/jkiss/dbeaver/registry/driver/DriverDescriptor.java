@@ -132,7 +132,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         @Override
         public String toString() {
-            return file.getFileName().toString();
+            return file != null ? file.getFileName().toString() : this.id;
         }
     }
 
@@ -941,6 +941,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 deletedLibs.add(lib);
             }
         }
+        for (DBPDriverLibrary lib : libs) {
+            lib.setDisabled(false);
+        }
+
         this.libraries.clear();
         this.libraries.addAll(deletedLibs);
         this.libraries.addAll(libs);
