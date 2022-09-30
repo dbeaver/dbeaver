@@ -106,7 +106,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         scrolledComposite.setExpandVertical(true);
         {
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
-            credentialsPanel = new CredentialsPanel(settingsGroup, true);
+            credentialsPanel = new CredentialsPanel(settingsGroup);
         }
 
         {
@@ -135,7 +135,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 }
             });
 
-            jumpServerCredentialsPanel = new CredentialsPanel(client, false);
+            jumpServerCredentialsPanel = new CredentialsPanel(client);
         }
 
         {
@@ -486,7 +486,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         private final Text passwordText;
         private final Button savePasswordCheckbox;
 
-        public CredentialsPanel(@NotNull Composite parent, boolean showSavePasswordCheckbox) {
+        public CredentialsPanel(@NotNull Composite parent) {
             super(parent, SWT.NONE);
 
             setLayout(new GridLayout(2, false));
@@ -534,51 +534,43 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 passwordText = new Text(passComp, SWT.BORDER | SWT.PASSWORD);
                 passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                if (showSavePasswordCheckbox) {
-                    savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_pass, false);
-                    savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            passwordText.setEnabled(savePasswordCheckbox.getSelection());
-                        }
-                    });
-                    savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-                } else {
-                    savePasswordCheckbox = null;
-                    ((GridData) passwordText.getLayoutData()).horizontalSpan = 2;
-                }
+                savePasswordCheckbox = UIUtils.createCheckbox(passComp, SSHUIMessages.model_ssh_configurator_checkbox_save_password, false);
+                savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        passwordText.setEnabled(savePasswordCheckbox.getSelection());
+                    }
+                });
+                savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             }
         }
 
         public void loadSettings(@NotNull DBWHandlerConfiguration configuration, @NotNull String prefix) {
-            hostNameText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + DBWHandlerConfiguration.PROP_HOST)));
-            final int portString = configuration.getIntProperty(prefix + DBWHandlerConfiguration.PROP_PORT);
-            if (portString != 0) {
-                hostPortText.setText(String.valueOf(portString));
+            final int port = configuration.getIntProperty(prefix + DBWHandlerConfiguration.PROP_PORT);
+            final String username;
+            final String password;
+            final boolean savePassword;
+
+            if (prefix.isEmpty()) {
+                username = configuration.getUserName();
+                password = configuration.getPassword();
+                savePassword = configuration.isSavePassword();
             } else {
-                hostPortText.setText(String.valueOf(SSHConstants.DEFAULT_SSH_PORT));
+                username = configuration.getStringProperty(prefix + RegistryConstants.ATTR_NAME);
+                password = configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD);
+                savePassword = configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD);
             }
+
+            hostNameText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + DBWHandlerConfiguration.PROP_HOST)));
+            hostPortText.setText(String.valueOf(port != 0 ? port : SSHConstants.DEFAULT_SSH_PORT));
             authMethodCombo.select(CommonUtils.valueOf(SSHConstants.AuthType.class, configuration.getStringProperty(prefix + SSHConstants.PROP_AUTH_TYPE), SSHConstants.AuthType.PASSWORD).ordinal());
             privateKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH)));
-            if (prefix.isEmpty()) {
-                userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
-                if (savePasswordCheckbox != null) {
-                    savePasswordCheckbox.setSelection(configuration.isSavePassword());
-                    passwordText.setEnabled(savePasswordCheckbox.getSelection());
-                }
-                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
-                    passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
-                }
-            } else {
-                userNameText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + RegistryConstants.ATTR_NAME)));
-                passwordText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD)));
-                if (savePasswordCheckbox != null) {
-                    savePasswordCheckbox.setSelection(configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD));
-                }
-                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
-                    passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
-                }
-            }
+
+            userNameText.setText(CommonUtils.notEmpty(username));
+            passwordText.setText(CommonUtils.notEmpty(savePassword ? password : null));
+            passwordText.setEnabled(savePassword);
+            savePasswordCheckbox.setSelection(savePassword);
+
             updateAuthMethodVisibility();
         }
 
@@ -590,19 +582,16 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
             if (prefix.isEmpty()) {
                 configuration.setUserName(userNameText.getText().trim());
+                configuration.setSavePassword(savePasswordCheckbox.getSelection());
 
-                if (savePasswordCheckbox != null) {
-                    configuration.setSavePassword(savePasswordCheckbox.getSelection());
-                }
-                if (savePasswordCheckbox == null || configuration.isSavePassword()) {
+                if (configuration.isSavePassword()) {
                     configuration.setPassword(passwordText.getText());
                 }
             } else {
                 configuration.setProperty(prefix + RegistryConstants.ATTR_NAME, userNameText.getText().trim());
-                if (savePasswordCheckbox != null) {
-                    configuration.setProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD, savePasswordCheckbox.getSelection());
-                }
-                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
+                configuration.setProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD, savePasswordCheckbox.getSelection());
+
+                if (savePasswordCheckbox.getSelection()) {
                     configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
                 }
             }
