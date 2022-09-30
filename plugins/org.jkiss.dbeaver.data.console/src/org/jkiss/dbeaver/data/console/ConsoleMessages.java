@@ -22,9 +22,10 @@ public class ConsoleMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.data.console.ConsoleMessages"; //$NON-NLS-1$
 
     public static String console_view_item_text;
-    public static String pref_page_console_view_label_show_output_console_view;
-    public static String pref_page_console_view_label_show_output_console_view_tip;
-    public static String console_view_action_tooltip;
+    public static String pref_page_console_view_show_output_console_view_label;
+    public static String pref_page_console_view_show_output_console_view_tip;
+    public static String pref_page_console_view_show_query_text_label;
+    public static String pref_page_console_view_show_server_output_label;
 
     static {
         // resource bundle initialization

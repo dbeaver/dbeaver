@@ -100,6 +100,9 @@ import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.*;
+import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddIn;
+import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
@@ -124,11 +127,12 @@ import org.jkiss.utils.CommonUtils;
 import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * SQL Executor
@@ -216,6 +220,8 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
     private ScriptAutoSaveJob scriptAutoSavejob;
     private boolean isResultSetAutoFocusEnabled = true;
+    
+    private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
     private static class ServerOutputInfo {
         private final DBCServerOutputReader outputReader;
@@ -263,8 +269,8 @@ public class SQLEditor extends SQLEditorBase implements
         this.extraPresentationDescriptor = SQLPresentationRegistry.getInstance().getPresentation(this);
     }
     
-    public void setConsoleViewOutputEnabled(boolean value) {
-        isResultSetAutoFocusEnabled = !value;
+    public void setResultSetAutoFocusEnabled(boolean value) {
+        isResultSetAutoFocusEnabled = value;
     }
 
     @Override
@@ -1625,7 +1631,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
     
     private void setResultTabSelection(CTabItem item) {
-        if (isResultSetAutoFocusEnabled || !(item.getData() instanceof QueryResultsContainer)) {
+        if (isResultSetAutoFocusEnabled || !(item.getData() instanceof QueryResultsContainer) || resultTabs.getItemCount() == 1) {
             resultTabs.setSelection(item);
         }
     }
@@ -1971,6 +1977,32 @@ public class SQLEditor extends SQLEditorBase implements
             }
 
         });
+        
+        // Initialize the add-ins and keep references for further cleanup on editor dispose
+        for (SQLEditorAddInDescriptor addInDesc : SQLEditorAddInsRegistry.getInstance().getAddIns()) {
+            try {
+                SQLEditorAddIn addIn = addInDesc.createInstance();
+                addIn.init(this);
+                addIns.add(addIn);
+            } catch (Throwable ex) {
+                log.error("Error during SQL editor add-in initialilzation", ex); //$NON-NLS-1$
+            }
+        }
+    }
+    
+    /**
+     * Obtain the add-in instance by its concrete type
+     */
+    @Nullable
+    public <T extends SQLEditorAddIn> T findAddIn(@NotNull Class<T> addInClass) {
+        for (SQLEditorAddIn addIn : addIns) { // we are ok with brute-force until there are not many of add-ins
+            if (addInClass.isInstance(addIn)) {
+                @SuppressWarnings("unchecked")
+                T concreteAddIn = (T) addIn;
+                return concreteAddIn;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -2745,7 +2777,19 @@ public class SQLEditor extends SQLEditorBase implements
         queryProcessors.clear();
         curResultsContainer = null;
         curQueryProcessor = null;
-
+        
+        { // Clean up the add-ins in reverse order
+            ListIterator<SQLEditorAddIn> addInsIterator = addIns.listIterator(addIns.size());
+            while (addInsIterator.hasPrevious()) {
+                SQLEditorAddIn addIn = addInsIterator.previous();
+                try {
+                    addIn.cleanup(this);
+                } catch (Throwable ex) {
+                    log.error("Error during SQL editor add-in cleanup", ex); //$NON-NLS-1$
+                }
+            }
+        }
+        
         super.dispose();
 
         if (sqlFile != null && !PlatformUI.getWorkbench().isClosing()) {
@@ -4405,8 +4449,31 @@ public class SQLEditor extends SQLEditorBase implements
                 outputs = new ArrayList<>(serverOutputs);
                 serverOutputs.clear();
             }
+            
+            List<PrintWriter> addInWriters = addIns.stream()
+                .map(SQLEditorAddIn::getServerOutputConsumer)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-            PrintWriter outputWriter = outputViewer.getOutputWriter();
+            PrintWriter outputWriter = new PrintWriter(outputViewer.getOutputWriter()) {
+                @Override
+                public void write(int c) {
+                    super.write(c);
+                    addInWriters.forEach(w -> w.write(c));
+                }
+
+                @Override
+                public void write(@NotNull String s, int off, int len) {
+                    super.write(s, off, len);
+                    addInWriters.forEach(w -> w.write(s, off, len));
+                }
+
+                @Override
+                public void write(@NotNull char[] buf, int off, int len) {
+                    super.write(buf, off, len);
+                    addInWriters.forEach(w -> w.write(buf, off, len));
+                }
+            };
 
             if (!outputs.isEmpty()) {
                 for (ServerOutputInfo info : outputs) {

@@ -19,5 +19,7 @@ package org.jkiss.dbeaver.data.console;
 
 public class SQLConsoleViewPreferenceConstants {
     public final static String SHOW_CONSOLE_VIEW_BY_DEFAULT = "SQLEditor.ConsoleView.showConsoleViewByDefault"; //$NON-NLS-1$
+    public final static String SHOW_QUERY_TEXT = "SQLEditor.ConsoleView.showQueryText"; //$NON-NLS-1$
+    public final static String SHOW_SERVER_OUTPUT = "SQLEditor.ConsoleView.showServerOutput"; //$NON-NLS-1$
 
 }

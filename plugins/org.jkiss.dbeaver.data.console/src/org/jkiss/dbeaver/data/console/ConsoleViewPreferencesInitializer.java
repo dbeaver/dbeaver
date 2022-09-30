@@ -30,9 +30,9 @@ public class ConsoleViewPreferencesInitializer extends AbstractPreferenceInitial
     public void initializeDefaultPreferences() {
         // Init default preferences
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
-        // SQL execution
         PrefUtils.setDefaultPreferenceValue(store, SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQLConsoleViewPreferenceConstants.SHOW_QUERY_TEXT, true);
+        PrefUtils.setDefaultPreferenceValue(store, SQLConsoleViewPreferenceConstants.SHOW_SERVER_OUTPUT, true);
     }
 
 }

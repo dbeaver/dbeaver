@@ -42,11 +42,13 @@ public class SQLConsoleView extends SQLEditorOutputConsoleViewer {
     public void printQueryData(@NotNull DBPPreferenceStore prefs, @NotNull ResultSetModel model, @Nullable String name) {
         PlainTextFormatter formatter = new PlainTextFormatter(prefs);
         StringBuilder grid = new StringBuilder();
-        formatter.printQueryName(grid, name);
-        
-        grid.append("\n");
+        if (prefs.getBoolean(SQLConsoleViewPreferenceConstants.SHOW_QUERY_TEXT)) {
+            formatter.printQueryName(grid, name);
+            grid.append("\n");
+        }
         
         int totalRows = formatter.printGrid(grid, model);
+        this.getOutputWriter().append("\n");
         this.getOutputWriter().append(grid.toString()).append("\n\n");
         this.getOutputWriter().append(String.valueOf(totalRows)).append(" row(s) fetched.\n\n");
         this.getOutputWriter().flush();
@@ -60,9 +62,10 @@ public class SQLConsoleView extends SQLEditorOutputConsoleViewer {
         if (hasUpdateCount || error != null) {
             PlainTextFormatter formatter = new PlainTextFormatter(prefs);
             StringBuilder grid = new StringBuilder();
-            formatter.printQueryName(grid, result.getStatement().getText());
-    
-            grid.append("\n");
+            if (prefs.getBoolean(SQLConsoleViewPreferenceConstants.SHOW_QUERY_TEXT)) {
+                formatter.printQueryName(grid, result.getStatement().getText());
+                grid.append("\n");
+            }
             
             if (hasUpdateCount) {
                 long updateCount = result.getExecuteResults().stream().mapToLong(r -> CommonUtils.notNull(r.getUpdateCount(), 0L)).sum();
