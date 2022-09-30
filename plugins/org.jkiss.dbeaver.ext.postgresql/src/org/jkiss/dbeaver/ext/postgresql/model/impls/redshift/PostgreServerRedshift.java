@@ -191,6 +191,11 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     }
 
     @Override
+    public boolean supportsCommentsOnRole() {
+        return false;
+    }
+
+    @Override
     public boolean supportsLocks() {
         return false;
     }
