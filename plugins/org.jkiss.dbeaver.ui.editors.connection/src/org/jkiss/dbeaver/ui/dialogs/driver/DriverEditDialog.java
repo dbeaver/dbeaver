@@ -719,8 +719,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         boolean hasFiles = false, hasDownloads = false;
         for (DBPDriverLibrary library : libraries) {
             final Path localFile = library.getLocalFile();
-            hasFiles = hasFiles || (!library.isDisabled() && localFile != null && Files.exists(localFile));
-            if (!hasFiles && !library.isDisabled()) {
+            hasFiles = hasFiles || (localFile != null && Files.exists(localFile));
+            if (!hasFiles) {
                 final Collection<DriverDescriptor.DriverFileInfo> files = driver.getLibraryFiles(library);
                 if (files != null) {
                     for (DriverDescriptor.DriverFileInfo file : files) {
@@ -731,7 +731,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 }
             }
 
-            if (!library.isDisabled() && library.isDownloadable()) {
+            if (library.isDownloadable()) {
                 hasDownloads = true;
             }
         }
