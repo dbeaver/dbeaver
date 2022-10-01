@@ -55,7 +55,9 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
     private static final String TERMINAL_VIEW_ENABLED_VALUE_FALSE = "false";
     private static final String TERMINAL_VIEW_ENABLED_VALUE_DEFAULT = "default";
     
-    private static final QualifiedName FILE_TERMINAL_VIEW_ENABLED_PROP_NAME = new QualifiedName(BUNDLE_NAME, TERMINAL_VIEW_ENABLED_PROPERTY);
+    private static final QualifiedName FILE_TERMINAL_VIEW_ENABLED_PROP_NAME = new QualifiedName(
+        BUNDLE_NAME, TERMINAL_VIEW_ENABLED_PROPERTY
+    );
 
     private SQLEditor editor;
     private TerminalViewContext viewContext;

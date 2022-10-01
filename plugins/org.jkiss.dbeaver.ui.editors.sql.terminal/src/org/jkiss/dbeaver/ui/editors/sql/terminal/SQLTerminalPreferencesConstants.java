@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
 
 public class SQLTerminalPreferencesConstants {
-    public final static String SHOW_TERMINAL_VIEW_BY_DEFAULT = "SQLEditor.ConsoleView.showConsoleViewByDefault"; //$NON-NLS-1$
-    public final static String SHOW_QUERY_TEXT = "SQLEditor.SQLTerminal.showQueryText"; //$NON-NLS-1$
-    public final static String SHOW_SERVER_OUTPUT = "SQLEditor.SQLTerminal.showServerOutput"; //$NON-NLS-1$
+    public static final String SHOW_TERMINAL_VIEW_BY_DEFAULT = "SQLEditor.ConsoleView.showConsoleViewByDefault"; //$NON-NLS-1$
+    public static final String SHOW_QUERY_TEXT = "SQLEditor.SQLTerminal.showQueryText"; //$NON-NLS-1$
+    public static final String SHOW_SERVER_OUTPUT = "SQLEditor.SQLTerminal.showServerOutput"; //$NON-NLS-1$
 
 }

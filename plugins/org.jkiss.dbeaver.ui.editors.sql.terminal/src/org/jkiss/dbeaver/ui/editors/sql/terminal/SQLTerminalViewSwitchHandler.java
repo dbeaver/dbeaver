@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.ui.editors.sql.terminal;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 
 public class SQLTerminalViewSwitchHandler extends AbstractHandler {
