@@ -1064,6 +1064,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     IResultSetController.MENU_GROUP_ADDITIONS,
                     ActionUtils.makeCommandContribution(
                         controller.getSite(),
+                        SpreadsheetCommandHandler.CMD_COLUMNS_HIDE_EMPTY));
+                manager.insertAfter(
+                    IResultSetController.MENU_GROUP_ADDITIONS,
+                    ActionUtils.makeCommandContribution(
+                        controller.getSite(),
                         SpreadsheetCommandHandler.CMD_COLUMNS_FIT_VALUE));
                 manager.insertAfter(
                     IResultSetController.MENU_GROUP_ADDITIONS,

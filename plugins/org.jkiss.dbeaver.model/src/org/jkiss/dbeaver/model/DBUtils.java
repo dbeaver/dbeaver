@@ -1592,7 +1592,7 @@ public final class DBUtils {
     }
 
     /**
-     * Returns DBPDataSourceContainer fro DBPDataSource or object itself otherwise
+     * Returns DBPDataSourceContainer from DBPDataSource or object itself otherwise
      */
     public static DBSObject getPublicObjectContainer(@NotNull DBSObject object)
     {

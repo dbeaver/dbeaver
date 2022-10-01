@@ -1012,10 +1012,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
-            return session.prepareStatement(
-                "SELECT a.oid,a.* FROM pg_catalog.pg_roles a " +
-                    "\nORDER BY a.rolname"
-            );
+            boolean supportsCommentsOnRole = owner.getDataSource().getServerType().supportsCommentsOnRole();
+            String sql = "SELECT a.oid,a.*" + (supportsCommentsOnRole ? ",pd.description" : "") +
+                " FROM pg_catalog.pg_roles a " +
+                (supportsCommentsOnRole ? "\nleft join pg_catalog.pg_shdescription pd on a.oid = pd.objoid" : "") +
+                "\nORDER BY a.rolname";
+            return session.prepareStatement(sql);
         }
 
         @Override

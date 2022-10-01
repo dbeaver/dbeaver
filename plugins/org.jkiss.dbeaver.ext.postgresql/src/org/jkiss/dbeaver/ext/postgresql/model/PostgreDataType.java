@@ -601,6 +601,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
                     DBCLogicalOperator.IS_NOT_NULL
                 };
             }
+        } else if (dataKind == DBPDataKind.OBJECT && (typeCategory == PostgreTypeCategory.G || typeCategory == PostgreTypeCategory.U)) {
+            List<DBCLogicalOperator> operators = new ArrayList<DBCLogicalOperator>();
+            if (attribute instanceof DBSAttributeBase && !((DBSAttributeBase) attribute).isRequired()) {
+                operators.add(DBCLogicalOperator.IS_NULL);
+                operators.add(DBCLogicalOperator.IS_NOT_NULL);
+            }
+            operators.add(DBCLogicalOperator.EQUALS);
+            return operators.toArray(new DBCLogicalOperator[0]);
         }
         return super.getSupportedOperators(attribute);
     }
