@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.console;
+package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -25,14 +25,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 
-public class ConsoleViewSwitchHandler extends AbstractHandler {
+public class SQLTerminalViewSwitchHandler extends AbstractHandler {
 
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
-            SQLConsoleEditorAddIn addIn = editor.findAddIn(SQLConsoleEditorAddIn.class);
+            SQLTerminalEditorAddIn addIn = editor.findAddIn(SQLTerminalEditorAddIn.class);
             if (addIn != null) {
                 addIn.toggleConsoleView();
             }

@@ -4473,6 +4473,12 @@ public class SQLEditor extends SQLEditorBase implements
                     super.write(buf, off, len);
                     addInWriters.forEach(w -> w.write(buf, off, len));
                 }
+                
+                @Override
+                public void flush() {
+                    super.flush();
+                    addInWriters.forEach(w -> w.flush());
+                }
             };
 
             if (!outputs.isEmpty()) {

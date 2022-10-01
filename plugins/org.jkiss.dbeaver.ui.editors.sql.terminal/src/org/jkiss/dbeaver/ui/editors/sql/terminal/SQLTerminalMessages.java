@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.console;
+package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
 import org.eclipse.osgi.util.NLS;
 
-public class ConsoleMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.data.console.ConsoleMessages"; //$NON-NLS-1$
+public class SQLTerminalMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalMessages"; //$NON-NLS-1$
 
-    public static String console_view_item_text;
-    public static String pref_page_console_view_show_output_console_view_label;
-    public static String pref_page_console_view_show_output_console_view_tip;
-    public static String pref_page_console_view_show_query_text_label;
-    public static String pref_page_console_view_show_server_output_label;
+    public static String sql_terminal_item_text;
+    public static String pref_page_sql_temrinal_show_output_console_view_label;
+    public static String pref_page_sql_temrinal_show_output_console_view_tip;
+    public static String pref_page_sql_temrinal_show_query_text_label;
+    public static String pref_page_sql_temrinal_show_server_output_label;
 
     static {
         // resource bundle initialization
-        NLS.initializeMessages(BUNDLE_NAME, ConsoleMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, SQLTerminalMessages.class);
     }
 
-    private ConsoleMessages() {
+    private SQLTerminalMessages() {
     }
 }

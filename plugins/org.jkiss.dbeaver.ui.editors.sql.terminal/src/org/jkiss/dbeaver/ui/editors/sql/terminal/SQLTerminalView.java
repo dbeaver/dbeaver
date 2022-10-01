@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.console;
+package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
 
 import org.eclipse.swt.custom.CTabFolder;
@@ -33,16 +33,16 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 
-public class SQLConsoleView extends SQLEditorOutputConsoleViewer {
+public class SQLTerminalView extends SQLEditorOutputConsoleViewer {
 
-    public SQLConsoleView(@NotNull IWorkbenchPartSite site, @NotNull CTabFolder tabsContainer, int styles) {
+    public SQLTerminalView(@NotNull IWorkbenchPartSite site, @NotNull CTabFolder tabsContainer, int styles) {
         super(site, tabsContainer, new MessageConsole("sql-data-log-output", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)));
     }
 
     public void printQueryData(@NotNull DBPPreferenceStore prefs, @NotNull ResultSetModel model, @Nullable String name) {
         PlainTextFormatter formatter = new PlainTextFormatter(prefs);
         StringBuilder grid = new StringBuilder();
-        if (prefs.getBoolean(SQLConsoleViewPreferenceConstants.SHOW_QUERY_TEXT)) {
+        if (prefs.getBoolean(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT)) {
             formatter.printQueryName(grid, name);
             grid.append("\n");
         }
@@ -62,7 +62,7 @@ public class SQLConsoleView extends SQLEditorOutputConsoleViewer {
         if (hasUpdateCount || error != null) {
             PlainTextFormatter formatter = new PlainTextFormatter(prefs);
             StringBuilder grid = new StringBuilder();
-            if (prefs.getBoolean(SQLConsoleViewPreferenceConstants.SHOW_QUERY_TEXT)) {
+            if (prefs.getBoolean(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT)) {
                 formatter.printQueryName(grid, result.getStatement().getText());
                 grid.append("\n");
             }

@@ -18,46 +18,46 @@
   -->
 <plugin>
     <extension point="org.jkiss.dbeaver.sql.editorAddIns">
-        <addIn id="org.jkiss.dbeaver.data.console.editorAddIn" class="org.jkiss.dbeaver.data.console.SQLConsoleEditorAddIn"/>
+        <addIn id="org.jkiss.dbeaver.ui.editors.sql.terminal.editorAddIn" class="org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalEditorAddIn"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.ui.editors.sql.show.consoleView" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.consoleView.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.consoleView.description" categoryId="org.jkiss.dbeaver.core.sql">
+        <command id="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.terminalView.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.terminalView.description" categoryId="org.jkiss.dbeaver.core.sql">
             <state class="org.eclipse.jface.commands.ToggleState" id="org.eclipse.ui.commands.toggleState" />
         </command>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.show.consoleView" class="org.jkiss.dbeaver.data.console.ConsoleViewSwitchHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" class="org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalViewSwitchHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
     </extension>
     
     <extension point="org.eclipse.ui.menus">
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side" >
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.consoleView"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView"/>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute?after=plan">
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.consoleView"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView"/>
         </menuContribution >
     </extension>
     
     <extension point="org.eclipse.ui.commandImages">
-    	<image commandId="org.jkiss.dbeaver.ui.editors.sql.show.consoleView" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png" />
+    	<image commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png" />
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">
-        <initializer class="org.jkiss.dbeaver.data.console.ConsoleViewPreferencesInitializer"/>
+        <initializer class="org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalPreferencesInitializer"/>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.data.console.PrefPageConsoleView" id="org.jkiss.dbeaver.preferences.main.sqleditor.consoleview" name="%console_view_item_text">
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalPreferencesPage" id="org.jkiss.dbeaver.preferences.main.sqleditor.terminalview" name="%terminal_view_item_text">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource" /></enabledWhen>
         </page>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
-        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.data.console.PrefPageConsoleView"  id="org.jkiss.dbeaver.preferences.main.sql.consoleview" name="%console_view_item_text" />
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.editors.sql.terminal.SQLTerminalPreferencesPage" id="org.jkiss.dbeaver.preferences.main.sql.terminalview" name="%terminal_view_item_text" />
     </extension>
 
 </plugin>

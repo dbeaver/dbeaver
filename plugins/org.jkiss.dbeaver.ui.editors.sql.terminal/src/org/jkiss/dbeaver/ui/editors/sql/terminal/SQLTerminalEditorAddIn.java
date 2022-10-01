@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.console;
+package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -45,32 +45,32 @@ import org.jkiss.utils.CommonUtils;
 import java.io.PrintWriter;
 
 
-public class SQLConsoleEditorAddIn implements SQLEditorAddIn {
-    private static final Log log = Log.getLog(ConsoleViewSwitchHandler.class);
+public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
+    private static final Log log = Log.getLog(SQLTerminalViewSwitchHandler.class);
 
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.data.console";
 
-    private static final String CONSOLE_VIEW_ENABLED_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.show.consoleView.isEnabled";
-    private static final String CONSOLE_VIEW_ENABLED_VALUE_TRUE = "true";
-    private static final String CONSOLE_VIEW_ENABLED_VALUE_FALSE = "false";
-    private static final String CONSOLE_VIEW_ENABLED_VALUE_DEFAULT = "default";
+    private static final String TERMINAL_VIEW_ENABLED_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.show.consoleView.isEnabled";
+    private static final String TERMINAL_VIEW_ENABLED_VALUE_TRUE = "true";
+    private static final String TERMINAL_VIEW_ENABLED_VALUE_FALSE = "false";
+    private static final String TERMINAL_VIEW_ENABLED_VALUE_DEFAULT = "default";
     
-    private static final QualifiedName FILE_CONSOLE_VIEW_ENABLED_PROP_NAME = new QualifiedName(BUNDLE_NAME, CONSOLE_VIEW_ENABLED_PROPERTY);
+    private static final QualifiedName FILE_TERMINAL_VIEW_ENABLED_PROP_NAME = new QualifiedName(BUNDLE_NAME, TERMINAL_VIEW_ENABLED_PROPERTY);
 
     private SQLEditor editor;
-    private ConsoleViewContext viewContext;
+    private TerminalViewContext viewContext;
     
     private final SQLEditorListener editorListener = new SQLEditorListenerDefault() {
         @Override
         public void onDataReceived(@NotNull DBPPreferenceStore contextPrefStore, @NotNull ResultSetModel resultSet, String name) {
-            if (isConsoleViewEnabled() && CommonUtils.isNotEmpty(name)) {
+            if (isTerminalViewEnabled() && CommonUtils.isNotEmpty(name)) {
                 obtainViewContext().view.printQueryData(contextPrefStore, resultSet, name);
             }
         }
 
         @Override
         public void onQueryResult(@NotNull DBPPreferenceStore contextPrefStore, @NotNull SQLQueryResult result) {
-            if (isConsoleViewEnabled()) {
+            if (isTerminalViewEnabled()) {
                 obtainViewContext().view.printQueryResult(contextPrefStore, result);
             }
         }
@@ -92,7 +92,7 @@ public class SQLConsoleEditorAddIn implements SQLEditorAddIn {
     @Nullable
     @Override
     public PrintWriter getServerOutputConsumer() {
-        if (editor.getActivePreferenceStore().getBoolean(SQLConsoleViewPreferenceConstants.SHOW_SERVER_OUTPUT) && isConsoleViewEnabled()) {
+        if (editor.getActivePreferenceStore().getBoolean(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT) && isTerminalViewEnabled()) {
             return UIUtils.syncExec(new RunnableWithResult<>() {
                 public PrintWriter runWithResult() {
                     return obtainViewContext().view.getOutputWriter();
@@ -103,16 +103,16 @@ public class SQLConsoleEditorAddIn implements SQLEditorAddIn {
         }
     }
         
-    private class ConsoleViewContext {
-        public final SQLConsoleView view;
+    private class TerminalViewContext {
+        public final SQLTerminalView view;
         public final CTabItem tabItem;
         
-        public ConsoleViewContext() {
+        public TerminalViewContext() {
             CTabFolder tabsContainer = editor.getResultTabsContainer();
-            view = new SQLConsoleView(editor.getSite(), tabsContainer, SWT.NONE);
+            view = new SQLTerminalView(editor.getSite(), tabsContainer, SWT.NONE);
             tabItem = new CTabItem(tabsContainer, SWT.CLOSE);
             tabItem.setControl(view.getControl());
-            tabItem.setText(ConsoleMessages.console_view_item_text);
+            tabItem.setText(SQLTerminalMessages.sql_terminal_item_text);
             tabItem.setToolTipText("");
             tabItem.setImage(DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE).createImage());
             tabItem.setData(view);
@@ -122,7 +122,7 @@ public class SQLConsoleEditorAddIn implements SQLEditorAddIn {
                     Widget item = event.item;
                     if (item instanceof CTabItem) {
                         CTabItem cTab = (CTabItem) item;
-                        if (cTab.getData() instanceof SQLConsoleView) {
+                        if (cTab.getData() instanceof SQLTerminalView) {
                             setConcoleViewEnabled(false);
                         }
                     }
@@ -146,9 +146,9 @@ public class SQLConsoleEditorAddIn implements SQLEditorAddIn {
     }
     
     @NotNull
-    private ConsoleViewContext obtainViewContext() {
+    private TerminalViewContext obtainViewContext() {
         if (viewContext == null) {
-            viewContext = new ConsoleViewContext();
+            viewContext = new TerminalViewContext();
         } 
         return viewContext;
     }
@@ -161,8 +161,8 @@ public class SQLConsoleEditorAddIn implements SQLEditorAddIn {
      * Changes the state of SQL Terminal.
      * The state is stored in the editor properties.
      */
-    public void toggleConsoleView() {
-        boolean wasEnabled = isConsoleViewEnabled();
+    public void toggleTerminalView() {
+        boolean wasEnabled = isTerminalViewEnabled();
         if (wasEnabled) {
             if (viewContext != null) {
                 viewContext.dispose();
@@ -176,7 +176,7 @@ public class SQLConsoleEditorAddIn implements SQLEditorAddIn {
             obtainViewContext();
         }        
         editor.getActivePreferenceStore().firePropertyChangeEvent(
-            SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT,
+            SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT,
             wasEnabled, !wasEnabled
         );
     }
@@ -186,15 +186,15 @@ public class SQLConsoleEditorAddIn implements SQLEditorAddIn {
      * SQL Terminal state is stored in the editor properties in the runtime
      * and saved in the script file to keep the state between launches.
      */
-    public boolean isConsoleViewEnabled() {
-        String value = editor.getPartProperty(CONSOLE_VIEW_ENABLED_PROPERTY);
+    public boolean isTerminalViewEnabled() {
+        String value = editor.getPartProperty(TERMINAL_VIEW_ENABLED_PROPERTY);
         if (value == null) {
-            value = CONSOLE_VIEW_ENABLED_VALUE_DEFAULT;
+            value = TERMINAL_VIEW_ENABLED_VALUE_DEFAULT;
         }
         switch (value) {
-            case CONSOLE_VIEW_ENABLED_VALUE_TRUE: return true;
-            case CONSOLE_VIEW_ENABLED_VALUE_FALSE: return false;
-            case CONSOLE_VIEW_ENABLED_VALUE_DEFAULT: // fall through
+            case TERMINAL_VIEW_ENABLED_VALUE_TRUE: return true;
+            case TERMINAL_VIEW_ENABLED_VALUE_FALSE: return false;
+            case TERMINAL_VIEW_ENABLED_VALUE_DEFAULT: // fall through
             default: {
                 boolean enabled = getInitialConsoleViewEnabled();
                 editor.setResultSetAutoFocusEnabled(!enabled);
@@ -207,28 +207,28 @@ public class SQLConsoleEditorAddIn implements SQLEditorAddIn {
         IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
         if (activeFile != null) {
             try {
-                String fileValue = activeFile.getPersistentProperty(FILE_CONSOLE_VIEW_ENABLED_PROP_NAME);
+                String fileValue = activeFile.getPersistentProperty(FILE_TERMINAL_VIEW_ENABLED_PROP_NAME);
                 if (fileValue != null) {
-                    return fileValue.equals(CONSOLE_VIEW_ENABLED_VALUE_TRUE);
+                    return fileValue.equals(TERMINAL_VIEW_ENABLED_VALUE_TRUE);
                 }
             } catch (CoreException e) {
                 log.debug(e.getMessage(), e);
             }
         }
-        return editor.getActivePreferenceStore().getBoolean(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT);
+        return editor.getActivePreferenceStore().getBoolean(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT);
     }
     
     private void setConcoleViewEnabled(@Nullable Boolean enabled) {
         if (enabled == null) {
-            editor.setPartProperty(CONSOLE_VIEW_ENABLED_PROPERTY, CONSOLE_VIEW_ENABLED_VALUE_DEFAULT);
+            editor.setPartProperty(TERMINAL_VIEW_ENABLED_PROPERTY, TERMINAL_VIEW_ENABLED_VALUE_DEFAULT);
         } else {
-            String value = enabled ? CONSOLE_VIEW_ENABLED_VALUE_TRUE : CONSOLE_VIEW_ENABLED_VALUE_FALSE;
-            editor.setPartProperty(CONSOLE_VIEW_ENABLED_PROPERTY, value);
+            String value = enabled ? TERMINAL_VIEW_ENABLED_VALUE_TRUE : TERMINAL_VIEW_ENABLED_VALUE_FALSE;
+            editor.setPartProperty(TERMINAL_VIEW_ENABLED_PROPERTY, value);
             editor.setResultSetAutoFocusEnabled(!enabled);
             IFile activeFile = EditorUtils.getFileFromInput(editor.getEditorInput());
             if (activeFile != null) {
                 try {
-                    activeFile.setPersistentProperty(FILE_CONSOLE_VIEW_ENABLED_PROP_NAME, value);
+                    activeFile.setPersistentProperty(FILE_TERMINAL_VIEW_ENABLED_PROP_NAME, value);
                 } catch (CoreException e) {
                     log.debug(e.getMessage(), e);
                 }
