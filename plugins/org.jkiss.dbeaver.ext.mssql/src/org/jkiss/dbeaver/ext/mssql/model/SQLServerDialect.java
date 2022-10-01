@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLVariableRule;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
@@ -42,10 +43,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
+public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDialectDDLExtension {
 
     private static final String[][] TSQL_BEGIN_END_BLOCK = new String[][]{
-        {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
+            {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
     };
 
     private static String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
@@ -60,17 +61,16 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
             {"\"", "\""},
     };
     private static final String[][] SYBASE_LEGACY_QUOTE_STRINGS = {
-        {"\"", "\""},
+            {"\"", "\""},
     };
 
-
-    private static String[] EXEC_KEYWORDS =  { "CALL", "EXEC", "EXECUTE" };
+    private static String[] EXEC_KEYWORDS = {"CALL", "EXEC", "EXECUTE"};
 
     private static String[] PLAIN_TYPE_NAMES = {
-        SQLServerConstants.TYPE_GEOGRAPHY,
-        SQLServerConstants.TYPE_GEOMETRY,
-        SQLServerConstants.TYPE_TIMESTAMP,
-        SQLServerConstants.TYPE_IMAGE,
+            SQLServerConstants.TYPE_GEOGRAPHY,
+            SQLServerConstants.TYPE_GEOMETRY,
+            SQLServerConstants.TYPE_TIMESTAMP,
+            SQLServerConstants.TYPE_IMAGE,
     };
 
     private static String[] SQLSERVER_FUNCTIONS_DATETIME = new String[]{
@@ -228,7 +228,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
                 default:
                     return null;
             }
-        } else if (ArrayUtils.contains(PLAIN_TYPE_NAMES , typeName)) {
+        } else if (ArrayUtils.contains(PLAIN_TYPE_NAMES, typeName)) {
             return null;
         } else if (dataKind == DBPDataKind.NUMERIC &&
                 (SQLServerConstants.TYPE_NUMERIC.equals(lowerTypeName) || SQLServerConstants.TYPE_DECIMAL.equals(lowerTypeName))) {
@@ -272,7 +272,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
             } else {
                 sql.append(" ");
             }
-            int width = maxParamLength + 70 - name.length()/2;
+            int width = maxParamLength + 70 - name.length() / 2;
             String typeName = inParameters.get(i).getParameterType().getFullTypeName();
             sql.append(CommonUtils.fixedLengthString("-- put the " + name + " parameter value instead of '?' (" + typeName + ")\n", width));
         }
@@ -352,5 +352,30 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public boolean supportsAliasInConditions() {
         return false;
+    }
+
+    @Override
+    public String getAutoIncrementKeyword() {
+        return "IDENTITY";
+    }
+
+    @Override
+    public boolean supportsCreateIfExists() {
+        return false;
+    }
+
+    @Override
+    public boolean timestampAsDatetime() {
+        return true;
+    }
+
+    @Override
+    public String getLargeNumericType() {
+        return SQLServerConstants.TYPE_BIGINT;
+    }
+
+    @Override
+    public String getLargeCharacterType() {
+        return SQLServerConstants.TYPE_VARCHAR + "(max)";
     }
 }

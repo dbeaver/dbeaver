@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
-import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
+import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslationManager;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -159,7 +159,7 @@ public final class SQLSchemaManager {
         BasicSQLDialect sourceDialect = new BasicSQLDialect() {
 
         };
-        ddlText = SQLQueryTranslator.translateScript(sourceDialect, targetDatabaseDialect, prefStore, ddlText);
+        ddlText = SQLQueryTranslationManager.translateScript(sourceDialect, targetDatabaseDialect, prefStore, ddlText);
 
         String[] ddl = ddlText.split(";");
         for (String line : ddl) {

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.struct.*;
@@ -50,12 +51,13 @@ import java.util.Locale;
 /**
  * PostgreSQL dialect
  */
-public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDataTypeConverter {
+public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDataTypeConverter,
+        SQLDialectDDLExtension {
     public static final String[] POSTGRE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
-        BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
-        new String[]{
-            "SHOW", "SET"
-        }
+            BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
+            new String[]{
+                    "SHOW", "SET"
+            }
     );
 
     private static final String[][] PG_STRING_QUOTES = {
@@ -759,7 +761,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         // #12723 Redshift driver returns wrong infor about unquoted case
         setUnquotedIdentCase(DBPIdentifierCase.LOWER);
     }
-    
+
     @Override
     public void addKeywords(Collection<String> set, DBPKeywordType type) {
         super.addKeywords(set, type);
@@ -1013,4 +1015,28 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         }
     }
 
+    @Override
+    public String getAutoIncrementKeyword() {
+        return "AUTO_INCREMENT";
+    }
+
+    @Override
+    public boolean supportsCreateIfExists() {
+        return true;
+    }
+
+    @Override
+    public boolean timestampAsDatetime() {
+        return false;
+    }
+
+    @Override
+    public String getLargeNumericType() {
+        return PostgreConstants.TYPE_BIGINT;
+    }
+
+    @Override
+    public String getLargeCharacterType() {
+        return PostgreConstants.TYPE_TEXT;
+    }
 }

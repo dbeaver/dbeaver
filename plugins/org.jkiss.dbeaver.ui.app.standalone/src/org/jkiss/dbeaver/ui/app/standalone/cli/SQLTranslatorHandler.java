@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
-import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
+import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslationManager;
 import org.jkiss.dbeaver.ui.app.standalone.CommandLineParameterHandler;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -66,9 +66,10 @@ public class SQLTranslatorHandler implements CommandLineParameterHandler {
         SQLDialect targetDialect = new BasicSQLDialect() {
 
         };
+
         String result = null;
         try {
-            result = SQLQueryTranslator.translateScript(srcDialect, targetDialect, preferenceStore, script);
+            result = SQLQueryTranslationManager.translateScript(srcDialect, targetDialect, preferenceStore, script);
         } catch (Exception e) {
             throw new RuntimeException("Error translating file " + inputFile, e);
         }

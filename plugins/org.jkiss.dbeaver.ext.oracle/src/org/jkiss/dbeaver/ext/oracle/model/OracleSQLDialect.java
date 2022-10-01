@@ -51,7 +51,8 @@ import java.util.Locale;
 /**
  * Oracle SQL dialect
  */
-public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConverter {
+public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConverter, SQLDialectDDLExtension {
+
 
     private static final Log log = Log.getLog(OracleSQLDialect.class);
 
@@ -673,5 +674,30 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Override
     public boolean supportsAliasInConditions() {
         return false;
+    }
+
+    @Override
+    public String getAutoIncrementKeyword() {
+        return "GENERATED ALWAYS AS IDENTITY";
+    }
+
+    @Override
+    public boolean supportsCreateIfExists() {
+        return false;
+    }
+
+    @Override
+    public boolean timestampAsDatetime() {
+        return false;
+    }
+
+    @Override
+    public String getLargeNumericType() {
+        return OracleConstants.TYPE_NUMBER;
+    }
+
+    @Override
+    public String getLargeCharacterType() {
+        return OracleConstants.TYPE_CLOB;
     }
 }
