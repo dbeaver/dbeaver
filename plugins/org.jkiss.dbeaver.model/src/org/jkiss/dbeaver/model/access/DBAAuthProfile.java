@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.rm.RMProjectType;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -58,7 +59,7 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
     }
 
     public String getSecretKeyId() {
-        return getProject().getName() + PROFILE_KEY_PREFIX + getProfileId();
+        return RMProjectType.getPlainProjectId(getProject()) + PROFILE_KEY_PREFIX + getProfileId();
     }
 
     public String getAuthModelId() {

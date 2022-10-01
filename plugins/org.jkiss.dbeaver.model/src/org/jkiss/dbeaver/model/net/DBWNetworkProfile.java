@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBInfoUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.rm.RMProjectType;
 import org.jkiss.dbeaver.model.secret.DBSSecret;
 import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -83,7 +84,7 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     }
 
     public String getSecretKeyId() {
-        return getProject().getName() + PROFILE_KEY_PREFIX + getProfileId();
+        return RMProjectType.getPlainProjectId(getProject()) + PROFILE_KEY_PREFIX + getProfileId();
     }
 
     @Override
