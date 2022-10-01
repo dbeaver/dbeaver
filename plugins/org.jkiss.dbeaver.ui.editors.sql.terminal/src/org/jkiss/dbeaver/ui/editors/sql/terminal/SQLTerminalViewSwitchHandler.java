@@ -34,7 +34,7 @@ public class SQLTerminalViewSwitchHandler extends AbstractHandler {
         if (editor != null) {
             SQLTerminalEditorAddIn addIn = editor.findAddIn(SQLTerminalEditorAddIn.class);
             if (addIn != null) {
-                addIn.toggleConsoleView();
+                addIn.toggleTerminalView();
             }
         }
         return null;

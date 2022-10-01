@@ -24,18 +24,18 @@
                             <annotation>
                                 <documentation>
                                 </documentation>
-                                <appInfo>
+                                <appinfo>
                                     <meta.attribute kind="identifier"/>
-                                </appInfo>
+                                </appinfo>
                             </annotation>
                         </attribute>
                         <attribute name="class" type="string" use="required">
                             <annotation>
                                 <documentation>
                                 </documentation>
-                                <appInfo>
+                                <appinfo>
                                     <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.editors.sql.SQLEditor.SQLEditorAddIn"/>
-                                </appInfo>
+                                </appinfo>
                             </annotation>
                         </attribute>
                         <attribute name="priority" type="int" use="optional">
@@ -46,7 +46,7 @@
                         </attribute>
                     </complexType>
                 </element>
-            </sequenece>
+            </sequence>
             <attribute name="point" type="string" use="required">
                 <annotation>
                     <documentation>
