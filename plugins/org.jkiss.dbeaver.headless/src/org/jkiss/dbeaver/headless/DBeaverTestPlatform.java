@@ -129,7 +129,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         log.debug("Initialize Test Platform...");
 
         this.defaultCertificateStorage = new DefaultCertificateStorage(
-            DBeaverTestActivator.getConfigurationFile("cert-storage"));
+            DBeaverTestActivator.getConfigurationFile("cert-storage").toPath());
 
         // Register properties adapter
         this.workspace = new DBeaverTestWorkspace(this, ResourcesPlugin.getWorkspace());

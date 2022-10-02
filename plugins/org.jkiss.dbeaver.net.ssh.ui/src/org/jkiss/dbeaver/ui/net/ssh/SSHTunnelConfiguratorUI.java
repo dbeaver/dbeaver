@@ -52,8 +52,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
-import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
@@ -521,7 +521,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             privateKeyLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_private_key);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            privateKeyText = new TextWithOpenFile(this, SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"});
+            privateKeyText = new ConfigurationFileSelector(this, SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"});
             privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             passwordLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_password);
@@ -559,7 +559,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 hostPortText.setText(String.valueOf(SSHConstants.DEFAULT_SSH_PORT));
             }
             authMethodCombo.select(CommonUtils.valueOf(SSHConstants.AuthType.class, configuration.getStringProperty(prefix + SSHConstants.PROP_AUTH_TYPE), SSHConstants.AuthType.PASSWORD).ordinal());
-            privateKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH)));
+            if (DBWorkbench.isDistributed()) {
+                privateKeyText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE)));
+            } else {
+                privateKeyText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH)));
+            }
+
             if (prefix.isEmpty()) {
                 userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
                 if (savePasswordCheckbox != null) {
@@ -586,7 +591,15 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
             configuration.setProperty(prefix + DBWHandlerConfiguration.PROP_HOST, hostNameText.getText().trim());
             configuration.setProperty(prefix + DBWHandlerConfiguration.PROP_PORT, CommonUtils.toInt(hostPortText.getText().trim()));
             configuration.setProperty(prefix + SSHConstants.PROP_AUTH_TYPE, SSHConstants.AuthType.values()[authMethodCombo.getSelectionIndex()].name());
-            configuration.setProperty(prefix + SSHConstants.PROP_KEY_PATH, privateKeyText.getText().trim());
+            String privateKey = privateKeyText.getText().trim();
+            if (CommonUtils.isEmpty(privateKey)) {
+                privateKey = null;
+            }
+            if (DBWorkbench.isDistributed()) {
+                configuration.setSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE, privateKey);
+            } else {
+                configuration.setProperty(prefix + SSHConstants.PROP_KEY_PATH, privateKey);
+            }
 
             if (prefix.isEmpty()) {
                 configuration.setUserName(userNameText.getText().trim());

@@ -83,7 +83,6 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         }
     }
 
-    private IProject project;
     private DBPProject projectMeta;
 
     private Table profilesTable;
@@ -404,17 +403,20 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
 
     @Override
     public IAdaptable getElement() {
-        return project;
+        return projectMeta == null ? null : projectMeta.getEclipseProject();
     }
 
     @Override
     public void setElement(IAdaptable element) {
+        IProject iProject;
         if (element instanceof DBNNode) {
-            this.project = ((DBNNode) element).getOwnerProject().getEclipseProject();
+            iProject = ((DBNNode) element).getOwnerProject().getEclipseProject();
         } else {
-            this.project = GeneralUtils.adapt(element, IProject.class);
+            iProject = GeneralUtils.adapt(element, IProject.class);
         }
-        this.projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(this.project);
+        if (iProject != null) {
+            this.projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(iProject);
+        }
     }
 
 }

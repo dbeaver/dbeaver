@@ -490,12 +490,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     ////////////////////////////////////////////////////
     // Data sources
 
-    public void addDataSource(@NotNull DBPDataSourceContainer dataSource) {
+    public void addDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         addDataSourceToList(descriptor);
         if (!descriptor.isDetached()) {
             persistDataSourceUpdate(dataSource);
         }
+        descriptor.persistSecretIfNeeded(true);
         notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
     }
 
@@ -518,13 +519,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             persistDataSourceDelete(dataSource);
         }
         try {
+            descriptor.removeSecretIfNeeded();
+        } catch (DBException e) {
+            log.error("Error deleting old secrets", e);
+        }
+        try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
             descriptor.dispose();
         }
     }
 
-    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) {
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         if (!(dataSource instanceof DataSourceDescriptor)) {
             return;
         }
@@ -736,12 +742,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public void saveDataSources() {
+        saveDataSources(new VoidProgressMonitor());
+    }
+
+    protected void saveDataSources(DBRProgressMonitor monitor) {
         if (project.isInMemory()) {
             return;
         }
 
         updateProjectNature();
-        final DBRProgressMonitor monitor = new VoidProgressMonitor();
         saveInProgress = true;
         try {
             for (DBPDataSourceConfigurationStorage storage : storages) {
@@ -966,7 +975,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         protected IStatus run(DBRProgressMonitor monitor) {
             synchronized (DataSourceRegistry.this) {
                 //log.debug("Save column config " + System.currentTimeMillis());
-                saveDataSources();
+                saveDataSources(monitor);
             }
             return Status.OK_STATUS;
         }

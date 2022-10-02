@@ -58,11 +58,11 @@ public class GlobalPropertyTester extends PropertyTester {
             case PROP_STANDALONE:
                 return DBWorkbench.getPlatform().getApplication().isStandalone();
             case PROP_DISTRIBUTED:
-                return DBWorkbench.getPlatform().getApplication().isDistributed();
+                return DBWorkbench.isDistributed();
             case PROP_BUNDLE_INSTALLED:
                 return Platform.getBundle((String)args[0]) != null;
             case PROP_CAN_CREATE_PROJECT:
-                return !DBWorkbench.getPlatform().getApplication().isDistributed();
+                return !DBWorkbench.isDistributed();
             case PROP_CAN_CREATE_CONNECTION:
             {
                 for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {

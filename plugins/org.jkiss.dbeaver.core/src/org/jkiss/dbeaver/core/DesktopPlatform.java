@@ -168,7 +168,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         }
 
         this.certificateStorage = new DefaultCertificateStorage(
-            new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "security"));
+            DBeaverActivator.getInstance().getStateLocation().toFile().toPath().resolve("security"));
 
         // Create workspace
         this.workspace = (DesktopWorkspaceImpl) getApplication().createWorkspace(this, ResourcesPlugin.getWorkspace());

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.IOException;
@@ -89,7 +90,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
     public Path getLocalFile() {
         // Try to use direct path
         String localFilePath = this.getLocalFilePath();
-        if (DriverDescriptor.isDistributedMode()) {
+        if (DBWorkbench.isDistributed()) {
             Path resolvedCache = driver.getWorkspaceStorageFolder().resolve(localFilePath);
             if (Files.exists(resolvedCache)) {
                 localFilePath = resolvedCache.toAbsolutePath().toString();

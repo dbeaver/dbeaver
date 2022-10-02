@@ -194,7 +194,11 @@ public class DBWHandlerConfiguration {
     }
 
     public void setSecureProperty(@NotNull String name, @Nullable String value) {
-        secureProperties.put(name, value);
+        if (value == null) {
+            secureProperties.remove(name);
+        } else {
+            secureProperties.put(name, value);
+        }
     }
 
     public void setSecureProperties(@NotNull Map<String, String> secureProperties) {

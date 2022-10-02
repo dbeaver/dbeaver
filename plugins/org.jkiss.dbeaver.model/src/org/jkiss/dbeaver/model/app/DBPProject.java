@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 
 import javax.crypto.SecretKey;
@@ -52,7 +51,10 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     // Project with no persistent state
     boolean isInMemory();
 
-
+    /**
+     * Project unique ID.
+     * May start with RMProjectType prefix
+     */
     String getId();
 
     @NotNull
@@ -103,9 +105,6 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     @NotNull
     DBTTaskManager getTaskManager();
-
-    @NotNull
-    DBSSecretController getSecretController();
 
     /**
      * Project auth context

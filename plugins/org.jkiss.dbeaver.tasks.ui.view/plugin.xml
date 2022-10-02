@@ -25,7 +25,7 @@
             class="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             id="org.jkiss.dbeaver.tasks.ui.TaskPropertyTester"
             namespace="org.jkiss.dbeaver.task"
-            properties="scheduled,taskEditable"
+            properties="scheduled,editable"
             type="org.jkiss.dbeaver.model.task.DBTTask"/>
     </extension>
 
@@ -59,9 +59,6 @@
         <definition id="org.jkiss.dbeaver.tasks.editable">
             <with variable="selection">
                 <count value="1"/>
-                <iterate operator="and">
-                    <test property="org.jkiss.dbeaver.task.taskEditable" value="true"/>
-                </iterate>
             </with>
         </definition>
     </extension>
@@ -110,10 +107,9 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <and>
-                            <test property="org.jkiss.dbeaver.task.taskEditable"/>
-                            <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
-                        </and>
+                        <instanceof value="org.jkiss.dbeaver.model.task.DBTTask">
+                            <test property="org.jkiss.dbeaver.task.editable"/>
+                        </instanceof>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -126,18 +122,17 @@
         <handler commandId="org.jkiss.dbeaver.task.copy" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerCopy">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
             <enabledWhen>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <instanceof value="org.jkiss.dbeaver.model.task.DBTTask"/>
-                    </iterate>
-                </with>
+                <reference definitionId="org.jkiss.dbeaver.tasks.editable"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerRefresh">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.folder.task.create" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerFolderCreate"/>
+        <handler commandId="org.jkiss.dbeaver.folder.task.create" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerFolderCreate">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.tasks.editable"/>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.folder.rename" class="org.jkiss.dbeaver.tasks.ui.view.TaskFolderRenameHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
             <enabledWhen>
@@ -182,19 +177,13 @@
             <separator name="additions" visible="true"/>
             <command commandId="org.jkiss.dbeaver.task.run"/>
             <command commandId="org.jkiss.dbeaver.task.create">
-                <visibleWhen>
-                    <reference definitionId="org.jkiss.dbeaver.tasks.editable"/>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.folder.task.create">
-                <visibleWhen>
-                    <reference definitionId="org.jkiss.dbeaver.tasks.editable"/>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.eclipse.ui.edit.delete">
-                <visibleWhen>
-                    <reference definitionId="org.jkiss.dbeaver.tasks.editable"/>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
             </command>
             <separator name="additions" visible="true"/>
         </menuContribution>

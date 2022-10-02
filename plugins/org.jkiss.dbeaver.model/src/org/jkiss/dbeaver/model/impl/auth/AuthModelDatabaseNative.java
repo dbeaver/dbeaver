@@ -77,7 +77,13 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
     }
 
     @Override
-    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, CREDENTIALS credentials, DBPConnectionConfiguration configuration, @NotNull Properties connectProps) throws DBException {
+    public Object initAuthentication(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull CREDENTIALS credentials,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull Properties connectProps
+    ) throws DBException {
         String userName = credentials.getUserName();
         String userPassword = credentials.getUserPassword();
 

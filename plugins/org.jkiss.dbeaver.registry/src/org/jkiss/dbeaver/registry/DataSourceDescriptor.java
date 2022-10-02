@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import org.jkiss.dbeaver.model.rm.RMProjectType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -120,7 +121,7 @@ public class DataSourceDescriptor
     private boolean savePassword;
     // Password is shared.
     // It will be saved in local configuration even if project uses secured storage
-    private boolean sharedPassword;
+    private boolean sharedCredentials;
 
     private boolean connectionReadOnly;
     private boolean forceUseSingleConnection = false;
@@ -249,7 +250,7 @@ public class DataSourceDescriptor
     }
 
     private String getSecretKeyId() {
-        return getProject().getName() + DATASOURCE_KEY_PREFIX + getId();
+        return RMProjectType.getPlainProjectId(getProject()) + DATASOURCE_KEY_PREFIX + getId();
     }
 
     public boolean isDisposed() {
@@ -376,12 +377,12 @@ public class DataSourceDescriptor
         this.savePassword = savePassword;
     }
 
-    public boolean isSharedPassword() {
-        return sharedPassword;
+    public boolean isSharedCredentials() {
+        return sharedCredentials;
     }
 
-    public void setSharedPassword(boolean sharedPassword) {
-        this.sharedPassword = sharedPassword;
+    public void setSharedCredentials(boolean sharedCredentials) {
+        this.sharedCredentials = sharedCredentials;
     }
 
     @Override
@@ -761,19 +762,20 @@ public class DataSourceDescriptor
 
     @Override
     public boolean persistConfiguration() {
-        // Save secrets
-        if (getProject().isUseSecretStorage()) {
-            try {
-                DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+        try {
+            persistSecretIfNeeded(false);
 
-                persistSecrets(secretController);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
-                return false;
-            }
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Secret save error", "Error saving credentials to secret storage", e);
+            return false;
+        }
+        try {
+            registry.updateDataSource(this);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Datasource update error", "Error updating datasource", e);
+            return false;
         }
 
-        registry.updateDataSource(this);
         Throwable lastError = registry.getLastError();
         if (lastError != null) {
             DBWorkbench.getPlatformUI().showError("Save error", "Error saving datasource configuration", lastError);
@@ -783,12 +785,33 @@ public class DataSourceDescriptor
         return true;
     }
 
+    boolean persistSecretIfNeeded(boolean force) throws DBException {
+        // Save only if secrets were already resolved or it is a new connection
+        if (secretsResolved || (force && getProject().isUseSecretStorage())) {
+            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+
+            persistSecrets(secretController);
+        }
+        return true;
+    }
+
+    void removeSecretIfNeeded() throws DBException {
+        // Delete secrets (on connection delete)
+        if (getProject().isUseSecretStorage()) {
+            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+
+            secretController.setSecretValue(getSecretKeyId(), null);
+        }
+    }
+
     @Override
     public void persistSecrets(DBSSecretController secretController) throws DBException {
         secretController.setSecretValue(
             getSecretKeyId(),
             saveToSecret()
         );
+
+        secretsResolved = true;
     }
 
     @Override
@@ -798,11 +821,12 @@ public class DataSourceDescriptor
         if (secretValue != null) {
             loadFromSecret(secretValue);
         } else {
-            if (!DBWorkbench.getPlatform().getApplication().isDistributed()) {
+            if (!DBWorkbench.isDistributed()) {
                 // Backward compatibility
                 loadFromLegacySecret(secretController);
             }
         }
+        secretsResolved = true;
     }
 
     @Override
@@ -1691,8 +1715,12 @@ public class DataSourceDescriptor
                     connConfig.setUserPassword(authInfo.getUserPassword());
                 }
             }
-            // Update connection properties
-            dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
+            try {
+                // Update connection properties
+                dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Error saving datasource", null, e);
+            }
         }
 
         return true;
@@ -1708,38 +1736,48 @@ public class DataSourceDescriptor
     /**
      * Saves datasource secret credentials to secret value (json)
      */
+    @Nullable
     private String saveToSecret() {
         Map<String, Object> props = new LinkedHashMap<>();
 
-        // Info fields (we don't use them anyhow)
-        props.put("datasource-id", getId());
-        props.put("datasource-name", getName());
-        props.put("datasource-driver", getDriver().getFullId());
-
         // Primary props
-        if (connectionInfo.getUserName() != null) {
+        if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
             props.put(RegistryConstants.ATTR_USER, connectionInfo.getUserName());
         }
-        if (connectionInfo.getUserPassword() != null) {
+        if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
             props.put(RegistryConstants.ATTR_PASSWORD, connectionInfo.getUserPassword());
         }
         // Additional auth props
         if (!CommonUtils.isEmpty(connectionInfo.getAuthProperties())) {
             props.put(RegistryConstants.TAG_PROPERTIES, connectionInfo.getAuthProperties());
         }
-        // Handlers
-        List<Map<String, Object>> handlersConfigs = new ArrayList<>();
-        for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
-            Map<String, Object> handlerProps = hc.saveToMap();
-            if (!handlerProps.isEmpty()) {
-                handlerProps.put(RegistryConstants.ATTR_ID, hc.getHandlerDescriptor().getId());
-                handlersConfigs.add(handlerProps);
+        if (CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
+            // Handlers. If config profile is set then props are saved there
+            List<Map<String, Object>> handlersConfigs = new ArrayList<>();
+            for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
+                Map<String, Object> handlerProps = hc.saveToMap();
+                if (!handlerProps.isEmpty()) {
+                    handlerProps.put(RegistryConstants.ATTR_ID, hc.getHandlerDescriptor().getId());
+                    handlersConfigs.add(handlerProps);
+                }
+            }
+            if (!handlersConfigs.isEmpty()) {
+                props.put(RegistryConstants.TAG_HANDLERS, handlersConfigs);
             }
         }
-        if (!handlersConfigs.isEmpty()) {
-            props.put(RegistryConstants.TAG_HANDLERS, handlersConfigs);
+        if (props.isEmpty()) {
+            return null;
         }
-        return DBInfoUtils.SECRET_GSON.toJson(props);
+
+        // Info fields (we don't use them anyhow)
+        // Add them only if we have real props
+        // Add them first (just to make secret easy-to-read during debugging)
+        Map<String, Object> propsFull = new LinkedHashMap<>();
+        propsFull.put("datasource-name", getName());
+        propsFull.put("datasource-driver", getDriver().getFullId());
+        propsFull.putAll(props);
+
+        return DBInfoUtils.SECRET_GSON.toJson(propsFull);
     }
 
     private void loadFromSecret(String secretValue) {

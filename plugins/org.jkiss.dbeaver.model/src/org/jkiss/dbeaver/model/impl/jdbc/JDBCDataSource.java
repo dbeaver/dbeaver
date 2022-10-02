@@ -46,12 +46,17 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSInstanceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SecurityManagerUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
+import java.io.IOException;
 import java.net.SocketException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.*;
 import java.util.*;
 
@@ -83,6 +88,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
     private int databaseMinorVersion = 0;
 
     private final transient List<Connection> closingConnections = new ArrayList<>();
+    private List<Path> tempFiles;
+
 
     protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
         throws DBException
@@ -95,7 +102,12 @@ public abstract class JDBCDataSource extends AbstractDataSource
     {
         this(container, dialect);
         if (initContext) {
-            initializeRemoteInstance(monitor);
+            try {
+                initializeRemoteInstance(monitor);
+            } catch (DBException e) {
+                shutdown(monitor);
+                throw e;
+            }
         }
     }
 
@@ -410,6 +422,21 @@ public abstract class JDBCDataSource extends AbstractDataSource
             }
         }
         defaultRemoteInstance = null;
+
+        if (tempFiles != null) {
+            for (Path tmpFile : tempFiles) {
+                try {
+                    if (Files.isDirectory(tmpFile)) {
+                        IOUtils.deleteDirectory(tmpFile);
+                    } else {
+                        Files.delete(tmpFile);
+                    }
+                } catch (IOException e) {
+                    log.debug("Error deleting temp file for '" + getContainer().getName() + "'", e);
+                }
+            }
+            tempFiles = null;
+        }
     }
 
     @Override
@@ -738,5 +765,23 @@ public abstract class JDBCDataSource extends AbstractDataSource
             throw new DBException(e, this);
         }
     }
+
+    protected String saveCertificateToFile(String rootCertProp) throws IOException {
+        Path certPath = Files.createTempFile(
+            DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
+            getContainer().getDriver().getId() + "-" + getContainer().getId(),
+            ".cert");
+        Files.writeString(certPath, rootCertProp);
+        trackTempFile(certPath);
+        return certPath.toAbsolutePath().toString();
+    }
+
+    public void trackTempFile(Path file) {
+        if (this.tempFiles == null) {
+            this.tempFiles = new ArrayList<>();
+        }
+        this.tempFiles.add(file);
+    }
+
 
 }

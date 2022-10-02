@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.rm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPProject;
 
 public enum RMProjectType {
 
@@ -48,5 +49,16 @@ public enum RMProjectType {
         }
         // Default value
         return USER;
+    }
+
+    public static String getPlainProjectId(DBPProject project) {
+        String id = project.getId();
+        if (id.length() > 2 && id.charAt(1) == '_') {
+            char typeC = id.charAt(0);
+            if (typeC == 'g' || typeC == 's' || typeC == 'u') {
+                return id.substring(2);
+            }
+        }
+        return id;
     }
 }
