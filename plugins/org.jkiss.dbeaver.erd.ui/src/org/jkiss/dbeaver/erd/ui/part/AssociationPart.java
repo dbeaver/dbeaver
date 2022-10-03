@@ -84,12 +84,12 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     protected void createEditPolicies() {
         installEditPolicy(EditPolicy.CONNECTION_ENDPOINTS_ROLE, new ConnectionEndpointEditPolicy());
         installEditPolicy(EditPolicy.CONNECTION_BENDPOINTS_ROLE, new AssociationBendEditPolicy());
-
-        if (isEditEnabled()) {
-            installEditPolicy(EditPolicy.COMPONENT_ROLE, new AssociationEditPolicy());
+        if (!getDiagramPart().getEditor().isReadOnly()) {
+            if (isEditEnabled()) {
+                installEditPolicy(EditPolicy.COMPONENT_ROLE, new AssociationEditPolicy());
+            }
+            getDiagramPart().getDiagram().getModelAdapter().installPartEditPolicies(this);
         }
-
-        getDiagramPart().getDiagram().getModelAdapter().installPartEditPolicies(this);
     }
 
     @Override
