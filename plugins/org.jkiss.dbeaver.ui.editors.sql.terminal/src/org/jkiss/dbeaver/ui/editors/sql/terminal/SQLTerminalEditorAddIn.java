@@ -48,7 +48,7 @@ import java.io.PrintWriter;
 public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
     private static final Log log = Log.getLog(SQLTerminalViewSwitchHandler.class);
 
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.data.console";
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.terminal";
 
     private static final String TERMINAL_VIEW_ENABLED_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.show.consoleView.isEnabled";
     private static final String TERMINAL_VIEW_ENABLED_VALUE_TRUE = "true";
