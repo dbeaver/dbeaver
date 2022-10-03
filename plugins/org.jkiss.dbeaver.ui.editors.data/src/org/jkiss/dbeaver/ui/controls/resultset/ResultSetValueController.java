@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -196,18 +197,24 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     public IValueManager getValueManager() {
         DBSTypedObject valueType = getBinding().getPresentationAttribute();
         DBDValueHandler valueHandler = getBinding().getValueHandler();
-        if (valueType.getDataKind() == DBPDataKind.ARRAY && cellLocation.getRowIndexes() != null) {
+        if (cellLocation.getRowIndexes() != null && valueType != null) {
             try {
-                // Get component data type
                 DBRProgressMonitor monitor = new VoidProgressMonitor();
-                DBSDataType arrayDataType = DBUtils.getDataType(valueType);
-                if (arrayDataType == null) {
-                    arrayDataType = DBUtils.resolveDataType(monitor, getBinding().getDataSource(), getBinding().getFullTypeName());
+                DBSDataType dataType = DBUtils.getDataType(valueType);
+                if (dataType == null) {
+                    dataType = DBUtils.resolveDataType(monitor, getBinding().getDataSource(), getBinding().getFullTypeName());
                 }
-                if (arrayDataType != null) {
-                    DBSDataType componentType = arrayDataType.getComponentType(monitor);
+                if (valueType.getDataKind() == DBPDataKind.ARRAY && dataType != null) {
+                    DBSDataType componentType = dataType.getComponentType(monitor);
                     if (componentType != null) {
                         valueType = componentType;
+                        valueHandler = DBUtils.findValueHandler(getBinding().getDataSource(), valueType);
+                    }
+                } else if (valueType.getDataKind() == DBPDataKind.STRUCT && dataType instanceof DBSEntity) {
+                    final var attributes = ((DBSEntity) dataType).getAttributes(monitor);
+                    final int index = cellLocation.getRowIndexes()[0];
+                    if (attributes != null && attributes.size() > index) {
+                        valueType = attributes.get(index);
                         valueHandler = DBUtils.findValueHandler(getBinding().getDataSource(), valueType);
                     }
                 }
@@ -241,11 +248,8 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @Override
     public boolean isReadOnly() {
-        DBSTypedObject valueType = getBinding().getPresentationAttribute();
-        // TODO: 8/26/2022 Add support for editing internal array rows
-        return controller.getAttributeReadOnlyStatus(getBinding()) != null || (valueType.getDataKind() != null
-            && valueType.getDataKind() == DBPDataKind.ARRAY
-            && cellLocation.getRowIndexes() != null);
+        // TODO: 8/26/2022 Add support for editing nested cells
+        return controller.getAttributeReadOnlyStatus(getBinding()) != null || cellLocation.getRowIndexes() != null;
     }
 
     @Override
