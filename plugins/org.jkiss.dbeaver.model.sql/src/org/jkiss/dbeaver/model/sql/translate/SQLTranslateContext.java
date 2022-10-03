@@ -37,9 +37,10 @@ final class SQLTranslateContext {
     private final SQLSyntaxManager syntaxManager;
 
     public SQLTranslateContext(
-            @NotNull SQLDialect sourceDialect,
-            @NotNull SQLDialect targetDialect,
-            @NotNull DBPPreferenceStore preferenceStore) {
+        @NotNull SQLDialect sourceDialect,
+        @NotNull SQLDialect targetDialect,
+        @NotNull DBPPreferenceStore preferenceStore
+    ) {
         this.sourceDialect = sourceDialect;
         this.targetDialect = targetDialect;
         this.preferenceStore = preferenceStore;

@@ -34,5 +34,6 @@ public interface SQLTranslator {
      * @return the list
      * @throws DBException the db exception
      */
+    @NotNull
     List<? extends SQLScriptElement> translate(@NotNull SQLScriptElement element) throws DBException;
 }

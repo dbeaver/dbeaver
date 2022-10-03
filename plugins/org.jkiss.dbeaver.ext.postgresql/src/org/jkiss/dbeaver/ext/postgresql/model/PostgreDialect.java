@@ -52,12 +52,12 @@ import java.util.Locale;
  * PostgreSQL dialect
  */
 public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDataTypeConverter,
-        SQLDialectDDLExtension {
+    SQLDialectDDLExtension {
     public static final String[] POSTGRE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
-            BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
-            new String[]{
-                    "SHOW", "SET"
-            }
+        BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
+        new String[]{
+            "SHOW", "SET"
+        }
     );
 
     private static final String[][] PG_STRING_QUOTES = {
@@ -1015,6 +1015,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         }
     }
 
+    @Nullable
     @Override
     public String getAutoIncrementKeyword() {
         return "AUTO_INCREMENT";
@@ -1030,11 +1031,13 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         return false;
     }
 
+    @NotNull
     @Override
     public String getLargeNumericType() {
         return PostgreConstants.TYPE_BIGINT;
     }
 
+    @NotNull
     @Override
     public String getLargeCharacterType() {
         return PostgreConstants.TYPE_TEXT;

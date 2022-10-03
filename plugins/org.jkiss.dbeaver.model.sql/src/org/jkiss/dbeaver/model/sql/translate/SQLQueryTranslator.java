@@ -24,11 +24,13 @@ import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
 import net.sf.jsqlparser.statement.create.table.Index;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -41,12 +43,64 @@ import java.util.Locale;
  */
 public class SQLQueryTranslator implements SQLTranslator {
 
+    @NotNull
     private SQLTranslateContext sqlTranslateContext;
 
-    public SQLQueryTranslator(SQLTranslateContext sqlTranslateContext) {
+    /**
+     * Instantiates sql query translator.
+     *
+     * @param sqlTranslateContext the sql translate context
+     */
+    public SQLQueryTranslator(@NotNull SQLTranslateContext sqlTranslateContext) {
         this.sqlTranslateContext = sqlTranslateContext;
     }
 
+    /**
+     * Translates script to target dialect.
+     *
+     * @param sourceDialect   the source dialect
+     * @param targetDialect   the target dialect
+     * @param preferenceStore the preference store
+     * @param script          the script
+     * @return the string
+     * @throws DBException the db exception
+     */
+    @NotNull
+    public static String translateScript(
+        @NotNull SQLDialect sourceDialect,
+        @NotNull SQLDialect targetDialect,
+        @NotNull DBPPreferenceStore preferenceStore,
+        @NotNull String script
+    ) throws DBException {
+
+        SQLTranslateContext context = new SQLTranslateContext(sourceDialect, targetDialect, preferenceStore);
+
+        List<SQLScriptElement> sqlScriptElements = SQLScriptParser.parseScript(sourceDialect, preferenceStore, script);
+        List<SQLScriptElement> result = new ArrayList<>();
+
+        SQLQueryTranslator defaultSQLQueryTranslator = new SQLQueryTranslator(context);
+
+        for (SQLScriptElement element : sqlScriptElements) {
+            result.addAll(defaultSQLQueryTranslator.translate(element));
+        }
+        String scriptDelimiter = targetDialect.getScriptDelimiters()[0];
+
+        StringBuilder sql = new StringBuilder();
+        for (SQLScriptElement element : result) {
+            sql.append(element.getText());
+            sql.append(scriptDelimiter).append("\n");
+        }
+        return sql.toString();
+    }
+
+    /**
+     * Translates sql script element.
+     *
+     * @param element the element
+     * @return the list
+     * @throws DBException the db exception
+     */
+    @NotNull
     public List<? extends SQLScriptElement> translate(@NotNull SQLScriptElement element) throws DBException {
 
         if (element instanceof SQLQuery) {
@@ -56,6 +110,7 @@ public class SQLQueryTranslator implements SQLTranslator {
         return Collections.singletonList(element);
     }
 
+    @NotNull
     private List<? extends SQLScriptElement> translateQuery(@NotNull SQLQuery query) {
         Statement statement = query.getStatement();
         if (statement != null) {
@@ -71,8 +126,11 @@ public class SQLQueryTranslator implements SQLTranslator {
      * @param statement the statement
      * @return the list
      */
-    protected List<? extends SQLScriptElement> translateStatement(@NotNull SQLQuery query,
-                                                                  @NotNull Statement statement) {
+    @NotNull
+    protected List<? extends SQLScriptElement> translateStatement(
+        @NotNull SQLQuery query,
+        @NotNull Statement statement
+    ) {
 
         List<SQLScriptElement> extraQueries = null;
 
@@ -120,6 +178,9 @@ public class SQLQueryTranslator implements SQLTranslator {
                             newDataType = extendedDialect.getLargeNumericType();
                         }
                         break;
+                    default:
+                        //no action
+                        break;
                 }
                 if (newDataType != null) {
                     cd.getColDataType().setDataType(newDataType);
@@ -127,15 +188,15 @@ public class SQLQueryTranslator implements SQLTranslator {
                 }
 
                 if (!CommonUtils.isEmpty(cd.getColumnSpecs())) {
-                    for (String cSpec : new ArrayList<>(cd.getColumnSpecs())) {
-                        switch (cSpec.toUpperCase(Locale.ENGLISH)) {
+                    for (String columnSpec : new ArrayList<>(cd.getColumnSpecs())) {
+                        switch (columnSpec.toUpperCase(Locale.ENGLISH)) {
                             case "AUTO_INCREMENT":
                             case "IDENTITY":
                                 if (!targetDialect.supportsColumnAutoIncrement()) {
                                     String sequenceName = CommonUtils.escapeIdentifier(createTable.getTable().getName()) +
                                         "_" + CommonUtils.escapeIdentifier(cd.getColumnName());
 
-                                    cd.getColumnSpecs().remove(cSpec);
+                                    cd.getColumnSpecs().remove(columnSpec);
                                     cd.getColumnSpecs().add("DEFAULT");
                                     cd.getColumnSpecs().add("NEXTVAL('" + sequenceName + "')");
                                     defChanged = true;
@@ -147,10 +208,13 @@ public class SQLQueryTranslator implements SQLTranslator {
                                     }
                                     extraQueries.add(new SQLQuery(null, createSeqQuery));
                                 } else if (extendedDialect != null) {
-                                    int indexOf = cd.getColumnSpecs().indexOf(cSpec);
+                                    int indexOf = cd.getColumnSpecs().indexOf(columnSpec);
                                     defChanged = true;
                                     cd.getColumnSpecs().set(indexOf, extendedDialect.getAutoIncrementKeyword());
                                 }
+                                break;
+                            default:
+                                //no action
                                 break;
                         }
                     }
@@ -180,6 +244,7 @@ public class SQLQueryTranslator implements SQLTranslator {
      *
      * @return the sql translate context
      */
+    @NotNull
     public SQLTranslateContext getSqlTranslateContext() {
         return sqlTranslateContext;
     }
@@ -189,7 +254,7 @@ public class SQLQueryTranslator implements SQLTranslator {
      *
      * @param sqlTranslateContext the sql translate context
      */
-    public void setSqlTranslateContext(SQLTranslateContext sqlTranslateContext) {
+    public void setSqlTranslateContext(@NotNull SQLTranslateContext sqlTranslateContext) {
         this.sqlTranslateContext = sqlTranslateContext;
     }
 }

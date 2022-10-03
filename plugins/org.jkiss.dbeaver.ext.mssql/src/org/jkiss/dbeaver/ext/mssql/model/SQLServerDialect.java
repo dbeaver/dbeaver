@@ -46,52 +46,52 @@ import java.util.*;
 public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDialectDDLExtension {
 
     private static final String[][] TSQL_BEGIN_END_BLOCK = new String[][]{
-            {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
+        {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
     };
 
     private static String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
-            "LOGIN",
-            "TOP",
-            "SYNONYM",
-            "PERSISTED"
+        "LOGIN",
+        "TOP",
+        "SYNONYM",
+        "PERSISTED"
     };
 
     private static final String[][] SQLSERVER_QUOTE_STRINGS = {
-            {"[", "]"},
-            {"\"", "\""},
+        {"[", "]"},
+        {"\"", "\""},
     };
     private static final String[][] SYBASE_LEGACY_QUOTE_STRINGS = {
-            {"\"", "\""},
+        {"\"", "\""},
     };
 
     private static String[] EXEC_KEYWORDS = {"CALL", "EXEC", "EXECUTE"};
 
     private static String[] PLAIN_TYPE_NAMES = {
-            SQLServerConstants.TYPE_GEOGRAPHY,
-            SQLServerConstants.TYPE_GEOMETRY,
-            SQLServerConstants.TYPE_TIMESTAMP,
-            SQLServerConstants.TYPE_IMAGE,
+        SQLServerConstants.TYPE_GEOGRAPHY,
+        SQLServerConstants.TYPE_GEOMETRY,
+        SQLServerConstants.TYPE_TIMESTAMP,
+        SQLServerConstants.TYPE_IMAGE,
     };
 
     private static String[] SQLSERVER_FUNCTIONS_DATETIME = new String[]{
-            "CURRENT_TIMEZONE",
-            "DATEPART",
-            "DATEADD",
-            "DATEDIFF",
-            "DATEDIFF_BIG",
-            "DATEFROMPARTS",
-            "DATENAME",
-            "DATETIMEFROMPARTS",
-            "EOMONTH",
-            "GETDATE",
-            "GETUTCDATE",
-            "ISDATE",
-            "SYSDATETIMEOFFSET",
-            "SYSUTCDATETIME",
-            "SMALLDATETIMEFROMPARTS",
-            "SWITCHOFFSET",
-            "TIMEFROMPARTS",
-            "TODATETIMEOFFSET"
+        "CURRENT_TIMEZONE",
+        "DATEPART",
+        "DATEADD",
+        "DATEDIFF",
+        "DATEDIFF_BIG",
+        "DATEFROMPARTS",
+        "DATENAME",
+        "DATETIMEFROMPARTS",
+        "EOMONTH",
+        "GETDATE",
+        "GETUTCDATE",
+        "ISDATE",
+        "SYSDATETIMEOFFSET",
+        "SYSUTCDATETIME",
+        "SMALLDATETIMEFROMPARTS",
+        "SWITCHOFFSET",
+        "TIMEFROMPARTS",
+        "TODATETIMEOFFSET"
     };
 
     private JDBCDataSource dataSource;
@@ -190,7 +190,12 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     }
 
     @Override
-    public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+    public String getColumnTypeModifiers(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBSTypedObject column,
+        @NotNull String typeName,
+        @NotNull DBPDataKind dataKind
+    ) {
         String lowerTypeName = typeName.toLowerCase(Locale.ENGLISH); // Workaround for generic data types
         if (dataKind == DBPDataKind.DATETIME || lowerTypeName.equals(SQLServerConstants.TYPE_DATETIMEOFFSET)) {
             // The datetimeoffset is the DATE type with the String data kind. Uses scale for the length property as other DATE types.
@@ -231,7 +236,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         } else if (ArrayUtils.contains(PLAIN_TYPE_NAMES, typeName)) {
             return null;
         } else if (dataKind == DBPDataKind.NUMERIC &&
-                (SQLServerConstants.TYPE_NUMERIC.equals(lowerTypeName) || SQLServerConstants.TYPE_DECIMAL.equals(lowerTypeName))) {
+            (SQLServerConstants.TYPE_NUMERIC.equals(lowerTypeName) || SQLServerConstants.TYPE_DECIMAL.equals(lowerTypeName))) {
             // numeric and decimal - are synonyms in sql server
             // The numeric precision has a range from 1 to 38. The default precision is 38.
             // The scale has a range from 0 to p (precision). The scale can be specified only if the precision is specified. By default, the scale is zero
@@ -354,6 +359,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         return false;
     }
 
+    @Nullable
     @Override
     public String getAutoIncrementKeyword() {
         return "IDENTITY";
@@ -369,11 +375,13 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         return true;
     }
 
+    @NotNull
     @Override
     public String getLargeNumericType() {
         return SQLServerConstants.TYPE_BIGINT;
     }
 
+    @NotNull
     @Override
     public String getLargeCharacterType() {
         return SQLServerConstants.TYPE_VARCHAR + "(max)";

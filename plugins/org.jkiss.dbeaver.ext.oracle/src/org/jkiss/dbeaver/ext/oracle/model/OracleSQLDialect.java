@@ -676,6 +676,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         return false;
     }
 
+    @Nullable
     @Override
     public String getAutoIncrementKeyword() {
         return "GENERATED ALWAYS AS IDENTITY";
@@ -691,11 +692,13 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         return false;
     }
 
+    @NotNull
     @Override
     public String getLargeNumericType() {
         return OracleConstants.TYPE_NUMBER;
     }
 
+    @NotNull
     @Override
     public String getLargeCharacterType() {
         return OracleConstants.TYPE_CLOB;

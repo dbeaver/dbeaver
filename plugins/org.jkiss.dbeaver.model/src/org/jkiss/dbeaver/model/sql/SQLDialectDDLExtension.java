@@ -16,16 +16,20 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 /**
  * Sql dialect ddl extension.
  */
-public interface SQLDialectDDLExtension {
+public interface SQLDialectDDLExtension extends SQLDialect {
 
     /**
      * Gets auto increment keyword.
      *
      * @return the auto increment keyword
      */
+    @Nullable
     String getAutoIncrementKeyword();
 
     /**
@@ -47,6 +51,7 @@ public interface SQLDialectDDLExtension {
      *
      * @return the large numeric type name
      */
+    @NotNull
     String getLargeNumericType();
 
     /**
@@ -54,6 +59,7 @@ public interface SQLDialectDDLExtension {
      *
      * @return the large character type name
      */
+    @NotNull
     String getLargeCharacterType();
 
 }
