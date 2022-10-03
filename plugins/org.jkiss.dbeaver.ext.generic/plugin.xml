@@ -445,8 +445,8 @@
                     webURL="http://www.intersystems.com/cache/"
                     description="InterSystems Cache"
                     categories="sql,object">
-                    <file type="jar" path="repo:/drivers/cache/CacheDB.jar"/>
-                    <file type="license" path="repo:/drivers/cache/LICENSE.txt"/>
+                    <file type="jar" path="drivers/cache" bundle="drivers.cache"/>
+                    <file type="license" path="repo:/drivers/cache/LICENSE.txt" bundle="drivers.cache"/>
                 </driver>
                 <driver
                     id="iris"
@@ -472,7 +472,7 @@
                     description="Ingres Database"
                     iconBig="icons/ingres_icon_big.png"
                     categories="sql">
-                    <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE"/>
+                    <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE" bundle="!drivers.ingres"/>
                     <parameter name="supports-truncate" value="false"/>
                     <file type="jar" path="drivers/ingres" bundle="drivers.ingres"/>
                 </driver>
@@ -1034,6 +1034,7 @@
                         description="OpenEdge Progress JDBC driver"
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#"
                         categories="sql">
+<!--                    <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>-->
                 </driver>
 
                 <!-- MonetDB -->
