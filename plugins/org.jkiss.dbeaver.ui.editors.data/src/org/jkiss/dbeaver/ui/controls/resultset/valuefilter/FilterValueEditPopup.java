@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 public class FilterValueEditPopup extends AbstractPopupPanel {
@@ -60,7 +59,7 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
     private static final String PROP_QUERY_DATABASE = "queryDatabase";
     private static final String PROP_CASE_INSENSITIVE_SEARCH = "caseInsensitiveSearch";
 
-    private static final NumberFormat NUMBER_FORMAT = new DecimalFormat();
+    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
 
     private Object value;
     private GenericFilterValueEdit filter;
@@ -170,12 +169,10 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         }
         if (descReferrer == null) {
             columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_count_label, ResultSetMessages.dialog_filter_value_edit_table_count_description, SWT.LEFT, true, true, true, null, new ColumnLabelProvider() {
-                private final NumberFormat numberFormat = NumberFormat.getInstance();
-
                 @Override
                 public String getText(Object element) {
                     if (element instanceof DBDLabelValuePairExt && isRowCountEnabled()) {
-                        return numberFormat.format(((DBDLabelValuePairExt) element).getCount());
+                        return NUMBER_FORMAT.format(((DBDLabelValuePairExt) element).getCount());
                     } else {
                         return null;
                     }
