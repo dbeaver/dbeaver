@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 public class FilterValueEditPopup extends AbstractPopupPanel {
@@ -58,6 +59,8 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
     private static final String PROP_SHOW_DISTINCT_VALUES_COUNT = "showDistinctValuesCount";
     private static final String PROP_QUERY_DATABASE = "queryDatabase";
     private static final String PROP_CASE_INSENSITIVE_SEARCH = "caseInsensitiveSearch";
+
+    private static final NumberFormat NUMBER_FORMAT = new DecimalFormat();
 
     private Object value;
     private GenericFilterValueEdit filter;
@@ -310,9 +313,16 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                     if (count == null) {
                         table.getColumn(0).setText(ResultSetMessages.dialog_filter_value_edit_table_value_label);
                     } else if (count == table.getItemCount()) {
-                        table.getColumn(0).setText(NLS.bind(ResultSetMessages.dialog_filter_value_edit_table_value_total_label, count));
+                        table.getColumn(0).setText(NLS.bind(
+                            ResultSetMessages.dialog_filter_value_edit_table_value_total_label,
+                            NUMBER_FORMAT.format(count)
+                        ));
                     } else {
-                        table.getColumn(0).setText(NLS.bind(ResultSetMessages.dialog_filter_value_edit_table_value_total_shown_label, count, table.getItemCount()));
+                        table.getColumn(0).setText(NLS.bind(
+                            ResultSetMessages.dialog_filter_value_edit_table_value_total_shown_label,
+                            NUMBER_FORMAT.format(count),
+                            NUMBER_FORMAT.format(table.getItemCount())
+                        ));
                     }
 
                     UIUtils.packColumns(table, false);
