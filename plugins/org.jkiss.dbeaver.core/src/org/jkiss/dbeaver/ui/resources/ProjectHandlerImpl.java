@@ -41,7 +41,7 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
 
     @Override
     public int getFeatures(IResource resource) {
-        boolean distributed = DBWorkbench.getPlatform().getApplication().isDistributed();
+        boolean distributed = DBWorkbench.isDistributed();
         int features = FEATURE_CREATE_FOLDER;
         if (!distributed) {
             features |= FEATURE_RENAME;

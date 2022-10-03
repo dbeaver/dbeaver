@@ -199,7 +199,11 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         dataSource.setName(name);
         dataSource.setSavePassword(!CommonUtils.isEmpty(config.getUserPassword()));
         dataSource.setFolder(importData.getDataSourceFolder());
-        dataSourceRegistry.addDataSource(dataSource);
+        try {
+            dataSourceRegistry.addDataSource(dataSource);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Import connection", null, e);
+        }
     }
 
     protected void adaptConnectionUrl(ImportConnectionInfo connectionInfo) throws DBException

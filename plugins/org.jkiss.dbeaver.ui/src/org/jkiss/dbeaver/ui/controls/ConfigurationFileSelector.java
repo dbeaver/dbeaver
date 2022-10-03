@@ -14,16 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.connection;
+package org.jkiss.dbeaver.ui.controls;
+
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
- * Driver configuration type
+ * ConfigurationFileSelector
  */
-public enum DBPDriverConfigurationType {
-    MANUAL,
-    URL;
+public class ConfigurationFileSelector extends TextWithOpenFile {
 
-    public boolean isDefault() {
-        return this == MANUAL;
+    public ConfigurationFileSelector(Composite parent, String title, String[] filterExt) {
+        super(parent, title, filterExt);
     }
+
+    public ConfigurationFileSelector(Composite parent, String title, String[] filterExt, boolean binaryFile) {
+        super(parent, title, filterExt, binaryFile);
+    }
+
+    @Override
+    protected boolean isPlainTextEditor() {
+        return DBWorkbench.isDistributed();
+    }
+
 }

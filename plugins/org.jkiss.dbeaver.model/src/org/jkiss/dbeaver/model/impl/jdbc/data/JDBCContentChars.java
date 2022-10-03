@@ -204,7 +204,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
     @Override
     public JDBCContentChars cloneValue(DBRProgressMonitor monitor)
     {
-        return new JDBCContentChars(executionContext, data);
+        return new JDBCContentChars(this);
     }
 
     @Override

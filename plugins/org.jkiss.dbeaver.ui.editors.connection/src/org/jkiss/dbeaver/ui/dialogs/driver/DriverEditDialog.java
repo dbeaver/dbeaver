@@ -114,8 +114,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
 
-    private final boolean isDistributed = DBWorkbench.getPlatform().getApplication().isDistributed();
-
     static int getDialogCount() {
         return dialogCount;
     }
@@ -504,7 +502,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         });
 
-        if (!isDistributed) {
+        if (!DBWorkbench.isDistributed()) {
             UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_add_artifact, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -719,8 +717,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         boolean hasFiles = false, hasDownloads = false;
         for (DBPDriverLibrary library : libraries) {
             final Path localFile = library.getLocalFile();
-            hasFiles = hasFiles || (!library.isDisabled() && localFile != null && Files.exists(localFile));
-            if (!hasFiles && !library.isDisabled()) {
+            hasFiles = hasFiles || (localFile != null && Files.exists(localFile));
+            if (!hasFiles) {
                 final Collection<DriverDescriptor.DriverFileInfo> files = driver.getLibraryFiles(library);
                 if (files != null) {
                     for (DriverDescriptor.DriverFileInfo file : files) {
@@ -731,7 +729,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 }
             }
 
-            if (!library.isDisabled() && library.isDownloadable()) {
+            if (library.isDownloadable()) {
                 hasDownloads = true;
             }
         }
@@ -809,7 +807,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     @Override
     protected void okPressed() {
 
-        if (isDistributed) {
+        if (DBWorkbench.isDistributed()) {
             try {
                 syncDriverLibraries();
             } catch (DBException e) {

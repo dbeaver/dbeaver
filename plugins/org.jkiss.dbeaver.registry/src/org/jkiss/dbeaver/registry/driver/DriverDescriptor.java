@@ -132,7 +132,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         @Override
         public String toString() {
-            return file.getFileName().toString();
+            return file != null ? file.getFileName().toString() : this.id;
         }
     }
 
@@ -681,7 +681,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.driverClass = null;
         this.isLoaded = false;
 
-        if (!isDistributedMode()) {
+        if (!DBWorkbench.isDistributed()) {
             this.resolvedFiles.clear();
         }
     }
@@ -934,7 +934,19 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public void setDriverLibraries(List<? extends DBPDriverLibrary> libs) {
+        List<DBPDriverLibrary> deletedLibs = new ArrayList<>();
+        for (DBPDriverLibrary lib : this.libraries) {
+            if (!lib.isCustom() && !libs.contains(lib)) {
+                lib.setDisabled(true);
+                deletedLibs.add(lib);
+            }
+        }
+        for (DBPDriverLibrary lib : libs) {
+            lib.setDisabled(false);
+        }
+
         this.libraries.clear();
+        this.libraries.addAll(deletedLibs);
         this.libraries.addAll(libs);
     }
 
@@ -1272,7 +1284,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     private List<Path> validateFilesPresence(boolean resetVersions) {
-        if (isDistributedMode()) {
+        if (DBWorkbench.isDistributed()) {
             // We are in distributed mode
             return syncDistributedDependencies();
         }
@@ -1428,7 +1440,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         }
 
                         byte[] fileData = fileController.loadFileData(DBFileController.TYPE_DATABASE_DRIVER, fileInfo.getFile().toString());
-                        Files.write(localDriverFile, fileData, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE_NEW);
+                        Files.write(localDriverFile, fileData, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
 
                         localFilePaths.add(localDriverFile);
                     } catch (Exception e) {
@@ -1779,10 +1791,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
         return libraries.toArray(new String[0]);
-    }
-
-    static boolean isDistributedMode() {
-        return DBWorkbench.getPlatform().getApplication().isDistributed();
     }
 
 }

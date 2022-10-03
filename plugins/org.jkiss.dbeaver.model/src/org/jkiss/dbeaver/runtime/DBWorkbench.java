@@ -87,4 +87,12 @@ public class DBWorkbench {
         return service;
     }
 
+    /**
+     * Distributed platform.
+     * All configurations and resources are stored on remote servers.
+     */
+    public static boolean isDistributed() {
+        return getPlatform().getApplication().isDistributed();
+    }
+
 }

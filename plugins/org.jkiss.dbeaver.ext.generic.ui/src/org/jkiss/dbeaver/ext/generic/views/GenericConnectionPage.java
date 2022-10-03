@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.generic.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -49,12 +48,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.InvalidPathException;
+import java.util.Collections;
 import java.util.List;
-import java.util.*;
+import java.util.Set;
 
 /**
  * GenericConnectionPage
@@ -277,7 +278,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             dialog.setFileName(text);
             if (CommonUtils.isNotEmpty(text)) {
                 try {
-                    String directoryPath = CommonUtils.getDirectoryPath(text);
+                    String directoryPath = IOUtils.getDirectoryPath(text);
                     if (CommonUtils.isNotEmpty(directoryPath)) {
                         dialog.setFilterPath(directoryPath);
                     }

@@ -98,7 +98,7 @@ public class LocalProjectImpl extends BaseProjectImpl {
             NullProgressMonitor monitor = new NullProgressMonitor();
             try {
                 project.open(monitor);
-                if (!DBWorkbench.getPlatform().getApplication().isDistributed()) {
+                if (!DBWorkbench.isDistributed()) {
                     project.refreshLocal(IFile.DEPTH_ONE, monitor);
                 }
             } catch (CoreException e) {

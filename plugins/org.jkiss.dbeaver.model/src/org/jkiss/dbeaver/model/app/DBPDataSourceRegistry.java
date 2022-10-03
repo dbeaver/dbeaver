@@ -79,11 +79,11 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     boolean removeDataSourceListener(@NotNull DBPEventListener listener);
 
-    void addDataSource(@NotNull DBPDataSourceContainer dataSource);
+    void addDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException;
 
     void removeDataSource(@NotNull DBPDataSourceContainer dataSource);
 
-    void updateDataSource(@NotNull DBPDataSourceContainer dataSource);
+    void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException;
 
     @NotNull
     List<? extends DBPDataSourceFolder> getAllFolders();
