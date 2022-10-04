@@ -446,7 +446,7 @@
                     description="InterSystems Cache"
                     categories="sql,object">
                     <file type="jar" path="drivers/cache" bundle="drivers.cache"/>
-                    <file type="license" path="repo:/drivers/cache/LICENSE.txt" bundle="drivers.cache"/>
+                    <file type="license" path="drivers/cache/LICENSE.txt" bundle="drivers.cache"/>
                 </driver>
                 <driver
                     id="iris"
