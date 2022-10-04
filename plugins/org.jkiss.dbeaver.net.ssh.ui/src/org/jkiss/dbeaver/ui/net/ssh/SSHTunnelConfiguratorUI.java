@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 import org.jkiss.dbeaver.model.net.ssh.SSHImplementationAbstract;
 import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
@@ -132,10 +133,15 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     UIUtils.enableWithChildren(jumpServerCredentialsPanel, jumpServerEnabledCheck.getSelection());
+                    if (jumpServerCredentialsPanel.savePasswordCheckbox != null) {
+                        jumpServerCredentialsPanel.passwordText.setEnabled(
+                            jumpServerCredentialsPanel.savePasswordCheckbox.getSelection()
+                            && jumpServerEnabledCheck.getSelection());
+                    }
                 }
             });
 
-            jumpServerCredentialsPanel = new CredentialsPanel(client, false);
+            jumpServerCredentialsPanel = new CredentialsPanel(client, true);
         }
 
         {
@@ -236,17 +242,17 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     @Nullable
     private static DBPAuthInfo promptCredentialsDialog(
         @NotNull SSHConstants.AuthType type,
-        @NotNull DBWHandlerConfiguration configuration
+        @NotNull String username, @NotNull String password
     ) {
         try {
             return DBWorkbench.getPlatformUI().promptUserCredentials(
                 SSHUIMessages.model_ssh_dialog_credentials,
                 SSHUIMessages.model_ssh_dialog_credentials_username,
-                configuration.getUserName(),
+                username,
                 type.equals(SSHConstants.AuthType.PUBLIC_KEY)
                     ? SSHUIMessages.model_ssh_dialog_credentials_passphrase
                     : SSHUIMessages.model_ssh_dialog_credentials_password,
-                configuration.getPassword(),
+                password,
                 type.equals(SSHConstants.AuthType.PUBLIC_KEY),
                 false
             );
@@ -285,13 +291,39 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     monitor.subTask("Initialize tunnel");
                     String authTypeName = configuration.getStringProperty("authType");
                     SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, authTypeName);
-                    if (!configuration.isSavePassword()) {
-                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration);
+                    if (!configuration.isSavePassword() && tunnel.getRequiredCredentials(configuration, null) != DBWTunnel.AuthCredentials.NONE) {
+                        DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType, configuration.getUserName(),
+                            configuration.getPassword());
                         if (dbpAuthInfo != null) {
                             if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
                                 configuration.setUserName(dbpAuthInfo.getUserName());
                             }
                             configuration.setPassword(dbpAuthInfo.getUserPassword());
+                        }
+                    }
+                    if (configuration.getBooleanProperty(getJumpServerSettingsPrefix() + "enabled")) { //$NON-NLS-1$
+                        authTypeName = configuration.getStringProperty(getJumpServerSettingsPrefix() + "authType"); //$NON-NLS-1$
+                        authType = CommonUtils.valueOf(SSHConstants.AuthType.class,
+                            authTypeName,
+                            SSHConstants.AuthType.PASSWORD
+                        );
+                        if (!configuration.getBooleanProperty(getJumpServerSettingsPrefix() + "save-password") //$NON-NLS-1$
+                            && tunnel.getRequiredCredentials(configuration, getJumpServerSettingsPrefix())
+                               != DBWTunnel.AuthCredentials.NONE) {
+                            DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType,
+                                configuration.getStringProperty(getJumpServerSettingsPrefix() + "name"), //$NON-NLS-1$
+                                configuration.getSecureProperty(getJumpServerSettingsPrefix() + "password") //$NON-NLS-1$
+                            );
+                            if (dbpAuthInfo != null) {
+                                if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
+                                    configuration.setProperty(getJumpServerSettingsPrefix() + "name", //$NON-NLS-1$
+                                        dbpAuthInfo.getUserName()
+                                    );
+                                }
+                                configuration.setSecureProperty(getJumpServerSettingsPrefix() + "password", //$NON-NLS-1$
+                                    dbpAuthInfo.getUserPassword()
+                                );
+                            }
                         }
                     }
                     tunnel.initializeHandler(monitor, configuration, connectionConfig);
@@ -340,12 +372,17 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
     }
 
+    @NotNull
+    private String getJumpServerSettingsPrefix() {
+        return SSHImplementationAbstract.getJumpServerSettingsPrefix(0);
+    }
+
     @Override
     public void loadSettings(@NotNull DBWHandlerConfiguration configuration)
     {
         credentialsPanel.loadSettings(configuration, "");
 
-        final String jumpServerSettingsPrefix = SSHImplementationAbstract.getJumpServerSettingsPrefix(0);
+        final String jumpServerSettingsPrefix = getJumpServerSettingsPrefix();
         jumpServerCredentialsPanel.loadSettings(configuration, jumpServerSettingsPrefix);
         jumpServerEnabledCheck.setSelection(configuration.getBooleanProperty(jumpServerSettingsPrefix + RegistryConstants.ATTR_ENABLED));
         UIUtils.enableWithChildren(jumpServerCredentialsPanel, jumpServerEnabledCheck.getSelection());
@@ -410,7 +447,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         boolean jumpServersEnabled = jumpServerEnabledCheck.getSelection();
         if (jumpServersEnabled) {
-            final String jumpServerSettingsPrefix = SSHImplementationAbstract.getJumpServerSettingsPrefix(0);
+            final String jumpServerSettingsPrefix = getJumpServerSettingsPrefix();
             jumpServerCredentialsPanel.saveSettings(configuration, jumpServerSettingsPrefix);
             configuration.setProperty(jumpServerSettingsPrefix + RegistryConstants.ATTR_ENABLED, jumpServersEnabled);
         }

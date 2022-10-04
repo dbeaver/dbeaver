@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
+import org.eclipse.jgit.annotations.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
@@ -93,22 +95,30 @@ public class SSHTunnelImpl implements DBWTunnel {
         return false;
     }
 
-    @Override
     public AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration) {
+        return getRequiredCredentials(configuration, null);
+    }
+
+    @Override
+    public AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration, @Nullable String prefix) {
+        String start = prefix;
+        if (start == null) {
+            start = "";
+        }
         if (!configuration.isEnabled() || !configuration.isSecured()) {
             return AuthCredentials.NONE;
         }
-        if (configuration.isSavePassword()) {
+        if (configuration.getBooleanProperty(start + RegistryConstants.ATTR_SAVE_PASSWORD)) {
             return AuthCredentials.NONE;
         }
 
-        String sshAuthType = configuration.getStringProperty(SSHConstants.PROP_AUTH_TYPE);
+        String sshAuthType = configuration.getStringProperty(start + SSHConstants.PROP_AUTH_TYPE);
         SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
         if (sshAuthType != null) {
             authType = SSHConstants.AuthType.valueOf(sshAuthType);
         }
         if (authType == SSHConstants.AuthType.PUBLIC_KEY) {
-            String privKeyValue = configuration.getSecureProperty(SSHConstants.PROP_KEY_VALUE);
+            String privKeyValue = configuration.getSecureProperty(start + SSHConstants.PROP_KEY_VALUE);
             if (privKeyValue != null) {
                 byte[] pkBinary = Base64.decode(privKeyValue);
                 if (SSHUtils.isKeyEncrypted(pkBinary)) {
@@ -116,7 +126,7 @@ public class SSHTunnelImpl implements DBWTunnel {
                 }
             }
             // Check whether this key is encrypted
-            String privKeyPath = configuration.getStringProperty(SSHConstants.PROP_KEY_PATH);
+            String privKeyPath = configuration.getStringProperty(start + SSHConstants.PROP_KEY_PATH);
             if (!CommonUtils.isEmpty(privKeyPath) && SSHUtils.isKeyFileEncrypted(privKeyPath)) {
                 return AuthCredentials.PASSWORD;
             }
