@@ -33,8 +33,11 @@
                         propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.25.1001/doc/Simba+Athena+JDBC+Connector+Install+and+Configuration+Guide.pdf"
                         categories="bigdata,aws">
                     <replace provider="generic" driver="aws_athena_42"/>
-                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.25.1001/SimbaAthenaJDBC-2.0.25.1001.zip" bundle="!drivers.athena"/>
+                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.32.1000/AthenaJDBC42.jar" bundle="!drivers.athena"/>
+                    <file type="license" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.32.1000/docs/LICENSE.txt" bundle="!drivers.athena"/>
+
                     <file type="jar" path="drivers/athena" bundle="drivers.athena"/>
+                    <file type="license" path="drivers/athena/LICENSE.txt" bundle="drivers.athena"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
