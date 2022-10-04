@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.mssql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -38,7 +37,13 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
+
 public class SQLServerConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
+
+    protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
+    protected static final List<String> GROUP_CONNECTION_ARR = List.of(GROUP_CONNECTION);
 
     private Label hostLabel;
     private Text hostText;
@@ -105,7 +110,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         SelectionAdapter typeSwitcher = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                setupConnectionModeSelection(urlText, typeURLRadio.getSelection());
+                setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), GROUP_CONNECTION_ARR);
                 updateUrl();
             }
         };
@@ -283,7 +288,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
         }
-        setupConnectionModeSelection(urlText, useURL);
+        setupConnectionModeSelection(urlText, useURL, GROUP_CONNECTION_ARR);
         updateUrl();
 
         activated = true;

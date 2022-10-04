@@ -59,6 +59,8 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
     private static final String PROP_QUERY_DATABASE = "queryDatabase";
     private static final String PROP_CASE_INSENSITIVE_SEARCH = "caseInsensitiveSearch";
 
+    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
+
     private Object value;
     private GenericFilterValueEdit filter;
     private Point location;
@@ -167,12 +169,10 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         }
         if (descReferrer == null) {
             columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_count_label, ResultSetMessages.dialog_filter_value_edit_table_count_description, SWT.LEFT, true, true, true, null, new ColumnLabelProvider() {
-                private final NumberFormat numberFormat = NumberFormat.getInstance();
-
                 @Override
                 public String getText(Object element) {
                     if (element instanceof DBDLabelValuePairExt && isRowCountEnabled()) {
-                        return numberFormat.format(((DBDLabelValuePairExt) element).getCount());
+                        return NUMBER_FORMAT.format(((DBDLabelValuePairExt) element).getCount());
                     } else {
                         return null;
                     }
@@ -310,9 +310,16 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
                     if (count == null) {
                         table.getColumn(0).setText(ResultSetMessages.dialog_filter_value_edit_table_value_label);
                     } else if (count == table.getItemCount()) {
-                        table.getColumn(0).setText(NLS.bind(ResultSetMessages.dialog_filter_value_edit_table_value_total_label, count));
+                        table.getColumn(0).setText(NLS.bind(
+                            ResultSetMessages.dialog_filter_value_edit_table_value_total_label,
+                            NUMBER_FORMAT.format(count)
+                        ));
                     } else {
-                        table.getColumn(0).setText(NLS.bind(ResultSetMessages.dialog_filter_value_edit_table_value_total_shown_label, count, table.getItemCount()));
+                        table.getColumn(0).setText(NLS.bind(
+                            ResultSetMessages.dialog_filter_value_edit_table_value_total_shown_label,
+                            NUMBER_FORMAT.format(count),
+                            NUMBER_FORMAT.format(table.getItemCount())
+                        ));
                     }
 
                     UIUtils.packColumns(table, false);

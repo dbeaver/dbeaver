@@ -27,19 +27,18 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.BaseProjectImpl;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -280,75 +279,92 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     private void loadConfiguration() {
-        Path configFile = getConfigFile(false);
-        if (!Files.exists(configFile)) {
+        if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_VIEW)) {
+            log.warn("The user has no permission to see tasks for this project: " + getProject().getDisplayName());
             return;
         }
-        try (Reader configReader = Files.newBufferedReader(configFile, StandardCharsets.UTF_8)) {
-            Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, configReader);
-
-            // First read and create folders
-            for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, TaskConstants.TASKS_FOLDERS_TAG)) {
-                String folderName = folderMap.getKey();
-                if (CommonUtils.isNotEmpty(folderName)) {
-                    Object property = JSONUtils.getObjectProperty(folderMap.getValue(), TaskConstants.TAG_PARENT);
-                    TaskFolderImpl parentFolder = null;
-                    if (property != null) {
-                        Optional<TaskFolderImpl> first = tasksFolders.stream()
-                            .filter(e -> e.getName().equals(property.toString()))
-                            .findFirst();
-                        if (first.isPresent()) {
-                            parentFolder = first.get();
-                        }
+        String configFile = null;
+        try {
+            configFile =
+                DBWorkbench.getPlatform().getTaskController().loadTaskConfigurationFile(getProject().getId(), TaskConstants.CONFIG_FILE);
+        } catch (DBException e) {
+            log.error("Error loading task configuration file.", e);
+        }
+        if (CommonUtils.isEmpty(configFile)) {
+            return;
+        }
+        Map<String, Object> jsonMap = JSONUtils.parseMap(CONFIG_GSON, new StringReader(configFile));
+        // First read and create folders
+        for (Map.Entry<String, Map<String, Object>> folderMap : JSONUtils.getNestedObjects(jsonMap, TaskConstants.TASKS_FOLDERS_TAG)) {
+            String folderName = folderMap.getKey();
+            if (CommonUtils.isNotEmpty(folderName)) {
+                Object property = JSONUtils.getObjectProperty(folderMap.getValue(), TaskConstants.TAG_PARENT);
+                TaskFolderImpl parentFolder = null;
+                if (property != null) {
+                    Optional<TaskFolderImpl> first = tasksFolders.stream()
+                        .filter(e -> e.getName().equals(property.toString()))
+                        .findFirst();
+                    if (first.isPresent()) {
+                        parentFolder = first.get();
                     }
+                }
+                try {
                     createTaskFolder(projectMetadata, folderName, parentFolder, new DBTTask[0]);
+                } catch (DBException ex) {
+                    log.error("Error creating tasks folder.", ex);
                 }
             }
+        }
 
-            for (Map.Entry<String, Object> taskMap : jsonMap.entrySet()) {
-                Map<String, Object> taskJSON = (Map<String, Object>) taskMap.getValue();
+        for (Map.Entry<String, Object> taskMap : jsonMap.entrySet()) {
+            Map<String, Object> taskJSON = (Map<String, Object>) taskMap.getValue();
 
-                try {
-                    String id = taskMap.getKey();
-                    if (!id.startsWith(TaskConstants.TASKS_FOLDERS_TAG)) {
-                        String task = JSONUtils.getString(taskJSON, TaskConstants.TAG_TASK);
-                        String label = CommonUtils.toString(JSONUtils.getString(taskJSON, TaskConstants.TAG_LABEL), id);
-                        String description = JSONUtils.getString(taskJSON, TaskConstants.TAG_DESCRIPTION);
-                        String taskFolderName = JSONUtils.getString(taskJSON, TaskConstants.TAG_TASK_FOLDER);
-                        Date createTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_CREATE_TIME));
-                        Date updateTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_UPDATE_TIME));
-                        Map<String, Object> state = JSONUtils.getObject(taskJSON, TaskConstants.TAG_STATE);
+            try {
+                String id = taskMap.getKey();
+                if (!id.startsWith(TaskConstants.TASKS_FOLDERS_TAG)) {
+                    String task = JSONUtils.getString(taskJSON, TaskConstants.TAG_TASK);
+                    String label = CommonUtils.toString(JSONUtils.getString(taskJSON, TaskConstants.TAG_LABEL), id);
+                    String description = JSONUtils.getString(taskJSON, TaskConstants.TAG_DESCRIPTION);
+                    String taskFolderName = JSONUtils.getString(taskJSON, TaskConstants.TAG_TASK_FOLDER);
+                    Date createTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_CREATE_TIME));
+                    Date updateTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_UPDATE_TIME));
+                    Map<String, Object> state = JSONUtils.getObject(taskJSON, TaskConstants.TAG_STATE);
 
-                        DBTTaskType taskDescriptor = getRegistry().getTaskType(task);
-                        if (taskDescriptor == null) {
-                            log.error("Can't find task descriptor " + task);
-                            continue;
-                        }
+                    DBTTaskType taskDescriptor = getRegistry().getTaskType(task);
+                    if (taskDescriptor == null) {
+                        log.error("Can't find task descriptor " + task);
+                        continue;
+                    }
 
-                        TaskFolderImpl taskFolder = searchTaskFolderByName(taskFolderName);
-                        TaskImpl taskConfig = new TaskImpl(projectMetadata, taskDescriptor, id, label, description, createTime, updateTime, taskFolder);
-                        taskConfig.setProperties(state);
-                        if (taskFolder != null) {
-                            taskFolder.addTaskToFolder(taskConfig);
-                            if (!tasksFolders.contains(taskFolder)) {
-                                synchronized (tasksFolders) {
-                                    tasksFolders.add(taskFolder);
-                                }
+                    TaskFolderImpl taskFolder = searchTaskFolderByName(taskFolderName);
+                    TaskImpl taskConfig = new TaskImpl(
+                        projectMetadata,
+                        taskDescriptor,
+                        id,
+                        label,
+                        description,
+                        createTime,
+                        updateTime,
+                        taskFolder);
+                    taskConfig.setProperties(state);
+                    if (taskFolder != null) {
+                        taskFolder.addTaskToFolder(taskConfig);
+                        if (!tasksFolders.contains(taskFolder)) {
+                            synchronized (tasksFolders) {
+                                tasksFolders.add(taskFolder);
                             }
                         }
-
-                        synchronized (tasks) {
-                            tasks.add(taskConfig);
-                        }
                     }
 
-                } catch (Exception e) {
-                    log.warn("Error parsing task configuration", e);
+                    synchronized (tasks) {
+                        tasks.add(taskConfig);
+                    }
                 }
 
+            } catch (Exception e) {
+                log.warn("Error parsing task configuration", e);
             }
-        } catch (Exception e) {
-            log.error("Error loading tasks configuration", e);
+
         }
     }
 
@@ -367,17 +383,10 @@ public class TaskManagerImpl implements DBTTaskManager {
     }
 
     public void saveConfiguration() {
-        Path configFile = getConfigFile(true);
+        DBPProject project = getProject();
         try {
-            if (Files.exists(configFile)) {
-                ContentUtils.makeFileBackup(configFile);
-            }
             if (tasks.isEmpty() && CommonUtils.isEmpty(tasksFolders)) {
-                try {
-                    Files.delete(configFile);
-                } catch (IOException e) {
-                    log.error("Error deleting file " + configFile.toAbsolutePath(), e);
-                }
+                DBWorkbench.getPlatform().getTaskController().saveTaskConfigurationFile(project.getId(), TaskConstants.CONFIG_FILE, null);
                 return;
             }
         } catch (Exception e) {
@@ -397,9 +406,11 @@ public class TaskManagerImpl implements DBTTaskManager {
         }
 
         try {
-            IOUtils.writeFileFromBuffer(configFile.toFile(), dsConfigBuffer.toByteArray());
+            DBWorkbench.getPlatform().getTaskController().saveTaskConfigurationFile(
+                project.getId(),
+                TaskConstants.CONFIG_FILE, dsConfigBuffer.toString(StandardCharsets.UTF_8));
         } catch (Exception e) {
-            log.error("Error saving configuration to a file " + configFile.toAbsolutePath(), e);
+            log.error("Error saving configuration to a file " + TaskConstants.CONFIG_FILE, e);
         }
     }
 
@@ -440,10 +451,6 @@ public class TaskManagerImpl implements DBTTaskManager {
             jsonWriter.endObject();
         }
         jsonWriter.endObject();
-    }
-
-    private Path getConfigFile(boolean create) {
-        return projectMetadata.getMetadataFolder(create).resolve(TaskConstants.CONFIG_FILE);
     }
 
 }

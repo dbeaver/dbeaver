@@ -39,7 +39,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
@@ -249,7 +248,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         } else if (node instanceof DBNResource) {
             final DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
             IResource resource = ((DBNResource) node).getResource();
-            if (resource instanceof IProject && !DBWorkbench.getPlatform().getApplication().isDistributed()) {
+            if (resource instanceof IProject && !DBWorkbench.isDistributed()) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_PROJECT));
             }
             DBPResourceHandler handler = workspace.getResourceHandler(resource);

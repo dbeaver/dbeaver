@@ -32,8 +32,11 @@ import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * DBeaverIcons
@@ -147,30 +150,50 @@ public class DBeaverIcons
             if (useLegacyOverlay) {
                 OverlayImageDescriptorLegacy ovrImage = new OverlayImageDescriptorLegacy(mainIcon.image.getImageData());
                 if (image.getTopLeft() != null)
-                    ovrImage.setTopLeft(new ImageDescriptor[]{getImageDescriptor(image.getTopLeft())});
+                    ovrImage.setTopLeft(accumulateDecorations(image, i -> i.getTopLeft()));
                 if (image.getTopRight() != null)
-                    ovrImage.setTopRight(new ImageDescriptor[]{getImageDescriptor(image.getTopRight())});
+                    ovrImage.setTopRight(accumulateDecorations(image, i -> i.getTopRight()));
                 if (image.getBottomLeft() != null)
-                    ovrImage.setBottomLeft(new ImageDescriptor[]{getImageDescriptor(image.getBottomLeft())});
+                    ovrImage.setBottomLeft(accumulateDecorations(image, i -> i.getBottomLeft()));
                 if (image.getBottomRight() != null)
-                    ovrImage.setBottomRight(new ImageDescriptor[]{getImageDescriptor(image.getBottomRight())});
+                    ovrImage.setBottomRight(accumulateDecorations(image, i -> i.getBottomRight()));
                 resultImage = ovrImage.createImage();
             } else {
                 OverlayImageDescriptor ovrImage = new OverlayImageDescriptor(mainIcon.imageDescriptor);
                 if (image.getTopLeft() != null)
-                    ovrImage.setTopLeft(new ImageDescriptor[]{getImageDescriptor(image.getTopLeft())});
+                    ovrImage.setTopLeft(accumulateDecorations(image, i -> i.getTopLeft()));
                 if (image.getTopRight() != null)
-                    ovrImage.setTopRight(new ImageDescriptor[]{getImageDescriptor(image.getTopRight())});
+                    ovrImage.setTopRight(accumulateDecorations(image, i -> i.getTopRight()));
                 if (image.getBottomLeft() != null)
-                    ovrImage.setBottomLeft(new ImageDescriptor[]{getImageDescriptor(image.getBottomLeft())});
+                    ovrImage.setBottomLeft(accumulateDecorations(image, i -> i.getBottomLeft()));
                 if (image.getBottomRight() != null)
-                    ovrImage.setBottomRight(new ImageDescriptor[]{getImageDescriptor(image.getBottomRight())});
+                    ovrImage.setBottomRight(accumulateDecorations(image, i -> i.getBottomRight()));
                 resultImage = ovrImage.createImage();
             }
             icon = new IconDescriptor(compositeId, resultImage);
             compositeMap.put(compositeId, icon);
         }
         return icon;
+    }
+
+    @NotNull
+    private static ImageDescriptor[] accumulateDecorations(
+        @NotNull DBIconComposite image,
+        @NotNull Function<DBIconComposite, DBPImage> map
+    ) {
+        DBPImage base = image.getMain();
+        if (base instanceof DBIconComposite) {
+            List<ImageDescriptor> decorations = new ArrayList<>();
+            decorations.add(getImageDescriptor(map.apply(image)));
+            do {
+                image = (DBIconComposite) base;
+                decorations.add(getImageDescriptor(map.apply(image)));
+                base = image.getMain();
+            } while (base instanceof DBIconComposite);
+            return decorations.toArray(ImageDescriptor[]::new);
+        } else {
+            return new ImageDescriptor[]{getImageDescriptor(map.apply(image))};
+        }
     }
 
     private static IconDescriptor getIconByLocation(String location) {

@@ -277,6 +277,9 @@ public class SQLScriptContext implements DBCScriptContext {
             for (SQLQueryParameter parameter : parameters) {
                 Object varValue = variables.get(parameter.getVarName());
                 if (varValue == null) {
+                    varValue = variables.get(parameter.getName());
+                }
+                if (varValue == null) {
                     varValue = defaultParameters.get(parameter.getName());
                 } else {
                     varValue = ((VariableInfo)varValue).value;

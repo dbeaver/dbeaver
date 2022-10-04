@@ -24,11 +24,12 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import javax.net.ssl.*;
-import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.LinkedHashMap;
@@ -39,11 +40,19 @@ import java.util.Map;
  */
 public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
+    public static final String CERT_VALUE_SUFFIX = ".value";
+
     public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
+    public static final String PROP_SSL_CA_CERT_VALUE = PROP_SSL_CA_CERT + CERT_VALUE_SUFFIX;
     public static final String PROP_SSL_CLIENT_CERT = "ssl.client.cert";
+    public static final String PROP_SSL_CLIENT_CERT_VALUE = PROP_SSL_CLIENT_CERT + CERT_VALUE_SUFFIX;
     public static final String PROP_SSL_CLIENT_KEY = "ssl.client.key";
-    public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
+    public static final String PROP_SSL_CLIENT_KEY_VALUE = PROP_SSL_CLIENT_KEY + CERT_VALUE_SUFFIX;
+
     public static final String PROP_SSL_KEYSTORE = "ssl.keystore";
+    public static final String PROP_SSL_KEYSTORE_VALUE = PROP_SSL_KEYSTORE + CERT_VALUE_SUFFIX;
+
+    public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
     public static final String PROP_SSL_METHOD = "ssl.method";
     public static final String PROP_SSL_FORCE_TLS12 = "ssl.forceTls12";
     public static final String CERT_TYPE = "ssl";
@@ -57,12 +66,8 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     public static void initializeTrustStore(DBRProgressMonitor monitor, DBPDataSource dataSource, DBWHandlerConfiguration sslConfig) throws DBException, IOException {
         final DBACertificateStorage securityManager = DBWorkbench.getPlatform().getCertificateStorage();
 
-        final String caCertProp = sslConfig.getStringProperty(PROP_SSL_CA_CERT);
-        final String clientCertProp = sslConfig.getStringProperty(PROP_SSL_CLIENT_CERT);
-        final String clientCertKeyProp = sslConfig.getStringProperty(PROP_SSL_CLIENT_KEY);
         final String selfSignedCert = sslConfig.getStringProperty(PROP_SSL_SELF_SIGNED_CERT);
         final String keyStore = sslConfig.getStringProperty(PROP_SSL_KEYSTORE);
-        final String password = sslConfig.getPassword();
 
         final SSLConfigurationMethod method = CommonUtils.valueOf(
             SSLConfigurationMethod.class,
@@ -72,27 +77,51 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         {
             if (method == SSLConfigurationMethod.KEYSTORE && keyStore != null) {
                 monitor.subTask("Load keystore");
+                final String password = sslConfig.getPassword();
+
                 char[] keyStorePasswordData = CommonUtils.isEmpty(password) ? new char[0] : password.toCharArray();
                 securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, keyStore, keyStorePasswordData);
             } else if (CommonUtils.toBoolean(selfSignedCert)) {
                 monitor.subTask("Generate self-signed certificate");
                 securityManager.addSelfSignedCertificate(dataSource.getContainer(), CERT_TYPE, "CN=" + dataSource.getContainer().getActualConnectionConfiguration().getHostName());
-            } else if (!CommonUtils.isEmpty(caCertProp) || !CommonUtils.isEmpty(clientCertProp)) {
-                monitor.subTask("Load certificates");
-                byte[] caCertData = CommonUtils.isEmpty(caCertProp) ? null : IOUtils.readFileToBuffer(new File(caCertProp));
-                byte[] clientCertData = CommonUtils.isEmpty(clientCertProp) ? null : IOUtils.readFileToBuffer(new File(clientCertProp));
-                byte[] keyData = CommonUtils.isEmpty(clientCertKeyProp) ? null : IOUtils.readFileToBuffer(new File(clientCertKeyProp));
-                securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, caCertData, clientCertData, keyData);
             } else {
-                securityManager.deleteCertificate(dataSource.getContainer(), CERT_TYPE);
+                byte[] caCertData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
+                byte[] clientCertData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
+                byte[] keyData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+
+                if (caCertData != null || clientCertData != null) {
+                    monitor.subTask("Load certificates");
+                    securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, caCertData, clientCertData, keyData);
+                } else {
+                    securityManager.deleteCertificate(dataSource.getContainer(), CERT_TYPE);
+                }
             }
         }
+    }
+
+    public static byte[] readCertificate(DBWHandlerConfiguration configuration, String basePropName) throws IOException {
+        return readCertificate(configuration, basePropName, null);
+    }
+
+    public static byte[] readCertificate(DBWHandlerConfiguration configuration, String basePropName, String altPropName) throws IOException {
+        String filePath = configuration.getStringProperty(basePropName);
+        if (CommonUtils.isEmpty(filePath) && altPropName != null) {
+            filePath = configuration.getStringProperty(altPropName);
+        }
+        if (!CommonUtils.isEmpty(filePath)) {
+            return Files.readAllBytes(Path.of(filePath));
+        }
+        String certValue = configuration.getSecureProperty(basePropName + SSLHandlerTrustStoreImpl.CERT_VALUE_SUFFIX);
+        if (!CommonUtils.isEmpty(certValue)) {
+            return certValue.getBytes(StandardCharsets.UTF_8);
+        }
+        return null;
     }
 
     public static Map<String, String> setGlobalTrustStore(DBPDataSource dataSource) {
         final DBACertificateStorage securityManager = DBWorkbench.getPlatform().getCertificateStorage();
 
-        String keyStorePath = securityManager.getKeyStorePath(dataSource.getContainer(), CERT_TYPE).getAbsolutePath();
+        String keyStorePath = securityManager.getKeyStorePath(dataSource.getContainer(), CERT_TYPE).toAbsolutePath().toString();
         String keyStoreType = securityManager.getKeyStoreType(dataSource.getContainer());
         char[] keyStorePass = securityManager.getKeyStorePassword(dataSource.getContainer(), CERT_TYPE);
 

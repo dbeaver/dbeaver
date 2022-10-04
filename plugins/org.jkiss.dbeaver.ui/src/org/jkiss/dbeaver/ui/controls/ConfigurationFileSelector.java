@@ -14,25 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.controls;
 
-package org.jkiss.dbeaver.model.app;
-
-import org.jkiss.dbeaver.model.DBConfigurationController;
-import org.jkiss.dbeaver.model.DBFileController;
-import org.jkiss.dbeaver.model.task.DBTTaskController;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
- * DB desktop application.
+ * ConfigurationFileSelector
  */
-public interface DBPApplicationConfigurator {
+public class ConfigurationFileSelector extends TextWithOpenFile {
 
-    DBConfigurationController createConfigurationController();
+    public ConfigurationFileSelector(Composite parent, String title, String[] filterExt) {
+        super(parent, title, filterExt);
+    }
 
-    DBFileController createFileController();
+    public ConfigurationFileSelector(Composite parent, String title, String[] filterExt, boolean binaryFile) {
+        super(parent, title, filterExt, binaryFile);
+    }
 
-    /**
-     * Returns task controller. Task controller helps to work with task: load and save configuration file for different type of projects
-     */
-    DBTTaskController createTaskController();
+    @Override
+    protected boolean isPlainTextEditor() {
+        return DBWorkbench.isDistributed();
+    }
 
 }

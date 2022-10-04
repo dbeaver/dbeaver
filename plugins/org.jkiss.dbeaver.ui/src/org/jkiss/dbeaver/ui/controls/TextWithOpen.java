@@ -27,17 +27,17 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 
 /**
  * TextWithOpen
  */
-public class TextWithOpen extends Composite
-{
+public class TextWithOpen extends Composite {
     private final Text text;
     private final ToolBar toolbar;
 
-    public TextWithOpen(Composite parent)
-    {
+    public TextWithOpen(Composite parent) {
         super(parent, SWT.NONE);
         final GridLayout gl = new GridLayout(2, false);
         gl.marginHeight = 0;
@@ -46,10 +46,29 @@ public class TextWithOpen extends Composite
         gl.horizontalSpacing = 0;
         setLayout(gl);
 
-        text = new Text(this, SWT.BORDER);
-        text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER));
+        boolean useTextEditor = isPlainTextEditor();
+        text = new Text(this, SWT.BORDER | (useTextEditor ? SWT.MULTI | SWT.V_SCROLL : SWT.SINGLE));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
+        if (useTextEditor) {
+            gd.heightHint = text.getLineHeight();
+        }
+        text.setLayoutData(gd);
 
         toolbar = new ToolBar(this, SWT.FLAT);
+        if (useTextEditor) {
+            final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
+            toolItem.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
+            toolItem.setToolTipText("Edit text");
+            toolItem.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    String newText = EditTextDialog.editText(getShell(), "Edit text", getText());
+                    if (newText != null) {
+                        setText(newText);
+                    }
+                }
+            });
+        }
         final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
         toolItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
         toolItem.setToolTipText("Browse");
@@ -60,18 +79,8 @@ public class TextWithOpen extends Composite
             }
         });
 
-        final GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER);
+        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_CENTER);
         toolbar.setLayoutData(gd);
-
-//        final Image browseImage = DBeaverIcons.getImage(DBIcon.TREE_FOLDER);
-//        final Rectangle iconBounds = browseImage.getBounds();
-//        Label button = new Label(this, SWT.NONE);
-//        button.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-//        button.setImage(browseImage);
-//        final GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER);
-//        gd.widthHint = iconBounds.width;
-//        gd.heightHint = iconBounds.height;
-//        button.setLayoutData(gd);
     }
 
     public String getText() {
@@ -80,6 +89,10 @@ public class TextWithOpen extends Composite
 
     public void setText(String str) {
         text.setText(str);
+    }
+
+    protected boolean isPlainTextEditor() {
+        return false;
     }
 
     protected void openBrowser() {
@@ -96,4 +109,5 @@ public class TextWithOpen extends Composite
         toolbar.setEnabled(enabled);
         text.setEnabled(enabled);
     }
+
 }

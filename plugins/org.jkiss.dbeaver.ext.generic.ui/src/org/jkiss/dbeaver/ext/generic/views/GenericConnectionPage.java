@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.generic.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -49,12 +48,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.InvalidPathException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * GenericConnectionPage
@@ -74,7 +75,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
     private boolean isCustom;
     private JDBCURL.MetaURL metaURL;
-
+    private Collection<String> controlGroupsByUrl;
     private Composite settingsGroup;
 
     private static final String GROUP_URL = "url"; //$NON-NLS-1$
@@ -84,6 +85,14 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     private static final String GROUP_PATH = "path"; //$NON-NLS-1$
     private static final String GROUP_LOGIN = "login"; //$NON-NLS-1$
     private boolean activated;
+    
+    private static final Map<String, String> controlGroupByUrlProp = Map.of(
+        JDBCConstants.PROP_HOST, GROUP_HOST,
+        JDBCConstants.PROP_SERVER, GROUP_SERVER,
+        JDBCConstants.PROP_DATABASE, GROUP_DB,
+        JDBCConstants.PROP_FOLDER, GROUP_PATH,
+        JDBCConstants.PROP_FILE, GROUP_PATH
+    );
 
     @Override
     public void createControl(Composite composite) {
@@ -106,7 +115,9 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             SelectionAdapter typeSwitcher = new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setupConnectionModeSelection(urlText, typeURLRadio.getSelection());
+                    if (controlGroupsByUrl.size() > 0) {
+                        setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), controlGroupsByUrl);
+                    }
                     saveAndUpdate();
                 }
             };
@@ -153,10 +164,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_HOST, hostText);
             addControlToGroup(GROUP_HOST, portLabel);
             addControlToGroup(GROUP_HOST, portText);
-            addControlToGroup(GROUP_CONNECTION, hostLabel);
-            addControlToGroup(GROUP_CONNECTION, hostText);
-            addControlToGroup(GROUP_CONNECTION, portLabel);
-            addControlToGroup(GROUP_CONNECTION, portText);
         }
 
         {
@@ -176,9 +183,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_SERVER, serverLabel);
             addControlToGroup(GROUP_SERVER, serverText);
             addControlToGroup(GROUP_SERVER, emptyLabel);
-            addControlToGroup(GROUP_CONNECTION, serverLabel);
-            addControlToGroup(GROUP_CONNECTION, serverText);
-            addControlToGroup(GROUP_CONNECTION, emptyLabel);
         }
 
         {
@@ -199,9 +203,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_DB, dbLabel);
             addControlToGroup(GROUP_DB, dbText);
             addControlToGroup(GROUP_DB, emptyLabel);
-            addControlToGroup(GROUP_CONNECTION, dbLabel);
-            addControlToGroup(GROUP_CONNECTION, dbText);
-            addControlToGroup(GROUP_CONNECTION, emptyLabel);
         }
 
         // Path
@@ -253,9 +254,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_PATH, pathLabel);
             addControlToGroup(GROUP_PATH, pathText);
             addControlToGroup(GROUP_PATH, buttonsPanel);
-            addControlToGroup(GROUP_CONNECTION, pathLabel);
-            addControlToGroup(GROUP_CONNECTION, pathText);
-            addControlToGroup(GROUP_CONNECTION, buttonsPanel);
         }
 
         {
@@ -277,7 +275,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             dialog.setFileName(text);
             if (CommonUtils.isNotEmpty(text)) {
                 try {
-                    String directoryPath = CommonUtils.getDirectoryPath(text);
+                    String directoryPath = IOUtils.getDirectoryPath(text);
                     if (CommonUtils.isNotEmpty(directoryPath)) {
                         dialog.setFilterPath(directoryPath);
                     }
@@ -376,7 +374,9 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         this.parseSampleURL(site.getDriver());
         final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
-        setupConnectionModeSelection(urlText, useURL);
+        if (controlGroupsByUrl.size() > 0) {
+            setupConnectionModeSelection(urlText, useURL, controlGroupsByUrl);
+        }
         site.updateButtons();
         if (!isCustom) {
             if (hostText != null) {
@@ -507,6 +507,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             showControlGroup(GROUP_DB, properties.contains(JDBCConstants.PROP_DATABASE));
             showControlGroup(GROUP_PATH, properties.contains(JDBCConstants.PROP_FOLDER) || properties.contains(JDBCConstants.PROP_FILE));
             showControlGroup(GROUP_CONNECTION_MODE, true);
+            controlGroupsByUrl = properties.stream().map(controlGroupByUrlProp::get).collect(Collectors.toSet());
         } else {
             isCustom = true;
             showControlGroup(GROUP_HOST, false);
@@ -515,6 +516,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             showControlGroup(GROUP_PATH, false);
             showControlGroup(GROUP_CONNECTION_MODE, false);
             urlText.setEditable(true);
+            controlGroupsByUrl = Collections.emptyList();
         }
         UIUtils.fixReadonlyTextBackground(urlText);
         showControlGroup(GROUP_LOGIN, !driver.isAnonymousAccess());
