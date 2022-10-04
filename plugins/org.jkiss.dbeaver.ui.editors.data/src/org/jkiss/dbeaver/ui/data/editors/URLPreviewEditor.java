@@ -50,13 +50,11 @@ public class URLPreviewEditor extends BaseValueEditor<Browser> {
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
         if (control != null) {
-            final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
+            final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.UI);
             if (CommonUtils.equalObjects(lastURL, strValue)) {
                 return;
             }
             lastURL = strValue;
-            control.setUrl("about:blank");
-            control.setText("<div>Loading " + strValue + "...</div>");
             control.setUrl(strValue);
         }
     }
