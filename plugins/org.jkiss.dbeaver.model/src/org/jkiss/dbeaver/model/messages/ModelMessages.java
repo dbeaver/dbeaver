@@ -235,6 +235,9 @@ public class ModelMessages extends NLS {
 	public static String project_shared_display_name;
 	public static String project_private_display_name;
 
+    public static String jdbc_content_view_error_message_title;
+    public static String jdbc_content_view_error_message_hint;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);

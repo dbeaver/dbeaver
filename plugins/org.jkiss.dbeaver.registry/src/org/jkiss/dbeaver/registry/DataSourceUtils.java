@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
@@ -357,7 +358,11 @@ public class DataSourceUtils {
         navSettings.setMergeEntities(mergeEntities);
 
         //ds.set
-        dsRegistry.addDataSource(newDS);
+        try {
+            dsRegistry.addDataSource(newDS);
+        } catch (DBException e) {
+            log.error(e);
+        }
         return newDS;
     }
 

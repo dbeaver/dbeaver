@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBConfigurationController;
+import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
@@ -27,8 +29,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.task.DBTTaskController;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -74,18 +76,36 @@ public interface DBPPlatform {
     DBACertificateStorage getCertificateStorage();
 
     @NotNull
-    DBASecureStorage getSecureStorage();
+    Path getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
+    /**
+     * Platform configuration controller.
+     * Keeps application configuration which can be shared with other users.
+     */
     @NotNull
-    File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
+    DBConfigurationController getConfigurationController();
 
+    /**
+     * Local config files are used to store some configuration specific to local machine only.
+     */
+    @NotNull
+    Path getLocalConfigurationFile(String fileName);
+
+    /**
+     * File controller allows to read/write binary files (e.g. custom driver libraries)
+     */
+    @NotNull
+    DBFileController getFileController();
+
+    /**
+     * Task controller can read and change tasks configuration file
+     */
+    @NotNull
+    DBTTaskController getTaskController();
+
+    @Deprecated
     @NotNull
     Path getApplicationConfiguration();
-
-    @NotNull
-    File getConfigurationFile(String fileName);
-
-    boolean isReadOnly();
 
     boolean isShuttingDown();
 

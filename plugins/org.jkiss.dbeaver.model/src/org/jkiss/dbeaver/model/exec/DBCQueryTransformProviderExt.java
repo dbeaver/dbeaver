@@ -21,4 +21,12 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 public interface DBCQueryTransformProviderExt {
 
     boolean isForceTransform(DBCSession session, SQLQuery sqlQuery);
+    
+    /**
+     * Check if limit can be set for the query
+
+     * @param query to check
+     * @return if limit can be applied to the provided query
+     */
+    boolean isLimitApplicableTo(SQLQuery query);
 }

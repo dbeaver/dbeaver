@@ -28,11 +28,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse {
 
-    /**
-     * Reloads workspace contents. Creates missing projects, removes unexistent projects
-     */
-    void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException;
-
     DBPResourceHandler getDefaultResourceHandler();
     DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors();
     DBPResourceHandlerDescriptor[] getAllResourceHandlers();
@@ -42,5 +37,10 @@ public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse {
     IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor handler, boolean forceCreate);
     @Nullable
     IFolder getResourceDefaultRoot(DBPProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate);
+
+    /**
+     * Reloads workspace contents. Creates missing projects, removes unexistent projects
+     */
+    void refreshWorkspaceContents(DBRProgressMonitor monitor) throws DBException;
 
 }

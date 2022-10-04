@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.tasks.ui;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.DBTScheduler;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskFolder;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.utils.CommonUtils;
@@ -33,6 +35,7 @@ public class TaskPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.task";
     public static final String PROP_SCHEDULED = "scheduled";
+    public static final String TASK_EDITABLE = "editable";
 
     public TaskPropertyTester() {
         super();
@@ -40,6 +43,9 @@ public class TaskPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+        if (receiver instanceof DBTTaskFolder && TASK_EDITABLE.equals(property)) {
+            return ((DBTTaskFolder) receiver).getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+        }
         if (!(receiver instanceof DBTTask)) {
             return false;
         }
@@ -48,6 +54,8 @@ public class TaskPropertyTester extends PropertyTester
             case PROP_SCHEDULED:
                 DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
                 return (scheduler != null && scheduler.getScheduledTaskInfo(task) != null) == CommonUtils.getBoolean(expectedValue, true);
+            case TASK_EDITABLE:
+                return task.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
         }
 
         return false;

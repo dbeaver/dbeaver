@@ -117,7 +117,7 @@ public class SSHTunnelImpl implements DBWTunnel {
             }
             // Check whether this key is encrypted
             String privKeyPath = configuration.getStringProperty(SSHConstants.PROP_KEY_PATH);
-            if (privKeyPath != null && SSHUtils.isKeyEncrypted(privKeyPath)) {
+            if (!CommonUtils.isEmpty(privKeyPath) && SSHUtils.isKeyFileEncrypted(privKeyPath)) {
                 return AuthCredentials.PASSWORD;
             }
             return AuthCredentials.NONE;

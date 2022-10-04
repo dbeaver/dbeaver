@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.sample.database;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -128,7 +129,11 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
         dataSource.setSavePassword(true);
         dataSource.getNavigatorSettings().setShowSystemObjects(true);
         dataSource.setName("DBeaver Sample Database (SQLite)");
-        dsRegistry.addDataSource(dataSource);
+        try {
+            dsRegistry.addDataSource(dataSource);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Connection create error", null, e);
+        }
     }
 }
 

@@ -20,13 +20,7 @@ package org.jkiss.utils;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -431,7 +425,6 @@ public class CommonUtils {
                 try {
                     return (int)Double.parseDouble(toString(object));
                 } catch (NumberFormatException e1) {
-                    e1.printStackTrace();
                     return defValue;
                 }
             }
@@ -670,7 +663,7 @@ public class CommonUtils {
     }
 
     @Nullable
-    public static <T extends Enum<T>> T valueOf(@Nullable Class<T> type, @Nullable String name, T defValue, boolean underscoreSpaces) {
+    public static <T extends Enum<T>> T valueOf(@NotNull Class<T> type, @Nullable String name, T defValue, boolean underscoreSpaces) {
         if (name == null) {
             return defValue;
         }
@@ -1036,27 +1029,6 @@ public class CommonUtils {
         }
         matcher.appendTail(sb);
         return sb.toString();
-    }
-
-    @Nullable
-    public static String getDirectoryPath(@NotNull String sPath) throws InvalidPathException {
-        final Path path = Paths.get(sPath);
-        if (Files.isDirectory(path)) {
-            return path.toString();
-        } else {
-            final Path parent = path.getParent();
-            if (parent != null) {
-                return parent.toString();
-            }
-        }
-        return null;
-    }
-
-    public static void deleteDirectory(@NotNull Path path) throws IOException {
-        Files.walk(path)
-            .sorted(Comparator.reverseOrder())
-            .map(Path::toFile)
-            .forEach(File::delete);
     }
 
     @SafeVarargs

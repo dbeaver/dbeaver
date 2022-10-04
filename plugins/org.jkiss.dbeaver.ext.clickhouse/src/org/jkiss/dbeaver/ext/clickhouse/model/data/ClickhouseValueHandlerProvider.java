@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCUUIDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.Locale;
@@ -40,6 +41,8 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
             return new ClickhouseBigNumberValueHandler(type, preferences);
         } else if ("bool".equals(lowerTypeName)) {
             return ClickhouseBoolValueHandler.INSTANCE;
+        } else if ("uuid".equals(lowerTypeName)) {
+            return JDBCUUIDValueHandler.INSTANCE;
         } else {
             return null;
         }

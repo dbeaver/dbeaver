@@ -29,16 +29,16 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 
 /**
  * DriverLibraryAbstract
  */
-public abstract class DriverLibraryAbstract implements DBPDriverLibrary
-{
+public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
     private static final Log log = Log.getLog(DriverLibraryAbstract.class);
 
     protected final DriverDescriptor driver;
@@ -98,8 +98,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         this.disabled = copyFrom.disabled;
     }
 
-    protected DriverLibraryAbstract(DriverDescriptor driver, FileType type, String path)
-    {
+    protected DriverLibraryAbstract(DriverDescriptor driver, FileType type, String path) {
         this.driver = driver;
         this.type = type;
         this.system = null;
@@ -107,8 +106,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         this.custom = true;
     }
 
-    protected DriverLibraryAbstract(DriverDescriptor driver, IConfigurationElement config)
-    {
+    protected DriverLibraryAbstract(DriverDescriptor driver, IConfigurationElement config) {
         this.driver = driver;
         String typeStr = config.getAttribute(RegistryConstants.ATTR_TYPE);
         if ("zip".equalsIgnoreCase(typeStr)) {
@@ -125,8 +123,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         this.custom = false;
     }
 
-    public DriverDescriptor getDriver()
-    {
+    public DriverDescriptor getDriver() {
         return driver;
     }
 
@@ -153,21 +150,22 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
 
     @NotNull
     @Override
-    public FileType getType()
-    {
+    public FileType getType() {
         return type;
     }
 
     @NotNull
     @Override
-    public String getPath()
-    {
+    public String getPath() {
         return path;
     }
 
+    public void setPath(String path) {
+        this.path = path;
+    }
+
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return null;
     }
 
@@ -177,47 +175,39 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     }
 
     @Override
-    public boolean isCustom()
-    {
+    public boolean isCustom() {
         return custom;
     }
 
-    public void setCustom(boolean custom)
-    {
+    public void setCustom(boolean custom) {
         this.custom = custom;
     }
 
     @Override
-    public boolean isDisabled()
-    {
+    public boolean isDisabled() {
         return disabled;
     }
 
-    public void setDisabled(boolean disabled)
-    {
+    public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }
 
     @Override
-    public boolean matchesCurrentPlatform()
-    {
+    public boolean matchesCurrentPlatform() {
         return system == null || system.matches(DBWorkbench.getPlatform().getLocalSystem());
     }
 
-    public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException
-    {
-        final File localFile = getLocalFile();
+    public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException {
+        final Path localFile = getLocalFile();
         if (localFile == null) {
             throw new IOException("No target file for '" + getPath() + "'");
         }
-        if (!forceUpdate && localFile.exists() && localFile.length() > 0) {
+        if (!forceUpdate && Files.exists(localFile) && Files.size(localFile) > 0) {
             return;
         }
-        final File localDir = localFile.getParentFile();
-        if (!localDir.exists()) {
-            if (!localDir.mkdirs()) {
-                log.warn("Can't create directory for local driver file '" + localDir.getAbsolutePath() + "'");
-            }
+        final Path localDir = localFile.getParent();
+        if (!Files.exists(localDir)) {
+            Files.createDirectories(localDir);
         }
 
         String externalURL = getExternalURL(monitor);
@@ -236,6 +226,16 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     @Override
     public String toString() {
         return getDisplayName();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DriverLibraryAbstract && ((DriverLibraryAbstract) obj).getId().equals(getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getId().hashCode();
     }
 
     public abstract DBPDriverLibrary copyLibrary(DriverDescriptor driverDescriptor);

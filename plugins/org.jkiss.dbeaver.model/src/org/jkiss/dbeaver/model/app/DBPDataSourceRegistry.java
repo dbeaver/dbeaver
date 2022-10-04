@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,6 +26,7 @@ import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.util.List;
@@ -36,7 +36,7 @@ import java.util.Set;
  * Datasource registry.
  * Extends DBPObject to support datasources ObjectManager
  */
-public interface DBPDataSourceRegistry extends DBPObject {
+public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     String LEGACY_CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
     String LEGACY_CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
@@ -79,11 +79,11 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     boolean removeDataSourceListener(@NotNull DBPEventListener listener);
 
-    void addDataSource(@NotNull DBPDataSourceContainer dataSource);
+    void addDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException;
 
     void removeDataSource(@NotNull DBPDataSourceContainer dataSource);
 
-    void updateDataSource(@NotNull DBPDataSourceContainer dataSource);
+    void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException;
 
     @NotNull
     List<? extends DBPDataSourceFolder> getAllFolders();
@@ -141,9 +141,6 @@ public interface DBPDataSourceRegistry extends DBPObject {
     void checkForErrors() throws DBException;
 
     void notifyDataSourceListeners(final DBPEvent event);
-
-    @NotNull
-    ISecurePreferences getSecurePreferences();
 
     // Registry auth provider. Null by default.
     @Nullable

@@ -17,9 +17,14 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConfigurationController;
+import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPApplicationConfigurator;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -29,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
@@ -46,18 +52,24 @@ import java.util.List;
  *
  * Base implementation of DBeaver platform
  */
-public abstract class BasePlatformImpl implements DBPPlatform {
+public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationConfigurator {
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
 
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
 
+    public static final String CONFIG_FOLDER = ".config";
+    public static final String FILES_FOLDER = ".files";
+
     private OSDescriptor localSystem;
 
     private DBNModel navigatorModel;
 
     private final List<IPluginService> activatedServices = new ArrayList<>();
+    private DBConfigurationController configurationController;
+    private DBFileController localFileController;
+    private DBTTaskController localTaskController;
 
     protected void initialize() {
         log.debug("Initialize base platform...");
@@ -133,6 +145,78 @@ public abstract class BasePlatformImpl implements DBPPlatform {
 
     @NotNull
     @Override
+    public DBConfigurationController getConfigurationController() {
+        if (configurationController == null) {
+            configurationController = createConfigurationController();
+        }
+        return configurationController;
+    }
+
+    @Override
+    @NotNull
+    public DBConfigurationController createConfigurationController() {
+        DBPApplication application = getApplication();
+        if (application instanceof DBPApplicationConfigurator) {
+            return ((DBPApplicationConfigurator) application).createConfigurationController();
+        }
+        LocalConfigurationController controller = new LocalConfigurationController(
+            getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
+        );
+        controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
+        return controller;
+    }
+
+    @NotNull
+    @Override
+    public DBFileController getFileController() {
+        if (localFileController == null) {
+            localFileController = createFileController();
+        }
+        return localFileController;
+    }
+
+    @Override
+    @NotNull
+    public DBFileController createFileController() {
+        DBPApplication application = getApplication();
+        if (application instanceof DBPApplicationConfigurator) {
+            return ((DBPApplicationConfigurator) application).createFileController();
+        }
+
+        return new LocalFileController(
+            getWorkspace().getMetadataFolder().resolve(FILES_FOLDER)
+        );
+    }
+
+    @NotNull
+    @Override
+    public Path getLocalConfigurationFile(String fileName) {
+        return getProductPlugin().getStateLocation().toFile().toPath().resolve(fileName);
+    }
+
+    @NotNull
+    @Override
+    public DBTTaskController getTaskController() {
+        if (localTaskController == null) {
+            localTaskController = createTaskController();
+        }
+        return localTaskController;
+    }
+
+    @Override
+    public DBTTaskController createTaskController() {
+        DBPApplication application = getApplication();
+        if (application instanceof DBPApplicationConfigurator) {
+            return ((DBPApplicationConfigurator) application).createTaskController();
+        } else {
+            return new LocalTaskController();
+        }
+    }
+
+    protected abstract Plugin getProductPlugin();
+
+    @NotNull
+    @Override
     public Path getApplicationConfiguration() {
         Path configPath;
         try {
@@ -165,8 +249,4 @@ public abstract class BasePlatformImpl implements DBPPlatform {
         return DataSourceProviderRegistry.getInstance();
     }
 
-    @Override
-    public boolean isReadOnly() {
-        return Platform.getInstanceLocation().isReadOnly();
-    }
 }

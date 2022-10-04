@@ -250,7 +250,7 @@
     </module>
     <module name="Indentation">
       <property name="basicOffset" value="4"/>
-      <property name="braceAdjustment" value="4"/>
+      <property name="braceAdjustment" value="0"/>
       <property name="caseIndent" value="4"/>
       <property name="throwsIndent" value="8"/>
       <property name="lineWrappingIndentation" value="4"/>
@@ -259,6 +259,7 @@
     <module name="AbbreviationAsWordInName">
       <property name="ignoreFinal" value="false"/>
       <property name="allowedAbbreviationLength" value="3"/>
+      <property name="allowedAbbreviations" value="JDBC,DBS,DBN,DBP"/>
       <property name="tokens"
                value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, ANNOTATION_DEF, ANNOTATION_FIELD_DEF,
                     PARAMETER_DEF, VARIABLE_DEF, METHOD_DEF, PATTERN_VARIABLE_DEF, RECORD_DEF,

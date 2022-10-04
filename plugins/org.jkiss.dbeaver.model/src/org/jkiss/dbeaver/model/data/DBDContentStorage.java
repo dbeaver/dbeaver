@@ -34,7 +34,7 @@ public interface DBDContentStorage {
 
     Reader getContentReader() throws IOException;
 
-    long getContentLength();
+    long getContentLength() throws IOException;
 
     String getCharset();
 

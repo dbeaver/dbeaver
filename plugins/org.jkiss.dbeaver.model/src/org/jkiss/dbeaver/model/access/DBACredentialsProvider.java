@@ -35,4 +35,6 @@ public interface DBACredentialsProvider {
     boolean provideAuthParameters(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer dataSourceContainer, @NotNull DBPConnectionConfiguration configuration)
         throws DBException;
 
+    @NotNull
+    String getAuthContextType();
 }

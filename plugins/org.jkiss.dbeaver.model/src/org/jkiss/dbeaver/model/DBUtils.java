@@ -1348,6 +1348,7 @@ public final class DBUtils {
         // because it sets update rows limit [SQL Server]
         boolean selectQuery = sqlQuery.getType() == SQLQueryType.SELECT && sqlQuery.isPlainSelect();
         final boolean hasLimits = (offset > 0 || selectQuery) && maxRows > 0;
+        boolean isShouldSetLimit = true;
         // This is a flag for any potential SELECT query
         boolean possiblySelect = sqlQuery.getType() == SQLQueryType.SELECT || sqlQuery.getType() == SQLQueryType.UNKNOWN;
         boolean limitAffectsDML = Boolean.TRUE.equals(session.getDataSource().getDataSourceFeature(DBPDataSource.FEATURE_LIMIT_AFFECTS_DML));
@@ -1356,6 +1357,9 @@ public final class DBUtils {
         if (selectQuery) {
             DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
             if (transformProvider != null) {
+                if (transformProvider instanceof DBCQueryTransformProviderExt) {
+                    isShouldSetLimit = ((DBCQueryTransformProviderExt) transformProvider).isLimitApplicableTo(sqlQuery);
+                }
                 if (hasLimits) {
                     if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
                             (transformProvider instanceof DBCQueryTransformProviderExt && ((DBCQueryTransformProviderExt) transformProvider).isForceTransform(session, sqlQuery))) {
@@ -1396,11 +1400,13 @@ public final class DBUtils {
             createStatement(session, queryText, doScrollable) :
             makeStatement(session, queryText, doScrollable);
         dbStat.setStatementSource(executionSource);
-
+        
         if (offset > 0 || hasLimits || (possiblySelect && maxRows > 0 && !limitAffectsDML)) {
             if (limitTransformer == null) {
-                // Set explicit limit - it is safe because we pretty sure that this is a plain SELECT query
-                dbStat.setLimit(offset, maxRows);
+                if (isShouldSetLimit) {
+                    // Set explicit limit - it is safe because we pretty sure that this is a plain SELECT query
+                    dbStat.setLimit(offset, maxRows);
+                }
             } else {
                 limitTransformer.transformStatement(dbStat, 0);
             }
@@ -1586,7 +1592,7 @@ public final class DBUtils {
     }
 
     /**
-     * Returns DBPDataSourceContainer fro DBPDataSource or object itself otherwise
+     * Returns DBPDataSourceContainer from DBPDataSource or object itself otherwise
      */
     public static DBSObject getPublicObjectContainer(@NotNull DBSObject object)
     {

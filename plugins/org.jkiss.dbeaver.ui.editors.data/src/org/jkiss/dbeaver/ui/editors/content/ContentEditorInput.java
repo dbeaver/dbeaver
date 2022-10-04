@@ -213,7 +213,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
         }
         if (storage instanceof DBDContentStorageLocal) {
             // User content's storage directly
-            contentFile = ((DBDContentStorageLocal)storage).getDataFile();
+            contentFile = ((DBDContentStorageLocal)storage).getDataFile().toFile();
             contentDetached = true;
         } else {
             // Copy content to local file
@@ -227,7 +227,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
                         valueId = valueController.getValueName();
                     }
 
-                    contentFile = ContentUtils.createTempContentFile(monitor, DBWorkbench.getPlatform(), valueId);
+                    contentFile = ContentUtils.createTempContentFile(monitor, DBWorkbench.getPlatform(), valueId).toFile();
                 }
 
                 // Write value to file
@@ -310,7 +310,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
             if (value instanceof DBDContent) {
                 ((DBDContent)value).updateContents(
                     new DefaultProgressMonitor(monitor),
-                    new ExternalContentStorage(DBWorkbench.getPlatform(), extFile));
+                    new ExternalContentStorage(DBWorkbench.getPlatform(), extFile.toPath()));
             } else {
                 updateStringValueFromFile(extFile);
             }
@@ -396,7 +396,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
                 }
             } else {
                 // Create new storage and pass it to content
-                storage = new TemporaryContentStorage(DBWorkbench.getPlatform(), contentFile, fileCharset, false);
+                storage = new TemporaryContentStorage(DBWorkbench.getPlatform(), contentFile.toPath(), fileCharset, false);
                 contentDetached = content.updateContents(monitor, storage);
             }
         } else if (stringStorage != null) {

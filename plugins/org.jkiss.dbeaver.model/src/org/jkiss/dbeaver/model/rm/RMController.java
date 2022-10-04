@@ -120,6 +120,13 @@ public interface RMController extends DBPObjectController {
         boolean recursive) throws DBException;
 
     /**
+     * Resources hierarchy
+     */
+    RMResource[] getResourcePath(
+        @NotNull String projectId,
+        @NotNull String resourcePath) throws DBException;
+
+    /**
      * Reads resource data
      */
     @NotNull

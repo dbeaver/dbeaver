@@ -26,17 +26,20 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.Collection;
 
 /**
  * DriverLibraryLocal
  */
-public class DriverLibraryLocal extends DriverLibraryAbstract
-{
+public class DriverLibraryLocal extends DriverLibraryAbstract {
     private static final Log log = Log.getLog(DriverLibraryLocal.class);
 
     public DriverLibraryLocal(DriverDescriptor driver, FileType type, String path) {
@@ -57,8 +60,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
     }
 
     @Override
-    public boolean isDownloadable()
-    {
+    public boolean isDownloadable() {
         return false;
     }
 
@@ -85,21 +87,31 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public File getLocalFile()
-    {
+    public Path getLocalFile() {
         // Try to use direct path
         String localFilePath = this.getLocalFilePath();
-
-        File libraryFile = new File(localFilePath);
-        if (libraryFile.exists()) {
-            return libraryFile;
+        if (DBWorkbench.isDistributed()) {
+            Path resolvedCache = driver.getWorkspaceStorageFolder().resolve(localFilePath);
+            if (Files.exists(resolvedCache)) {
+                localFilePath = resolvedCache.toAbsolutePath().toString();
+            }
         }
 
-        // Try to get local file
-        File platformFile = detectLocalFile();
-        if (platformFile != null && platformFile.exists()) {
-            // Relative file do not exists - use plain one
-            return platformFile;
+        Path platformFile = null;
+        try {
+            Path libraryFile = Path.of(localFilePath);
+            if (Files.exists(libraryFile)) {
+                return libraryFile;
+            }
+
+            // Try to get local file
+            platformFile = detectLocalFile();
+            if (platformFile != null && Files.exists(platformFile)) {
+                // Relative file do not exists - use plain one
+                return platformFile;
+            }
+        } catch (InvalidPathException e) {
+            // ignore - bad local path
         }
 
         URL url = driver.getProviderDescriptor().getContributorBundle().getEntry(localFilePath);
@@ -114,22 +126,20 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
                 log.warn(ex);
             }
             if (url != null) {
-                return new File(url.getFile());
+                return Path.of(url.getFile());
             }
         } else {
             try {
                 url = FileLocator.toFileURL(new URL(localFilePath));
-                File urlFile = new File(url.getFile());
-                if (urlFile.exists()) {
-                    platformFile = urlFile;
+                Path urlFile = RuntimeUtils.getLocalPathFromURL(url);
+                if (Files.exists(urlFile)) {
+                    return urlFile;
                 }
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 // ignore
             }
         }
 
-        // Nothing fits - just return plain url
         return platformFile;
     }
 
@@ -139,15 +149,18 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
         return null;
     }
 
-    protected File detectLocalFile()
-    {
-        String localPath = getLocalFilePath();
-
+    protected Path detectLocalFile() {
         // Try to use relative path from installation dir
-        File file = new File(new File(Platform.getInstallLocation().getURL().getFile()), localPath);
-        if (!file.exists()) {
+        String localPath = getLocalFilePath();
+        Path file = null;
+        try {
+            file = RuntimeUtils.getLocalPathFromURL(Platform.getInstallLocation().getURL()).resolve(localPath);
+        } catch (IOException e) {
+            log.warn("Error getting platform location", e);
+        }
+        if (file == null || !Files.exists(file)) {
             // Use custom drivers path
-            file = new File(DriverDescriptor.getCustomDriversHome().toFile(), localPath);
+            file = DriverDescriptor.getCustomDriversHome().resolve(localPath);
         }
         return file;
     }
@@ -165,15 +178,19 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
     @NotNull
     @Override
     public DBIcon getIcon() {
-        File localFile = getLocalFile();
-        if (localFile != null && localFile.isDirectory()) {
+        Path localFile = getLocalFile();
+        if (localFile != null && Files.isDirectory(localFile)) {
             return DBIcon.TREE_FOLDER_ADMIN;
         } else {
             switch (type) {
-                case lib: return DBIcon.LIBRARY;
-                case jar: return DBIcon.JAR;
-                case license: return DBIcon.TYPE_TEXT;
-                default: return DBIcon.TYPE_UNKNOWN;
+                case lib:
+                    return DBIcon.LIBRARY;
+                case jar:
+                    return DBIcon.JAR;
+                case license:
+                    return DBIcon.TYPE_TEXT;
+                default:
+                    return DBIcon.TYPE_UNKNOWN;
             }
         }
     }

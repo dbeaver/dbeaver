@@ -1064,6 +1064,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     IResultSetController.MENU_GROUP_ADDITIONS,
                     ActionUtils.makeCommandContribution(
                         controller.getSite(),
+                        SpreadsheetCommandHandler.CMD_COLUMNS_HIDE_EMPTY));
+                manager.insertAfter(
+                    IResultSetController.MENU_GROUP_ADDITIONS,
+                    ActionUtils.makeCommandContribution(
+                        controller.getSite(),
                         SpreadsheetCommandHandler.CMD_COLUMNS_FIT_VALUE));
                 manager.insertAfter(
                     IResultSetController.MENU_GROUP_ADDITIONS,
@@ -2267,15 +2272,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
-            // First check in decorator's label provider
-            IResultSetLabelProvider dataLabelProvider = getController().getDecorator().getDataLabelProvider();
-            if (dataLabelProvider != null) {
-                Color fg = dataLabelProvider.getCellForeground(attribute, row);
-                if (fg != null) {
-                    return fg;
-                }
-            }
-
             if (selected) {
                 return foregroundSelected;
             }
@@ -2287,6 +2283,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     return UIUtils.getSharedColor(booleanStyles.getStyle((Boolean) cellValue).getColor());
                 }
                 return null;
+            }
+
+            final DBDAttributeDecorator dataLabelProvider = getController().getDecorator().getDataLabelProvider();
+            if (dataLabelProvider != null) {
+                final String fg = dataLabelProvider.getCellForeground(attribute, row.getVisualNumber());
+                if (fg != null) {
+                    return UIUtils.getSharedColor(fg);
+                }
             }
 
             {
@@ -2324,15 +2328,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean cellSelected,
             boolean ignoreRowSelection)
         {
-            // First check in decorator's label provider
-            IResultSetLabelProvider dataLabelProvider = getController().getDecorator().getDataLabelProvider();
-            if (dataLabelProvider != null) {
-                Color bg = dataLabelProvider.getCellBackground(attribute, row);
-                if (bg != null) {
-                    return bg;
-                }
-            }
-
             if (cellValue == DBDVoid.INSTANCE) {
                 return cellHeaderBackground;
             }
@@ -2408,6 +2403,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     25
                 );
                 return UIUtils.getSharedTextColors().getColor(mixRGB);
+            }
+
+            final DBDAttributeDecorator dataLabelProvider = getController().getDecorator().getDataLabelProvider();
+            if (dataLabelProvider != null) {
+                final String bg = dataLabelProvider.getCellBackground(attribute, row.getVisualNumber());
+                if (bg != null) {
+                    return UIUtils.getSharedColor(bg);
+                }
             }
 
             switch (row.getState()) {

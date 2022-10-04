@@ -17,9 +17,20 @@
 
 package org.jkiss.dbeaver.model.access;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBInfoUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.rm.RMProjectType;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
+
+import java.io.StringReader;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Auth profile.
@@ -27,12 +38,16 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
  */
 public class DBAAuthProfile extends DBPConfigurationProfile {
 
+    // Secret key prefix
+    public static final String PROFILE_KEY_PREFIX = "/auth-profile/";
+
     private String authModelId;
     private String userName;
     private String userPassword;
     private boolean savePassword;
 
-    public DBAAuthProfile() {
+    public DBAAuthProfile(DBPProject project) {
+        super(project);
     }
 
     public DBAAuthProfile(DBAAuthProfile source) {
@@ -41,6 +56,10 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
         this.userName = source.userName;
         this.userPassword = source.userPassword;
         this.savePassword = source.savePassword;
+    }
+
+    public String getSecretKeyId() {
+        return RMProjectType.getPlainProjectId(getProject()) + PROFILE_KEY_PREFIX + getProfileId();
     }
 
     public String getAuthModelId() {
@@ -78,4 +97,51 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
     public DBPAuthModelDescriptor getAuthModel() {
         return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(authModelId);
     }
+
+    @Override
+    public void persistSecrets(DBSSecretController secretController) throws DBException {
+        Map<String, Object> props = new LinkedHashMap<>();
+
+        // Info fields (we don't use them anyhow)
+        props.put("profile-id", getProfileId());
+        props.put("profile-name", getProfileName());
+
+        // Primary props
+        if (getUserName() != null) {
+            props.put("user", getUserName());
+        }
+        if (getUserPassword() != null) {
+            props.put("password", getUserPassword());
+        }
+        // Additional auth props
+        if (!CommonUtils.isEmpty(getProperties())) {
+            props.put("properties", getProperties());
+        }
+        String secretValue = DBInfoUtils.SECRET_GSON.toJson(props);
+
+        secretController.setSecretValue(
+            getSecretKeyId(),
+            secretValue);
+    }
+
+    @Override
+    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+        String secretValue = secretController.getSecretValue(
+            getSecretKeyId());
+        if (secretValue == null) {
+            // Backward compatibility
+            loadFromLegacySecret(secretController);
+            return;
+        }
+
+        Map<String, Object> props = JSONUtils.parseMap(DBInfoUtils.SECRET_GSON, new StringReader(secretValue));
+        userName = JSONUtils.getString(props, "user");
+        userPassword = JSONUtils.getString(props, "password");
+        setProperties(JSONUtils.deserializeStringMap(props, "properties"));
+    }
+
+    private void loadFromLegacySecret(DBSSecretController secretController) throws DBException {
+        // Auth profiles were not supported in legacy versions
+    }
+
 }

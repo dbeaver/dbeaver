@@ -46,6 +46,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private final ObjectType implType;
     private final String name;
     private final String description;
+    private final String requiredAuthProvider;
     private DBPImage icon;
     private boolean defaultModel;
     private boolean isDesktop;
@@ -69,7 +70,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         this.defaultModel = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_DEFAULT));
         this.isDesktop = CommonUtils.toBoolean(config.getAttribute("desktop"));
         this.requiresLocalConfiguration = CommonUtils.toBoolean(config.getAttribute("requiresLocalConfiguration"));
-
+        this.requiredAuthProvider = CommonUtils.toString(config.getAttribute("requiredAuthProvider"));
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             String replModel = dsConfig.getAttribute("model");
             String forAttr = dsConfig.getAttribute("for");
@@ -162,6 +163,12 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         PropertyCollector propertyCollector = new PropertyCollector(credentials, false);
         propertyCollector.collectProperties();
         return propertyCollector;
+    }
+
+    @Nullable
+    @Override
+    public String getRequiredAuthProviderId() {
+        return requiredAuthProvider;
     }
 
     boolean appliesTo(DBPDriver driver) {

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 import org.jkiss.utils.CommonUtils;
@@ -36,7 +37,7 @@ public class SpannerAuthConfigurator extends DatabaseNativeAuthModelConfigurator
     @Override
     public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
         UIUtils.createControlLabel(authPanel, SpannerMessages.label_private_key_path);
-        privateKeyFile = new TextWithOpenFile(authPanel, SpannerMessages.label_private_key_path, new String[] { "*", "*.json" } ); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        privateKeyFile = new ConfigurationFileSelector(authPanel, SpannerMessages.label_private_key_path, new String[] { "*", "*.json" } );
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
         privateKeyFile.setLayoutData(gd);
     }

@@ -91,17 +91,6 @@ public class DBeaverActivator extends AbstractUIPlugin {
     }
 
     /**
-     * Returns configuration file
-     */
-    public static synchronized File getConfigurationFile(String fileName)
-    {
-        if (configDir == null) {
-            configDir = getInstance().getStateLocation().toFile();
-        }
-        return new File(configDir, fileName);
-    }
-
-    /**
      * Returns the plugin's resource bundle,
      *
      * @return core resource bundle

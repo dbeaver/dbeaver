@@ -33,25 +33,24 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class MavenRegistry
-{
+public class MavenRegistry {
     private static final Log log = Log.getLog(MavenRegistry.class);
 
     public static final String MAVEN_LOCAL_REPO_ID = "local";
     public static final String MAVEN_LOCAL_REPO_NAME = "Local Repository";
     public static final String MAVEN_LOCAL_REPO_FOLDER = "maven-local";
+    public static final String MAVEN_REPOSITORIES_CONFIG = "maven-repositories.xml";
 
     private static MavenRegistry instance = null;
     private final List<String> ignoredArtifactVersions = new ArrayList<>();
 
-    public synchronized static MavenRegistry getInstance()
-    {
+    public synchronized static MavenRegistry getInstance() {
         if (instance == null) {
             instance = new MavenRegistry();
             instance.init();
@@ -66,8 +65,7 @@ public class MavenRegistry
 
     private static final PasswordEncrypter ENCRYPTOR = new SimpleStringEncrypter();
 
-    private MavenRegistry()
-    {
+    private MavenRegistry() {
     }
 
     boolean isVersionIgnored(String ref) {
@@ -127,45 +125,46 @@ public class MavenRegistry
     }
 
     public void loadCustomRepositories() {
-        final File cfgFile = getConfigurationFile();
-        if (cfgFile.exists()) {
-            try {
-                final Document reposDocument = XMLUtils.parseDocument(cfgFile);
-                for (Element repoElement : XMLUtils.getChildElementList(reposDocument.getDocumentElement(), "repository")) {
-                    String repoID = repoElement.getAttribute("id");
-                    MavenRepository repo = findRepository(repoID);
-                    if (repo == null) {
-                        String repoName = repoElement.getAttribute("name");
-                        String repoURL = repoElement.getAttribute("url");
-                        repo = new MavenRepository(
-                            repoID,
-                            repoName,
-                            repoURL,
-                            MavenRepository.RepositoryType.CUSTOM);
-                        List<String> scopes = new ArrayList<>();
-                        for (Element scopeElement : XMLUtils.getChildElementList(repoElement, "scope")) {
-                            scopes.add(scopeElement.getAttribute("group"));
-                        }
-                        repo.setScopes(scopes);
-
-                        repositories.add(repo);
+        try {
+            String config = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(MAVEN_REPOSITORIES_CONFIG);
+            if (CommonUtils.isEmpty(config)) {
+                return;
+            }
+            final Document reposDocument = XMLUtils.parseDocument(new StringReader(config));
+            for (Element repoElement : XMLUtils.getChildElementList(reposDocument.getDocumentElement(), "repository")) {
+                String repoID = repoElement.getAttribute("id");
+                MavenRepository repo = findRepository(repoID);
+                if (repo == null) {
+                    String repoName = repoElement.getAttribute("name");
+                    String repoURL = repoElement.getAttribute("url");
+                    repo = new MavenRepository(
+                        repoID,
+                        repoName,
+                        repoURL,
+                        MavenRepository.RepositoryType.CUSTOM);
+                    List<String> scopes = new ArrayList<>();
+                    for (Element scopeElement : XMLUtils.getChildElementList(repoElement, "scope")) {
+                        scopes.add(scopeElement.getAttribute("group"));
                     }
+                    repo.setScopes(scopes);
 
-                    repo.setOrder(CommonUtils.toInt(repoElement.getAttribute("order")));
-                    repo.setEnabled(CommonUtils.toBoolean(repoElement.getAttribute("enabled")));
+                    repositories.add(repo);
+                }
 
-                    final String authUser = repoElement.getAttribute("auth-user");
-                    if (!CommonUtils.isEmpty(authUser)) {
-                        repo.getAuthInfo().setUserName(authUser);
-                        String authPassword = repoElement.getAttribute("auth-password");
-                        if (!CommonUtils.isEmpty(authPassword)) {
-                            repo.getAuthInfo().setUserPassword(ENCRYPTOR.decrypt(authPassword));
-                        }
+                repo.setOrder(CommonUtils.toInt(repoElement.getAttribute("order")));
+                repo.setEnabled(CommonUtils.toBoolean(repoElement.getAttribute("enabled")));
+
+                final String authUser = repoElement.getAttribute("auth-user");
+                if (!CommonUtils.isEmpty(authUser)) {
+                    repo.getAuthInfo().setUserName(authUser);
+                    String authPassword = repoElement.getAttribute("auth-password");
+                    if (!CommonUtils.isEmpty(authPassword)) {
+                        repo.getAuthInfo().setUserPassword(ENCRYPTOR.decrypt(authPassword));
                     }
                 }
-            } catch (Exception e) {
-                log.error("Error parsing maven repositories configuration", e);
             }
+        } catch (Exception e) {
+            log.error("Error parsing maven repositories configuration", e);
         }
     }
 
@@ -263,8 +262,9 @@ public class MavenRegistry
     public void saveConfiguration() {
         sortRepositories();
 
-        try (OutputStream is = new FileOutputStream(getConfigurationFile())) {
-            XMLBuilder xml = new XMLBuilder(is, GeneralUtils.UTF8_ENCODING);
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            XMLBuilder xml = new XMLBuilder(baos, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             try (final XMLBuilder.Element e1 = xml.startElement("maven")) {
                 for (MavenRepository repository : repositories) {
@@ -296,6 +296,10 @@ public class MavenRegistry
                 }
             }
             xml.flush();
+
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
+                MAVEN_REPOSITORIES_CONFIG,
+                baos.toString(StandardCharsets.UTF_8));
         } catch (Exception e) {
             log.error("Error saving Maven registry", e);
         }
@@ -303,11 +307,6 @@ public class MavenRegistry
 
     private void sortRepositories() {
         repositories.sort(Comparator.comparingInt(MavenRepository::getOrder));
-    }
-
-    private static File getConfigurationFile()
-    {
-        return DBWorkbench.getPlatform().getConfigurationFile("maven-repositories.xml");
     }
 
 }

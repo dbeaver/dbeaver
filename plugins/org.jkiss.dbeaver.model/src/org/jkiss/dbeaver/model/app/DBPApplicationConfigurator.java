@@ -14,22 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.IWorkspace;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+package org.jkiss.dbeaver.model.app;
+
+import org.jkiss.dbeaver.model.DBConfigurationController;
+import org.jkiss.dbeaver.model.DBFileController;
+import org.jkiss.dbeaver.model.task.DBTTaskController;
 
 /**
- * EclipseApplicationImpl
+ * DB desktop application.
  */
-public abstract class EclipseApplicationImpl extends BaseApplicationImpl {
+public interface DBPApplicationConfigurator {
 
-    @NotNull
-    @Override
-    public DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace) {
-        return new DesktopWorkspaceImpl(platform, eclipseWorkspace);
-    }
+    DBConfigurationController createConfigurationController();
+
+    DBFileController createFileController();
+
+    /**
+     * Returns task controller. Task controller helps to work with task: load and save configuration file for different type of projects
+     */
+    DBTTaskController createTaskController();
 
 }

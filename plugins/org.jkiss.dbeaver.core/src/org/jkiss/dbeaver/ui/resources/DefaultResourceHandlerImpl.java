@@ -121,7 +121,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                 UIUtils.runInProgressService(monitor -> {
                     try {
                         target[0] = Files.createTempFile(
-                            DBWorkbench.getPlatform().getTempFolder(monitor, "external-files").toPath(),
+                            DBWorkbench.getPlatform().getTempFolder(monitor, "external-files"),
                             null,
                             fileStore.getName()
                         );

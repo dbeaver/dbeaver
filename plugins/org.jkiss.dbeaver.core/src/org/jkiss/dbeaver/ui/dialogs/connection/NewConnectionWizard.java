@@ -21,6 +21,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -206,7 +207,12 @@ public class NewConnectionWizard extends ConnectionWizard
             dataSourceRegistry, dataSourceTpl.getId(), driver, dataSourceTpl.getConnectionConfiguration());
         dataSourceNew.copyFrom(dataSourceTpl);
         saveSettings(dataSourceNew);
-        dataSourceRegistry.addDataSource(dataSourceNew);
+        try {
+            dataSourceRegistry.addDataSource(dataSourceNew);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Create failed", "Error adding new connections", e);
+            return false;
+        }
         return true;
     }
 

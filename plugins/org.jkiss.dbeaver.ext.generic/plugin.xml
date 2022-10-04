@@ -315,8 +315,8 @@
                     <file type="jar" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
                     <file type="lib" os="win32" arch="x86_64" path="https://github.com/dbeaver/jdbc-odbc-bridge-jre7/raw/main/x64/JdbcOdbc.dll" bundle="!drivers.odbc"/>
 
-                    <file type="jar" path="drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="drivers.odbc"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64/JdbcOdbc.dll" bundle="drivers.odbc"/>
+                    <file type="jar" path="drivers/odbc" bundle="drivers.odbc"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/odbc/x64" bundle="drivers.odbc"/>
                 </driver>
                 <driver
                     id="derby"
@@ -492,9 +492,6 @@
                     description="SQLite JDBC driver"
                     promoted="1"
                     categories="sql,embedded">
-                    <replace provider="generic" driver="sqlite_zentus"/>
-                    <replace provider="generic" driver="sqlite_xerial"/>
-                    <replace provider="generic" driver="sqlite_ch_werner"/>
 
                     <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
                     <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
@@ -746,6 +743,8 @@
 
                     <parameter name="supports-limits" value="false"/>
                     <parameter name="supports-references" value="false"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                    <parameter name="query-set-active-db" value="USE ?"/>
                 </driver>
                 <driver
                     id="spark_hive"

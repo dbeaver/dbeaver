@@ -35,7 +35,7 @@ public class SQLServerAuthModelCustom extends SQLServerAuthModelAbstract {
     public static final String ID = "sqlserver_custom";
 
     @Override
-    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, AuthModelDatabaseNativeCredentials credentials, DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
+    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull AuthModelDatabaseNativeCredentials credentials, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
         return super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
     }
 

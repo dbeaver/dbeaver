@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.resources.bookmarks;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -75,9 +76,9 @@ public class DBNBookmark extends DBNResource
         return storage.getDescription() + dsInfo;
     }
 
+    @NotNull
     @Override
-    public DBPImage getNodeIcon()
-    {
+    public DBPImage getResourceNodeIcon() {
         return storage.getImage();
     }
 

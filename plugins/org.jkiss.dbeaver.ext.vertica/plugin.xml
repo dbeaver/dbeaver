@@ -154,16 +154,17 @@
                     class="com.vertica.jdbc.Driver"
                     sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
                     defaultPort="5433"
-                    webURL="https://my.vertica.com/download/vertica/client-drivers/"
-                    description="JDBC driver for Vertica 8+ Database"
+                    webURL="https://www.vertica.com/download/vertica/client-drivers/"
+                    description="JDBC driver for Vertica 12+ Database"
                     categories="sql,analytic,columns">
                     <replace provider="generic" driver="vertica"/>
                     <replace provider="vertica" driver="vertica-jdbc"/>
                     <replace provider="vertica" driver="vertica-jdbc-6"/>
 
                     <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
+                    <file type="jar" path="maven:/com.vertica.jdbc:vertica-jdbc:RELEASE" bundle="!drivers.vertica"/>
                     <file type="jar" path="drivers/vertica" bundle="drivers.vertica"/>
-<!--                    <file type="jar" path="maven:/com.vertica:vertica-jdbc:RELEASE"/>-->
+<!--                    <file type="jar" path="https://www.vertica.com/client_drivers/12.0.x/12.0.1-0/vertica-jdbc-12.0.1-0.jar"/>-->
 
                     <parameter name="query-get-active-db" value="select current_schema()"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>

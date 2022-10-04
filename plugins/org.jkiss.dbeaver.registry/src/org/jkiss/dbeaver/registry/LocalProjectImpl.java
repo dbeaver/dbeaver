@@ -31,6 +31,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
@@ -97,7 +98,9 @@ public class LocalProjectImpl extends BaseProjectImpl {
             NullProgressMonitor monitor = new NullProgressMonitor();
             try {
                 project.open(monitor);
-                project.refreshLocal(IFile.DEPTH_ONE, monitor);
+                if (!DBWorkbench.isDistributed()) {
+                    project.refreshLocal(IFile.DEPTH_ONE, monitor);
+                }
             } catch (CoreException e) {
                 if (getWorkspace().getPlatform().getApplication().isStandalone() &&
                     e.getMessage().contains(IProjectDescription.DESCRIPTION_FILE_NAME)) {
@@ -131,6 +134,11 @@ public class LocalProjectImpl extends BaseProjectImpl {
 
         // Now project is in modern format
         setFormat(ProjectFormat.MODERN);
+    }
+
+    @Override
+    public boolean isUseSecretStorage() {
+        return false;
     }
 
     /**

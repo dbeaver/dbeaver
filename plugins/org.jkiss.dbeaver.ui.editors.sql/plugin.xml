@@ -311,21 +311,21 @@
             </activeWhen>
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
+                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceViewable"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.sql.editor.recent" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
+                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.sql.editor.create" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
+                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -368,11 +368,21 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.rename" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile">
             <enabledWhen>
                 <with variable="activePart">
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                    	<test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
+                    </adapt>
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.deleteThisScript" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerDeleteCurrentFile"/>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.deleteThisScript" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerDeleteCurrentFile">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                        <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
         <!--
                 <handler commandId="org.eclipse.ui.edit.text.showInformation" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFilelerRenameFile">
                     <enabledWhen>
@@ -726,13 +736,19 @@
             <menu label="%menu.org.jkiss.dbeaver.core.connection.sqleditor">
                 <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
+                    <visibleWhen checkEnabled="true">
+                        <reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/>
+                    </visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
+                    <visibleWhen checkEnabled="true">
+                        <reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/>
+                    </visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
+                    <visibleWhen checkEnabled="true">
+                        <reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/>
+                    </visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.console">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.sql.canOpenEditor"/></visibleWhen>
@@ -749,16 +765,31 @@
         </menuContribution>
 
         <menuContribution locationURI="menu:org.jkiss.dbeaver.menu.sql.open">
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <separator name="console" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.sql.editor.console"/>
             <separator name="search" visible="true"/>
-            <command commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand"/>
+            <command commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand">
+                <visibleWhen>
+                    <test property="org.jkiss.dbeaver.core.global.bundleInstalled" args="org.eclipse.text.quicksearch"/>
+                </visibleWhen>
+            </command>
             <separator name="settings" visible="true"/>
 
             <menu id="SQLEditorOpenDefaultMenu" label="%menu.sqleditor.open.default">
+                <visibleWhen>
+                    <with variable="activePart">
+                        <test property="org.jkiss.dbeaver.core.global.canEditResource"/>
+                    </with>
+                </visibleWhen>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open.default" style="radio"><parameter name="command" value="org.jkiss.dbeaver.core.sql.editor.open"/></command>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open.default" style="radio"><parameter name="command" value="org.jkiss.dbeaver.core.sql.editor.recent"/></command>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open.default" style="radio"><parameter name="command" value="org.jkiss.dbeaver.core.sql.editor.create"/></command>
@@ -774,7 +805,9 @@
                  style="pulldown"
                  mode="FORCE_TEXT"
                  id="org.jkiss.dbeaver.menu.sql.open">
-                <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                <visibleWhen checkEnabled="true">
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/>
+                </visibleWhen>
             </command>
 <!--
             <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
@@ -788,9 +821,15 @@
             <menu id="SQLEditorMenu" label="%menu.sqleditor">
                 <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
 
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.console"/>
 
                 <separator name="execute" visible="true"/>
@@ -881,14 +920,14 @@
                 <separator name="files" visible="true"/>
 
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file">
-                    <visibleWhen>
+                    <visibleWhen checkEnabled="true">
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file">
-                    <visibleWhen>
+                    <visibleWhen checkEnabled="true">
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                         </with>
@@ -914,7 +953,16 @@
 
                 <separator name="context" visible="true"/>
 
-                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"><parameter name="noCustomLabel" value="true"/></command>
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection">
+                    <parameter name="noCustomLabel" value="true"/>
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                                <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
+                            </adapt>
+                        </with>
+                    </visibleWhen>
+                </command>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"><parameter name="noCustomLabel" value="true"/></command>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection"/>
 
@@ -946,16 +994,29 @@
                 <separator name="additions_active_object" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.connection">
                    <parameter name="noCustomLabel" value="true"/>
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                                <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
+                            </adapt>
+                        </with>
+                    </visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.schema">
                     <parameter name="noCustomLabel" value="true"/>
                 </command>
             </menu>
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file.label">
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.rename"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.rename">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
                 <command commandId="org.eclipse.ui.file.revert"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
             </menu>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">

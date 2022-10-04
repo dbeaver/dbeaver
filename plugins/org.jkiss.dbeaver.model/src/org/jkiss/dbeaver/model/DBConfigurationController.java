@@ -14,21 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model;
 
-package org.jkiss.dbeaver.model.app;
-
-import org.eclipse.equinox.security.storage.ISecurePreferences;
-
-import javax.crypto.SecretKey;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 
 /**
- * Client security manager
+ * Config files controller.
  */
-public interface DBASecureStorage {
+public interface DBConfigurationController extends DBPObjectController {
 
-    boolean useSecurePreferences();
+    /**
+     * Loads config file contents.
+     * @param filePath relative or absolute file path
+     *
+     */
+    String loadConfigurationFile(@NotNull String filePath) throws DBException;
 
-    ISecurePreferences getSecurePreferences();
+    /**
+     * Saves config file contents
+     * @param filePath relative or absolute
+     * @param data
+     * @throws DBException
+     */
+    void saveConfigurationFile(
+        @NotNull String filePath,
+        @NotNull String data) throws DBException;
 
-    SecretKey getLocalSecretKey();
 }

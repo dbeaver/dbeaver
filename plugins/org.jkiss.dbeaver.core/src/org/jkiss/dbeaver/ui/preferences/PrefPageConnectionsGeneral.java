@@ -188,7 +188,12 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
 
     private void updateCombosAndSettings() {
         defaultConnectionType = DBPConnectionType.getDefaultConnectionType();
-        connectionTypeCombo.select(defaultConnectionType);
+        for (int i = 0; i < connectionTypeCombo.getItemCount(); i++) {
+            if (connectionTypeCombo.getItem(i).getId().equals(defaultConnectionType.getId())) {
+                connectionTypeCombo.select(i);
+                break;
+            }
+        }
         defaultNavigatorSettings = DataSourceNavigatorSettings.getDefaultSettings();
         ConnectionPageGeneral.updateNavigatorSettingsPreset(navigatorSettingsCombo, defaultNavigatorSettings);
         super.performDefaults();

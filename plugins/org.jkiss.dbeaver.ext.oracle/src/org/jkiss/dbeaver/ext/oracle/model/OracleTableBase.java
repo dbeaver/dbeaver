@@ -142,13 +142,15 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public String getComment(DBRProgressMonitor monitor) {
         if (comment == null) {
             comment = "";
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table comments")) {
-                comment = queryTableComment(session);
-                if (comment == null) {
-                    comment = "";
+            if (isPersisted()) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table comments")) {
+                    comment = queryTableComment(session);
+                    if (comment == null) {
+                        comment = "";
+                    }
+                } catch (Exception e) {
+                    log.error("Can't fetch table '" + getName() + "' comment", e);
                 }
-            } catch (Exception e) {
-                log.error("Can't fetch table '" + getName() + "' comment", e);
             }
         }
         return comment;

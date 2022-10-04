@@ -749,7 +749,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     void createPropertyRefreshAction(IContributionManager contributionManager) {
         // Contribute "Read expensive props" - but only if object has expensive props
         DBSObject databaseObject = getDatabaseObject();
-        if (!databaseObject.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_PROPERTIES)) {
+        DBPDataSource dataSource = databaseObject.getDataSource();
+        if (dataSource != null && !dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.READ_EXPENSIVE_PROPERTIES)) {
             PropertyCollector collector = new PropertyCollector(databaseObject, false);
             collector.setEnableFilters(false);
             collector.collectProperties();

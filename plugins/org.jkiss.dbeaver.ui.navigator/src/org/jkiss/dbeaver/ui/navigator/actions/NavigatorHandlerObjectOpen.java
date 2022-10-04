@@ -36,9 +36,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
@@ -136,8 +136,10 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
     {
         if (selectedNode instanceof DBNDataSource) {
             final DBPDataSourceContainer dataSourceContainer = ((DBNDataSource)selectedNode).getDataSourceContainer();
-            openConnectionEditor(workbenchWindow, dataSourceContainer);
-            return null;
+            if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
+                openConnectionEditor(workbenchWindow, dataSourceContainer);
+                return null;
+            }
         }
         try {
             if (selectedNode instanceof DBNDatabaseFolder && !(selectedNode.getParentNode() instanceof DBNDatabaseFolder) && selectedNode.getParentNode() instanceof DBNDatabaseNode) {
@@ -315,14 +317,14 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             DBNNode node = NavigatorUtils.getSelectedNode(selection);
             if (node != null) {
                 String actionName = UINavigatorMessages.actions_navigator_open;
-                if (node instanceof DBNDataSource) {
+                if (node instanceof DBNDataSource && node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
                     actionName = UINavigatorMessages.actions_navigator_edit;
                 } else if (node instanceof DBNDatabaseNode) {
                     DBSObject object = ((DBNDatabaseNode) node).getObject();
                     if (object != null) {
-                        DBEObjectEditor objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
-                            object.getClass(),
-                            DBEObjectEditor.class);
+//                        DBEObjectEditor objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
+//                            object.getClass(),
+//                            DBEObjectEditor.class);
                         //actionName = objectManager == null || !objectManager.canEditObject(object) ? UINavigatorMessages.actions_navigator_view : UINavigatorMessages.actions_navigator_edit;
                         actionName = UINavigatorMessages.actions_navigator_view;
                     }

@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -32,6 +34,12 @@ import java.io.StringWriter;
  * DB value formatting utilities
  */
 public final class DBInfoUtils {
+
+    public static final Gson SECRET_GSON = new GsonBuilder()
+        .setLenient()
+        .serializeNulls()
+        .setPrettyPrinting()
+        .create();
 
     public static String makeObjectDescription(@NotNull DBRProgressMonitor monitor, DBPNamedObject object, boolean html) {
         StringBuilder info = new StringBuilder();

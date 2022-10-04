@@ -19,14 +19,10 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
-import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -94,30 +90,9 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
         return false;
     }
 
-    @NotNull
-    @Override
-    public DBASecureStorage getSecureStorage() {
-        return DefaultSecureStorage.INSTANCE;
-    }
-
-    @NotNull
-    @Override
-    public DBASecureStorage getProjectSecureStorage(DBPProject project) {
-        return new ProjectSecureStorage(project);
-    }
-
     @Override
     public String getInfoDetails(DBRProgressMonitor monitor) {
         return "N/A";
-    }
-
-    /**
-     * Returns last user activity time
-     * @return -1 by default
-     */
-    @Override
-    public long getLastUserActivityTime() {
-        return -1;
     }
 
     @Override
