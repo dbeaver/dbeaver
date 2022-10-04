@@ -177,8 +177,8 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 				+ "	USER_NAME,\n"
 				+ "	CREATED,\n"
 				+ (this.exasolCurrentUserPrivileges.getUserHasDictionaryAccess() ? "	DISTINGUISHED_NAME,\n" : "")
-				+ "	KERBEROS_PRINCIPAL,\n"
-				+ "	PASSWORD,\n"
+				+ (this.exasolCurrentUserPrivileges.getUserHasDictionaryAccess() ? "	KERBEROS_PRINCIPAL,\n" : "")
+				+ (this.exasolCurrentUserPrivileges.getUserHasDictionaryAccess() ? "	PASSWORD,\n" : "")
 				+ priorityColUser
 				+ "	PASSWORD_STATE,\n"
 				+ "	PASSWORD_STATE_CHANGED,\n"
