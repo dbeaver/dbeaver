@@ -1048,27 +1048,27 @@ public class DataSourceDescriptor
     }
 
     private boolean askForSSHJumpServerPassword(@NotNull DBWHandlerConfiguration tunnelConfiguration) {
-        if (tunnelConfiguration.getBooleanProperty(getJumpServerSettingsPrefix(0) + RegistryConstants.ATTR_ENABLED)) {
+        if (tunnelConfiguration.getBooleanProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_ENABLED)) {
             DBPConnectionConfiguration actualConfig = getActualConnectionConfiguration();
             DBPConnectionConfiguration connConfig = getConnectionConfiguration();
             String prompt = NLS.bind(RegistryMessages.dialog_connection_auth_title_for_handler, "SSH jump server");
             DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration, getJumpServerSettingsPrefix(0));
             if (rc != DBWTunnel.AuthCredentials.NONE) {
                 DBPAuthInfo dbpAuthInfo = askCredentials(this, rc, prompt,
-                    tunnelConfiguration.getStringProperty(getJumpServerSettingsPrefix(0) + RegistryConstants.ATTR_NAME),
+                    tunnelConfiguration.getStringProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_NAME),
                     //$NON-NLS-1$
-                    tunnelConfiguration.getSecureProperty(getJumpServerSettingsPrefix(0) + RegistryConstants.ATTR_PASSWORD),
+                    tunnelConfiguration.getSecureProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_FEATURE_PASSWORD),
                     //$NON-NLS-1$
                     false
                 );
                 if (dbpAuthInfo != null) {
                     if (rc.equals(DBWTunnel.AuthCredentials.PASSWORD)) {
-                        tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + RegistryConstants.ATTR_NAME, //$NON
+                        tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_NAME, //$NON
                             // -NLS-1$
                             dbpAuthInfo.getUserName()
                         );
                     }
-                    tunnelConfiguration.setSecureProperty(getJumpServerSettingsPrefix(0) + RegistryConstants.ATTR_PASSWORD, //$NON
+                    tunnelConfiguration.setSecureProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_FEATURE_PASSWORD, //$NON
                         // -NLS-1$
                         dbpAuthInfo.getUserPassword()
                     );

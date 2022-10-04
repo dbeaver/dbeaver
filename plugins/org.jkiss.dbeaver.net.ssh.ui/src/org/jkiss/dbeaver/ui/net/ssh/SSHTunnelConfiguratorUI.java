@@ -34,6 +34,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -327,7 +328,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 String authTypeName;
                 // If we are not saving password and have jump server enabled we need to show dialog
                 // for user to write it
-                if (!configuration.getBooleanProperty(getJumpServerSettingsPrefix() + RegistryConstants.ATTR_ENABLED)) {
+                if (configuration.getBooleanProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_ENABLED)) {
                     authTypeName = configuration.getStringProperty(getJumpServerSettingsPrefix() + SSHConstants.PROP_AUTH_TYPE);
                     authType = CommonUtils.valueOf(SSHConstants.AuthType.class,
                         authTypeName,
@@ -337,17 +338,17 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                         != DBWTunnel.AuthCredentials.NONE) {
                         DBPAuthInfo dbpAuthInfo = promptCredentialsDialog(authType,
                             configuration.getStringProperty(getJumpServerSettingsPrefix()
-                                                            + RegistryConstants.ATTR_NAME),
+                                                            + DBConstants.PROP_ID_NAME),
                             configuration.getSecureProperty(getJumpServerSettingsPrefix()
-                                                            + RegistryConstants.ATTR_PASSWORD)
+                                                            + DBConstants.PROP_FEATURE_PASSWORD)
                         );
                         if (dbpAuthInfo != null) {
                             if (authType.equals(SSHConstants.AuthType.PASSWORD)) {
-                                configuration.setProperty(getJumpServerSettingsPrefix() + RegistryConstants.ATTR_NAME,
+                                configuration.setProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_ID_NAME,
                                     dbpAuthInfo.getUserName()
                                 );
                             }
-                            configuration.setSecureProperty(getJumpServerSettingsPrefix() + RegistryConstants.ATTR_PASSWORD,
+                            configuration.setSecureProperty(getJumpServerSettingsPrefix() + DBConstants.PROP_FEATURE_PASSWORD,
                                 dbpAuthInfo.getUserPassword()
                             );
                         }
@@ -398,7 +399,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
         final String jumpServerSettingsPrefix = getJumpServerSettingsPrefix();
         jumpServerCredentialsPanel.loadSettings(configuration, jumpServerSettingsPrefix);
-        jumpServerEnabledCheck.setSelection(configuration.getBooleanProperty(jumpServerSettingsPrefix + RegistryConstants.ATTR_ENABLED));
+        jumpServerEnabledCheck.setSelection(configuration.getBooleanProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED));
         if (credentialsPanel.savePasswordCheckbox != null) {
             jumpServerCredentialsPanel.passwordText.setEnabled(credentialsPanel.savePasswordCheckbox.getSelection());
             if (!credentialsPanel.savePasswordCheckbox.getSelection()) {
@@ -469,7 +470,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         if (jumpServersEnabled) {
             final String jumpServerSettingsPrefix = getJumpServerSettingsPrefix();
             jumpServerCredentialsPanel.saveSettings(configuration, jumpServerSettingsPrefix);
-            configuration.setProperty(jumpServerSettingsPrefix + RegistryConstants.ATTR_ENABLED, jumpServersEnabled);
+            configuration.setProperty(jumpServerSettingsPrefix + DBConstants.PROP_ID_ENABLED, jumpServersEnabled);
         }
 
         String implLabel = tunnelImplCombo.getText();
@@ -633,13 +634,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
                 }
             } else {
-                userNameText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + RegistryConstants.ATTR_NAME)));
-                passwordText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD)));
+                userNameText.setText(CommonUtils.notEmpty(configuration.getStringProperty(prefix + DBConstants.PROP_ID_NAME)));
+                passwordText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + DBConstants.PROP_FEATURE_PASSWORD)));
                 if (savePasswordCheckbox != null) {
-                    savePasswordCheckbox.setSelection(configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD));
+                    savePasswordCheckbox.setSelection(configuration.getBooleanProperty(prefix + DBConstants.PROP_FEATURE_PASSWORD));
                 }
                 if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
-                    passwordText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD)));
+                    passwordText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + DBConstants.PROP_FEATURE_PASSWORD)));
                 }
             }
             updateAuthMethodVisibility();
