@@ -2198,9 +2198,9 @@ public class ResultSetViewer extends Viewer
     @Override
     public void toggleSortOrder(@NotNull DBDAttributeBinding columnElement, @Nullable ColumnOrder forceOrder) {
         DBDDataFilter dataFilter = getModel().getDataFilter();
-        if (forceOrder == ColumnOrder.ASC) {
-            dataFilter.resetOrderBy();
-        }
+        // if (forceOrder == ColumnOrder.ASC) {
+        //     dataFilter.resetOrderBy();
+        // }
         DBDAttributeConstraint constraint = dataFilter.getConstraint(columnElement);
         assert constraint != null;
         ResultSetUtils.OrderingMode orderingMode = ResultSetUtils.getOrderingMode(this);
