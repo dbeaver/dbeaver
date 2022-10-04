@@ -41,10 +41,16 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         addSQLKeywords(
-                Arrays.asList(
-                        "QUALIFY",
-                        "ILIKE"
-                ));
+            Arrays.asList(
+                "QUALIFY",
+                "ILIKE",
+                "PACKAGE",
+                "PIPE",
+                "STAGE",
+                "STREAM",
+                "TAG",
+                "TASK"
+            ));
     }
 
     @Override

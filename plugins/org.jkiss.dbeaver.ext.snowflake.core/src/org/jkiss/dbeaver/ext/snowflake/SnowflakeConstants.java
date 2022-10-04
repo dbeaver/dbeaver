@@ -37,4 +37,8 @@ public class SnowflakeConstants
     public static final String PROP_ROLE_LEGACY = DBConstants.INTERNAL_PROP_PREFIX + "role@";
     public static final String PROP_AUTHENTICATOR_LEGACY = DBConstants.INTERNAL_PROP_PREFIX + "authenticator@";
 
+    public static final String METADATA_COLUMN_CREATED = "CREATED";
+    public static final String METADATA_COLUMN_LAST_ALTERED = "LAST_ALTERED";
+    public static final String METADATA_COLUMN_COMMENT = "COMMENT";
+
 }
