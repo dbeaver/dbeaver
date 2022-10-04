@@ -409,6 +409,8 @@ public class ResultSetMessages extends NLS {
 
     public static String refs_label;
     public static String refs_no_refs_text;
+    public static String refs_open_target;
+    public static String refs_open_target_tip;
 
     public static String value_viewer_select_view_message;
     public static String value_viewer_hide_panel_message;
