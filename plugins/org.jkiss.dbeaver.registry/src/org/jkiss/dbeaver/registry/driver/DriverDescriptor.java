@@ -175,6 +175,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private DBPImage iconError;
     private DBPImage iconBig;
     private boolean embedded, origEmbedded;
+    private boolean supportsDistributedMode;
     private boolean singleConnection;
     private boolean clientRequired;
     private boolean supportsDriverProperties;
@@ -315,6 +316,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.defaultConnectionProperties.putAll(copyFrom.defaultConnectionProperties);
             this.customConnectionProperties.putAll(copyFrom.customConnectionProperties);
             this.configurationTypes.addAll(copyFrom.configurationTypes);
+            this.supportsDistributedMode = copyFrom.supportsDistributedMode;
         } else {
             this.categories = new ArrayList<>();
             this.name = "";
@@ -352,6 +354,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.origAnonymousAccess = this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.origAllowsEmptyPassword = this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
+        this.supportsDistributedMode = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
         this.custom = false;
         this.isLoaded = false;
 
@@ -1088,6 +1091,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Override
     public boolean isSupportedByLocalSystem() {
+        if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            return supportsDistributedMode;
+        }
         if (supportedSystems.isEmpty()) {
             // Multi-platform
             return true;
