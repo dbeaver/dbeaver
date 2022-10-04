@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,6 @@ import java.util.Map;
  */
 public abstract class ConnectionPageAbstract extends DialogPage implements IDataSourceConnectionEditor {
 
-    protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
     protected static final String GROUP_CONNECTION_MODE = "connectionMode"; //$NON-NLS-1$
     @NotNull
     protected final Map<String, List<Control>> propGroupMap = new HashMap<>();
@@ -312,18 +312,25 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         typeManualRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_host_label, false, typeSwitcher);
         typeURLRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_url_label, true, typeSwitcher);
         modeGroup.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).create());
+        addControlToGroup(GROUP_CONNECTION_MODE, cnnTypeLabel);
         addControlToGroup(GROUP_CONNECTION_MODE, modeGroup);
     }
 
-    protected void setupConnectionModeSelection(@NotNull Text urlText, boolean useUrl) {
+    protected void setupConnectionModeSelection(@NotNull Text urlText, boolean useUrl, @NotNull Collection<String> nonUrlPropGroups) {
         if (typeURLRadio != null) typeURLRadio.setSelection(useUrl);
         if (typeManualRadio != null) typeManualRadio.setSelection(!useUrl);
         urlText.setEditable(useUrl);
 
-        for (Control control : propGroupMap.get(GROUP_CONNECTION)) {
-            control.setEnabled(!useUrl);
-            if (control instanceof Text) {
-                ((Text) control).setEditable(!useUrl);
+        boolean nonUrl = !useUrl;
+        for (String groupName : nonUrlPropGroups) {
+            List<Control> controls = propGroupMap.get(groupName);
+            if (controls != null) {
+                for (Control control : controls) {
+                    control.setEnabled(nonUrl);
+                    if (control instanceof Text) {
+                        ((Text) control).setEditable(nonUrl);
+                    }
+                }
             }
         }
     }
