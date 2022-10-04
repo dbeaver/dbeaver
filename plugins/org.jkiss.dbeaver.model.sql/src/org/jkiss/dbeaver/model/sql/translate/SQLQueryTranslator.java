@@ -16,12 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql.translate;
 
-import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
-import net.sf.jsqlparser.statement.create.table.Index;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -146,19 +143,6 @@ public class SQLQueryTranslator implements SQLTranslator {
             if (extendedDialect != null && extendedDialect.supportsCreateIfExists()) {
                 createTable.setIfNotExists(false);
                 defChanged = true;
-            }
-
-            if (!targetDialect.supportsTableDropCascade() && createTable.getIndexes() != null) {
-                for (Index index : createTable.getIndexes()) {
-                    if (index instanceof ForeignKeyIndex) {
-                        ForeignKeyIndex foreignKeyIndex = (ForeignKeyIndex) index;
-                        ReferentialAction referentialAction = foreignKeyIndex.getReferentialAction(ReferentialAction.Type.DELETE);
-                        if (referentialAction != null && referentialAction.getAction().equals(ReferentialAction.Action.CASCADE)) {
-                            referentialAction.setAction(ReferentialAction.Action.NO_ACTION);
-                            defChanged = true;
-                        }
-                    }
-                }
             }
 
             for (ColumnDefinition cd : createTable.getColumnDefinitions()) {
