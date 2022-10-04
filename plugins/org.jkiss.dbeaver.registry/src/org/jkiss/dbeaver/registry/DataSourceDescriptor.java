@@ -964,13 +964,13 @@ public class DataSourceDescriptor
                                     return false;
                                 }
                             }
+                            if (!askForSSHJumpServerPassword(tunnelConfiguration)) {
+                                updateDataSourceObject(this);
+                                tunnelHandler = null;
+                                return false;
+                            }
                         }
                         // We need to resolve jump server differently due to it being a part of ssh configuration
-                        if (!askForSSHJumpServerPassword(tunnelConfiguration)) {
-                            updateDataSourceObject(this);
-                            tunnelHandler = null;
-                            return false;
-                        }
                         DBExecUtils.startContextInitiation(this);
                         try {
                             resolvedConnectionInfo = tunnelHandler.initializeHandler(monitor, tunnelConfiguration, resolvedConnectionInfo);
@@ -1051,37 +1051,37 @@ public class DataSourceDescriptor
         DBPConnectionConfiguration actualConfig = getActualConnectionConfiguration();
         DBPConnectionConfiguration connConfig = getConnectionConfiguration();
         String prompt = NLS.bind(RegistryMessages.dialog_connection_auth_title_for_handler, "SSH jump server");
-        if (tunnelConfiguration.getBooleanProperty(getJumpServerSettingsPrefix(0) + "enabled")) { //$NON-NLS-1$
-            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration,
-                getJumpServerSettingsPrefix(0));
-            if (rc != DBWTunnel.AuthCredentials.NONE) {
-                if (!tunnelConfiguration.getBooleanProperty(getJumpServerSettingsPrefix(0) + "save-password")) { //$NON-NLS-1$
-                    DBPAuthInfo dbpAuthInfo = askCredentials(this,
-                        rc,
-                        prompt,
-                        tunnelConfiguration.getStringProperty(getJumpServerSettingsPrefix(0) + "name"), //$NON-NLS-1$
-                        tunnelConfiguration.getSecureProperty(getJumpServerSettingsPrefix(0) + "password") //$NON-NLS-1$
-                    );
-                    if (dbpAuthInfo != null) {
-                        if (rc.equals(DBWTunnel.AuthCredentials.PASSWORD)) {
-                            tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + "name", //$NON-NLS-1$
-                                dbpAuthInfo.getUserName()
-                            );
-                        }
-                        tunnelConfiguration.setSecureProperty(getJumpServerSettingsPrefix(0) + "password", //$NON-NLS-1$
-                            dbpAuthInfo.getUserPassword()
+        DBWTunnel.AuthCredentials rc =
+            tunnelHandler.getRequiredCredentials(tunnelConfiguration, getJumpServerSettingsPrefix(0));
+        if (rc != DBWTunnel.AuthCredentials.NONE) {
+            if (!tunnelConfiguration.getBooleanProperty(
+                getJumpServerSettingsPrefix(0) + "save-password")) { //$NON-NLS-1$
+                DBPAuthInfo dbpAuthInfo = askCredentials(this,
+                    rc,
+                    prompt,
+                    tunnelConfiguration.getStringProperty(getJumpServerSettingsPrefix(0) + "name"),
+                    //$NON-NLS-1$
+                    tunnelConfiguration.getSecureProperty(getJumpServerSettingsPrefix(0) + "password"),
+                    //$NON-NLS-1$
+                    false
+                );
+                if (dbpAuthInfo != null) {
+                    if (rc.equals(DBWTunnel.AuthCredentials.PASSWORD)) {
+                        tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + "name", //$NON-NLS-1$
+                            dbpAuthInfo.getUserName()
                         );
-                        tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + "save-password",
-                            dbpAuthInfo.isSavePassword()); //$NON-NLS-1$
-                        actualConfig.updateHandler(tunnelConfiguration);
-
-                        if (dbpAuthInfo.isSavePassword() && connConfig != actualConfig) {
-                            // Save changes in real connection info
-                            connConfig.updateHandler(tunnelConfiguration);
-                        }
-                    } else {
-                        return false;
                     }
+                    tunnelConfiguration.setSecureProperty(getJumpServerSettingsPrefix(0) + "password", //$NON-NLS-1$
+                        dbpAuthInfo.getUserPassword()
+                    );
+                    actualConfig.updateHandler(tunnelConfiguration);
+
+                    if (tunnelConfiguration.isSavePassword() && connConfig != actualConfig) {
+                        // Save changes in real connection info
+                        connConfig.updateHandler(tunnelConfiguration);
+                    }
+                } else {
+                    return false;
                 }
             }
         }
@@ -1709,7 +1709,7 @@ public class DataSourceDescriptor
 
         DBPAuthInfo authInfo;
         try {
-            authInfo = askCredentials(dataSourceContainer, authType, prompt, user, password);
+            authInfo = askCredentials(dataSourceContainer, authType, prompt, user, password, !dataSourceContainer.isTemporary());
         } catch (Exception e) {
             log.debug(e);
             authInfo = new DBPAuthInfo(user, password, false);
@@ -1771,7 +1771,8 @@ public class DataSourceDescriptor
         @NotNull DBWTunnel.AuthCredentials authType,
         String prompt,
         String user,
-        String password)
+        String password,
+        boolean canSavePassword)
     {
         DBPAuthInfo authInfo;
         authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt,
@@ -1780,7 +1781,7 @@ public class DataSourceDescriptor
                 ? RegistryMessages.dialog_connection_auth_passphrase
                 : RegistryMessages.dialog_connection_auth_password, password,
             authType != DBWTunnel.AuthCredentials.CREDENTIALS,
-            !dataSourceContainer.isTemporary()
+            canSavePassword
         );
         return authInfo;
     }

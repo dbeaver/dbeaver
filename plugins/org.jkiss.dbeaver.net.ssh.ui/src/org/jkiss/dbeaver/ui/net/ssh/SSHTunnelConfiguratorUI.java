@@ -129,19 +129,23 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
 
             jumpServerEnabledCheck = UIUtils.createCheckbox(client, SSHUIMessages.model_ssh_configurator_group_jump_server_checkbox_label, false);
             jumpServerEnabledCheck.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false, 2, 1));
+
+            jumpServerCredentialsPanel = new CredentialsPanel(client, false);
             jumpServerEnabledCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     UIUtils.enableWithChildren(jumpServerCredentialsPanel, jumpServerEnabledCheck.getSelection());
-                    if (jumpServerCredentialsPanel.savePasswordCheckbox != null) {
-                        jumpServerCredentialsPanel.passwordText.setEnabled(
-                            jumpServerCredentialsPanel.savePasswordCheckbox.getSelection()
-                            && jumpServerEnabledCheck.getSelection());
-                    }
                 }
             });
-
-            jumpServerCredentialsPanel = new CredentialsPanel(client, true);
+            if (jumpServerCredentialsPanel != null && credentialsPanel.savePasswordCheckbox != null) {
+                credentialsPanel.savePasswordCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        jumpServerCredentialsPanel.passwordText.setEnabled(credentialsPanel.savePasswordCheckbox.getSelection()
+                                                                           && jumpServerEnabledCheck.getSelection());
+                    }
+                });
+            }
         }
 
         {
@@ -385,6 +389,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         final String jumpServerSettingsPrefix = getJumpServerSettingsPrefix();
         jumpServerCredentialsPanel.loadSettings(configuration, jumpServerSettingsPrefix);
         jumpServerEnabledCheck.setSelection(configuration.getBooleanProperty(jumpServerSettingsPrefix + RegistryConstants.ATTR_ENABLED));
+
         UIUtils.enableWithChildren(jumpServerCredentialsPanel, jumpServerEnabledCheck.getSelection());
 
         String implType = configuration.getStringProperty(SSHConstants.PROP_IMPLEMENTATION);
@@ -577,6 +582,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             passwordText.setEnabled(savePasswordCheckbox.getSelection());
+
                         }
                     });
                     savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -649,10 +655,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 }
             } else {
                 configuration.setProperty(prefix + RegistryConstants.ATTR_NAME, userNameText.getText().trim());
-                if (savePasswordCheckbox != null) {
-                    configuration.setProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD, savePasswordCheckbox.getSelection());
-                }
-                if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
+                if (passwordText.isEnabled()) {
                     configuration.setSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD, passwordText.getText());
                 }
             }
