@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -50,7 +51,13 @@ import java.util.stream.Collectors;
 /**
  * OracleSchema
  */
-public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, DBPObjectStatisticsCollector
+public class OracleSchema extends OracleGlobalObject implements
+    DBSSchema,
+    DBPRefreshableObject,
+    DBPSystemObject,
+    DBSProcedureContainer,
+    DBPObjectStatisticsCollector,
+    DBPScriptObject
 {
     private static final Log log = Log.getLog(OracleSchema.class);
 
@@ -507,6 +514,102 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 }
             }
             hasStatistics = true;
+        }
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("-- DROP USER ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n");
+        sql.append("CREATE USER ").append(DBUtils.getQuotedIdentifier(this)).append("\n-- IDENTIFIED BY <password>\n").append(";\n");
+
+        // Show DDL for all schema objects
+        monitor.beginTask("Cache schema", 1);
+        cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
+        monitor.done();
+
+        Collection<OracleDataType> dataTypes = getDataTypes(monitor);
+        monitor.beginTask("Load data types", dataTypes.size());
+
+        if (!monitor.isCanceled()) {
+            for (OracleDataType dataType : dataTypes) {
+                addDDLLine(sql, dataType.getObjectDefinitionText(monitor, options));
+                monitor.worked(1);
+                if (monitor.isCanceled()) {
+                    break;
+                }
+            }
+            monitor.done();
+        }
+
+        if (!monitor.isCanceled()) {
+            List<OracleTableBase> tablesOrViews = getTableCache().getAllObjects(monitor, this);
+            for (OracleTableBase tableBase : tablesOrViews) {
+                if (tableBase instanceof OracleTable && ((OracleTable) tableBase).isNested()) {
+                    // To avoid java.sql.SQLException: ORA-31603
+                    continue;
+                }
+                addDDLLine(sql, tableBase.getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()), options));
+                monitor.worked(1);
+                if (monitor.isCanceled()) {
+                    break;
+                }
+            }
+            monitor.done();
+        }
+
+        if (!monitor.isCanceled()) {
+            Collection<OracleProcedureStandalone> procedures = getProcedures(monitor);
+            monitor.beginTask("Load procedures", procedures.size());
+            for (OracleProcedureStandalone procedure : procedures) {
+                monitor.subTask(procedure.getName());
+                addDDLLine(sql, procedure.getObjectDefinitionText(monitor, options));
+                monitor.worked(1);
+                if (monitor.isCanceled()) {
+                    break;
+                }
+            }
+            monitor.done();
+        }
+
+        if (!monitor.isCanceled()) {
+            Collection<OracleSchemaTrigger> triggers = getTriggers(monitor);
+            monitor.beginTask("Load triggers", triggers.size());
+            for (OracleSchemaTrigger trigger : triggers) {
+                monitor.subTask(trigger.getName());
+                addDDLLine(sql, trigger.getObjectDefinitionText(monitor, options));
+                monitor.worked(1);
+                if (monitor.isCanceled()) {
+                    break;
+                }
+            }
+            monitor.done();
+        }
+
+        if (!monitor.isCanceled()) {
+            Collection<OracleSequence> sequences = getSequences(monitor);
+            monitor.beginTask("Load sequences", sequences.size());
+            for (OracleSequence sequence : sequences) {
+                monitor.subTask(sequence.getName());
+                addDDLLine(sql, sequence.getObjectDefinitionText(monitor, options));
+                monitor.worked(1);
+                if (monitor.isCanceled()) {
+                    break;
+                }
+            }
+            monitor.done();
+        }
+
+        return sql.toString();
+    }
+
+    private void addDDLLine(StringBuilder sql, String ddl) {
+        if (!CommonUtils.isEmpty(ddl)) {
+            sql.append("\n").append(ddl);
+            if (!ddl.endsWith(";")) {
+                sql.append(";");
+            }
+            sql.append("\n");
         }
     }
 
