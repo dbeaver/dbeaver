@@ -618,7 +618,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                     savePasswordCheckbox.setSelection(configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_SAVE_PASSWORD));
                 }
                 if (savePasswordCheckbox == null || savePasswordCheckbox.getSelection()) {
-                    passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
+                    passwordText.setText(CommonUtils.notEmpty(configuration.getSecureProperty(prefix + RegistryConstants.ATTR_PASSWORD)));
                 }
             }
             updateAuthMethodVisibility();

@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
-import org.eclipse.jgit.annotations.Nullable;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;

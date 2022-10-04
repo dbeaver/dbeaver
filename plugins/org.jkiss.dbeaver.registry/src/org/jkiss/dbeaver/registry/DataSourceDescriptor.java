@@ -1071,6 +1071,8 @@ public class DataSourceDescriptor
                         tunnelConfiguration.setSecureProperty(getJumpServerSettingsPrefix(0) + "password", //$NON-NLS-1$
                             dbpAuthInfo.getUserPassword()
                         );
+                        tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + "save-password",
+                            dbpAuthInfo.isSavePassword()); //$NON-NLS-1$
                         actualConfig.updateHandler(tunnelConfiguration);
 
                         if (dbpAuthInfo.isSavePassword() && connConfig != actualConfig) {
