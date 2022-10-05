@@ -86,6 +86,9 @@ public interface DBPPlatform {
     @NotNull
     DBConfigurationController getConfigurationController();
     
+    @NotNull
+    DBConfigurationController getProductConfigurationController();
+        
     /**
      * Platform plug-in configuration controller.
      * Keeps plug-in configuration which can be shared with other users.

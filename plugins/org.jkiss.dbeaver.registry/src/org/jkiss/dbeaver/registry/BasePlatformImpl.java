@@ -171,6 +171,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         return controller;
     }
 
+    @NotNull
+    @Override
+    public DBConfigurationController getProductConfigurationController() {
+        return getPluginConfigurationController(getProductPlugin());
+    }
+
     /**
      * Platform plug-in configuration controller.
      * Keeps plug-in configuration which can be shared with other users.

@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -35,15 +36,14 @@ import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class GeometryViewerRegistry {
+    private static final String GEOMETRY_REGISTRY_CONFIG_XML = "geometry_registry_config.xml";
     private static final Log log = Log.getLog(GeometryViewerRegistry.class);
     private static final GeometryViewerRegistry INSTANCE = new GeometryViewerRegistry(Platform.getExtensionRegistry());
 
@@ -109,12 +109,15 @@ public class GeometryViewerRegistry {
         setDefaultLeafletTilesNonSynchronized(opt.orElse(null));
     }
 
-    private static void populateFromConfig(@NotNull Collection<String> notVisiblePredefinedTilesIds, @NotNull Collection<LeafletTilesDescriptor> userDefinedTiles) {
-        Path cfg = getConfigFile();
-        if (!Files.exists(cfg)) {
+    private static void populateFromConfig(
+        @NotNull Collection<String> notVisiblePredefinedTilesIds,
+        @NotNull Collection<LeafletTilesDescriptor> userDefinedTiles
+    ) throws DBException {
+        String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(GEOMETRY_REGISTRY_CONFIG_XML);
+        if (CommonUtils.isEmpty(content)) {
             return;
         }
-        try (InputStream in = Files.newInputStream(cfg)) {
+        try (StringReader in = new StringReader(content)) {
             SAXReader saxReader = new SAXReader(in);
             saxReader.parse(new SAXListener.BaseListener() {
                 private final StringBuilder buffer = new StringBuilder();
@@ -191,11 +194,6 @@ public class GeometryViewerRegistry {
         }
     }
 
-    @NotNull
-    private static Path getConfigFile() {
-        return DBWorkbench.getPlatform().getLocalConfigurationFile("geometry_registry_config.xml");
-    }
-
     //viewers are read only, so it's ok to not synchronize access
     public List<GeometryViewerDescriptor> getSupportedViewers(@NotNull DBPDataSource dataSource) {
         return viewers.values().stream().filter(v -> v.supportedBy(dataSource)).collect(Collectors.toList());
@@ -258,7 +256,7 @@ public class GeometryViewerRegistry {
     }
 
     private void flushConfig() {
-        try (OutputStream out = Files.newOutputStream(getConfigFile())) {
+        try (StringWriter out = new StringWriter()) {
             XMLBuilder xmlBuilder = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
             xmlBuilder.setButify(true);
             try (XMLBuilder.Element ignored = xmlBuilder.startElement(KEY_ROOT)) {
@@ -284,7 +282,11 @@ public class GeometryViewerRegistry {
                 }
             }
             xmlBuilder.flush();
-        } catch (IOException e) {
+            out.flush();
+            
+            DBWorkbench.getPlatform().getProductConfigurationController()
+                .saveConfigurationFile(GEOMETRY_REGISTRY_CONFIG_XML, out.getBuffer().toString());
+        } catch (Throwable e) {
             log.error("Error saving" + GeometryViewerRegistry.class.getName() + " configuration");
         }
     }

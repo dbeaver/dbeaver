@@ -19,6 +19,7 @@ import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import org.eclipse.jface.text.templates.persistence.TemplateReaderWriter;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
@@ -32,11 +33,7 @@ import org.osgi.framework.Bundle;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.PropertyResourceBundle;
@@ -177,42 +174,32 @@ public class SQLTemplateStore extends TemplateStore {
     }
 
     private static class CustomTemplatesStore extends SimplePreferenceStore {
+        private static final String TEMPLATES_CONFIG_XML = "templates.xml";
+
         private CustomTemplatesStore() {
             super(DBWorkbench.getPlatform().getPreferenceStore());
             try {
-                Path configurationFile = getConfigurationFile();
-                if (Files.exists(configurationFile)) {
-                    setValue(PREF_STORE_KEY, Files.readString(configurationFile));
+                String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(TEMPLATES_CONFIG_XML);
+                if (CommonUtils.isNotEmpty(content)) {
+                    setValue(PREF_STORE_KEY, content);
                 }
-            } catch (IOException e) {
+            } catch (DBException e) {
                 log.error(e);
             }
         }
-
-        private Path getConfigurationFile() {
-            return DBWorkbench.getPlatform().getLocalConfigurationFile("templates.xml");
-        }
-
+        
         @Override
         public void save() throws IOException {
             // Save templates
-            Path configurationFile = getConfigurationFile();
             String templatesConfig = getString(PREF_STORE_KEY);
-            if (!CommonUtils.isEmpty(templatesConfig)) {
-                // Save it in templates file
-                try (Writer writer = Files.newBufferedWriter(configurationFile, StandardCharsets.UTF_8)) {
-                    writer.write(templatesConfig);
-                }
-            } else {
-                if (Files.exists(configurationFile)) {
-                    try {
-                        Files.delete(configurationFile);
-                    } catch (IOException e) {
-                        log.warn("Can't delete empty template configuration", e);
-                    }
-                }
-            }
 
+            try {
+                DBWorkbench.getPlatform()
+                   .getProductConfigurationController()
+                   .saveConfigurationFile(TEMPLATES_CONFIG_XML, templatesConfig);
+            } catch (DBException e) {
+                log.warn("Can't save template configuration", e);
+            }
         }
     }
 

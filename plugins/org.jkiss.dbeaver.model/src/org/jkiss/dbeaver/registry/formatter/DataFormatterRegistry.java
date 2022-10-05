@@ -34,11 +34,7 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -133,25 +129,21 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
     private void loadProfiles()
     {
         customProfiles = new ArrayList<>();
-
-        Path storeFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE_NAME);
-        if (!Files.exists(storeFile)) {
-            return;
-        }
         try {
-            try (InputStream is = Files.newInputStream(storeFile)) {
+            String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(CONFIG_FILE_NAME);
+            if (CommonUtils.isEmpty(content)) {
+                return;
+            }
+            try (StringReader is = new StringReader(content)) {
                 SAXReader parser = new SAXReader(is);
                 try {
                     parser.parse(new FormattersParser());
-                } catch (XMLException ex) {
+                } catch (Throwable ex) {
                     throw new DBException("Datasource config parse error", ex);
                 }
-            } catch (DBException ex) {
-                log.warn("Can't load profiles config from " + storeFile, ex);
             }
-        }
-        catch (IOException ex) {
-            log.warn("IO error", ex);
+        } catch (DBException ex) {
+            log.warn("Can't load profiles config from " + CONFIG_FILE_NAME, ex);
         }
     }
 
@@ -161,9 +153,8 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         if (customProfiles == null) {
             return;
         }
-        Path storeFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE_NAME);
-        try (OutputStream os = Files.newOutputStream(storeFile)) {
-            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
+        try (StringWriter out = new StringWriter()) {
+            XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             xml.startElement("profiles");
             for (DBDDataFormatterProfile profile : customProfiles) {
@@ -183,9 +174,12 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
             }
             xml.endElement();
             xml.flush();
-        }
-        catch (IOException ex) {
-            log.warn("IO error", ex);
+
+            out.flush();
+            DBWorkbench.getPlatform().getProductConfigurationController()
+                .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
+        } catch (Throwable ex) {
+            log.warn("Failed to save data formatter profiles to " + CONFIG_FILE_NAME, ex);
         }
     }
 

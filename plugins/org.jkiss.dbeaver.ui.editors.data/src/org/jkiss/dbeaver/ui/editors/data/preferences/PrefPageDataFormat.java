@@ -244,6 +244,18 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
     }
 
+    @NotNull
+    @Override
+    protected DBPPreferenceStore getTargetPreferenceStore() {
+        if (isDataSourcePreferencePage()) {
+            return getDataSourceContainer().getPreferenceStore();
+        } else if (formatterProfile == null) {
+            return DBWorkbench.getPlatform().getPreferenceStore();
+        } else {
+            return formatterProfile.getPreferenceStore();
+        }
+    }
+
     private void setCurrentProfile(DBDDataFormatterProfile profile)
     {
         if (formatterProfile == profile) {
