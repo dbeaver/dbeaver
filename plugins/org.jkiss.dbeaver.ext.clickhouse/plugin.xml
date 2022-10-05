@@ -30,6 +30,7 @@
                         icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
                         iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon_big.png"
                         description="Yandex ClickHouse legacy driver (server version &lt; 21.3)"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://github.com/yandex/clickhouse-jdbc"
                         categories="sql,analytic,columns">
                     <replace provider="generic" driver="yandex_clickhouse"/>
@@ -52,6 +53,7 @@
                     icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon.png"
                     iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/clickhouse_icon_big.png"
                     description="Yandex ClickHouse driver (server version 21.3+)"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/yandex/clickhouse-jdbc"
                     categories="sql,analytic,columns">
                     <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.3.2]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
