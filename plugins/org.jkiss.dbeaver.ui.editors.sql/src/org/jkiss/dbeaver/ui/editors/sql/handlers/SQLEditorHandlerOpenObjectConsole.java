@@ -110,15 +110,40 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
 
         openAndExecuteSQLScript(workbenchWindow, navigatorContext, title, doRun, currentSelection, sql);
     }
-
+    
+    /**
+     * openAndExecuteSQLScript in a SQL window
+     */
     public static void openAndExecuteSQLScript(
         IWorkbenchWindow workbenchWindow,
         SQLNavigatorContext navigatorContext,
         String title,
         boolean doRun,
         ISelection currentSelection,
-        String sql) throws CoreException
-    {
+        String sql
+    ) throws CoreException {
+        openAndExecuteSQLScript(
+            workbenchWindow,
+            navigatorContext,
+            title,
+            doRun,
+            currentSelection,
+            sql, 
+            false);
+    }
+
+    /**
+     * openAndExecuteSQLScript with force sqlScript executing
+     */
+    public static void openAndExecuteSQLScript(
+        IWorkbenchWindow workbenchWindow,
+        SQLNavigatorContext navigatorContext,
+        String title,
+        boolean doRun,
+        ISelection currentSelection,
+        String sql,
+        boolean forceProcessAsScript
+    ) throws CoreException {
         SQLEditor editor;
         DBPProject project = navigatorContext.getProject();
         if (OPEN_FILE_EDITOR && project != null && project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
@@ -154,7 +179,7 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
                     public void done(IJobChangeEvent event) {
                         UIUtils.syncExec(() -> editor.processSQL(
                             false,
-                            NavigatorUtils.getSelectedObjects(currentSelection).size() > 1
+                            forceProcessAsScript || NavigatorUtils.getSelectedObjects(currentSelection).size() > 1
                         ));
                     }
                 });
