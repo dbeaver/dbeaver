@@ -619,6 +619,10 @@ public class CoreMessages extends NLS {
     public static String dialog_data_source_synchronize_reply_keep_local_label;
     public static String dialog_data_source_synchronize_reply_keep_remote_label;
 
+    public static String pref_page_connections_group_security;
+    public static String pref_page_connections_use_win_cert_label;
+    public static String pref_page_connections_use_win_cert_tip;
+
     static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);

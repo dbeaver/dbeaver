@@ -12,7 +12,6 @@
         <programArgs></programArgs>
 
         <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Dosgi.requiredJavaVersion=11 -Xms64m -Xmx1024m</vmArgs>
-        <vmArgsWin>-Djavax.net.ssl.trustStoreType=WINDOWS-ROOT</vmArgsWin>
         <vmArgsMac>-XstartOnFirstThread</vmArgsMac>
     </launcherArgs>
 
