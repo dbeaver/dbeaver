@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
@@ -84,6 +85,13 @@ public interface DBPPlatform {
      */
     @NotNull
     DBConfigurationController getConfigurationController();
+    
+    /**
+     * Platform plug-in configuration controller.
+     * Keeps plug-in configuration which can be shared with other users.
+     */
+    @NotNull
+    DBConfigurationController getPluginConfigurationController(@NotNull Plugin plugin);
 
     /**
      * Local config files are used to store some configuration specific to local machine only.

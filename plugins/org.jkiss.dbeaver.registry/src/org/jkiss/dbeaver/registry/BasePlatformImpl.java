@@ -40,12 +40,15 @@ import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.osgi.framework.Bundle;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * BaseWorkspaceImpl.
@@ -70,6 +73,8 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private DBConfigurationController configurationController;
     private DBFileController localFileController;
     private DBTTaskController localTaskController;
+    
+    private final Map<Plugin, DBConfigurationController> configurationControllerByPlugin = new HashMap<>();
 
     protected void initialize() {
         log.debug("Initialize base platform...");
@@ -164,6 +169,39 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         );
         controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
         return controller;
+    }
+
+    /**
+     * Platform plug-in configuration controller.
+     * Keeps plug-in configuration which can be shared with other users.
+     */
+    @NotNull
+    public DBConfigurationController getPluginConfigurationController(@NotNull Plugin plugin) {
+        DBConfigurationController controller = configurationControllerByPlugin.get(plugin);
+        if (controller == null) {
+            controller = createPluginConfigurationController(plugin.getBundle());
+            configurationControllerByPlugin.put(plugin, controller);
+        }
+        return controller;
+    }
+    
+    @Override
+    @NotNull
+    public DBConfigurationController createPluginConfigurationController(@NotNull String pluginId) {
+        return createPluginConfigurationController(Platform.getBundle(pluginId));
+    }
+
+    @NotNull
+    private DBConfigurationController createPluginConfigurationController(@NotNull Bundle bundle) {
+        DBPApplication application = getApplication();
+        if (application instanceof DBPApplicationConfigurator) {
+            String pluginBundleName = bundle.getSymbolicName();
+            return ((DBPApplicationConfigurator) application).createPluginConfigurationController(pluginBundleName);
+        } else {
+            return new LocalConfigurationController(
+                Platform.getStateLocation(bundle).toFile().toPath()
+            );
+        }
     }
 
     @NotNull

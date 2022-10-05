@@ -19,11 +19,14 @@ package org.jkiss.dbeaver.ui.dashboard.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardDataType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
@@ -36,13 +39,14 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.*;
 
 public class DashboardRegistry {
     private static final Log log = Log.getLog(DashboardRegistry.class);
+    
+    private static final String CONFIG_FILE_NAME = "dashboards.xml";
 
     private static DashboardRegistry instance = null;
 
@@ -85,26 +89,33 @@ public class DashboardRegistry {
         }
 
         // Load dashboards from config
-        File configFile = getDashboardsConfigFile();
-        if (configFile.exists()) {
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PUBLIC)) {
+            log.warn("The user has no permission to load dashboard configuration");
             try {
-                loadConfigFromFile(configFile);
+                loadConfigFromFile();
             } catch (Exception e) {
                 log.error("Error loading dashboard configuration", e);
             }
         }
     }
 
-    private void loadConfigFromFile(File configFile) throws XMLException {
-        Document dbDocument = XMLUtils.parseDocument(configFile);
-        for (Element dbElement : XMLUtils.getChildElementList(dbDocument.getDocumentElement(), "dashboard")) {
-            DashboardDescriptor dashboard = new DashboardDescriptor(this, dbElement);
-            dashboardList.put(dashboard.getId(), dashboard);
+    private void loadConfigFromFile() throws XMLException, DBException {
+        String configContent = DBWorkbench.getPlatform()
+            .getPluginConfigurationController(UIDashboardActivator.getDefault())
+            .loadConfigurationFile(CONFIG_FILE_NAME);
+
+        if (CommonUtils.isNotEmpty(configContent)) {
+            Document dbDocument = XMLUtils.parseDocument(new StringReader(configContent));
+            for (Element dbElement : XMLUtils.getChildElementList(dbDocument.getDocumentElement(), "dashboard")) {
+                DashboardDescriptor dashboard = new DashboardDescriptor(this, dbElement);
+                dashboardList.put(dashboard.getId(), dashboard);
+            }
         }
     }
 
     private void saveConfigFile() {
-        try (OutputStream out = new FileOutputStream(getDashboardsConfigFile())){
+        try {
+            StringWriter out = new StringWriter();
             XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             xml.startElement("dashboards");
@@ -117,15 +128,16 @@ public class DashboardRegistry {
             }
             xml.endElement();
             xml.flush();
+            out.flush();
+            
+            DBWorkbench.getPlatform()
+               .getPluginConfigurationController(UIDashboardActivator.getDefault())
+               .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
         } catch (Exception e) {
             log.error("Error saving dashboard configuration", e);
         }
     }
-
-    private File getDashboardsConfigFile() {
-        return new File(UIDashboardActivator.getDefault().getStateLocation().toFile(), "dashboards.xml");
-    }
-
+    
     public DashboardViewTypeDescriptor getViewType(String id) {
         for (DashboardViewTypeDescriptor descriptor : viewTypeList) {
             if (descriptor.getId().equals(id)) {
