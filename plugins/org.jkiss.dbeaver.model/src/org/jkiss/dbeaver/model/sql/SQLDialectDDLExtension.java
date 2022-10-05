@@ -40,26 +40,27 @@ public interface SQLDialectDDLExtension extends SQLDialect {
     boolean supportsCreateIfExists();
 
     /**
-     * Whether datetime should be used instead of timestamp.
+     * Gets timestamp type.
      *
-     * @return true or false
-     */
-    boolean timestampAsDatetime();
-
-    /**
-     * Gets large numeric type name.
-     *
-     * @return the large numeric type name
+     * @return the timestamp type
      */
     @NotNull
-    String getLargeNumericType();
+    String getTimestampDataType();
 
     /**
-     * Gets large character type name.
+     * Gets big integer type.
      *
-     * @return the large character type name
+     * @return the big integer type
      */
     @NotNull
-    String getLargeCharacterType();
+    String getBigIntegerType();
+
+    /**
+     * Gets clob data type.
+     *
+     * @return the clob data type
+     */
+    @NotNull
+    String getClobDataType();
 
 }

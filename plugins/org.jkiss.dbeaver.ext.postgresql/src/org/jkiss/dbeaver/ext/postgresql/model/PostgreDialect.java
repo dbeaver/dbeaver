@@ -82,6 +82,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "CURRENT_ROLE",
         "CURRENT_USER",
     };
+    public static final String AUTO_INCREMENT_KEYWORD = "AUTO_INCREMENT";
 
     //region KeyWords
 
@@ -1018,7 +1019,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @Nullable
     @Override
     public String getAutoIncrementKeyword() {
-        return "AUTO_INCREMENT";
+        return AUTO_INCREMENT_KEYWORD;
     }
 
     @Override
@@ -1026,20 +1027,21 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         return true;
     }
 
+    @NotNull
     @Override
-    public boolean timestampAsDatetime() {
-        return false;
+    public String getTimestampDataType() {
+        return PostgreConstants.TYPE_TIMESTAMP;
     }
 
     @NotNull
     @Override
-    public String getLargeNumericType() {
+    public String getBigIntegerType() {
         return PostgreConstants.TYPE_BIGINT;
     }
 
     @NotNull
     @Override
-    public String getLargeCharacterType() {
+    public String getClobDataType() {
         return PostgreConstants.TYPE_TEXT;
     }
 }

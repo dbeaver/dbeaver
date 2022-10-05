@@ -53,7 +53,6 @@ import java.util.Locale;
  */
 public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConverter, SQLDialectDDLExtension {
 
-
     private static final Log log = Log.getLog(OracleSQLDialect.class);
 
     private static final String[] EXEC_KEYWORDS = new String[]{ "call" };
@@ -120,6 +119,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         "ELSIF",
         "EXIT",
     };
+    public static final String AUTO_INCREMENT_KEYWORD = "GENERATED ALWAYS AS IDENTITY";
     private boolean crlfBroken;
     private DBPPreferenceStore preferenceStore;
 
@@ -679,7 +679,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Nullable
     @Override
     public String getAutoIncrementKeyword() {
-        return "GENERATED ALWAYS AS IDENTITY";
+        return AUTO_INCREMENT_KEYWORD;
     }
 
     @Override
@@ -687,20 +687,21 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         return false;
     }
 
+    @NotNull
     @Override
-    public boolean timestampAsDatetime() {
-        return false;
+    public String getTimestampDataType() {
+        return OracleConstants.TYPE_NAME_TIMESTAMP;
     }
 
     @NotNull
     @Override
-    public String getLargeNumericType() {
+    public String getBigIntegerType() {
         return OracleConstants.TYPE_NUMBER;
     }
 
     @NotNull
     @Override
-    public String getLargeCharacterType() {
+    public String getClobDataType() {
         return OracleConstants.TYPE_CLOB;
     }
 }

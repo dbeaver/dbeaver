@@ -48,6 +48,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     private static final String[][] TSQL_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
     };
+    public static final String AUTO_INCREMENT_KEYWORD = "IDENTITY";
 
     private static String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
         "LOGIN",
@@ -362,7 +363,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     @Nullable
     @Override
     public String getAutoIncrementKeyword() {
-        return "IDENTITY";
+        return AUTO_INCREMENT_KEYWORD;
     }
 
     @Override
@@ -370,20 +371,21 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         return false;
     }
 
+    @NotNull
     @Override
-    public boolean timestampAsDatetime() {
-        return true;
+    public String getTimestampDataType() {
+        return SQLServerConstants.TYPE_DATETIME;
     }
 
     @NotNull
     @Override
-    public String getLargeNumericType() {
+    public String getBigIntegerType() {
         return SQLServerConstants.TYPE_BIGINT;
     }
 
     @NotNull
     @Override
-    public String getLargeCharacterType() {
+    public String getClobDataType() {
         return SQLServerConstants.TYPE_VARCHAR + "(max)";
     }
 }
