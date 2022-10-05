@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.console;
+package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
-public class ConsoleViewPreferencesInitializer extends AbstractPreferenceInitializer {
+public class SQLTerminalPreferencesInitializer extends AbstractPreferenceInitializer {
 
-    public ConsoleViewPreferencesInitializer() {
+    public SQLTerminalPreferencesInitializer() {
     }
 
     @Override
     public void initializeDefaultPreferences() {
         // Init default preferences
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
-        // SQL execution
-        PrefUtils.setDefaultPreferenceValue(store, SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT, true);
+        PrefUtils.setDefaultPreferenceValue(store, SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT, true);
     }
 
 }

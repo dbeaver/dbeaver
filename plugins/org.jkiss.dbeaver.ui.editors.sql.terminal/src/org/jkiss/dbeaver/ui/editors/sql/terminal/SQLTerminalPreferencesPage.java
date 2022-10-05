@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.console;
+package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -28,20 +28,21 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
-/**
- * PrefPageSQLExecute
- */
-public class PrefPageConsoleView extends TargetPrefPage {
-    private static final Log log = Log.getLog(PrefPageConsoleView.class);
+public class SQLTerminalPreferencesPage extends TargetPrefPage {
+    private static final Log log = Log.getLog(SQLTerminalPreferencesPage.class);
 
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor.consoleview"; //$NON-NLS-1$
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor.terminalview"; //$NON-NLS-1$
 
-    private Button showConsoleViewByDefault;
+    private Button showTerminalViewByDefault;
+    private Button showQueryText;
+    private Button showServerOutput;
 
     @Override
     protected boolean hasDataSourceSpecificOptions(@NotNull DBPDataSourceContainer dataSourceDescriptor) {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
-        return store.contains(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT);
+        return store.contains(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT)
+            || store.contains(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT)
+            || store.contains(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT);
     }
 
     @Override
@@ -61,10 +62,24 @@ public class PrefPageConsoleView extends TargetPrefPage {
             GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
             0
         );
-        showConsoleViewByDefault = UIUtils.createCheckbox(
+        showTerminalViewByDefault = UIUtils.createCheckbox(
             commonGroup,
-            ConsoleMessages.pref_page_console_view_label_show_output_console_view,
-            ConsoleMessages.pref_page_console_view_label_show_output_console_view_tip,
+            SQLTerminalMessages.pref_page_sql_temrinal_show_output_console_view_label,
+            SQLTerminalMessages.pref_page_sql_temrinal_show_output_console_view_tip,
+            false,
+            2
+        );
+        showQueryText = UIUtils.createCheckbox(
+            commonGroup,
+            SQLTerminalMessages.pref_page_sql_temrinal_show_query_text_label,
+            null,
+            false,
+            2
+        );
+        showServerOutput = UIUtils.createCheckbox(
+            commonGroup,
+            SQLTerminalMessages.pref_page_sql_temrinal_show_server_output_label,
+            null,
             false,
             2
         );
@@ -75,7 +90,9 @@ public class PrefPageConsoleView extends TargetPrefPage {
     @Override
     protected void loadPreferences(@NotNull DBPPreferenceStore store) {
         try {
-            showConsoleViewByDefault.setSelection(store.getBoolean(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT));
+            showTerminalViewByDefault.setSelection(store.getBoolean(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT));
+            showQueryText.setSelection(store.getBoolean(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT));
+            showServerOutput.setSelection(store.getBoolean(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -84,7 +101,9 @@ public class PrefPageConsoleView extends TargetPrefPage {
     @Override
     protected void savePreferences(@NotNull DBPPreferenceStore store) {
         try {
-            store.setValue(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT, showConsoleViewByDefault.getSelection());
+            store.setValue(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT, showTerminalViewByDefault.getSelection());
+            store.setValue(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT, showQueryText.getSelection());
+            store.setValue(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT, showServerOutput.getSelection());
 
         } catch (Exception e) {
             log.warn(e);
@@ -94,7 +113,9 @@ public class PrefPageConsoleView extends TargetPrefPage {
 
     @Override
     protected void clearPreferences(@NotNull DBPPreferenceStore store) {
-        store.setToDefault(SQLConsoleViewPreferenceConstants.SHOW_CONSOLE_VIEW_BY_DEFAULT);
+        store.setToDefault(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT);
+        store.setToDefault(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT);
+        store.setToDefault(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT);
     }
 
     @NotNull

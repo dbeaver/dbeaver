@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.console;
+package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
 
 import org.eclipse.swt.custom.CTabFolder;
@@ -33,20 +33,22 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 
-public class SQLConsoleView extends SQLEditorOutputConsoleViewer {
+public class SQLTerminalView extends SQLEditorOutputConsoleViewer {
 
-    public SQLConsoleView(@NotNull IWorkbenchPartSite site, @NotNull CTabFolder tabsContainer, int styles) {
+    public SQLTerminalView(@NotNull IWorkbenchPartSite site, @NotNull CTabFolder tabsContainer, int styles) {
         super(site, tabsContainer, new MessageConsole("sql-data-log-output", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)));
     }
 
     public void printQueryData(@NotNull DBPPreferenceStore prefs, @NotNull ResultSetModel model, @Nullable String name) {
         PlainTextFormatter formatter = new PlainTextFormatter(prefs);
         StringBuilder grid = new StringBuilder();
-        formatter.printQueryName(grid, name);
-        
-        grid.append("\n");
+        if (prefs.getBoolean(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT)) {
+            formatter.printQueryName(grid, name);
+            grid.append("\n");
+        }
         
         int totalRows = formatter.printGrid(grid, model);
+        this.getOutputWriter().append("\n");
         this.getOutputWriter().append(grid.toString()).append("\n\n");
         this.getOutputWriter().append(String.valueOf(totalRows)).append(" row(s) fetched.\n\n");
         this.getOutputWriter().flush();
@@ -60,9 +62,10 @@ public class SQLConsoleView extends SQLEditorOutputConsoleViewer {
         if (hasUpdateCount || error != null) {
             PlainTextFormatter formatter = new PlainTextFormatter(prefs);
             StringBuilder grid = new StringBuilder();
-            formatter.printQueryName(grid, result.getStatement().getText());
-    
-            grid.append("\n");
+            if (prefs.getBoolean(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT)) {
+                formatter.printQueryName(grid, result.getStatement().getText());
+                grid.append("\n");
+            }
             
             if (hasUpdateCount) {
                 long updateCount = result.getExecuteResults().stream().mapToLong(r -> CommonUtils.notNull(r.getUpdateCount(), 0L)).sum();
