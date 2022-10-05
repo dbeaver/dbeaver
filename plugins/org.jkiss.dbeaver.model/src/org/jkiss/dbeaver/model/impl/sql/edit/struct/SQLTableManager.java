@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -213,7 +214,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             return actions.toArray(new DBEPersistAction[0]);
         }
 
-        if (table.isPersisted() && isIncludeDropInDDL()) {
+        if (table.isPersisted() && isIncludeDropInDDL(table)) {
             actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Drop table"));
             for (DBEPersistAction delAction : new ObjectDeleteCommand(table, ModelMessages.model_jdbc_delete_object).getPersistActions(monitor, executionContext, options)) {
                 String script = delAction.getScript();
@@ -311,7 +312,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         return !DBUtils.isHiddenObject(index) && !DBUtils.isInheritedObject(index);
     }
 
-    protected boolean isIncludeDropInDDL() {
+    protected boolean isIncludeDropInDDL(@NotNull OBJECT_TYPE table) {
         return true;
     }
 
