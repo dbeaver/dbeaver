@@ -62,7 +62,7 @@ public class SQLServerTableTypeManager extends SQLServerBaseTableManager<SQLServ
     }
 
     @Override
-    protected boolean isIncludeDropInDDL() {
+    protected boolean isIncludeDropInDDL(@NotNull SQLServerTableType tableType) {
         return false;
     }
 }

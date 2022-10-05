@@ -68,6 +68,8 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
 
     public PostgreTableConstraintBase(PostgreTableBase table, String constraintName, DBSEntityConstraintType constraintType) {
         super(table, constraintName, null, constraintType, false);
+        // conislocal is true by default for constraints which have such a parameter in metadata
+        this.isLocal = getDataSource().getServerType().supportsInheritance() || this instanceof PostgreTableInheritance;
     }
 
     public PostgreTableConstraintBase(DBRProgressMonitor monitor, PostgreTableReal owner, PostgreTableConstraintBase srcConstr) throws DBException {

@@ -310,5 +310,12 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
     </extension>
+    
+    <!-- SQL Generators -->
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="procedureCheck" class="org.jkiss.dbeaver.ext.postgresql.model.sql.generator.SQLGeneratorProcedureCheck" label="CHECK (via plpgsql_check)" description="Check (via plpgsql_check)" order="2000">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
+        </generator>
+    </extension>
 
 </plugin>

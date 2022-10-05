@@ -74,7 +74,7 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
     }
 
     @Override
-    protected boolean isIncludeDropInDDL() {
+    protected boolean isIncludeDropInDDL(@NotNull GenericTableBase tableBase) {
         return false;
     }
 }

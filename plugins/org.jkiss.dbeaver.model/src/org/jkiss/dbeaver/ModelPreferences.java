@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.osgi.framework.Bundle;
 
 import java.util.Arrays;
@@ -43,6 +44,8 @@ public final class ModelPreferences
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
     public static final String CLIENT_TIMEZONE = "java.client.timezone";
     public static final String CLIENT_BROWSER = "swt.client.browser";
+
+    public static final String PROP_USE_WIN_TRUST_STORE_TYPE = "connections.useWinTrustStoreType"; //$NON-NLS-1$
 
     public static final String NOTIFICATIONS_ENABLED = "notifications.enabled"; //$NON-NLS-1$
     public static final String NOTIFICATIONS_CLOSE_DELAY_TIMEOUT = "notifications.closeDelay"; //$NON-NLS-1$
@@ -275,6 +278,8 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_VERSION_UPDATE, false);
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_HOME, "");
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_SOURCES, "https://dbeaver.io/files/jdbc/");
+
+        PrefUtils.setDefaultPreferenceValue(store, PROP_USE_WIN_TRUST_STORE_TYPE, true);
 
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS, true);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);

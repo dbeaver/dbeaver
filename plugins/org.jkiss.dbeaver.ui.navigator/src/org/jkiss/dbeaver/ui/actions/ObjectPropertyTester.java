@@ -265,7 +265,7 @@ public class ObjectPropertyTester extends PropertyTester {
         }
         if (onlySingle == null) {
             // Just try to find first create handler
-            if (node instanceof DBNDataSource) {
+            if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
                 // We always can create datasource
                 return node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
             }

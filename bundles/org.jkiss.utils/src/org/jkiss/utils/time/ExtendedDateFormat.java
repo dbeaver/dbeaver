@@ -146,6 +146,9 @@ public class ExtendedDateFormat extends SimpleDateFormat {
         int index = pos.getIndex();
         if (index < text.length() && nanoStart > 0) {
             long nanos = 0;
+            if (nanoPrefix != null) {
+                index += nanoPrefix.length();
+            }
             for (int i = 0; i < nanoLength; i++) {
                 int digitPos = index + i;
                 if (digitPos == text.length()) {

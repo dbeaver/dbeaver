@@ -320,6 +320,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         if (typeURLRadio != null) typeURLRadio.setSelection(useUrl);
         if (typeManualRadio != null) typeManualRadio.setSelection(!useUrl);
         urlText.setEditable(useUrl);
+        urlText.setEnabled(useUrl);
 
         boolean nonUrl = !useUrl;
         for (String groupName : nonUrlPropGroups) {

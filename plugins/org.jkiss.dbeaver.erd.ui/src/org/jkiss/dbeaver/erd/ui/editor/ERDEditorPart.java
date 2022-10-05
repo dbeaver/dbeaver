@@ -1034,7 +1034,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     protected abstract void loadDiagram(boolean refreshMetadata);
 
-    @NotNull
+    @Nullable
     public abstract DBPProject getDiagramProject();
 
     @Override

@@ -148,7 +148,7 @@ public class OracleUtils {
 
             if (!CommonUtils.isEmpty(object.getConstraints(monitor)) && 
                 !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS) &&
-                CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true)) {
+                CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS)) {
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.REF_CONSTRAINT);
             }
 
