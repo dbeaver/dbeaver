@@ -63,21 +63,23 @@ public class NotePart extends NodePart
 	 */
 	@Override
     protected void createEditPolicies()
-	{
-        final boolean layoutEnabled = isLayoutEnabled();
-        if (layoutEnabled) {
-            installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
-            //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
-            //installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
-            installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteEditPolicy());
-            installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new NoteDirectEditPolicy());
-            //installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteDirectEditPolicy());
+    {
+        if (!getEditor().isReadOnly()) {
+            final boolean layoutEnabled = isLayoutEnabled();
+            if (layoutEnabled) {
+                installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
+                //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
+                //installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
+                installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteEditPolicy());
+                installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new NoteDirectEditPolicy());
+                //installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteDirectEditPolicy());
 
-            //installEditPolicy(EditPolicy.SELECTION_FEEDBACK_ROLE, new ResizableEditPolicy());
+                //installEditPolicy(EditPolicy.SELECTION_FEEDBACK_ROLE, new ResizableEditPolicy());
+            }
+
+            getDiagram().getModelAdapter().installPartEditPolicies(this);
         }
-
-        getDiagram().getModelAdapter().installPartEditPolicies(this);
-	}
+    }
 
     @Override
     public EditPart getTargetEditPart(Request request) {

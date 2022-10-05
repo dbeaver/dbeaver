@@ -60,7 +60,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
         Object value = super.getValueFromObject(session, type, object, copy, validateValue);
-        if (value instanceof Date) {
+        if (value instanceof Date || value instanceof LocalDateTime) {
             switch (type.getTypeID()) {
                 case Types.TIME:
                 case Types.TIME_WITH_TIMEZONE:

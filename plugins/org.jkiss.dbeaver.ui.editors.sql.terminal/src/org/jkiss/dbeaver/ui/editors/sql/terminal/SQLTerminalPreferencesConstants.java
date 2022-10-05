@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.console;
+package org.jkiss.dbeaver.ui.editors.sql.terminal;
 
 
-public class SQLConsoleViewPreferenceConstants {
-    public final static String SHOW_CONSOLE_VIEW_BY_DEFAULT = "SQLEditor.ConsoleView.showConsoleViewByDefault"; //$NON-NLS-1$
+public class SQLTerminalPreferencesConstants {
+    public static final String SHOW_TERMINAL_VIEW_BY_DEFAULT = "SQLEditor.ConsoleView.showConsoleViewByDefault"; //$NON-NLS-1$
+    public static final String SHOW_QUERY_TEXT = "SQLEditor.SQLTerminal.showQueryText"; //$NON-NLS-1$
+    public static final String SHOW_SERVER_OUTPUT = "SQLEditor.SQLTerminal.showServerOutput"; //$NON-NLS-1$
 
 }

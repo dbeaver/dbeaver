@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
-Bundle-SymbolicName: org.jkiss.dbeaver.data.console;singleton:=true
+Bundle-SymbolicName: org.jkiss.dbeaver.ui.editors.sql.terminal;singleton:=true
 Bundle-Version: 1.0.67.qualifier
 Bundle-Release-Date: 20221010
 Bundle-Vendor: %Bundle-Vendor
@@ -14,5 +14,5 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ui.editors.data,
  org.jkiss.dbeaver.ui.editors.sql
-Export-Package: org.jkiss.dbeaver.data.console
-Automatic-Module-Name: org.jkiss.dbeaver.data.console
+Export-Package: org.jkiss.dbeaver.ui.editors.sql.terminal
+Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.sql.terminal

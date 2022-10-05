@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.editors;
 
+import org.eclipse.jface.action.IContributionManager;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 
 
@@ -30,5 +34,16 @@ public class OracleObjectDeclarationViewer extends SQLSourceViewer {
     @Override
     protected boolean isReadOnly() {
         return true;
+    }
+
+    @Override
+    protected void contributeEditorCommands(IContributionManager toolBarManager) {
+        super.contributeEditorCommands(toolBarManager);
+
+        DBSObject sourceObject = getSourceObject();
+
+        if (sourceObject instanceof OracleTableBase || sourceObject instanceof OracleSchema) {
+            OracleEditorUtils.addDDLControl(toolBarManager, sourceObject, this);
+        }
     }
 }

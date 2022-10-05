@@ -66,6 +66,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
         boolean supportComments = false;
         boolean supportFullDDL = false;
         boolean supportSeparateFKStatements = false;
+        boolean supportsPartitionsDDL = false;
         for (Object object : sqlGenerator.getObjects()) {
             if (object instanceof DBPScriptObjectExt2) {
                 DBPScriptObjectExt2 sourceObject = (DBPScriptObjectExt2) object;
@@ -84,6 +85,9 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 }
                 if (supportPermissions && supportComments && supportFullDDL) {
                     break; //it supports everything
+                }
+                if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PARTITIONS)) {
+                    supportsPartitionsDDL = true;
                 }
             }
         }
@@ -233,6 +237,26 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 public void widgetSelected(SelectionEvent e) {
                     sqlGenerator.setUseSeparateForeignKeys(useSeparateFkStatements.getSelection());
                     getDialogBoundsSettings().put(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, useSeparateFkStatements.getSelection());
+
+                    UIUtils.runInUI(sqlGenerator);
+                    Object sql = sqlGenerator.getResult();
+                    if (sql != null) {
+                        setSQLText(CommonUtils.toString(sql));
+                        updateSQL();
+                    }
+                }
+            });
+        }
+        if (supportsPartitionsDDL) {
+            Button supportsPartitionsDDLButton = UIUtils.createCheckbox(
+                settings,
+                SQLEditorMessages.sql_generator_dialog_button_show_partitions_DDL,
+                sqlGenerator.isShowPartitionsDDL());
+            supportsPartitionsDDLButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    sqlGenerator.setShowPartitionsDDL(supportsPartitionsDDLButton.getSelection());
+                    getDialogBoundsSettings().put(DBPScriptObject.OPTION_INCLUDE_PARTITIONS, supportsPartitionsDDLButton.getSelection());
 
                     UIUtils.runInUI(sqlGenerator);
                     Object sql = sqlGenerator.getResult();

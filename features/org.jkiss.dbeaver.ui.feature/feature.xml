@@ -114,7 +114,7 @@
          unpack="false"/>
 
     <plugin
-         id="org.jkiss.dbeaver.data.console"
+         id="org.jkiss.dbeaver.ui.editors.sql.terminal"
          download-size="0"
          install-size="0"
          version="0.0.0"

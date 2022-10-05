@@ -221,7 +221,6 @@
         <setEntry value="org.jkiss.dbeaver.cmp.simple.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.cmp.simple@default:default"/>
         <setEntry value="org.jkiss.dbeaver.core@default:default"/>
-        <setEntry value="org.jkiss.dbeaver.data.console@default:default"/>
         <setEntry value="org.jkiss.dbeaver.data.gis.view@default:default"/>
         <setEntry value="org.jkiss.dbeaver.data.gis@default:default"/>
         <setEntry value="org.jkiss.dbeaver.data.office.ui@default:default"/>
@@ -317,6 +316,7 @@
         <setEntry value="org.jkiss.dbeaver.ui.editors.image@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.editors.json@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.editors.session@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ui.editors.sql.terminal@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.editors.sql@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.editors.xml@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.navigator@default:default"/>

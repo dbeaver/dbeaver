@@ -251,11 +251,13 @@ public class DiagramPart extends PropertyAwarePart {
     @Override
     protected void createEditPolicies()
     {
-        installEditPolicy(EditPolicy.CONTAINER_ROLE, new DiagramContainerEditPolicy());
-        installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
-
-        getDiagram().getModelAdapter().installPartEditPolicies(this);
+        if (!getEditor().isReadOnly()) {
+            installEditPolicy(EditPolicy.CONTAINER_ROLE, new DiagramContainerEditPolicy());
+            installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
+            getDiagram().getModelAdapter().installPartEditPolicies(this);
+        }
     }
+
 
     /**
      * Updates the table bounds in the model so that the same bounds can be

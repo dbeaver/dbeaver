@@ -8,7 +8,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <relativePath>../</relativePath>
   </parent>
-  <artifactId>org.jkiss.dbeaver.data.console</artifactId>
+  <artifactId>org.jkiss.dbeaver.ui.editors.sql.terminal</artifactId>
   <version>1.0.67-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>
