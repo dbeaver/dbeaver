@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -92,7 +93,8 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     @Override
     public boolean isReadOnly()
     {
-        return false;
+        DBPProject project = this.getDiagramProject();
+        return project == null || !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
     }
 
     @Override
@@ -187,9 +189,12 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         diagramLoadingJob.schedule();
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPProject getDiagramProject() {
+        if (getEditorInput() == null) {
+            return null;
+        }
         return getEditorInput().getNavigatorNode().getOwnerProject();
     }
 
