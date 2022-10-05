@@ -94,15 +94,15 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
     @Nullable
     @Override
     public PrintWriter getServerOutputConsumer() {
-        if (editor.getActivePreferenceStore().getBoolean(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT) && isTerminalViewEnabled()) {
-            return UIUtils.syncExec(new RunnableWithResult<>() {
-                public PrintWriter runWithResult() {
+        return UIUtils.syncExec(new RunnableWithResult<>() {
+            public PrintWriter runWithResult() {
+                if (editor.getActivePreferenceStore().getBoolean(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT) && isTerminalViewEnabled()) {
                     return obtainViewContext().view.getOutputWriter();
+                } else {
+                    return null;
                 }
-            });
-        } else {
-            return null;
-        }
+            }
+        });
     }
         
     private class TerminalViewContext {

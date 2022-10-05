@@ -40,7 +40,9 @@ public class SQLTerminalPreferencesPage extends TargetPrefPage {
     @Override
     protected boolean hasDataSourceSpecificOptions(@NotNull DBPDataSourceContainer dataSourceDescriptor) {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
-        return store.contains(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT);
+        return store.contains(SQLTerminalPreferencesConstants.SHOW_TERMINAL_VIEW_BY_DEFAULT)
+            || store.contains(SQLTerminalPreferencesConstants.SHOW_QUERY_TEXT)
+            || store.contains(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT);
     }
 
     @Override
