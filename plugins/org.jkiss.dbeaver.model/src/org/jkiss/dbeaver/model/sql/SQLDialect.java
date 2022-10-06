@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
-import org.jkiss.dbeaver.model.impl.sql.DialectQueryGenerator;
+import org.jkiss.dbeaver.model.impl.sql.SQLDialectQueryGenerator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
@@ -60,7 +60,7 @@ public interface SQLDialect {
     }
 
     @NotNull
-    DialectQueryGenerator getQueryGenerator();
+    SQLDialectQueryGenerator getQueryGenerator();
 
     @NotNull
     String getDialectId();
