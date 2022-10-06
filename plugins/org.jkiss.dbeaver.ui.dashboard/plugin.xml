@@ -53,13 +53,38 @@
         <!-- Dashboard handlers -->
 
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.open" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardOpen">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
+            <enabledWhen>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/>
+                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="public"/>
+                </and>
+            </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.dashboard.configure" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardConfiguration"/>
-        <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardReset"/>
-        <handler commandId="org.jkiss.dbeaver.ui.dashboard.add" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardAddItem"/>
-        <handler commandId="org.jkiss.dbeaver.ui.dashboard.remove" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardRemoveItem"/>
-        <handler commandId="org.jkiss.dbeaver.ui.dashboard.view" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardViewItem"/>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.configure" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardConfiguration">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="public"/>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardReset">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.add" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardAddItem">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.remove" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardRemoveItem">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.view" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardViewItem">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="public"/>
+            </enabledWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -86,12 +111,20 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.dashboardView">
-            <command commandId="org.jkiss.dbeaver.ui.dashboard.configure"/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.configure">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <separator name="actions" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.ui.dashboard.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/object_add.png"/>
-            <command commandId="org.jkiss.dbeaver.ui.dashboard.remove" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/object_remove.png"/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/object_add.png">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.remove" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/object_remove.png">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <separator name="actions_ext" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.ui.dashboard.reset" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/reset.png"/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.reset" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/reset.png">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <separator name="additions" visible="true"/>
         </menuContribution>
 

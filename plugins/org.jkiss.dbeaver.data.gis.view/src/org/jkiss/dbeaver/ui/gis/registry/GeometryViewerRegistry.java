@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
@@ -113,6 +114,10 @@ public class GeometryViewerRegistry {
         @NotNull Collection<String> notVisiblePredefinedTilesIds,
         @NotNull Collection<LeafletTilesDescriptor> userDefinedTiles
     ) throws DBException {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
+            log.warn("The user has no permission to load geometry tiles configuration");
+            return;
+        }
         String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(GEOMETRY_REGISTRY_CONFIG_XML);
         if (CommonUtils.isEmpty(content)) {
             return;
@@ -243,6 +248,10 @@ public class GeometryViewerRegistry {
     }
 
     public void updateTiles(@NotNull Collection<LeafletTilesDescriptor> predefinedDescriptors, @NotNull Collection<LeafletTilesDescriptor> userDefinedDescriptors) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            log.warn("The user has no permission to save geometry tiles configuration");
+            return;
+        }
         synchronized (tilesLock) {
             predefinedTiles.clear();
             predefinedTiles.addAll(predefinedDescriptors);
@@ -287,7 +296,7 @@ public class GeometryViewerRegistry {
             DBWorkbench.getPlatform().getProductConfigurationController()
                 .saveConfigurationFile(GEOMETRY_REGISTRY_CONFIG_XML, out.getBuffer().toString());
         } catch (Throwable e) {
-            log.error("Error saving" + GeometryViewerRegistry.class.getName() + " configuration");
+            log.error("Error saving " + GeometryViewerRegistry.class.getName() + " configuration");
         }
     }
 }

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -179,6 +180,10 @@ public class SQLTemplateStore extends TemplateStore {
         private CustomTemplatesStore() {
             super(DBWorkbench.getPlatform().getPreferenceStore());
             try {
+                if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
+                    log.warn("The user has no permission to load sql templates configuration");
+                    return;
+                }
                 String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(TEMPLATES_CONFIG_XML);
                 if (CommonUtils.isNotEmpty(content)) {
                     setValue(PREF_STORE_KEY, content);
@@ -190,13 +195,17 @@ public class SQLTemplateStore extends TemplateStore {
         
         @Override
         public void save() throws IOException {
+            if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+                log.warn("The user has no permission to save sql templates configuration");
+                return;
+            }
             // Save templates
             String templatesConfig = getString(PREF_STORE_KEY);
 
             try {
                 DBWorkbench.getPlatform()
-                   .getProductConfigurationController()
-                   .saveConfigurationFile(TEMPLATES_CONFIG_XML, templatesConfig);
+                    .getProductConfigurationController()
+                    .saveConfigurationFile(TEMPLATES_CONFIG_XML, templatesConfig);
             } catch (DBException e) {
                 log.warn("Can't save template configuration", e);
             }

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -126,9 +127,12 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         return customProfiles;
     }
 
-    private void loadProfiles()
-    {
+    private void loadProfiles() {
         customProfiles = new ArrayList<>();
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
+            log.warn("The user has no permission to load custom data formatter configuration");
+            return;
+        }
         try {
             String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(CONFIG_FILE_NAME);
             if (CommonUtils.isEmpty(content)) {
@@ -148,9 +152,12 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
     }
 
 
-    private void saveProfiles()
-    {
+    private void saveProfiles() {
         if (customProfiles == null) {
+            return;
+        }
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            log.warn("The user has no permission to save data formatter configuration");
             return;
         }
         try (StringWriter out = new StringWriter()) {

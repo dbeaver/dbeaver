@@ -89,13 +89,15 @@ public class DashboardRegistry {
         }
 
         // Load dashboards from config
-        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
             log.warn("The user has no permission to load dashboard configuration");
-            try {
-                loadConfigFromFile();
-            } catch (Exception e) {
-                log.error("Error loading dashboard configuration", e);
-            }
+            return;
+        }
+
+        try {
+            loadConfigFromFile();
+        } catch (Exception e) {
+            log.error("Error loading dashboard configuration", e);
         }
     }
 
@@ -114,6 +116,10 @@ public class DashboardRegistry {
     }
 
     private void saveConfigFile() {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            log.warn("The user has no permission to save dashboards configuration");
+            return;
+        }
         try {
             StringWriter out = new StringWriter();
             XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
@@ -185,6 +191,9 @@ public class DashboardRegistry {
     }
 
     public void createDashboard(DashboardDescriptor dashboard) throws IllegalArgumentException {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            throw new IllegalArgumentException("The user has no permission to create dashboard configuration");
+        }
         if (dashboardList.containsKey(dashboard.getId())) {
             throw new IllegalArgumentException("Dashboard " + dashboard.getId() + "' already exists");
         }
@@ -197,6 +206,9 @@ public class DashboardRegistry {
     }
 
     public void removeDashboard(DashboardDescriptor dashboard) throws IllegalArgumentException {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            throw new IllegalArgumentException("The user has no permission to remove dashboard configuration");
+        }
         if (!dashboardList.containsKey(dashboard.getId())) {
             throw new IllegalArgumentException("Dashboard " + dashboard.getId() + "' doesn't exist");
         }
