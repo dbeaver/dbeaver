@@ -89,7 +89,7 @@ public class DashboardRegistry {
         }
 
         // Load dashboards from config
-        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PUBLIC)) {
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
             log.warn("The user has no permission to load dashboard configuration");
             try {
                 loadConfigFromFile();

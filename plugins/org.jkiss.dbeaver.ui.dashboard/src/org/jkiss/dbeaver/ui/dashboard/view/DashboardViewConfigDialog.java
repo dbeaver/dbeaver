@@ -23,6 +23,8 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
@@ -84,16 +86,17 @@ public class DashboardViewConfigDialog extends BaseDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        final Button managerButton = createButton(parent, IDialogConstants.CANCEL_ID, UIDashboardMessages.dialog_dashboard_view_config_button_manage, false);
-        ((GridData) managerButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
-        ((GridData) managerButton.getLayoutData()).grabExcessHorizontalSpace = true;
-        managerButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
-            }
-        });
-
+        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            final Button managerButton = createButton(parent, IDialogConstants.CANCEL_ID, UIDashboardMessages.dialog_dashboard_view_config_button_manage, false);
+            ((GridData) managerButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
+            ((GridData) managerButton.getLayoutData()).grabExcessHorizontalSpace = true;
+            managerButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
+                }
+            });
+        }
         super.createButtonsForButtonBar(parent);
     }
 
