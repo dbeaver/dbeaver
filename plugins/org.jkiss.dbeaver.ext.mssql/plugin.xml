@@ -310,6 +310,7 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
+                        supportedConfigurationTypes="MANUAL,URL"
                         description="Microsoft JDBC Driver for SQL Server">
                     <replace provider="generic" driver="mssql_ms"/>
                     <replace provider="mssql" driver="mssql_jdbc_ms"/>
