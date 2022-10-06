@@ -24,6 +24,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
 import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -131,6 +132,13 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
                 }
             });
             tabItem.addDisposeListener(e -> {
+                Object item = e.getSource();
+                if (item instanceof CTabItem) {
+                    CTabItem cTab = (CTabItem) item;
+                    if (cTab.getData() instanceof SQLTerminalView) {
+                        setConcoleViewEnabled(false);
+                    }
+                }
                 if (tabsContainer.getItemCount() == 0 && !editor.hasMaximizedControl()) {
                     // Hide results
                     editor.toggleResultPanel(false, true);
@@ -149,7 +157,7 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
     
     @NotNull
     private TerminalViewContext obtainViewContext() {
-        if (viewContext == null) {
+        if (viewContext == null && isTerminalViewEnabled()) {
             viewContext = new TerminalViewContext();
         } 
         return viewContext;

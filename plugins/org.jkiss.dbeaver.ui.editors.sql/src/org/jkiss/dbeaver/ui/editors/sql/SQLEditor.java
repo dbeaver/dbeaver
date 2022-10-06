@@ -4440,7 +4440,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private void dumpOutput(DBRProgressMonitor monitor) {
-            if (outputViewer == null) {
+            SQLEditorOutputConsoleViewer currentOutputViewer = outputViewer;
+            if (currentOutputViewer == null || currentOutputViewer.isDisposed()) {
                 return;
             }
 
@@ -4455,7 +4456,10 @@ public class SQLEditor extends SQLEditorBase implements
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-            PrintWriter outputWriter = new PrintWriter(outputViewer.getOutputWriter()) {
+            if (currentOutputViewer == null || currentOutputViewer.isDisposed()) {
+                return;
+            }
+            PrintWriter outputWriter = new PrintWriter(currentOutputViewer.getOutputWriter()) {
                 @Override
                 public void write(int c) {
                     super.write(c);
@@ -4521,13 +4525,13 @@ public class SQLEditor extends SQLEditorBase implements
             }
 
             outputWriter.flush();
-            if (!outputViewer.isHasNewOutput()) {
+            if (currentOutputViewer == null || currentOutputViewer.isDisposed() || !currentOutputViewer.isHasNewOutput()) {
                 return;
             }
-            outputViewer.resetNewOutput();
+            currentOutputViewer.resetNewOutput();
             // Show output log view if needed
             UIUtils.asyncExec(() -> {
-                outputViewer.scrollToEnd();
+                currentOutputViewer.scrollToEnd();
                 if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW)) {
                     if (!getViewToolItem(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT).getSelection()) {
                         showOutputPanel();
