@@ -1043,11 +1043,21 @@ public final class SQLUtils {
         return CommonUtils.escapeIdentifier(table.getName());
     }
 
-    public static void appendQueryConditions(DBPDataSource dataSource, @NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter) {
+    public static void appendQueryConditions(
+        DBPDataSource dataSource,
+        @NotNull StringBuilder query,
+        @Nullable String tableAlias,
+        @Nullable DBDDataFilter dataFilter
+    ) {
         dataSource.getSQLDialect().getQueryGenerator().appendQueryConditions(dataSource, query, tableAlias, dataFilter);
     }
 
-    public static void appendQueryOrder(DBPDataSource dataSource, @NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter) {
+    public static void appendQueryOrder(
+        DBPDataSource dataSource,
+        @NotNull StringBuilder query,
+        @Nullable String tableAlias,
+        @Nullable DBDDataFilter dataFilter
+    ) {
         dataSource.getSQLDialect().getQueryGenerator().appendQueryOrder(dataSource, query, tableAlias, dataFilter);
     }
 

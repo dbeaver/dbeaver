@@ -85,7 +85,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @NotNull
     @Override
     public SQLDialectQueryGenerator getQueryGenerator() {
-        return StandartSQLDialectQueryGenerator.INSTANCE;
+        return StandardSQLDialectQueryGenerator.INSTANCE;
     }
 
     @Nullable
