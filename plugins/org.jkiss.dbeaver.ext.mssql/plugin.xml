@@ -175,6 +175,7 @@
                         defaultDatabase="master"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="%driver.sqlserver.description"
+                        supportedConfigurationTypes="MANUAL,URL"
                         promoted="1"
                         categories="sql">
 
@@ -201,6 +202,7 @@
                         defaultDatabase="master"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="%driver.sqlserver.description"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
                     <replace provider="mssql" driver="mssql_jdbc_azure"/>
@@ -224,6 +226,7 @@
                         defaultDatabase="master"
                         webURL="https://babelfishpg.org/"
                         description="%driver.sqlserver.description"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql,server,aws">
                     <parameter name="jtds" value="true"/>
 
@@ -307,6 +310,7 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
+                        supportedConfigurationTypes="MANUAL,URL"
                         description="Microsoft JDBC Driver for SQL Server">
                     <replace provider="generic" driver="mssql_ms"/>
                     <replace provider="mssql" driver="mssql_jdbc_ms"/>
@@ -341,6 +345,7 @@
                         defaultDatabase="master"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="%driver.sqlserver.old.description"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
                     <parameter name="query-get-active-db" value="select db_name()"/>
@@ -373,6 +378,7 @@
                         defaultDatabase="master"
                         webURL="http://jtds.sourceforge.net/"
                         description="jTDS SQL Server (MSSQL) driver"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
                     <replace provider="mssql" driver="mssql_jdbc_jtds"/>
@@ -410,6 +416,7 @@
                         defaultUser="sa"
                         webURL="http://jtds.sourceforge.net/"
                         description="Sybase jTDS driver"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
                     <replace provider="generic" driver="sybase"/>
@@ -441,6 +448,7 @@
                         defaultUser="sa"
                         webURL="http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc01776.1604/doc/html/san1357754912881.html"
                         description="Sybase jConnect driver"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
                     <property name="loginTimeout" value="20"/>
@@ -472,6 +480,7 @@
                         defaultUser="sa"
                         webURL="https://help.sap.com/viewer/bb5dd5b844d046ea97fa6b328e0fda1d/8.0/en-US/b9acdb91f1e94cc2bdf12e9986567643.html"
                         description="SAP ASE jConnect driver"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
                     <property name="loginTimeout" value="20"/>
