@@ -137,8 +137,8 @@ public class DashboardRegistry {
             out.flush();
             
             DBWorkbench.getPlatform()
-               .getPluginConfigurationController(UIDashboardActivator.getDefault())
-               .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
+                .getPluginConfigurationController(UIDashboardActivator.getDefault())
+                .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
         } catch (Exception e) {
             log.error("Error saving dashboard configuration", e);
         }

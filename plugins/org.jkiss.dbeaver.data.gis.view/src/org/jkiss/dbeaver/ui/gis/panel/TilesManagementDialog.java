@@ -143,7 +143,10 @@ class TilesManagementDialog extends BaseDialog {
                             log.error("Edited descriptor is null despite that user clicked ok");
                             return;
                         }
-                        if (containsDescriptorWithLabel(predefinedTiles, editedDescriptor.getLabel()) || userDefinedTiles.stream().anyMatch(t -> t.getLabel().equals(editedDescriptor.getLabel()) && !t.equals(originalDescriptor))) {
+                        if (containsDescriptorWithLabel(predefinedTiles, editedDescriptor.getLabel())
+                            || userDefinedTiles.stream().anyMatch(t -> t.getLabel().equals(editedDescriptor.getLabel())
+                            && !t.equals(originalDescriptor))
+                        ) {
                             DBWorkbench.getPlatformUI().showError(
                                 GISMessages.panel_select_tiles_action_manage_dialog_error_editing_tiles_title,
                                 GISMessages.panel_select_tiles_action_manage_dialog_error_editing_tiles_message

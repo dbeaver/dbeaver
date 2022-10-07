@@ -85,7 +85,11 @@ public interface DBPPlatform {
      */
     @NotNull
     DBConfigurationController getConfigurationController();
-    
+
+    /**
+     * Product configuration controller.
+     * Keeps product configuration which can be shared with other users.
+     */
     @NotNull
     DBConfigurationController getProductConfigurationController();
         

@@ -87,7 +87,12 @@ public class DashboardViewConfigDialog extends BaseDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
-            final Button managerButton = createButton(parent, IDialogConstants.CANCEL_ID, UIDashboardMessages.dialog_dashboard_view_config_button_manage, false);
+            final Button managerButton = createButton(
+                parent,
+                IDialogConstants.CANCEL_ID,
+                UIDashboardMessages.dialog_dashboard_view_config_button_manage,
+                false
+            );
             ((GridData) managerButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
             ((GridData) managerButton.getLayoutData()).grabExcessHorizontalSpace = true;
             managerButton.addSelectionListener(new SelectionAdapter() {
