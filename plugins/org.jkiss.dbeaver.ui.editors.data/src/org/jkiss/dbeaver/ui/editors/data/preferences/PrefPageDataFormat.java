@@ -226,8 +226,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
     }
 
-    private void changeProfile()
-    {
+    private void changeProfile() {
         int selectionIndex = profilesCombo.getSelectionIndex();
         if (selectionIndex < 0) {
             return;
@@ -235,12 +234,22 @@ public class PrefPageDataFormat extends TargetPrefPage
         DBDDataFormatterProfile newProfile;
         if (selectionIndex == 0) {
             newProfile = getDefaultProfile();
+            
         } else {
             String newProfileName = profilesCombo.getItem(selectionIndex);
             newProfile = DataFormatterRegistry.getInstance().getCustomProfile(newProfileName);
         }
         if (newProfile != formatterProfile) {
+            boolean editable = selectionIndex == 0 ||
+                DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER);
+
             setCurrentProfile(newProfile);
+            
+            localeSelector.setEnabled(editable);
+            datetimeNativeFormatCheck.setEnabled(editable);
+            numericNativeFormatCheck.setEnabled(editable);
+            numericScientificFormatCheck.setEnabled(editable && numericNativeFormatCheck.getSelection());
+            propertiesControl.getTree().setEnabled(editable);
         }
     }
 

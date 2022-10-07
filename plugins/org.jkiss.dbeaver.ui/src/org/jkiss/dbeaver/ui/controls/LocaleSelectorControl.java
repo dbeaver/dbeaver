@@ -256,4 +256,11 @@ public class LocaleSelectorControl extends Composite
         return currentLocale;
     }
 
+    @Override
+    public void setEnabled(boolean enabled) {
+       languageCombo.setEnabled(enabled);
+       countryCombo.setEnabled(enabled);
+       variantCombo.setEnabled(enabled);
+       super.setEnabled(enabled);
+    }
 }

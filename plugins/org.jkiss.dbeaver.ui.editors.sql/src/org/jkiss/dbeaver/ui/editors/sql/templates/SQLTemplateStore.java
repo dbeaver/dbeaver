@@ -19,6 +19,7 @@ import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import org.eclipse.jface.text.templates.persistence.TemplateReaderWriter;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
@@ -31,14 +32,11 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -52,9 +50,39 @@ public class SQLTemplateStore extends TemplateStore {
 
     private static final Log log = Log.getLog(SQLTemplateStore.class);
     public static final String PREF_STORE_KEY = "org.jkiss.dbeaver.core.sql_templates";
+    
+    private final CustomTemplatesStore customTemplatesStore;
 
-    public SQLTemplateStore(ContextTypeRegistry registry) {
-        super(registry, new PreferenceStoreDelegate(new CustomTemplatesStore()), PREF_STORE_KEY); //$NON-NLS-1$
+    private SQLTemplateStore(ContextTypeRegistry registry, CustomTemplatesStore customTemplatesStore) {
+        super(registry, new PreferenceStoreDelegate(customTemplatesStore), PREF_STORE_KEY); //$NON-NLS-1$
+        this.customTemplatesStore = customTemplatesStore;
+    }
+
+    /**
+     * Returns set of custom sql templates declared in custom templates store
+     * Partially copied from eclipse sources
+     */
+    @NotNull
+    public Set<String> getCustomTemplateNames() {
+        try {
+            String pref = customTemplatesStore.getString(PREF_STORE_KEY);
+            if (pref != null && !pref.trim().isEmpty()) {
+                Reader input = new StringReader(pref);
+                TemplateReaderWriter reader = new TemplateReaderWriter();
+                return Stream.of(reader.read(input)).map(t -> t.getTemplate().getName()).collect(Collectors.toSet());
+            } 
+        } catch (IOException ex) {
+            log.error("Failed to load custom template names", ex);
+        } 
+        return Collections.emptySet();
+    }
+
+    /**
+     * Creates SQLTemplateStore instance by the specified template context registry
+     */
+    @NotNull
+    public static SQLTemplateStore createInstance(@NotNull ContextTypeRegistry registry) {
+        return new SQLTemplateStore(registry, new CustomTemplatesStore());
     }
 
     /**
