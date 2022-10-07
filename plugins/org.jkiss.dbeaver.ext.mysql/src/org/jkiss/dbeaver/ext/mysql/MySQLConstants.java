@@ -214,6 +214,7 @@ public class MySQLConstants {
     public static final String TYPE_ENUM = "enum";
     public static final String TYPE_SET = "set";
     public static final String TYPE_VARBINARY = "VARBINARY";
+    public static final String TYPE_UUID = "uuid";
 
     public static final String BIN_FOLDER = "bin";
     public static final String ENV_VAR_MYSQL_PWD = "MYSQL_PWD";
