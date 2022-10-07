@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.struct.*;
@@ -50,7 +51,8 @@ import java.util.Locale;
 /**
  * PostgreSQL dialect
  */
-public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDataTypeConverter {
+public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDataTypeConverter,
+    SQLDialectDDLExtension {
     public static final String[] POSTGRE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
         new String[]{
@@ -80,6 +82,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "CURRENT_ROLE",
         "CURRENT_USER",
     };
+    public static final String AUTO_INCREMENT_KEYWORD = "AUTO_INCREMENT";
 
     //region KeyWords
 
@@ -759,7 +762,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         // #12723 Redshift driver returns wrong infor about unquoted case
         setUnquotedIdentCase(DBPIdentifierCase.LOWER);
     }
-    
+
     @Override
     public void addKeywords(Collection<String> set, DBPKeywordType type) {
         super.addKeywords(set, type);
@@ -1013,4 +1016,32 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         }
     }
 
+    @Nullable
+    @Override
+    public String getAutoIncrementKeyword() {
+        return AUTO_INCREMENT_KEYWORD;
+    }
+
+    @Override
+    public boolean supportsCreateIfExists() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public String getTimestampDataType() {
+        return PostgreConstants.TYPE_TIMESTAMP;
+    }
+
+    @NotNull
+    @Override
+    public String getBigIntegerType() {
+        return PostgreConstants.TYPE_BIGINT;
+    }
+
+    @NotNull
+    @Override
+    public String getClobDataType() {
+        return PostgreConstants.TYPE_TEXT;
+    }
 }

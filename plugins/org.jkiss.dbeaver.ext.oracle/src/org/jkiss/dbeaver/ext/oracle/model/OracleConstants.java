@@ -108,6 +108,7 @@ public class OracleConstants {
     public static final String TYPE_NAME_DATE = "DATE";
     public static final String TYPE_NAME_ROWID = "ROWID";
     public static final String TYPE_NAME_VARCHAR2 = "VARCHAR2";
+    public static final String TYPE_CLOB = "CLOB";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
     public static final String TYPE_NUMBER = "NUMBER";
     public static final String TYPE_DECIMAL = "DECIMAL";

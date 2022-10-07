@@ -51,7 +51,7 @@ import java.util.Locale;
 /**
  * Oracle SQL dialect
  */
-public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConverter {
+public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConverter, SQLDialectDDLExtension {
 
     private static final Log log = Log.getLog(OracleSQLDialect.class);
 
@@ -119,6 +119,7 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
         "ELSIF",
         "EXIT",
     };
+    public static final String AUTO_INCREMENT_KEYWORD = "GENERATED ALWAYS AS IDENTITY";
     private boolean crlfBroken;
     private DBPPreferenceStore preferenceStore;
 
@@ -673,5 +674,34 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
     @Override
     public boolean supportsAliasInConditions() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public String getAutoIncrementKeyword() {
+        return AUTO_INCREMENT_KEYWORD;
+    }
+
+    @Override
+    public boolean supportsCreateIfExists() {
+        return false;
+    }
+
+    @NotNull
+    @Override
+    public String getTimestampDataType() {
+        return OracleConstants.TYPE_NAME_TIMESTAMP;
+    }
+
+    @NotNull
+    @Override
+    public String getBigIntegerType() {
+        return OracleConstants.TYPE_NUMBER;
+    }
+
+    @NotNull
+    @Override
+    public String getClobDataType() {
+        return OracleConstants.TYPE_CLOB;
     }
 }
