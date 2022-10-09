@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.security.user;
 
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.util.Objects;
@@ -25,13 +26,23 @@ import java.util.Set;
 public class SMAuthPermissions {
     @Nullable
     private final String userId;
+    @NotNull
     private final String sessionId;
+    @NotNull
     private final Set<String> permissions;
+    @Nullable
+    private final String authRole;
 
-    public SMAuthPermissions(@Nullable String userId, String sessionId, Set<String> permissions) {
+    public SMAuthPermissions(
+        @Nullable String userId,
+        @NotNull String sessionId,
+        @NotNull Set<String> permissions,
+        @Nullable String authRole
+    ) {
         this.userId = userId;
         this.permissions = permissions;
         this.sessionId = sessionId;
+        this.authRole = authRole;
     }
 
     @Nullable
@@ -39,12 +50,19 @@ public class SMAuthPermissions {
         return userId;
     }
 
+    @NotNull
     public String getSessionId() {
         return sessionId;
     }
 
+    @NotNull
     public Set<String> getPermissions() {
         return permissions;
+    }
+
+    @Nullable
+    public String getAuthRole() {
+        return authRole;
     }
 
     @Override
@@ -52,11 +70,14 @@ public class SMAuthPermissions {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SMAuthPermissions that = (SMAuthPermissions) o;
-        return Objects.equals(userId, that.userId) && Objects.equals(permissions, that.permissions);
+        return Objects.equals(userId, that.userId)
+            && Objects.equals(permissions, that.permissions)
+            && Objects.equals(authRole, that.authRole);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, permissions);
+        return Objects.hash(userId, permissions, authRole);
     }
+
 }

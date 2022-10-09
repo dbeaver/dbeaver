@@ -50,7 +50,8 @@ public class SMAuthInfo {
         @NotNull Map<String, Object> authData,
         @Nullable String redirectUrl,
         @Nullable String smAuthToken,
-        @Nullable String smRefreshToken, @Nullable SMAuthPermissions authPermissions
+        @Nullable String smRefreshToken,
+        @Nullable SMAuthPermissions authPermissions
     ) {
         this.authStatus = authStatus;
         this.error = error;
@@ -120,6 +121,11 @@ public class SMAuthInfo {
     @Nullable
     public SMAuthPermissions getAuthPermissions() {
         return authPermissions;
+    }
+
+    @Nullable
+    public String getAuthRole() {
+        return authPermissions == null ? null : authPermissions.getAuthRole();
     }
 
     @NotNull
