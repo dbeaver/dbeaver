@@ -1136,7 +1136,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Override
     public String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
-        if (isSampleURLForced()) {
+        if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
+            return connectionInfo.getUrl();
+        } else if (isSampleURLForced()) {
             // Generate URL by template
             return JDBCURL.generateUrlByTemplate(this, connectionInfo);
         } else {
