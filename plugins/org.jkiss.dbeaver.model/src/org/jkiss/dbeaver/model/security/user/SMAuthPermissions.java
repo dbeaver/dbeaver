@@ -30,19 +30,15 @@ public class SMAuthPermissions {
     private final String sessionId;
     @NotNull
     private final Set<String> permissions;
-    @Nullable
-    private final String authRole;
 
     public SMAuthPermissions(
         @Nullable String userId,
         @NotNull String sessionId,
-        @NotNull Set<String> permissions,
-        @Nullable String authRole
+        @NotNull Set<String> permissions
     ) {
         this.userId = userId;
         this.permissions = permissions;
         this.sessionId = sessionId;
-        this.authRole = authRole;
     }
 
     @Nullable
@@ -60,24 +56,18 @@ public class SMAuthPermissions {
         return permissions;
     }
 
-    @Nullable
-    public String getAuthRole() {
-        return authRole;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SMAuthPermissions that = (SMAuthPermissions) o;
         return Objects.equals(userId, that.userId)
-            && Objects.equals(permissions, that.permissions)
-            && Objects.equals(authRole, that.authRole);
+            && Objects.equals(permissions, that.permissions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, permissions, authRole);
+        return Objects.hash(userId, permissions);
     }
 
 }

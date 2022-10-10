@@ -41,6 +41,8 @@ public class SMAuthInfo {
     @Nullable
     private final String smRefreshToken;
     @Nullable
+    private final String authRole;
+    @Nullable
     private final SMAuthPermissions authPermissions;
 
     private SMAuthInfo(
@@ -51,6 +53,7 @@ public class SMAuthInfo {
         @Nullable String redirectUrl,
         @Nullable String smAuthToken,
         @Nullable String smRefreshToken,
+        @Nullable String authRole,
         @Nullable SMAuthPermissions authPermissions
     ) {
         this.authStatus = authStatus;
@@ -60,6 +63,7 @@ public class SMAuthInfo {
         this.redirectUrl = redirectUrl;
         this.smAuthToken = smAuthToken;
         this.smRefreshToken = smRefreshToken;
+        this.authRole = authRole;
         this.authPermissions = authPermissions;
     }
 
@@ -92,11 +96,13 @@ public class SMAuthInfo {
             .build();
     }
 
-    public static SMAuthInfo success(@NotNull String authAttemptId,
-                                     @NotNull String accessToken,
-                                     @Nullable String refreshToken,
-                                     @NotNull SMAuthPermissions smAuthPermissions,
-                                     @NotNull Map<String, Object> authData) {
+    public static SMAuthInfo success(
+        @NotNull String authAttemptId,
+        @NotNull String accessToken,
+        @Nullable String refreshToken,
+        @NotNull SMAuthPermissions smAuthPermissions,
+        @NotNull Map<String, Object> authData
+    ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.SUCCESS)
             .setAuthAttemptId(authAttemptId)
@@ -125,7 +131,7 @@ public class SMAuthInfo {
 
     @Nullable
     public String getAuthRole() {
-        return authPermissions == null ? null : authPermissions.getAuthRole();
+        return authRole;
     }
 
     @NotNull
@@ -162,6 +168,7 @@ public class SMAuthInfo {
         private String redirectUrl;
         private String smAuthToken;
         private String smRefreshToken;
+        private String authRole;
         private SMAuthPermissions authPermissions;
 
         private Builder() {
@@ -202,6 +209,10 @@ public class SMAuthInfo {
             return this;
         }
 
+        public Builder setAuthRole(String authRole) {
+            this.authRole = authRole;
+            return this;
+        }
 
         public Builder setAuthPermissions(SMAuthPermissions authPermissions) {
             this.authPermissions = authPermissions;
@@ -209,7 +220,8 @@ public class SMAuthInfo {
         }
 
         public SMAuthInfo build() {
-            return new SMAuthInfo(authStatus, error, authAttemptId, authData, redirectUrl, smAuthToken, smRefreshToken, authPermissions);
+            return new SMAuthInfo(
+                authStatus, error, authAttemptId, authData, redirectUrl, smAuthToken, smRefreshToken, authRole, authPermissions);
         }
     }
 }
