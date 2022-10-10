@@ -102,7 +102,8 @@ import java.util.stream.Collectors;
  * Spreadsheet presentation.
  * Visualizes results as grid.
  */
-public class SpreadsheetPresentation extends AbstractPresentation implements IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
+public class SpreadsheetPresentation extends AbstractPresentation
+    implements IResultSetEditor, IResultSetDisplayFormatProvider, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
     public static final String PRESENTATION_ID = "spreadsheet";
 
     public static final String ATTR_OPTION_PINNED = "pinned";
@@ -2526,6 +2527,17 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return DBDDisplayFormat.NATIVE;
         }
         return gridValueFormat;
+    }
+
+    @Override
+    public DBDDisplayFormat getDefaultDisplayFormat() {
+        return gridValueFormat;
+    }
+
+    @Override
+    public void setDefaultDisplayFormat(DBDDisplayFormat displayFormat) {
+        this.gridValueFormat = displayFormat;
+        getPreferenceStore().setValue(ResultSetPreferences.RESULT_GRID_VALUE_FORMAT, this.gridValueFormat.name());
     }
 
     private boolean isShowAsCheckbox(DBDAttributeBinding attr) {
