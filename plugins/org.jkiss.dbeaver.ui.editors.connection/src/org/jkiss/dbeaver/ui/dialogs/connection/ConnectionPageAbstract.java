@@ -40,14 +40,12 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
+import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * ConnectionPageAbstract
@@ -71,6 +69,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected Button typeURLRadio;
 
     private ImageDescriptor curImageDescriptor;
+    private Button licenseButton;
 
     public IDataSourceConnectionEditorSite getSite() {
         return site;
@@ -98,6 +97,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         if (driver != null && driverText != null) {
             driverText.setText(CommonUtils.toString(driver.getFullName()));
         }
+        UIUtils.setControlVisible(licenseButton, driver != null && !CommonUtils.isEmpty(driver.getLicense()));
 
         DataSourceDescriptor dataSource = (DataSourceDescriptor) getSite().getActiveDataSource();
 
@@ -143,7 +143,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     protected void createDriverPanel(Composite parent) {
 
-        Composite panel = UIUtils.createComposite(parent, 4);
+        Composite panel = UIUtils.createComposite(parent, 5);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_END);
         gd.horizontalSpan = ((GridLayout) parent.getLayout()).numColumns;
         gd.grabExcessHorizontalSpace = true;
@@ -156,9 +156,9 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
                 DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES,
                 false);
-            ((GridData)variablesHintLabel.getInfoLabel().getLayoutData()).horizontalSpan = site.isNew() ? 3 : 4;
+            ((GridData)variablesHintLabel.getInfoLabel().getLayoutData()).horizontalSpan = site.isNew() ? 4 : 5;
         } else {
-            UIUtils.createEmptyLabel(panel, 3, 1);
+            UIUtils.createEmptyLabel(panel, 5, 1);
         }
 
         if (site.isNew()) {
@@ -173,7 +173,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
         Label divLabel = new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 4;
+        gd.horizontalSpan = 5;
         divLabel.setLayoutData(gd);
 
         Label driverLabel = new Label(panel, SWT.NONE);
@@ -199,6 +199,22 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             driverButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         } else {
             UIUtils.createEmptyLabel(panel, 1, 1);
+        }
+
+        {
+            licenseButton = UIUtils.createDialogButton(panel, UIConnectionMessages.dialog_edit_driver_text_driver_license, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    String driverLicense = site.getDriver().getLicense();
+                    if (CommonUtils.isEmpty(driverLicense)) {
+                        driverLicense = "N/A";
+                    }
+                    AcceptLicenseDialog licenseDialog = new AcceptLicenseDialog(getShell(), site.getDriver().getFullName(), driverLicense);
+                    licenseDialog.setViewMode(true);
+                    licenseDialog.open();
+                }
+            });
+            licenseButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }
     }
 
