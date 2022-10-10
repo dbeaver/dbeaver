@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextActivation;
@@ -187,7 +188,14 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
             null));
         menuMgr.setRemoveAllWhenShown(true);
         getControl().setMenu(menu);
-        controller.getSite().registerContextMenu(menuMgr, null);
+
+        IWorkbenchPartSite site = controller.getSite();
+        if (site instanceof IEditorSite) {
+            // Exclude editor input contributions from context menu
+            ((IEditorSite) site).registerContextMenu(getClass().getSimpleName() + "_menu", menuMgr, this, false);
+        } else {
+            site.registerContextMenu(menuMgr, this);
+        }
     }
 
     protected void trackPresentationControl() {

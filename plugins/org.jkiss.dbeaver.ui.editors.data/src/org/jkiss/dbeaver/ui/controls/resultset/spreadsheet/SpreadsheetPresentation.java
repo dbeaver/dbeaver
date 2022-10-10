@@ -163,6 +163,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private boolean colorizeDataTypes = true;
     private final Map<DBPDataKind, Color> dataTypesForegrounds = new IdentityHashMap<>();
+    private DBDDisplayFormat gridValueFormat;
 
     public Spreadsheet getSpreadsheet() {
         return spreadsheet;
@@ -850,6 +851,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         useNativeNumbersFormat = controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
 
         spreadsheet.setColumnScrolling(!getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
+        gridValueFormat = CommonUtils.valueOf(DBDDisplayFormat.class, getPreferenceStore().getString(ResultSetPreferences.RESULT_GRID_VALUE_FORMAT), DBDDisplayFormat.UI);
 
         spreadsheet.setRedraw(false);
         try {
@@ -2523,7 +2525,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (value instanceof Number && useNativeNumbersFormat) {
             return DBDDisplayFormat.NATIVE;
         }
-        return DBDDisplayFormat.UI;
+        return gridValueFormat;
     }
 
     private boolean isShowAsCheckbox(DBDAttributeBinding attr) {
