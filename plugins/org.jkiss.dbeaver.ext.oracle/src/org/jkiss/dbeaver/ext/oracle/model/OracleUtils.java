@@ -80,7 +80,7 @@ public class OracleUtils {
 */
         final OracleDataSource dataSource = object.getDataSource();
 
-        monitor.beginTask("Load sources for " + objectType + " '" + objectFullName + "'...", 1);
+        monitor.subTask("Load sources for " + objectType + " '" + objectFullName + "'...");
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load source code for " + objectType + " '" + objectFullName + "'")) {
             
             if (CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS)) {
@@ -173,8 +173,6 @@ public class OracleUtils {
             } else {
                 throw new DBException(e, dataSource);
             }
-        } finally {
-            monitor.done();
         }
     }
 

@@ -419,6 +419,7 @@ public class OracleSchema extends OracleGlobalObject implements
             monitor.subTask("Cache table constraints");
             constraintCache.getObjects(monitor, this, null);
             foreignKeyCache.getObjects(monitor, this, null);
+            tableTriggerCache.getAllObjects(monitor, this);
         }
     }
 
@@ -529,9 +530,8 @@ public class OracleSchema extends OracleGlobalObject implements
         monitor.done();
 
         Collection<OracleDataType> dataTypes = getDataTypes(monitor);
-        monitor.beginTask("Load data types", dataTypes.size());
-
         if (!monitor.isCanceled()) {
+            monitor.beginTask("Load data types", dataTypes.size());
             for (OracleDataType dataType : dataTypes) {
                 addDDLLine(sql, dataType.getObjectDefinitionText(monitor, options));
                 monitor.worked(1);
@@ -544,13 +544,15 @@ public class OracleSchema extends OracleGlobalObject implements
 
         if (!monitor.isCanceled()) {
             List<OracleTableBase> tablesOrViews = getTableCache().getAllObjects(monitor, this);
+            monitor.beginTask("Read tables DDL", tablesOrViews.size());
             for (OracleTableBase tableBase : tablesOrViews) {
+                monitor.worked(1);
                 if (tableBase instanceof OracleTable && ((OracleTable) tableBase).isNested()) {
                     // To avoid java.sql.SQLException: ORA-31603
                     continue;
                 }
+                monitor.subTask("Load table '" + tableBase.getName() + "' DDL");
                 addDDLLine(sql, tableBase.getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()), options));
-                monitor.worked(1);
                 if (monitor.isCanceled()) {
                     break;
                 }
