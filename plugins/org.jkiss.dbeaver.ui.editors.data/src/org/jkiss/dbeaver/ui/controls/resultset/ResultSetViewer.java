@@ -2771,6 +2771,10 @@ public class ResultSetViewer extends Viewer
         //manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
         decorator.fillContributions(manager);
+
+        if (activePresentation != null) {
+            activePresentation.fillMenu(manager);
+        }
     }
 
     private void fillColumnViewMenu(IMenuManager viewMenu, @NotNull DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
