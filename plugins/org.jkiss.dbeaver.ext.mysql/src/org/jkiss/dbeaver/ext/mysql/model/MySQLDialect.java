@@ -205,13 +205,13 @@ public class MySQLDialect extends JDBCSQLDialect {
     @NotNull
     @Override
     public String escapeString(String string) {
-        return string.replace("'", "''").replaceAll("\\\\(?![_%?])", "\\\\\\\\");
+        return string.replace("'", "''").replace("`", "``").replaceAll("\\\\(?![_%?])", "\\\\\\\\");
     }
 
     @NotNull
     @Override
     public String unEscapeString(String string) {
-        return string.replace("''", "'").replace("\\\\", "\\");
+        return string.replace("''", "'").replace("``", "`").replace("\\\\", "\\");
     }
 
     @NotNull
