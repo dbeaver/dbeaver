@@ -76,8 +76,9 @@ public class ReferenceValueEditor {
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
     private Table editorSelector;
-    private volatile boolean sortByValue = true;
-    private volatile boolean sortAsc = true;
+    private static volatile boolean sortByValue = true; // It is static to save its value between editors
+    private static volatile boolean sortAsc = true;
+    private TableColumn prevSortColumn = null;
     private volatile boolean dictLoaded = false;
     private Object lastPattern;
     private Object firstValue = null;
@@ -184,6 +185,11 @@ public class ReferenceValueEditor {
         SortListener sortListener = new SortListener();
         valueColumn.addListener(SWT.Selection, sortListener);
         descColumn.addListener(SWT.Selection, sortListener);
+        if (!sortByValue) {
+            editorSelector.setSortColumn(descColumn);
+            editorSelector.setSortDirection(sortAsc ? SWT.DOWN : SWT.UP);
+            prevSortColumn = descColumn;
+        }
 
         editorSelector.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -391,8 +397,7 @@ public class ReferenceValueEditor {
     }
 
     private class SortListener implements Listener {
-        private TableColumn prevColumn = null;
-        private int sortDirection = SWT.DOWN;
+        private int sortDirection = sortAsc ? SWT.DOWN : SWT.UP;
 
         public SortListener() {
         }
@@ -400,16 +405,17 @@ public class ReferenceValueEditor {
         @Override
         public void handleEvent(Event event) {
             TableColumn column = (TableColumn) event.widget;
-            if (prevColumn == column) {
+            if (prevSortColumn == column) {
                 // Set reverse order
                 sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
             }
-            prevColumn = column;
+            prevSortColumn = column;
             sortByValue = (Boolean)column.getData();
             sortAsc = sortDirection == SWT.DOWN;
             editorSelector.setSortColumn(column);
             editorSelector.setSortDirection(sortDirection);
             reloadSelectorValues(lastPattern, true);
+
         }
     }
 
