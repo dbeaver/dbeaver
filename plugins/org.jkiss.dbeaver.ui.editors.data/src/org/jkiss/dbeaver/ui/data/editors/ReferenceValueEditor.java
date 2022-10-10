@@ -29,6 +29,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -82,12 +83,13 @@ public class ReferenceValueEditor {
     private Object firstValue = null;
     private Object lastValue = null;
     private int maxResults;
+    private Font boldFont;
 
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
         this.valueEditor = valueEditor;
-        maxResults =
+        this.maxResults =
             valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getInt(
                 ModelPreferences.DICTIONARY_MAX_ROWS);
     }
@@ -119,6 +121,9 @@ public class ReferenceValueEditor {
         if (refConstraint == null) {
             return false;
         }
+
+        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
+        parent.addDisposeListener(e -> this.boldFont.dispose());
 
         if (refConstraint instanceof DBSEntityAssociation) {
             final DBSEntityAssociation association = (DBSEntityAssociation)refConstraint;
@@ -182,7 +187,7 @@ public class ReferenceValueEditor {
 
         editorSelector.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(SelectionEvent e) {
                 if (valueEditor.isReadOnly()) {
                     return;
                 }
@@ -229,13 +234,11 @@ public class ReferenceValueEditor {
             for (TableItem item : items) {
                 if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
                     editorSelector.deselectAll();
-                    item.setBackground(selectionColor);
-                    item.setForeground(UIUtils.getContrastColor(selectionColor));
+                    item.setFont(boldFont);
                     editorSelector.showItem(item);
                     newValueFound = true;
                 } else {
-                    item.setBackground(null);
-                    item.setForeground(null);
+                    item.setFont(null);
                 }
             }
 
@@ -354,13 +357,12 @@ public class ReferenceValueEditor {
                         curItem = item;
                         curItemIndex = i;
                     } else {
-                        item.setBackground(null);
+                        item.setFont(null);
                     }
                 }
                 editorSelector.deselectAll();
                 if (curItem != null) {
-                    curItem.setBackground(selectionColor);
-                    curItem.setForeground(UIUtils.getContrastColor(selectionColor));
+                    curItem.setFont(boldFont);
                     editorSelector.showItem(curItem);
                     // Show cur item on top
                     editorSelector.setTopIndex(curItemIndex);
