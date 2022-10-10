@@ -176,45 +176,52 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         gd.horizontalSpan = 5;
         divLabel.setLayoutData(gd);
 
-        Label driverLabel = new Label(panel, SWT.NONE);
-        driverLabel.setText(UIConnectionMessages.dialog_connection_driver);
-        driverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-        driverText = new Text(panel, SWT.READ_ONLY);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        //gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 2;
-        //gd.widthHint = 200;
-        driverText.setLayoutData(gd);
-
-        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DRIVER_MANAGER)) {
-            Button driverButton = UIUtils.createDialogButton(panel, UIConnectionMessages.dialog_connection_edit_driver_button, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (site.openDriverEditor()) {
-                        updateDriverInfo(site.getDriver());
-                    }
-                }
-            });
-            driverButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        } else {
-            UIUtils.createEmptyLabel(panel, 1, 1);
-        }
-
         {
-            licenseButton = UIUtils.createDialogButton(panel, UIConnectionMessages.dialog_edit_driver_text_driver_license, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    String driverLicense = site.getDriver().getLicense();
-                    if (CommonUtils.isEmpty(driverLicense)) {
-                        driverLicense = "N/A";
+            Composite driverInfoComp = UIUtils.createComposite(panel, 5);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 5;
+            driverInfoComp.setLayoutData(gd);
+
+            Label driverLabel = new Label(driverInfoComp, SWT.NONE);
+            driverLabel.setText(UIConnectionMessages.dialog_connection_driver);
+            driverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            driverText = new Text(driverInfoComp, SWT.READ_ONLY);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            //gd.grabExcessHorizontalSpace = true;
+            gd.horizontalSpan = 2;
+            //gd.widthHint = 200;
+            driverText.setLayoutData(gd);
+
+            if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DRIVER_MANAGER)) {
+                Button driverButton = UIUtils.createDialogButton(driverInfoComp, UIConnectionMessages.dialog_connection_edit_driver_button, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (site.openDriverEditor()) {
+                            updateDriverInfo(site.getDriver());
+                        }
                     }
-                    AcceptLicenseDialog licenseDialog = new AcceptLicenseDialog(getShell(), site.getDriver().getFullName(), driverLicense);
-                    licenseDialog.setViewMode(true);
-                    licenseDialog.open();
-                }
-            });
-            licenseButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+                });
+                driverButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            } else {
+                UIUtils.createEmptyLabel(driverInfoComp, 1, 1);
+            }
+
+            {
+                licenseButton = UIUtils.createDialogButton(driverInfoComp, UIConnectionMessages.dialog_edit_driver_text_driver_license, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        String driverLicense = site.getDriver().getLicense();
+                        if (CommonUtils.isEmpty(driverLicense)) {
+                            driverLicense = "N/A";
+                        }
+                        AcceptLicenseDialog licenseDialog = new AcceptLicenseDialog(getShell(), site.getDriver().getFullName(), driverLicense);
+                        licenseDialog.setViewMode(true);
+                        licenseDialog.open();
+                    }
+                });
+                licenseButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
         }
     }
 
