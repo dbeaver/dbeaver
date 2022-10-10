@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.model.sql.translate;
 
+import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.create.table.Index;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -145,6 +148,21 @@ public class SQLQueryTranslator implements SQLTranslator {
                 defChanged = true;
             }
 
+            String dialectName = targetDialect.getDialectName().toLowerCase();
+
+            if (createTable.getIndexes() != null && (dialectName.equals("oracle"))) {
+                for (Index index : createTable.getIndexes()) {
+                    if (index instanceof ForeignKeyIndex) {
+                        ForeignKeyIndex foreignKeyIndex = (ForeignKeyIndex) index;
+                        ReferentialAction referentialAction = foreignKeyIndex.getReferentialAction(ReferentialAction.Type.DELETE);
+                        if (referentialAction != null && referentialAction.getAction().equals(ReferentialAction.Action.NO_ACTION)) {
+                            referentialAction.setAction(ReferentialAction.Action.CASCADE);
+                            defChanged = true;
+                        }
+                    }
+                }
+            }
+
             for (ColumnDefinition cd : createTable.getColumnDefinitions()) {
                 String newDataType = null;
                 switch (cd.getColDataType().getDataType().toUpperCase(Locale.ENGLISH)) {
@@ -152,7 +170,6 @@ public class SQLQueryTranslator implements SQLTranslator {
                         newDataType = (extendedDialect != null) ? extendedDialect.getClobDataType() : "varchar";
                         break;
                     case "TEXT":
-                        String dialectName = targetDialect.getDialectName().toLowerCase();
                         if (extendedDialect != null && (dialectName.equals("oracle") || dialectName.equals("sqlserver"))) {
                             newDataType = extendedDialect.getClobDataType();
                         }
