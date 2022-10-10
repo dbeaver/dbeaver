@@ -281,7 +281,9 @@ public final class DBStructUtils {
                 srcTypedObject instanceof DBSObject &&  objectContainer.getDataSource() == ((DBSObject) srcTypedObject).getDataSource()))) {
             // If source and target datasources have the same type then just return the same type name
             DBPDataSource srcDataSource = ((DBSObject) srcTypedObject).getDataSource();
+            assert srcDataSource != null;
             DBPDataSource tgtDataSource = objectContainer.getDataSource();
+            assert tgtDataSource != null;
             if (srcDataSource.getClass() == tgtDataSource.getClass() && addModifiers) {
                 return srcTypedObject.getFullTypeName();
             }
@@ -290,8 +292,9 @@ public final class DBStructUtils {
         {
             SQLDataTypeConverter dataTypeConverter = objectContainer == null ? null :
                 DBUtils.getAdapter(SQLDataTypeConverter.class, objectContainer.getDataSource().getSQLDialect());
-            if (dataTypeConverter != null) {
+            if (dataTypeConverter != null && srcTypedObject instanceof DBSObject) {
                 DBPDataSource srcDataSource = ((DBSObject) srcTypedObject).getDataSource();
+                assert srcDataSource != null;
                 DBPDataSource tgtDataSource = objectContainer.getDataSource();
                 String targetTypeName = dataTypeConverter.convertExternalDataType(
                     srcDataSource.getSQLDialect(),
