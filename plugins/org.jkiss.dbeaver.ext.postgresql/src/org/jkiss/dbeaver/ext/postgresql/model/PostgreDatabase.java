@@ -714,12 +714,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
         if (supportTypColumn == null) {
             if (!dataSource.isServerVersionAtLeast(10, 0)) {
                 try {
-                    String resultSet = JDBCUtils.queryString(session, "SELECT 1 FROM pg_catalog.pg_attribute s\n" +
-                        "JOIN pg_catalog.pg_class p ON s.attrelid = p.oid\n" +
-                        "JOIN pg_catalog.pg_namespace n ON p.relnamespace = n.oid\n" +
-                        "WHERE p.relname = 'pg_type'\n" +
-                        "AND n.nspname = 'pg_catalog'\n" +
-                        "AND s.attname = 'typcategory'");
+                    String resultSet = JDBCUtils.queryString(
+                        session,
+                        PostgreUtils.getQueryForSystemColumnChecking("pg_type", "typcategory"));
                     supportTypColumn = resultSet != null;
                 } catch (SQLException e) {
                     log.debug("Error reading system information from pg_attribute", e);
