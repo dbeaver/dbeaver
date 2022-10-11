@@ -316,6 +316,7 @@
             <type standard="BIT"/>
             <type name="JSON"/>
             <type name="GEOMETRY"/>
+            <type name="UUID"/>
 
         </provider>
     </extension>
