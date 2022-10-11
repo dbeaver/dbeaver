@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.security;
 
 public enum SMSubjectType {
     user("U"),
-    role("R");
+    team("R");
 
     private final String code;
 
