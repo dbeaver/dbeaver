@@ -71,6 +71,7 @@ import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.TabFolderReorder;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
@@ -2771,6 +2772,10 @@ public class ResultSetViewer extends Viewer
         //manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
         decorator.fillContributions(manager);
+
+        if (activePresentation != null) {
+            activePresentation.fillMenu(manager);
+        }
     }
 
     private void fillColumnViewMenu(IMenuManager viewMenu, @NotNull DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
@@ -2778,14 +2783,42 @@ public class ResultSetViewer extends Viewer
         if (dataSource == null) {
             return;
         }
-        List<? extends DBDAttributeTransformerDescriptor> transformers =
-            DBWorkbench.getPlatform().getValueHandlerRegistry().findTransformers(
-                dataSource, attr, null);
-        if (!CommonUtils.isEmpty(transformers)) {
-            MenuManager transformersMenu = new MenuManager(NLS.bind(ResultSetMessages.controls_resultset_viewer_action_view_column_type, attr.getName()));
-            transformersMenu.setRemoveAllWhenShown(true);
-            transformersMenu.addMenuListener(manager12 -> fillAttributeTransformersMenu(manager12, attr));
-            viewMenu.add(transformersMenu);
+        // Display format
+        {
+            if (activePresentation instanceof IResultSetDisplayFormatProvider) {
+                DBDDisplayFormat defaultDisplayFormat = ((IResultSetDisplayFormatProvider) activePresentation).getDefaultDisplayFormat();
+                MenuManager formatsMenu = new MenuManager(DTUIMessages.value_format_selector_value);
+                for (DBDDisplayFormat displayFormat : DBDDisplayFormat.values()) {
+                    String formatName;
+                    switch (displayFormat) {
+                        case UI: formatName = DTUIMessages.value_format_selector_display; break;
+                        case EDIT: formatName = DTUIMessages.value_format_selector_editable; break;
+                        default: formatName = DTUIMessages.value_format_selector_database_native; break;
+                    }
+                    Action action = new Action(formatName, Action.AS_RADIO_BUTTON) {
+                        @Override
+                        public void run() {
+                            ((IResultSetDisplayFormatProvider) activePresentation).setDefaultDisplayFormat(displayFormat);
+                        }
+                    };
+                    action.setChecked(displayFormat == defaultDisplayFormat);
+                    formatsMenu.add(action);
+                }
+                viewMenu.add(formatsMenu);
+                viewMenu.add(new Separator());
+            }
+        }
+        // Transformers
+        {
+            List<? extends DBDAttributeTransformerDescriptor> transformers =
+                DBWorkbench.getPlatform().getValueHandlerRegistry().findTransformers(
+                    dataSource, attr, null);
+            if (!CommonUtils.isEmpty(transformers)) {
+                MenuManager transformersMenu = new MenuManager(NLS.bind(ResultSetMessages.controls_resultset_viewer_action_view_column_type, attr.getName()));
+                transformersMenu.setRemoveAllWhenShown(true);
+                transformersMenu.addMenuListener(manager12 -> fillAttributeTransformersMenu(manager12, attr));
+                viewMenu.add(transformersMenu);
+            }
         }
         if (model.isSingleSource()) {
             viewMenu.add(new TransformerSettingsAction());
