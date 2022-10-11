@@ -78,6 +78,8 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_SHOW_ERRORS_IN_DIALOG = "resultset.show.errorDialog"; //$NON-NLS-1$
     public static final String RESULT_SET_MARK_CELL_VALUE_OCCURRENCES = "resultset.mark.cell.value.occurrences"; //$NON-NLS-1$
 
+    public static final String RESULT_GRID_VALUE_FORMAT = "resultset.grid.value.format"; //$NON-NLS-1$
+
     public static final String RESULT_TEXT_TAB_SIZE = "resultset.text.tab.size"; //$NON-NLS-1$
     public static final String RESULT_TEXT_MAX_COLUMN_SIZE = "resultset.text.max.column.size"; //$NON-NLS-1$
     public static final String RESULT_TEXT_VALUE_FORMAT = "resultset.text.value.format"; //$NON-NLS-1$

@@ -102,7 +102,8 @@ import java.util.stream.Collectors;
  * Spreadsheet presentation.
  * Visualizes results as grid.
  */
-public class SpreadsheetPresentation extends AbstractPresentation implements IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
+public class SpreadsheetPresentation extends AbstractPresentation
+    implements IResultSetEditor, IResultSetDisplayFormatProvider, ISelectionProvider, IStatefulControl, IAdaptable, IGridController {
     public static final String PRESENTATION_ID = "spreadsheet";
 
     public static final String ATTR_OPTION_PINNED = "pinned";
@@ -163,6 +164,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     private boolean colorizeDataTypes = true;
     private final Map<DBPDataKind, Color> dataTypesForegrounds = new IdentityHashMap<>();
+    private DBDDisplayFormat gridValueFormat;
 
     public Spreadsheet getSpreadsheet() {
         return spreadsheet;
@@ -850,6 +852,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         useNativeNumbersFormat = controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
 
         spreadsheet.setColumnScrolling(!getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING));
+        gridValueFormat = CommonUtils.valueOf(DBDDisplayFormat.class, getPreferenceStore().getString(ResultSetPreferences.RESULT_GRID_VALUE_FORMAT), DBDDisplayFormat.UI);
 
         spreadsheet.setRedraw(false);
         try {
@@ -2523,7 +2526,18 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (value instanceof Number && useNativeNumbersFormat) {
             return DBDDisplayFormat.NATIVE;
         }
-        return DBDDisplayFormat.UI;
+        return gridValueFormat;
+    }
+
+    @Override
+    public DBDDisplayFormat getDefaultDisplayFormat() {
+        return gridValueFormat;
+    }
+
+    @Override
+    public void setDefaultDisplayFormat(DBDDisplayFormat displayFormat) {
+        this.gridValueFormat = displayFormat;
+        getPreferenceStore().setValue(ResultSetPreferences.RESULT_GRID_VALUE_FORMAT, this.gridValueFormat.name());
     }
 
     private boolean isShowAsCheckbox(DBDAttributeBinding attr) {
@@ -2633,7 +2647,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public String getText(@NotNull IGridItem item) {
             if (item instanceof IGridColumn && controller.isRecordMode()) {
                 final ResultSetRow rsr = (ResultSetRow) item.getElement();
-                return ResultSetMessages.controls_resultset_viewer_status_row + " #" + rsr.getVisualNumber();
+                return ResultSetMessages.controls_resultset_viewer_status_row + " #" + (rsr.getVisualNumber() + 1);
             }
 
             if (item instanceof IGridRow && item.getParent() != null && controller.isRecordMode()) {
