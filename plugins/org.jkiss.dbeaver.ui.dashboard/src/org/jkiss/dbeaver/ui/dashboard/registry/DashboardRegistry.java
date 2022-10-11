@@ -103,7 +103,7 @@ public class DashboardRegistry {
 
     private void loadConfigFromFile() throws XMLException, DBException {
         String configContent = DBWorkbench.getPlatform()
-            .getPluginConfigurationController(UIDashboardActivator.getDefault())
+            .getConfigurationController(UIDashboardActivator.PLUGIN_ID)
             .loadConfigurationFile(CONFIG_FILE_NAME);
 
         if (CommonUtils.isNotEmpty(configContent)) {
@@ -137,7 +137,7 @@ public class DashboardRegistry {
             out.flush();
             
             DBWorkbench.getPlatform()
-                .getPluginConfigurationController(UIDashboardActivator.getDefault())
+                .getConfigurationController(UIDashboardActivator.PLUGIN_ID)
                 .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
         } catch (Exception e) {
             log.error("Error saving dashboard configuration", e);

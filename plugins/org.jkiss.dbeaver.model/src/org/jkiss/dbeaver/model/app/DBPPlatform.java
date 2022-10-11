@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.app;
 
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
@@ -80,25 +81,18 @@ public interface DBPPlatform {
     Path getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
     /**
-     * Platform configuration controller.
-     * Keeps application configuration which can be shared with other users.
+     * Returns platform configuration controller,
+     * which keeps configuration which can be shared with other users.
      */
     @NotNull
-    DBConfigurationController getConfigurationController();
-
+    DBConfigurationController getConfigurationController(@Nullable String pluginId);
+    
     /**
-     * Product configuration controller.
-     * Keeps product configuration which can be shared with other users.
+     * Returns configuration controller,
+     * which keeps product configuration which can be shared with other users.
      */
     @NotNull
     DBConfigurationController getProductConfigurationController();
-        
-    /**
-     * Platform plug-in configuration controller.
-     * Keeps plug-in configuration which can be shared with other users.
-     */
-    @NotNull
-    DBConfigurationController getPluginConfigurationController(@NotNull Plugin plugin);
 
     /**
      * Local config files are used to store some configuration specific to local machine only.

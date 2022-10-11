@@ -71,11 +71,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private DBNModel navigatorModel;
 
     private final List<IPluginService> activatedServices = new ArrayList<>();
-    private DBConfigurationController configurationController;
     private DBFileController localFileController;
     private DBTTaskController localTaskController;
     
-    private final Map<Plugin, DBConfigurationController> configurationControllerByPlugin = new HashMap<>();
+    private DBConfigurationController defaultConfigurationController;
+    private final Map<Bundle, DBConfigurationController> configurationControllerByPlugin = new HashMap<>();
 
     protected void initialize() {
         log.debug("Initialize base platform...");
@@ -149,37 +149,34 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         return FileSystemProviderRegistry.getInstance();
     }
 
-    @NotNull
-    @Override
-    public DBConfigurationController getConfigurationController() {
-        if (configurationController == null) {
-            configurationController = createConfigurationController((String) null);
-        }
-        return configurationController;
-    }
-
-    @NotNull
-    @Override
-    public DBConfigurationController getProductConfigurationController() {
-        return getPluginConfigurationController(getProductPlugin());
-    }
-
     /**
      * Platform plug-in configuration controller.
      * Keeps plug-in configuration which can be shared with other users.
      */
     @NotNull
-    public DBConfigurationController getPluginConfigurationController(@NotNull Plugin plugin) {
-        DBConfigurationController controller = configurationControllerByPlugin.get(plugin);
+    @Override
+    public DBConfigurationController getConfigurationController(@Nullable String pluginId) {
+        Bundle bundle = pluginId == null ? null : Platform.getBundle(pluginId);
+        DBConfigurationController controller = bundle == null ? defaultConfigurationController : configurationControllerByPlugin.get(bundle);
         if (controller == null) {
-            controller = createConfigurationController(plugin.getBundle());
-            configurationControllerByPlugin.put(plugin, controller);
+            controller = createConfigurationController(bundle);
+            if (bundle == null) {
+                defaultConfigurationController = controller;
+            } else {
+                configurationControllerByPlugin.put(bundle, controller);
+            }
         }
         return controller;
     }
     
-    @Override
     @NotNull
+    @Override
+    public DBConfigurationController getProductConfigurationController() {
+        return getConfigurationController(getProductPlugin().getBundle().getSymbolicName());
+    }
+
+    @NotNull
+    @Override
     public DBConfigurationController createConfigurationController(@Nullable String pluginId) {
         return createConfigurationController(pluginId == null ? null : Platform.getBundle(pluginId));
     }
@@ -251,7 +248,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     }
 
     protected abstract Plugin getProductPlugin();
-
+    
     @NotNull
     @Override
     public Path getApplicationConfiguration() {
