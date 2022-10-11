@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
@@ -27,14 +27,11 @@ import org.jkiss.dbeaver.model.task.DBTTaskController;
  */
 public interface DBPApplicationConfigurator {
 
-    DBConfigurationController createConfigurationController();
-
     /**
-     * Creates platform plug-in configuration controller by plug-in id.
-     * Keeps plug-in configuration which can be shared with other users.
+     * Creates configuration controller by plug-in id.
+     * Keeps configuration which can be shared with other users.
      */
-    @NotNull
-    DBConfigurationController createPluginConfigurationController(@NotNull String pluginId);
+    DBConfigurationController createConfigurationController(@Nullable String pluginId);
 
     DBFileController createFileController();
 

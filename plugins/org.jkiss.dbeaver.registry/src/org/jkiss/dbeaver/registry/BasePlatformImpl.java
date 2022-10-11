@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
@@ -152,23 +153,9 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @Override
     public DBConfigurationController getConfigurationController() {
         if (configurationController == null) {
-            configurationController = createConfigurationController();
+            configurationController = createConfigurationController((String) null);
         }
         return configurationController;
-    }
-
-    @Override
-    @NotNull
-    public DBConfigurationController createConfigurationController() {
-        DBPApplication application = getApplication();
-        if (application instanceof DBPApplicationConfigurator) {
-            return ((DBPApplicationConfigurator) application).createConfigurationController();
-        }
-        LocalConfigurationController controller = new LocalConfigurationController(
-            getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
-        );
-        controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
-        return controller;
     }
 
     @NotNull
@@ -185,7 +172,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     public DBConfigurationController getPluginConfigurationController(@NotNull Plugin plugin) {
         DBConfigurationController controller = configurationControllerByPlugin.get(plugin);
         if (controller == null) {
-            controller = createPluginConfigurationController(plugin.getBundle());
+            controller = createConfigurationController(plugin.getBundle());
             configurationControllerByPlugin.put(plugin, controller);
         }
         return controller;
@@ -193,16 +180,22 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     
     @Override
     @NotNull
-    public DBConfigurationController createPluginConfigurationController(@NotNull String pluginId) {
-        return createPluginConfigurationController(Platform.getBundle(pluginId));
+    public DBConfigurationController createConfigurationController(@Nullable String pluginId) {
+        return createConfigurationController(pluginId == null ? null : Platform.getBundle(pluginId));
     }
 
     @NotNull
-    private DBConfigurationController createPluginConfigurationController(@NotNull Bundle bundle) {
+    private DBConfigurationController createConfigurationController(@Nullable Bundle bundle) {
         DBPApplication application = getApplication();
         if (application instanceof DBPApplicationConfigurator) {
-            String pluginBundleName = bundle.getSymbolicName();
-            return ((DBPApplicationConfigurator) application).createPluginConfigurationController(pluginBundleName);
+            String pluginBundleName = bundle == null ? null : bundle.getSymbolicName();
+            return ((DBPApplicationConfigurator) application).createConfigurationController(pluginBundleName);
+        } else if (bundle == null) {
+            LocalConfigurationController controller = new LocalConfigurationController(
+                getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
+            );
+            controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
+            return controller;
         } else {
             return new LocalConfigurationController(
                 Platform.getStateLocation(bundle).toFile().toPath()
