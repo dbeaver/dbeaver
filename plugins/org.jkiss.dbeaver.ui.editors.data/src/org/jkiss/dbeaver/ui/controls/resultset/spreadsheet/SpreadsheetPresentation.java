@@ -2633,7 +2633,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public String getText(@NotNull IGridItem item) {
             if (item instanceof IGridColumn && controller.isRecordMode()) {
                 final ResultSetRow rsr = (ResultSetRow) item.getElement();
-                return ResultSetMessages.controls_resultset_viewer_status_row + " #" + rsr.getVisualNumber();
+                return ResultSetMessages.controls_resultset_viewer_status_row + " #" + (rsr.getVisualNumber() + 1);
             }
 
             if (item instanceof IGridRow && item.getParent() != null && controller.isRecordMode()) {
