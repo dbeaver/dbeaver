@@ -204,6 +204,13 @@ public class MySQLDialect extends JDBCSQLDialect {
     
     @NotNull
     @Override
+    protected String quoteIdentifier(@NotNull String str, @NotNull String[][] quoteStrings) {
+        // Escape with first (default) quote string
+        return quoteStrings[0][0] + escapeString(str) + quoteStrings[0][1];
+    }
+    
+    @NotNull
+    @Override
     public String escapeString(String string) {
         return string.replace("'", "''").replace("`", "``").replaceAll("\\\\(?![_%?])", "\\\\\\\\");
     }
