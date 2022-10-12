@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -93,8 +94,9 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
                     final Iterator<? extends DBSSchema> iterator = schemas == null ? null : schemas.iterator();
                     if (iterator != null && iterator.hasNext()) {
                         return iterator.next().getName();
+                    } else {
+                        return container instanceof DBSStructContainer ? container.getName() : "null";
                     }
-                    return container.getName();
                 }
                 case NativeToolUtils.VARIABLE_TABLE: {
                     final Iterator<? extends DBSTable> iterator = tables == null ? null : tables.iterator();
