@@ -57,9 +57,7 @@
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.tasks.editable">
-            <with variable="selection">
-                <count value="1"/>
-            </with>
+            <test property="org.jkiss.dbeaver.core.global.hasPermission" value="driver-manager"/>
         </definition>
     </extension>
 
