@@ -60,6 +60,7 @@ import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1716,7 +1717,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (info.fileCRC != targetCRC) {
             // Copy file
             try {
-                Files.copy(srcLocalFile, trgLocalFile);
+                Files.copy(srcLocalFile, trgLocalFile, StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 log.error("Error copying library file '" + srcLocalFile + "' into '" + trgLocalFile + "'", e);
                 return null;
