@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.registry.task;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -58,6 +60,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     static final SimpleDateFormat systemDateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
 
+    private final Set<TaskRunJob> runningTasks = Collections.synchronizedSet(new HashSet<>());
     private final BaseProjectImpl projectMetadata;
     private final List<TaskImpl> tasks = new ArrayList<>();
     private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
@@ -265,6 +268,19 @@ public class TaskManagerImpl implements DBTTaskManager {
         TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(taskFolder, DBTTaskFolderEvent.Action.TASK_FOLDER_REMOVE));
     }
 
+    @Override
+    public boolean hasRunningTasks() {
+        return !runningTasks.isEmpty();
+    }
+
+    @Override
+    public void cancelRunningTasks() {
+        final Job[] tasks = runningTasks.toArray(Job[]::new);
+        for (Job task : tasks) {
+            task.cancel();
+        }
+    }
+
     @NotNull
     @Override
     public Path getStatisticsFolder() {
@@ -274,6 +290,17 @@ public class TaskManagerImpl implements DBTTaskManager {
     @Override
     public Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) {
         TaskRunJob runJob = new TaskRunJob((TaskImpl) task, Locale.getDefault(), listener);
+        runJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void aboutToRun(IJobChangeEvent event) {
+                runningTasks.add((TaskRunJob) event.getJob());
+            }
+
+            @Override
+            public void done(IJobChangeEvent event) {
+                runningTasks.remove((TaskRunJob) event.getJob());
+            }
+        });
         runJob.schedule();
         return runJob;
     }
