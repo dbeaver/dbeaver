@@ -1114,7 +1114,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 final Path licenseFile = file.getLocalFile();
                 if (licenseFile != null && Files.exists(licenseFile)) {
                     try {
-                        return Files.readString(licenseFile);
+                        // Use readAllBytes because readString may fail if file charset is inconsistent
+                        return new String(Files.readAllBytes(licenseFile));
                     } catch (IOException e) {
                         log.warn(e);
                     }
