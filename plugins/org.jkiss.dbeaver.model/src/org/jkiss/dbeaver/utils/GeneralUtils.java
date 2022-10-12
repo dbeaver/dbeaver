@@ -471,7 +471,8 @@ public class GeneralUtils {
         return text.toString();
     }
 
-    public static String extractVariableName(String string) {
+    @Nullable
+    public static String extractVariableName(@NotNull String string) {
         Matcher matcher = VAR_PATTERN.matcher(string);
         if (matcher.find()) {
             return matcher.group(2);
