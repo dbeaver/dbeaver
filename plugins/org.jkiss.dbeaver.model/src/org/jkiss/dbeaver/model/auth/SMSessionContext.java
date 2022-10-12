@@ -45,8 +45,6 @@ public interface SMSessionContext {
     @Nullable
     SMSession findSpaceSession(@NotNull SMAuthSpace space);
 
-    SMAuthToken[] getSavedTokens();
-
     void addSession(@NotNull SMSession session);
 
     boolean removeSession(@NotNull SMSession session);

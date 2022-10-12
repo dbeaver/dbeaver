@@ -54,6 +54,8 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
             case MySQLConstants.TYPE_ENUM:
             case MySQLConstants.TYPE_SET:
                 return JDBCObjectValueHandler.INSTANCE;
+            case MySQLConstants.TYPE_UUID:
+                return MySQLUUIDValueHandlerProvider.INSTANCE;
         }
 
         return null;

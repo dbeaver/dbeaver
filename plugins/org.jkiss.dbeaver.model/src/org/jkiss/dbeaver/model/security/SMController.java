@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
 import org.jkiss.dbeaver.model.auth.SMAuthInfo;
 import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMObjectPermissions;
-import org.jkiss.dbeaver.model.security.user.SMRole;
+import org.jkiss.dbeaver.model.security.user.SMTeam;
 import org.jkiss.dbeaver.model.security.user.SMUser;
 
 import java.util.List;
@@ -39,7 +39,7 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
     ///////////////////////////////////////////
     // Users
     @NotNull
-    SMRole[] getUserRoles(String userId) throws DBException;
+    SMTeam[] getUserTeams(String userId) throws DBException;
 
     SMUser getUserById(String userId) throws DBException;
 
@@ -67,7 +67,7 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
     Set<String> getSubjectPermissions(String subjectId) throws DBException;
 
     @NotNull
-    Set<String> getUserPermissions(String userId) throws DBException;
+    Set<String> getUserPermissions(String userId, String authRole) throws DBException;
 
     ///////////////////////////////////////////
     // Sessions

@@ -47,8 +47,7 @@ public class JDBCUtils {
     private static final Map<String, Integer> badColumnNames = new HashMap<>();
 
     @Nullable
-    public static String safeGetString(ResultSet dbResult, String columnName)
-    {
+    public static String safeGetString(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getString(columnName);
         } catch (Exception e) {
@@ -58,8 +57,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static String safeGetStringTrimmed(ResultSet dbResult, String columnName)
-    {
+    public static String safeGetStringTrimmed(ResultSet dbResult, String columnName) {
         try {
             final String value = dbResult.getString(columnName);
             if (value != null && !value.isEmpty()) {
@@ -74,8 +72,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static String safeGetString(ResultSet dbResult, int columnIndex)
-    {
+    public static String safeGetString(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getString(columnIndex);
         } catch (Exception e) {
@@ -85,8 +82,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static String safeGetStringTrimmed(ResultSet dbResult, int columnIndex)
-    {
+    public static String safeGetStringTrimmed(ResultSet dbResult, int columnIndex) {
         try {
             final String value = dbResult.getString(columnIndex);
             if (value != null && !value.isEmpty()) {
@@ -100,8 +96,16 @@ public class JDBCUtils {
         }
     }
 
-    public static int safeGetInt(ResultSet dbResult, String columnName)
-    {
+    @Nullable
+    public static void setStringOrNull(PreparedStatement dbStat, int columnIndex, String value) throws SQLException {
+        if (value != null) {
+            dbStat.setString(columnIndex, value);
+        } else {
+            dbStat.setNull(columnIndex, Types.VARCHAR);
+        }
+    }
+
+    public static int safeGetInt(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getInt(columnName);
         } catch (Exception e) {
@@ -110,8 +114,7 @@ public class JDBCUtils {
         }
     }
 
-    public static int safeGetInt(ResultSet dbResult, int columnIndex)
-    {
+    public static int safeGetInt(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getInt(columnIndex);
         } catch (Exception e) {
@@ -121,8 +124,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Integer safeGetInteger(ResultSet dbResult, String columnName)
-    {
+    public static Integer safeGetInteger(ResultSet dbResult, String columnName) {
         try {
             final int result = dbResult.getInt(columnName);
             if (dbResult.wasNull()) {
@@ -137,8 +139,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Integer safeGetInteger(ResultSet dbResult, int columnIndex)
-    {
+    public static Integer safeGetInteger(ResultSet dbResult, int columnIndex) {
         try {
             final int result = dbResult.getInt(columnIndex);
             if (dbResult.wasNull()) {
@@ -152,8 +153,7 @@ public class JDBCUtils {
         }
     }
 
-    public static long safeGetLong(ResultSet dbResult, String columnName)
-    {
+    public static long safeGetLong(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getLong(columnName);
         } catch (Exception e) {
@@ -162,8 +162,7 @@ public class JDBCUtils {
         }
     }
 
-    public static long safeGetLong(ResultSet dbResult, int columnIndex)
-    {
+    public static long safeGetLong(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getLong(columnIndex);
         } catch (Exception e) {
@@ -173,8 +172,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Long safeGetLongNullable(ResultSet dbResult, String columnName)
-    {
+    public static Long safeGetLongNullable(ResultSet dbResult, String columnName) {
         try {
             final long result = dbResult.getLong(columnName);
             return dbResult.wasNull() ? null : result;
@@ -184,8 +182,7 @@ public class JDBCUtils {
         }
     }
 
-    public static double safeGetDouble(ResultSet dbResult, String columnName)
-    {
+    public static double safeGetDouble(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getDouble(columnName);
         } catch (Exception e) {
@@ -194,8 +191,7 @@ public class JDBCUtils {
         }
     }
 
-    public static double safeGetDouble(ResultSet dbResult, int columnIndex)
-    {
+    public static double safeGetDouble(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getDouble(columnIndex);
         } catch (Exception e) {
@@ -204,8 +200,7 @@ public class JDBCUtils {
         }
     }
 
-    public static float safeGetFloat(ResultSet dbResult, String columnName)
-    {
+    public static float safeGetFloat(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getFloat(columnName);
         } catch (Exception e) {
@@ -214,8 +209,7 @@ public class JDBCUtils {
         }
     }
 
-    public static float safeGetFloat(ResultSet dbResult, int columnIndex)
-    {
+    public static float safeGetFloat(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getFloat(columnIndex);
         } catch (Exception e) {
@@ -225,8 +219,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static BigDecimal safeGetBigDecimal(ResultSet dbResult, String columnName)
-    {
+    public static BigDecimal safeGetBigDecimal(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getBigDecimal(columnName);
         } catch (Exception e) {
@@ -236,8 +229,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static BigDecimal safeGetBigDecimal(ResultSet dbResult, int columnIndex)
-    {
+    public static BigDecimal safeGetBigDecimal(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getBigDecimal(columnIndex);
         } catch (Exception e) {
@@ -246,13 +238,11 @@ public class JDBCUtils {
         }
     }
 
-    public static boolean safeGetBoolean(ResultSet dbResult, String columnName)
-    {
+    public static boolean safeGetBoolean(ResultSet dbResult, String columnName) {
         return safeGetBoolean(dbResult, columnName, false);
     }
 
-    public static boolean safeGetBoolean(ResultSet dbResult, String columnName, boolean defValue)
-    {
+    public static boolean safeGetBoolean(ResultSet dbResult, String columnName, boolean defValue) {
         try {
             return dbResult.getBoolean(columnName);
         } catch (Exception e) {
@@ -261,8 +251,7 @@ public class JDBCUtils {
         }
     }
 
-    public static boolean safeGetBoolean(ResultSet dbResult, int columnIndex)
-    {
+    public static boolean safeGetBoolean(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getBoolean(columnIndex);
         } catch (Exception e) {
@@ -271,8 +260,7 @@ public class JDBCUtils {
         }
     }
 
-    public static boolean safeGetBoolean(@NotNull ResultSet dbResult, int columnIndex, @NotNull String trueValue)
-    {
+    public static boolean safeGetBoolean(@NotNull ResultSet dbResult, int columnIndex, @NotNull String trueValue) {
         try {
             final String strValue = dbResult.getString(columnIndex);
             return strValue != null && strValue.startsWith(trueValue);
@@ -282,8 +270,7 @@ public class JDBCUtils {
         }
     }
 
-    public static boolean safeGetBoolean(ResultSet dbResult, String columnName, String trueValue)
-    {
+    public static boolean safeGetBoolean(ResultSet dbResult, String columnName, String trueValue) {
         try {
             final String strValue = dbResult.getString(columnName);
             return strValue != null && strValue.startsWith(trueValue);
@@ -294,8 +281,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static byte[] safeGetBytes(ResultSet dbResult, String columnName)
-    {
+    public static byte[] safeGetBytes(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getBytes(columnName);
         } catch (Exception e) {
@@ -305,8 +291,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Timestamp safeGetTimestamp(ResultSet dbResult, String columnName)
-    {
+    public static Timestamp safeGetTimestamp(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getTimestamp(columnName);
         } catch (Exception e) {
@@ -316,8 +301,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Timestamp safeGetTimestamp(ResultSet dbResult, int columnIndex)
-    {
+    public static Timestamp safeGetTimestamp(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getTimestamp(columnIndex);
         } catch (Exception e) {
@@ -327,8 +311,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Date safeGetDate(ResultSet dbResult, String columnName)
-    {
+    public static Date safeGetDate(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getDate(columnName);
         } catch (Exception e) {
@@ -338,8 +321,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Date safeGetDate(ResultSet dbResult, int columnIndex)
-    {
+    public static Date safeGetDate(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getDate(columnIndex);
         } catch (Exception e) {
@@ -349,8 +331,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Time safeGetTime(ResultSet dbResult, String columnName)
-    {
+    public static Time safeGetTime(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getTime(columnName);
         } catch (Exception e) {
@@ -360,8 +341,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Time safeGetTime(ResultSet dbResult, int columnIndex)
-    {
+    public static Time safeGetTime(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getTime(columnIndex);
         } catch (Exception e) {
@@ -371,8 +351,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static SQLXML safeGetXML(ResultSet dbResult, String columnName)
-    {
+    public static SQLXML safeGetXML(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getSQLXML(columnName);
         } catch (Exception e) {
@@ -382,8 +361,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static SQLXML safeGetXML(ResultSet dbResult, int columnIndex)
-    {
+    public static SQLXML safeGetXML(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getSQLXML(columnIndex);
         } catch (Exception e) {
@@ -393,8 +371,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Object safeGetObject(ResultSet dbResult, String columnName)
-    {
+    public static Object safeGetObject(ResultSet dbResult, String columnName) {
         try {
             return dbResult.getObject(columnName);
         } catch (Exception e) {
@@ -404,8 +381,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Object safeGetObject(ResultSet dbResult, int columnIndex)
-    {
+    public static Object safeGetObject(ResultSet dbResult, int columnIndex) {
         try {
             return dbResult.getObject(columnIndex);
         } catch (Exception e) {
@@ -415,8 +391,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static <T> T safeGetArray(ResultSet dbResult, String columnName)
-    {
+    public static <T> T safeGetArray(ResultSet dbResult, String columnName) {
         try {
             Array array = dbResult.getArray(columnName);
             return array == null ? null : (T) array.getArray();
@@ -427,8 +402,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static Object safeGetArray(ResultSet dbResult, int columnIndex)
-    {
+    public static Object safeGetArray(ResultSet dbResult, int columnIndex) {
         try {
             Array array = dbResult.getArray(columnIndex);
             return array == null ? null : array.getArray();
@@ -455,13 +429,11 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static String normalizeIdentifier(@Nullable String value)
-    {
+    public static String normalizeIdentifier(@Nullable String value) {
         return value == null ? null : value.trim();
     }
 
-    public static boolean isConnectionAlive(DBPDataSource dataSource, Connection connection)
-    {
+    public static boolean isConnectionAlive(DBPDataSource dataSource, Connection connection) {
         try {
             if (connection == null || connection.isClosed()) {
                 return false;
@@ -510,8 +482,7 @@ public class JDBCUtils {
         return isValid[0];
     }
 
-    public static void scrollResultSet(ResultSet dbResult, long offset, boolean forceFetch) throws SQLException
-    {
+    public static void scrollResultSet(ResultSet dbResult, long offset, boolean forceFetch) throws SQLException {
         // Scroll to first row
         boolean scrolled = false;
         if (!forceFetch) {
@@ -534,8 +505,7 @@ public class JDBCUtils {
         }
     }
 
-    public static void reportWarnings(JDBCSession session, SQLWarning rootWarning)
-    {
+    public static void reportWarnings(JDBCSession session, SQLWarning rootWarning) {
         for (SQLWarning warning = rootWarning; warning != null; warning = warning.getNextWarning()) {
             if (warning.getMessage() == null && warning.getErrorCode() == 0) {
                 // Skip trash [Excel driver]
@@ -547,31 +517,28 @@ public class JDBCUtils {
     }
 
     @NotNull
-    public static String limitQueryLength(@NotNull String query, int maxLength)
-    {
+    public static String limitQueryLength(@NotNull String query, int maxLength) {
         return query.length() <= maxLength ? query : query.substring(0, maxLength);
     }
 
-    public static DBSForeignKeyModifyRule getCascadeFromNum(int num)
-    {
+    public static DBSForeignKeyModifyRule getCascadeFromNum(int num) {
         switch (num) {
-        case DatabaseMetaData.importedKeyNoAction:
-            return DBSForeignKeyModifyRule.NO_ACTION;
-        case DatabaseMetaData.importedKeyCascade:
-            return DBSForeignKeyModifyRule.CASCADE;
-        case DatabaseMetaData.importedKeySetNull:
-            return DBSForeignKeyModifyRule.SET_NULL;
-        case DatabaseMetaData.importedKeySetDefault:
-            return DBSForeignKeyModifyRule.SET_DEFAULT;
-        case DatabaseMetaData.importedKeyRestrict:
-            return DBSForeignKeyModifyRule.RESTRICT;
-        default:
-            return DBSForeignKeyModifyRule.UNKNOWN;
+            case DatabaseMetaData.importedKeyNoAction:
+                return DBSForeignKeyModifyRule.NO_ACTION;
+            case DatabaseMetaData.importedKeyCascade:
+                return DBSForeignKeyModifyRule.CASCADE;
+            case DatabaseMetaData.importedKeySetNull:
+                return DBSForeignKeyModifyRule.SET_NULL;
+            case DatabaseMetaData.importedKeySetDefault:
+                return DBSForeignKeyModifyRule.SET_DEFAULT;
+            case DatabaseMetaData.importedKeyRestrict:
+                return DBSForeignKeyModifyRule.RESTRICT;
+            default:
+                return DBSForeignKeyModifyRule.UNKNOWN;
         }
     }
 
-    public static DBSForeignKeyModifyRule getCascadeFromName(String name)
-    {
+    public static DBSForeignKeyModifyRule getCascadeFromName(String name) {
         switch (name) {
             case "NO ACTION":
                 return DBSForeignKeyModifyRule.NO_ACTION;
@@ -588,8 +555,7 @@ public class JDBCUtils {
         }
     }
 
-    public static void executeSQL(Connection session, String sql, Object ... params) throws SQLException
-    {
+    public static void executeSQL(Connection session, String sql, Object... params) throws SQLException {
         try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
@@ -600,8 +566,7 @@ public class JDBCUtils {
         }
     }
 
-    public static int executeUpdate(Connection session, String sql, Object ... params) throws SQLException
-    {
+    public static int executeUpdate(Connection session, String sql, Object... params) throws SQLException {
         try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
@@ -612,15 +577,13 @@ public class JDBCUtils {
         }
     }
 
-    public static void executeProcedure(Connection session, String sql) throws SQLException
-    {
+    public static void executeProcedure(Connection session, String sql) throws SQLException {
         try (PreparedStatement dbStat = session.prepareCall(sql)) {
             dbStat.execute();
         }
     }
 
-    public static <T> T executeQuery(Connection session, String sql, Object ... params) throws SQLException
-    {
+    public static <T> T executeQuery(Connection session, String sql, Object... params) throws SQLException {
         try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
@@ -637,7 +600,7 @@ public class JDBCUtils {
         }
     }
 
-    public static void executeStatement(Connection session, String sql, Object ... params) throws SQLException {
+    public static void executeStatement(Connection session, String sql, Object... params) throws SQLException {
         try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
@@ -655,8 +618,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static String queryString(Connection session, String sql, Object... args) throws SQLException
-    {
+    public static String queryString(Connection session, String sql, Object... args) throws SQLException {
         try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
@@ -674,8 +636,7 @@ public class JDBCUtils {
     }
 
     @Nullable
-    public static <T> T queryObject(Connection session, String sql, Object... args) throws SQLException
-    {
+    public static <T> T queryObject(Connection session, String sql, Object... args) throws SQLException {
         try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
@@ -694,10 +655,10 @@ public class JDBCUtils {
 
     /**
      * Executes query that returns multiple strings as a result
-
+     *
      * @param session current connection session
-     * @param sql query text
-     * @param args optional parameters for the prepared statement
+     * @param sql     query text
+     * @param args    optional parameters for the prepared statement
      * @return collection of strings
      */
     @NotNull
@@ -717,9 +678,8 @@ public class JDBCUtils {
             return results;
         }
     }
-    
-    private static void debugColumnRead(ResultSet dbResult, String columnName, Exception error)
-    {
+
+    private static void debugColumnRead(ResultSet dbResult, String columnName, Exception error) {
         String colFullId = columnName;
         if (dbResult instanceof JDBCResultSet) {
             colFullId += ":" + ((JDBCResultSet) dbResult).getSession().getDataSource().getContainer().getId();
@@ -733,8 +693,7 @@ public class JDBCUtils {
         }
     }
 
-    private static void debugColumnRead(ResultSet dbResult, int columnIndex, Exception error)
-    {
+    private static void debugColumnRead(ResultSet dbResult, int columnIndex, Exception error) {
         debugColumnRead(dbResult, "#" + columnIndex, error);
     }
 
@@ -809,8 +768,7 @@ public class JDBCUtils {
         }
     }
 
-    public static void rethrowSQLException(Throwable e) throws SQLException
-    {
+    public static void rethrowSQLException(Throwable e) throws SQLException {
         if (e instanceof InvocationTargetException) {
             Throwable targetException = ((InvocationTargetException) e).getTargetException();
             if (targetException instanceof SQLException) {
@@ -822,8 +780,7 @@ public class JDBCUtils {
     }
 
     @NotNull
-    public static DBPDataKind resolveDataKind(@Nullable DBPDataSource dataSource, String typeName, int typeID)
-    {
+    public static DBPDataKind resolveDataKind(@Nullable DBPDataSource dataSource, String typeName, int typeID) {
         if (dataSource == null) {
             return JDBCDataSource.getDataKind(typeName, typeID);
         } else if (dataSource instanceof DBPDataTypeProvider) {
