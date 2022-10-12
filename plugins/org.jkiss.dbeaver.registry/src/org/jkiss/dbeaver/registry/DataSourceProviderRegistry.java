@@ -394,7 +394,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             if (provided) {
                 driversConfig = Files.readString(Path.of(configFileName), StandardCharsets.UTF_8);
             } else {
-                driversConfig = DBWorkbench.getPlatform().getConfigurationController(null).loadConfigurationFile(configFileName);
+                driversConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(configFileName);
             }
 
             if (CommonUtils.isEmpty(driversConfig)) {
@@ -416,7 +416,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             new DriverDescriptorSerializerLegacy().serializeDrivers(baos, this.dataSourceProviders);
-            DBWorkbench.getPlatform().getConfigurationController(null).saveConfigurationFile(
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
                 DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME,
                 baos.toString(StandardCharsets.UTF_8));
         } catch (Exception ex) {
@@ -446,7 +446,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     private void loadConnectionTypes() {
         try {
-            String ctConfig = DBWorkbench.getPlatform().getConfigurationController(null).loadConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
+            String ctConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
             if (!CommonUtils.isEmpty(ctConfig)) {
                 try (Reader is = new StringReader(ctConfig)) {
                     new SAXReader(is).parse(new ConnectionTypeParser());
@@ -514,7 +514,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             xml.endElement();
             xml.flush();
 
-            DBWorkbench.getPlatform().getConfigurationController(null).saveConfigurationFile(
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
                 RegistryConstants.CONNECTION_TYPES_FILE_NAME,
                 baos.toString(StandardCharsets.UTF_8));
         } catch (Exception ex) {

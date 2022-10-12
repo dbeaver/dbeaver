@@ -126,7 +126,7 @@ public class MavenRegistry {
 
     public void loadCustomRepositories() {
         try {
-            String config = DBWorkbench.getPlatform().getConfigurationController(null).loadConfigurationFile(MAVEN_REPOSITORIES_CONFIG);
+            String config = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(MAVEN_REPOSITORIES_CONFIG);
             if (CommonUtils.isEmpty(config)) {
                 return;
             }
@@ -297,7 +297,7 @@ public class MavenRegistry {
             }
             xml.flush();
 
-            DBWorkbench.getPlatform().getConfigurationController(null).saveConfigurationFile(
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
                 MAVEN_REPOSITORIES_CONFIG,
                 baos.toString(StandardCharsets.UTF_8));
         } catch (Exception e) {

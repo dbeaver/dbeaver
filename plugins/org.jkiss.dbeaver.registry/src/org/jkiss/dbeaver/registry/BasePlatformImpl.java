@@ -149,14 +149,25 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         return FileSystemProviderRegistry.getInstance();
     }
 
-    /**
-     * Platform plug-in configuration controller.
-     * Keeps plug-in configuration which can be shared with other users.
-     */
     @NotNull
     @Override
-    public DBConfigurationController getConfigurationController(@Nullable String pluginId) {
-        Bundle bundle = pluginId == null ? null : Platform.getBundle(pluginId);
+    public DBConfigurationController getConfigurationController() {
+        return getPluginConfigurationController(null);
+    }
+    
+    @NotNull
+    @Override
+    public DBConfigurationController getProductConfigurationController() {
+        return getConfigurationController(getProductPlugin().getBundle());
+    }
+    
+    @NotNull
+    @Override
+    public DBConfigurationController getPluginConfigurationController(@NotNull String pluginId) {
+        return getConfigurationController(Platform.getBundle(pluginId));
+    }
+    
+    private DBConfigurationController getConfigurationController(Bundle bundle) {
         DBConfigurationController controller = bundle == null ? defaultConfigurationController : configurationControllerByPlugin.get(bundle);
         if (controller == null) {
             controller = createConfigurationController(bundle);
@@ -167,12 +178,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             }
         }
         return controller;
-    }
-    
-    @NotNull
-    @Override
-    public DBConfigurationController getProductConfigurationController() {
-        return getConfigurationController(getProductPlugin().getBundle().getSymbolicName());
     }
 
     @NotNull

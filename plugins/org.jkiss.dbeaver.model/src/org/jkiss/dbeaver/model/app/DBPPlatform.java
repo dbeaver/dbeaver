@@ -85,7 +85,7 @@ public interface DBPPlatform {
      * which keeps configuration which can be shared with other users.
      */
     @NotNull
-    DBConfigurationController getConfigurationController(@Nullable String pluginId);
+    DBConfigurationController getConfigurationController();
     
     /**
      * Returns configuration controller,
@@ -93,6 +93,13 @@ public interface DBPPlatform {
      */
     @NotNull
     DBConfigurationController getProductConfigurationController();
+    
+    /**
+     * Returns configuration controller,
+     * which keeps plugin configuration which can be shared with other users.
+     */
+    @NotNull
+    DBConfigurationController getPluginConfigurationController(@NotNull String pluginId);
 
     /**
      * Local config files are used to store some configuration specific to local machine only.
