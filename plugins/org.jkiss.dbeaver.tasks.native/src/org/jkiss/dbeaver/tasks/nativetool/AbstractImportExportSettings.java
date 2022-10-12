@@ -93,9 +93,8 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
                     final Iterator<? extends DBSSchema> iterator = schemas == null ? null : schemas.iterator();
                     if (iterator != null && iterator.hasNext()) {
                         return iterator.next().getName();
-                    } else {
-                        return container instanceof DBSSchema ? container.getName() : "null";
                     }
+                    return container.getName();
                 }
                 case NativeToolUtils.VARIABLE_TABLE: {
                     final Iterator<? extends DBSTable> iterator = tables == null ? null : tables.iterator();
