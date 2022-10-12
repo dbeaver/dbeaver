@@ -714,12 +714,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
         if (supportTypColumn == null) {
             if (!dataSource.isServerVersionAtLeast(10, 0)) {
                 try {
-                    String resultSet = JDBCUtils.queryString(
+                    JDBCUtils.queryString(
                         session,
                         PostgreUtils.getQueryForSystemColumnChecking("pg_type", "typcategory"));
-                    supportTypColumn = resultSet != null;
+                    supportTypColumn = true;
                 } catch (SQLException e) {
-                    log.debug("Error reading system information from pg_attribute", e);
+                    log.debug("Error reading system information from the pg_type table", e);
                     supportTypColumn = false;
                 }
             } else {

@@ -76,12 +76,12 @@ public class GreenplumDataSource extends PostgreDataSource {
     boolean isServerSupportFmterrtblColumn(@NotNull JDBCSession session) {
         if (supportsFmterrtblColumn == null) {
             try {
-                String resultSet = JDBCUtils.queryString(
+                JDBCUtils.queryString(
                     session,
                     PostgreUtils.getQueryForSystemColumnChecking("pg_exttable", "fmterrtbl"));
-                supportsFmterrtblColumn = resultSet != null;
+                supportsFmterrtblColumn = true;
             } catch (SQLException e) {
-                log.debug("Error reading system information from pg_attribute", e);
+                log.debug("Error reading system information from the pg_exttable table", e);
                 supportsFmterrtblColumn = false;
             }
         }

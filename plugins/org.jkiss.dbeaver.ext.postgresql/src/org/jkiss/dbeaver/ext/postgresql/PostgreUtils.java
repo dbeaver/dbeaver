@@ -815,7 +815,8 @@ public class PostgreUtils {
     /**
      * Usually, we can check the info about system columns (whether existing or not, depending on the server version) in the documentation.
      * But sometimes, this approach is not working.
-     * In this case, we can directly check the existing system column on the database from the pg_catalog.pg_attribute table.
+     * In this case, we can directly check the existing system column on the database.
+     * If the column doesn't exist, then there will be an exception
      *
      * @param tableName name of the system table
      * @param columnName name of the system column
@@ -823,12 +824,7 @@ public class PostgreUtils {
      */
     @NotNull
     public static String getQueryForSystemColumnChecking(@NotNull String tableName, @NotNull String columnName) {
-        return "SELECT 1 FROM pg_catalog.pg_attribute s\n" +
-            "JOIN pg_catalog.pg_class p ON s.attrelid = p.oid\n" +
-            "JOIN pg_catalog.pg_namespace n ON p.relnamespace = n.oid\n" +
-            "WHERE p.relname = '" + tableName + "'\n" +
-            "AND n.nspname = 'pg_catalog'\n" +
-            "AND s.attname = '" + columnName + "'";
+        return "SELECT " + columnName + " FROM pg_catalog." + tableName + " WHERE 1<>1 LIMIT 1";
     }
 
 }
