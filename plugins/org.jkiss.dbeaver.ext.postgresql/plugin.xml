@@ -308,12 +308,13 @@
                     webURL="https://jdbc.postgresql.org/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                     description="%driver.postgresql.description"
+                    supportedConfigurationTypes="MANUAL,URL"
                     promoted="1"
                     categories="sql"
                     dialect="postgresql">
                     <replace provider="generic" driver="postgresql"/>
                     <replace provider="postgresql" driver="postgresql"/>
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/com.github.waffle:waffle-jna:RELEASE[1.9.1]" if="properties.gsslib=='sspi'" optional="true" bundle="!drivers.postgresql"/>
@@ -338,6 +339,7 @@
                     defaultPort="5432"
                     webURL="https://jdbc.postgresql.org/"
                     description="PostgreSQL generic driver. Can be used for old (7.x) or non-standard PostgreSQL servers."
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
                 </driver>
@@ -353,6 +355,7 @@
                     defaultUser="postgres"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                     description="Obsolete"
+                    supportedConfigurationTypes="MANUAL,URL"
                     dialect="postgresql">
                     <parameter name="serverType" value="greenplum"/>
                 </driver>
@@ -373,7 +376,7 @@
                     description="%driver.timescale.description"
                     categories="timeseries"
                     dialect="postgresql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -396,9 +399,10 @@
                     webURL="https://yellowbrick.io/"
                     propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                     description="Yellowbrick JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -422,8 +426,9 @@
                         webURL="https://www.yugabyte.com/yugabytedb/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.yugabytedb.description"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -446,8 +451,9 @@
                         webURL="https://www.cockroachlabs.com/product/cockroachdb/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.cockroach.description"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -469,6 +475,7 @@
                     defaultDatabase="dev"
                     defaultUser="awsuser"
                     description="AWS Redshift JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                     propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html"
                     categories="sql,analytic,bigdata,aws"
@@ -499,6 +506,7 @@
                         webURL="https://enterprisedb.com/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.edb.description"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
                     <parameter name="serverType" value="edb"/>
@@ -519,8 +527,9 @@
                         webURL="https://cloud.google.com/sql"
                         propertiesURL="https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory#postgresql-1"
                         description="%driver.gcloudpg.description"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql,cloud">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/com.google.cloud.sql:postgres-socket-factory:RELEASE"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>

@@ -14,28 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security;
+package org.jkiss.dbeaver.model.sql.translate;
 
-public enum SMSubjectType {
-    user("U"),
-    team("R");
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 
-    private final String code;
+import java.util.List;
 
-    SMSubjectType(String code) {
-        this.code = code;
-    }
+/**
+ * Sql translator.
+ */
+public interface SQLTranslator {
 
-    public String getCode() {
-        return code;
-    }
-
-    public static SMSubjectType fromCode(String code) {
-        for (SMSubjectType st : values()) {
-            if (st.code.equals(code)) {
-                return st;
-            }
-        }
-        throw new IllegalArgumentException("Bad subject type code: " + code);
-    }
+    /**
+     * Translate script element to target dialect.
+     *
+     * @param element the element
+     * @return the list
+     * @throws DBException the db exception
+     */
+    @NotNull
+    List<? extends SQLScriptElement> translate(@NotNull SQLScriptElement element) throws DBException;
 }

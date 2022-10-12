@@ -97,6 +97,7 @@ public class PostgreConstants {
         "oid", "oid", "Row identifier", false);
 
     public static final String TYPE_CHAR = "char";
+    public static final String TYPE_TEXT = "text";
     public static final String TYPE_UUID = "uuid";
     public static final String TYPE_BPCHAR = "bpchar";
     public static final String TYPE_VARCHAR = "varchar";
@@ -137,6 +138,8 @@ public class PostgreConstants {
     public static final String TYPE_INT2 = "int2";
     public static final String TYPE_INT4 = "int4";
     public static final String TYPE_INT8 = "int8";
+    public static final String TYPE_BIGINT = "bigint";
+
     public static final String TYPE_FLOAT4 = "float4";
     public static final String TYPE_FLOAT8 = "float8";
 

@@ -21,7 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.auth.*;
+import org.jkiss.dbeaver.model.auth.SMAuthSpace;
+import org.jkiss.dbeaver.model.auth.SMSession;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.auth.SMSessionProviderService;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -87,11 +90,6 @@ public class SessionContextImpl implements SMSessionContext {
             }
         }
         return null;
-    }
-
-    @Override
-    public SMAuthToken[] getSavedTokens() {
-        return new SMAuthToken[0];
     }
 
     public void addSession(@NotNull SMSession session) {

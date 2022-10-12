@@ -59,6 +59,17 @@ public class SQLScriptParser {
         return CommonUtils.isEmpty(property);
     }
 
+    /**
+     * Parses sql query.
+     *
+     * @param context        the context
+     * @param startPos       the start position
+     * @param endPos         the end position
+     * @param currentPos     the current position
+     * @param scriptMode     the script mode
+     * @param keepDelimiters the keep delimiters option
+     * @return the sql script element
+     */
     public static SQLScriptElement parseQuery(
         final SQLParserContext context,
         final int startPos,
@@ -340,6 +351,21 @@ public class SQLScriptParser {
                 }
             }
         }
+    }
+
+    /**
+     * Parses sql query.
+     *
+     * @param dialect          the dialect
+     * @param preferenceStore  the preference store
+     * @param sqlScriptContent the sql script content
+     * @param cursorPosition   the cursor position
+     * @return the sql script element
+     */
+    public static SQLScriptElement parseQuery(SQLDialect dialect, DBPPreferenceStore preferenceStore, String sqlScriptContent,
+                                              int cursorPosition) {
+        SQLParserContext parserContext = prepareSqlParserContext(dialect, preferenceStore, sqlScriptContent);
+        return SQLScriptParser.extractQueryAtPos(parserContext, cursorPosition);
     }
 
     private static boolean needsDelimiterAfterBlock(String firstKeyword, String lastKeyword, SQLDialect dialect) {
@@ -806,19 +832,13 @@ public class SQLScriptParser {
     }
 
     public static List<SQLScriptElement> parseScript(SQLDialect dialect, DBPPreferenceStore preferenceStore, String sqlScriptContent) {
-        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.init(dialect, preferenceStore);
-        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules();
-
-        Document sqlDocument = new Document(sqlScriptContent);
-
-        SQLParserContext parserContext = new SQLParserContext(null, syntaxManager, ruleManager, sqlDocument);
-        parserContext.setPreferenceStore(preferenceStore);
+        SQLParserContext parserContext = prepareSqlParserContext(dialect, preferenceStore, sqlScriptContent);
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 
-    public static SQLScriptElement parseQuery(SQLDialect dialect, DBPPreferenceStore preferenceStore, String sqlScriptContent, int cursorPosition) {
+    @NotNull
+    private static SQLParserContext prepareSqlParserContext(SQLDialect dialect, DBPPreferenceStore preferenceStore,
+                                                            String sqlScriptContent) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, preferenceStore);
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
@@ -828,7 +848,7 @@ public class SQLScriptParser {
 
         SQLParserContext parserContext = new SQLParserContext(null, syntaxManager, ruleManager, sqlDocument);
         parserContext.setPreferenceStore(preferenceStore);
-        return SQLScriptParser.extractQueryAtPos(parserContext, cursorPosition);
+        return parserContext;
     }
 
     private static class ScriptBlockInfo {

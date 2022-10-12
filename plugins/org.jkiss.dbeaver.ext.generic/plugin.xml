@@ -193,6 +193,7 @@
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
                         defaultPort="446"
                         description="DB2 iSeries/AS 400 driver"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
                     <file type="jar" path="maven:/net.sf.jt400:jt400:RELEASE" bundle="!drivers.jt400"/>
@@ -221,6 +222,7 @@
                     defaultPort="7200"
                     webURL="https://www.sdn.sap.com/irj/sdn/maxdb"
                     description="SAP MaxDB - The SAP Database System"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
                     <file type="jar" path="drivers/maxdb" bundle="drivers.maxdb"/>
@@ -239,6 +241,7 @@
                     defaultPort="1533"
                     webURL="https://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
                     <file type="jar" path="maven:/com.ibm.informix:jdbc:RELEASE[4.50.4.1]" bundle="!drivers.informix"/>
@@ -266,6 +269,7 @@
                     defaultPort="9092"
                     webURL="https://www.h2database.com/"
                     description="H2 Server"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="h2">
 
@@ -288,6 +292,7 @@
                     webURL="https://www.h2database.com/"
                     embedded="true"
                     description="H2 Embedded"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,embedded"
                     dialect="h2">
 
@@ -309,6 +314,7 @@
                     sampleURL="jdbc:odbc:{database}"
                     webURL="https://sun.com"
                     description="ODBC bridge driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     promoted="1"
                     categories="sql">
                     <os name="win32"/>
@@ -329,6 +335,7 @@
                     webURL="https://db.apache.org/"
                     embedded="true"
                     description="Derby (Java DB) embedded driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,embedded">
 
                     <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
@@ -358,6 +365,7 @@
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
                     <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
@@ -383,6 +391,7 @@
                     defaultPort="1360"
                     webURL="http://developer.mimer.com/"
                     description="Mimer SQL TCP/IP driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,embedded">
                     <file type="jar" path="repo:/drivers/mimer/mimjdbc3.jar"/>
                 </driver>
@@ -397,6 +406,7 @@
                     defaultPort="9001"
                     webURL="http://hsqldb.org/"
                     description="HyperSQL DataBase - Server Mode"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
                     <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
@@ -421,6 +431,7 @@
                     webURL="http://hsqldb.org/"
                     embedded="true"
                     description="HyperSQL DataBase - Embedded Mode"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,embedded">
 
                     <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
@@ -444,6 +455,7 @@
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/cache/"
                     description="InterSystems Cache"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
                     <file type="jar" path="drivers/cache" bundle="drivers.cache"/>
                     <file type="license" path="drivers/cache/LICENSE.txt" bundle="drivers.cache"/>
@@ -458,6 +470,7 @@
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/iris/"
                     description="InterSystems IRIS. Replaces Cache driver."
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
 <!--                    <replace provider="generic" driver="cache"/>-->
                     <file type="jar" path="https://github.com/intersystems-community/iris-driver-distribution/raw/main/intersystems-jdbc-3.1.0.jar"/>
@@ -470,6 +483,7 @@
                     defaultPort="II7"
                     webURL="http://www.ingres.com/products/ingres-database/"
                     description="Ingres Database"
+                    supportedConfigurationTypes="MANUAL,URL"
                     iconBig="icons/ingres_icon_big.png"
                     categories="sql">
                     <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE" bundle="!drivers.ingres"/>
@@ -490,6 +504,7 @@
                     embedded="true"
                     anonymous="true"
                     description="SQLite JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     promoted="1"
                     categories="sql,embedded">
 
@@ -517,6 +532,7 @@
                         embedded="true"
                         anonymous="true"
                         description="DuckDB JDBC driver"
+                        supportedConfigurationTypes="MANUAL,URL"
                         promoted="1"
                         categories="sql,embedded">
                     <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE"/>
@@ -533,6 +549,7 @@
                     defaultPort="1025"
                     webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
                     description="Teradata JDBC Type 4 driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic">
 
                     <file type="jar" path="repo:/drivers/teradata/terajdbc4.jar" bundle="!drivers.teradata"/>
@@ -559,6 +576,7 @@
                     embedded="true"
                     anonymous="true"
                     description="CsvJdbc driver for CSV files"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="http://csvjdbc.sourceforge.net/"
                     propertiesURL="http://csvjdbc.sourceforge.net/doc.html"
                     categories="embedded,file">
@@ -593,6 +611,7 @@
                     embedded="true"
                     anonymous="true"
                     description="CsvJdbc driver for DBF files"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="http://csvjdbc.sourceforge.net/"
                     propertiesURL="http://csvjdbc.sourceforge.net/doc.html"
                     categories="embedded,file">
@@ -624,6 +643,7 @@
                     webURL="http://ucanaccess.sourceforge.net/site.html"
                     embedded="true"
                     description="Microsoft Access driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,embedded,file">
 
                     <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
@@ -641,6 +661,7 @@
                     defaultPort="5480"
                     webURL=""
                     description="Netezza database driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic">
                 </driver>
 
@@ -653,6 +674,7 @@
                     sampleURL="jdbc:com.nuodb://{host}[:{port}]/[{database}]"
                     defaultPort=""
                     description="NuoDB"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="http://www.nuodb.com/"
                     categories="sql,cloud">
                     <file type="jar" path="maven:/com.nuodb.jdbc:nuodb-jdbc:RELEASE"/>
@@ -686,6 +708,7 @@
                     defaultPort="2181"
                     webURL="http://phoenix.apache.org/"
                     description="Thin driver for Apache Phoenix HBase Database"
+                    supportedConfigurationTypes="MANUAL,URL"
                     category="Hadoop"
                     categories="hadoop"
                     singleConnection="true">
@@ -701,6 +724,7 @@
                     sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
                     defaultPort="1527"
                     description="Pivotal GemfireXD"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="http://blog.pivotal.io/tag/gemfire-xd"
                     category="Hadoop"
                     categories="hadoop"
@@ -716,6 +740,7 @@
                     sampleURL="jdbc:snappydata://{host}[:{port}]/"
                     defaultPort="1528"
                     description="Pivotal GemfireXD"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://snappydatainc.github.io/snappydata/"
                     category="Hadoop"
                     categories="hadoop"
@@ -733,6 +758,7 @@
                     sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10000"
                     description="Apache Hive JDBC"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                     category="Hadoop"
                     categories="hadoop"
@@ -755,6 +781,7 @@
                     sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10000"
                     description="Spark Thrift Server connector"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-sql-thrift-server.html"
                     category="Hadoop"
                     categories="hadoop"
@@ -774,6 +801,7 @@
                     sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10009"
                     description="Kyuubi Thrift Server connector"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://kyuubi.apache.org/"
                     category="Hadoop"
                     categories="hadoop"
@@ -792,6 +820,7 @@
                     class="org.apache.drill.jdbc.Driver"
                     sampleURL="jdbc:drill:zk={host}/{server}[;schema={database}]"
                     description="Apache Drill JDBC"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="http://drill.apache.org/docs/using-the-jdbc-driver/"
                     category="Hadoop"
                     categories="hadoop"
@@ -814,6 +843,7 @@
                     defaultPort="21050"
                     supportsDistributedMode="false"
                     description="Cloudera Impala. You can download JDBC driver files from https://www.cloudera.com/"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://www.cloudera.com/downloads/connectors/impala/jdbc/2-5-41.html"
                     category="Hadoop"
                     categories="hadoop">
@@ -853,6 +883,7 @@
                     sampleURL="jdbc:virtuoso://{host}:{port}/DATABASE={database}/CHARSET=UTF-8"
                     defaultPort="1111"
                     description="OpenLink Virtuoso open source driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/openlink/virtuoso-opensource"
                     categories="sql,object">
                     <file type="jar" path="https://github.com/openlink/virtuoso-opensource/raw/develop/7/libsrc/JDBCDriverType4/virtjdbc4.jar"/>
@@ -866,6 +897,7 @@
                     sampleURL="jdbc:machbase://{host}/mhdb"
                     defaultPort="5656"
                     description="MACHBASE standard driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="http://www.machbase.com"
                     iconBig="icons/machbase_icon_big.png"
                     categories="timeseries">
@@ -883,6 +915,7 @@
                     icon="icons/clickhouse_icon.png"
                     iconBig="icons/clickhouse_icon_big.png"
                     description="Yandex ClickHouse"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/yandex/clickhouse-jdbc"
                     categories="sql,analytic,columns">
                     <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.2.6]" bundle="!drivers.clickhouse"/>
@@ -904,6 +937,7 @@
                     sampleURL="jdbc:orient:remote:{host}/{database}"
                     defaultPort=""
                     description="OrientDB JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/orientechnologies/orientdb-jdbc"
                     categories="graph">
                     <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE[1.7]"/>
@@ -921,6 +955,7 @@
                     sampleURL="jdbc:neo4j:bolt://{host}[:{port}]/"
                     defaultPort="7687"
                     description="Neo4j JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
                     categories="graph">
                     <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
@@ -938,6 +973,7 @@
                     sampleURL="jdbc:presto://{host}:{port}[/{database}]"
                     defaultPort="8080"
                     description="Facebook Presto (prestodb) JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://prestodb.io/"
                     categories="sql,bigdata,hadoop">
                     <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
@@ -961,6 +997,7 @@
                         sampleURL="jdbc:presto://{host}:{port}[/{database}]"
                         defaultPort="8080"
                         description="Community Presto (prestosql) JDBC driver, use Trino for newer releases"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://prestosql.io/"
                         categories="sql,bigdata,hadoop">
                     <file type="jar" path="maven:/io.prestosql:presto-jdbc:RELEASE"/>
@@ -980,6 +1017,7 @@
                     sampleURL="jdbc:trino://{host}:{port}[/{database}]"
                     defaultPort="8080"
                     description="Trino JDBC driver, newer replacement for PrestoSQL"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://trino.io/"
                     categories="sql,bigdata,hadoop">
                     <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
@@ -1001,6 +1039,7 @@
                         sampleURL="jdbc:CUBRID:{host}:{port}:{database}:::"
                         defaultPort="33000"
                         description="CUBRID JDBC driver"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://www.cubrid.org/"
                         categories="sql">
                     <!-- At the moment HTTPS link doesn't work. But we can't keep HTTP anyway. -->
@@ -1017,6 +1056,7 @@
                         sampleURL="jdbc:solr://{host}:{port}/[?collection={database}]"
                         defaultPort="9983"
                         description="Apache SolrJ JDBC driver"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://lucene.apache.org/solr/"
                         categories="fulltext">
                     <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>
@@ -1034,6 +1074,7 @@
                         supportsDistributedMode="false"
                         defaultPort="6718"
                         description="OpenEdge Progress JDBC driver"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#"
                         categories="sql">
 <!--                    <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>-->
@@ -1049,6 +1090,7 @@
                         sampleURL="jdbc:monetdb://{host}[:{port}]/[{database}]"
                         defaultPort="50000"
                         description="MonetDB JDBC driver"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://www.monetdb.org/Documentation/Manuals/SQLreference/Programming/JDBC"
                         categories="sql,columns">
                     <file type="jar" path="maven:/monetdb:monetdb-jdbc:RELEASE"/>
@@ -1065,6 +1107,7 @@
                         sampleURL="jdbc:dremio:direct={host}[:{port}][;schema={database}]"
                         defaultPort="31010"
                         description="Dremio JDBC driver"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://docs.dremio.com/drivers/dremio-jdbc-driver.html"
                         categories="analytic,hadoop,sql">
                     <file type="jar" path="https://download.dremio.com/jdbc-driver/3.0.6-201812082352540436-1f684f9/dremio-jdbc-driver-3.0.6-201812082352540436-1f684f9.jar"/>
@@ -1082,6 +1125,7 @@
                         sampleURL="jdbc:ignite:thin://{host}[:{port}][;schema={database}]"
                         defaultPort=""
                         description="%driver.apache.ignite.description"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://apacheignite-sql.readme.io/docs/jdbc-driver"
                         categories="hadoop">
                     <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE"/>
@@ -1098,6 +1142,7 @@
                         sampleURL="jdbc:omnisci:{host}:{port}:{database}"
                         defaultPort="6274"
                         description="OmniSci (formerly MapD) SQL Analytics Engine"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://docs.omnisci.com/v5.1.1/6_jdbc.html"
                         categories="analytics,sql">
                     <file type="jar" path="maven:/com.omnisci:omnisci-jdbc:RELEASE"/>
@@ -1115,6 +1160,7 @@
                     sampleURL="crate://{host}[:{port}]/"
                     defaultPort="5432"
                     description="CrateDB JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://crate.io/docs/clients/jdbc/en/latest/"
                     categories="sql">
                     <file type="jar" path="maven:/io.crate:crate-jdbc:RELEASE"/>
@@ -1145,6 +1191,7 @@
                     defaultPort="1583"
                     supportsDistributedMode="false"
                     description="Pervasive JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://docs.actian.com/psql/PSQLv11/jdbc/wwhelp/wwhimpl/common/html/wwhelp.htm#href=jdbc_gd.1.3.html&amp;single=true"
                     categories="sql">
                 </driver>
@@ -1160,6 +1207,7 @@
                         sampleURL="jdbc:Sqream://{host}:{port}/{database};cluster=true"
                         defaultPort="3108"
                         description="SQream DB - SQL Data Warehouse"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://docs.sqream.com/en/latest/guides/client_drivers/jdbc/index.html"
                         categories="sql,analytic,columns">
                         <file type="jar" path="maven:/com.sqream:sqream-jdbc:RELEASE"/>
@@ -1206,6 +1254,7 @@
                     sampleURL="jdbc:avatica:remote:url=http://{host}:{port}/druid/v2/sql/avatica/"
                     defaultPort="8082"
                     description="Apache Calcite Avatica JDBC driver. Supports Apache Druid"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://calcite.apache.org/avatica/docs/client_reference.html"
                     categories="sql">
                     <file type="jar" path="maven:/org.apache.calcite.avatica:avatica-core:RELEASE[1.17.0]"/>
@@ -1229,6 +1278,7 @@
                     sampleURL="jdbc:kylin://{host}:{port}/{database}"
                     defaultPort="443"
                     description="Apache Kylin JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://kylin.apache.org/docs23/howto/howto_jdbc.html"
                     categories="sql">
                     <file type="jar" path="maven:/org.apache.kylin:kylin-jdbc:RELEASE"/>
@@ -1254,6 +1304,7 @@
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="3306"
                         webURL="https://www.mysql.com/products/connector/"
+                        supportedConfigurationTypes="MANUAL,URL"
                         description="Driver for MySQL (4.x and earlier)">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
                     <property name="rewriteBatchedStatements" value="true"/>
@@ -1267,10 +1318,11 @@
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
+                        supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://jdbc.postgresql.org/"
                         description="PostgreSQL JDBC driver. Can be used for old PostgreSQL versions or some PostgreSQL based databases (before 8.x).">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.25]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
 

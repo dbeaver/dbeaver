@@ -156,6 +156,7 @@
                     defaultPort="5433"
                     webURL="https://www.vertica.com/download/vertica/client-drivers/"
                     description="JDBC driver for Vertica 12+ Database"
+                    supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic,columns">
                     <replace provider="generic" driver="vertica"/>
                     <replace provider="vertica" driver="vertica-jdbc"/>

@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.security.user.SMRole;
+import org.jkiss.dbeaver.model.security.user.SMTeam;
 import org.jkiss.dbeaver.model.security.user.SMUser;
 
 import java.util.List;
@@ -36,7 +36,7 @@ public interface SMAdminController extends SMController {
 
     void deleteUser(String userId) throws DBException;
 
-    void setUserRoles(String userId, String[] roleIds, String grantorId) throws DBException;
+    void setUserTeams(String userId, String[] teamIds, String grantorId) throws DBException;
 
     SMUser getUserById(String userId) throws DBException;
 
@@ -48,21 +48,21 @@ public interface SMAdminController extends SMController {
     void enableUser(String userId, boolean enabled) throws DBException;
 
     ///////////////////////////////////////////
-    // Roles
+    // Teams
 
     @NotNull
-    SMRole[] readAllRoles() throws DBException;
+    SMTeam[] readAllTeams() throws DBException;
 
-    SMRole findRole(String roleId) throws DBException;
+    SMTeam findTeam(String teamId) throws DBException;
 
     @NotNull
-    String[] getRoleSubjects(String roleId) throws DBException;
+    String[] getTeamMembers(String teamId) throws DBException;
 
-    void createRole(String roleId, String name, String description, String grantor) throws DBException;
+    void createTeam(String teamId, String name, String description, String grantor) throws DBException;
 
-    void updateRole(String roleId, String name, String description) throws DBException;
+    void updateTeam(String teamId, String name, String description) throws DBException;
 
-    void deleteRole(String roleId) throws DBException;
+    void deleteTeam(String teamId) throws DBException;
 
     ///////////////////////////////////////////
     // Permissions

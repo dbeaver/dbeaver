@@ -541,6 +541,8 @@ public class GeneralUtils {
         SQLException nextError = null;
         if (ex instanceof SQLException) {
             nextError = ((SQLException) ex).getNextException();
+        } else if (cause instanceof SQLException) {
+            nextError = ((SQLException) cause).getNextException();
         }
         if (cause == null && nextError == null) {
             return new Status(

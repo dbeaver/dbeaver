@@ -14,39 +14,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * Session context.
- * Holds various auth sessions.
+ * Sql dialect ddl extension.
  */
-public interface SMSessionContext {
+public interface SQLDialectDDLExtension extends SQLDialect {
 
     /**
-     * Find and opens space session
-     * @param space target space
-     * @param open  if true then new session will be opened if possible
+     * Gets auto increment keyword.
+     *
+     * @return the auto increment keyword
      */
     @Nullable
-    SMSession getSpaceSession(@NotNull DBRProgressMonitor monitor, @NotNull SMAuthSpace space, boolean open) throws DBException;
+    String getAutoIncrementKeyword();
 
-    @Nullable
     /**
-     * Workaround to determine the correct context in QM
+     * Supports create if exists boolean.
+     *
+     * @return true or false
      */
-    SMAuthSpace getPrimaryAuthSpace();
+    boolean supportsCreateIfExists();
 
-    @Nullable
-    SMSession findSpaceSession(@NotNull SMAuthSpace space);
+    /**
+     * Gets timestamp type.
+     *
+     * @return the timestamp type
+     */
+    @NotNull
+    String getTimestampDataType();
 
-    void addSession(@NotNull SMSession session);
+    /**
+     * Gets big integer type.
+     *
+     * @return the big integer type
+     */
+    @NotNull
+    String getBigIntegerType();
 
-    boolean removeSession(@NotNull SMSession session);
+    /**
+     * Gets clob data type.
+     *
+     * @return the clob data type
+     */
+    @NotNull
+    String getClobDataType();
 
 }

@@ -66,6 +66,7 @@ public class SQLTranslatorHandler implements CommandLineParameterHandler {
         SQLDialect targetDialect = new BasicSQLDialect() {
 
         };
+
         String result = null;
         try {
             result = SQLQueryTranslator.translateScript(srcDialect, targetDialect, preferenceStore, script);
