@@ -236,11 +236,12 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             // Convert target name case (#1516)
             DBSObjectContainer container = parent.getSettings().getContainer();
             if (container != null) {
-                DBPDataSource dataSource = container.getDataSource();
-                if (dataSource != null && !DBUtils.isQuotedIdentifier(dataSource, targetName)
-                    && !dataSource.getSQLDialect().mustBeQuoted(targetName, true))
+                DBPDataSource targetDataSource = container.getDataSource();
+                boolean skipNameTransformation = isSkipNameTransformation(targetDataSource, targetName);
+                if (targetDataSource != null && !DBUtils.isQuotedIdentifier(targetDataSource, targetName)
+                    && !skipNameTransformation)
                 {
-                    targetName = DBObjectNameCaseTransformer.transformName(dataSource, targetName);
+                    targetName = DBObjectNameCaseTransformer.transformName(targetDataSource, targetName);
                 }
             }
         } else if (mappingType == DatabaseMappingType.unspecified && source != null && targetName != null) {
@@ -251,6 +252,14 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 targetName = sourceLabelOrName;
             }
         }
+    }
+
+    private boolean isSkipNameTransformation(@Nullable DBPDataSource targetDataSource, @NotNull String targetName) {
+        if (targetDataSource != null && source instanceof DBSObject && ((DBSObject) source).getDataSource() != null) {
+            return targetDataSource.getSQLDialect().mustBeQuoted(targetName, true)
+                && targetDataSource.getClass().equals(((DBSObject) source).getDataSource().getClass());
+        }
+        return false;
     }
 
     String getSourceLabelOrName(DBSAttributeBase source) {
@@ -267,7 +276,8 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
         DBSObjectContainer container = parent.getSettings().getContainer();
 
-        if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name)) {
+        boolean skipNameTransformation = container != null && isSkipNameTransformation(container.getDataSource(), name);
+        if (!skipNameTransformation && container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name)) {
             name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
         }
 
