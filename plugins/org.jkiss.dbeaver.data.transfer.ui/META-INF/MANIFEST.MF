@@ -9,6 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Activator: org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.tools.transfer.ui,
+ org.jkiss.dbeaver.tools.transfer.ui.internal,
  org.jkiss.dbeaver.tools.transfer.ui.wizard,
  org.jkiss.dbeaver.ui.controls
 Require-Bundle: org.eclipse.core.runtime,

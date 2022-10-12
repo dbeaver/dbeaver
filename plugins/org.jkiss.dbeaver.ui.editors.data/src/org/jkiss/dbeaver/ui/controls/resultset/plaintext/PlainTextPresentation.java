@@ -45,6 +45,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -61,7 +62,7 @@ import java.util.Map;
  * Empty presentation.
  * Used when RSV has no results (initially).
  */
-public class PlainTextPresentation extends AbstractPresentation implements IAdaptable {
+public class PlainTextPresentation extends AbstractPresentation implements IResultSetDisplayFormatProvider, IAdaptable {
 
     public static final int FIRST_ROW_LINE = 2;
 
@@ -423,6 +424,16 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     @Override
     public ISelection getSelection() {
         return new PlainTextSelectionImpl();
+    }
+
+    @Override
+    public DBDDisplayFormat getDefaultDisplayFormat() {
+        return DBDDisplayFormat.safeValueOf(controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT));
+    }
+
+    @Override
+    public void setDefaultDisplayFormat(DBDDisplayFormat displayFormat) {
+        controller.getPreferenceStore().setValue(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT, displayFormat.name());
     }
 
     private class PlainTextSelectionImpl implements IResultSetSelection {

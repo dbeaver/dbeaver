@@ -15,27 +15,17 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.ui.controls.resultset;
+
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 
 /**
- * Auth token.
- * Can be used by services to authenticate automatically.
+ * Result set display format provider.
  */
-public class SMAuthToken {
+public interface IResultSetDisplayFormatProvider {
 
-    private final SMSession session;
-    private final SMAuthSpace space;
+    DBDDisplayFormat getDefaultDisplayFormat();
 
-    public SMAuthToken(SMSession session, SMAuthSpace space) {
-        this.session = session;
-        this.space = space;
-    }
+    void setDefaultDisplayFormat(DBDDisplayFormat displayFormat);
 
-    public SMSession getSession() {
-        return session;
-    }
-
-    public SMAuthSpace getSpace() {
-        return space;
-    }
 }

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.*;
 
 /**
@@ -82,6 +83,7 @@ public class MySQLUtils {
         typeMap.put("geometry", java.sql.Types.BINARY);
         typeMap.put("binary", java.sql.Types.BINARY);
         typeMap.put("varbinary", java.sql.Types.VARBINARY);
+        typeMap.put(MySQLConstants.TYPE_UUID, Types.CHAR);
     }
 
     public static int typeNameToValueType(String typeName)
