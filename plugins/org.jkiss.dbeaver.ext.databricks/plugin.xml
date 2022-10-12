@@ -31,6 +31,7 @@
 
                     <file type="jar" path="https://databricks-bi-artifacts.s3.us-east-2.amazonaws.com/simbaspark-drivers/jdbc/2.6.22/SimbaSparkJDBC42-2.6.22.1040.zip" bundle="!drivers.databricks"/>
                     <file type="jar" path="drivers/databricks" bundle="drivers.databricks"/>
+                    <file type="license" path="drivers/databricks/EULA.txt" bundle="drivers.databricks"/>/>
 
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-multi-insert" value="true"/>
