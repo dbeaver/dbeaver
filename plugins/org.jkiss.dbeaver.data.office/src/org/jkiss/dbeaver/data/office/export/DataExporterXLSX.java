@@ -79,7 +79,6 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private static final int EXCEL2007MAXROWS = 1048575;
     private static final int EXCEL_MAX_CELL_CHARACTERS = 32767; // Total number of characters that a cell can contain - 32,767 characters
-    private boolean showDescription;
 
     enum FontStyleProp {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
 
@@ -92,7 +91,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private SXSSFWorkbook wb;
 
-    private boolean printHeader = false;
+    private HeaderFormat headerFormat = HeaderFormat.label;
     private boolean rowNumber = false;
     private String boolTrue = "true";
     private String boolFalse = "false";
@@ -135,9 +134,10 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         nullString = nullStringProp == null ? null : nullStringProp.toString();
 
         try {
-            printHeader = CommonUtils.getBoolean(properties.get(PROP_HEADER), true);
-        } catch (Exception e) {
-            printHeader = false;
+            headerFormat = HeaderFormat.valueOf(CommonUtils.toString(properties.get(PROP_HEADER)));
+        } catch (IllegalArgumentException e) {
+            // Backward compatibility. Before it was a boolean flag whether we want to include labels as a header or not
+            headerFormat = CommonUtils.getBoolean(properties.get(PROP_HEADER), true) ? HeaderFormat.label : HeaderFormat.none;
         }
 
         try {
@@ -332,14 +332,11 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
         columns = getSite().getAttributes();
         decorator = GeneralUtils.adapt(getSite().getSource(), DBDAttributeDecorator.class);
-        // FIXME: we want to avoid UI component dependency. But still want to use its preferences
-        showDescription = session.getDataSource().getContainer().getPreferenceStore()
-                .getBoolean("resultset.show.columnDescription");
     }
 
     private void printHeader(DBCResultSet resultSet, Worksheet wsh) throws DBException {
         boolean hasDescription = false;
-        if (showDescription) {
+        if (headerFormat.hasDescription()) {
             // Read bindings to extract column descriptions
             boolean bindingsOk = true;
             DBDAttributeBindingMeta[] bindings = new DBDAttributeBindingMeta[columns.length];
@@ -367,26 +364,32 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             }
         }
 
+        if (!hasDescription && !headerFormat.hasLabel()) {
+            return;
+        }
+
         SXSSFSheet sh = (SXSSFSheet) wsh.getSh();
-        Row row = sh.createRow(wsh.getCurrentRow());
+        sh.trackAllColumnsForAutoSizing();
 
         int startCol = rowNumber ? 1 : 0;
 
-        sh.trackAllColumnsForAutoSizing();
-        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
-            DBDAttributeBinding column = columns[i];
+        if (headerFormat.hasLabel()) {
+            Row row = sh.createRow(wsh.getCurrentRow());
+            for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
+                DBDAttributeBinding column = columns[i];
 
-            String colName = column.getLabel();
-            if (CommonUtils.isEmpty(colName)) {
-                colName = column.getName();
+                String colName = column.getLabel();
+                if (CommonUtils.isEmpty(colName)) {
+                    colName = column.getName();
+                }
+                Cell cell = row.createCell(i + startCol, CellType.STRING);
+                cell.setCellValue(colName);
+                cell.setCellStyle(styleHeader);
             }
-            Cell cell = row.createCell(i + startCol, CellType.STRING);
-            cell.setCellValue(colName);
-            cell.setCellStyle(styleHeader);
+            wsh.incRow();
         }
 
         if (hasDescription) {
-            wsh.incRow();
             Row descRow = sh.createRow(wsh.getCurrentRow());
             for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
                 Cell descCell = descRow.createCell(i + startCol, CellType.STRING);
@@ -397,13 +400,12 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
                 descCell.setCellValue(description);
                 descCell.setCellStyle(styleHeader);
             }
+            wsh.incRow();
         }
 
         for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
             sh.autoSizeColumn(i);
         }
-
-        wsh.incRow();
 
         try {
             sh.flushRows();
@@ -433,9 +435,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private Worksheet createSheet(DBCResultSet resultSet, Object colValue) throws DBException {
         Worksheet w = new Worksheet(wb.createSheet(), colValue, 0);
-        if (printHeader) {
-            printHeader(resultSet, w);
-        }
+        printHeader(resultSet, w);
         return w;
     }
 
@@ -601,5 +601,18 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         final int g = Integer.parseInt(tokenizer.nextToken().trim());
         final int b = Integer.parseInt(tokenizer.nextToken().trim());
         return new Color(r, g, b);
+    }
+
+    private enum HeaderFormat {
+        // These need to be in lower case to match names of the properties
+        label, description, both, none;
+
+        public boolean hasLabel() {
+            return this == label || this == both;
+        }
+
+        public boolean hasDescription() {
+            return this == description || this == both;
+        }
     }
 }
