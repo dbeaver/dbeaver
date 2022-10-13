@@ -283,9 +283,18 @@ public class DesktopUI implements DBPPlatformUI {
         return UIUtils.confirmAction(null, title, message, isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION);
     }
     
+    @NotNull
     @Override
-    public UserChoiceResponse showUserChoice(String title, String message, List<String> labelByValue, boolean showForAllOption, Integer defaultChoice) {
-        final List<Reply> reply = labelByValue.stream().map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s)).collect(Collectors.toList());
+    public UserChoiceResponse showUserChoice(
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull List<String> labelByValue,
+        boolean showForAllOption,
+        @NotNull Integer defaultChoice
+    ) {
+        final List<Reply> reply = labelByValue.stream()
+            .map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s))
+            .collect(Collectors.toList());
         final List<Reply> actualReply = reply.stream().filter(r -> r != null).collect(Collectors.toList());
         Reply result = UIUtils.syncExec(new RunnableWithResult<Reply>() {
             public Reply runWithResult() {

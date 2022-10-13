@@ -64,10 +64,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     }
     
     public enum DataFileConflictBehavior {
-        ASK("ask user what to do"),
-        APPEND("append new data to the end of existing file"),
-        PATCHNAME("place new file nearby with autofixed name"),
-        OVERWRITE("overwrite existing file");
+        ASK("ask"),
+        APPEND("append"),
+        PATCHNAME("autofix name"),
+        OVERWRITE("overwrite");
         
         public final String title; 
         
@@ -77,9 +77,9 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     }
     
     public enum BlobFileConflictBehavior {
-        ASK("ask user what to do"),
-        PATCHNAME("place new file nearby with autofixed name"),
-        OVERWRITE("overwrite existing file");       
+        ASK("ask"),
+        PATCHNAME("autofix name"),
+        OVERWRITE("overwrite");       
 
         public final String title; 
         
@@ -107,7 +107,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private DBDDataFormatterProfile formatterProfile;
     @NotNull
     private DBDDisplayFormat valueFormat = DBDDisplayFormat.UI;
-    // private boolean appendToFileEnd = false;
     private DataFileConflictBehavior dataFileConflictBehavior = DataFileConflictBehavior.ASK;
     private BlobFileConflictBehavior blobFileConflictBehavior = BlobFileConflictBehavior.ASK;
     private boolean outputClipboard = false;
@@ -119,26 +118,20 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private final Map<String, Map<String, Object>> eventProcessors = new HashMap<>();
 
 
-//    public boolean isAppendToFileEnd() {
-//        return appendToFileEnd;
-//    }
-//
-//    public void setAppendToFileEnd(boolean appendToFileEnd) {
-//        this.appendToFileEnd = appendToFileEnd;
-//    }
-
-    public void setDataFileConflictBehavior(DataFileConflictBehavior dataFileConflictBehavior) {
+    public void setDataFileConflictBehavior(@NotNull DataFileConflictBehavior dataFileConflictBehavior) {
         this.dataFileConflictBehavior = dataFileConflictBehavior;
     }
     
+    @NotNull
     public DataFileConflictBehavior getDataFileConflictBehavior() {
         return dataFileConflictBehavior;
     }
 
-    public void setBlobFileConflictBehavior(BlobFileConflictBehavior blobFileConflictBehavior) {
+    public void setBlobFileConflictBehavior(@NotNull BlobFileConflictBehavior blobFileConflictBehavior) {
         this.blobFileConflictBehavior = blobFileConflictBehavior;
     }
     
+    @NotNull
     public BlobFileConflictBehavior getBlobFileConflictBehavior() {
         return blobFileConflictBehavior;
     }
@@ -294,9 +287,16 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         outputTimestampPattern = CommonUtils.toString(settings.get("outputTimestampPattern"), outputTimestampPattern);
         outputEncodingBOM = CommonUtils.getBoolean(settings.get("outputEncodingBOM"), outputEncodingBOM);
         outputClipboard = CommonUtils.getBoolean(settings.get("outputClipboard"), outputClipboard);
-//        appendToFileEnd = CommonUtils.getBoolean(settings.get("appendToFile"), appendToFileEnd);
-        dataFileConflictBehavior = CommonUtils.valueOf(DataFileConflictBehavior.class, CommonUtils.toString(settings.get(DATA_FILE_CONFLICT_BEHAVIOR)), DataFileConflictBehavior.ASK);
-        blobFileConflictBehavior = CommonUtils.valueOf(BlobFileConflictBehavior.class, CommonUtils.toString(settings.get(BLOB_FILE_CONFLICT_BEHAVIOR)), BlobFileConflictBehavior.ASK);
+        dataFileConflictBehavior = CommonUtils.valueOf(
+            DataFileConflictBehavior.class,
+            CommonUtils.toString(settings.get(DATA_FILE_CONFLICT_BEHAVIOR)),
+            DataFileConflictBehavior.ASK
+        );
+        blobFileConflictBehavior = CommonUtils.valueOf(
+            BlobFileConflictBehavior.class,
+            CommonUtils.toString(settings.get(BLOB_FILE_CONFLICT_BEHAVIOR)),
+            BlobFileConflictBehavior.ASK
+        );
         if (dataTransferSettings.getDataPipes().size() > 1) {
             useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile);
         } else {

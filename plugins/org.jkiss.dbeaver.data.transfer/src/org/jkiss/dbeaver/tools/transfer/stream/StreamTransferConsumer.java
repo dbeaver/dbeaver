@@ -140,6 +140,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private final List<File> outputFiles = new ArrayList<>();
     private StatOutputStream statStream;
+    
+    private DataFileConflictBehavior dataFileConflictBehaviorForAll = null;
+    private Integer dataFileConflictPreviousChoice = null;
 
     public StreamTransferConsumer() {
     }
@@ -270,10 +273,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private BlobFileConflictBehavior blobFileConflictBehaviorForAll = null;
     private Integer blobFileConflictPreviousChoice = null;
     
-    private boolean resolveOverwriteBlobFileConflict(String fileName) {        
+    private boolean resolveOverwriteBlobFileConflict(@NotNull String fileName) {        
         BlobFileConflictBehavior behavior = blobFileConflictBehaviorForAll != null 
-                                                        ? blobFileConflictBehaviorForAll
-                                                        : settings.getBlobFileConflictBehavior();
+            ? blobFileConflictBehaviorForAll
+            : settings.getBlobFileConflictBehavior();
         
         if (behavior == BlobFileConflictBehavior.ASK) {
             UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
@@ -324,13 +327,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         if (lobFile.isFile()) {
             if (!resolveOverwriteBlobFileConflict(fileExt)) {
                 lobFile = makeLobFileName(Long.toString(System.currentTimeMillis()), fileExt);
-                while (outputFile.isFile()) {
+                // I believe that we can't generate two System.currentTimeMillis() in the same time,
+                // but if it accidentally happen, let's just wait and generate it again
+                while (lobFile.isFile()) {
                     try { Thread.sleep(100); }
                     catch (InterruptedException ex) { }
                     lobFile = makeLobFileName(Long.toString(System.currentTimeMillis()), fileExt);
                 }
             }
-        }            
+        }
         
         try (InputStream cs = contents.getContentStream()) {
             ContentUtils.saveContentToFile(cs, lobFile, monitor);
@@ -363,7 +368,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             outputFile = null;
         }
 
-        if (processor instanceof IAppendableDataExporter && (settings.getDataFileConflictBehavior() == DataFileConflictBehavior.APPEND || (settings.isUseSingleFile() && parameters.orderNumber > 0))) {
+        if (processor instanceof IAppendableDataExporter && (settings.getDataFileConflictBehavior() == DataFileConflictBehavior.APPEND
+            || (settings.isUseSingleFile() && parameters.orderNumber > 0))
+        ) {
             try {
                 ((IAppendableDataExporter) processor).importData(exportSite);
             } catch (DBException e) {
@@ -411,14 +418,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
         closeOutputStreams();
     }
-
-    private DataFileConflictBehavior dataFileConflictBehaviorForAll = null;
-    private Integer dataFileConflictPreviousChoice = null;
     
     private DataFileConflictBehavior getDataFileConflictBehavior(String fileName) {        
         DataFileConflictBehavior behavior = dataFileConflictBehaviorForAll != null 
-                                                        ? dataFileConflictBehaviorForAll
-                                                        : settings.getDataFileConflictBehavior();
+            ? dataFileConflictBehaviorForAll
+            : settings.getDataFileConflictBehavior();
         
         if (behavior == DataFileConflictBehavior.ASK) {
             UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
@@ -458,14 +462,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     
     private void openOutputStreams() throws IOException {
         final boolean truncate;
-
-//        if (settings.getDataFileConflictBehavior() == DataFileConflictBehavior.OVERWRITE && settings.isUseSingleFile() && parameters.orderNumber == 0) {
-//            truncate = true;
-//        } else if (processor instanceof IAppendableDataExporter && (settings.getDataFileConflictBehavior() == DataFileConflictBehavior.APPEND || settings.isUseSingleFile())) {
-//            truncate = ((IAppendableDataExporter) processor).shouldTruncateOutputFileBeforeExport();
-//        } else {
-//            truncate = true;
-//        }
         
         if (outputFile.isFile()) {
             DataFileConflictBehavior behavior = getDataFileConflictBehavior(outputFile.getName());
@@ -476,6 +472,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 case PATCHNAME:
                     truncate = false;
                     outputFile = makeOutputFile("" + System.currentTimeMillis());
+                    // I believe that we can't generate two System.currentTimeMillis() in the same time,
+                    // but if it accidentally happen, let's just wait and generate it again
                     while (outputFile.isFile()) {
                         try { Thread.sleep(100); }
                         catch (InterruptedException ex) { }
@@ -662,19 +660,19 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return outputFiles;
     }
 
+    @NotNull
     public String getOutputFileName() {
         return getOutputFileName(null);
     }
     
+    @NotNull
     private String getOutputFileName(@Nullable String suffix) {
         Object extension = processorProperties == null ? null : processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
-        String fileName = translatePattern(
-            settings.getOutputFilePattern(),
-            null).trim();
+        String fileName = translatePattern(settings.getOutputFilePattern(), null).trim();
         // Can't rememeber why did we need this. It breaks file names in case of multiple tables export (#6911)
-//        if (parameters.orderNumber > 0 && !settings.isUseSingleFile()) {
-//            fileName += "_" + String.valueOf(parameters.orderNumber + 1);
-//        }
+        // if (parameters.orderNumber > 0 && !settings.isUseSingleFile()) {
+        //    fileName += "_" + String.valueOf(parameters.orderNumber + 1);
+        //}
         if (multiFileNumber > 0) {
             fileName += "_" + (multiFileNumber + 1);
         }
@@ -688,12 +686,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
     }
 
+    @NotNull
     public File makeOutputFile() {
         return makeOutputFile(null);
     }
     
+    @NotNull
     private File makeOutputFile(@Nullable String suffix) {
-                File dir = new File(getOutputFolder());
+        File dir = new File(getOutputFolder());
         if (!dir.exists() && !dir.mkdirs()) {
             log.error("Can't create output directory '" + dir.getAbsolutePath() + "'");
         }

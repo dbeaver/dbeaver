@@ -61,12 +61,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     
@@ -75,8 +73,15 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         
         private T currentValue;
         
-        public EnumSelectionGroup(Composite parent, String header, List<T> values, Function<T, String> titleByValue, T defaultValue, 
-                                    Consumer<T> onValueSelected, Function<T, Boolean> valueSelectionConfirmation) {
+        public EnumSelectionGroup(
+            @NotNull Composite parent,
+            @NotNull String header,
+            @NotNull List<T> values,
+            @NotNull Function<T, String> titleByValue,
+            @NotNull T defaultValue,
+            @NotNull Consumer<T> onValueSelected,
+            @NotNull Function<T, Boolean> valueSelectionConfirmation
+        ) {
             Group group = UIUtils.createControlGroup(parent, header, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             
             @SuppressWarnings("unchecked")
@@ -103,11 +108,12 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             currentValue = defaultValue;
         }
         
+        @NotNull
         public T getValue() {
             return currentValue;
         }
         
-        public void setValue(T value) {
+        public void setValue(@NotNull T value) {
             for (Button btn: radioButtonByValue.values()) {
                 btn.setSelection(false);
             }
@@ -134,7 +140,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     private Button singleFileCheck;
     private Button showFinalMessageCheckbox;
     private Button splitFilesCheckbox;
-//    private Button appendToEndOfFileCheck;
     private EnumSelectionGroup<DataFileConflictBehavior> dataFileConflictBehaviorSelector;
     private EnumSelectionGroup<BlobFileConflictBehavior> blobFileConflictBehaviorSelector;
     private Label maximumFileSizeLabel;
@@ -206,17 +211,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                     }
                 });
             }
-
-//            appendToEndOfFileCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_add_to_end_of_file, DTMessages.data_transfer_wizard_output_label_add_to_end_of_file_tip, false, 1);
-//            appendToEndOfFileCheck.addSelectionListener(new SelectionAdapter() {
-//                @Override
-//                public void widgetSelected(SelectionEvent e) {
-//                    settings.setAppendToFileEnd(appendToEndOfFileCheck.getSelection());
-//                    updateControlsEnablement();
-//                }
-//            });
-            
-            // StreamConsumerSettings.DataFileConflictBehavior.values()
             
             singleFileCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_use_single_file, DTMessages.data_transfer_wizard_output_label_use_single_file_tip, false, 5);
             singleFileCheck.addSelectionListener(new SelectionAdapter() {
@@ -261,17 +255,29 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 Composite fileConflictBehaviorSettings = UIUtils.createComposite(generalSettings, 2);
                 fileConflictBehaviorSettings.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 5, 1));
                 
-                dataFileConflictBehaviorSelector = new EnumSelectionGroup<>(fileConflictBehaviorSettings, "On object data file name conflict", List.of( 
+                dataFileConflictBehaviorSelector = new EnumSelectionGroup<>(
+                    fileConflictBehaviorSettings,
+                    "On object data file name conflict",
+                    List.of(
+                        DataFileConflictBehavior.ASK,
+                        DataFileConflictBehavior.APPEND,
+                        DataFileConflictBehavior.PATCHNAME,
+                        DataFileConflictBehavior.OVERWRITE
+                    ),
+                    v -> v.title,
                     DataFileConflictBehavior.ASK,
-                    DataFileConflictBehavior.APPEND,
-                    DataFileConflictBehavior.PATCHNAME,
-                    DataFileConflictBehavior.OVERWRITE
-                ), v -> v.title, DataFileConflictBehavior.ASK, v -> settings.setDataFileConflictBehavior(v), v -> v != DataFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite());
-                blobFileConflictBehaviorSelector = new EnumSelectionGroup<>(fileConflictBehaviorSettings, "On blob value file name conflict", List.of( 
+                    v -> settings.setDataFileConflictBehavior(v),
+                    v -> v != DataFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite()
+                );
+                blobFileConflictBehaviorSelector = new EnumSelectionGroup<>(
+                    fileConflictBehaviorSettings,
+                    "On blob value file name conflict",
+                    List.of(BlobFileConflictBehavior.ASK, BlobFileConflictBehavior.PATCHNAME, BlobFileConflictBehavior.OVERWRITE),
+                    v -> v.title,
                     BlobFileConflictBehavior.ASK,
-                    BlobFileConflictBehavior.PATCHNAME,
-                    BlobFileConflictBehavior.OVERWRITE
-                ), v -> v.title, BlobFileConflictBehavior.ASK, v -> settings.setBlobFileConflictBehavior(v), v -> v != BlobFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite());
+                    v -> settings.setBlobFileConflictBehavior(v),
+                    v -> v != BlobFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite()
+                );
             }
 
             // No resolver - several producers may present.
@@ -333,13 +339,14 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         boolean isAppendable = settings.getProcessor().isAppendable() && !compressCheckbox.getSelection();
         boolean clipboard = !isBinary && clipboardCheck.getSelection();
         boolean compressableByConflictResolution = dataFileConflictBehaviorSelector.getValue() != DataFileConflictBehavior.APPEND
-                                                && dataFileConflictBehaviorSelector.getValue() != DataFileConflictBehavior.ASK
-                                                && blobFileConflictBehaviorSelector.getValue() != BlobFileConflictBehavior.ASK;
+            && dataFileConflictBehaviorSelector.getValue() != DataFileConflictBehavior.ASK
+            && blobFileConflictBehaviorSelector.getValue() != BlobFileConflictBehavior.ASK;
         clipboardCheck.setEnabled(!isBinary);
         singleFileCheck.setEnabled(!clipboard && isAppendable && settings.getDataPipes().size() > 1 && settings.getMaxJobCount() <= 1);
-        // appendToEndOfFileCheck.setEnabled(!clipboard && isAppendable);
         dataFileConflictBehaviorSelector.setEnabled(!clipboard && isAppendable); // TODO 
-        blobFileConflictBehaviorSelector.setEnabled(!clipboard && getWizard().getPageSettings(this, StreamConsumerSettings.class).getLobExtractType() == LobExtractType.FILES);
+        blobFileConflictBehaviorSelector.setEnabled(
+            !clipboard && getWizard().getPageSettings(this, StreamConsumerSettings.class).getLobExtractType() == LobExtractType.FILES
+        );
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
         compressCheckbox.setEnabled(!clipboard && compressableByConflictResolution && !singleFileCheck.getSelection());
@@ -364,7 +371,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         clipboardCheck.setSelection(settings.isOutputClipboard() && !descriptor.isBinaryFormat());
         singleFileCheck.setSelection(settings.isUseSingleFile() && descriptor.isAppendable());
-//        appendToEndOfFileCheck.setSelection(settings.isAppendToFileEnd() && descriptor.isAppendable());
         dataFileConflictBehaviorSelector.setValue(settings.getDataFileConflictBehavior());
         blobFileConflictBehaviorSelector.setValue(settings.getBlobFileConflictBehavior());
         directoryText.setText(CommonUtils.toString(settings.getOutputFolder()));
@@ -433,7 +439,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 return false;
             }
         }
-        
         return true;
     }
     

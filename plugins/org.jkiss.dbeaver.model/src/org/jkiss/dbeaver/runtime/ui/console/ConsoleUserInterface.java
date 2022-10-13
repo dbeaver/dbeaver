@@ -97,7 +97,13 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
     
     @Override
-    public UserChoiceResponse showUserChoice(@NotNull final String title, @Nullable final String message, @NotNull List<String> labels, boolean showForAllOption, @Nullable Integer defaultChoice) {
+    public UserChoiceResponse showUserChoice(
+        @NotNull final String title,
+        @Nullable final String message,
+        @NotNull List<String> labels,
+        boolean showForAllOption,
+        @Nullable Integer defaultChoice
+    ) {
         return new UserChoiceResponse(defaultChoice, showForAllOption);
     }
 
