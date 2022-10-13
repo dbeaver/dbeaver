@@ -30,9 +30,9 @@ public class AcceptLicenseDialog extends Dialog {
 
     private final String title;
     private final String license;
+    private boolean viewMode;
 
-    public AcceptLicenseDialog(Shell parentShell, String title, String license)
-    {
+    public AcceptLicenseDialog(Shell parentShell, String title, String license) {
         super(parentShell);
         this.title = title;
         this.license = license;
@@ -40,12 +40,11 @@ public class AcceptLicenseDialog extends Dialog {
 
     @Override
     protected boolean isResizable() {
-    	return true;
+        return true;
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
-    {
+    protected Control createDialogArea(Composite parent) {
         getShell().setText(title);
 
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -65,20 +64,24 @@ public class AcceptLicenseDialog extends Dialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
+    protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.YES_LABEL, true);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.NO_LABEL, false);
+        if (!viewMode) {
+            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.NO_LABEL, false);
+        }
     }
 
-    public static boolean acceptLicense(Shell parentShell, String title, String license)
-    {
+    public static boolean acceptLicense(Shell parentShell, String title, String license) {
         AcceptLicenseDialog dialog = new AcceptLicenseDialog(parentShell, title, license);
         if (dialog.open() == IDialogConstants.OK_ID) {
             return true;
         } else {
             return false;
         }
+    }
+
+    public void setViewMode(boolean viewMode) {
+        this.viewMode = viewMode;
     }
 
 }
