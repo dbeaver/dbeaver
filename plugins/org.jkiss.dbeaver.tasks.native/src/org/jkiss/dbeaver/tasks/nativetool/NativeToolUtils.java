@@ -27,6 +27,7 @@ public abstract class NativeToolUtils {
 
     public static final String VARIABLE_HOST = "host";
     public static final String VARIABLE_DATABASE = "database";
+    public static final String VARIABLE_SCHEMA = "schema";
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_DATE = "date";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
@@ -40,6 +41,7 @@ public abstract class NativeToolUtils {
     public static final String[] ALL_VARIABLES = {
         VARIABLE_HOST,
         VARIABLE_DATABASE,
+        VARIABLE_SCHEMA,
         VARIABLE_TABLE,
         VARIABLE_DATE,
         VARIABLE_TIMESTAMP,
