@@ -201,7 +201,9 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         connectionDefaultNamePatternText.setText(ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
         sampleConnectionName.setText(GeneralUtils.replaceVariables(connectionDefaultNamePatternText.getText(), fakeConnectionNameResolver));
         connectionNamePattern = ModelPreferences.getPreferences().getDefaultString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
-        useWinTrustStoreCheck.setSelection(ModelPreferences.getPreferences().getDefaultBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE));
+        if (RuntimeUtils.isWindows()) {
+            useWinTrustStoreCheck.setSelection(ModelPreferences.getPreferences().getDefaultBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE));
+        }
         updateCombosAndSettings();
     }
 
@@ -227,7 +229,9 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             DataSourceNavigatorSettings.setDefaultSettings(defaultNavigatorSettings);
         }
         ModelPreferences.getPreferences().setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
-        ModelPreferences.getPreferences().setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
+        if (RuntimeUtils.isWindows()) {
+            ModelPreferences.getPreferences().setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
+        }
         return super.performOk();
     }
 
