@@ -23,6 +23,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -40,6 +42,9 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescr
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.BlobFileConflictBehavior;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.DataFileConflictBehavior;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.LobExtractType;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
@@ -56,13 +61,69 @@ import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
+    
+    private class EnumSelectionGroup<T extends Enum<T>> {
+        private final Map<T, Button> radioButtonByValue;
+        
+        private T currentValue;
+        
+        public EnumSelectionGroup(Composite parent, String header, List<T> values, Function<T, String> titleByValue, T defaultValue, 
+                                    Consumer<T> onValueSelected, Function<T, Boolean> valueSelectionConfirmation) {
+            Group group = UIUtils.createControlGroup(parent, header, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            
+            @SuppressWarnings("unchecked")
+            SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
+                Button triggered = (Button)e.widget;
+                if (triggered.getSelection()) {
+                    T newValue = (T)e.widget.getData();
+                    if (currentValue != newValue) {
+                        if (valueSelectionConfirmation.apply(newValue)) {
+                            currentValue = newValue;
+                            onValueSelected.accept(newValue);   
+                        } else {
+                            setValue(currentValue);
+                        }
+                    }
+                }
+            });
+            
+            radioButtonByValue = values.stream().collect(Collectors.toMap(
+                v -> v,
+                v -> UIUtils.createRadioButton(group, titleByValue.apply(v), v, selectionListener)
+            ));
+            
+            currentValue = defaultValue;
+        }
+        
+        public T getValue() {
+            return currentValue;
+        }
+        
+        public void setValue(T value) {
+            for (Button btn: radioButtonByValue.values()) {
+                btn.setSelection(false);
+            }
+            radioButtonByValue.get(value).setSelection(true);
+            currentValue = value;
+        }
+
+        public void setEnabled(boolean value) {
+            for (Button btn: radioButtonByValue.values()) {
+                btn.setEnabled(value);
+            }
+        }
+    }
 
     private static final Log log = Log.getLog(StreamConsumerPageOutput.class);
-
+    
     private Combo encodingCombo;
     private Button encodingBOMCheckbox;
     private Text timestampPattern;
@@ -73,7 +134,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     private Button singleFileCheck;
     private Button showFinalMessageCheckbox;
     private Button splitFilesCheckbox;
-    private Button appendToEndOfFileCheck;
+//    private Button appendToEndOfFileCheck;
+    private EnumSelectionGroup<DataFileConflictBehavior> dataFileConflictBehaviorSelector;
+    private EnumSelectionGroup<BlobFileConflictBehavior> blobFileConflictBehaviorSelector;
     private Label maximumFileSizeLabel;
     private Text maximumFileSizeText;
     private final Map<String, EventProcessorComposite> processors = new HashMap<>();
@@ -144,15 +207,17 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 });
             }
 
-            appendToEndOfFileCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_add_to_end_of_file, DTMessages.data_transfer_wizard_output_label_add_to_end_of_file_tip, false, 1);
-            appendToEndOfFileCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setAppendToFileEnd(appendToEndOfFileCheck.getSelection());
-                    updateControlsEnablement();
-                }
-            });
-
+//            appendToEndOfFileCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_add_to_end_of_file, DTMessages.data_transfer_wizard_output_label_add_to_end_of_file_tip, false, 1);
+//            appendToEndOfFileCheck.addSelectionListener(new SelectionAdapter() {
+//                @Override
+//                public void widgetSelected(SelectionEvent e) {
+//                    settings.setAppendToFileEnd(appendToEndOfFileCheck.getSelection());
+//                    updateControlsEnablement();
+//                }
+//            });
+            
+            // StreamConsumerSettings.DataFileConflictBehavior.values()
+            
             singleFileCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_use_single_file, DTMessages.data_transfer_wizard_output_label_use_single_file_tip, false, 5);
             singleFileCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -190,6 +255,23 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.widthHint = UIUtils.getFontHeight(maximumFileSizeText) * 10;
                 maximumFileSizeText.setLayoutData(gd);
+            }
+
+            {
+                Composite fileConflictBehaviorSettings = UIUtils.createComposite(generalSettings, 2);
+                fileConflictBehaviorSettings.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 5, 1));
+                
+                dataFileConflictBehaviorSelector = new EnumSelectionGroup<>(fileConflictBehaviorSettings, "On object data file name conflict", List.of( 
+                    DataFileConflictBehavior.ASK,
+                    DataFileConflictBehavior.APPEND,
+                    DataFileConflictBehavior.PATCHNAME,
+                    DataFileConflictBehavior.OVERWRITE
+                ), v -> v.title, DataFileConflictBehavior.ASK, v -> settings.setDataFileConflictBehavior(v), v -> v != DataFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite());
+                blobFileConflictBehaviorSelector = new EnumSelectionGroup<>(fileConflictBehaviorSettings, "On blob value file name conflict", List.of( 
+                    BlobFileConflictBehavior.ASK,
+                    BlobFileConflictBehavior.PATCHNAME,
+                    BlobFileConflictBehavior.OVERWRITE
+                ), v -> v.title, BlobFileConflictBehavior.ASK, v -> settings.setBlobFileConflictBehavior(v), v -> v != BlobFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite());
             }
 
             // No resolver - several producers may present.
@@ -250,12 +332,17 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         boolean isBinary = settings.getProcessor().isBinaryFormat();
         boolean isAppendable = settings.getProcessor().isAppendable() && !compressCheckbox.getSelection();
         boolean clipboard = !isBinary && clipboardCheck.getSelection();
+        boolean compressableByConflictResolution = dataFileConflictBehaviorSelector.getValue() != DataFileConflictBehavior.APPEND
+                                                && dataFileConflictBehaviorSelector.getValue() != DataFileConflictBehavior.ASK
+                                                && blobFileConflictBehaviorSelector.getValue() != BlobFileConflictBehavior.ASK;
         clipboardCheck.setEnabled(!isBinary);
         singleFileCheck.setEnabled(!clipboard && isAppendable && settings.getDataPipes().size() > 1 && settings.getMaxJobCount() <= 1);
-        appendToEndOfFileCheck.setEnabled(!clipboard && isAppendable);
+        // appendToEndOfFileCheck.setEnabled(!clipboard && isAppendable);
+        dataFileConflictBehaviorSelector.setEnabled(!clipboard && isAppendable); // TODO 
+        blobFileConflictBehaviorSelector.setEnabled(!clipboard && getWizard().getPageSettings(this, StreamConsumerSettings.class).getLobExtractType() == LobExtractType.FILES);
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
-        compressCheckbox.setEnabled(!clipboard && !appendToEndOfFileCheck.getSelection() && !singleFileCheck.getSelection());
+        compressCheckbox.setEnabled(!clipboard && compressableByConflictResolution && !singleFileCheck.getSelection());
         splitFilesCheckbox.setEnabled(!clipboard);
         maximumFileSizeLabel.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         maximumFileSizeText.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
@@ -277,7 +364,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         clipboardCheck.setSelection(settings.isOutputClipboard() && !descriptor.isBinaryFormat());
         singleFileCheck.setSelection(settings.isUseSingleFile() && descriptor.isAppendable());
-        appendToEndOfFileCheck.setSelection(settings.isAppendToFileEnd() && descriptor.isAppendable());
+//        appendToEndOfFileCheck.setSelection(settings.isAppendToFileEnd() && descriptor.isAppendable());
+        dataFileConflictBehaviorSelector.setValue(settings.getDataFileConflictBehavior());
+        blobFileConflictBehaviorSelector.setValue(settings.getBlobFileConflictBehavior());
         directoryText.setText(CommonUtils.toString(settings.getOutputFolder()));
         fileNameText.setText(CommonUtils.toString(settings.getOutputFilePattern()));
         compressCheckbox.setSelection(settings.isCompressResults());
@@ -344,8 +433,16 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 return false;
             }
         }
-
+        
         return true;
+    }
+    
+    private boolean confirmPossibleFileOverwrite() {
+        return DBWorkbench.getPlatformUI().confirmAction(
+            "Possible data loss", 
+            "You are about to configure task with OVERWRITE settings turned on, which may lead to a data loss if target file already exists. Do you want to confirm?",
+            true
+        );
     }
 
     @NotNull

@@ -62,11 +62,38 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         BINARY,
         NATIVE
     }
+    
+    public enum DataFileConflictBehavior {
+        ASK("ask user what to do"),
+        APPEND("append new data to the end of existing file"),
+        PATCHNAME("place new file nearby with autofixed name"),
+        OVERWRITE("overwrite existing file");
+        
+        public final String title; 
+        
+        DataFileConflictBehavior(String title) {
+            this.title = title;
+        }
+    }
+    
+    public enum BlobFileConflictBehavior {
+        ASK("ask user what to do"),
+        PATCHNAME("place new file nearby with autofixed name"),
+        OVERWRITE("overwrite existing file");       
+
+        public final String title; 
+        
+        BlobFileConflictBehavior(String title) {
+            this.title = title;
+        }
+    }
 
     public static final String PROP_EXTRACT_IMAGES = "extractImages";
     public static final String PROP_FILE_EXTENSION = "extension";
 
     private static final String SETTING_VALUE_FORMAT = "valueFormat"; //$NON-NLS-1$
+    private static final String DATA_FILE_CONFLICT_BEHAVIOR = "dataFileConflictBehavior"; //$NON-NLS-1$
+    private static final String BLOB_FILE_CONFLICT_BEHAVIOR = "blobFileConflictBehavior"; //$NON-NLS-1$
 
     private LobExtractType lobExtractType = LobExtractType.INLINE;
     private LobEncoding lobEncoding = LobEncoding.BINARY;
@@ -80,7 +107,9 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private DBDDataFormatterProfile formatterProfile;
     @NotNull
     private DBDDisplayFormat valueFormat = DBDDisplayFormat.UI;
-    private boolean appendToFileEnd = false;
+    // private boolean appendToFileEnd = false;
+    private DataFileConflictBehavior dataFileConflictBehavior = DataFileConflictBehavior.ASK;
+    private BlobFileConflictBehavior blobFileConflictBehavior = BlobFileConflictBehavior.ASK;
     private boolean outputClipboard = false;
     private boolean useSingleFile = false;
     private boolean compressResults = false;
@@ -90,12 +119,28 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private final Map<String, Map<String, Object>> eventProcessors = new HashMap<>();
 
 
-    public boolean isAppendToFileEnd() {
-        return appendToFileEnd;
+//    public boolean isAppendToFileEnd() {
+//        return appendToFileEnd;
+//    }
+//
+//    public void setAppendToFileEnd(boolean appendToFileEnd) {
+//        this.appendToFileEnd = appendToFileEnd;
+//    }
+
+    public void setDataFileConflictBehavior(DataFileConflictBehavior dataFileConflictBehavior) {
+        this.dataFileConflictBehavior = dataFileConflictBehavior;
+    }
+    
+    public DataFileConflictBehavior getDataFileConflictBehavior() {
+        return dataFileConflictBehavior;
     }
 
-    public void setAppendToFileEnd(boolean appendToFileEnd) {
-        this.appendToFileEnd = appendToFileEnd;
+    public void setBlobFileConflictBehavior(BlobFileConflictBehavior blobFileConflictBehavior) {
+        this.blobFileConflictBehavior = blobFileConflictBehavior;
+    }
+    
+    public BlobFileConflictBehavior getBlobFileConflictBehavior() {
+        return blobFileConflictBehavior;
     }
 
     public LobExtractType getLobExtractType() {
@@ -249,7 +294,9 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         outputTimestampPattern = CommonUtils.toString(settings.get("outputTimestampPattern"), outputTimestampPattern);
         outputEncodingBOM = CommonUtils.getBoolean(settings.get("outputEncodingBOM"), outputEncodingBOM);
         outputClipboard = CommonUtils.getBoolean(settings.get("outputClipboard"), outputClipboard);
-        appendToFileEnd = CommonUtils.getBoolean(settings.get("appendToFile"), appendToFileEnd);
+//        appendToFileEnd = CommonUtils.getBoolean(settings.get("appendToFile"), appendToFileEnd);
+        dataFileConflictBehavior = CommonUtils.valueOf(DataFileConflictBehavior.class, CommonUtils.toString(settings.get(DATA_FILE_CONFLICT_BEHAVIOR)), DataFileConflictBehavior.ASK);
+        blobFileConflictBehavior = CommonUtils.valueOf(BlobFileConflictBehavior.class, CommonUtils.toString(settings.get(BLOB_FILE_CONFLICT_BEHAVIOR)), BlobFileConflictBehavior.ASK);
         if (dataTransferSettings.getDataPipes().size() > 1) {
             useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile);
         } else {
@@ -323,7 +370,9 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     public void saveSettings(Map<String, Object> settings) {
         settings.put("lobExtractType", lobExtractType.name());
         settings.put("lobEncoding", lobEncoding.name());
-        settings.put("appendToFile", appendToFileEnd);
+        // settings.put("appendToFile", appendToFileEnd);
+        settings.put(DATA_FILE_CONFLICT_BEHAVIOR, dataFileConflictBehavior.name());
+        settings.put(BLOB_FILE_CONFLICT_BEHAVIOR, blobFileConflictBehavior.name());
         settings.put("outputFolder", outputFolder);
         settings.put("outputFilePattern", outputFilePattern);
         settings.put("outputEncoding", outputEncoding);
@@ -366,6 +415,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_use_single_file, useSingleFile);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_directory, outputFolder);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_file_name_pattern, outputFilePattern);
+            DTUtils.addSummary(summary, "Object data file name conflict behavior", dataFileConflictBehavior.title);
+            DTUtils.addSummary(summary, "Blob value file name conflict behavior", blobFileConflictBehavior.title);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_encoding, outputEncoding);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, outputTimestampPattern);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_insert_bom, outputEncodingBOM);

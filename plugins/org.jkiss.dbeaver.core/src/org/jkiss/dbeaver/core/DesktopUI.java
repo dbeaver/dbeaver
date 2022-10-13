@@ -70,7 +70,11 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * DBeaver UI core
@@ -277,6 +281,26 @@ public class DesktopUI implements DBPPlatformUI {
     @Override
     public boolean confirmAction(String title, String message, boolean isWarning) {
         return UIUtils.confirmAction(null, title, message, isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION);
+    }
+    
+    @Override
+    public UserChoiceResponse showUserChoice(String title, String message, List<String> labelByValue, boolean showForAllOption, Integer defaultChoice) {
+        final List<Reply> reply = labelByValue.stream().map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s)).collect(Collectors.toList());
+        final List<Reply> actualReply = reply.stream().filter(r -> r != null).collect(Collectors.toList());
+        Reply result = UIUtils.syncExec(new RunnableWithResult<Reply>() {
+            public Reply runWithResult() {
+                MessageBoxBuilder mbb = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setReplies(actualReply.toArray(new Reply[actualReply.size()]))
+                    .setPrimaryImage(DBIcon.STATUS_WARNING);
+                if (defaultChoice != null && reply.get(defaultChoice) != null) {
+                    mbb.setDefaultReply(reply.get(defaultChoice));
+                }
+                return mbb.showMessageBox();
+            };
+        });
+        return new UserChoiceResponse(reply.indexOf(result), showForAllOption);
     }
 
     @Override

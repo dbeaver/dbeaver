@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * User interface interactions
@@ -52,6 +54,16 @@ public interface DBPPlatformUI {
         STOP,
         RETRY,
     }
+    
+    public static class UserChoiceResponse {
+        public final int choiceIndex;
+        public final boolean applyForAll;
+
+        public UserChoiceResponse(int choiceIndex, boolean applyForAll) {
+            this.choiceIndex = choiceIndex;
+            this.applyForAll = applyForAll;
+        }
+    }
 
     UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status);
     UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final Throwable e);
@@ -62,6 +74,7 @@ public interface DBPPlatformUI {
     void showWarningMessageBox(@NotNull final String title, @Nullable final String message);
     boolean confirmAction(String title, String message);
     boolean confirmAction(String title, String message, boolean isWarning);
+    UserChoiceResponse showUserChoice(@NotNull final String title, @Nullable final String message, @NotNull List<String> labels, boolean showForAllOption, @Nullable Integer defaultChoice);
 
     UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue);
 
