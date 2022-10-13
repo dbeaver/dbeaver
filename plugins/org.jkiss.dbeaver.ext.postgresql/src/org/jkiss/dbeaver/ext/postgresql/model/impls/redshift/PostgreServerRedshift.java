@@ -414,4 +414,9 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public int getTruncateToolModes() {
         return 0;
     }
+
+    @Override
+    public boolean supportsAlterTableColumnWithUSING() {
+        return false;
+    }
 }
