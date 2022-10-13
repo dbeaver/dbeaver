@@ -1398,11 +1398,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
 
-        // Now check driver version
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE) && !downloaded) {
-            // TODO: implement new version check
-        }
-
         // Check if local files are zip archives with jars inside
         return DriverUtils.extractZipArchives(result);
     }
