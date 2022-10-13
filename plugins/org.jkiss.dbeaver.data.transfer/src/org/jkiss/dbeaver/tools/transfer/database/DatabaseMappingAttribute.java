@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -255,9 +256,14 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     private boolean isSkipNameTransformation(@Nullable DBPDataSource targetDataSource, @NotNull String targetName) {
-        if (targetDataSource != null && source instanceof DBSObject && ((DBSObject) source).getDataSource() != null) {
-            return targetDataSource.getSQLDialect().mustBeQuoted(targetName, true)
-                && targetDataSource.getClass().equals(((DBSObject) source).getDataSource().getClass());
+        if (source instanceof DBSObject) {
+            DBPDataSource sourceDataSource = ((DBSObject) source).getDataSource();
+            if (targetDataSource != null && sourceDataSource != null) {
+                SQLDialect targetSqlDialect = targetDataSource.getSQLDialect();
+                SQLDialect sourceSQLDialect = sourceDataSource.getSQLDialect();
+                return targetSqlDialect!= null && sourceSQLDialect != null && targetSqlDialect.mustBeQuoted(targetName, true)
+                    && targetSqlDialect.getClass().equals(sourceSQLDialect.getClass());
+            }
         }
         return false;
     }
