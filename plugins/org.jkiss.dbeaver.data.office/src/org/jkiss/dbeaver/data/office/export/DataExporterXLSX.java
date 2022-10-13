@@ -394,17 +394,14 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
                 Cell descCell = descRow.createCell(i + startCol, CellType.STRING);
                 String description = columns[i].getDescription();
-                if (CommonUtils.isEmpty(description)) {
-                    description = "";
-                }
-                descCell.setCellValue(description);
+                descCell.setCellValue(CommonUtils.notEmpty(description));
                 descCell.setCellStyle(styleHeader);
+
+                if (CommonUtils.isNotEmpty(description)) {
+                    sh.autoSizeColumn(i);
+                }
             }
             wsh.incRow();
-        }
-
-        for (int i = 0, columnsSize = columns.length; i < columnsSize; i++) {
-            sh.autoSizeColumn(i);
         }
 
         try {
