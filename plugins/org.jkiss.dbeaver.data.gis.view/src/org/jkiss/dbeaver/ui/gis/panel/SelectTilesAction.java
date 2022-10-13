@@ -21,6 +21,8 @@ import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -69,15 +71,17 @@ class SelectTilesAction extends Action {
                 if (!menuManager.isEmpty()) {
                     menuManager.add(new Separator());
                 }
-                menuManager.add(new Action(GISMessages.panel_select_tiles_action_manage_tiles_action) {
-                    @Override
-                    public void run() {
-                        int result = new TilesManagementDialog(valueEditor.getEditorControl().getShell()).open();
-                        if (result == IDialogConstants.OK_ID) {
-                            valueEditor.refresh();
+                if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+                    menuManager.add(new Action(GISMessages.panel_select_tiles_action_manage_tiles_action) {
+                        @Override
+                        public void run() {
+                            int result = new TilesManagementDialog(valueEditor.getEditorControl().getShell()).open();
+                            if (result == IDialogConstants.OK_ID) {
+                                valueEditor.refresh();
+                            }
                         }
-                    }
-                });
+                    });
+                }
             });
             return menuManager;
         });
