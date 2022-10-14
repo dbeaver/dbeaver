@@ -83,6 +83,16 @@ public class DefaultNavigatorNodeRenderer implements INavigatorItemRenderer {
                 gc.setLineWidth(oldLineWidth);
             }
         }
+        if ((event.detail & SWT.SELECTED) != 0) {
+            gc.setForeground(UIStyles.isDarkTheme() ? Display.getDefault().getSystemColor(SWT.COLOR_WHITE) : 
+                Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
+            gc.setLineWidth(1);
+            gc.setLineStyle(SWT.LINE_DOT);
+            gc.drawLine(event.x - 1, event.y, event.x + event.width - 1, event.y);
+            gc.drawLine(event.x - 1, event.y, event.x - 1, event.y + event.height - 1);
+            gc.drawLine(event.x + event.width - 1, event.y, event.x + event.width - 1, event.y + event.height - 1);
+            gc.drawLine(event.x - 1, event.y + event.height - 1, event.x + event.width - 1, event.y + event.height - 1);                
+        }
     }
 
     @Override
