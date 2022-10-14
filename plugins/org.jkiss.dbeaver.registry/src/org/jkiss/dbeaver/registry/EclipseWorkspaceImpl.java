@@ -126,7 +126,10 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         }
         for (IProject project : allProjects) {
             if (project.exists() && !project.isHidden() && isProjectAccessible(project)) {
-                LocalProjectImpl projectMetadata = createProjectFrom(project);
+                LocalProjectImpl projectMetadata = projects.get(project);
+                if (projectMetadata == null) {
+                    projectMetadata = createProjectFrom(project);
+                }
                 this.projects.put(project, projectMetadata);
 
                 if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && project.getName().equals(activeProjectName))) {
