@@ -884,7 +884,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     return false;
                 }
             }
-    		return patternMatched;
+            return patternMatched;
         }
 
         private boolean hasVisibleConnections(Viewer viewer, DBNLocalFolder folder) {
