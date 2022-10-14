@@ -856,31 +856,35 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             }
             String labelText = ((ILabelProvider) ((ContentViewer) viewer).getLabelProvider()).getText(element);
             if (labelText == null) {
-    			return false;
-    		}
+                return false;
+            }
             boolean patternMatched = wordMatches(labelText);
             if (!patternMatched) { // pattern is not matched - so we'll check, maybe format is schema.object
                 if (hasDotPattern) {
                     Object item = null;
-                    if (element instanceof DBNDatabaseItem) 
+                    if (element instanceof DBNDatabaseItem) {
                         item = ((DBNDatabaseItem) element).getParentNode();
+                    }
                     boolean schemaMatched = false;
                     while (item != null) {
-                        if (item instanceof DBNDatabaseFolder) 
+                        if (item instanceof DBNDatabaseFolder) {
                             item = ((DBNDatabaseFolder) item).getParentNode();
-                        else if (item instanceof DBNDatabaseItem) {
+                        } else if (item instanceof DBNDatabaseItem) {
                             DBSObject obj = ((DBNDatabaseItem) item).getObject();
                             if (obj instanceof DBSStructContainer) {
                                 String name = ((DBSStructContainer) obj).getName();
-                                if (name != null)
+                                if (name != null) {
                                     schemaMatched = name.equalsIgnoreCase(dotPattern[0]);
+                                }
                                 break;
                             }
                         }
                         else 
                             break;
                     }
-                    if (schemaMatched) return matcherShort.match(labelText);
+                    if (schemaMatched) {
+                        return matcherShort.match(labelText);
+                    }
                     return false;
                 }
             }
