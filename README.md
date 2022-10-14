@@ -48,7 +48,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 #### Prerequisites:
 
  1. Java (JDK) 17 or later (<a href="https://adoptium.net/" target="_blank">OpenJDK 17</a> is our default Java at the moment).
- 2. <a href="https://maven.apache.org/" target="_blank">Apache Maven 3.8.4+</a>
+ 2. <a href="https://maven.apache.org/" target="_blank">Apache Maven 3.8.6+</a>
  3. Internet access
  4. Git client
 
