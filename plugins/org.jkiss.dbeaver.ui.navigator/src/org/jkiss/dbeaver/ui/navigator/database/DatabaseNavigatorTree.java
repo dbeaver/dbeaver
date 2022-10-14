@@ -748,7 +748,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private class TreeFilter extends PatternFilter {
         private final INavigatorFilter filter;
         private boolean hasPattern = false;
+        private boolean hasDotPattern = false;
         private TextMatcherExt matcher;
+        private TextMatcherExt matcherShort;
+        private String[] dotPattern;
 
         TreeFilter(INavigatorFilter filter) {
             setIncludeLeadingWildcard(true);
@@ -769,6 +772,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         @Override
         public void setPattern(String patternString) {
             this.hasPattern = !CommonUtils.isEmpty(patternString);
+            this.hasDotPattern = false;
             if (patternString != null) {
                 String pattern = patternString;
                 if (!patternString.endsWith(" ")) {
@@ -776,6 +780,16 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 }
                 pattern = "*" + pattern;
                 this.matcher = new TextMatcherExt(pattern, true, false);
+                this.dotPattern = patternString.split("\\.");
+                if (dotPattern.length == 2) {
+                    this.hasDotPattern = true;
+                    String patternShort = dotPattern[1];
+                    if (!patternShort.endsWith(" ")) {
+                        patternShort = patternShort + "*";
+                    }
+                    patternShort = "*" + patternShort;
+                    this.matcherShort = new TextMatcherExt(patternShort, true, false);
+                }
             } else {
                 super.setPattern(null);
             }
@@ -840,8 +854,37 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             if (!needToMatch) {
                 return true;
             }
-
-            return super.isLeafMatch(viewer, element);
+            String labelText = ((ILabelProvider) ((ContentViewer) viewer).getLabelProvider()).getText(element);
+            if (labelText == null) {
+    			return false;
+    		}
+            boolean patternMatched = wordMatches(labelText);
+            if (!patternMatched) { // pattern is not matched - so we'll check, maybe format is schema.object
+                if (hasDotPattern) {
+                    Object item = null;
+                    if (element instanceof DBNDatabaseItem) 
+                        item = ((DBNDatabaseItem) element).getParentNode();
+                    boolean schemaMatched = false;
+                    while (item != null) {
+                        if (item instanceof DBNDatabaseFolder) 
+                            item = ((DBNDatabaseFolder) item).getParentNode();
+                        else if (item instanceof DBNDatabaseItem) {
+                            DBSObject obj = ((DBNDatabaseItem) item).getObject();
+                            if (obj instanceof DBSStructContainer) {
+                                String name = ((DBSStructContainer) obj).getName();
+                                if (name != null)
+                                    schemaMatched = name.equalsIgnoreCase(dotPattern[0]);
+                                break;
+                            }
+                        }
+                        else 
+                            break;
+                    }
+                    if (schemaMatched) return matcherShort.match(labelText);
+                    return false;
+                }
+            }
+    		return patternMatched;
         }
 
         private boolean hasVisibleConnections(Viewer viewer, DBNLocalFolder folder) {
