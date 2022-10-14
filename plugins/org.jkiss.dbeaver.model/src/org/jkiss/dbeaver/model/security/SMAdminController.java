@@ -53,6 +53,8 @@ public interface SMAdminController extends SMController {
 
     void enableUser(String userId, boolean enabled) throws DBException;
 
+    void setUserAuthRole(@NotNull String userId, @Nullable String authRole) throws DBException;
+
     ///////////////////////////////////////////
     // Teams
 
