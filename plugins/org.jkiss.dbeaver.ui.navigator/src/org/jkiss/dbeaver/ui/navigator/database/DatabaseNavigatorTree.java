@@ -878,9 +878,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                                 }
                                 break;
                             }
-                        }
-                        else 
+                        } else {
                             break;
+                        }
                     }
                     if (schemaMatched) {
                         return matcherShort.match(labelText);
