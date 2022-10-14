@@ -175,6 +175,8 @@ public class DTMessages extends NLS {
     public static String data_transfer_file_conflict_append;
     public static String data_transfer_file_conflict_behavior_setting;
     public static String data_transfer_blob_file_conflict_behavior_setting;
+    public static String data_transfer_file_conflict_behavior_apply_to_all;
+    public static String data_transfer_file_conflict_behavior_apply_to_all_for_current_object;
 
 	public static String data_transfer_summary_title;
 

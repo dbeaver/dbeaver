@@ -57,11 +57,12 @@ public interface DBPPlatformUI {
     
     public static class UserChoiceResponse {
         public final int choiceIndex;
-        public final boolean applyForAll;
+        @Nullable
+        public final Integer forAllChoiceIndex;
 
-        public UserChoiceResponse(int choiceIndex, boolean applyForAll) {
+        public UserChoiceResponse(int choiceIndex, Integer forAllChoiceIndex) {
             this.choiceIndex = choiceIndex;
-            this.applyForAll = applyForAll;
+            this.forAllChoiceIndex = forAllChoiceIndex;
         }
     }
 
@@ -79,7 +80,7 @@ public interface DBPPlatformUI {
         @NotNull final String title,
         @Nullable final String message,
         @NotNull List<String> labels,
-        boolean showForAllOption,
+        @NotNull List<String> forAllLabels,
         @Nullable Integer defaultChoice
     );
 

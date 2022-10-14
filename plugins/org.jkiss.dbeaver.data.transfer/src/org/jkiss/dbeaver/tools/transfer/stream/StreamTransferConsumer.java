@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -40,7 +39,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
@@ -274,6 +272,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     
     private BlobFileConflictBehavior blobFileConflictBehaviorForAll = null;
     private Integer blobFileConflictPreviousChoice = null;
+    private boolean dontDropBlobFileConflictBehavior = false;
     
     private boolean resolveOverwriteBlobFileConflict(@NotNull String fileName) {        
         BlobFileConflictBehavior behavior = blobFileConflictBehaviorForAll != null 
@@ -281,6 +280,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             : settings.getBlobFileConflictBehavior();
         
         if (behavior == BlobFileConflictBehavior.ASK) {
+            List<String> forAllLabels = settings.isUseSingleFile()
+                ? List.of(DTMessages.data_transfer_file_conflict_behavior_apply_to_all)
+                : List.of(
+                    DTMessages.data_transfer_file_conflict_behavior_apply_to_all,
+                    DTMessages.data_transfer_file_conflict_behavior_apply_to_all_for_current_object
+                );
             UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
                 DTMessages.data_transfer_blob_file_conflict_title, NLS.bind(DTMessages.data_transfer_file_conflict_ask_message, fileName),
                 List.of(
@@ -288,8 +293,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     BlobFileConflictBehavior.OVERWRITE.title,
                     DTMessages.data_transfer_file_conflict_cancel
                 ),
-                false,
-                blobFileConflictPreviousChoice
+                forAllLabels, blobFileConflictPreviousChoice
             );
             if (response.choiceIndex > 1) {
                 throw new RuntimeException("User cancel during existing file resolution for blob " + fileName);
@@ -300,8 +304,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }[response.choiceIndex];
             
             blobFileConflictPreviousChoice = response.choiceIndex;
-            if (response.applyForAll) {
+            if (response.forAllChoiceIndex != null) {
                 blobFileConflictBehaviorForAll = behavior;
+                dontDropBlobFileConflictBehavior = (int)response.forAllChoiceIndex == 0; 
             }
         }
         
@@ -327,14 +332,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         String fileExt = (extractImages != null && extractImages) ? ".jpg" : ".data";
         File lobFile = makeLobFileName(null, fileExt);
         if (lobFile.isFile()) {
-            if (!resolveOverwriteBlobFileConflict(fileExt)) {
-                lobFile = makeLobFileName(Long.toString(System.currentTimeMillis()), fileExt);
+            if (!resolveOverwriteBlobFileConflict(lobFile.getName())) {
+                lobFile = makeLobFileName("-" + System.currentTimeMillis(), fileExt);
                 // I believe that we can't generate two System.currentTimeMillis() in the same time,
                 // but if it accidentally happen, let's just wait and generate it again
                 while (lobFile.isFile()) {
                     try { Thread.sleep(100); }
                     catch (InterruptedException ex) { }
-                    lobFile = makeLobFileName(Long.toString(System.currentTimeMillis()), fileExt);
+                    lobFile = makeLobFileName("-" + System.currentTimeMillis(), fileExt);
                 }
             }
         }
@@ -427,6 +432,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             : settings.getDataFileConflictBehavior();
         
         if (behavior == DataFileConflictBehavior.ASK) {
+            List<String> forAllLabels = settings.isUseSingleFile()
+                ? List.of()
+                : List.of(DTMessages.data_transfer_file_conflict_behavior_apply_to_all);
             UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
                 DTMessages.data_transfer_file_conflict_ask_title, NLS.bind(DTMessages.data_transfer_file_conflict_ask_message, fileName),
                 List.of(
@@ -435,8 +443,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     DataFileConflictBehavior.OVERWRITE.title,
                     DTMessages.data_transfer_file_conflict_cancel
                 ),
-                false,
-                dataFileConflictPreviousChoice
+                forAllLabels, dataFileConflictPreviousChoice
             );
             if (response.choiceIndex > 2) {
                 throw new RuntimeException("User cancel during existing file resolution for data " + fileName);
@@ -448,7 +455,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }[response.choiceIndex];
             
             dataFileConflictPreviousChoice = response.choiceIndex;
-            if (response.applyForAll) {
+            if (response.forAllChoiceIndex != null) {
                 dataFileConflictBehaviorForAll = behavior;
             }
         }
@@ -473,13 +480,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     break;
                 case PATCHNAME:
                     truncate = false;
-                    outputFile = makeOutputFile("" + System.currentTimeMillis());
+                    outputFile = makeOutputFile("-" + System.currentTimeMillis());
                     // I believe that we can't generate two System.currentTimeMillis() in the same time,
                     // but if it accidentally happen, let's just wait and generate it again
                     while (outputFile.isFile()) {
                         try { Thread.sleep(100); }
                         catch (InterruptedException ex) { }
-                        outputFile = makeOutputFile("" + System.currentTimeMillis());
+                        outputFile = makeOutputFile("-" + System.currentTimeMillis());
                     }
                     break;
                 case OVERWRITE:
@@ -571,6 +578,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         this.processor = processor;
         this.settings = settings;
         this.processorProperties = processorProperties;
+                
+        if (!dontDropBlobFileConflictBehavior) {
+            blobFileConflictBehaviorForAll = null;
+        }
     }
 
     @Override
