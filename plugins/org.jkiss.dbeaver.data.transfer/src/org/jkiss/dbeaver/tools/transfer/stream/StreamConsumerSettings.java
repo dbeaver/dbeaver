@@ -64,10 +64,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     }
     
     public enum DataFileConflictBehavior {
-        ASK("ask"),
-        APPEND("append"),
-        PATCHNAME("autofix name"),
-        OVERWRITE("overwrite");
+        ASK(DTMessages.data_transfer_file_conflict_ask),
+        APPEND(DTMessages.data_transfer_file_conflict_append),
+        PATCHNAME(DTMessages.data_transfer_file_conflict_fix_name),
+        OVERWRITE(DTMessages.data_transfer_file_conflict_override);
         
         public final String title; 
         
@@ -77,10 +77,10 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     }
     
     public enum BlobFileConflictBehavior {
-        ASK("ask"),
-        PATCHNAME("autofix name"),
-        OVERWRITE("overwrite");       
-
+        ASK(DTMessages.data_transfer_file_conflict_ask),
+        PATCHNAME(DTMessages.data_transfer_file_conflict_fix_name),
+        OVERWRITE(DTMessages.data_transfer_file_conflict_override);
+        
         public final String title; 
         
         BlobFileConflictBehavior(String title) {
@@ -415,8 +415,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_use_single_file, useSingleFile);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_directory, outputFolder);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_file_name_pattern, outputFilePattern);
-            DTUtils.addSummary(summary, "Object data file name conflict behavior", dataFileConflictBehavior.title);
-            DTUtils.addSummary(summary, "Blob value file name conflict behavior", blobFileConflictBehavior.title);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_file_conflict_behavior_setting, dataFileConflictBehavior.title);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_blob_file_conflict_behavior_setting, blobFileConflictBehavior.title);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_encoding, outputEncoding);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, outputTimestampPattern);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_insert_bom, outputEncodingBOM);

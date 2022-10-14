@@ -343,7 +343,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             && blobFileConflictBehaviorSelector.getValue() != BlobFileConflictBehavior.ASK;
         clipboardCheck.setEnabled(!isBinary);
         singleFileCheck.setEnabled(!clipboard && isAppendable && settings.getDataPipes().size() > 1 && settings.getMaxJobCount() <= 1);
-        dataFileConflictBehaviorSelector.setEnabled(!clipboard && isAppendable); // TODO 
+        dataFileConflictBehaviorSelector.setEnabled(!clipboard && isAppendable);
         blobFileConflictBehaviorSelector.setEnabled(
             !clipboard && getWizard().getPageSettings(this, StreamConsumerSettings.class).getLobExtractType() == LobExtractType.FILES
         );
@@ -444,8 +444,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     
     private boolean confirmPossibleFileOverwrite() {
         return DBWorkbench.getPlatformUI().confirmAction(
-            "Possible data loss", 
-            "You are about to configure task with OVERWRITE settings turned on, which may lead to a data loss if target file already exists. Do you want to confirm?",
+            DTMessages.data_transfer_file_conflict_confirm_override_title, 
+            DTMessages.data_transfer_file_conflict_confirm_override_message,
             true
         );
     }

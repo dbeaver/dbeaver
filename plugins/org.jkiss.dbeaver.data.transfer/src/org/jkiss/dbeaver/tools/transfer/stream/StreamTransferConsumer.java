@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.BlobFileConflictBehavior;
@@ -280,13 +282,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         
         if (behavior == BlobFileConflictBehavior.ASK) {
             UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
-                "Target blob item file already exists", "File " + fileName + " already exists", 
+                DTMessages.data_transfer_blob_file_conflict_title, NLS.bind(DTMessages.data_transfer_file_conflict_ask_message, fileName),
                 List.of(
                     BlobFileConflictBehavior.PATCHNAME.title,
                     BlobFileConflictBehavior.OVERWRITE.title,
-                    "Cancel"
+                    DTMessages.data_transfer_file_conflict_cancel
                 ),
-                false, // TODO apply to all
+                false,
                 blobFileConflictPreviousChoice
             );
             if (response.choiceIndex > 1) {
@@ -426,14 +428,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         
         if (behavior == DataFileConflictBehavior.ASK) {
             UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
-                "Target data file already exists", "File " + fileName + " already exists", 
+                DTMessages.data_transfer_file_conflict_ask_title, NLS.bind(DTMessages.data_transfer_file_conflict_ask_message, fileName),
                 List.of(
                     processor instanceof IAppendableDataExporter ? DataFileConflictBehavior.APPEND.title : null,
                     DataFileConflictBehavior.PATCHNAME.title,
                     DataFileConflictBehavior.OVERWRITE.title,
-                    "Cancel"
+                    DTMessages.data_transfer_file_conflict_cancel
                 ),
-                false, // TODO apply to all
+                false,
                 dataFileConflictPreviousChoice
             );
             if (response.choiceIndex > 2) {
