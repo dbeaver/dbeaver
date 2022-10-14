@@ -25,12 +25,17 @@ import org.jkiss.dbeaver.model.auth.AuthPropertyDescriptor;
 import org.jkiss.dbeaver.model.auth.SMAuthProvider;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.security.SMAuthCredentialsProfile;
 import org.jkiss.dbeaver.model.security.SMAuthProviderDescriptor;
+import org.jkiss.dbeaver.model.security.SMSubjectType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Auth service descriptor
@@ -114,12 +119,12 @@ public class AuthProviderDescriptor extends AbstractDescriptor {
         return new ArrayList<>(credentialProfiles);
     }
 
-    public List<AuthPropertyDescriptor> getCredentialParameters(Set<String> keySet) {
+    public List<AuthPropertyDescriptor> getCredentialParameters(String[] propNames) {
         if (credentialProfiles.size() > 1) {
             for (SMAuthCredentialsProfile profile : credentialProfiles) {
-                if (profile.getCredentialParameters().size() == keySet.size()) {
+                if (profile.getCredentialParameters().size() == propNames.length) {
                     boolean matches = true;
-                    for (String paramName : keySet) {
+                    for (String paramName : propNames) {
                         if (profile.getCredentialParameter(paramName) == null) {
                             matches = false;
                             break;
@@ -168,4 +173,9 @@ public class AuthProviderDescriptor extends AbstractDescriptor {
 
         return smInfo;
     }
+
+    public List<DBPPropertyDescriptor> getMetaProperties(SMSubjectType subjectType) {
+        return null;
+    }
+
 }
