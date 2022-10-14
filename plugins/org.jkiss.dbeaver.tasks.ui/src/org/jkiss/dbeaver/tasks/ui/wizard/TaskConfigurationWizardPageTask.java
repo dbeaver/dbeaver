@@ -344,6 +344,9 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         if (!filterTaskTypes || selectedProject == null || !selectedProject.isRegistryLoaded()) {
             return true;
         }
+        if (type.isStandalone()) {
+            return true;
+        }
         for (DBPDataSourceContainer ds : selectedProject.getDataSourceRegistry().getDataSources()) {
             if (type.isDriverApplicable(ds.getDriver())) {
                 return true;
