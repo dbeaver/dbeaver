@@ -19,48 +19,36 @@ package org.jkiss.dbeaver.model.security.user;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SMUser extends SMSubject {
+public class SMSubject {
 
-    private String[] userTeams;
-    private boolean enabled;
+    protected final String subjectId;
+    private final Map<String, String> metaParameters = new LinkedHashMap<>();
 
-    public SMUser(@NotNull String userId, boolean enabled) {
-        this(userId, null, new String[0], enabled);
-    }
-
-    public SMUser(
-        @NotNull String userId,
-        @Nullable Map<String, String> metaParameters,
-        @NotNull String[] teams,
-        boolean enabled
+    public SMSubject(
+        @NotNull String subjectId,
+        @Nullable Map<String, String> metaParameters
     ) {
-        super(userId, metaParameters);
-        this.userTeams = teams;
-        this.enabled = enabled;
+        this.subjectId = subjectId;
+        if (metaParameters != null) {
+            this.metaParameters.putAll(metaParameters);
+        }
     }
 
-    @NotNull
-    public String getUserId() {
+    public String getSubjectId() {
         return subjectId;
     }
 
     @NotNull
-    public String[] getUserTeams() {
-        return userTeams;
+    public Map<String, String> getMetaParameters() {
+        return metaParameters;
     }
 
-    public void setUserTeams(@NotNull String[] userTeams) {
-        this.userTeams = userTeams;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void enableUser(boolean enabled) {
-        this.enabled = enabled;
+    public void setMetaParameter(String name, String value) {
+        metaParameters.put(name, value);
     }
 
 }
+
