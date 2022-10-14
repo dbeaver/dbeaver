@@ -20,12 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -53,6 +56,22 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
 
     public OracleTimestampValueHandler(DBDFormatSettings formatSettings) {
         super(formatSettings);
+    }
+
+    @Override
+    public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
+        if (resultSet instanceof JDBCResultSet) {
+            final JDBCResultSet dbResults = (JDBCResultSet) resultSet;
+            try {
+                if (OracleConstants.TYPE_NAME_DATE.equals(type.getTypeName())) {
+                    return dbResults.getDate(index + 1);
+                }
+            } catch (SQLException e) {
+                log.debug("Exception caught when fetching date value", e);
+            }
+        }
+
+        return super.fetchValueObject(session, resultSet, type, index);
     }
 
     @Override
@@ -167,11 +186,10 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     @NotNull
     protected String getFormatterId(DBSTypedObject column)
     {
-/*
-        if (column.getMaxLength() == OracleConstants.DATE_TYPE_LENGTH) {
+        if (OracleConstants.TYPE_NAME_DATE.equals(column.getTypeName())) {
             return DBDDataFormatter.TYPE_NAME_DATE;
         }
-*/
+
         return super.getFormatterId(column);
     }
 
