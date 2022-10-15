@@ -888,7 +888,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     return false;
                 }
             }
-			if (!patternMatched) { // Analyze description too
+            if (!patternMatched) { // Analyze description too
                 if (element instanceof DBNDatabaseItem) {
                     Object obj = ((DBNDatabaseItem) element).getObject();
                     if (obj instanceof DBSObject) {
