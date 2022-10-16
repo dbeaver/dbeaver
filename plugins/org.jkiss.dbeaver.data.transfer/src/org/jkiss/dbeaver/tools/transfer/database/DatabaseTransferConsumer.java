@@ -147,6 +147,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         return previewRows;
     }
 
+    /**
+     * @return list of target attributes
+     */
+    @Nullable
+    public List<DBSAttributeBase> getTargetAttributes() {
+        return targetAttributes;
+    }
+
     @Override
     public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
         try {
