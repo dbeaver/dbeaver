@@ -61,6 +61,9 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             this.blobFileConflictBehavior = StreamConsumerSettings.this.blobFileConflictBehavior;
         }
 
+        /**
+         * Initialize non-persistent parameters for data transfer execution which is shared between consumers of the task
+         */
         public void initForConsumer() {
             if (!this.dontDropBlobFileConflictBehavior) {
                 this.blobFileConflictBehavior = StreamConsumerSettings.this.blobFileConflictBehavior;

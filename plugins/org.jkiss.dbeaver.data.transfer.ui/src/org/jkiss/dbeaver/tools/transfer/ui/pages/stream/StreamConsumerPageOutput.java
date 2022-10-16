@@ -63,10 +63,10 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.Charset;
+import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.*;
 import java.util.stream.Collectors;
 
 public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
@@ -90,11 +90,10 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         ) {
             group = UIUtils.createControlGroup(parent, header, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             
-            @SuppressWarnings("unchecked")
             SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
-                Button triggered = (Button)e.widget;
+                Button triggered = (Button) e.widget;
                 if (triggered.getSelection()) {
-                    T newValue = (T)e.widget.getData();
+                    T newValue = (T) e.widget.getData();
                     if (!currentValue.equals(newValue)) {
                         if (valueSelectionConfirmation.apply(newValue)) {
                             applyNewValue(newValue);
@@ -125,7 +124,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
         
         public void setValue(@NotNull T value) {
-            for (Button btn: radioButtonByValue.values()) {
+            for (Button btn : radioButtonByValue.values()) {
                 btn.setSelection(false);
             }
             
@@ -148,7 +147,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         public void setEnabled(boolean enabled) {
             group.setEnabled(enabled);
-            for (Button btn: radioButtonByValue.values()) {
+            for (Button btn : radioButtonByValue.values()) {
                 btn.setEnabled(enabled);
             }
         }
@@ -308,7 +307,10 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                     ),
                     v -> v.title,
                     DataFileConflictBehavior.ASK,
-                    v -> { settings.setDataFileConflictBehavior(v); updateFileConflictExpanderTitle(expander, settings); },
+                    v -> {
+                        settings.setDataFileConflictBehavior(v);
+                        updateFileConflictExpanderTitle(expander, settings);
+                    },
                     v -> v != DataFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite()
                 );
                 blobFileConflictBehaviorSelector = new EnumSelectionGroup<>(
@@ -317,7 +319,10 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                     List.of(BlobFileConflictBehavior.ASK, BlobFileConflictBehavior.PATCHNAME, BlobFileConflictBehavior.OVERWRITE),
                     v -> v.title,
                     BlobFileConflictBehavior.ASK,
-                    v -> { settings.setBlobFileConflictBehavior(v); updateFileConflictExpanderTitle(expander, settings); },
+                    v -> {
+                        settings.setBlobFileConflictBehavior(v);
+                        updateFileConflictExpanderTitle(expander, settings);
+                    },
                     v -> v != BlobFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite()
                 );
             }
@@ -390,9 +395,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         boolean isBinary = settings.getProcessor().isBinaryFormat();
         boolean isAppendable = settings.getProcessor().isAppendable() && !compressCheckbox.getSelection();
         boolean clipboard = !isBinary && clipboardCheck.getSelection();
-        boolean compressableByConflictResolution = dataFileConflictBehaviorSelector.getValue() != DataFileConflictBehavior.APPEND
-            && dataFileConflictBehaviorSelector.getValue() != DataFileConflictBehavior.ASK
-            && blobFileConflictBehaviorSelector.getValue() != BlobFileConflictBehavior.ASK;
         clipboardCheck.setEnabled(!isBinary);
         singleFileCheck.setEnabled(!clipboard && isAppendable && settings.getDataPipes().size() > 1 && settings.getMaxJobCount() <= 1);
         dataFileConflictBehaviorSelector.setEnabled(!clipboard);
@@ -400,6 +402,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         blobFileConflictBehaviorSelector.setEnabled(
             !clipboard && getWizard().getPageSettings(this, StreamConsumerSettings.class).getLobExtractType() == LobExtractType.FILES
         );
+        boolean compressableByConflictResolution = dataFileConflictBehaviorSelector.getValue() != DataFileConflictBehavior.APPEND
+            && dataFileConflictBehaviorSelector.getValue() != DataFileConflictBehavior.ASK
+            && blobFileConflictBehaviorSelector.getValue() != BlobFileConflictBehavior.ASK;
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
         compressCheckbox.setEnabled(!clipboard && compressableByConflictResolution && !singleFileCheck.getSelection());

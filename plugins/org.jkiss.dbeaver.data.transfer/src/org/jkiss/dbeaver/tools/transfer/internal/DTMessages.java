@@ -162,7 +162,7 @@ public class DTMessages extends NLS {
 	public static String data_transfer_task_handler_unexpected_error_message;
 	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_title;
 	public static String data_transfer_task_handler_resoring_referential_integrity_unexpected_error_message;
-	
+
     public static String data_transfer_file_conflict_confirm_override_title;
     public static String data_transfer_file_conflict_confirm_override_message;
     public static String data_transfer_blob_file_conflict_title;

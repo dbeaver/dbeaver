@@ -65,6 +65,9 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
     // If not null then this consumer is a fake one which must be replaced by explicit target consumers on configuration stage
     @Nullable
     Object getTargetObjectContainer();
-    
-    default void setRuntimeParameters(Object runtimeParameters) { }
+
+    /**
+     * Set non-persistent parameters for data transfer execution which is shared between consumers of the task
+     */
+    default void setRuntimeParameters(@Nullable Object runtimeParameters) { }
 }

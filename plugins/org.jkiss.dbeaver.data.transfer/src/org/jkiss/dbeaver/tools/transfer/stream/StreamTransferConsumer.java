@@ -56,14 +56,9 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
-import org.jkiss.utils.Pair;
 import org.jkiss.utils.io.ByteOrderMark;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -304,7 +299,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             runtimeParameters.blobFileConflictPreviousChoice = response.choiceIndex;
             if (response.forAllChoiceIndex != null) {
                 runtimeParameters.blobFileConflictBehavior = behavior;
-                runtimeParameters.dontDropBlobFileConflictBehavior = (int)response.forAllChoiceIndex == 0; 
+                runtimeParameters.dontDropBlobFileConflictBehavior = response.forAllChoiceIndex == 0;
             }
         }
         
@@ -335,8 +330,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 // I believe that we can't generate two System.currentTimeMillis() in the same time,
                 // but if it accidentally happen, let's just wait and generate it again
                 while (lobFile.isFile()) {
-                    try { Thread.sleep(100); }
-                    catch (InterruptedException ex) { }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        // ignore
+                    }
                     lobFile = makeLobFileName("-" + System.currentTimeMillis(), fileExt);
                 }
             }
@@ -433,12 +431,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 : List.of(DTMessages.data_transfer_file_conflict_behavior_apply_to_all);
             UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
                 DTMessages.data_transfer_file_conflict_ask_title, NLS.bind(DTMessages.data_transfer_file_conflict_ask_message, fileName),
-                Arrays.asList(new String[] {
+                Arrays.asList(
                     processor instanceof IAppendableDataExporter ? DataFileConflictBehavior.APPEND.title : null,
                     DataFileConflictBehavior.PATCHNAME.title,
                     DataFileConflictBehavior.OVERWRITE.title,
                     DTMessages.data_transfer_file_conflict_cancel
-                }),
+                ),
                 forAllLabels, runtimeParameters.dataFileConflictPreviousChoice
             );
             if (response.choiceIndex > 2) {
@@ -480,8 +478,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     // I believe that we can't generate two System.currentTimeMillis() in the same time,
                     // but if it accidentally happen, let's just wait and generate it again
                     while (outputFile.isFile()) {
-                        try { Thread.sleep(100); }
-                        catch (InterruptedException ex) { }
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ex) {
+                            // ignore
+                        }
                         outputFile = makeOutputFile("-" + System.currentTimeMillis());
                     }
                     break;
@@ -568,7 +569,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, TransferParameters parameters, IStreamDataExporter processor, Map<String, Object> processorProperties) {
+    public void initTransfer(
+        @NotNull DBSObject sourceObject,
+        @NotNull StreamConsumerSettings settings,
+        @NotNull TransferParameters parameters,
+        @NotNull IStreamDataExporter processor,
+        @NotNull Map<String, Object> processorProperties
+    ) {
         this.dataContainer = (DBSDataContainer) sourceObject;
         this.parameters = parameters;
         this.processor = processor;

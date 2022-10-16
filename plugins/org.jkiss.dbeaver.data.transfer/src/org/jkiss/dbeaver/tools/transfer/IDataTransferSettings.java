@@ -31,5 +31,10 @@ public interface IDataTransferSettings {
 
     String getSettingsSummary();
 
-    default Object prepareRuntimeParameters() { return null; }
+    /**
+     * Returns non-persistent parameters for data transfer execution which is shared between consumers of the task
+     */
+    default Object prepareRuntimeParameters() {
+        return null;
+    }
 }

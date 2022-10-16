@@ -19,13 +19,11 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.e4.ui.internal.workbench.swt.SelectionAdapterFactory;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
@@ -74,11 +72,9 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * DBeaver UI core
@@ -291,16 +287,15 @@ public class DesktopUI implements DBPPlatformUI {
     @Override
     public UserChoiceResponse showUserChoice(
         @NotNull String title,
-        @NotNull String message,
+        @Nullable String message,
         @NotNull List<String> choiceLabels,
         @NotNull List<String> forAllLabels,
-        @NotNull Integer defaultChoice
+        @Nullable Integer defaultChoice
     ) {
         final List<Reply> reply = choiceLabels.stream()
             .map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s))
             .collect(Collectors.toList());
-        final List<Reply> actualReply = reply.stream().filter(r -> r != null).collect(Collectors.toList());
-        
+
         return UIUtils.syncExec(new RunnableWithResult<UserChoiceResponse>() {
             public UserChoiceResponse runWithResult() {
                 List<Button> extraCheckboxes = new ArrayList<>(forAllLabels.size());
@@ -308,7 +303,7 @@ public class DesktopUI implements DBPPlatformUI {
                 MessageBoxBuilder mbb = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
                     .setTitle(title)
                     .setMessage(message)
-                    .setReplies(actualReply.toArray(new Reply[actualReply.size()]))
+                    .setReplies(reply.stream().filter(Objects::nonNull).toArray(Reply[]::new))
                     .setPrimaryImage(DBIcon.STATUS_WARNING);
                 
                 if (defaultChoice != null && reply.get(defaultChoice) != null) {
@@ -317,7 +312,7 @@ public class DesktopUI implements DBPPlatformUI {
                 if (forAllLabels.size() > 0) {
                     mbb.setCustomArea(pp -> {
                         SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
-                            int chkIndex = (Integer)e.widget.getData();
+                            int chkIndex = (Integer) e.widget.getData();
                             if (extraCheckboxes.get(chkIndex).getSelection()) {
                                 selectedCheckboxIndex[0] = chkIndex;
                                 for (int index = 0; index < extraCheckboxes.size(); index++) {
@@ -339,7 +334,7 @@ public class DesktopUI implements DBPPlatformUI {
                 Reply result = mbb.showMessageBox();
                 int choiceIndex = reply.indexOf(result);
                 return new UserChoiceResponse(choiceIndex, selectedCheckboxIndex[0]);
-            };
+            }
         }); 
     }
 
