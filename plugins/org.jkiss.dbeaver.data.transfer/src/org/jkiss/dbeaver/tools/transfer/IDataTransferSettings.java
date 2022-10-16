@@ -31,4 +31,5 @@ public interface IDataTransferSettings {
 
     String getSettingsSummary();
 
+    default Object prepareRuntimeParameters() { return null; }
 }

@@ -49,6 +49,24 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     private static final Log log = Log.getLog(StreamConsumerSettings.class);
 
+    public class ConsumerRuntimeParameters {
+        public DataFileConflictBehavior dataFileConflictBehavior;
+        public Integer dataFileConflictPreviousChoice = null;
+        public BlobFileConflictBehavior blobFileConflictBehavior;
+        public Integer blobFileConflictPreviousChoice = null;
+        public boolean dontDropBlobFileConflictBehavior = false;
+        
+        public ConsumerRuntimeParameters() {
+            this.dataFileConflictBehavior = StreamConsumerSettings.this.dataFileConflictBehavior;
+            this.blobFileConflictBehavior = StreamConsumerSettings.this.blobFileConflictBehavior;
+        }
+
+        public void initForConsumer() {
+            if (!this.dontDropBlobFileConflictBehavior) {
+                this.blobFileConflictBehavior = StreamConsumerSettings.this.blobFileConflictBehavior;
+            }
+        }
+    }
 
     public enum LobExtractType {
         SKIP,
@@ -134,6 +152,11 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     @NotNull
     public BlobFileConflictBehavior getBlobFileConflictBehavior() {
         return blobFileConflictBehavior;
+    }
+    
+    @Override
+    public ConsumerRuntimeParameters prepareRuntimeParameters() {
+        return new ConsumerRuntimeParameters();
     }
 
     public LobExtractType getLobExtractType() {
@@ -406,7 +429,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             settings.put("eventProcessors", eventProcessors);
         }
     }
-
+    
     @Override
     public String getSettingsSummary() {
         StringBuilder summary = new StringBuilder();

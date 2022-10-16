@@ -26,6 +26,9 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -69,7 +72,10 @@ import java.util.stream.Collectors;
 public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     
     private class EnumSelectionGroup<T extends Enum<T>> {
+        private final Group group; 
         private final Map<T, Button> radioButtonByValue;
+        private final T defaultValue;
+        private final Consumer<T> onValueSelected;
         
         private T currentValue;
         
@@ -82,17 +88,16 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             @NotNull Consumer<T> onValueSelected,
             @NotNull Function<T, Boolean> valueSelectionConfirmation
         ) {
-            Group group = UIUtils.createControlGroup(parent, header, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            group = UIUtils.createControlGroup(parent, header, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             
             @SuppressWarnings("unchecked")
             SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
                 Button triggered = (Button)e.widget;
                 if (triggered.getSelection()) {
                     T newValue = (T)e.widget.getData();
-                    if (currentValue != newValue) {
+                    if (!currentValue.equals(newValue)) {
                         if (valueSelectionConfirmation.apply(newValue)) {
-                            currentValue = newValue;
-                            onValueSelected.accept(newValue);   
+                            applyNewValue(newValue);
                         } else {
                             setValue(currentValue);
                         }
@@ -104,26 +109,53 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 v -> v,
                 v -> UIUtils.createRadioButton(group, titleByValue.apply(v), v, selectionListener)
             ));
-            
-            currentValue = defaultValue;
+         
+            this.defaultValue = defaultValue;
+            this.currentValue = defaultValue;
+            this.onValueSelected = onValueSelected;
         }
         
         @NotNull
         public T getValue() {
             return currentValue;
         }
+
+        public T getDefaultValue() {
+            return defaultValue;
+        }
         
         public void setValue(@NotNull T value) {
             for (Button btn: radioButtonByValue.values()) {
                 btn.setSelection(false);
             }
-            radioButtonByValue.get(value).setSelection(true);
-            currentValue = value;
+            
+            Button valueBtn = radioButtonByValue.get(value);
+            if (group.getEnabled() && !valueBtn.getEnabled()) {
+                radioButtonByValue.get(defaultValue).setEnabled(true);
+                applyNewValue(defaultValue);
+            } else {
+                valueBtn.setSelection(true);
+                applyNewValue(value);
+            }
+        }
+        
+        private void applyNewValue(T newValue) {
+            if (!currentValue.equals(newValue)) {
+                currentValue = newValue;
+                onValueSelected.accept(newValue);
+            }
         }
 
-        public void setEnabled(boolean value) {
+        public void setEnabled(boolean enabled) {
+            group.setEnabled(enabled);
             for (Button btn: radioButtonByValue.values()) {
-                btn.setEnabled(value);
+                btn.setEnabled(enabled);
+            }
+        }
+
+        public void setValueEnabled(T value, boolean enabled) {
+            if (group.getEnabled()) {
+                radioButtonByValue.get(value).setEnabled(enabled);
             }
         }
     }
@@ -252,12 +284,22 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             }
 
             {
-                Composite fileConflictBehaviorSettings = UIUtils.createComposite(generalSettings, 2);
-                fileConflictBehaviorSettings.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 5, 1));
+                final ExpandableComposite expander = new ExpandableComposite(generalSettings, SWT.NONE);
+                expander.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 5, 1));
+                expander.addExpansionListener(new ExpansionAdapter() {
+                    @Override
+                    public void expansionStateChanged(ExpansionEvent e) {
+                        updateFileConflictExpanderTitle(expander, settings);
+                        UIUtils.resizeShell(parent.getShell());
+                    }
+                });
+                Composite fileConflictBehaviorSettings = UIUtils.createComposite(expander, 2);
+                expander.setClient(fileConflictBehaviorSettings);
+                updateFileConflictExpanderTitle(expander, settings);
                 
                 dataFileConflictBehaviorSelector = new EnumSelectionGroup<>(
                     fileConflictBehaviorSettings,
-                    "On object data file name conflict",
+                    DTMessages.data_transfer_file_conflict_behavior_setting,
                     List.of(
                         DataFileConflictBehavior.ASK,
                         DataFileConflictBehavior.APPEND,
@@ -266,16 +308,16 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                     ),
                     v -> v.title,
                     DataFileConflictBehavior.ASK,
-                    v -> settings.setDataFileConflictBehavior(v),
+                    v -> { settings.setDataFileConflictBehavior(v); updateFileConflictExpanderTitle(expander, settings); },
                     v -> v != DataFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite()
                 );
                 blobFileConflictBehaviorSelector = new EnumSelectionGroup<>(
                     fileConflictBehaviorSettings,
-                    "On blob value file name conflict",
+                    DTMessages.data_transfer_blob_file_conflict_behavior_setting,
                     List.of(BlobFileConflictBehavior.ASK, BlobFileConflictBehavior.PATCHNAME, BlobFileConflictBehavior.OVERWRITE),
                     v -> v.title,
                     BlobFileConflictBehavior.ASK,
-                    v -> settings.setBlobFileConflictBehavior(v),
+                    v -> { settings.setBlobFileConflictBehavior(v); updateFileConflictExpanderTitle(expander, settings); },
                     v -> v != BlobFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite()
                 );
             }
@@ -333,6 +375,16 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
     }
 
+    private void updateFileConflictExpanderTitle(ExpandableComposite expander, StreamConsumerSettings settings) {
+        if (expander.isExpanded()) {
+            expander.setText("File name conflict behavior settings");
+        } else {
+            String text = DTMessages.data_transfer_file_conflict_behavior_setting + ": " + settings.getDataFileConflictBehavior().title +
+                "; " + DTMessages.data_transfer_blob_file_conflict_behavior_setting + ": " + settings.getBlobFileConflictBehavior().title;
+            expander.setText(text);
+        }
+    }
+
     private void updateControlsEnablement() {
         final DataTransferSettings settings = getWizard().getSettings();
         boolean isBinary = settings.getProcessor().isBinaryFormat();
@@ -343,7 +395,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             && blobFileConflictBehaviorSelector.getValue() != BlobFileConflictBehavior.ASK;
         clipboardCheck.setEnabled(!isBinary);
         singleFileCheck.setEnabled(!clipboard && isAppendable && settings.getDataPipes().size() > 1 && settings.getMaxJobCount() <= 1);
-        dataFileConflictBehaviorSelector.setEnabled(!clipboard && isAppendable);
+        dataFileConflictBehaviorSelector.setEnabled(!clipboard);
+        dataFileConflictBehaviorSelector.setValueEnabled(DataFileConflictBehavior.APPEND, isAppendable);
         blobFileConflictBehaviorSelector.setEnabled(
             !clipboard && getWizard().getPageSettings(this, StreamConsumerSettings.class).getLobExtractType() == LobExtractType.FILES
         );
@@ -382,6 +435,12 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         timestampPattern.setText(settings.getOutputTimestampPattern());
         encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM() && !descriptor.isBinaryFormat());
         showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
+        
+        if (!getWizard().getSettings().getProcessor().isAppendable() || settings.isCompressResults()) {
+            if (settings.getDataFileConflictBehavior() == DataFileConflictBehavior.APPEND) {
+                dataFileConflictBehaviorSelector.setValue(dataFileConflictBehaviorSelector.getDefaultValue());
+            }
+        }
 
         if (descriptor.isBinaryFormat()) {
             settings.setOutputClipboard(false);

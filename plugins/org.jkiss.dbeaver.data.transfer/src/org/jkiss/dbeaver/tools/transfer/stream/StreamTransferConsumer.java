@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.BlobFileConflictBehavior;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.ConsumerRuntimeParameters;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.DataFileConflictBehavior;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -55,9 +56,14 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.Pair;
 import org.jkiss.utils.io.ByteOrderMark;
 
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -118,6 +124,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private IStreamDataExporter processor;
     private StreamConsumerSettings settings;
+    private ConsumerRuntimeParameters runtimeParameters;
     private DBSDataContainer dataContainer;
 
     private OutputStream outputStream;
@@ -141,9 +148,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private final List<File> outputFiles = new ArrayList<>();
     private StatOutputStream statStream;
     
-    private DataFileConflictBehavior dataFileConflictBehaviorForAll = null;
-    private Integer dataFileConflictPreviousChoice = null;
-
     public StreamTransferConsumer() {
     }
 
@@ -270,15 +274,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         columnBindings = null;
     }
     
-    private BlobFileConflictBehavior blobFileConflictBehaviorForAll = null;
-    private Integer blobFileConflictPreviousChoice = null;
-    private boolean dontDropBlobFileConflictBehavior = false;
+    private boolean resolveOverwriteBlobFileConflict(@NotNull String fileName) {
+        BlobFileConflictBehavior behavior = runtimeParameters.blobFileConflictBehavior;
     
-    private boolean resolveOverwriteBlobFileConflict(@NotNull String fileName) {        
-        BlobFileConflictBehavior behavior = blobFileConflictBehaviorForAll != null 
-            ? blobFileConflictBehaviorForAll
-            : settings.getBlobFileConflictBehavior();
-        
         if (behavior == BlobFileConflictBehavior.ASK) {
             List<String> forAllLabels = settings.isUseSingleFile()
                 ? List.of(DTMessages.data_transfer_file_conflict_behavior_apply_to_all)
@@ -293,7 +291,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     BlobFileConflictBehavior.OVERWRITE.title,
                     DTMessages.data_transfer_file_conflict_cancel
                 ),
-                forAllLabels, blobFileConflictPreviousChoice
+                forAllLabels, runtimeParameters.blobFileConflictPreviousChoice
             );
             if (response.choiceIndex > 1) {
                 throw new RuntimeException("User cancel during existing file resolution for blob " + fileName);
@@ -303,10 +301,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 BlobFileConflictBehavior.OVERWRITE
             }[response.choiceIndex];
             
-            blobFileConflictPreviousChoice = response.choiceIndex;
+            runtimeParameters.blobFileConflictPreviousChoice = response.choiceIndex;
             if (response.forAllChoiceIndex != null) {
-                blobFileConflictBehaviorForAll = behavior;
-                dontDropBlobFileConflictBehavior = (int)response.forAllChoiceIndex == 0; 
+                runtimeParameters.blobFileConflictBehavior = behavior;
+                runtimeParameters.dontDropBlobFileConflictBehavior = (int)response.forAllChoiceIndex == 0; 
             }
         }
         
@@ -426,10 +424,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         closeOutputStreams();
     }
     
-    private DataFileConflictBehavior getDataFileConflictBehavior(String fileName) {        
-        DataFileConflictBehavior behavior = dataFileConflictBehaviorForAll != null 
-            ? dataFileConflictBehaviorForAll
-            : settings.getDataFileConflictBehavior();
+    private DataFileConflictBehavior getDataFileConflictBehavior(String fileName) {
+        DataFileConflictBehavior behavior = runtimeParameters.dataFileConflictBehavior;
         
         if (behavior == DataFileConflictBehavior.ASK) {
             List<String> forAllLabels = settings.isUseSingleFile()
@@ -437,13 +433,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 : List.of(DTMessages.data_transfer_file_conflict_behavior_apply_to_all);
             UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
                 DTMessages.data_transfer_file_conflict_ask_title, NLS.bind(DTMessages.data_transfer_file_conflict_ask_message, fileName),
-                List.of(
+                Arrays.asList(new String[] {
                     processor instanceof IAppendableDataExporter ? DataFileConflictBehavior.APPEND.title : null,
                     DataFileConflictBehavior.PATCHNAME.title,
                     DataFileConflictBehavior.OVERWRITE.title,
                     DTMessages.data_transfer_file_conflict_cancel
-                ),
-                forAllLabels, dataFileConflictPreviousChoice
+                }),
+                forAllLabels, runtimeParameters.dataFileConflictPreviousChoice
             );
             if (response.choiceIndex > 2) {
                 throw new RuntimeException("User cancel during existing file resolution for data " + fileName);
@@ -454,9 +450,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 DataFileConflictBehavior.OVERWRITE
             }[response.choiceIndex];
             
-            dataFileConflictPreviousChoice = response.choiceIndex;
-            if (response.forAllChoiceIndex != null) {
-                dataFileConflictBehaviorForAll = behavior;
+            runtimeParameters.dataFileConflictPreviousChoice = response.choiceIndex;
+            if (response.forAllChoiceIndex != null || settings.isUseSingleFile()) {
+                runtimeParameters.dataFileConflictBehavior = behavior;
             }
         }
         
@@ -578,9 +574,20 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         this.processor = processor;
         this.settings = settings;
         this.processorProperties = processorProperties;
-                
-        if (!dontDropBlobFileConflictBehavior) {
-            blobFileConflictBehaviorForAll = null;
+        
+        if (runtimeParameters == null) {
+            runtimeParameters = settings.prepareRuntimeParameters();
+        } else {
+            runtimeParameters.initForConsumer();
+        }
+    }
+    
+    @Override
+    public void setRuntimeParameters(Object runtimeParameters) {
+        if (runtimeParameters instanceof ConsumerRuntimeParameters) {
+            this.runtimeParameters = (ConsumerRuntimeParameters) runtimeParameters;
+        } else {
+            throw new IllegalStateException("Unsupported stream transfer consumer runtime parameters " + runtimeParameters);
         }
     }
 
