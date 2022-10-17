@@ -282,7 +282,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     @Nullable
     @Override
     public Object getAttributeValue(DBDAttributeBinding attribute) {
-        return controller.getModel().getCellValue(cellLocation);
+        return controller.getModel().getCellValue(attribute, cellLocation.getRow());
     }
 
 }
