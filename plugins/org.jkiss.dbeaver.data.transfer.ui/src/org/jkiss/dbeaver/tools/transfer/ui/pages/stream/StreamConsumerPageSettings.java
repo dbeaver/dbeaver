@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -116,23 +117,29 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                     }
                 });
 
-                UIUtils.createDialogButton(generalSettings, DTMessages.data_transfer_wizard_settings_button_edit, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
-                            getShell(),
-                            dataFormatterRegistry,
-                            "org.jkiss.dbeaver.preferences.main.dataformat", // TODO: replace this hardcode with some model invocation
-                            null,
-                            getSelectedFormatterProfile(),
-                            PreferencesUtil.OPTION_NONE);
-                        if (propDialog != null) {
-                            propDialog.open();
-                            reloadFormatProfiles();
+                Button editProfileButton = UIUtils.createDialogButton(
+                    generalSettings,
+                    DTMessages.data_transfer_wizard_settings_button_edit,
+                    new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
+                                getShell(),
+                                dataFormatterRegistry,
+                                "org.jkiss.dbeaver.preferences.main.dataformat", // TODO: replace this hardcode with some model invocation
+                                null,
+                                getSelectedFormatterProfile(),
+                                PreferencesUtil.OPTION_NONE);
+                            if (propDialog != null) {
+                                propDialog.open();
+                                reloadFormatProfiles();
+                            }
                         }
                     }
-                });
+                );
+                editProfileButton.setEnabled(
+                    DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)
+                );
 
                 reloadFormatProfiles();
 

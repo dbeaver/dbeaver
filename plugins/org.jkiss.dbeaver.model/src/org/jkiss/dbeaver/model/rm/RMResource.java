@@ -84,7 +84,7 @@ public class RMResource extends RMObject {
     }
 
     public Map<String, Object> getProperties() {
-        return properties;
+        return properties == null ? Map.of() : properties;
     }
 
     public void setProperties(Map<String, Object> properties) {

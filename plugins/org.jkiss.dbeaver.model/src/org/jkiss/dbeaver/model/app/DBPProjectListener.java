@@ -22,9 +22,9 @@ package org.jkiss.dbeaver.model.app;
  */
 public interface DBPProjectListener
 {
-    void handleProjectAdd(DBPProject project);
+    default void handleProjectAdd(DBPProject project) {}
 
-    void handleProjectRemove(DBPProject project);
+    default void handleProjectRemove(DBPProject project) {}
 
-    void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue);
+    default void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {}
 }

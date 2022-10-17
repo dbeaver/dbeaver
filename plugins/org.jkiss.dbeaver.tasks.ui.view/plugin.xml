@@ -57,8 +57,8 @@
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.tasks.editable">
-            <with variable="selection">
-                <count value="1"/>
+            <with variable="activePart">
+                <test property="org.jkiss.dbeaver.core.global.canCreateConnection"/>
             </with>
         </definition>
     </extension>
@@ -171,11 +171,14 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.tasks">
-            <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.project.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/project.png"><parameter name="group" value="project"/></command>
             <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.category.name" icon="icons/task_list.png"><parameter name="group" value="category"/></command>
             <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.type.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"><parameter name="group" value="type"/></command>
             <separator name="additions" visible="true"/>
             <command commandId="org.jkiss.dbeaver.task.run"/>
+            <separator name="additions" visible="true"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.tasks">
             <command commandId="org.jkiss.dbeaver.task.create">
                 <visibleWhen checkEnabled="true"/>
             </command>
@@ -186,6 +189,9 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
             <separator name="additions" visible="true"/>
+            <menu label="Project">
+                <dynamic id="org.jkiss.dbeaver.tasks.menu.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorActiveProjectContributor"/>
+            </menu>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">

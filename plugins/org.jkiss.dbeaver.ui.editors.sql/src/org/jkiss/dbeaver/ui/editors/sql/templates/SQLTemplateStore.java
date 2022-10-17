@@ -19,9 +19,12 @@ import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import org.eclipse.jface.text.templates.persistence.TemplateReaderWriter;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -29,18 +32,11 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Writer;
+import java.io.*;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -54,9 +50,39 @@ public class SQLTemplateStore extends TemplateStore {
 
     private static final Log log = Log.getLog(SQLTemplateStore.class);
     public static final String PREF_STORE_KEY = "org.jkiss.dbeaver.core.sql_templates";
+    
+    private final CustomTemplatesStore customTemplatesStore;
 
-    public SQLTemplateStore(ContextTypeRegistry registry) {
-        super(registry, new PreferenceStoreDelegate(new CustomTemplatesStore()), PREF_STORE_KEY); //$NON-NLS-1$
+    private SQLTemplateStore(ContextTypeRegistry registry, CustomTemplatesStore customTemplatesStore) {
+        super(registry, new PreferenceStoreDelegate(customTemplatesStore), PREF_STORE_KEY); //$NON-NLS-1$
+        this.customTemplatesStore = customTemplatesStore;
+    }
+
+    /**
+     * Returns set of custom sql templates declared in custom templates store
+     * Partially copied from eclipse sources
+     */
+    @NotNull
+    public Set<String> getCustomTemplateNames() {
+        try {
+            String pref = customTemplatesStore.getString(PREF_STORE_KEY);
+            if (pref != null && !pref.trim().isEmpty()) {
+                Reader input = new StringReader(pref);
+                TemplateReaderWriter reader = new TemplateReaderWriter();
+                return Stream.of(reader.read(input)).map(t -> t.getTemplate().getName()).collect(Collectors.toSet());
+            } 
+        } catch (IOException ex) {
+            log.error("Failed to load custom template names", ex);
+        } 
+        return Collections.emptySet();
+    }
+
+    /**
+     * Creates SQLTemplateStore instance by the specified template context registry
+     */
+    @NotNull
+    public static SQLTemplateStore createInstance(@NotNull ContextTypeRegistry registry) {
+        return new SQLTemplateStore(registry, new CustomTemplatesStore());
     }
 
     /**
@@ -177,42 +203,40 @@ public class SQLTemplateStore extends TemplateStore {
     }
 
     private static class CustomTemplatesStore extends SimplePreferenceStore {
+        private static final String TEMPLATES_CONFIG_XML = "templates.xml";
+
         private CustomTemplatesStore() {
             super(DBWorkbench.getPlatform().getPreferenceStore());
             try {
-                Path configurationFile = getConfigurationFile();
-                if (Files.exists(configurationFile)) {
-                    setValue(PREF_STORE_KEY, Files.readString(configurationFile));
+                if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
+                    log.warn("The user has no permission to load sql templates configuration");
+                    return;
                 }
-            } catch (IOException e) {
+                String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(TEMPLATES_CONFIG_XML);
+                if (CommonUtils.isNotEmpty(content)) {
+                    setValue(PREF_STORE_KEY, content);
+                }
+            } catch (DBException e) {
                 log.error(e);
             }
         }
-
-        private Path getConfigurationFile() {
-            return DBWorkbench.getPlatform().getLocalConfigurationFile("templates.xml");
-        }
-
+        
         @Override
         public void save() throws IOException {
-            // Save templates
-            Path configurationFile = getConfigurationFile();
-            String templatesConfig = getString(PREF_STORE_KEY);
-            if (!CommonUtils.isEmpty(templatesConfig)) {
-                // Save it in templates file
-                try (Writer writer = Files.newBufferedWriter(configurationFile, StandardCharsets.UTF_8)) {
-                    writer.write(templatesConfig);
-                }
-            } else {
-                if (Files.exists(configurationFile)) {
-                    try {
-                        Files.delete(configurationFile);
-                    } catch (IOException e) {
-                        log.warn("Can't delete empty template configuration", e);
-                    }
-                }
+            if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+                log.warn("The user has no permission to save sql templates configuration");
+                return;
             }
+            // Save templates
+            String templatesConfig = getString(PREF_STORE_KEY);
 
+            try {
+                DBWorkbench.getPlatform()
+                    .getProductConfigurationController()
+                    .saveConfigurationFile(TEMPLATES_CONFIG_XML, templatesConfig);
+            } catch (DBException e) {
+                log.warn("Can't save template configuration", e);
+            }
         }
     }
 

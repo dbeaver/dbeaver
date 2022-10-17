@@ -304,9 +304,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
 
     @Override
     public final boolean performOk() {
-        DBPPreferenceStore store = isDataSourcePreferencePage() ?
-            getDataSourceContainer().getPreferenceStore() :
-            DBWorkbench.getPlatform().getPreferenceStore();
+        DBPPreferenceStore store = getTargetPreferenceStore();
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {
             // Just delete datasource specific settings
             clearPreferences(store);

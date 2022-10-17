@@ -34,6 +34,7 @@
                         singleConnection="true">
                     <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.2.21.1025.zip" bundle="!drivers.bigquery"/>/>
                     <file type="jar" path="drivers/bigquery" bundle="drivers.bigquery"/>/>
+                    <file type="license" path="drivers/bigquery/EULA.txt" bundle="drivers.bigquery"/>/>
 
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <parameter name="supports-catalog-selection" value="false"/>

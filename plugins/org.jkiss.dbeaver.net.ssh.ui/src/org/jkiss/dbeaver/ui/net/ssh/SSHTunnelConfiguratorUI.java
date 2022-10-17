@@ -198,12 +198,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
         }
 
         {
-            Composite sc = new Composite(parent, SWT.NONE);
-            sc.setLayout(new GridLayout());
-            sc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        }
-
-        {
             Composite controlGroup = UIUtils.createComposite(parent, 3);
             controlGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
