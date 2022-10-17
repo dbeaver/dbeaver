@@ -128,7 +128,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         properties.put(DataExporterXLSX.PROP_SPLIT_BYROWCOUNT, EXCEL2007MAXROWS);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, 0);
         properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
-        properties.put(DataExporterXLSX.PROP_APPEND_STRATEGY, "create new sheets");
+        properties.put(DataExporterXLSX.PROP_APPEND_STRATEGY, AppendStrategy.CREATE_NEW_SHEETS.value);
         return properties;
     }
 
@@ -347,7 +347,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private void printHeader(DBCResultSet resultSet, Worksheet wsh) throws DBException {
         final SXSSFSheet sh = (SXSSFSheet) wsh.getSh();
 
-        if (appendStrategy == AppendStrategy.USE_EXISTING_SHEETS && getXSSFSheet(sh).getPhysicalNumberOfRows() > 0) {
+        if (appendStrategy == AppendStrategy.USE_EXISTING_SHEETS && getPhysicalNumberOfRows(sh) > 0) {
             return;
         }
 
@@ -444,11 +444,11 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     }
 
     private Worksheet createSheet(DBCResultSet resultSet, Object colValue) throws DBException {
-        final SXSSFSheet sheet;
+        final Sheet sheet;
         final Worksheet worksheet;
         if (appendStrategy == AppendStrategy.USE_EXISTING_SHEETS && sheetIndex < wb.getNumberOfSheets()) {
             sheet = wb.getSheetAt(sheetIndex++);
-            worksheet = new Worksheet(sheet, colValue, getXSSFSheet(sheet).getPhysicalNumberOfRows());
+            worksheet = new Worksheet(sheet, colValue, getPhysicalNumberOfRows(sheet));
         } else {
             sheet = wb.createSheet();
             worksheet = new Worksheet(sheet, colValue, 0);
@@ -582,9 +582,8 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         return true;
     }
 
-    @NotNull
-    private XSSFSheet getXSSFSheet(@NotNull Sheet sheet) {
-        return wb.getXSSFWorkbook().getSheetAt(wb.getSheetIndex(sheet));
+    private int getPhysicalNumberOfRows(@NotNull Sheet sheet) {
+        return wb.getXSSFWorkbook().getSheetAt(wb.getSheetIndex(sheet)).getPhysicalNumberOfRows();
     }
 
     private String getPreparedString(String cellValue) {
