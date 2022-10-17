@@ -185,6 +185,12 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
 
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
         SQLObjectEditor<DBSEntityAttribute, OBJECT_TYPE> tcm = getObjectEditor(editorsRegistry, DBSEntityAttribute.class);
+        /*
+         * FIXME: We have a pretty major problem with inheritance and managers
+         * FIXME: we search for constraint manager by class which is also a parent
+         * FIXME: for indexes and foreign keys this may lead to incorrect manager provided for key
+         * Temporary workaround - provide primary key before indexes and foreign keys in getChildTypes
+         */
         SQLObjectEditor<DBSEntityConstraint, OBJECT_TYPE> pkm = getObjectEditor(editorsRegistry, DBSEntityConstraint.class);
         SQLObjectEditor<DBSTableForeignKey, OBJECT_TYPE> fkm = getObjectEditor(editorsRegistry, DBSTableForeignKey.class);
         SQLObjectEditor<DBSTableIndex, OBJECT_TYPE> im = getObjectEditor(editorsRegistry, DBSTableIndex.class);
