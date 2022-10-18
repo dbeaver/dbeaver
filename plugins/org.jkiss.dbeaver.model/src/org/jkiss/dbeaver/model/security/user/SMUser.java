@@ -70,4 +70,7 @@ public class SMUser extends SMSubject {
         this.enabled = enabled;
     }
 
+    public String getAuthRole() {
+        return authRole;
+    }
 }
