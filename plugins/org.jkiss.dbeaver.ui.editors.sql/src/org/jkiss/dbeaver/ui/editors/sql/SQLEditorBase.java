@@ -129,6 +129,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
 
+
+    private boolean editorServicesEnabled = true;
+
     private int lastQueryErrorPosition = -1;
 
     public SQLEditorBase() {
@@ -182,6 +185,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             return file != null && file.length() > MAX_FILE_LENGTH_FOR_RULES;
         }
         return false;
+    }
+
+    public boolean getEditorServicesEnabled() {
+        return editorServicesEnabled;
+    }
+
+    public void setEditorServicesEnabled(boolean value) {
+        this.editorServicesEnabled = value;
     }
 
     static boolean isReadEmbeddedBinding() {
@@ -1010,7 +1021,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public boolean isFoldingEnabled() {
-        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+        return getEditorServicesEnabled() && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
     /**

@@ -40,7 +40,7 @@ public class SQLContentAssistant extends ContentAssistant {
     private class SQLAutoAssistListener extends AutoAssistListener {
         @Override
         protected void showAssist(int showStyle) {
-            if (showStyle == 1 && !editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)) {
+            if (showStyle == 1 && !(editor.getEditorServicesEnabled() && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION))) {
                 return;
             }
             SQLCompletionProcessor.setSimpleMode(true);

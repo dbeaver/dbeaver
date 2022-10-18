@@ -61,8 +61,8 @@ class SQLOccurrencesHighlighter {
 
     SQLOccurrencesHighlighter(SQLEditorBase editor) {
         this.editor = editor;
-        this.markOccurrencesUnderCursor = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
-        this.markOccurrencesForSelection = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
+        this.markOccurrencesUnderCursor = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
+        this.markOccurrencesForSelection = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
     }
 
     public boolean isEnabled() {
@@ -223,14 +223,14 @@ class SQLOccurrencesHighlighter {
             uninstallOccurrencesFinder();
         } else {
             setMarkingOccurrences(
-                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
-                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
+                editor.getEditorServicesEnabled() && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
+                editor.getEditorServicesEnabled() && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         }
     }
 
     boolean handlePreferenceStoreChanged(PropertyChangeEvent event) {
         String property = event.getProperty();
-        if (SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR.equals(property) || SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION.equals(property)) {
+        if (editor.getEditorServicesEnabled() && (SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR.equals(property) || SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION.equals(property))) {
             updateInput(editor.getEditorInput());
             return true;
         }

@@ -634,6 +634,11 @@ public class SQLEditor extends SQLEditorBase implements
     public boolean isSmartAutoCommit() {
         return getActivePreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
     }
+    
+    @Override
+    public boolean isFoldingEnabled() {
+        return getEditorServicesEnabled() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+    }
 
     @Override
     public void setSmartAutoCommit(boolean smartAutoCommit) {
