@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -726,7 +728,18 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     
     @NotNull
     private File makeOutputFile(@Nullable String suffix) {
-        File dir = new File(getOutputFolder());
+        final File file = makeOutputFile(suffix, getOutputFolder());
+
+        try (FileOutputStream ignored = new FileOutputStream(file)) {
+            return file;
+        } catch (IOException e) {
+            return makeOutputFile(suffix, getFallbackOutputFolder());
+        }
+    }
+
+    @NotNull
+    private File makeOutputFile(@Nullable String suffix, @NotNull String outputFolder) {
+        File dir = new File(outputFolder);
         if (!dir.exists() && !dir.mkdirs()) {
             log.error("Can't create output directory '" + dir.getAbsolutePath() + "'");
         }
@@ -900,6 +913,18 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @NotNull
     public StreamConsumerSettings getSettings() {
         return settings;
+    }
+
+    @NotNull
+    private static String getFallbackOutputFolder() {
+        final DBPPreferenceStore prefs = DTActivator.getDefault().getPreferences();
+        final String value = prefs.getString(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY);
+
+        if (CommonUtils.isEmpty(value)) {
+            return DTConstants.DEFAULT_FALLBACK_OUTPUT_DIRECTORY;
+        } else {
+            return value;
+        }
     }
 
     private class StreamExportSite implements IStreamDataExporterSite {

@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
+import org.jkiss.dbeaver.tools.transfer.ui.prefs.PrefPageDataTransfer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
@@ -63,8 +64,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.Charset;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -194,13 +195,19 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         {
             Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
-            clipboardCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_copy_to_clipboard, null, false, 5);
+            clipboardCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_copy_to_clipboard, null, false, 4);
             clipboardCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setOutputClipboard(clipboardCheck.getSelection());
                     updateControlsEnablement();
                     updatePageCompletion();
+                }
+            });
+            UIUtils.createLink(generalSettings, DTMessages.data_transfer_wizard_output_label_global_settings, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.showPreferencesFor(getShell(), null, PrefPageDataTransfer.PAGE_ID);
                 }
             });
 

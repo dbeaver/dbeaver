@@ -213,6 +213,10 @@ public class DTUIMessages extends NLS {
 	public static String data_transfer_event_processor_execute_command_working_directory;
 	public static String data_transfer_event_processor_execute_command_working_directory_title;
 
+	public static String pref_data_transfer_options_title;
+	public static String pref_data_transfer_options_fallback_directory;
+	public static String pref_data_transfer_options_fallback_directory_tip;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, DTUIMessages.class);
