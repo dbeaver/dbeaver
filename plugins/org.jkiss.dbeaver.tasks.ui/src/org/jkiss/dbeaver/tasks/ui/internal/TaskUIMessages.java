@@ -55,7 +55,8 @@ public class TaskUIMessages extends NLS {
 	public static String task_config_wizard_page_task_control_label_descr;
 	public static String task_config_wizard_page_task_text_label_task_id;
 	public static String task_config_wizard_page_task_create_folder_label;
-	
+	public static String task_config_wizard_page_task_no_task_types_available;
+
 	public static String task_config_wizard_stub_title_create_task;
 	public static String task_config_wizard_stub_page_name_void;
 	
