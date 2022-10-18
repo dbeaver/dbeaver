@@ -1465,12 +1465,13 @@ public class UIUtils {
 
     public static void drawMessageOverControl(Control control, GC gc, String message, int offset) {
         Rectangle bounds = control.getBounds();
+        final int height = gc.textExtent(message).y;
         for (String line : message.split("\n")) {
             line = line.trim();
             Point ext = gc.textExtent(line);
             gc.drawText(line,
                 (bounds.width - ext.x) / 2,
-                bounds.height / 2 + offset);
+                (bounds.height - height) / 2 + offset);
             offset += ext.y;
         }
     }
