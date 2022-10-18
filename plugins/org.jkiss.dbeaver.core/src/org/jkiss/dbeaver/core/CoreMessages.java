@@ -627,7 +627,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_transactions_notifications_show_check_label;
     public static String pref_page_transactions_notifications_show_check_description;
 
-	public static String pref_page_label_edit_permissions;
+    public static String pref_page_label_edit_permissions;
 
     static {
 		// initialize resource bundle

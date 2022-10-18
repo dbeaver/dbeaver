@@ -257,7 +257,9 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        EditConnectionPermissionsDialog dialog = new EditConnectionPermissionsDialog(getShell(), getSelectedType().getModifyPermission());
+                        EditConnectionPermissionsDialog dialog = new EditConnectionPermissionsDialog(
+                            getShell(), getSelectedType().getModifyPermission()
+                        );
                         if (dialog.open() == IDialogConstants.OK_ID) {
                             getSelectedType().setModifyPermissions(dialog.getAccessRestrictions());
                         }
