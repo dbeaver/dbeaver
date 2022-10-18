@@ -210,7 +210,9 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         final DBPPreferenceListener prefListener = event -> {
             switch (event.getProperty()) {
                 case SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION:
-                    assistant.enableAutoActivation(editor.getEditorServicesEnabled() && configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
+                    assistant.enableAutoActivation(
+                        editor.getEditorServicesEnabled() && configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)
+                    );
                     break;
                 case SQLPreferenceConstants.AUTO_ACTIVATION_DELAY:
                     assistant.setAutoActivationDelay(configStore.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));

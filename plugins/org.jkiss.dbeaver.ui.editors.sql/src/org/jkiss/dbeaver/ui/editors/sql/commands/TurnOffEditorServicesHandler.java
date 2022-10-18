@@ -44,28 +44,40 @@ public class TurnOffEditorServicesHandler extends AbstractHandler implements IEl
         final SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
 
         if (editor != null && editor.getDocument() != null) {
-            boolean oldServicesEnabled = editor.getEditorServicesEnabled();
-            DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
-            boolean foldingEnabled = prefStore.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
-            boolean autoActivationEnabled = prefStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
-            boolean markWordUnderCursorEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
-            boolean markWordForSelectionEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
-            boolean newServicesEnabled = !oldServicesEnabled;
+            final boolean oldServicesEnabled = editor.getEditorServicesEnabled();
+            final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
+            final boolean foldingEnabled = prefStore.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+            final boolean autoActivationEnabled = prefStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
+            final boolean markWordUnderCursorEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
+            final boolean markWordForSelectionEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
+            final boolean newServicesEnabled = !oldServicesEnabled;
             
             editor.setEditorServicesEnabled(newServicesEnabled);
             prefStore.firePropertyChangeEvent(
-                SQLPreferenceConstants.FOLDING_ENABLED, oldServicesEnabled && foldingEnabled, newServicesEnabled && foldingEnabled);
+                SQLPreferenceConstants.FOLDING_ENABLED,
+                oldServicesEnabled && foldingEnabled,
+                newServicesEnabled && foldingEnabled
+            );
             prefStore.firePropertyChangeEvent(
-                SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, oldServicesEnabled && autoActivationEnabled, newServicesEnabled && autoActivationEnabled);
+                SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION,
+                oldServicesEnabled && autoActivationEnabled,
+                newServicesEnabled && autoActivationEnabled
+            );
             prefStore.firePropertyChangeEvent(
-                SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR, oldServicesEnabled && markWordUnderCursorEnabled, newServicesEnabled && markWordUnderCursorEnabled);
+                SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR,
+                oldServicesEnabled && markWordUnderCursorEnabled,
+                newServicesEnabled && markWordUnderCursorEnabled
+            );
             prefStore.firePropertyChangeEvent(
-                SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, oldServicesEnabled && markWordForSelectionEnabled, newServicesEnabled && markWordForSelectionEnabled);
-        }
-        
-        value = !value;
-        editor.getSite().getService(ICommandService.class).refreshElements("org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices", null);
+                SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION,
+                oldServicesEnabled && markWordForSelectionEnabled,
+                newServicesEnabled && markWordForSelectionEnabled
+            );
 
+            value = !value;
+            editor.getSite().getService(ICommandService.class)
+                .refreshElements("org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices", null);
+        }
         return null;
     }
 

@@ -33,6 +33,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -61,8 +62,9 @@ class SQLOccurrencesHighlighter {
 
     SQLOccurrencesHighlighter(SQLEditorBase editor) {
         this.editor = editor;
-        this.markOccurrencesUnderCursor = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
-        this.markOccurrencesForSelection = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
+        final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
+        this.markOccurrencesUnderCursor = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
+        this.markOccurrencesForSelection = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
     }
 
     public boolean isEnabled() {
@@ -222,15 +224,19 @@ class SQLOccurrencesHighlighter {
         if (SQLEditorBase.isBigScript(input)) {
             uninstallOccurrencesFinder();
         } else {
+            final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
             setMarkingOccurrences(
-                editor.getEditorServicesEnabled() && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
-                editor.getEditorServicesEnabled() && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
+                editor.getEditorServicesEnabled() && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
+                editor.getEditorServicesEnabled() && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         }
     }
 
     boolean handlePreferenceStoreChanged(PropertyChangeEvent event) {
         String property = event.getProperty();
-        if (editor.getEditorServicesEnabled() && (SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR.equals(property) || SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION.equals(property))) {
+        if (editor.getEditorServicesEnabled()
+            && (SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR.equals(property)
+            || SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION.equals(property))
+        ) {
             updateInput(editor.getEditorInput());
             return true;
         }
