@@ -103,9 +103,9 @@ public class ClickhouseDataSource extends GenericDataSource {
     private void initSSL(DBRProgressMonitor monitor, Properties properties, DBWHandlerConfiguration sslConfig) throws DBException {
         monitor.subTask("Initialising SSL configuration");
         properties.put(ClickhouseConstants.SSL_PARAM, "true");
-        if ("com_clickhouse".equals(getContainer().getDriver().getId())) {
-            if (!DBWorkbench.isDistributed()) {
-                try {
+        try {
+            if ("com_clickhouse".equals(getContainer().getDriver().getId())) {
+                if (DBWorkbench.isDistributed()) {
                     String clientCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
                     if (!CommonUtils.isEmpty(clientCertProp)) {
                         properties.put(ClickhouseConstants.SSL_PATH, saveCertificateToFile(clientCertProp));
@@ -114,28 +114,36 @@ public class ClickhouseDataSource extends GenericDataSource {
                     if (!CommonUtils.isEmpty(clientKeyProp)) {
                         properties.put(ClickhouseConstants.SSL_KEY_PASSWORD, saveCertificateToFile(clientKeyProp));
                     }
-                    String caCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
-                    if (!CommonUtils.isEmpty(caCertProp)) {
-                        properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE, saveCertificateToFile(caCertProp));
-                    }
-                } catch (IOException e) {
-                    throw new DBException("Can not configure SSL", e);
+                } else {
+                    properties.put(ClickhouseConstants.SSL_PATH,
+                        sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT)
+                    );
+                    properties.put(ClickhouseConstants.SSL_KEY_PASSWORD,
+                        sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY)
+                    );
+                }
+                properties.put(ClickhouseConstants.SSL_MODE,
+                    sslConfig.getStringProperty(ClickhouseConstants.SSL_MODE_CONF)
+                );
+            } else {
+                // Old clickhouse used lowercase for sslmode, we should send it in the lowercase
+                String mode = sslConfig.getStringProperty(ClickhouseConstants.SSL_MODE_CONF);
+                if (mode != null) {
+                    properties.put(ClickhouseConstants.SSL_MODE, mode.toLowerCase());
+                }
+            }
+            if (DBWorkbench.isDistributed()) {
+                String caCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
+                if (!CommonUtils.isEmpty(caCertProp)) {
+                    properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE, saveCertificateToFile(caCertProp));
                 }
             } else {
-                properties.put(ClickhouseConstants.SSL_PATH,
-                    sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT));
-                properties.put(ClickhouseConstants.SSL_KEY_PASSWORD,
-                    sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY));
                 properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE,
-                    sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT));
+                    sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT)
+                );
             }
-            properties.put(ClickhouseConstants.SSL_MODE, sslConfig.getStringProperty(ClickhouseConstants.SSL_MODE_CONF));
-        } else {
-            // Old clickhouse used lowercase for sslmode, we should send it in the lowercase
-            String mode = sslConfig.getStringProperty(ClickhouseConstants.SSL_MODE_CONF);
-            if (mode != null) {
-                properties.put(ClickhouseConstants.SSL_MODE, mode.toLowerCase());
-            }
+        } catch (IOException e) {
+            throw new DBException("Can not configure SSL", e);
         }
     }
 
