@@ -374,8 +374,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             subPages = ((IDialogPageProvider) connectionEditor).getDialogPages(extrasOnly, true);
 
-            if (isNew() || !getDriver().isEmbedded()) {
-                // Add network tabs (for new connections or non-embedded drivers)
+            if (!getDriver().isEmbedded()) {
+                // Add network tabs (for non-embedded drivers)
                 for (NetworkHandlerDescriptor descriptor : NetworkHandlerRegistry.getInstance().getDescriptors(getActiveDataSource())) {
                     subPages = ArrayUtils.add(IDialogPage.class, subPages, new ConnectionPageNetworkHandler(this, descriptor));
                 }

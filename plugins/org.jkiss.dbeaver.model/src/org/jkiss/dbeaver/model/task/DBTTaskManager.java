@@ -84,6 +84,10 @@ public interface DBTTaskManager {
 
     void updateConfiguration();
 
+    boolean hasRunningTasks();
+
+    void cancelRunningTasks();
+
     @NotNull
     Path getStatisticsFolder();
 

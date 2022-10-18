@@ -30,6 +30,9 @@ public class CoreApplicationMessages extends NLS {
 	public static String actions_menu_reset_workspace_state_message;
 	public static String actions_menu_recent_editors;
 
+	public static String confirmation_cancel_database_tasks_title;
+	public static String confirmation_cancel_database_tasks_message;
+
     static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreApplicationMessages.class);
