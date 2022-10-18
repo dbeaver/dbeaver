@@ -10,6 +10,7 @@ tmp/
 .settings
 local.properties
 .loadpath
+.dccache
 
 # External tool builders
 .externalToolBuilders/
