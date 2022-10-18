@@ -232,6 +232,21 @@
                     <parameter name="query-set-active-db" value="SET CURRENT_SCHEMA = ?"/>
                 </driver>
                 <driver
+                    id="opensearch"
+                    label="OpenSearch"
+                    icon="icons/opensearch_icon.png"
+                    iconBig="icons/opensearch_icon_big.png"
+                    class="org.opensearch.jdbc.Driver"
+                    sampleURL="jdbc:opensearch://[{scheme}://][{host}][:{port}]"
+                    defaultPort="443"
+                    webURL="https://www.opensearch.org/"
+                    description="OpenSearch open source search and analytics suite"
+                    categories="sql">
+                    <file type="jar" path="https://artifacts.opensearch.org/opensearch-clients/jdbc/opensearch-sql-jdbc-1.1.0.1.jar" bundle="!drivers.opensearch"/>
+                    <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
+                </driver>
+                <driver
                     id="informix"
                     label="Informix"
                     icon="icons/informix_icon.png"
