@@ -83,7 +83,7 @@ public class NavigatorHandlerCreateFolder extends NavigatorHandlerObjectBase {
     private static void createNewFolder(@NotNull IResource resource, @NotNull String folderName) throws DBException {
         try {
             if (resource instanceof IProject) {
-                IFolder newFolder = ((IProject)resource).getFolder(folderName);
+                IFolder newFolder = ((IProject) resource).getFolder(folderName);
                 if (newFolder.exists()) {
                     throw new DBException("Folder '" + folderName + "' already exists in project '" + resource.getName() + "'");
                 }
