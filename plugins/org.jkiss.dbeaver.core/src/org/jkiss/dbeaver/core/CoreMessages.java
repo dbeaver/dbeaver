@@ -623,6 +623,12 @@ public class CoreMessages extends NLS {
     public static String pref_page_connections_use_win_cert_label;
     public static String pref_page_connections_use_win_cert_tip;
 
+    public static String pref_page_transactions_notify_name_group_label;
+    public static String pref_page_transactions_notifications_show_check_label;
+    public static String pref_page_transactions_notifications_show_check_description;
+
+	public static String pref_page_label_edit_permissions;
+
     static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
