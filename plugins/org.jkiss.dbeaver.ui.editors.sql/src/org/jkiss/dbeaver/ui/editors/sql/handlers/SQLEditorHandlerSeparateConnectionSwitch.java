@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -48,14 +49,17 @@ public class SQLEditorHandlerSeparateConnectionSwitch extends CompoundContributi
     protected IContributionItem[] getContributionItems() {
         DBPPreferenceStore preferenceStore = getPreferenceStore();
         if (preferenceStore == null) {
-            return new IContributionItem[] {
-                new ActionContributionItem(new Action("No editor or data source selected", Action.AS_UNSPECIFIED) {{
-                    setEnabled(false);
+            Action placeholder = new Action(
+                SQLEditorMessages.sql_editor_separate_connection_no_editor_or_ds_selected,
+                Action.AS_UNSPECIFIED
+            ) {
+                @Override
+                public void run() {
+                    // do nothing
                 }
-                    @Override
-                    public void run() { }
-                })
             };
+            placeholder.setEnabled(false);
+            return new IContributionItem[] { new ActionContributionItem(placeholder) };
         }
         
         List<SeparateConnectionBehavior> behaviors = List.of(
@@ -68,7 +72,7 @@ public class SQLEditorHandlerSeparateConnectionSwitch extends CompoundContributi
         );
         
         List<IContributionItem> items = new ArrayList<>(behaviors.size());
-        for (final SeparateConnectionBehavior behavior: behaviors) {
+        for (final SeparateConnectionBehavior behavior : behaviors) {
             Action action = new Action(behavior.getTitle(), Action.AS_RADIO_BUTTON) {
                 @Override
                 public void run() {

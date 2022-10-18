@@ -56,6 +56,9 @@ public final class ModelPreferences
             return title;
         }
         
+        /**
+         * Convert value to SeparateConnectionBehavior option
+         */
         public static SeparateConnectionBehavior parse(String value) {
             if ("true".equalsIgnoreCase(value)) {
                 return DEFAULT;

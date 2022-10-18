@@ -96,7 +96,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         return true;
     }
 
-    private final static List<SeparateConnectionBehavior> editorUseSeparateConnectionValues = List.of(
+    private static final List<SeparateConnectionBehavior> editorUseSeparateConnectionValues = List.of(
         SeparateConnectionBehavior.ALWAYS,
         SeparateConnectionBehavior.DEFAULT,
         SeparateConnectionBehavior.NEVER

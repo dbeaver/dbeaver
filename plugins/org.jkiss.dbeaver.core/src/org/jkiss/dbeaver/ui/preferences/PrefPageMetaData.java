@@ -71,7 +71,7 @@ public class PrefPageMetaData extends TargetPrefPage
         return true;
     }
     
-    private final static List<SeparateConnectionBehavior> metaUseSeparateConnectionValues = List.of(
+    private static final List<SeparateConnectionBehavior> metaUseSeparateConnectionValues = List.of(
         SeparateConnectionBehavior.ALWAYS,
         SeparateConnectionBehavior.DEFAULT,
         SeparateConnectionBehavior.NEVER
