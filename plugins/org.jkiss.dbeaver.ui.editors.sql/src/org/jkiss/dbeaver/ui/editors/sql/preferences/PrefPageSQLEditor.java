@@ -19,11 +19,16 @@ package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -34,6 +39,9 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * PrefPageSQLEditor
@@ -46,7 +54,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
     private static final String TEXT_EDITOR_PAGE_ID = "org.eclipse.ui.preferencePages.GeneralTextEditor"; //$NON-NLS-1$
 
-    private Button editorSeparateConnectionCheck;
+    private Combo editorSeparateConnectionCombo;
     private Button connectOnActivationCheck;
     private Button connectOnExecuteCheck;
 
@@ -88,6 +96,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
         return true;
     }
 
+    private final static List<SeparateConnectionBehavior> editorUseSeparateConnectionValues = List.of(
+        SeparateConnectionBehavior.ALWAYS,
+        SeparateConnectionBehavior.DEFAULT,
+        SeparateConnectionBehavior.NEVER
+    );
+
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
@@ -96,10 +110,14 @@ public class PrefPageSQLEditor extends TargetPrefPage
         {
             Group connectionsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
             ((GridData)connectionsGroup.getLayoutData()).horizontalSpan = 2;
-            editorSeparateConnectionCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor, false);
-            if (getDataSourceContainer() != null && getDataSourceContainer().isForceUseSingleConnection()) {
-                editorSeparateConnectionCheck.setEnabled(false);
-            }
+            editorSeparateConnectionCombo = UIUtils.createLabelCombo(
+                UIUtils.createComposite(connectionsGroup, 3),
+                SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor,
+                SWT.READ_ONLY | SWT.DROP_DOWN
+            );
+            ((GridData) editorSeparateConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
+            editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
+                .map(s -> s.getTitle()).collect(Collectors.toList()).toArray(new String[0]));
             connectOnActivationCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_editor_activation, false);
             connectOnExecuteCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_query_execute, false);
         }
@@ -150,7 +168,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
-            editorSeparateConnectionCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION));
+            editorSeparateConnectionCombo.select(editorUseSeparateConnectionValues.indexOf(
+                SeparateConnectionBehavior.parse(store.getString(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION))
+            ));
             connectOnActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE));
             connectOnExecuteCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE));
 
@@ -174,7 +194,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void savePreferences(DBPPreferenceStore store)
     {
         try {
-            store.setValue(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION, editorSeparateConnectionCheck.getSelection());
+            store.setValue(
+                SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
+                editorUseSeparateConnectionValues.get(editorSeparateConnectionCombo.getSelectionIndex()).name()
+            );
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE, connectOnActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, connectOnExecuteCheck.getSelection());
 

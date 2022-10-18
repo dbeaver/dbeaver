@@ -262,8 +262,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.assist.templates" name="%command.org.jkiss.dbeaver.ui.editors.sql.assist.templates.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.assist.templates.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.sync.connection" name="%command.org.jkiss.dbeaver.ui.editors.sql.sync.connection.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.sync.connection.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.sync.auto" name="%command.org.jkiss.dbeaver.ui.editors.sql.sync.auto.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.sync.auto.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.connection.separate" name="%command.org.jkiss.dbeaver.ui.editors.sql.connection.separate.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.connection.separate.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.rename" name="%command.org.jkiss.dbeaver.ui.editors.sql.rename.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.rename.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+		<command id="org.jkiss.dbeaver.ui.editors.sql.rename" name="%command.org.jkiss.dbeaver.ui.editors.sql.rename.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.rename.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.deleteThisScript" name="%command.org.jkiss.dbeaver.ui.editors.sql.deleteThisScript.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.deleteThisScript.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.close.tab" name="%command.org.jkiss.dbeaver.ui.editors.sql.close.tab.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.close.tab.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket" name="%command.org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -572,7 +571,6 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSyncConnectionAuto"/>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.connection.separate" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSeparateConnectionOption"/>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExportData">
             <enabledWhen>
                 <with variable="activeEditor">
@@ -970,8 +968,10 @@
                 <separator name="options" visible="true"/>
 
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto" style="toggle"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.connection.separate" style="toggle"/>
 
+				<menu label="%menu.org.jkiss.dbeaver.ui.editors.sql.connection.separate.label">
+                    <dynamic id="org.jkiss.dbeaver.ui.editors.sql.connection.separate.switch" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSeparateConnectionSwitch"/>
+                </menu>
             </menu>
         </menuContribution>
 
