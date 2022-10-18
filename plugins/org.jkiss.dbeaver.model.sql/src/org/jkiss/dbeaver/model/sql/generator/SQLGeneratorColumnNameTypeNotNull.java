@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-public class SQLGeneratorColumnNameTypeNN extends SQLGeneratorColumnNameType {
+public class SQLGeneratorColumnNameTypeNotNull extends SQLGeneratorColumnNameType {
 
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntityAttribute object) throws DBException {

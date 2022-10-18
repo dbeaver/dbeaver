@@ -48,7 +48,7 @@
         <generator id="ColumnNameType" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorColumnNameType" label="%sql.generator.name_type" description="%sql.generator.name_type_long" order="1051">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityAttribute"/>
         </generator>
-        <generator id="ColumnNameTypeNN" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorColumnNameTypeNN" label="%sql.generator.name_type_nn" description="%sql.generator.name_type_nn_long" order="1052">
+        <generator id="ColumnNameTypeNN" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorColumnNameTypeNotNull" label="%sql.generator.name_type_nn" description="%sql.generator.name_type_nn_long" order="1052">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityAttribute"/>
         </generator>
     </extension>
