@@ -237,16 +237,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             DBSObjectContainer container = parent.getSettings().getContainer();
             if (container != null && container.getDataSource() != null) {
                 DBPDataSource targetDataSource = container.getDataSource();
-                boolean isSkipNameTransformation = false;
-                if (source instanceof DBSObject) {
-                    DBPDataSource sourceDataSource = ((DBSObject) source).getDataSource();
-                    String sourceAttributeName = getSourceAttributeName(source);
-                    if (sourceDataSource != null && sourceDataSource.getSQLDialect() != null
-                        && CommonUtils.isNotEmpty(sourceAttributeName)) {
-                        isSkipNameTransformation = sourceDataSource.getSQLDialect().mustBeQuoted(sourceAttributeName, true);
-                    }
-                }
-                if (!DBUtils.isQuotedIdentifier(targetDataSource, targetName) && !isSkipNameTransformation) {
+                if (!DBUtils.isQuotedIdentifier(targetDataSource, targetName) && !isSkipNameTransformation()) {
                     targetName = DBObjectNameCaseTransformer.transformName(targetDataSource, targetName);
                 }
             }
@@ -268,7 +259,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         String name = getSourceAttributeName(source);
         DBSObjectContainer container = parent.getSettings().getContainer();
 
-        if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name)) {
+        if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name) && !isSkipNameTransformation()) {
             name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
         }
 
@@ -289,6 +280,19 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             name = source.getName();
         }
         return name;
+    }
+
+    private boolean isSkipNameTransformation() {
+        boolean isSkipNameTransformation = false;
+        if (source instanceof DBSObject) {
+            DBPDataSource sourceDataSource = ((DBSObject) source).getDataSource();
+            String sourceAttributeName = getSourceAttributeName(source);
+            if (sourceDataSource != null && sourceDataSource.getSQLDialect() != null
+                && CommonUtils.isNotEmpty(sourceAttributeName)) {
+                isSkipNameTransformation = sourceDataSource.getSQLDialect().mustBeQuoted(sourceAttributeName, true);
+            }
+        }
+        return isSkipNameTransformation;
     }
 
     @Nullable
