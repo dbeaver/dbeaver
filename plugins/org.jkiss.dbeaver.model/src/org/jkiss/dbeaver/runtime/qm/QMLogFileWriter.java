@@ -41,7 +41,6 @@ import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 /**
  * Query manager log writer
@@ -110,7 +109,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
         final LocalDate today = LocalDate.now();
         final LocalDate judgementDay = today.minusDays(daysToKeep);
 
-        final List<Path> files = Files.list(logDirectory)
+        Files.list(logDirectory)
             .filter(file -> {
                 try {
                     final LocalDate date = LOG_FILENAME_FORMATTER.parse(file.getFileName().toString(), LocalDate::from);
@@ -119,15 +118,13 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
                     return false;
                 }
             })
-            .collect(Collectors.toList());
-
-        for (Path file : files) {
-            try {
-                Files.delete(file);
-            } catch (IOException e) {
-                log.debug("Unable to purge old log file '" + file + "': " + e.getMessage());
-            }
-        }
+            .forEach(file -> {
+                try {
+                    Files.delete(file);
+                } catch (IOException e) {
+                    log.debug("Unable to purge the old log file '" + file + "': " + e.getMessage());
+                }
+            });
     }
 
     @Override
