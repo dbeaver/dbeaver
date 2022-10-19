@@ -235,8 +235,11 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         if (mappingType == DatabaseMappingType.create && !CommonUtils.isEmpty(targetName)) {
             // Convert target name case (#1516)
             DBSObjectContainer container = parent.getSettings().getContainer();
-            if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), targetName)) {
-                targetName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), targetName);
+            if (container != null && container.getDataSource() != null) {
+                DBPDataSource targetDataSource = container.getDataSource();
+                if (!DBUtils.isQuotedIdentifier(targetDataSource, targetName) && !isSkipNameTransformation()) {
+                    targetName = DBObjectNameCaseTransformer.transformName(targetDataSource, targetName);
+                }
             }
         } else if (mappingType == DatabaseMappingType.unspecified && source != null && targetName != null) {
             String sourceLabelOrName = getSourceLabelOrName(source);
@@ -253,16 +256,10 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     String getSourceLabelOrName(DBSAttributeBase source, boolean quoteIdentifier) {
-        String name = null;
-        if (source instanceof DBDAttributeBinding) {
-            name = ((DBDAttributeBinding) source).getLabel();
-        }
-        if (CommonUtils.isEmpty(name)) {
-            name = source.getName();
-        }
+        String name = getSourceAttributeName(source);
         DBSObjectContainer container = parent.getSettings().getContainer();
 
-        if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name)) {
+        if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name) && !isSkipNameTransformation()) {
             name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
         }
 
@@ -271,6 +268,31 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
 
         return name;
+    }
+
+    @NotNull
+    private String getSourceAttributeName(@NotNull DBSAttributeBase source) {
+        String name = null;
+        if (source instanceof DBDAttributeBinding) {
+            name = ((DBDAttributeBinding) source).getLabel();
+        }
+        if (CommonUtils.isEmpty(name)) {
+            name = source.getName();
+        }
+        return name;
+    }
+
+    private boolean isSkipNameTransformation() {
+        boolean isSkipNameTransformation = false;
+        if (source instanceof DBSObject) {
+            DBPDataSource sourceDataSource = ((DBSObject) source).getDataSource();
+            String sourceAttributeName = getSourceAttributeName(source);
+            if (sourceDataSource != null && sourceDataSource.getSQLDialect() != null
+                && CommonUtils.isNotEmpty(sourceAttributeName)) {
+                isSkipNameTransformation = sourceDataSource.getSQLDialect().mustBeQuoted(sourceAttributeName, true);
+            }
+        }
+        return isSkipNameTransformation;
     }
 
     @Nullable
