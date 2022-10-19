@@ -114,7 +114,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         Map<String, Object> properties = new HashMap<>();
         properties.put(DataExporterXLSX.PROP_ROWNUMBER, false);
         properties.put(DataExporterXLSX.PROP_BORDER, "THIN");
-        properties.put(DataExporterXLSX.PROP_HEADER, true);
+        properties.put(DataExporterXLSX.PROP_HEADER, HeaderFormat.LABEL.value);
         properties.put(DataExporterXLSX.PROP_NULL_STRING, null);
         properties.put(DataExporterXLSX.PROP_HEADER_FONT, "BOLD");
         properties.put(DataExporterXLSX.PROP_TRUESTRING, "true");
