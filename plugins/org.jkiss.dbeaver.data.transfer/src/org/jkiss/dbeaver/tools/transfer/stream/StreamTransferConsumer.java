@@ -288,6 +288,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 ),
                 forAllLabels, runtimeParameters.blobFileConflictPreviousChoice
             );
+            if (response.choiceIndex < 0) {
+                throw new RuntimeException("Blob file name conflict behavior is not specified while " + fileName + " already exists");
+            }
             if (response.choiceIndex > 1) {
                 throw new RuntimeException("User cancel during existing file resolution for blob " + fileName);
             }
@@ -441,6 +444,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             );
             if (response.choiceIndex > 2) {
                 throw new RuntimeException("User cancel during existing file resolution for data " + fileName);
+            }
+            if (response.choiceIndex < 0) {
+                throw new RuntimeException("Data file name conflict behavior is not specified while " + fileName + " already exists");
             }
             behavior = new DataFileConflictBehavior[] {
                 DataFileConflictBehavior.APPEND,

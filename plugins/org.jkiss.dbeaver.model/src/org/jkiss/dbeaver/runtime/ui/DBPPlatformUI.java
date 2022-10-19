@@ -56,6 +56,9 @@ public interface DBPPlatformUI {
     }
     
     public static class UserChoiceResponse {
+        /**
+         * index of the user's choice or out of range value (-1) on dialog failure
+         */
         public final int choiceIndex;
         @Nullable
         public final Integer forAllChoiceIndex;

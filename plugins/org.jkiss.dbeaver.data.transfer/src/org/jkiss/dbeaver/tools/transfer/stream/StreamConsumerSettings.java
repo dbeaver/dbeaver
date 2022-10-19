@@ -316,12 +316,12 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         dataFileConflictBehavior = CommonUtils.valueOf(
             DataFileConflictBehavior.class,
             CommonUtils.toString(settings.get(DATA_FILE_CONFLICT_BEHAVIOR)),
-            DataFileConflictBehavior.ASK
+            DataFileConflictBehavior.PATCHNAME
         );
         blobFileConflictBehavior = CommonUtils.valueOf(
             BlobFileConflictBehavior.class,
             CommonUtils.toString(settings.get(BLOB_FILE_CONFLICT_BEHAVIOR)),
-            BlobFileConflictBehavior.ASK
+            BlobFileConflictBehavior.PATCHNAME
         );
         if (dataTransferSettings.getDataPipes().size() > 1) {
             useSingleFile = CommonUtils.getBoolean(settings.get("useSingleFile"), useSingleFile);
