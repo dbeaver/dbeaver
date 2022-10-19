@@ -36,7 +36,9 @@ import java.util.Map;
 
 public class TurnOffEditorServicesHandler extends AbstractHandler implements IElementUpdater {
     
-    static boolean value = false;
+    private final static String COMMAND_ID  = "org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices";
+    private boolean value = false;
+    
 
     @Nullable
     @Override
@@ -44,7 +46,7 @@ public class TurnOffEditorServicesHandler extends AbstractHandler implements IEl
         final SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
 
         if (editor != null && editor.getDocument() != null) {
-            final boolean oldServicesEnabled = editor.getEditorServicesEnabled();
+            final boolean oldServicesEnabled = editor.isEditorServicesEnabled();
             final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
             final boolean foldingEnabled = prefStore.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
             final boolean autoActivationEnabled = prefStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
@@ -76,7 +78,7 @@ public class TurnOffEditorServicesHandler extends AbstractHandler implements IEl
 
             value = !value;
             editor.getSite().getService(ICommandService.class)
-                .refreshElements("org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices", null);
+                .refreshElements(COMMAND_ID, null);
         }
         return null;
     }
@@ -85,7 +87,7 @@ public class TurnOffEditorServicesHandler extends AbstractHandler implements IEl
     public void updateElement(@NotNull UIElement element, @Nullable Map parameters) {
         IEditorPart editor = element.getServiceLocator().getService(IWorkbenchWindow.class).getActivePage().getActiveEditor();
         if (editor instanceof SQLEditor) {
-            element.setChecked(!((SQLEditor) editor).getEditorServicesEnabled());    
+            element.setChecked(!((SQLEditor) editor).isEditorServicesEnabled());    
         }        
     }
 }

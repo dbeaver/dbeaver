@@ -637,7 +637,7 @@ public class SQLEditor extends SQLEditorBase implements
     
     @Override
     public boolean isFoldingEnabled() {
-        return getEditorServicesEnabled() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+        return isEditorServicesEnabled() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
     @Override

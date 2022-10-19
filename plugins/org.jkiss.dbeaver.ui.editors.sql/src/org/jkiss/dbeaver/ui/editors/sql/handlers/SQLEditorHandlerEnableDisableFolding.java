@@ -27,6 +27,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.io.IOException;
 import java.util.Map;
@@ -39,11 +40,7 @@ public class SQLEditorHandlerEnableDisableFolding extends AbstractHandler implem
             DBPPreferenceStore preferenceStore  = ((SQLEditor) editor).getActivePreferenceStore();
             boolean previousValue = preferenceStore.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
             preferenceStore.setValue(SQLPreferenceConstants.FOLDING_ENABLED, !previousValue);
-            try {
-                preferenceStore.save();
-            } catch (IOException e) {
-                throw new ExecutionException("Error saving folding preference", e);
-            }
+            PrefUtils.savePreferenceStore(preferenceStore);
         }
         return null;
     }

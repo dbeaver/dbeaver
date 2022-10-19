@@ -187,7 +187,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return false;
     }
 
-    public boolean getEditorServicesEnabled() {
+    public boolean isEditorServicesEnabled() {
         return editorServicesEnabled;
     }
 
@@ -1021,7 +1021,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public boolean isFoldingEnabled() {
-        return getEditorServicesEnabled()
+        return isEditorServicesEnabled()
             && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
