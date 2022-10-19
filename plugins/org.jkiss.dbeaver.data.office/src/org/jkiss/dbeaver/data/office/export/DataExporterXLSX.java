@@ -349,11 +349,10 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
                 }
             }
             if (bindingsOk) {
-                DBSEntity sourceEntity = null;
-                if (getSite().getSource() instanceof DBSEntity) {
-                    sourceEntity = (DBSEntity) getSite().getSource();
+                final DBSEntity sourceEntity = GeneralUtils.adapt(getSite().getSource(), DBSEntity.class);
+                if (sourceEntity != null) {
+                    DBExecUtils.bindAttributes(resultSet.getSession(), sourceEntity, resultSet, bindings, null);
                 }
-                DBExecUtils.bindAttributes(resultSet.getSession(), sourceEntity, resultSet, bindings, null);
             }
 
             for (DBDAttributeBinding column : columns) {
