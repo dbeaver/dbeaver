@@ -812,4 +812,19 @@ public class PostgreUtils {
         return name.replace(PostgreConstants.USER_VARIABLE, database.getMetaContext().getActiveUser());
     }
 
+    /**
+     * Usually, we can check the info about system columns (whether existing or not, depending on the server version) in the documentation.
+     * But sometimes, this approach is not working.
+     * In this case, we can directly check the existing system column on the database.
+     * If the column doesn't exist, then there will be an exception
+     *
+     * @param tableName name of the system table
+     * @param columnName name of the system column
+     * @return query for the system column checking
+     */
+    @NotNull
+    public static String getQueryForSystemColumnChecking(@NotNull String tableName, @NotNull String columnName) {
+        return "SELECT " + columnName + " FROM pg_catalog." + tableName + " WHERE 1<>1 LIMIT 1";
+    }
+
 }
