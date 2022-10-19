@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -109,9 +111,26 @@ public class JDBCRemoteInstance implements DBSInstance {
         if (this.metaContext != null) {
             return this.metaContext;
         }
-        if (!dataSource.getContainer().getDriver().isEmbedded() &&
-            !dataSource.getContainer().isForceUseSingleConnection() &&
-            dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION)) {
+        
+        DBPDataSourceContainer container = dataSource.getContainer();
+        SeparateConnectionBehavior behavior = SeparateConnectionBehavior.parse(
+            container.getPreferenceStore().getString(ModelPreferences.META_SEPARATE_CONNECTION)
+        );
+        boolean isMetaConnectionSeparate;
+        switch (behavior) {
+            case ALWAYS:
+                isMetaConnectionSeparate = true;
+                break;
+            case NEVER:
+                isMetaConnectionSeparate = false;
+                break;
+            case DEFAULT:
+            default: 
+                isMetaConnectionSeparate = !container.getDriver().isEmbedded() && !container.isForceUseSingleConnection();
+                break;
+        }
+
+        if (isMetaConnectionSeparate) {
             // FIXME: do not sync expensive operations
             //synchronized (allContexts) {
                 this.metaContext = dataSource.createExecutionContext(this, getMetadataContextName());

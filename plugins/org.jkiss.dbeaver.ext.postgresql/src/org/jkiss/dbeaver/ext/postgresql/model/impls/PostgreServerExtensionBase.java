@@ -560,4 +560,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public boolean supportsOpFamily() {
         return  dataSource.isServerVersionAtLeast(8, 3);
     }
+
+    @Override
+    public boolean supportsAlterTableColumnWithUSING() {
+        return dataSource.isServerVersionAtLeast(8, 0);
+    }
 }

@@ -1043,10 +1043,6 @@ public class DataSourceDescriptor
     }
 
     public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
-        if (this.getDriver().isSingleConnection()) {
-            this.setForceUseSingleConnection(true);
-        }
-
         final DBPDataSourceProvider provider = getDriver().getDataSourceProvider();
         if (provider instanceof DBPDataSourceProviderSynchronizable) {
             try {
