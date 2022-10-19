@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
 import java.util.Arrays;
@@ -41,6 +41,35 @@ import java.util.Locale;
  */
 public final class ModelPreferences
 {
+    public enum SeparateConnectionBehavior {
+        DEFAULT("Default"),
+        ALWAYS("Always"),
+        NEVER("Never");
+        
+        private final String title;
+        
+        SeparateConnectionBehavior(String title) {
+            this.title = title;
+        }
+        
+        public String getTitle() {
+            return title;
+        }
+        
+        /**
+         * Convert value to SeparateConnectionBehavior option
+         */
+        public static SeparateConnectionBehavior parse(String value) {
+            if ("true".equalsIgnoreCase(value)) {
+                return DEFAULT;
+            } else if ("false".equalsIgnoreCase(value)) {
+                return NEVER;
+            } else {
+                return CommonUtils.valueOf(SeparateConnectionBehavior.class, value, DEFAULT);
+            }
+        }
+    }
+    
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
     public static final String CLIENT_TIMEZONE = "java.client.timezone";
     public static final String CLIENT_BROWSER = "swt.client.browser";
@@ -203,7 +232,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, QUERY_REMOVE_TRAILING_DELIMITER, true);
 
         PrefUtils.setDefaultPreferenceValue(store, MEMORY_CONTENT_MAX_SIZE, 10000);
-        PrefUtils.setDefaultPreferenceValue(store, META_SEPARATE_CONNECTION, true);
+        PrefUtils.setDefaultPreferenceValue(store, META_SEPARATE_CONNECTION, SeparateConnectionBehavior.DEFAULT.name());
         PrefUtils.setDefaultPreferenceValue(store, META_CASE_SENSITIVE, false);
         PrefUtils.setDefaultPreferenceValue(store, META_USE_SERVER_SIDE_FILTERS, true);
 

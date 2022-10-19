@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.security.user.SMTeam;
 import org.jkiss.dbeaver.model.security.user.SMUser;
@@ -32,7 +33,12 @@ public interface SMAdminController extends SMController {
     ///////////////////////////////////////////
     // Users
 
-    void createUser(String userId, Map<String, String> metaParameters, boolean enabled) throws DBException;
+    void createUser(
+        @NotNull String userId,
+        @NotNull Map<String, String> metaParameters,
+        boolean enabled,
+        @Nullable String defaultAuthRole
+    ) throws DBException;
 
     void deleteUser(String userId) throws DBException;
 
@@ -46,6 +52,8 @@ public interface SMAdminController extends SMController {
     void setUserMeta(String userId, Map<String, Object> metaParameters) throws DBException;
 
     void enableUser(String userId, boolean enabled) throws DBException;
+
+    void setUserAuthRole(@NotNull String userId, @Nullable String authRole) throws DBException;
 
     ///////////////////////////////////////////
     // Teams

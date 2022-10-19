@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.datavirtuality;singleton:=true
-Bundle-Version: 1.0.41.qualifier
-Bundle-Release-Date: 20221010
+Bundle-Version: 1.0.42.qualifier
+Bundle-Release-Date: 20221024
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.jkiss.dbeaver.model,

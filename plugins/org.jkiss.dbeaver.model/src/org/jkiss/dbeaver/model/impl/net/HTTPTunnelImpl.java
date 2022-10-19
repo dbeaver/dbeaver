@@ -31,6 +31,11 @@ import java.io.IOException;
 public class HTTPTunnelImpl implements DBWTunnel {
 
     @Override
+    public AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration, String prefix) {
+        return AuthCredentials.NONE;
+    }
+
+    @Override
     public AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration) {
         return AuthCredentials.NONE;
     }

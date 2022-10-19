@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -62,9 +63,18 @@ public class SQLEditorUtils {
     private static final QualifiedName NEW_SCRIPT_FILE = new QualifiedName(SQLEditorActivator.PLUGIN_ID, "newScriptFile");
 
     public static boolean isOpenSeparateConnection(DBPDataSourceContainer container) {
-        return container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
-            !container.isForceUseSingleConnection() &&
-            !container.getDriver().isEmbedded();
+        SeparateConnectionBehavior behavior = SeparateConnectionBehavior.parse(
+            container.getPreferenceStore().getString(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION)
+        );
+        switch (behavior) {
+            case ALWAYS:
+                return true;
+            case NEVER:
+                return false;
+            case DEFAULT:
+            default: 
+                return !container.isForceUseSingleConnection() && !container.getDriver().isEmbedded();
+        }
     }
 
     public static IFolder getScriptsFolder(DBPProject project, boolean forceCreate) throws CoreException
