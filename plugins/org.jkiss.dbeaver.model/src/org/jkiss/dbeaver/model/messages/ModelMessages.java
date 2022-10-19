@@ -192,6 +192,7 @@ public class ModelMessages extends NLS {
 	public static String controls_querylog_action_clear_log;
 	public static String controls_querylog_action_copy;
 	public static String controls_querylog_action_copy_all_fields;
+	public static String controls_querylog_action_delete;
 	public static String controls_querylog_action_select_all;
 	public static String controls_querylog_column_duration_name;
 	public static String controls_querylog_column_duration_tooltip;
