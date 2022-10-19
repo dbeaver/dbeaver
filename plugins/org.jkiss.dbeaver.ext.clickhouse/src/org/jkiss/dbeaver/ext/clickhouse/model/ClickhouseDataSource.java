@@ -106,11 +106,12 @@ public class ClickhouseDataSource extends GenericDataSource {
         try {
             if ("com_clickhouse".equals(getContainer().getDriver().getId())) {
                 if (DBWorkbench.isDistributed()) {
-                    String clientCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
+                    String clientCertProp =
+                        sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT_VALUE);
                     if (!CommonUtils.isEmpty(clientCertProp)) {
                         properties.put(ClickhouseConstants.SSL_PATH, saveCertificateToFile(clientCertProp));
                     }
-                    String clientKeyProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+                    String clientKeyProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY_VALUE);
                     if (!CommonUtils.isEmpty(clientKeyProp)) {
                         properties.put(ClickhouseConstants.SSL_KEY_PASSWORD, saveCertificateToFile(clientKeyProp));
                     }
@@ -133,7 +134,7 @@ public class ClickhouseDataSource extends GenericDataSource {
                 }
             }
             if (DBWorkbench.isDistributed()) {
-                String caCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
+                String caCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT_VALUE);
                 if (!CommonUtils.isEmpty(caCertProp)) {
                     properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE, saveCertificateToFile(caCertProp));
                 }
