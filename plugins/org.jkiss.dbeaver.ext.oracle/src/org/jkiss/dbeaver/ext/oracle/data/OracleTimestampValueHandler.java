@@ -59,12 +59,19 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     }
 
     @Override
-    public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
-        if (resultSet instanceof JDBCResultSet && OracleConstants.TYPE_NAME_DATE.equals(type.getTypeName())) {
-            try {
-                return ((JDBCResultSet) resultSet).getDate(index + 1);
-            } catch (SQLException e) {
-                log.debug("Exception caught when fetching date value", e);
+    public Object fetchValueObject(
+        @NotNull DBCSession session,
+        @NotNull DBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index
+    ) throws DBCException {
+        if (resultSet instanceof JDBCResultSet) {
+            if (OracleConstants.TYPE_NAME_DATE.equals(type.getTypeName()) && !formatSettings.isUseNativeDateTimeFormat()) {
+                try {
+                    return ((JDBCResultSet) resultSet).getDate(index + 1);
+                } catch (SQLException e) {
+                    log.debug("Exception caught when fetching date value", e);
+                }
             }
         }
 
