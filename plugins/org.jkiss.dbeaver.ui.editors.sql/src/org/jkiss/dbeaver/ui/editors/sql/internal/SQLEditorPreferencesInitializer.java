@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
@@ -49,7 +50,9 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.STATEMENT_TIMEOUT, 0);
         // Disable separate connection by default. Otherwise many people don't understand what happens (data editor and SQL editor have different contexts)
-        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION, true);
+        PrefUtils.setDefaultPreferenceValue(
+            store, SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION, SeparateConnectionBehavior.DEFAULT.name()
+        );
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE, true);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, false);
 
