@@ -56,6 +56,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -718,9 +719,24 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private boolean isRestoreActiveSchemaFromScript() {
-        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA) &&
-            getActivePreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
-            (this.getDataSourceContainer() == null || !this.getDataSourceContainer().isForceUseSingleConnection());
+        SeparateConnectionBehavior behavior = SeparateConnectionBehavior.parse(
+            getActivePreferenceStore().getString(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION)
+        );
+        boolean isSeparateConnection;
+        switch (behavior) {
+            case ALWAYS:
+                isSeparateConnection = true;
+                break;
+            case NEVER:
+                isSeparateConnection = false;
+                break;
+            case DEFAULT:
+            default:
+                isSeparateConnection = this.getDataSourceContainer() == null
+                    || !this.getDataSourceContainer().isForceUseSingleConnection();
+                break;
+        }
+        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA) && isSeparateConnection;
     }
 
     private static class CloseContextJob extends AbstractJob {
