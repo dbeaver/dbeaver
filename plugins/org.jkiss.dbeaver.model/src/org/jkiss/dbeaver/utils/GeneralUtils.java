@@ -471,6 +471,15 @@ public class GeneralUtils {
         return text.toString();
     }
 
+    @Nullable
+    public static String extractVariableName(@NotNull String string) {
+        Matcher matcher = VAR_PATTERN.matcher(string);
+        if (matcher.find()) {
+            return matcher.group(2);
+        }
+        return null;
+    }
+
     @NotNull
     public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
         if (CommonUtils.isEmpty(string)) {
