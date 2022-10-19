@@ -143,6 +143,8 @@ public interface PostgreServerExtension {
 
     boolean isAlterTableAtomic();
 
+    // Roles
+
     boolean supportsSuperusers();
 
     boolean supportsRolesWithCreateDBAbility();
@@ -162,6 +164,8 @@ public interface PostgreServerExtension {
      * Determines whether the database supports syntax like {@code COMMENT ON ROLE roleName IS 'comment'} or not
      */
     boolean supportsCommentsOnRole();
+
+    // Data types
 
     /** True if supports serials - serial types are auto-incrementing integer data types */
     boolean supportSerialTypes();
@@ -200,4 +204,10 @@ public interface PostgreServerExtension {
 
     /** True if supports operator families as access methods (System Info) */
     boolean supportsOpFamily();
+
+    /**
+     * Determines whether the database supports syntax
+     * like {@code ALTER TABLE tableName ALTER COLUMN columnName USING columnName::dataTypeName} or not
+     */
+    boolean supportsAlterTableColumnWithUSING();
 }
