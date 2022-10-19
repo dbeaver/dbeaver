@@ -88,11 +88,21 @@ public class SMAuthInfo {
         @Nullable String redirectUrl,
         @NotNull Map<String, Object> authData
     ) {
+        return inProgress(authAttemptId, redirectUrl, authData, null);
+    }
+
+    public static SMAuthInfo inProgress(
+        @NotNull String authAttemptId,
+        @Nullable String redirectUrl,
+        @NotNull Map<String, Object> authData,
+        @Nullable String authRole
+    ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.IN_PROGRESS)
             .setAuthAttemptId(authAttemptId)
             .setRedirectUrl(redirectUrl)
             .setAuthData(authData)
+            .setAuthRole(authRole)
             .build();
     }
 
@@ -101,7 +111,8 @@ public class SMAuthInfo {
         @NotNull String accessToken,
         @Nullable String refreshToken,
         @NotNull SMAuthPermissions smAuthPermissions,
-        @NotNull Map<String, Object> authData
+        @NotNull Map<String, Object> authData,
+        @Nullable String authRole
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.SUCCESS)
@@ -110,6 +121,7 @@ public class SMAuthInfo {
             .setSmRefreshToken(refreshToken)
             .setAuthData(authData)
             .setAuthPermissions(smAuthPermissions)
+            .setAuthRole(authRole)
             .build();
     }
 
