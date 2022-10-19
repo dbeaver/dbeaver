@@ -91,7 +91,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private SXSSFWorkbook wb;
 
-    private HeaderFormat headerFormat = HeaderFormat.label;
+    private HeaderFormat headerFormat = HeaderFormat.LABEL;
     private boolean rowNumber = false;
     private String boolTrue = "true";
     private String boolFalse = "false";
@@ -132,13 +132,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         Map<String, Object> properties = site.getProperties();
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
-
-        try {
-            headerFormat = HeaderFormat.valueOf(CommonUtils.toString(properties.get(PROP_HEADER)));
-        } catch (IllegalArgumentException e) {
-            // Backward compatibility. Before it was a boolean flag whether we want to include labels as a header or not
-            headerFormat = CommonUtils.getBoolean(properties.get(PROP_HEADER), true) ? HeaderFormat.label : HeaderFormat.none;
-        }
+        headerFormat = HeaderFormat.of(CommonUtils.toString(properties.get(PROP_HEADER)));
 
         try {
             rowNumber = CommonUtils.getBoolean(properties.get(PROP_ROWNUMBER), false);
@@ -600,15 +594,34 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     }
 
     private enum HeaderFormat {
-        // These need to be in lower case to match names of the properties
-        label, description, both, none;
+        LABEL("label"),
+        DESCRIPTION("description"),
+        BOTH("both"),
+        NONE("none");
+
+        private final String value;
+
+        HeaderFormat(@NotNull String value) {
+            this.value = value;
+        }
+
+        @NotNull
+        public static HeaderFormat of(@NotNull String value) {
+            for (HeaderFormat format : values()) {
+                if (format.value.equals(value)) {
+                    return format;
+                }
+            }
+
+            return LABEL;
+        }
 
         public boolean hasLabel() {
-            return this == label || this == both;
+            return this == LABEL || this == BOTH;
         }
 
         public boolean hasDescription() {
-            return this == description || this == both;
+            return this == DESCRIPTION || this == BOTH;
         }
     }
 }
