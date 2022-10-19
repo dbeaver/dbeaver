@@ -1115,7 +1115,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 final Path licenseFile = file.getLocalFile();
                 if (licenseFile != null && Files.exists(licenseFile)) {
                     try {
-                        return Files.readString(licenseFile);
+                        // Use readAllBytes because readString may fail if file charset is inconsistent
+                        return new String(Files.readAllBytes(licenseFile));
                     } catch (IOException e) {
                         log.warn(e);
                     }
@@ -1396,11 +1397,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     }
                 }
             }
-        }
-
-        // Now check driver version
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE) && !downloaded) {
-            // TODO: implement new version check
         }
 
         // Check if local files are zip archives with jars inside

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
@@ -40,12 +41,15 @@ import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.osgi.framework.Bundle;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * BaseWorkspaceImpl.
@@ -67,9 +71,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private DBNModel navigatorModel;
 
     private final List<IPluginService> activatedServices = new ArrayList<>();
-    private DBConfigurationController configurationController;
     private DBFileController localFileController;
     private DBTTaskController localTaskController;
+    
+    private DBConfigurationController defaultConfigurationController;
+    private final Map<Bundle, DBConfigurationController> configurationControllerByPlugin = new HashMap<>();
 
     protected void initialize() {
         log.debug("Initialize base platform...");
@@ -146,24 +152,57 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @NotNull
     @Override
     public DBConfigurationController getConfigurationController() {
-        if (configurationController == null) {
-            configurationController = createConfigurationController();
+        return getPluginConfigurationController(null);
+    }
+    
+    @NotNull
+    @Override
+    public DBConfigurationController getProductConfigurationController() {
+        return getConfigurationController(getProductPlugin().getBundle());
+    }
+    
+    @NotNull
+    @Override
+    public DBConfigurationController getPluginConfigurationController(@NotNull String pluginId) {
+        return getConfigurationController(Platform.getBundle(pluginId));
+    }
+    
+    private DBConfigurationController getConfigurationController(Bundle bundle) {
+        DBConfigurationController controller = bundle == null ? defaultConfigurationController : configurationControllerByPlugin.get(bundle);
+        if (controller == null) {
+            controller = createConfigurationController(bundle);
+            if (bundle == null) {
+                defaultConfigurationController = controller;
+            } else {
+                configurationControllerByPlugin.put(bundle, controller);
+            }
         }
-        return configurationController;
+        return controller;
     }
 
-    @Override
     @NotNull
-    public DBConfigurationController createConfigurationController() {
+    @Override
+    public DBConfigurationController createConfigurationController(@Nullable String pluginId) {
+        return createConfigurationController(pluginId == null ? null : Platform.getBundle(pluginId));
+    }
+
+    @NotNull
+    private DBConfigurationController createConfigurationController(@Nullable Bundle bundle) {
         DBPApplication application = getApplication();
         if (application instanceof DBPApplicationConfigurator) {
-            return ((DBPApplicationConfigurator) application).createConfigurationController();
+            String pluginBundleName = bundle == null ? null : bundle.getSymbolicName();
+            return ((DBPApplicationConfigurator) application).createConfigurationController(pluginBundleName);
+        } else if (bundle == null) {
+            LocalConfigurationController controller = new LocalConfigurationController(
+                getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
+            );
+            controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
+            return controller;
+        } else {
+            return new LocalConfigurationController(
+                Platform.getStateLocation(bundle).toFile().toPath()
+            );
         }
-        LocalConfigurationController controller = new LocalConfigurationController(
-            getWorkspace().getMetadataFolder().resolve(CONFIG_FOLDER)
-        );
-        controller.setLegacyConfigFolder(getProductPlugin().getStateLocation().toFile().toPath());
-        return controller;
     }
 
     @NotNull
@@ -214,7 +253,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     }
 
     protected abstract Plugin getProductPlugin();
-
+    
     @NotNull
     @Override
     public Path getApplicationConfiguration() {

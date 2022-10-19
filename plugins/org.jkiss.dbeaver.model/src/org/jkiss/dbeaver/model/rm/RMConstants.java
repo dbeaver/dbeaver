@@ -32,4 +32,7 @@ public interface RMConstants  {
     String PERMISSION_RM_ADMIN = "rm-admin";
 
     String PERMISSION_DRIVER_MANAGER = "driver-manager";
+    
+    String PERMISSION_PUBLIC = "public";
+    String PERMISSION_CONFIGURATION_MANAGER = "configuration-manager";
 }

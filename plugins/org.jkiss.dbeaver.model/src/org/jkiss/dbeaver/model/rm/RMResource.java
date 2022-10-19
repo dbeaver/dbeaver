@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.rm;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.meta.Property;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -85,7 +84,7 @@ public class RMResource extends RMObject {
     }
 
     public Map<String, Object> getProperties() {
-        return properties == null ? Collections.emptyMap() : properties;
+        return properties == null ? Map.of() : properties;
     }
 
     public void setProperties(Map<String, Object> properties) {

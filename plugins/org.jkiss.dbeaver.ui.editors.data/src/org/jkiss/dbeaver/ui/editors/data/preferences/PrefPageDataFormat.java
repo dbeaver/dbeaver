@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
@@ -108,8 +109,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
-    protected void createPreferenceHeader(Composite composite)
-    {
+    protected void createPreferenceHeader(Composite composite) {
         if (!isDataSourcePreferencePage()) {
             Composite profileGroup = UIUtils.createComposite(composite, 3);
             profileGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -118,20 +118,20 @@ public class PrefPageDataFormat extends TargetPrefPage
             profilesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             profilesCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     changeProfile();
                 }
             });
-            UIUtils.createDialogButton(
-                profileGroup,
-                ResultSetMessages.pref_page_data_format_button_manage_profiles, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    manageProfiles();
-                }
-            });
+            if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+                UIUtils.createDialogButton(
+                    profileGroup,
+                    ResultSetMessages.pref_page_data_format_button_manage_profiles, new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            manageProfiles();
+                        }
+                    });
+            }
         }
     }
 
@@ -226,8 +226,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
     }
 
-    private void changeProfile()
-    {
+    private void changeProfile() {
         int selectionIndex = profilesCombo.getSelectionIndex();
         if (selectionIndex < 0) {
             return;
@@ -235,12 +234,34 @@ public class PrefPageDataFormat extends TargetPrefPage
         DBDDataFormatterProfile newProfile;
         if (selectionIndex == 0) {
             newProfile = getDefaultProfile();
+            
         } else {
             String newProfileName = profilesCombo.getItem(selectionIndex);
             newProfile = DataFormatterRegistry.getInstance().getCustomProfile(newProfileName);
         }
         if (newProfile != formatterProfile) {
+            boolean editable = selectionIndex == 0 ||
+                DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER);
+
             setCurrentProfile(newProfile);
+            
+            localeSelector.setEnabled(editable);
+            datetimeNativeFormatCheck.setEnabled(editable);
+            numericNativeFormatCheck.setEnabled(editable);
+            numericScientificFormatCheck.setEnabled(editable && numericNativeFormatCheck.getSelection());
+            propertiesControl.getTree().setEnabled(editable);
+        }
+    }
+
+    @NotNull
+    @Override
+    protected DBPPreferenceStore getTargetPreferenceStore() {
+        if (isDataSourcePreferencePage()) {
+            return getDataSourceContainer().getPreferenceStore();
+        } else if (formatterProfile == null) {
+            return DBWorkbench.getPlatform().getPreferenceStore();
+        } else {
+            return formatterProfile.getPreferenceStore();
         }
     }
 
@@ -520,8 +541,11 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
 
         @Override
-        protected void buttonPressed(int buttonId)
-        {
+        protected void buttonPressed(int buttonId) {
+            if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+                log.warn("The user has no permission to edit custom data format profiles configuration");
+                return;
+            }
             DataFormatterRegistry registry = DataFormatterRegistry.getInstance();
             if (buttonId == NEW_ID) {
                 String profileName = EnterNameDialog.chooseName(getShell(), ResultSetMessages.dialog_data_format_profiles_dialog_name_chooser_title);
@@ -556,8 +580,11 @@ public class PrefPageDataFormat extends TargetPrefPage
             }
         }
 
-        private void loadProfiles()
-        {
+        private void loadProfiles() {
+            if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
+                log.warn("The user has no permission to load custom data format profiles configuration");
+                return;
+            }
             profileList.removeAll();
             List<DBDDataFormatterProfile> profiles = DataFormatterRegistry.getInstance().getCustomProfiles();
             for (DBDDataFormatterProfile profile : profiles) {

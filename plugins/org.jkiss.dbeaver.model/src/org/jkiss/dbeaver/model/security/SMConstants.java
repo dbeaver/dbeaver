@@ -25,4 +25,6 @@ public interface SMConstants {
     String PROJECT_PERMISSION_SCOPE = "project";
 
     String DATA_SOURCE_ACCESS_PERMISSION = "access";
+
+    String USER_AUTH_ROLE_PARAM = "authRole";
 }

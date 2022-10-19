@@ -67,7 +67,7 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
     Set<String> getSubjectPermissions(String subjectId) throws DBException;
 
     @NotNull
-    Set<String> getUserPermissions(String userId, String authRole) throws DBException;
+    Set<String> getUserPermissions(String userId) throws DBException;
 
     ///////////////////////////////////////////
     // Sessions

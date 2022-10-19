@@ -47,10 +47,13 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -313,7 +316,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                 }
             }
 
-            return closeActiveTransactions();
+            return cancelRunningTasks() && closeActiveTransactions();
         } catch (Throwable e) {
             e.printStackTrace();
             return true;
@@ -326,6 +329,25 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                 return false;
             }
         }
+        return true;
+    }
+
+    private boolean cancelRunningTasks() {
+        final DBTTaskManager manager = DBWorkbench.getPlatform().getWorkspace().getActiveProject().getTaskManager();
+
+        if (manager.hasRunningTasks()) {
+            final boolean cancel = DBWorkbench.getPlatformUI().confirmAction(
+                CoreApplicationMessages.confirmation_cancel_database_tasks_title,
+                CoreApplicationMessages.confirmation_cancel_database_tasks_message
+            );
+
+            if (cancel) {
+                manager.cancelRunningTasks();
+            }
+
+            return cancel;
+        }
+
         return true;
     }
 

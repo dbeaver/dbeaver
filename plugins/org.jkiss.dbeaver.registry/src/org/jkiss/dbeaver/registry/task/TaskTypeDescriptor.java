@@ -131,6 +131,11 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
         return object instanceof DBPObject && appliesTo((DBPObject) object);
     }
 
+    @Override
+    public boolean isStandalone() {
+        return CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_STANDALONE));
+    }
+
     @Nullable
     @Override
     public String confirmationMessageIfNeeded() {

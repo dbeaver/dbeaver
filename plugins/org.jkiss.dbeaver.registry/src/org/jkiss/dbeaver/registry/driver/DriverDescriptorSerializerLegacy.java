@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
@@ -24,7 +25,9 @@ import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.VersionUtils;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -220,6 +223,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
         DataSourceProviderDescriptor curProvider;
         DriverDescriptor curDriver;
         DBPDriverLibrary curLibrary;
+        boolean isLibraryUpgraded = false;
 
         public DriversParser(boolean provided) {
             this.providedDrivers = provided;
@@ -303,6 +307,8 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         log.warn("Library outside of driver");
                         return;
                     }
+                    isLibraryUpgraded = false;
+
                     DBPDriverLibrary.FileType type;
                     String typeStr = atts.getValue(RegistryConstants.ATTR_TYPE);
                     if (CommonUtils.isEmpty(typeStr)) {
@@ -334,7 +340,17 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         lib = DriverLibraryAbstract.createFromPath(curDriver, type, path, version);
                         curDriver.addDriverLibrary(lib, false);
                     } else if (!CommonUtils.isEmpty(version)) {
-                        lib.setPreferredVersion(version);
+                        // Overwrite version only if it is higher than the original one
+                        String preferredVersion = lib.getPreferredVersion();
+                        int versionMatch = VersionUtils.compareVersions(version, preferredVersion);
+                        if (versionMatch > 0) {
+                            // Version in config higher than in bundles. Probably a manual update - just overwrite it.
+                            lib.setPreferredVersion(version);
+                        } else if (versionMatch < 0 && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE)) {
+                            // Version in config is lower than in bundle. Probably it came from product version update - just reset it.
+                            lib.resetVersion();
+                            isLibraryUpgraded = true;
+                        }
                     }
                     if (lib instanceof DriverLibraryMavenArtifact) {
                         ((DriverLibraryMavenArtifact) lib).setIgnoreDependencies(CommonUtils.toBoolean(atts.getValue("ignore-dependencies")));
@@ -344,7 +360,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     break;
                 }
                 case RegistryConstants.TAG_FILE: {
-                    if (curDriver != null && curLibrary != null) {
+                    if (curDriver != null && curLibrary != null && !isLibraryUpgraded) {
                         String path = atts.getValue(RegistryConstants.ATTR_PATH);
                         if (path != null) {
                             path = replacePathVariables(path);

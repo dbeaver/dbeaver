@@ -28,16 +28,22 @@ public class SMUser {
     private final Map<String, String> metaParameters = new LinkedHashMap<>();
     private String[] userTeams;
     private boolean enabled;
+    private final String authRole;
 
-    public SMUser(@NotNull String userId, boolean enabled) {
-        this(userId, null, new String[0], enabled);
+    public SMUser(
+        @NotNull String userId,
+        boolean enabled,
+        @Nullable String authRole
+    ) {
+        this(userId, null, new String[0], enabled, authRole);
     }
 
     public SMUser(
         @NotNull String userId,
         @Nullable Map<String, String> metaParameters,
         @NotNull String[] teams,
-        boolean enabled
+        boolean enabled,
+        @Nullable String authRole
     ) {
         this.userId = userId;
         if (metaParameters != null) {
@@ -45,6 +51,7 @@ public class SMUser {
         }
         this.userTeams = teams;
         this.enabled = enabled;
+        this.authRole = authRole;
     }
 
     @NotNull
@@ -78,4 +85,8 @@ public class SMUser {
         metaParameters.put(name, value);
     }
 
+    @Nullable
+    public String getAuthRole() {
+        return authRole;
+    }
 }
