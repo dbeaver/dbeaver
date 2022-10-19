@@ -22,19 +22,26 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * Query manager log writer
@@ -42,6 +49,8 @@ import java.util.List;
 public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
 
     private static final Log log = Log.getLog(QMLogFileWriter.class);
+    private static final DateTimeFormatter LOG_FILENAME_FORMATTER = DateTimeFormatter
+        .ofPattern("'dbeaver_sql_'" + GeneralUtils.DEFAULT_DATE_PATTERN + "'.log'", Locale.ENGLISH);
 
     private File logFile;
     private boolean enabled;
@@ -64,17 +73,25 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
 
     private synchronized void initLogFile()
     {
-        enabled = ModelPreferences.getPreferences().getBoolean(QMConstants.PROP_STORE_LOG_FILE);
+        final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        enabled = preferences.getBoolean(QMConstants.PROP_STORE_LOG_FILE);
         if (enabled) {
-            String logFolderPath = ModelPreferences.getPreferences().getString(QMConstants.PROP_LOG_DIRECTORY);
+            final int daysToKeepLogs = preferences.getInt(QMConstants.PROP_HISTORY_DAYS);
+            final String logFolderPath = preferences.getString(QMConstants.PROP_LOG_DIRECTORY);
+
+            try {
+                purgeOldLogs(Path.of(logFolderPath), daysToKeepLogs);
+            } catch (IOException e) {
+                log.debug("Error purging old logs: " + e.getMessage());
+            }
+
             File logFolder = new File(logFolderPath);
             if (!logFolder.exists()) {
                 if (!logFolder.mkdirs()) {
                     log.error("Can't create log folder '" + logFolderPath + "'");
                 }
             }
-            String logFileName = "dbeaver_sql_" + RuntimeUtils.getCurrentDate() + ".log";
-            logFile = new File(logFolder, logFileName);
+            logFile = new File(logFolder, LOG_FILENAME_FORMATTER.format(LocalDate.now()));
             try {
                 logWriter = new FileWriter(logFile, true);
             } catch (IOException e) {
@@ -87,6 +104,30 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
             }
         }
         eventFilter = new DefaultEventFilter();
+    }
+
+    private static void purgeOldLogs(@NotNull Path logDirectory, int daysToKeep) throws IOException {
+        final LocalDate today = LocalDate.now();
+        final LocalDate judgementDay = today.minusDays(daysToKeep);
+
+        final List<Path> files = Files.list(logDirectory)
+            .filter(file -> {
+                try {
+                    final LocalDate date = LOG_FILENAME_FORMATTER.parse(file.getFileName().toString(), LocalDate::from);
+                    return judgementDay.isAfter(date);
+                } catch (DateTimeParseException e) {
+                    return false;
+                }
+            })
+            .collect(Collectors.toList());
+
+        for (Path file : files) {
+            try {
+                Files.delete(file);
+            } catch (IOException e) {
+                log.debug("Unable to purge old log file '" + file + "': " + e.getMessage());
+            }
+        }
     }
 
     @Override
