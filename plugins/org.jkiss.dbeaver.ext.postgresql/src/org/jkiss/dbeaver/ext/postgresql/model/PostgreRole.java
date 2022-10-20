@@ -377,12 +377,22 @@ public class PostgreRole implements
                 .append(SQLUtils.quoteString(this, description))
                 .append(";");
         }
-
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
             ddl.append("\n");
             List<DBEPersistAction> actions = new ArrayList<>();
             PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
             ddl.append("\n").append(SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false));
+        }
+        if (isInherit()) {
+            ddl.append("\n");
+            for (PostgreRoleMember member : belongsCache.getAllObjects(monitor, this)) {
+                ddl.append("\n")
+                    .append("GRANT ")
+                    .append(DBUtils.getQuotedIdentifier(member.getOwner(monitor)))
+                    .append(" TO ")
+                    .append(DBUtils.getQuotedIdentifier(this))
+                    .append(";");
+            }
         }
 
         return ddl.toString();
