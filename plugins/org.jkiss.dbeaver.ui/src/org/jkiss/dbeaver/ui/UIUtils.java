@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.commands.ActionHandler;
@@ -25,6 +27,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -1802,6 +1806,89 @@ public class UIUtils {
             log.debug(e);
             return null;
         }
+    }
+    
+    private static long getLongOperationTime() {
+        try {
+            return PlatformUI.getWorkbench().getProgressService().getLongOperationTime();
+        } catch (Exception ex) { // when workbench is not initialized yet during startup
+            return 800; // see org.eclipse.ui.internal.progress.ProgressManager.getLongOperationTime()
+        }
+    }
+    
+    /**
+     * Execute runnable task synchronously while displaying job indeterminate indicator and blocking the UI, when called from the UI thread
+     */
+    public static <T> T syncExecBlocking(String operationDesc, RunnableWithResult<T> runnable)
+        throws InvocationTargetException, InterruptedException {
+        
+        @SuppressWarnings("unchecked")
+        RunnableWithResultEx<T> runnableEx = runnable instanceof RunnableWithResultEx ? (RunnableWithResultEx<T>) runnable : null;
+        
+        final AbstractJob job = new AbstractJob(operationDesc) {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask(operationDesc, IProgressMonitor.UNKNOWN);
+                runnable.run();
+                monitor.done();
+                return Status.OK_STATUS;
+            }
+            @Override
+            protected void canceling() {
+                if (runnableEx != null) {
+                    runnableEx.cancel();
+                }
+            }
+        };
+        job.schedule();
+        
+        if (UIUtils.isUIThread()) {
+            Display display = getDisplay();
+            if (!display.isDisposed()) {
+                RunnableWithResultEx<Boolean> shortWait = new RunnableWithResultEx<Boolean>() {
+                    @Override
+                    protected Boolean runWithResultImpl() throws Exception {
+                        return !job.join(getLongOperationTime(), new NullProgressMonitor());
+                    }
+                    @Override
+                    protected void onCancelled() { }
+                };
+                Collection<Shell> shells = Arrays.asList(display.getShells());
+                shells.forEach(s -> s.setEnabled(false));
+                BusyIndicator.showWhile(display, new RunnableWithResultEx<Object>() {
+                    protected Object runWithResultImpl() throws Exception {
+                        ModalContext.run((IProgressMonitor monitor) -> {
+                            shortWait.run();
+                        }, true, new NullProgressMonitor(), display);
+                        return null;
+                    }
+                });
+                shells.forEach(s -> s.setEnabled(true));
+                
+                if (shortWait.getResultOrRethrow()) {
+                    ProgressMonitorDialog progress = new ProgressMonitorDialog(display.getActiveShell()) {
+                        @Override
+                        protected void cancelPressed() {
+                            job.cancel();
+                            super.cancelPressed();
+                        }  
+                    };
+                    
+                    progress.run(true, runnableEx != null, new IRunnableWithProgress() {
+                        @Override
+                        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                            monitor.beginTask(operationDesc, IProgressMonitor.UNKNOWN);
+                            job.join();
+                            monitor.done();
+                        }
+                    });
+                }
+            }
+        }
+
+        job.join();
+        
+        return runnable.getResult();
     }
 
     @Nullable

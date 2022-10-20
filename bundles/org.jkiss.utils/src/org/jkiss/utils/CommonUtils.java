@@ -313,6 +313,16 @@ public class CommonUtils {
         }
         return rootCause;
     }
+    
+    public static String collectExceptionMessage(@NotNull Throwable ex) {
+        StringBuilder sb = new StringBuilder();
+        int depth = 0;
+        while (ex != null) {
+            sb.append("  ".repeat(depth)).append(sb).append("\n");
+            ex = ex.getCause();
+        }
+        return sb.toString();
+    }
 
     public static boolean equalObjects(@Nullable Object o1, @Nullable Object o2) {
         if (o1 == o2) {

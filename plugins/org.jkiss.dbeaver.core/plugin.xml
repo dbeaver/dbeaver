@@ -1270,5 +1270,9 @@
             <hiddenToolBarItem id="org.eclipse.ui.edit.text.gotoLastEditPosition"/>
         </perspectiveExtension>
     </extension>
+    
+    <extension point="org.jkiss.dbeaver.service">
+        <service name="org.jkiss.dbeaver.runtime.ui.RemoteCallService" class="org.jkiss.dbeaver.core.RemoteCallServiceImpl" headless="false"/>
+    </extension>
 
 </plugin>
