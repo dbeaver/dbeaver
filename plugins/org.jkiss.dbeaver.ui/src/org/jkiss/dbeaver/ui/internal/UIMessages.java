@@ -101,6 +101,9 @@ public class UIMessages extends NLS {
     public static String tooltip_restore;
     public static String tooltip_hide;
 
+    public static String utils_actions_copy_label;
+    public static String utils_actions_copy_all_label;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);

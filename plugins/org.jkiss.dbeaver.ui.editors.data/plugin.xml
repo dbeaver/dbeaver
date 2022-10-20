@@ -876,7 +876,7 @@
         <content-type
             file-extensions="databasedata"
             id="org.jkiss.dbeaver.data"
-            name="Database data flow"
+            name="%extension-point.org.eclipse.core.contenttype.contentTypes.name"
             priority="normal"/>
     </extension>
 

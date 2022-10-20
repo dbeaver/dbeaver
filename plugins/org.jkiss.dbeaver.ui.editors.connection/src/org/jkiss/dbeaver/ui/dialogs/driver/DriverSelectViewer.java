@@ -75,8 +75,14 @@ public class DriverSelectViewer extends Viewer {
     }
 
     public enum OrderBy {
-        name("Title", "Order by driver title"),
-        score("Score", "Order by driver usage score then by title");
+        name(
+            UIConnectionMessages.dialog_driver_select_viewer_order_by_name_label,
+            UIConnectionMessages.dialog_driver_select_viewer_order_by_name_description
+        ),
+        score(
+            UIConnectionMessages.dialog_driver_select_viewer_order_by_score_label,
+            UIConnectionMessages.dialog_driver_select_viewer_order_by_score_description
+        );
 
         private final String label;
         private final String description;

@@ -294,6 +294,11 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_url_label;
     public static String dialog_connection_host_label;
 
+    public static String dialog_driver_select_viewer_order_by_name_label;
+    public static String dialog_driver_select_viewer_order_by_name_description;
+    public static String dialog_driver_select_viewer_order_by_score_label;
+    public static String dialog_driver_select_viewer_order_by_score_description;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIConnectionMessages.class);
