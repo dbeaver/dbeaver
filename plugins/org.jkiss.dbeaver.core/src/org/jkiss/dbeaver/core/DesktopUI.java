@@ -491,6 +491,11 @@ public class DesktopUI implements DBPPlatformUI {
         runnable.run(new VoidProgressMonitor());
     }
 
+    @Override
+    public <RESULT> RESULT executeWithProgressBlocking(String operationDescr, RunnableWithResult<RESULT> runnable) throws InvocationTargetException, InterruptedException {
+        return UIUtils.syncExecBlocking(operationDescr, runnable);
+    }
+    
     @NotNull
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {

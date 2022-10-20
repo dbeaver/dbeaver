@@ -198,6 +198,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     public void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         runnable.run(new LoggingProgressMonitor());
     }
+    
+    @Override
+    public <RESULT> RESULT executeWithProgressBlocking(String operationDescr, RunnableWithResult<RESULT> runnable) throws InvocationTargetException, InterruptedException {
+        return runnable.runWithResult();
+    }
 
     @NotNull
     @Override
