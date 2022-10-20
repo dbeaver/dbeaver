@@ -1819,8 +1819,11 @@ public class UIUtils {
     /**
      * Execute runnable task synchronously while displaying job indeterminate indicator and blocking the UI, when called from the UI thread
      */
-    public static <T> T syncExecBlocking(String operationDesc, RunnableWithResult<T> runnable)
-        throws InvocationTargetException, InterruptedException {
+    @NotNull
+    public static <T> T syncExecBlocking(
+        @NotNull String operationDesc,
+        @NotNull RunnableWithResult<T> runnable
+    ) throws InvocationTargetException, InterruptedException {
         
         @SuppressWarnings("unchecked")
         RunnableWithResultEx<T> runnableEx = runnable instanceof RunnableWithResultEx ? (RunnableWithResultEx<T>) runnable : null;
@@ -1833,6 +1836,7 @@ public class UIUtils {
                 monitor.done();
                 return Status.OK_STATUS;
             }
+            
             @Override
             protected void canceling() {
                 if (runnableEx != null) {
@@ -1850,12 +1854,13 @@ public class UIUtils {
                     protected Boolean runWithResultImpl() throws Exception {
                         return !job.join(getLongOperationTime(), new NullProgressMonitor());
                     }
+
                     @Override
                     protected void onCancelled() { }
                 };
                 Collection<Shell> shells = Arrays.asList(display.getShells());
                 shells.forEach(s -> s.setEnabled(false));
-                BusyIndicator.showWhile(display, new RunnableWithResultEx<Object>() {
+                BusyIndicator.showWhile(display, new RunnableWithResultEx<>() {
                     protected Object runWithResultImpl() throws Exception {
                         ModalContext.run((IProgressMonitor monitor) -> {
                             shortWait.run();

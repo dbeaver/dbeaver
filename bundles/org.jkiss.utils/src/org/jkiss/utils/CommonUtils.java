@@ -313,12 +313,15 @@ public class CommonUtils {
         }
         return rootCause;
     }
-    
+
+    /**
+     * Collect combined message from all the aggregated exceptions
+     */
     public static String collectExceptionMessage(@NotNull Throwable ex) {
         StringBuilder sb = new StringBuilder();
         int depth = 0;
         while (ex != null) {
-            sb.append("  ".repeat(depth)).append(sb).append("\n");
+            sb.append("  ".repeat(depth)).append(ex.getMessage()).append("\n");
             ex = ex.getCause();
         }
         return sb.toString();

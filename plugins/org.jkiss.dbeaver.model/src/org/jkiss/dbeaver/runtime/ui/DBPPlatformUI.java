@@ -131,8 +131,15 @@ public interface DBPPlatformUI {
     void executeWithProgress(@NotNull Runnable runnable);
 
     void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException;
-    
-    <RESULT> RESULT executeWithProgressBlocking(String operationDescr, RunnableWithResult<RESULT> runnable) throws InvocationTargetException, InterruptedException;
+
+    /**
+     * Execute runnable task synchronously while displaying job indicator if needed
+     */
+    @NotNull
+    <RESULT> RESULT executeWithProgressBlocking(
+        @NotNull String operationDescription,
+        @NotNull RunnableWithResult<RESULT> runnable
+    )throws InvocationTargetException, InterruptedException;
 
     @NotNull
     <RESULT> Job createLoadingService(

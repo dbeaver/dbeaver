@@ -22,7 +22,8 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Runnable which stores some result
  */
-public abstract class RunnableWithResultEx<RESULT_TYPE> extends RunnableWithResult<RunnableWithResultEx.ResultOrError<RESULT_TYPE>> {
+public abstract class RunnableWithResultEx<RESULT_TYPE>
+    extends RunnableWithResult<RunnableWithResultEx.ResultOrError<RESULT_TYPE>> {
 
     public static class ResultOrError<RESULT_TYPE> { 
         private final RESULT_TYPE result;
@@ -32,17 +33,14 @@ public abstract class RunnableWithResultEx<RESULT_TYPE> extends RunnableWithResu
             this.result = result;
             this.exception = exception;
         }
-        
+
+        /**
+         * Return result or throw InvocationTargetException if exception occurred during execution
+         */
         public RESULT_TYPE getResultOrRethrow() throws InvocationTargetException {
             if (exception == null) {
                 return result;
             } else {
-                throw new InvocationTargetException(exception, "Exception caught during delegated operation");
-            }
-        }
-        
-        public void rethrowIfError() throws InvocationTargetException {
-            if (exception != null) {
                 throw new InvocationTargetException(exception, "Exception caught during delegated operation");
             }
         }
@@ -60,7 +58,10 @@ public abstract class RunnableWithResultEx<RESULT_TYPE> extends RunnableWithResu
     }
 
     protected abstract RESULT_TYPE runWithResultImpl() throws Exception;
-    
+
+    /**
+     * Cancel execution
+     */
     public final void cancel() { 
         if (!isCancelled) {
             isCancelled = true;
@@ -68,8 +69,11 @@ public abstract class RunnableWithResultEx<RESULT_TYPE> extends RunnableWithResu
         }
     }
 
-    protected void onCancelled() { } 
+    protected void onCancelled() { }
 
+    /**
+     * Return result or throw InvocationTargetException on execution failure
+     */
     public final RESULT_TYPE getResultOrRethrow() throws InvocationTargetException {
         return getResult().getResultOrRethrow();
     }
