@@ -211,6 +211,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_format_label_insert_line_feed_before_commas;
     public static String pref_page_sql_format_label_settings;
     public static String  pref_page_sql_format_label_SQLPreview;
+    public static String  pref_page_sql_format_label_format_active_query;
+    public static String  pref_page_sql_format_label_format_active_query_tip;
     // SQLCompletion
     public static String pref_page_sql_completion_group_sql_assistant;
     public static String pref_page_sql_completion_label_enable_auto_activation;
@@ -357,6 +359,7 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_nonsql_text;
     
     public static String sql_editor_separate_connection_no_editor_or_ds_selected;
+
 
     static {
         // initialize resource bundle

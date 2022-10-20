@@ -132,7 +132,13 @@ public class PrefPageSQLFormat extends TargetPrefPage
         });
         formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        formatCurrentQueryCheck = UIUtils.createCheckbox(composite, "Format active query only", "Formats only active query or selected text. Otherwise formats entire SQL script", true, 1);
+        formatCurrentQueryCheck = UIUtils.createCheckbox(
+            composite,
+            SQLEditorMessages.pref_page_sql_format_label_format_active_query,
+            SQLEditorMessages.pref_page_sql_format_label_format_active_query_tip,
+            true,
+            1
+        );
 
         Composite formatterGroup = UIUtils.createPlaceholder(composite, 1, 5);
         formatterGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

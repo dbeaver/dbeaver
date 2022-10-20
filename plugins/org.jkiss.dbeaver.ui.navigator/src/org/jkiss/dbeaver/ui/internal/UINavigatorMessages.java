@@ -270,6 +270,13 @@ public class UINavigatorMessages extends NLS {
     public static String failed_to_paste_due_to_permissions_title;
     public static String failed_to_paste_due_to_permissions_message;
 
+    public static String object_list_control_group_by_label;
+    public static String object_list_control_clear_grouping_label;
+    public static String pref_page_project_resource_settings_description;
+    public static String navigator_handler_connections_filter_show_all_text;
+    public static String navigator_handler_connections_filter_show_connected_text;
+    public static String navigator_handler_object_create_file_other_text;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UINavigatorMessages.class);

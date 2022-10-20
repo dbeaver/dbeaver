@@ -238,6 +238,9 @@ public class ModelMessages extends NLS {
     public static String jdbc_content_view_error_message_title;
     public static String jdbc_content_view_error_message_hint;
 
+    public static String no_corresponding_table_column_text;
+    public static String cannot_determine_unique_row_identifier_text;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);

@@ -1760,7 +1760,7 @@ public class ResultSetViewer extends Viewer
             UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
 
             selectionStatLabel = new Text(statusBar, SWT.READ_ONLY);
-            selectionStatLabel.setToolTipText("Selected rows/columns/cells");
+            selectionStatLabel.setToolTipText(ResultSetMessages.result_set_viewer_selection_stat_tooltip);
             CSSUtils.setCSSClass(selectionStatLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
 //            Label filler = new Label(statusComposite, SWT.NONE);
