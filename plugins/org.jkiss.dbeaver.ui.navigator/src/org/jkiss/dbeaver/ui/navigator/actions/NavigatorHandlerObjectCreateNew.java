@@ -272,7 +272,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (!createActions.isEmpty() && !(createActions.get(createActions.size() - 1) instanceof Separator)) {
                 createActions.add(new Separator());
             }
-            createActions.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_NEW, "Other ...", null));
+            createActions.add(ActionUtils.makeCommandContribution(
+                site, IWorkbenchCommandConstants.FILE_NEW, UINavigatorMessages.navigator_handler_object_create_file_other_text, null
+            ));
         }
         return createActions;
     }

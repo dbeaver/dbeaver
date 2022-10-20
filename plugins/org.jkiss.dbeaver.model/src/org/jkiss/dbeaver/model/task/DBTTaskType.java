@@ -60,6 +60,11 @@ public interface DBTTaskType {
 
     boolean isObjectApplicable(Object object);
 
+    /**
+     * Checks whether this task is standalone (means that it can work without database connection) or not.
+     */
+    boolean isStandalone();
+
     @Nullable
     String confirmationMessageIfNeeded();
 }

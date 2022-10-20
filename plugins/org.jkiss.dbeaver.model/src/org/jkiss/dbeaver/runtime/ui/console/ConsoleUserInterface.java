@@ -35,10 +35,13 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Map;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
     private static final Log log = Log.getLog(ConsoleUserInterface.class);
@@ -91,6 +94,17 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public boolean confirmAction(String title, String message, boolean isWarning) {
         return false;
+    }
+    
+    @Override
+    public UserChoiceResponse showUserChoice(
+        @NotNull final String title,
+        @Nullable final String message,
+        @NotNull List<String> labels,
+        @NotNull List<String> forAllLabels,
+        @Nullable Integer defaultChoice
+    ) {
+        return new UserChoiceResponse(-1, null);
     }
 
     @Override

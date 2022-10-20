@@ -192,7 +192,7 @@ public class MetaDataPanel implements IResultSetPanel {
         @Override
         public void fillCustomActions(IContributionManager contributionManager) {
             UIUtils.fillDefaultTreeContextMenu(contributionManager, (Tree) getItemsViewer().getControl());
-            contributionManager.add(new Action("Copy column names") {
+            contributionManager.add(new Action(ResultSetMessages.meta_data_panel_action_copy_column_text) {
                 @Override
                 public void run() {
                     StringBuilder text = new StringBuilder();

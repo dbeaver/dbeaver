@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.net.DBWForwarder;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
@@ -819,7 +820,7 @@ public class DBExecUtils {
                     //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                     DBSEntityAttribute attr = binding.getEntityAttribute();
                     if (attr == null) {
-                        bindingMeta.setRowIdentifierStatus("No corresponding table column");
+                        bindingMeta.setRowIdentifierStatus(ModelMessages.no_corresponding_table_column_text);
                         continue;
                     }
                     DBSEntity attrEntity = attr.getParentObject();
@@ -833,7 +834,7 @@ public class DBExecUtils {
                                     entityIdentifier);
                                 locatorMap.put(attrEntity, rowIdentifier);
                             } else {
-                                bindingMeta.setRowIdentifierStatus("Cannot determine unique row identifier");
+                                bindingMeta.setRowIdentifierStatus(ModelMessages.cannot_determine_unique_row_identifier_text);
                             }
                         }
                         bindingMeta.setRowIdentifier(rowIdentifier);
