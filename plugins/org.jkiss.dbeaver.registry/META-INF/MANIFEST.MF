@@ -8,6 +8,7 @@ Bundle-Release-Date: 20221024
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.registry.auth,
  org.jkiss.dbeaver.registry.datatype,
  org.jkiss.dbeaver.registry.driver,
  org.jkiss.dbeaver.registry.fs,
