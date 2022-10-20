@@ -67,7 +67,7 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
     }
 
     public static void runTask(DBTTask task) {
-        if (!promptTaskVariables(task)) {
+        if (task.getType().supportsVariables() && !confirmTaskVariables(task)) {
             return;
         }
 
@@ -94,21 +94,19 @@ public class TaskHandlerRun extends AbstractHandler implements IElementUpdater {
 
     }
 
-    private static boolean promptTaskVariables(@NotNull DBTTask task) {
-        if (task.getType().supportsVariables()) {
-            final Map<String, Object> properties = task.getProperties();
+    private static boolean confirmTaskVariables(@NotNull DBTTask task) {
+        final Map<String, Object> properties = task.getProperties();
 
-            if (CommonUtils.toBoolean(properties.get(DBTaskUtils.TASK_PROMPT_VARIABLES))) {
-                final Map<String, Object> variables = DBTaskUtils.getVariables(task);
-                final EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(UIUtils.getActiveWorkbenchShell(), variables);
+        if (CommonUtils.toBoolean(properties.get(DBTaskUtils.TASK_PROMPT_VARIABLES))) {
+            final Map<String, Object> variables = DBTaskUtils.getVariables(task);
+            final EditTaskVariablesDialog dialog = new EditTaskVariablesDialog(UIUtils.getActiveWorkbenchShell(), variables);
 
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return false;
-                }
+            if (dialog.open() != IDialogConstants.OK_ID) {
+                return false;
+            }
 
-                if (!variables.equals(dialog.getVariables())) {
-                    DBTaskUtils.setVariables(properties, dialog.getVariables());
-                }
+            if (!variables.equals(dialog.getVariables())) {
+                DBTaskUtils.setVariables(properties, dialog.getVariables());
             }
         }
 
