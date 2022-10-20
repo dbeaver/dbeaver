@@ -17,17 +17,14 @@
 
 package org.jkiss.dbeaver.runtime.ui;
 
-import okhttp3.Call;
-import okhttp3.Response;
-
 /**
  * Remote call execution service
  */
-public interface RemoteCallService {
+public interface RemoteCallService<TCall, TResult> {
 
     /**
      * Execute a remote call
      */
-    Response executeCall(Call call) throws Exception;
+    TResult executeCall(TCall call) throws Exception;
 
 }

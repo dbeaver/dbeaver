@@ -27,7 +27,7 @@ import okhttp3.Response;
 /**
  * Remote call execution service implementation
  */
-public class RemoteCallServiceImpl implements RemoteCallService {
+public class RemoteCallServiceImpl implements RemoteCallService<Call, Response> {
 
     @Override
     public Response executeCall(Call call) throws Exception {

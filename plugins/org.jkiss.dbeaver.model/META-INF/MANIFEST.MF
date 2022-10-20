@@ -103,7 +103,6 @@ Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  org.apache.commons.jexl;visibility:=reexport,
  com.github.jsqlparser;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport,
- org.jkiss.bundle.okhttp;visibility:=reexport,
  com.google.gson,
  org.bouncycastle.bcpkix,
  org.bouncycastle.bcprov
