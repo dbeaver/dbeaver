@@ -108,10 +108,12 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         runnableContext.run(true, false, monitor -> {
             monitor.beginTask("Initialize pipes", dataPipes.size());
             try {
+                Object consumerRuntimeParameters = settings.getNodeSettings(settings.getConsumer()).prepareRuntimeParameters();
                 for (int i = 0; i < dataPipes.size(); i++) {
                     DataTransferPipe pipe = dataPipes.get(i);
                     pipe.initPipe(settings, i, dataPipes.size());
                     IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
+                    consumer.setRuntimeParameters(consumerRuntimeParameters);
                     consumer.startTransfer(monitor);
                     if (enableReferentialIntegrity(consumer, monitor, false)) {
                         indexOfLastPipeWithDisabledReferentialIntegrity[0] = i;
