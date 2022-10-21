@@ -63,7 +63,8 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
         boolean isView = sourceObject.isView();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Snowflake object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT GET_DDL('" + (isView ? "VIEW" : "TABLE") + "', '" + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + "', TRUE) "))
+                    "SELECT GET_DDL('" + (isView ? "VIEW" : "TABLE") + "', '" +
+                        sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + "', TRUE) "))
             {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
