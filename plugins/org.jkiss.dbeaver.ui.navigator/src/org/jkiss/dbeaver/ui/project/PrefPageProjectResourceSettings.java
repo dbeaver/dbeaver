@@ -67,7 +67,7 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
     private TableEditor handlerTableEditor;
 
     public PrefPageProjectResourceSettings() {
-        setDescription("DBeaver project resources/folders settings");
+        setDescription(UINavigatorMessages.pref_page_project_resource_settings_description);
     }
 
     @Override

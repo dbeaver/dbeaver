@@ -251,15 +251,21 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 }
             });
 
-            Button epButton = UIUtils.createDialogButton(groupSettings, "Edit permissions ...", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    EditConnectionPermissionsDialog dialog = new EditConnectionPermissionsDialog(getShell(), getSelectedType().getModifyPermission());
-                    if (dialog.open() == IDialogConstants.OK_ID) {
-                        getSelectedType().setModifyPermissions(dialog.getAccessRestrictions());
+            Button epButton = UIUtils.createDialogButton(
+                groupSettings,
+                CoreMessages.pref_page_label_edit_permissions,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        EditConnectionPermissionsDialog dialog = new EditConnectionPermissionsDialog(
+                            getShell(), getSelectedType().getModifyPermission()
+                        );
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            getSelectedType().setModifyPermissions(dialog.getAccessRestrictions());
+                        }
                     }
                 }
-            });
+            );
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             epButton.setLayoutData(gd);

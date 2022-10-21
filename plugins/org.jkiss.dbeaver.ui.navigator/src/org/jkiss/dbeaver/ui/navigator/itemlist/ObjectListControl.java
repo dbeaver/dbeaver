@@ -1460,27 +1460,29 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 if (columnPersist) {
                     columnName = columnController.getColumnName(selectedColumnNumber);
                 }
-                menuManager.add(new Action("Group by column " + CommonUtils.notEmpty(columnName), null) {
-                    @Override
-                    public void run() {
-                        if (columnPersist) {
-                            groupingColumn = getColumnByIndex(selectedColumnNumber);
-                            groupingColumn.columnIndex = selectedColumnNumber;
-                            originalColumnOrder = ((TreeViewer) itemsViewer).getTree().getColumnOrder();
-                            moveGroupingColumnInTheBeginning(selectedColumnNumber);
-                            itemsViewer.setContentProvider(new GroupingTreeProvider());
-                            itemsViewer.refresh();
-                            ((TreeViewer) itemsViewer).expandToLevel(2);
+                menuManager.add(
+                    new Action(NLS.bind(UINavigatorMessages.object_list_control_group_by_label, CommonUtils.notEmpty(columnName)), null) {
+                        @Override
+                        public void run() {
+                            if (columnPersist) {
+                                groupingColumn = getColumnByIndex(selectedColumnNumber);
+                                groupingColumn.columnIndex = selectedColumnNumber;
+                                originalColumnOrder = ((TreeViewer) itemsViewer).getTree().getColumnOrder();
+                                moveGroupingColumnInTheBeginning(selectedColumnNumber);
+                                itemsViewer.setContentProvider(new GroupingTreeProvider());
+                                itemsViewer.refresh();
+                                ((TreeViewer) itemsViewer).expandToLevel(2);
+                            }
+                        }
+
+                        @Override
+                        public boolean isEnabled() {
+                            return columnPersist;
                         }
                     }
+                );
 
-                    @Override
-                    public boolean isEnabled() {
-                        return columnPersist;
-                    }
-                });
-
-                menuManager.add(new Action("Clear grouping", null) {
+                menuManager.add(new Action(UINavigatorMessages.object_list_control_clear_grouping_label, null) {
                     @Override
                     public void run() {
                         groupingColumn = null;

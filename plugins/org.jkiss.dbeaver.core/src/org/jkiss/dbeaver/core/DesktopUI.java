@@ -24,6 +24,8 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
@@ -71,6 +73,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * DBeaver UI core
@@ -277,6 +281,61 @@ public class DesktopUI implements DBPPlatformUI {
     @Override
     public boolean confirmAction(String title, String message, boolean isWarning) {
         return UIUtils.confirmAction(null, title, message, isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION);
+    }
+    
+    @NotNull
+    @Override
+    public UserChoiceResponse showUserChoice(
+        @NotNull String title,
+        @Nullable String message,
+        @NotNull List<String> choiceLabels,
+        @NotNull List<String> forAllLabels,
+        @Nullable Integer defaultChoice
+    ) {
+        final List<Reply> reply = choiceLabels.stream()
+            .map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s))
+            .collect(Collectors.toList());
+
+        return UIUtils.syncExec(new RunnableWithResult<UserChoiceResponse>() {
+            public UserChoiceResponse runWithResult() {
+                List<Button> extraCheckboxes = new ArrayList<>(forAllLabels.size());
+                Integer[] selectedCheckboxIndex = { null };
+                MessageBoxBuilder mbb = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setReplies(reply.stream().filter(Objects::nonNull).toArray(Reply[]::new))
+                    .setPrimaryImage(DBIcon.STATUS_WARNING);
+                
+                if (defaultChoice != null && reply.get(defaultChoice) != null) {
+                    mbb.setDefaultReply(reply.get(defaultChoice));
+                }
+                if (forAllLabels.size() > 0) {
+                    mbb.setCustomArea(pp -> {
+                        SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
+                            int chkIndex = (Integer) e.widget.getData();
+                            if (extraCheckboxes.get(chkIndex).getSelection()) {
+                                selectedCheckboxIndex[0] = chkIndex;
+                                for (int index = 0; index < extraCheckboxes.size(); index++) {
+                                    if (index != chkIndex) {
+                                        extraCheckboxes.get(index).setSelection(false);
+                                    }
+                                }
+                            }
+                        });
+                        for (int index = 0; index < forAllLabels.size(); index++) {
+                            Button chk = UIUtils.createCheckbox(pp, forAllLabels.get(index), false);
+                            chk.setData(index);
+                            chk.addSelectionListener(selectionListener);
+                            extraCheckboxes.add(chk);
+                        }
+                    });
+                }
+                
+                Reply result = mbb.showMessageBox();
+                int choiceIndex = reply.indexOf(result);
+                return new UserChoiceResponse(choiceIndex, selectedCheckboxIndex[0]);
+            }
+        }); 
     }
 
     @Override

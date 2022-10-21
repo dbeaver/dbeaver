@@ -400,7 +400,7 @@
             <datasource id="mysql"/>
         </dashboard>
 
-        <dashboard id="mysql.sessions" label="Server sessions" defaultView="timeseries" group="Standard" updatePeriod="2000" calc="value" value="integer" fetch="rows" showByDefault="true" description="Shows session grouped by command">
+        <dashboard id="mysql.sessions" label="%dashboard.mysql.sessions.label" defaultView="timeseries" group="Standard" updatePeriod="2000" calc="value" value="integer" fetch="rows" showByDefault="true" description="%dashboard.mysql.sessions.description">
             <datasource id="mysql"/>
             <query>SELECT Command,count(*) from information_schema.PROCESSLIST GROUP BY Command</query>
         </dashboard>
@@ -408,41 +408,41 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="mysql" name="MySQL" description="MySQL database task" icon="icons/mysql_icon.png"/>
-        <category id="mysqlTool" parent="mysql" name="Tools" description="MySQL database tools" icon="icons/mysql_icon.png"/>
+        <category id="mysql" name="MySQL" description="%category.mysql.description" icon="icons/mysql_icon.png"/>
+        <category id="mysqlTool" parent="mysql" name="%org.jkiss.dbeaver.task.category.mysqlTool.name" description="%org.jkiss.dbeaver.task.category.mysqlTool.description" icon="icons/mysql_icon.png"/>
 
-        <task id="mysqlDatabaseBackup" name="MySQL dump" description="MySQL database export task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler">
+        <task id="mysqlDatabaseBackup" name="%task.mysqlDatabaseBackup.name" description="%task.mysqlDatabaseBackup.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
         </task>
-        <task id="mysqlDatabaseRestore" name="MySQL restore" description="MySQL database import task" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler" confirmationMessage="%mysqlDatabaseRestore.confirmationMessage">
+        <task id="mysqlDatabaseRestore" name="%task.mysqlDatabaseRestore.name" description="%task.mysqlDatabaseRestore.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler" confirmationMessage="%mysqlDatabaseRestore.confirmationMessage">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
         </task>
-        <task id="mysqlScriptExecute" name="MySQL script" description="MySQL script execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
+        <task id="mysqlScriptExecute" name="%task.mysqlScriptExecute.name" description="%task.mysqlScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteHandler">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
 
         <!-- SQL tools -->
-        <task id="mysqlToolCheckTable" name="Check table" description="Check table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableCheck">
+        <task id="mysqlToolCheckTable" name="%task.mysqlToolCheckTable.name" description="%task.mysqlToolCheckTable.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableCheck">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         </task>
-        <task id="mysqlToolRepairTable" name="Repair table" description="Repair table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableRepair">
+        <task id="mysqlToolRepairTable" name="%task.mysqlToolRepairTable.name" description="%task.mysqlToolRepairTable.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableRepair">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         </task>
-        <task id="mysqlToolAnalyzeTable" name="Analyze table" description="Analyze table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableAnalyze">
+        <task id="mysqlToolAnalyzeTable" name="%task.mysqlToolAnalyzeTable.name" description="%task.mysqlToolAnalyzeTable.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableAnalyze">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         </task>
-        <task id="mysqlToolOptimizeTable" name="Optimize table" description="Optimize table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableOptimize">
+        <task id="mysqlToolOptimizeTable" name="%task.mysqlToolOptimizeTable.name" description="%task.mysqlToolOptimizeTable.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableOptimize">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         </task>
-        <task id="mysqlToolTruncateTable" name="Truncate table" description="Truncate table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableTruncate">
+        <task id="mysqlToolTruncateTable" name="%task.mysqlToolTruncateTable.name" description="%task.mysqlToolTruncateTable.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="mysqlTool" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLToolTableTruncate">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         </task>
