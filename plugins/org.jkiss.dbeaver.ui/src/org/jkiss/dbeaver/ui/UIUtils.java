@@ -1808,14 +1808,6 @@ public class UIUtils {
         }
     }
     
-    private static long getLongOperationTime() {
-        try {
-            return PlatformUI.getWorkbench().getProgressService().getLongOperationTime();
-        } catch (Exception ex) { // when workbench is not initialized yet during startup
-            return 800; // see org.eclipse.ui.internal.progress.ProgressManager.getLongOperationTime()
-        }
-    }
-    
     /**
      * Execute runnable task synchronously while displaying job indeterminate indicator and blocking the UI, when called from the UI thread
      */
@@ -1858,17 +1850,18 @@ public class UIUtils {
                     @Override
                     protected void onCancelled() { }
                 };
-                Collection<Shell> shells = Arrays.asList(display.getShells());
-                shells.forEach(s -> s.setEnabled(false));
-                BusyIndicator.showWhile(display, new RunnableWithResultEx<>() {
+                for (Shell shell : display.getShells()) {
+                    shell.setEnabled(false);
+                }
+                BusyIndicator.showWhile(display, new RunnableWithResultEx<Object>() {
                     protected Object runWithResultImpl() throws Exception {
-                        ModalContext.run((IProgressMonitor monitor) -> {
-                            shortWait.run();
-                        }, true, new NullProgressMonitor(), display);
+                        ModalContext.run(monitor -> shortWait.run(), true, new NullProgressMonitor(), display);
                         return null;
                     }
                 });
-                shells.forEach(s -> s.setEnabled(true));
+                for (Shell shell : display.getShells()) {
+                    shell.setEnabled(true);
+                }
                 
                 if (shortWait.getResultOrRethrow()) {
                     ProgressMonitorDialog progress = new ProgressMonitorDialog(display.getActiveShell()) {
@@ -1881,7 +1874,7 @@ public class UIUtils {
                     
                     progress.run(true, runnableEx != null, new IRunnableWithProgress() {
                         @Override
-                        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        public void run(IProgressMonitor monitor) throws InterruptedException {
                             monitor.beginTask(operationDesc, IProgressMonitor.UNKNOWN);
                             job.join();
                             monitor.done();
@@ -2253,6 +2246,14 @@ public class UIUtils {
             }));
         } else {
             widget.addDisposeListener(e -> onFocusLost.run());
+        }
+    }
+
+    private static long getLongOperationTime() {
+        try {
+            return PlatformUI.getWorkbench().getProgressService().getLongOperationTime();
+        } catch (Exception ex) { // when workbench is not initialized yet during startup
+            return 800; // see org.eclipse.ui.internal.progress.ProgressManager.getLongOperationTime()
         }
     }
 }

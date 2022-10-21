@@ -22,14 +22,14 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Runnable which stores some result
  */
-public abstract class RunnableWithResultEx<RESULT_TYPE>
-    extends RunnableWithResult<RunnableWithResultEx.ResultOrError<RESULT_TYPE>> {
+public abstract class RunnableWithResultEx<T>
+    extends RunnableWithResult<RunnableWithResultEx.ResultOrError<T>> {
 
-    public static class ResultOrError<RESULT_TYPE> { 
-        private final RESULT_TYPE result;
+    public static class ResultOrError<T> {
+        private final T result;
         private final Exception exception;
         
-        public ResultOrError(RESULT_TYPE result, Exception exception) {
+        public ResultOrError(T result, Exception exception) {
             this.result = result;
             this.exception = exception;
         }
@@ -37,7 +37,7 @@ public abstract class RunnableWithResultEx<RESULT_TYPE>
         /**
          * Return result or throw InvocationTargetException if exception occurred during execution
          */
-        public RESULT_TYPE getResultOrRethrow() throws InvocationTargetException {
+        public T getResultOrRethrow() throws InvocationTargetException {
             if (exception == null) {
                 return result;
             } else {
@@ -49,15 +49,13 @@ public abstract class RunnableWithResultEx<RESULT_TYPE>
     private boolean isCancelled = false;
     
     @Override
-    public final ResultOrError<RESULT_TYPE> runWithResult() {
+    public final ResultOrError<T> runWithResult() {
         try {
             return new ResultOrError<>(this.runWithResultImpl(), null);
         } catch (Exception ex) {
             return new ResultOrError<>(null, ex);
         }
     }
-
-    protected abstract RESULT_TYPE runWithResultImpl() throws Exception;
 
     /**
      * Cancel execution
@@ -69,12 +67,16 @@ public abstract class RunnableWithResultEx<RESULT_TYPE>
         }
     }
 
-    protected void onCancelled() { }
+    protected void onCancelled() {
+        // do nothing by default
+    }
+
+    protected abstract T runWithResultImpl() throws Exception;
 
     /**
      * Return result or throw InvocationTargetException on execution failure
      */
-    public final RESULT_TYPE getResultOrRethrow() throws InvocationTargetException {
+    public final T getResultOrRethrow() throws InvocationTargetException {
         return getResult().getResultOrRethrow();
     }
 }

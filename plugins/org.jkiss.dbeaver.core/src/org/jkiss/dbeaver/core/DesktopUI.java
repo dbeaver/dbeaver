@@ -493,9 +493,9 @@ public class DesktopUI implements DBPPlatformUI {
 
     @NotNull
     @Override
-    public <RESULT> RESULT executeWithProgressBlocking(
+    public <T> T executeWithProgressBlocking(
         @NotNull String operationDescription,
-        @NotNull RunnableWithResult<RESULT> runnable
+        @NotNull RunnableWithResult<T> runnable
     ) throws InvocationTargetException, InterruptedException {
         return UIUtils.syncExecBlocking(operationDescription, runnable);
     }

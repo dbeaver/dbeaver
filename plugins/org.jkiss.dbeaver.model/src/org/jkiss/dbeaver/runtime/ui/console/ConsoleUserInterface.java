@@ -201,9 +201,9 @@ public class ConsoleUserInterface implements DBPPlatformUI {
 
     @NotNull
     @Override
-    public <RESULT> RESULT executeWithProgressBlocking(
+    public <T> T executeWithProgressBlocking(
         @NotNull String operationDescription,
-        @NotNull RunnableWithResult<RESULT> runnable
+        @NotNull RunnableWithResult<T> runnable
     ) {
         return runnable.runWithResult();
     }
