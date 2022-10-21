@@ -88,21 +88,11 @@ public class SMAuthInfo {
         @Nullable String redirectUrl,
         @NotNull Map<String, Object> authData
     ) {
-        return inProgress(authAttemptId, redirectUrl, authData, null);
-    }
-
-    public static SMAuthInfo inProgress(
-        @NotNull String authAttemptId,
-        @Nullable String redirectUrl,
-        @NotNull Map<String, Object> authData,
-        @Nullable String authRole
-    ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.IN_PROGRESS)
             .setAuthAttemptId(authAttemptId)
             .setRedirectUrl(redirectUrl)
             .setAuthData(authData)
-            .setAuthRole(authRole)
             .build();
     }
 
