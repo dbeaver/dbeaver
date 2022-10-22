@@ -461,11 +461,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
         
         if ((behavior == DataFileConflictBehavior.OVERWRITE || behavior == DataFileConflictBehavior.PATCHNAME) && 
-            settings.isUseSingleFile() && parameters.orderNumber > 0 &&
-            processor instanceof IAppendableDataExporter && ((IAppendableDataExporter) processor).shouldTruncateOutputFileBeforeExport()) {
+            settings.isUseSingleFile() && parameters.orderNumber == 0) {
+            return behavior;
+        } else if ((behavior == DataFileConflictBehavior.APPEND || settings.isUseSingleFile()) &&
+            processor instanceof IAppendableDataExporter &&  !((IAppendableDataExporter) processor).shouldTruncateOutputFileBeforeExport()) {
             return DataFileConflictBehavior.APPEND;
         } else {
-            return behavior;
+            return DataFileConflictBehavior.OVERWRITE;
         }
     }
     
