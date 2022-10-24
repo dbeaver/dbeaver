@@ -115,6 +115,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor,
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
+            editorSeparateConnectionCombo.setToolTipText(SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor_tip);
             ((GridData) editorSeparateConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
             editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
                 .map(s -> s.getTitle()).collect(Collectors.toList()).toArray(new String[0]));

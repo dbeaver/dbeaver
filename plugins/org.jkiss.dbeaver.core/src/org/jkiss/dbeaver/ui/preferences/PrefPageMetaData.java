@@ -90,6 +90,7 @@ public class PrefPageMetaData extends TargetPrefPage
                 CoreMessages.pref_page_database_general_separate_meta_connection,
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
+            separateMetaConnectionCombo.setToolTipText(CoreMessages.pref_page_database_general_separate_meta_connection_tip);
             ((GridData) separateMetaConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
             separateMetaConnectionCombo.setItems(metaUseSeparateConnectionValues.stream()
                 .map(s -> s.getTitle()).collect(Collectors.toList()).toArray(new String[0]));
