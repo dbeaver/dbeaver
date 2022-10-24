@@ -101,7 +101,8 @@ public class SMAuthInfo {
         @NotNull String accessToken,
         @Nullable String refreshToken,
         @NotNull SMAuthPermissions smAuthPermissions,
-        @NotNull Map<String, Object> authData
+        @NotNull Map<String, Object> authData,
+        @Nullable String authRole
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.SUCCESS)
@@ -110,6 +111,7 @@ public class SMAuthInfo {
             .setSmRefreshToken(refreshToken)
             .setAuthData(authData)
             .setAuthPermissions(smAuthPermissions)
+            .setAuthRole(authRole)
             .build();
     }
 

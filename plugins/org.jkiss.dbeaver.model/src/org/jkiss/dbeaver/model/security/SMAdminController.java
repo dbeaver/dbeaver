@@ -49,8 +49,6 @@ public interface SMAdminController extends SMController {
     @NotNull
     SMUser[] findUsers(String userNameMask) throws DBException;
 
-    void setUserMeta(String userId, Map<String, Object> metaParameters) throws DBException;
-
     void enableUser(String userId, boolean enabled) throws DBException;
 
     void setUserAuthRole(@NotNull String userId, @Nullable String authRole) throws DBException;
@@ -73,7 +71,10 @@ public interface SMAdminController extends SMController {
     void deleteTeam(String teamId) throws DBException;
 
     ///////////////////////////////////////////
-    // Permissions
+    // General
+
+    void setSubjectMetas(String userId, Map<String, String> metaParameters) throws DBException;
+
     void setSubjectPermissions(String subjectId, List<String> permissionIds, String grantorId) throws DBException;
 
     /**

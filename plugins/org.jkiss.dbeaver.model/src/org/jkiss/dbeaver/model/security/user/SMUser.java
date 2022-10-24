@@ -19,13 +19,10 @@ package org.jkiss.dbeaver.model.security.user;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SMUser {
+public class SMUser extends SMSubject {
 
-    private final String userId;
-    private final Map<String, String> metaParameters = new LinkedHashMap<>();
     private String[] userTeams;
     private boolean enabled;
     private final String authRole;
@@ -45,10 +42,7 @@ public class SMUser {
         boolean enabled,
         @Nullable String authRole
     ) {
-        this.userId = userId;
-        if (metaParameters != null) {
-            this.metaParameters.putAll(metaParameters);
-        }
+        super(userId, metaParameters);
         this.userTeams = teams;
         this.enabled = enabled;
         this.authRole = authRole;
@@ -56,12 +50,7 @@ public class SMUser {
 
     @NotNull
     public String getUserId() {
-        return userId;
-    }
-
-    @NotNull
-    public Map<String, String> getMetaParameters() {
-        return metaParameters;
+        return subjectId;
     }
 
     @NotNull
@@ -81,11 +70,6 @@ public class SMUser {
         this.enabled = enabled;
     }
 
-    public void setMetaParameter(String name, String value) {
-        metaParameters.put(name, value);
-    }
-
-    @Nullable
     public String getAuthRole() {
         return authRole;
     }
