@@ -128,8 +128,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -3111,6 +3111,7 @@ public class SQLEditor extends SQLEditorBase implements
             case ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK:
             case ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED:
             case ModelPreferences.SQL_VARIABLES_ENABLED:
+            case ModelPreferences.SQL_VARIABLE_PATTERN:
             case ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX:
             case ModelPreferences.SQL_CONTROL_COMMAND_PREFIX:
                 reloadSyntaxRules();

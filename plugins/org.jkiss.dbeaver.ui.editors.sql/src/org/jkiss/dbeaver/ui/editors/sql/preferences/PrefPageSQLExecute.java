@@ -73,6 +73,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Text controlCommandPrefixText;
     private Button enableParametersInEmbeddedCode;
     private Button enableVariables;
+    private Text variablePattern;
 
     public PrefPageSQLExecute()
     {
@@ -104,6 +105,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX) ||
             store.contains(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX) ||
             store.contains(ModelPreferences.SQL_VARIABLES_ENABLED) ||
+            store.contains(ModelPreferences.SQL_VARIABLE_PATTERN) ||
 
             store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
             store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
@@ -223,6 +225,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             controlCommandPrefixText.setTextLimit(1);
             enableParametersInEmbeddedCode = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl_tip, false, 2);
             enableVariables = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_enable_variables, SQLEditorMessages.pref_page_sql_editor_enable_variables_tip, false, 2);
+            variablePattern = UIUtils.createLabelText(paramsGroup, SQLEditorMessages.pref_page_sql_editor_variable_pattern, "");
 
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
@@ -286,6 +289,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             controlCommandPrefixText.setText(store.getString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX));
             enableParametersInEmbeddedCode.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED));
             enableVariables.setSelection(store.getBoolean(ModelPreferences.SQL_VARIABLES_ENABLED));
+            variablePattern.setText(store.getString(ModelPreferences.SQL_VARIABLE_PATTERN));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -320,6 +324,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX, controlCommandPrefixText.getText());
             store.setValue(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED, enableParametersInEmbeddedCode.getSelection());
             store.setValue(ModelPreferences.SQL_VARIABLES_ENABLED, enableVariables.getSelection());
+            store.setValue(ModelPreferences.SQL_VARIABLE_PATTERN, variablePattern.getText());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -351,6 +356,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK);
         store.setToDefault(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX);
         store.setToDefault(ModelPreferences.SQL_VARIABLES_ENABLED);
+        store.setToDefault(ModelPreferences.SQL_VARIABLE_PATTERN);
 
         store.setToDefault(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
         store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);

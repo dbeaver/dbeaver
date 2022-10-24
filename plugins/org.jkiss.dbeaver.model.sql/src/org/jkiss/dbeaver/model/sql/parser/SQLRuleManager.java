@@ -144,7 +144,7 @@ public class SQLRuleManager {
         {
             if (!minimalRules && syntaxManager.isVariablesEnabled()) {
                 // Variable rule
-                rules.add(new ScriptVariableRule(parameterToken));
+                rules.add(new ScriptVariableRule(parameterToken, syntaxManager.getVariablePattern()));
             }
         }
 

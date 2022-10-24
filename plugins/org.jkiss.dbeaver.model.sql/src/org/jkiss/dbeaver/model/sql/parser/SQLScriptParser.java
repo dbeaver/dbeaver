@@ -714,10 +714,19 @@ public class SQLScriptParser {
                         parameters = new ArrayList<>();
                     }
 
+                    String varName = paramName;
+                    for (String prefix : syntaxManager.getNamedParameterPrefixes()) {
+                        if (varName.startsWith(prefix)) {
+                            varName = varName.substring(prefix.length());
+                            break;
+                        }
+                    }
+
                     SQLQueryParameter parameter = new SQLQueryParameter(
                         syntaxManager,
                         parameters.size(),
                         paramName,
+                        varName,
                         tokenOffset - queryOffset,
                         tokenLength);
 
@@ -735,7 +744,7 @@ public class SQLScriptParser {
                 // Use regex
                 String query = document.get(queryOffset, queryLength);
 
-                Matcher matcher = SQLQueryParameter.getVariablePattern().matcher(query);
+                Matcher matcher = syntaxManager.getVariablePattern().matcher(query);
                 int position = 0;
                 while (matcher.find(position)) {
                     {
@@ -754,7 +763,7 @@ public class SQLScriptParser {
                         }
 
                         if (param == null) {
-                            param = new SQLQueryParameter(syntaxManager, orderPos, matcher.group(0), start, matcher.end() - matcher.start());
+                            param = new SQLQueryParameter(syntaxManager, orderPos, matcher.group(0), matcher.group(1), start, matcher.end() - matcher.start());
                             if (parameters == null) {
                                 parameters = new ArrayList<>();
                             }

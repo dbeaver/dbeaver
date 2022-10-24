@@ -16,35 +16,26 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.code.NotNull;
-
-import java.util.regex.Pattern;
-
 /**
  * SQL statement parameter info
  */
 public class SQLQueryParameter {
-
-
-    private static final Pattern VARIABLE_PATTERN_SIMPLE = Pattern.compile("\\$\\{[a-z0-9_]+\\}", Pattern.CASE_INSENSITIVE);
-    private static final Pattern VARIABLE_PATTERN_FULL = Pattern.compile("\\$P?!?\\{[a-z0-9_]+\\}", Pattern.CASE_INSENSITIVE);
-
-
     private final SQLSyntaxManager syntaxManager;
     private int ordinalPosition;
     private String name;
+    private String varName;
     private String value;
     private boolean variableSet;
     private final int tokenOffset;
     private final int tokenLength;
     private SQLQueryParameter previous;
 
-    public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name)
+    public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name, String varName)
     {
-        this(syntaxManager, ordinalPosition, name, 0, 0);
+        this(syntaxManager, ordinalPosition, name, varName, 0, 0);
     }
 
-    public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name, int tokenOffset, int tokenLength)
+    public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name, String varName, int tokenOffset, int tokenLength)
     {
         this.syntaxManager = syntaxManager;
         if (tokenOffset < 0) {
@@ -55,6 +46,7 @@ public class SQLQueryParameter {
         }
         this.ordinalPosition = ordinalPosition;
         this.name = name.trim();
+        this.varName = varName;
         this.tokenOffset = tokenOffset;
         this.tokenLength = tokenLength;
     }
@@ -107,50 +99,10 @@ public class SQLQueryParameter {
         this.variableSet = variableSet;
     }
 
-    public String getVarName() {
-        String varName = stripVariablePattern(name);
-        if (!varName.equals(name)) {
-            return varName;
-        }
-        for (String prefix : syntaxManager.getNamedParameterPrefixes()) {
-            if (name.startsWith(prefix)) {
-                return name.substring(prefix.length());
-            }
-        }
-        return name;
-    }
+    public String getVarName() { return varName; }
 
     @Override
     public String toString() {
         return getVarName() + "=" + value;
     }
-
-    public static Pattern getVariablePattern() {
-        if (supportsJasperSyntax()) {
-            return VARIABLE_PATTERN_FULL;
-        } else {
-            return VARIABLE_PATTERN_SIMPLE;
-        }
-    }
-
-    public static boolean supportsJasperSyntax() {
-        return true;
-    }
-
-    @NotNull
-    public static String stripVariablePattern(String pattern) {
-        if (supportsJasperSyntax()) {
-            if (pattern.startsWith("$P{") && pattern.endsWith("}")) {
-                return pattern.substring(3, pattern.length() - 1);
-            } else if (pattern.startsWith("$P!{") && pattern.endsWith("}")) {
-                return pattern.substring(4, pattern.length() - 1);
-            }
-        }
-        if (pattern.startsWith("${") && pattern.endsWith("}")) {
-            return pattern.substring(2, pattern.length() - 1);
-        }
-
-        return pattern;
-    }
-
 }

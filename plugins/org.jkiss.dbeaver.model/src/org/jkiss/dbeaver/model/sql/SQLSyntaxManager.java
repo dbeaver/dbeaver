@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 /**
  * SQLSyntaxManager.
@@ -52,6 +53,7 @@ public class SQLSyntaxManager {
     private String[] namedParameterPrefixes;
     private String controlCommandPrefix;
     private boolean variablesEnabled;
+    private Pattern variablePattern;
     @NotNull
     private String catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
     @NotNull
@@ -132,6 +134,10 @@ public class SQLSyntaxManager {
         return variablesEnabled;
     }
 
+    public Pattern getVariablePattern() {
+        return variablePattern;
+    }
+
     public void init(@NotNull SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)
     {
         this.statementDelimiters = new String[0];
@@ -163,6 +169,7 @@ public class SQLSyntaxManager {
         this.parametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED);
         this.anonymousParametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
         this.variablesEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_VARIABLES_ENABLED);
+        this.variablePattern = Pattern.compile(preferenceStore.getString(ModelPreferences.SQL_VARIABLE_PATTERN), Pattern.CASE_INSENSITIVE);
         String markString = preferenceStore.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK);
         if (CommonUtils.isEmpty(markString)) {
             this.anonymousParameterMark = SQLConstants.DEFAULT_PARAMETER_MARK;
