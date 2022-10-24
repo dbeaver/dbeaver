@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
@@ -149,7 +150,8 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(schemas) || (monitor != null && !CommonUtils.isEmpty(getSchemas(monitor)))) {
+        if (!CommonUtils.isEmpty(schemas) || !CommonUtils.isEmpty(getSchemas(monitor == null ?
+                                                                             new VoidProgressMonitor() : monitor))) {
             return GenericSchema.class;
         } else {
             return GenericTable.class;
