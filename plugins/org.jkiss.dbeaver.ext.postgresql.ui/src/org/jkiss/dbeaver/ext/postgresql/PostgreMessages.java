@@ -159,6 +159,7 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_role_label_role_name;
     public static String dialog_create_role_label_user_password;
     public static String dialog_create_role_label_user_role;
+    public static String dialog_database_name_hint;
 
     /* Permissions */
     public static String edit_command_grant_privilege_action_grant_privilege;
