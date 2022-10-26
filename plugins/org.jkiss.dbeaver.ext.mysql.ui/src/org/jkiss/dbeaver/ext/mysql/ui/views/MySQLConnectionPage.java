@@ -144,7 +144,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             serverTimezoneCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         }
 
-        if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConstants.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION)) {
+        if (DBWorkbench.hasFeature(DBConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION)) {
             homesSelector = new ClientHomesSelector(advancedGroup, MySQLUIMessages.dialog_connection_local_client, false);
             gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
             homesSelector.getPanel().setLayoutData(gd);

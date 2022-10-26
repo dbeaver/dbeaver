@@ -142,7 +142,7 @@ public class DBConstants {
 
     public static final String HOST_LOCALHOST = "localhost";
 
-    public static final String PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION = "simpleDatabaseAdministration";
+    public static final String PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION = "advancedDatabaseAdministration";
 
 
 }

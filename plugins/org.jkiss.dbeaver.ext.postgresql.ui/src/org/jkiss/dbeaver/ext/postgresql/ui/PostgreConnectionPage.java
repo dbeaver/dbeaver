@@ -179,9 +179,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
                 roleText.setLayoutData(gd);
             }
 
-            if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConstants.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION)
-                && serverType.supportsClient()
-            ) {
+            if (DBWorkbench.hasFeature(DBConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION) && serverType.supportsClient()) {
                 homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
                 gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
                 homesSelector.getPanel().setLayoutData(gd);

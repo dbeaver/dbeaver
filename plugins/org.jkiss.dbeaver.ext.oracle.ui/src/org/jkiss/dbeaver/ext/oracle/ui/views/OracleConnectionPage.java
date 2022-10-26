@@ -120,7 +120,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
         bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        if (!DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConstants.PRODUCT_FEATURE_SIMPLE_DATABASE_ADMINISTRATION)) {
+        if (DBWorkbench.hasFeature(DBConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION)) {
             createClientHomeGroup(bottomControls);
         }
 

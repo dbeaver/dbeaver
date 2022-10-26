@@ -26,7 +26,7 @@ public class DTConstants {
     public static final String TASK_IMPORT = "dataImport";
     public static final String TASK_EXPORT = "dataExport";
 
-    public static final String PRODUCT_FEATURE_SIMPLE_DATA_TRANSFER = "simpleDataTransfer";
+    public static final String PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER = "advancedDataTransfer";
 
     public static final String DEFAULT_TABLE_NAME_EXPORT = "export";
 

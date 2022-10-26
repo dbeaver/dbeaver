@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * Base application implementation
@@ -102,8 +101,9 @@ public abstract class BaseApplicationImpl implements IApplication, DBPApplicatio
 
     @Override
     public boolean hasProductFeature(String featureName) {
-        return CommonUtils.toBoolean(
-            Platform.getProduct().getProperty("feature." + featureName));
+        // By default, product includes all possible features
+        // Feature set can be customized by particular implementation
+        return true;
     }
 
     /////////////////////////////////////////

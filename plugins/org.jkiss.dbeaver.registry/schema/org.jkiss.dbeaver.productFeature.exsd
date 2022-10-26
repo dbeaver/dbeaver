@@ -3,7 +3,7 @@
 <schema targetNamespace="org.jkiss.dbeaver.registry" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.appFeature" name="Application feature"/>
+         <meta.schema plugin="org.jkiss.dbeaver.registry" id="org.jkiss.dbeaver.productFeature" name="Application feature"/>
       </appInfo>
       <documentation>
          Tasks

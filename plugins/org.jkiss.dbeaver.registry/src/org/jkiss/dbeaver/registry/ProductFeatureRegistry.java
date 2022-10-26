@@ -32,24 +32,24 @@ import java.util.Map;
 /**
  * Application feature registry
  */
-public class ApplicationFeatureRegistry {
+public class ProductFeatureRegistry {
 
-    private static final Log log = Log.getLog(ApplicationFeatureRegistry.class);
+    private static final Log log = Log.getLog(ProductFeatureRegistry.class);
 
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.appFeature"; //NON-NLS-1
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.productFeature"; //NON-NLS-1
 
     private final Map<String, DBPApplicationFeature> allFeatures = new LinkedHashMap<>();
 
-    private static ApplicationFeatureRegistry instance = null;
+    private static ProductFeatureRegistry instance = null;
 
-    public synchronized static ApplicationFeatureRegistry getInstance() {
+    public synchronized static ProductFeatureRegistry getInstance() {
         if (instance == null) {
-            instance = new ApplicationFeatureRegistry(Platform.getExtensionRegistry());
+            instance = new ProductFeatureRegistry(Platform.getExtensionRegistry());
         }
         return instance;
     }
 
-    private ApplicationFeatureRegistry(IExtensionRegistry registry) {
+    private ProductFeatureRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ObjectManagerDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
