@@ -93,9 +93,6 @@ public class ClickhouseDataSource extends GenericDataSource {
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
-        } else {
-            // Newer MySQL servers/connectors requires explicit SSL disable
-            properties.put(ClickhouseConstants.SSL_PARAM, "false");
         }
         return properties;
     }

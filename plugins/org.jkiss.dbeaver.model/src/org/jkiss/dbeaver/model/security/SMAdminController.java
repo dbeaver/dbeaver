@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.security.user.SMUser;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Admin interface
@@ -33,6 +34,25 @@ public interface SMAdminController extends SMController {
     ///////////////////////////////////////////
     // Users
 
+    /**
+     * Gets user teams.
+     *
+     * @param userId the user id
+     * @return the user team [ ]
+     * @throws DBException the db exception
+     */
+    @NotNull
+    SMTeam[] getUserTeams(String userId) throws DBException;
+
+    /**
+     * Create user.
+     *
+     * @param userId          the user id
+     * @param metaParameters  the meta parameters
+     * @param enabled         the enabled
+     * @param defaultAuthRole the default auth role
+     * @throws DBException the db exception
+     */
     void createUser(
         @NotNull String userId,
         @NotNull Map<String, String> metaParameters,
@@ -44,12 +64,17 @@ public interface SMAdminController extends SMController {
 
     void setUserTeams(String userId, String[] teamIds, String grantorId) throws DBException;
 
+    /**
+     * Gets user by id.
+     *
+     * @param userId the user id
+     * @return the user by id
+     * @throws DBException the db exception
+     */
     SMUser getUserById(String userId) throws DBException;
 
     @NotNull
     SMUser[] findUsers(String userNameMask) throws DBException;
-
-    void setUserMeta(String userId, Map<String, Object> metaParameters) throws DBException;
 
     void enableUser(String userId, boolean enabled) throws DBException;
 
@@ -73,7 +98,56 @@ public interface SMAdminController extends SMController {
     void deleteTeam(String teamId) throws DBException;
 
     ///////////////////////////////////////////
+    // Credentials
+
+    /**
+     * Sets user credentials for specified provider.
+     *
+     * @param userId         the user id
+     * @param authProviderId the auth provider id
+     * @param credentials    the credentials
+     * @throws DBException the db exception
+     */
+    void setUserCredentials(
+        @NotNull String userId,
+        @NotNull String authProviderId,
+        @NotNull Map<String, Object> credentials
+    ) throws DBException;
+
+    /**
+     * Returns list of auth provider IDs associated with this user
+     *
+     * @param userId the user id
+     * @return the string [ ]
+     * @throws DBException the db exception
+     */
+    String[] getUserLinkedProviders(@NotNull String userId) throws DBException;
+
+    ///////////////////////////////////////////
+    // General
+
+    void setSubjectMetas(String userId, Map<String, String> metaParameters) throws DBException;
+
     // Permissions
+
+    /**
+     * Gets subject permissions.
+     *
+     * @param subjectId the subject id
+     * @return the subject permissions
+     * @throws DBException the db exception
+     */
+    @NotNull
+    Set<String> getSubjectPermissions(String subjectId) throws DBException;
+
+    /**
+     * Sets subject permissions.
+     *
+     * @param subjectId     the subject id
+     * @param permissionIds the permission ids
+     * @param grantorId     the grantor id
+     * @throws DBException the db exception
+     */
     void setSubjectPermissions(String subjectId, List<String> permissionIds, String grantorId) throws DBException;
 
     /**
@@ -84,6 +158,14 @@ public interface SMAdminController extends SMController {
         @NotNull SMObjectType objectType
     ) throws DBException;
 
+    /**
+     * Gets subject object permission grants.
+     *
+     * @param subjectId    the subject id
+     * @param smObjectType the sm object type
+     * @return the subject object permission grants
+     * @throws DBException the db exception
+     */
     List<SMObjectPermissionsGrant> getSubjectObjectPermissionGrants(
         @NotNull String subjectId,
         @NotNull SMObjectType smObjectType

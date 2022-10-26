@@ -121,13 +121,11 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
         GenericMetaModel metaModel = column.getDataSource().getMetaModel();
         if (!metaModel.supportsNotNullColumnModifiers(column)) {
             return new ColumnModifier[]{
-                DataTypeModifier,
-                DefaultModifier
+                DataTypeModifier, DefaultModifier
             };
         } else {
             return new ColumnModifier[]{
-                DataTypeModifier,
-                DefaultModifier,
+                DataTypeModifier, DefaultModifier,
                 metaModel.isColumnNotNullByDefault() ? NullNotNullModifier : NotNullModifier
             };
         }

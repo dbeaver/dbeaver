@@ -36,36 +36,88 @@ import java.util.Set;
  */
 public interface SMController extends DBPObjectController, SMAuthCredentialsManager {
 
+
     ///////////////////////////////////////////
     // Users
+
+    /**
+     * Gets user teams.
+     *
+     * @return the user team [ ]
+     * @throws DBException the db exception
+     */
     @NotNull
-    SMTeam[] getUserTeams(String userId) throws DBException;
+    SMTeam[] getUserTeams() throws DBException;
 
-    SMUser getUserById(String userId) throws DBException;
+    /**
+     * Gets current active user.
+     *
+     * @return the user
+     * @throws DBException the db exception
+     */
+    @NotNull
+    SMUser getCurrentUser() throws DBException;
 
-    Map<String, Object> getUserParameters(String userId) throws DBException;
+    /**
+     * Gets user parameters.
+     *
+     * @return the user parameters
+     * @throws DBException the db exception
+     */
+    Map<String, Object> getUserParameters() throws DBException;
 
-    void setUserParameter(String userId, String name, Object value) throws DBException;
+    /**
+     * Sets user parameter.
+     *
+     * @param name  the name
+     * @param value the value
+     * @throws DBException the db exception
+     */
+    void setUserParameter(String name, Object value) throws DBException;
 
     ///////////////////////////////////////////
     // Credentials
 
     /**
-     * Sets user credentials for specified provider
+     * Gets user credentials for specified provider
+     *
+     * @param authProviderId the auth provider id
+     * @return the user credentials
+     * @throws DBException the db exception
      */
-    void setUserCredentials(@NotNull String userId, @NotNull String authProviderId, @NotNull Map<String, Object> credentials) throws DBException;
+    @NotNull
+    Map<String, Object> getUserCredentials(@NotNull String authProviderId) throws DBException;
+
+    /**
+     * Sets user credentials for specified provider.
+     *
+     * @param authProviderId the auth provider id
+     * @param credentials    the credentials
+     * @throws DBException the db exception
+     */
+    void setUserCredentials(
+        @NotNull String authProviderId,
+        @NotNull Map<String, Object> credentials
+    ) throws DBException;
 
     /**
      * Returns list of auth provider IDs associated with this user
+     *
+     * @return the string [ ]
+     * @throws DBException the db exception
      */
-    String[] getUserLinkedProviders(@NotNull String userId) throws DBException;
+    String[] getUserLinkedProviders() throws DBException;
 
     ///////////////////////////////////////////
     // Permissions
 
-    @NotNull
-    Set<String> getSubjectPermissions(String subjectId) throws DBException;
-
+    /**
+     * Gets user permissions.
+     *
+     * @param userId the user id
+     * @return the user permissions
+     * @throws DBException the db exception
+     */
     @NotNull
     Set<String> getUserPermissions(String userId) throws DBException;
 
@@ -106,26 +158,40 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
      */
     SMTokens refreshSession(@NotNull String refreshToken) throws DBException;
 
-    void updateSession(
-        @NotNull String sessionId,
-        @Nullable String userId,
-        Map<String, Object> parameters) throws DBException;
+    /**
+     * Updates session.
+     *
+     * @param sessionId  the session id
+     * @param parameters the parameters
+     * @throws DBException the db exception
+     */
+    void updateSession(@NotNull String sessionId, Map<String, Object> parameters) throws DBException;
 
     ///////////////////////////////////////////
     // Permissions
 
-    SMAuthPermissions getTokenPermissions(String token) throws DBException;
+    /**
+     * Gets token permissions.
+     *
+     * @return the token permissions
+     * @throws DBException the db exception
+     */
+    SMAuthPermissions getTokenPermissions() throws DBException;
 
     ///////////////////////////////////////////
     // Auth providers
 
     SMAuthProviderDescriptor[] getAvailableAuthProviders() throws DBException;
 
+    /**
+     * Gets all available objects permissions.
+     *
+     * @param objectType the object type
+     * @return the all available objects permissions
+     * @throws DBException the db exception
+     */
     @NotNull
-    List<SMObjectPermissions> getAllAvailableObjectsPermissions(
-        @NotNull String subjectId,
-        @NotNull SMObjectType objectType
-    ) throws DBException;
+    List<SMObjectPermissions> getAllAvailableObjectsPermissions(@NotNull SMObjectType objectType) throws DBException;
 
     void setObjectPermissions(
         @NotNull Set<String> objectIds,
@@ -141,6 +207,15 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
         @NotNull SMObjectType smObjectType
     ) throws DBException;
 
+    /**
+     * Gets object permissions.
+     *
+     * @param subjectId  the subject id
+     * @param objectId   the object id
+     * @param objectType the object type
+     * @return the object permissions
+     * @throws DBException the db exception
+     */
     @NotNull
     SMObjectPermissions getObjectPermissions(
         @NotNull String subjectId,
