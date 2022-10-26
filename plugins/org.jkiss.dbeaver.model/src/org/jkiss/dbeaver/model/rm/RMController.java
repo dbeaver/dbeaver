@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
 
+import java.util.List;
+
 /**
  * Resource manager API.
  */
@@ -73,7 +75,7 @@ public interface RMController extends DBPObjectController {
      * Save datasources. Not: it only adds or updates existing datasources.
      * @param configuration configuration in modern format.
      */
-    void saveProjectDataSources(@NotNull String projectId, @NotNull String configuration, @NotNull String[] dataSourceIds) throws DBException;
+    void saveProjectDataSources(@NotNull String projectId, @NotNull String configuration, @Nullable List<String> dataSourceIds) throws DBException;
 
     /**
      * Delete datasource by Ids
