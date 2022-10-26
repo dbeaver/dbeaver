@@ -24,7 +24,8 @@ import java.util.Map;
 public class RMEvent {
 
     public enum Action {
-        RESOURCE_DELETE
+        RESOURCE_DELETE,
+        RESOURCE_ADD
     }
 
     @NotNull
