@@ -330,6 +330,7 @@
                     webURL="https://sun.com"
                     description="ODBC bridge driver"
                     supportedConfigurationTypes="MANUAL,URL"
+                    supportsDistributedMode="false"
                     promoted="1"
                     categories="sql">
                     <os name="win32"/>
@@ -351,6 +352,7 @@
                     embedded="true"
                     description="Derby (Java DB) embedded driver"
                     supportedConfigurationTypes="MANUAL,URL"
+                    supportsDistributedMode="false"
                     categories="sql,embedded">
 
                     <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
@@ -447,6 +449,7 @@
                     embedded="true"
                     description="HyperSQL DataBase - Embedded Mode"
                     supportedConfigurationTypes="MANUAL,URL"
+                    supportsDistributedMode="false"
                     categories="sql,embedded">
 
                     <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE" bundle="!drivers.hsqldb"/>
@@ -592,6 +595,7 @@
                     anonymous="true"
                     description="CsvJdbc driver for CSV files"
                     supportedConfigurationTypes="MANUAL,URL"
+                    supportsDistributedMode="false"
                     webURL="http://csvjdbc.sourceforge.net/"
                     propertiesURL="http://csvjdbc.sourceforge.net/doc.html"
                     categories="embedded,file">
@@ -627,6 +631,7 @@
                     anonymous="true"
                     description="CsvJdbc driver for DBF files"
                     supportedConfigurationTypes="MANUAL,URL"
+                    supportsDistributedMode="false"
                     webURL="http://csvjdbc.sourceforge.net/"
                     propertiesURL="http://csvjdbc.sourceforge.net/doc.html"
                     categories="embedded,file">
@@ -659,6 +664,7 @@
                     embedded="true"
                     description="Microsoft Access driver"
                     supportedConfigurationTypes="MANUAL,URL"
+                    supportsDistributedMode="false"
                     categories="sql,embedded,file">
 
                     <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
@@ -1334,6 +1340,7 @@
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
                         supportedConfigurationTypes="MANUAL,URL"
+                        supportsDistributedMode="false"
                         webURL="https://jdbc.postgresql.org/"
                         description="PostgreSQL JDBC driver. Can be used for old PostgreSQL versions or some PostgreSQL based databases (before 8.x).">
 
