@@ -129,6 +129,13 @@ public @interface Property
     String helpContextId() default ""; //NON-NLS-1
 
     /**
+     * Features list as a string with comma delimiter .
+     *
+     * @return the string
+     */
+    String features() default "";
+
+    /**
      * Can be used to format numbers and date/time property values
      */
     String format() default ""; //NON-NLS-1

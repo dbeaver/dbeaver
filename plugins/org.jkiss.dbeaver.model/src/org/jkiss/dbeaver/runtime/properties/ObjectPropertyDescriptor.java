@@ -40,10 +40,8 @@ import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * ObjectPropertyDescriptor
@@ -222,10 +220,21 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return getEditableValue(object);
     }
 
+    private List<String> parseFeatures() {
+        String features = propInfo.features();
+        if (features == null || features.isBlank()) {
+            return new ArrayList<>();
+        }
+        return Arrays.stream(features.split(",|\\s+"))
+            .collect(Collectors.toList());
+    }
+
     @Nullable
     @Override
     public String[] getFeatures() {
-        List<String> features = new ArrayList<>();
+
+        List<String> features = parseFeatures();
+
         if (this.isRequired()) features.add(DBConstants.PROP_FEATURE_REQUIRED);
         if (this.isSpecific()) features.add(DBConstants.PROP_FEATURE_SPECIFIC);
         if (this.isOptional()) features.add(DBConstants.PROP_FEATURE_OPTIONAL);
@@ -243,11 +252,19 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (this.isHref()) features.add(DBConstants.PROP_FEATURE_HREF);
         if (this.isViewable()) features.add(DBConstants.PROP_FEATURE_VIEWABLE);
         if (this.isPassword()) features.add(DBConstants.PROP_FEATURE_PASSWORD);
+
         return features.toArray(new String[0]);
     }
 
     @Override
     public boolean hasFeature(@NotNull String feature) {
+
+        List<String> features = parseFeatures();
+
+        if (features.contains(feature)) {
+            return true;
+        }
+
         switch (feature) {
             case DBConstants.PROP_FEATURE_REQUIRED:
                 return this.isRequired();
