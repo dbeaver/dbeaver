@@ -72,7 +72,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
-        refreshMappingType(monitor, DatabaseMappingType.existing, false);
+        refreshMappingType(monitor, DatabaseMappingType.existing, false, false);
     }
 
     public DatabaseMappingContainer(DatabaseMappingContainer container, DBSDataContainer sourceObject) {
@@ -106,19 +106,28 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     public void refreshMappingType(DBRRunnableContext context, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
-        refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh);
+        refreshMappingType(new VoidProgressMonitor(), mappingType, forceRefresh, false);
     }
 
-    public void refreshMappingType(DBRProgressMonitor monitor, DatabaseMappingType mappingType, boolean forceRefresh) throws DBException {
+    public void refreshMappingType(
+        DBRProgressMonitor monitor,
+        DatabaseMappingType mappingType,
+        boolean forceRefresh,
+        boolean updateAttributesNames
+    ) throws DBException {
         this.mappingType = mappingType;
-        refreshAttributesMappingTypes(monitor, forceRefresh);
+        refreshAttributesMappingTypes(monitor, forceRefresh, updateAttributesNames);
     }
 
-    public void refreshAttributesMappingTypes(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
+    public void refreshAttributesMappingTypes(
+        DBRProgressMonitor monitor,
+        boolean forceRefresh,
+        boolean updateAttributesNames
+    ) throws DBException {
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(monitor);
         if (!CommonUtils.isEmpty(mappings)) {
             for (DatabaseMappingAttribute attr : mappings) {
-                attr.updateMappingType(monitor, forceRefresh);
+                attr.updateMappingType(monitor, forceRefresh, updateAttributesNames);
             }
         }
     }
@@ -254,7 +263,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private void addAttributeMapping(DBRProgressMonitor monitor, DBSAttributeBase attr) throws DBException {
         DatabaseMappingAttribute mapping = new DatabaseMappingAttribute(this, attr);
-        mapping.updateMappingType(monitor, false);
+        mapping.updateMappingType(monitor, false, false);
         attributeMappings.add(mapping);
     }
 
