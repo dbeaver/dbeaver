@@ -28,6 +28,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -582,13 +583,31 @@ public class SQLQueryJob extends DataSourceJob
             curResult.setHasResultSet(hasResultSet);
 
             long updateCount = -1;
+            // Some databases (especially NoSQL) may produce a lot of
+            // result sets, we should warn user because it may lead to UI freeze
+            int resultSetCounter = 0;
+            boolean confirmed = false;
             while (true) {
                 // Fetch data only if we have to fetch all results or if it is rs requested
                 if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
+                    if (hasResultSet && !confirmed && resultSetCounter >= getDataSourceContainer().getPreferenceStore()
+                        .getInt(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY)) {
+                        hasResultSet = DBWorkbench.getPlatformUI().confirmAction(
+                            SQLEditorMessages.editors_sql_warning_many_subtables_title,
+                            NLS.bind(
+                                SQLEditorMessages.editors_sql_warning_many_subtables_text,
+                                getDataSourceContainer().getPreferenceStore()
+                                    .getInt(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY)
+                            ),
+                            true
+                        );
+                        confirmed = hasResultSet;
+                    }
                     if (hasResultSet && fetchResultSets) {
                         DBCResultSet resultSet;
                         try {
                             resultSet = dbcStatement.openResultSet();
+                            resultSetCounter++;
                         } catch (DBCException e) {
                             DBPErrorAssistant.ErrorType errorType = DBExecUtils.discoverErrorType(session.getDataSource(), e);
                             if (errorType == DBPErrorAssistant.ErrorType.RESULT_SET_MISSING) {

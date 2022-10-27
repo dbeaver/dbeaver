@@ -346,6 +346,7 @@
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="%driver.sqlserver.old.description"
                         supportedConfigurationTypes="MANUAL,URL"
+                        supportsDistributedMode="false"
                         categories="sql">
 
                     <parameter name="query-get-active-db" value="select db_name()"/>
@@ -379,6 +380,7 @@
                         webURL="http://jtds.sourceforge.net/"
                         description="jTDS SQL Server (MSSQL) driver"
                         supportedConfigurationTypes="MANUAL,URL"
+                        supportsDistributedMode="false"
                         categories="sql">
 
                     <replace provider="mssql" driver="mssql_jdbc_jtds"/>

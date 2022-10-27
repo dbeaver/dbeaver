@@ -142,7 +142,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     getWizard().runWithProgress(monitor -> {
                         // Reset mappings
                         for (DatabaseMappingContainer mappingContainer : settings.getDataMappings().values()) {
-                            setMappingTarget(monitor, mappingContainer, mappingContainer.getTargetName(), true);
+                            setMappingTarget(
+                                monitor,
+                                mappingContainer,
+                                mappingContainer.getTargetName(),
+                                true,
+                                true);
                         }
                     });
                     mappingViewer.refresh();
@@ -308,11 +313,16 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                                 if (element instanceof DatabaseMappingAttribute) {
                                     DatabaseMappingAttribute attribute = (DatabaseMappingAttribute) item.getData();
                                     attribute.setMappingType(DatabaseMappingType.existing);
-                                    attribute.updateMappingType(new VoidProgressMonitor(), false);
+                                    attribute.updateMappingType(new VoidProgressMonitor(), false, false);
                                 } else if (element instanceof DatabaseMappingContainer) {
                                     DatabaseMappingContainer container = (DatabaseMappingContainer) element;
                                     getWizard().runWithProgress(monitor ->
-                                        setMappingTarget(monitor, container, container.getTargetName(), false));
+                                        setMappingTarget(
+                                            monitor,
+                                            container,
+                                            container.getTargetName(),
+                                            false,
+                                            false));
                                 }
                                 selectNextColumn(item);
                             }
@@ -517,7 +527,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                     String finalName = name;
                     getWizard().runWithProgress(monitor ->
-                        setMappingTarget(monitor, (DatabaseMappingObject) element, finalName, false));
+                        setMappingTarget(monitor, (DatabaseMappingObject) element, finalName, false, false));
                     mappingViewer.update(element, null);
                     mappingViewer.setSelection(mappingViewer.getSelection());
                     updatePageCompletion();
@@ -777,14 +787,18 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         return editor;
     }
 
-    private void setMappingTarget(DBRProgressMonitor monitor, DatabaseMappingObject mapping, String name, boolean forceRefresh) {
+    private void setMappingTarget(DBRProgressMonitor monitor, DatabaseMappingObject mapping, String name, boolean forceRefresh, boolean updateAttributesNames) {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         try {
             if (name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP)) {
                 if (mapping instanceof DatabaseMappingAttribute) {
                     ((DatabaseMappingAttribute) mapping).setMappingType(DatabaseMappingType.skip);
                 } else {
-                    ((DatabaseMappingContainer) mapping).refreshMappingType(monitor, DatabaseMappingType.skip, false);
+                    ((DatabaseMappingContainer) mapping).refreshMappingType(
+                        monitor,
+                        DatabaseMappingType.skip,
+                        false,
+                        false);
                 }
             } else if (name.equals(TARGET_NAME_BROWSE)) {
                 mapExistingTable((DatabaseMappingContainer) mapping);
@@ -810,7 +824,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                                         targetDataContainer = (DBSDataManipulator) existingObject;
                                     } else {
                                         containerMapping.setTargetName(name);
-                                        containerMapping.refreshMappingType(monitor, DatabaseMappingType.unspecified, false);
+                                        containerMapping.refreshMappingType(
+                                            monitor,
+                                            DatabaseMappingType.unspecified,
+                                            false,
+                                            false);
                                         mappingErrorMessage =
                                             "Name '" + unQuotedNameForSearch + "' is already used by " + DBUtils.getObjectTypeName(existingObject);
 
@@ -836,9 +854,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             containerMapping.setTarget(targetDataContainer);
                             if (forceRefresh && mapping.getMappingType() == DatabaseMappingType.recreate) {
                                 // Keep container mapping type, refresh only attributes
-                                containerMapping.refreshAttributesMappingTypes(monitor, false);
+                                containerMapping.refreshAttributesMappingTypes(monitor, false, false);
                             } else {
-                                containerMapping.refreshMappingType(monitor, DatabaseMappingType.existing, false);
+                                containerMapping.refreshMappingType(monitor, DatabaseMappingType.existing, false, false);
                             }
 
                             DBSDataManipulator finalTargetDataContainer = targetDataContainer;
@@ -857,11 +875,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                     if (forceRefresh && mapping.getMappingType() == DatabaseMappingType.recreate) {
                         // Keep container mapping type, refresh only attributes
-                        containerMapping.refreshAttributesMappingTypes(monitor, false);
+                        containerMapping.refreshAttributesMappingTypes(monitor, false, false);
                     } else {
                         containerMapping.setTarget(null);
                         containerMapping.setTargetName(name);
-                        containerMapping.refreshMappingType(monitor, DatabaseMappingType.create, forceRefresh);
+                        containerMapping.refreshMappingType(monitor, DatabaseMappingType.create, forceRefresh, updateAttributesNames);
                     }
                 } else {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) mapping;
@@ -906,7 +924,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             for (Object element : elementList) {
                 if (element instanceof DatabaseMappingContainer) {
                     DatabaseMappingContainer container = (DatabaseMappingContainer) element;
-                    setMappingTarget(monitor, container, container.getTargetName(), true);
+                    setMappingTarget(monitor, container, container.getTargetName(), true, false);
                 }
             }
         });
