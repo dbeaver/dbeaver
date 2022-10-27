@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.runtime;
 /**
  * Runnable which stores some result
  */
-public abstract class RunnableWithResult<RESULT_TYPE> implements DBRCancellable, Runnable {
+public abstract class RunnableWithResult<RESULT_TYPE> implements Runnable {
 
     private RESULT_TYPE result;
 
@@ -35,4 +35,8 @@ public abstract class RunnableWithResult<RESULT_TYPE> implements DBRCancellable,
     }
 
     public abstract RESULT_TYPE runWithResult();
+
+    public void cancel() {
+        // do nothing by default
+    }
 }
