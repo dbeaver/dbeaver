@@ -31,6 +31,7 @@ public class ResetUISettingsAction extends Action
 
     public ResetUISettingsAction(IWorkbenchWindow window) {
         super(CoreApplicationMessages.actions_menu_reset_ui_settings_title);
+        setId(getClass().getName());
         this.window = window;
     }
 

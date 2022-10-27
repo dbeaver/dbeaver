@@ -239,12 +239,21 @@
             <command commandId="org.eclipse.ui.file.refresh" label="%command.org.jkiss.dbeaver.core.file.refresh.name"/>
 
             <separator name="import-export" visible="true"/>
-            <command commandId="org.eclipse.ui.file.import" label="%command.org.jkiss.dbeaver.core.file.import.name"/>
-            <command commandId="org.eclipse.ui.file.export" label="%command.org.jkiss.dbeaver.core.file.export.name"/>
+            <command commandId="org.eclipse.ui.file.import" label="%command.org.jkiss.dbeaver.core.file.import.name">
+                <visibleWhen>
+                    <reference definitionId="LocalWorkspace"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.eclipse.ui.file.export" label="%command.org.jkiss.dbeaver.core.file.export.name">
+                <visibleWhen>
+                    <reference definitionId="LocalWorkspace"/>
+                </visibleWhen>
+            </command>
 
             <separator name="properties" visible="true"/>
             <command commandId="org.eclipse.ui.file.properties" label="%command.org.jkiss.dbeaver.core.file.properties.name"/>
-
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="menu:file?after=additions">
             <separator name="exit" visible="true"/>
             <command commandId="org.eclipse.ui.file.exit" label="%command.org.jkiss.dbeaver.core.file.exit.name"/>
         </menuContribution>
