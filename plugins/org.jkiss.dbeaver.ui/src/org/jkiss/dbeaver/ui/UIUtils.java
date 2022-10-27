@@ -33,6 +33,7 @@ import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.jface.wizard.IWizardContainer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.dnd.Clipboard;
@@ -1501,7 +1502,7 @@ public class UIUtils {
 
     public static void fillDefaultTableContextMenu(IContributionManager menu, final Table table) {
         if (table.getColumnCount() > 1) {
-            menu.add(new Action("Copy " + table.getColumn(0).getText()) {
+            menu.add(new Action(NLS.bind(UIMessages.utils_actions_copy_label, table.getColumn(0).getText())) {
                 @Override
                 public void run() {
                     StringBuilder text = new StringBuilder();
@@ -1516,7 +1517,7 @@ public class UIUtils {
                 }
             });
         }
-        menu.add(new Action("Copy All") {
+        menu.add(new Action(UIMessages.utils_actions_copy_all_label) {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();
@@ -1553,7 +1554,7 @@ public class UIUtils {
                 }
             });
         }
-        menu.add(new Action("Copy All") {
+        menu.add(new Action(UIMessages.utils_actions_copy_all_label) {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();

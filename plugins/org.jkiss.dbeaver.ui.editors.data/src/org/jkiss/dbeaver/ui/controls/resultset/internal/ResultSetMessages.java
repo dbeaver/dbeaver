@@ -452,6 +452,8 @@ public class ResultSetMessages extends NLS {
 
     public static String generate_ddl_by_result_set_name;
     public static String generate_ddl_by_result_set_tip;
+    public static String meta_data_panel_action_copy_column_text;
+    public static String result_set_viewer_selection_stat_tooltip;
 
     static {
         // initialize resource bundle

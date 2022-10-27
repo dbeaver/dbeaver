@@ -151,7 +151,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
-    public void updateMappingType(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException {
+    public void updateMappingType(DBRProgressMonitor monitor, boolean forceRefresh, boolean updateAttributesNames) throws DBException {
         if (mappingType == DatabaseMappingType.skip) {
             // We already have mapping for the attribute with the skip type
             return;
@@ -228,7 +228,12 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             // Case recreate container mapping in the new table or just create
             mappingType = DatabaseMappingType.create;
             if (forceRefresh || CommonUtils.isEmpty(targetName)) {
-                targetName = getSourceLabelOrName(source, true);
+                if (!updateAttributesNames && CommonUtils.isNotEmpty(targetName)) {
+                    // We want to keep targetName in this case. It can be the targetName from a task as example
+                    targetName = getSourceLabelOrName(targetName, true);
+                } else {
+                    targetName = getSourceLabelOrName(source, true);
+                }
             }
         }
 
@@ -256,7 +261,10 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     String getSourceLabelOrName(DBSAttributeBase source, boolean quoteIdentifier) {
-        String name = getSourceAttributeName(source);
+        return getSourceLabelOrName(getSourceAttributeName(source), quoteIdentifier);
+    }
+
+    private String getSourceLabelOrName(String name, boolean quoteIdentifier) {
         DBSObjectContainer container = parent.getSettings().getContainer();
 
         if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name) && !isSkipNameTransformation()) {

@@ -75,6 +75,8 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_explain_plan;
     public static String editors_sql_output;
     public static String editors_sql_output_tip;
+    public static String editors_sql_warning_many_subtables_title;
+    public static String editors_sql_warning_many_subtables_text;
     public static String editors_sql_statistics;
     public static String editors_sql_job_execute_query;
     public static String editors_sql_job_execute_script;
@@ -154,6 +156,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_close_results_tab_on_error;
     public static String pref_page_sql_editor_label_auto_open_output_view;
     public static String pref_page_sql_editor_label_auto_open_output_view_tip;
+    public static String pref_page_sql_editor_label_size_warning_threshold;
+    public static String pref_page_sql_editor_label_size_warning_threshold_tip;
     public static String pref_page_sql_editor_label_replace_on_single_query_exec_view;
     public static String pref_page_sql_editor_label_replace_on_single_query_exec_view_tip;
     public static String pref_page_sql_editor_label_results_orientation;
@@ -211,6 +215,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_format_label_insert_line_feed_before_commas;
     public static String pref_page_sql_format_label_settings;
     public static String  pref_page_sql_format_label_SQLPreview;
+    public static String  pref_page_sql_format_label_format_active_query;
+    public static String  pref_page_sql_format_label_format_active_query_tip;
     // SQLCompletion
     public static String pref_page_sql_completion_group_sql_assistant;
     public static String pref_page_sql_completion_label_enable_auto_activation;
@@ -357,6 +363,7 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_nonsql_text;
     
     public static String sql_editor_separate_connection_no_editor_or_ds_selected;
+
 
     static {
         // initialize resource bundle

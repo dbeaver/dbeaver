@@ -30,7 +30,7 @@
             priority="normal"
             describer="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarkContentTypeDescriber"/>
 
-        <content-type file-extensions="lnk" id="org.jkiss.dbeaver.shortcut" name="Windows Shortcut" priority="normal">
+        <content-type file-extensions="lnk" id="org.jkiss.dbeaver.shortcut" name="%content-type.org.jkiss.dbeaver.shortcut.name" priority="normal">
             <describer class="org.eclipse.core.runtime.content.BinarySignatureDescriber">
                 <!-- http://msdn.microsoft.com/en-us/library/dd871305%28PROT.10%29.aspx -->
                 <parameter name="signature" value="4C,00,00,00,01,14,02,00,00,00,00,00,C0,00,00,00,00,00,00,46"/>
@@ -478,6 +478,9 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
         </handler>
 
         <!-- Query log view handlers -->

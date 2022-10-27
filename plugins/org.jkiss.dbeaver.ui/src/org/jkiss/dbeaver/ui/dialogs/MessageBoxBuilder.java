@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class MessageBoxBuilder {
     private final MessageBoxModern dialog;
@@ -76,6 +78,12 @@ public final class MessageBoxBuilder {
     @NotNull
     public MessageBoxBuilder setDefaultReply(@NotNull Reply defaultReply) {
         this.defaultReply = defaultReply;
+        return this;
+    }
+    
+    @NotNull
+    public MessageBoxBuilder setCustomArea(@NotNull Consumer<? super Composite> customArea) {
+        dialog.setCustomArea(customArea);
         return this;
     }
 

@@ -163,6 +163,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
+        dbText.setMessage(PostgreMessages.dialog_database_name_hint);
         addControlToGroup(GROUP_CONNECTION, dbText);
 
         createAuthPanel(mainGroup, 1);

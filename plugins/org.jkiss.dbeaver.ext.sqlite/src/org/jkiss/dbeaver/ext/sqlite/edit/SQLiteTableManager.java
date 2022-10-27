@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ext.sqlite.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
-import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
+import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -42,9 +45,9 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
 
     private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         SQLiteTableColumn.class,
-        SQLiteTableForeignKey.class,
+        GenericUniqueKey.class,
         GenericTableIndex.class,
-        GenericUniqueKey.class
+        SQLiteTableForeignKey.class
     );
 
     @NotNull
