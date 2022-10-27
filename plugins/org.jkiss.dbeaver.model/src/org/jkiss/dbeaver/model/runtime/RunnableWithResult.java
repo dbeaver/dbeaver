@@ -35,5 +35,4 @@ public abstract class RunnableWithResult<RESULT_TYPE> implements Runnable {
     }
 
     public abstract RESULT_TYPE runWithResult();
-
 }
