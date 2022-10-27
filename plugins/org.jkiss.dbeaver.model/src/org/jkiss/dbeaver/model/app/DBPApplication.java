@@ -74,9 +74,10 @@ public interface DBPApplication {
      */
     String getDefaultProjectName();
 
-    String getProductProperty(String propName);
+    @Nullable
+    String getProductProperty(@NotNull String propName);
 
-    boolean hasProductFeature(String featureName);
+    boolean hasProductFeature(@NotNull String featureName);
 
     /**
      * @return null if not found, otherwise returns default workspace path
