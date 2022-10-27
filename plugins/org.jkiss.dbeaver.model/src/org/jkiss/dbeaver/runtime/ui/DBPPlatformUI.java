@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -137,7 +137,7 @@ public interface DBPPlatformUI {
      * Execute runnable task synchronously while displaying job indicator if needed
      */
     @NotNull
-    <T> Future<T> executeWithProgressBlocking(@NotNull String operationDescription, @NotNull RunnableWithResult<Future<T>> runnable);
+    <T> Future<T> executeWithProgressBlocking(@NotNull String operationDescription, @NotNull DBRRunnableWithResult<Future<T>> runnable);
 
     @NotNull
     <RESULT> Job createLoadingService(

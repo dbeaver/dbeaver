@@ -506,15 +506,20 @@ public class DesktopUI implements DBPPlatformUI {
     @Override
     public <T> Future<T> executeWithProgressBlocking(
         @NotNull String operationDescription,
-        @NotNull RunnableWithResult<Future<T>> runnable
+        @NotNull DBRRunnableWithResult<Future<T>> runnable
     ) {
         final AbstractJob job = new AbstractJob(operationDescription) {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
-                runnable.run();
-                monitor.done();
-                return Status.OK_STATUS;
+                try {
+                    runnable.run(monitor);
+                    return Status.OK_STATUS;
+                } catch (Exception ex) {
+                    return Status.error("UI blocking operation failed", ex);
+                } finally {
+                    monitor.done();
+                }
             }
             
             @Override
@@ -584,7 +589,7 @@ public class DesktopUI implements DBPPlatformUI {
             return CompletableFuture.failedFuture(ex);
         }
         
-        return runnable.getResult();
+        return job.getResult().isOK() ? runnable.getResult() : CompletableFuture.failedFuture(job.getResult().getException());
     }
     
     @NotNull

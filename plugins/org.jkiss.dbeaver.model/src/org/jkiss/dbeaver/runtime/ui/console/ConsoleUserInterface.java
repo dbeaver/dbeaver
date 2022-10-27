@@ -42,6 +42,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
@@ -204,9 +205,14 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public <T> Future<T> executeWithProgressBlocking(
         @NotNull String operationDescription,
-        @NotNull RunnableWithResult<Future<T>> runnable
+        @NotNull DBRRunnableWithResult<Future<T>> runnable
     ) {
-        return runnable.runWithResult();
+        try {
+            runnable.run(new LoggingProgressMonitor());
+            return runnable.getResult();
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
     }
 
     @NotNull
