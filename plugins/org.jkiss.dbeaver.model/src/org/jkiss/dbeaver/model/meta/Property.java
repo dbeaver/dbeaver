@@ -133,7 +133,7 @@ public @interface Property
      *
      * @return the string
      */
-    String features() default "";
+    String[] features() default {};
 
     /**
      * Can be used to format numbers and date/time property values

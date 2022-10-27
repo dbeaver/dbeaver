@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
@@ -220,20 +221,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return getEditableValue(object);
     }
 
-    private List<String> parseFeatures() {
-        String features = propInfo.features();
-        if (features == null || features.isBlank()) {
-            return new ArrayList<>();
-        }
-        return Arrays.stream(features.split(",|\\s+"))
-            .collect(Collectors.toList());
-    }
-
     @Nullable
     @Override
     public String[] getFeatures() {
 
-        List<String> features = parseFeatures();
+        List<String> features = Arrays.stream(propInfo.features())
+            .collect(Collectors.toList());
 
         if (this.isRequired()) features.add(DBConstants.PROP_FEATURE_REQUIRED);
         if (this.isSpecific()) features.add(DBConstants.PROP_FEATURE_SPECIFIC);
@@ -258,12 +251,6 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     @Override
     public boolean hasFeature(@NotNull String feature) {
-
-        List<String> features = parseFeatures();
-
-        if (features.contains(feature)) {
-            return true;
-        }
 
         switch (feature) {
             case DBConstants.PROP_FEATURE_REQUIRED:
@@ -297,7 +284,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             case DBConstants.PROP_FEATURE_PASSWORD:
                 return this.isPassword();
         }
-        return false;
+
+        return ArrayUtils.contains(propInfo.features(), feature);
     }
 
     private boolean getEditableValue(Object object)
