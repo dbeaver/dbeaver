@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * User interface interactions
@@ -136,10 +137,7 @@ public interface DBPPlatformUI {
      * Execute runnable task synchronously while displaying job indicator if needed
      */
     @NotNull
-    <T> T executeWithProgressBlocking(
-        @NotNull String operationDescription,
-        @NotNull RunnableWithResult<T> runnable
-    ) throws InvocationTargetException, InterruptedException;
+    <T> Future<T> executeWithProgressBlocking(@NotNull String operationDescription,@NotNull RunnableWithResult<Future<T>> runnable);
 
     @NotNull
     <RESULT> Job createLoadingService(

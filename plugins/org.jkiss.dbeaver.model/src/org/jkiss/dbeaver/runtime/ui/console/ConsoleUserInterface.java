@@ -42,6 +42,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
     private static final Log log = Log.getLog(ConsoleUserInterface.class);
@@ -201,9 +202,9 @@ public class ConsoleUserInterface implements DBPPlatformUI {
 
     @NotNull
     @Override
-    public <T> T executeWithProgressBlocking(
+    public <T> Future<T> executeWithProgressBlocking(
         @NotNull String operationDescription,
-        @NotNull RunnableWithResult<T> runnable
+        @NotNull RunnableWithResult<Future<T>> runnable
     ) {
         return runnable.runWithResult();
     }

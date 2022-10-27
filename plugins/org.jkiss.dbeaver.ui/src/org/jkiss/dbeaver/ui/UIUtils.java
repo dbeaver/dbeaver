@@ -1807,87 +1807,6 @@ public class UIUtils {
             return null;
         }
     }
-    
-    /**
-     * Execute runnable task synchronously while displaying job indeterminate indicator and blocking the UI, when called from the UI thread
-     */
-    @NotNull
-    public static <T> T syncExecBlocking(
-        @NotNull String operationDesc,
-        @NotNull RunnableWithResult<T> runnable
-    ) throws InvocationTargetException, InterruptedException {
-        
-        @SuppressWarnings("unchecked")
-        RunnableWithResultEx<T> runnableEx = runnable instanceof RunnableWithResultEx ? (RunnableWithResultEx<T>) runnable : null;
-        
-        final AbstractJob job = new AbstractJob(operationDesc) {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                monitor.beginTask(operationDesc, IProgressMonitor.UNKNOWN);
-                runnable.run();
-                monitor.done();
-                return Status.OK_STATUS;
-            }
-            
-            @Override
-            protected void canceling() {
-                if (runnableEx != null) {
-                    runnableEx.cancel();
-                }
-            }
-        };
-        job.schedule();
-        
-        if (UIUtils.isUIThread()) {
-            Display display = getDisplay();
-            if (!display.isDisposed()) {
-                RunnableWithResultEx<Boolean> shortWait = new RunnableWithResultEx<Boolean>() {
-                    @Override
-                    protected Boolean runWithResultImpl() throws Exception {
-                        return !job.join(getLongOperationTime(), new NullProgressMonitor());
-                    }
-
-                    @Override
-                    protected void onCancelled() { }
-                };
-                for (Shell shell : display.getShells()) {
-                    shell.setEnabled(false);
-                }
-                BusyIndicator.showWhile(display, new RunnableWithResultEx<Object>() {
-                    protected Object runWithResultImpl() throws Exception {
-                        ModalContext.run(monitor -> shortWait.run(), true, new NullProgressMonitor(), display);
-                        return null;
-                    }
-                });
-                for (Shell shell : display.getShells()) {
-                    shell.setEnabled(true);
-                }
-                
-                if (shortWait.getResultOrRethrow()) {
-                    ProgressMonitorDialog progress = new ProgressMonitorDialog(display.getActiveShell()) {
-                        @Override
-                        protected void cancelPressed() {
-                            job.cancel();
-                            super.cancelPressed();
-                        }  
-                    };
-                    
-                    progress.run(true, runnableEx != null, new IRunnableWithProgress() {
-                        @Override
-                        public void run(IProgressMonitor monitor) throws InterruptedException {
-                            monitor.beginTask(operationDesc, IProgressMonitor.UNKNOWN);
-                            job.join();
-                            monitor.done();
-                        }
-                    });
-                }
-            }
-        }
-
-        job.join();
-        
-        return runnable.getResult();
-    }
 
     @Nullable
     public static Color getSharedColor(@Nullable String rgbString) {
@@ -2249,11 +2168,4 @@ public class UIUtils {
         }
     }
 
-    private static long getLongOperationTime() {
-        try {
-            return PlatformUI.getWorkbench().getProgressService().getLongOperationTime();
-        } catch (Exception ex) { // when workbench is not initialized yet during startup
-            return 800; // see org.eclipse.ui.internal.progress.ProgressManager.getLongOperationTime()
-        }
-    }
 }
