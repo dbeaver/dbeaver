@@ -137,7 +137,7 @@ public interface DBPPlatformUI {
      * Execute runnable task synchronously while displaying job indicator if needed
      */
     @NotNull
-    <T> Future<T> executeWithProgressBlocking(@NotNull String operationDescription,@NotNull RunnableWithResult<Future<T>> runnable);
+    <T> Future<T> executeWithProgressBlocking(@NotNull String operationDescription, @NotNull RunnableWithResult<Future<T>> runnable);
 
     @NotNull
     <RESULT> Job createLoadingService(
