@@ -19,11 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
@@ -67,6 +63,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Combo resultsOrientationCombo;
     private Button autoOpenOutputView;
     private Button replaceCurrentTab;
+    private Spinner sizeWarningThreshouldSpinner;
 
     public PrefPageSQLEditor()
     {
@@ -146,6 +143,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
             }
 
             autoOpenOutputView = UIUtils.createCheckbox(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_open_output_view, SQLEditorMessages.pref_page_sql_editor_label_auto_open_output_view_tip, false, 2);
+            sizeWarningThreshouldSpinner = UIUtils.createLabelSpinner(layoutGroup,
+                SQLEditorMessages.pref_page_sql_editor_label_size_warning_threshold,
+                SQLEditorMessages.pref_page_sql_editor_label_size_warning_threshold_tip, 20, 2, 200);
+            sizeWarningThreshouldSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
 
         {
@@ -185,6 +186,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
             resultsOrientationCombo.setText(orientation.getLabel());
             autoOpenOutputView.setSelection(store.getBoolean(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW));
+            sizeWarningThreshouldSpinner.setSelection(store.getInt(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -216,6 +218,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 }
             }
             store.setValue(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW, autoOpenOutputView.getSelection());
+            store.setValue(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY, sizeWarningThreshouldSpinner.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -228,7 +231,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
         store.setToDefault(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
         store.setToDefault(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE);
-
+        store.setToDefault(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);

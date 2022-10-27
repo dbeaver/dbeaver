@@ -22,6 +22,7 @@ import org.eclipse.gef3.EditPartFactory;
 import org.eclipse.gef3.palette.PaletteRoot;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.erd.ui.editor.ERDViewStyle;
 
 /**
  * ERD object adapter
@@ -29,6 +30,11 @@ import org.jkiss.code.Nullable;
 public interface ERDDecorator {
 
     boolean showCheckboxes();
+
+    /**
+     * Checks whether the given {@code style} is supported by the decorator.
+     */
+    boolean supportsAttributeStyle(@NotNull ERDViewStyle style);
 
     boolean supportsAttributeVisibility();
 
