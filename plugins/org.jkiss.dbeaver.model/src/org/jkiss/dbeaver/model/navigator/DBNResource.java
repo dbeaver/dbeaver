@@ -18,16 +18,14 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBIconComposite;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
@@ -454,7 +452,7 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     }
 
     @Override
-    @Nullable
+    @NotNull
     public IResource getResource()
     {
         return resource;
@@ -496,32 +494,6 @@ public class DBNResource extends DBNNode implements DBNNodeWithResource// implem
     public void setResourceImage(DBPImage resourceImage)
     {
         this.resourceImage = resourceImage;
-    }
-
-    public void createNewFolder(String folderName)
-        throws DBException
-    {
-        try {
-            if (resource instanceof IProject) {
-                IFolder newFolder = ((IProject)resource).getFolder(folderName);
-                if (newFolder.exists()) {
-                    throw new DBException("Folder '" + folderName + "' already exists in project '" + resource.getName() + "'");
-                }
-                newFolder.create(true, true, new NullProgressMonitor());
-            } else if (resource instanceof IFolder) {
-                IFolder parentFolder = (IFolder) resource;
-                if (!parentFolder.exists()) {
-                    parentFolder.create(true, true, new NullProgressMonitor());
-                }
-                IFolder newFolder = parentFolder.getFolder(folderName);
-                if (newFolder.exists()) {
-                    throw new DBException("Folder '" + folderName + "' already exists in '" + resource.getFullPath().toString() + "'");
-                }
-                newFolder.create(true, true, new NullProgressMonitor());
-            }
-        } catch (CoreException e) {
-            throw new DBException("Can't create new folder", e);
-        }
     }
 
     public Collection<DBPDataSourceContainer> getAssociatedDataSources()
