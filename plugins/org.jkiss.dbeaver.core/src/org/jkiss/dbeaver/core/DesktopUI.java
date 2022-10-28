@@ -516,7 +516,7 @@ public class DesktopUI implements DBPPlatformUI {
                     runnable.run(monitor);
                     return Status.OK_STATUS;
                 } catch (Exception ex) {
-                    return Status.error("UI blocking operation failed", ex);
+                    return GeneralUtils.makeExceptionStatus(ex);
                 } finally {
                     monitor.done();
                 }
