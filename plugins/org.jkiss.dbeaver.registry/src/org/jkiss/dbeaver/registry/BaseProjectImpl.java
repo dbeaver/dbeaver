@@ -317,6 +317,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName) {
         loadMetadata();
+        resourcePath = normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps != null) {
@@ -335,6 +336,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Nullable
     public Map<String, Object> getResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
+        resourcePath = normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             return resourceProperties.get(resourcePath);
         }
@@ -343,6 +345,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     @Override
     public void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue) {
         loadMetadata();
+        resourcePath = normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             Map<String, Object> resProps = resourceProperties.get(resourcePath);
             if (resProps == null) {
@@ -380,6 +383,7 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     public boolean resetResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
+        resourcePath = normalizeResourcePath(resourcePath);
         boolean hadProperties;
         synchronized (metadataSync) {
             hadProperties = resourceProperties.remove(resourcePath) != null;
@@ -388,6 +392,12 @@ public abstract class BaseProjectImpl implements DBPProject {
             flushMetadata();
         }
         return hadProperties;
+    }
+
+    @NotNull
+    private static String normalizeResourcePath(@NotNull String resourcePath) {
+        while (resourcePath.startsWith("/")) resourcePath = resourcePath.substring(1);
+        return resourcePath;
     }
 
     @Override
@@ -404,7 +414,8 @@ public abstract class BaseProjectImpl implements DBPProject {
         boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {
-                cacheChanged = (resourceProperties.remove(path.toString()) != null);
+                String resPath = normalizeResourcePath(path.toString());
+                cacheChanged = (resourceProperties.remove(resPath) != null);
             }
         }
         if (cacheChanged) {
@@ -416,9 +427,11 @@ public abstract class BaseProjectImpl implements DBPProject {
         boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {
-                Map<String, Object> props = resourceProperties.remove(oldPath.toString());
+                String oldResPath = normalizeResourcePath(oldPath.toString());
+                Map<String, Object> props = resourceProperties.remove(oldResPath);
                 if (props != null) {
-                    resourceProperties.put(newPath.toString(), props);
+                    String newResPath = normalizeResourcePath(newPath.toString());
+                    resourceProperties.put(newResPath, props);
                     cacheChanged = true;
                 }
             }
