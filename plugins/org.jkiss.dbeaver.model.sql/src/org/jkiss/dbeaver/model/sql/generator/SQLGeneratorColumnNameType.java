@@ -43,7 +43,11 @@ public class SQLGeneratorColumnNameType extends SQLGenerator<DBSEntityAttribute>
     @Override
     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntityAttribute object) throws DBException {
         if (sql.length() > 0) {
-            sql.append(",\n");
+            if (isCompactSQL()) {
+                sql.append(", ");
+            } else {
+                sql.append(",\n");
+            }
         }        
         String columnName = DBUtils.getQuotedIdentifier(object.getDataSource(), object.getName());
         sql.append(columnName);
