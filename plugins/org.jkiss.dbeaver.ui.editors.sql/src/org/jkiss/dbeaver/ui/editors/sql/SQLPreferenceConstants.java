@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 public class SQLPreferenceConstants
 {
 
+
+
     public enum EmptyScriptCloseBehavior {
         NOTHING(SQLEditorMessages.script_close_behavior_do_not_delete),
         DELETE_NEW(SQLEditorMessages.script_close_behavior_delete_only_new_scripts),
@@ -113,6 +115,7 @@ public class SQLPreferenceConstants
     public final static String REFRESH_DEFAULTS_AFTER_EXECUTE           = "SQLEditor.refreshDefaultsAfterExecute";
     public final static String CLEAR_OUTPUT_BEFORE_EXECUTE              = "SQLEditor.clearOutputBeforeExecute";
 
+    public static final String RESULT_SET_MAX_TABS_PER_QUERY            = "SQLEditor.resultSet.queryTabLimit";
     public final static String RESULT_SET_CLOSE_ON_ERROR                = "SQLEditor.resultSet.closeOnError";
     public final static String RESULT_SET_REPLACE_CURRENT_TAB           = "SQLEditor.resultSet.replaceCurrentTab"; //$NON-NLS-1$
     public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation";

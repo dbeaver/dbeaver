@@ -756,7 +756,7 @@ public class DBExecUtils {
                             SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getOrdinalPosition());
                             if (selectItem.isPlainColumn()) {
                                 String realColumnName = selectItem.getName();
-                                if (!CommonUtils.equalObjects(realColumnName, columnName)) {
+                                if (!realColumnName.equalsIgnoreCase(columnName)) {
                                     if (DBUtils.isQuotedIdentifier(dataSource, realColumnName)) {
                                         columnName = DBUtils.getUnQuotedIdentifier(dataSource, realColumnName);
                                     } else {

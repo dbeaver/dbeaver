@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -34,7 +35,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * PrefPageMetaData
@@ -90,9 +90,12 @@ public class PrefPageMetaData extends TargetPrefPage
                 CoreMessages.pref_page_database_general_separate_meta_connection,
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
+            separateMetaConnectionCombo.setToolTipText(
+                NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, PrefUtils.collectSingleConnectionDrivers())
+            );
             ((GridData) separateMetaConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
             separateMetaConnectionCombo.setItems(metaUseSeparateConnectionValues.stream()
-                .map(s -> s.getTitle()).collect(Collectors.toList()).toArray(new String[0]));
+                .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             caseSensitiveNamesCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names_tip, false, 1);
             readExpensiveCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, CoreMessages.pref_page_database_general_checkbox_show_row_count_tip, false, 1);
             serverSideFiltersCheck = UIUtils.createCheckbox(metadataGroup, CoreMessages.pref_page_database_general_server_side_object_filters, CoreMessages.pref_page_database_general_server_side_object_filters_tip, false, 1);

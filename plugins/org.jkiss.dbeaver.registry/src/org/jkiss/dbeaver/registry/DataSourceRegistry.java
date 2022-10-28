@@ -94,23 +94,23 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
         loadDataSources(true);
 
-        if (!isVirtual()) {
+        if (!isMultiUser()) {
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
 
             addDataSourceListener(modelChangeListener);
         }
     }
 
-    // Virtual registry:
+    // Multi-user registry:
     // - doesn't register listeners
     // -
-    private boolean isVirtual() {
-        return project.isVirtual();
+    private boolean isMultiUser() {
+        return DBWorkbench.getPlatform().getApplication().isMultiuser();
     }
 
     @Override
     public void dispose() {
-        if (!isVirtual()) {
+        if (!isMultiUser()) {
             removeDataSourceListener(modelChangeListener);
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, false);
         }
@@ -803,7 +803,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     private void updateProjectNature() {
-        if (isVirtual()) {
+        if (isMultiUser()) {
             return;
         }
         try {
