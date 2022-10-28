@@ -318,7 +318,7 @@
         <handler commandId="org.jkiss.dbeaver.core.sql.editor.recent" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceViewable"/>
                 </with>
             </enabledWhen>
         </handler>
