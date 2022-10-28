@@ -47,10 +47,9 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
 
 /**
@@ -127,10 +126,15 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         try {
             String diagramState = DiagramLoader.serializeDiagram(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, false);
 
-            final File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
-            try (final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(localFile), GeneralUtils.UTF8_CHARSET)) {
-                osw.write(diagramState);
+            final IFile file = EditorUtils.getFileFromInput(getEditorInput());
+            if (file == null) {
+                throw new DBException("Can't determine diagram file");
             }
+            file.setContents(
+                new ByteArrayInputStream(diagramState.getBytes(StandardCharsets.UTF_8)),
+                true,
+                true,
+                monitor);
             getCommandStack().markSaveLocation();
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Save diagram", null, e);
