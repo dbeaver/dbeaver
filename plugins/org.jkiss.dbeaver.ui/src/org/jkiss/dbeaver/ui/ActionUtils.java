@@ -371,6 +371,7 @@ public class ActionUtils
         @NotNull final IActionDelegate actionDelegate,
         @Nullable IWorkbenchSite site,
         @Nullable ISelection selection,
+        @Nullable String id,
         @Nullable String text,
         @Nullable ImageDescriptor image,
         @Nullable String toolTip)
@@ -381,6 +382,9 @@ public class ActionUtils
                 actionDelegate.run(this);
             }
         };
+        if (id != null) {
+            actionImpl.setId(id);
+        }
         if (text != null) {
             actionImpl.setText(text);
         }
