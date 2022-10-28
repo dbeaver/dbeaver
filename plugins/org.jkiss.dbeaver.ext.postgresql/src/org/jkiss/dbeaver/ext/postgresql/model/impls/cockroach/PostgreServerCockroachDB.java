@@ -153,11 +153,6 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean supportsResultSetLimits() {
-        return true;
-    }
-
-    @Override
     public boolean supportsRelationSizeCalc() {
         return false;
     }

@@ -142,6 +142,7 @@ public class SQLEditorMessages extends NLS {
     // SQLEditor
     public static String pref_page_sql_editor_group_connections;
     public static String pref_page_sql_editor_label_separate_connection_each_editor;
+    public static String pref_page_sql_editor_label_separate_connection_each_editor_tip;
     public static String pref_page_sql_editor_label_connect_on_editor_activation;
     public static String pref_page_sql_editor_label_connect_on_query_execute;
 

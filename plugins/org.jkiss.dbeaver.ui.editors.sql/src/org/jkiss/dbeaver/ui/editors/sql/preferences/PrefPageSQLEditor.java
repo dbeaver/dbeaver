@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -37,7 +38,6 @@ import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * PrefPageSQLEditor
@@ -106,15 +106,18 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         {
             Group connectionsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-            ((GridData)connectionsGroup.getLayoutData()).horizontalSpan = 2;
+            ((GridData) connectionsGroup.getLayoutData()).horizontalSpan = 2;
             editorSeparateConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(connectionsGroup, 3),
                 SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor,
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
+            editorSeparateConnectionCombo.setToolTipText(
+                NLS.bind(SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor_tip, PrefUtils.collectSingleConnectionDrivers())
+            );
             ((GridData) editorSeparateConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
             editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
-                .map(s -> s.getTitle()).collect(Collectors.toList()).toArray(new String[0]));
+                .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             connectOnActivationCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_editor_activation, false);
             connectOnExecuteCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_query_execute, false);
         }
