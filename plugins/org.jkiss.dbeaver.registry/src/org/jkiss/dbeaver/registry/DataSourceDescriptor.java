@@ -192,6 +192,7 @@ public class DataSourceDescriptor
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
         this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
+        this.forceUseSingleConnection = driver.isSingleConnection();
     }
 
     // Copy constructor
@@ -322,6 +323,7 @@ public class DataSourceDescriptor
 
     public void setDriver(@NotNull DriverDescriptor driver) {
         this.driver = driver;
+        this.forceUseSingleConnection = driver.isSingleConnection();
     }
 
     @NotNull
