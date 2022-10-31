@@ -107,6 +107,10 @@ public interface DBPDataSourceContainer extends
     // Also hidden connections are excluded from persistence
     boolean isHidden();
 
+    boolean isSharedCredentials();
+
+    void setSharedCredentials(boolean sharedCredentials);
+
     boolean isConnectionReadOnly();
 
     boolean isSavePassword();

@@ -379,10 +379,12 @@ public class DataSourceDescriptor
         this.savePassword = savePassword;
     }
 
+    @Override
     public boolean isSharedCredentials() {
         return sharedCredentials;
     }
 
+    @Override
     public void setSharedCredentials(boolean sharedCredentials) {
         this.sharedCredentials = sharedCredentials;
     }
