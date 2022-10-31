@@ -92,6 +92,11 @@ public class RMProject extends RMObject {
         return ArrayUtils.contains(SHARED_PROJECTS, getType());
     }
 
+    @Property
+    public boolean isGlobal() {
+        return getType() == RMProjectType.GLOBAL;
+    }
+
     public String getDescription() {
         return description;
     }
