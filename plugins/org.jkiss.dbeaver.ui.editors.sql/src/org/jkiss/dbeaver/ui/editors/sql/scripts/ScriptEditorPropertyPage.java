@@ -48,14 +48,11 @@ public class ScriptEditorPropertyPage extends PropertyPage {
     public ScriptEditorPropertyPage() {
         super();
     }
-    
-    private IFile getCurrentFile() {
-        return super.getElement().getAdapter(IFile.class);
-    }
 
     /**
      * @see PreferencePage#createContents(Composite)
      */
+    @Override
     protected Control createContents(Composite parent) {
         Composite composite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
@@ -71,6 +68,9 @@ public class ScriptEditorPropertyPage extends PropertyPage {
         return composite;
     }
     
+    /**
+     * Returns state of Disable SQL Editor services property
+     */
     public static boolean getDisableEditorServicesProp(IFile file) {
         try {
             return CommonUtils.getBoolean(file.getPersistentProperty(DISABLE_EDITOR_SERVICES_PROP_NAME), false);
@@ -80,9 +80,34 @@ public class ScriptEditorPropertyPage extends PropertyPage {
         }
     }
     
+    /**
+     * Sets value to Disable SQL Editor services property
+     */
     public static void setDisableEditorServicesProp(IFile file, boolean value) throws CoreException {
         file.setPersistentProperty(DISABLE_EDITOR_SERVICES_PROP_NAME, Boolean.toString(value));
         notifyAssociatedServices(file, value);
+    }
+    
+    @Override
+    protected void performDefaults() {
+        super.performDefaults();
+        chkDisableEditorSvcs.setSelection(false);
+    }
+    
+    @Override
+    public boolean performOk() {
+        try {
+            setDisableEditorServicesProp(getCurrentFile(), chkDisableEditorSvcs.getSelection());
+        } catch (CoreException e) {
+            log.debug(e.getMessage(), e);
+            return false;
+        }
+        return true;
+    }
+    
+    
+    private IFile getCurrentFile() {
+        return super.getElement().getAdapter(IFile.class);
     }
     
     private static void notifyAssociatedServices(IFile file, boolean newServicesEnabled) {
@@ -92,7 +117,7 @@ public class ScriptEditorPropertyPage extends PropertyPage {
                 for (IEditorReference editorRef : page.getEditorReferences()) {
                     IEditorPart editor = editorRef.getEditor(false);
                     if (editor instanceof SQLEditorBase) {
-                        SQLEditorBase sqlEditor = (SQLEditorBase)editor;
+                        SQLEditorBase sqlEditor = (SQLEditorBase) editor;
                         IFile editorFile = editor.getEditorInput().getAdapter(IFile.class);
                         if (editorFile.equals(file)) {
                             affectedPrefs.add(sqlEditor.getActivePreferenceStore());
@@ -101,7 +126,7 @@ public class ScriptEditorPropertyPage extends PropertyPage {
                 }
             }
         }
-        for (DBPPreferenceStore prefs: affectedPrefs) {
+        for (DBPPreferenceStore prefs : affectedPrefs) {
             notifyPrefs(prefs, newServicesEnabled);
         }
 
@@ -136,20 +161,4 @@ public class ScriptEditorPropertyPage extends PropertyPage {
             newServicesEnabled && markWordForSelectionEnabled
         );
     }
-    
-    protected void performDefaults() {
-        super.performDefaults();
-        chkDisableEditorSvcs.setSelection(false);
-    }
-    
-    public boolean performOk() {
-        try {
-            setDisableEditorServicesProp(getCurrentFile(), chkDisableEditorSvcs.getSelection());
-        } catch (CoreException e) {
-            log.debug(e.getMessage(), e);
-            return false;
-        }
-        return true;
-    }
-
 }

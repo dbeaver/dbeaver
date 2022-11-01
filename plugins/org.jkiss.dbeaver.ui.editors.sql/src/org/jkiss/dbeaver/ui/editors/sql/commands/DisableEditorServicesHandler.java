@@ -33,7 +33,7 @@ import java.util.Map;
 
 public class DisableEditorServicesHandler extends AbstractHandler implements IElementUpdater {
     
-    public final static String COMMAND_ID  = "org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices";
+    public static final String COMMAND_ID  = "org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices";
 
     @Nullable
     @Override

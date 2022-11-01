@@ -185,12 +185,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return false;
     }
 
+    /**
+     * Checks whether Disable SQL Editor services property is set
+     */
     public boolean isEditorServicesEnabled() {
         IEditorInput input = getEditorInput();
         IFile file = input == null ? null : input.getAdapter(IFile.class);
         return file == null ? true : !ScriptEditorPropertyPage.getDisableEditorServicesProp(file);
     }
 
+    /*
+     * Sets value to Disable SQL Editor services property
+     */
     public void setEditorServicesEnabled(boolean value) {
         IEditorInput input = getEditorInput();
         if (input != null) {
