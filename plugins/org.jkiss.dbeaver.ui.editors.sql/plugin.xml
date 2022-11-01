@@ -487,7 +487,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.search.web" class="org.jkiss.dbeaver.ui.editors.sql.commands.OpenLinkInWindowHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices" class="org.jkiss.dbeaver.ui.editors.sql.commands.TurnOffEditorServicesHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices" class="org.jkiss.dbeaver.ui.editors.sql.commands.DisableEditorServicesHandler">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.copy.query" class="org.jkiss.dbeaver.ui.editors.sql.commands.CopyActiveQueryHandler">
@@ -1047,9 +1047,6 @@
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.copy.query"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.search.web"/>
         </menuContribution>
-        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?before=group.copy">
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices" style="toggle" tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices.description"/>
-        </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=generate">
             <menu label="%menu.database.sql.generate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.png">
@@ -1272,4 +1269,14 @@
             <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
         </generator>
     </extension>
+    
+	<extension point="org.eclipse.ui.propertyPages">
+		<page class="org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptEditorPropertyPage" 
+              id="org.jkiss.dbeaver.ui.editors.sql.scripts.scriptEditorPropertyPage" 
+              name="%scriptEditorPropertyPage.name" nameFilter="*.sql">
+			<enabledWhen>
+				<adapt type="org.eclipse.core.resources.IFile" />
+			</enabledWhen>
+		</page>
+	</extension>
 </plugin>

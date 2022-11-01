@@ -68,6 +68,7 @@ import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
+import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptEditorPropertyPage;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
@@ -129,9 +130,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private SQLOccurrencesHighlighter occurrencesHighlighter;
     private SQLSymbolInserter sqlSymbolInserter;
 
-
-    private boolean editorServicesEnabled = true;
-
     private int lastQueryErrorPosition = -1;
 
     public SQLEditorBase() {
@@ -188,11 +186,23 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public boolean isEditorServicesEnabled() {
-        return editorServicesEnabled;
+        IEditorInput input = getEditorInput();
+        IFile file = input == null ? null : input.getAdapter(IFile.class);
+        return file == null ? true : !ScriptEditorPropertyPage.getDisableEditorServicesProp(file);
     }
 
     public void setEditorServicesEnabled(boolean value) {
-        this.editorServicesEnabled = value;
+        IEditorInput input = getEditorInput();
+        if (input != null) {
+            IFile file = input.getAdapter(IFile.class);
+            if (file != null) {
+                try {
+                    ScriptEditorPropertyPage.setDisableEditorServicesProp(file, !value);
+                } catch (CoreException e) {
+                    log.debug(e);
+                }
+            }
+        }
     }
 
     static boolean isReadEmbeddedBinding() {
