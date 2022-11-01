@@ -1037,7 +1037,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 }
                 if (state == InlineState.MATCHED) {
                     prevTokenWasMatchAttempt = true;
-                    final boolean fullMatch = CommonUtils.isEmpty(tableAlias) || tableAlias.equals(matchedTableAlias);
+                    final boolean fullMatch = CommonUtils.isEmpty(tableAlias) || tableAlias.equalsIgnoreCase(matchedTableAlias);
                     final boolean partialMatch = fullMatch || (allowPartialMatch && CommonUtils.startsWithIgnoreCase(matchedTableAlias, tableAlias));
                     if (!fullMatch && !partialMatch) {
                         // The presented alias does not fully or partially match the matched token, reset
