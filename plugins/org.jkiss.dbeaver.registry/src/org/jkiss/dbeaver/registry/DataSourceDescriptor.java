@@ -1799,6 +1799,9 @@ public class DataSourceDescriptor
      */
     @Nullable
     private String saveToSecret() {
+        if (isSharedCredentials()) {
+            return null;
+        }
         Map<String, Object> props = new LinkedHashMap<>();
 
         // Primary props

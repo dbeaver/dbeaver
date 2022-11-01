@@ -540,6 +540,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             if (!((DataSourceDescriptor) dataSource).isDetached()) {
                 persistDataSourceUpdate(dataSource);
             }
+            DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
+            descriptor.persistSecretIfNeeded(true);
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
     }
