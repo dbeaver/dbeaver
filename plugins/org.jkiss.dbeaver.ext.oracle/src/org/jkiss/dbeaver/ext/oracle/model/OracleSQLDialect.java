@@ -504,8 +504,10 @@ public class OracleSQLDialect extends JDBCSQLDialect implements SQLDataTypeConve
                 if (precision == 0 || precision > OracleConstants.NUMERIC_MAX_PRECISION) {
                     precision = OracleConstants.NUMERIC_MAX_PRECISION;
                 }
-                if (scale != null && precision > 0) {
-                    return "(" + precision + ',' + scale + ")";
+                if (scale != null || precision > 0) {
+                    // 38 - is default precision value. And we can not add scale here.
+                    // It will be changed to 0 automatically after table creation from the Oracle side.
+                    return "(" + (precision > 0 ? precision : "38") + (scale != null ? "," + scale : "") +  ")";
                 }
                 break;
             case OracleConstants.TYPE_INTERVAL_DAY_SECOND:

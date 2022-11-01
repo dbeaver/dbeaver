@@ -72,6 +72,7 @@ public interface DBPApplication {
     /**
      * Default project name, e.g. 'General'.
      */
+    @Nullable
     String getDefaultProjectName();
 
     @Nullable

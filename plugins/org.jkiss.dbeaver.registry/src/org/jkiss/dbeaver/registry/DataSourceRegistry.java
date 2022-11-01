@@ -812,14 +812,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 final IProjectDescription description = eclipseProject.getDescription();
                 if (description != null) {
                     String[] natureIds = description.getNatureIds();
-                    if (dataSources.isEmpty()) {
-                        // Remove nature
-                        if (ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
-                            description.setNatureIds(ArrayUtils.remove(String.class, natureIds, DBeaverNature.NATURE_ID));
-                            eclipseProject.setDescription(description, new NullProgressMonitor());
-                        }
-
-                    } else {
+                    if (!dataSources.isEmpty()) {
                         // Add nature
                         if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
                             description.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));
