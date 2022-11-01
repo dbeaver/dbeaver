@@ -558,21 +558,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         final Path homeDir = Path.of(defaultHomePath);
         try {
             if (!Files.exists(homeDir) || Files.list(homeDir).count() == 0) {
-                Path previousVersionWorkspaceDir = null;
-                for (String oldDir : WORKSPACE_DIR_PREVIOUS) {
-                    oldDir = GeneralUtils.replaceSystemPropertyVariables(oldDir);
-                    final Path oldWorkspaceDir = Path.of(oldDir);
-                    if (Files.exists(oldWorkspaceDir) &&
-                        Files.exists(GeneralUtils.getMetadataFolder(oldWorkspaceDir))) {
-                        previousVersionWorkspaceDir = oldWorkspaceDir;
-                        break;
-                    }
-                }
-                if (previousVersionWorkspaceDir != null) {
-                    DBeaverSettingsImporter importer = new DBeaverSettingsImporter(this, getDisplay());
-                    if (!importer.migrateFromPreviousVersion(previousVersionWorkspaceDir.toFile(), homeDir.toFile())) {
-                        return false;
-                    }
+                if (!tryMigrateFromPreviousVersion(homeDir)) {
+                    return false;
                 }
             }
         } catch (Throwable e) {
@@ -623,6 +610,26 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
 
+        return true;
+    }
+
+    protected boolean tryMigrateFromPreviousVersion(Path homeDir) {
+        Path previousVersionWorkspaceDir = null;
+        for (String oldDir : WORKSPACE_DIR_PREVIOUS) {
+            oldDir = GeneralUtils.replaceSystemPropertyVariables(oldDir);
+            final Path oldWorkspaceDir = Path.of(oldDir);
+            if (Files.exists(oldWorkspaceDir) &&
+                Files.exists(GeneralUtils.getMetadataFolder(oldWorkspaceDir))) {
+                previousVersionWorkspaceDir = oldWorkspaceDir;
+                break;
+            }
+        }
+        if (previousVersionWorkspaceDir != null) {
+            DBeaverSettingsImporter importer = new DBeaverSettingsImporter(this, getDisplay());
+            if (!importer.migrateFromPreviousVersion(previousVersionWorkspaceDir.toFile(), homeDir.toFile())) {
+                return false;
+            }
+        }
         return true;
     }
 

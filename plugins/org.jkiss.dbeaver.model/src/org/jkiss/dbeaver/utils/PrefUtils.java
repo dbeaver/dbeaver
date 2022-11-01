@@ -18,12 +18,17 @@
 package org.jkiss.dbeaver.utils;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 /**
  * Preferences utilities
@@ -123,5 +128,17 @@ public class PrefUtils {
         } else {
             store.setDefault(propName, value.toString());
         }
+    }
+
+    /**
+     * Builds string of drivers with single connection option
+     */
+    public static String collectSingleConnectionDrivers() {
+        return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getDataSourceProviders().stream()
+            .flatMap(pr -> pr.getDrivers().stream())
+            .filter(DBPDriver::isSingleConnection)
+            .sorted(Comparator.comparing(DBPNamedObject::getName))
+            .map(d -> " - " + d.getName())
+            .collect(Collectors.joining("\n"));
     }
 }

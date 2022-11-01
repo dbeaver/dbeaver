@@ -65,8 +65,10 @@ public class AcceptLicenseDialog extends Dialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.YES_LABEL, true);
-        if (!viewMode) {
+        if (viewMode) {
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+        } else {
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.YES_LABEL, true);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.NO_LABEL, false);
         }
     }

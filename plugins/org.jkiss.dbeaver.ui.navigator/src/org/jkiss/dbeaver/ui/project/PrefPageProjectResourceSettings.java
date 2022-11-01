@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -67,7 +68,7 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
     private TableEditor handlerTableEditor;
 
     public PrefPageProjectResourceSettings() {
-        setDescription("DBeaver project resources/folders settings");
+        setDescription(UINavigatorMessages.pref_page_project_resource_settings_description);
     }
 
     @Override
@@ -77,6 +78,8 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
+        boolean isReadOnly = DBWorkbench.isDistributed();
+
         Composite composite = UIUtils.createComposite(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -99,66 +102,70 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
             handlerTableEditor.horizontalAlignment = SWT.RIGHT;
             handlerTableEditor.grabHorizontal = true;
             handlerTableEditor.grabVertical = true;
-            resourceTable.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseUp(MouseEvent e) {
-                    disposeOldEditor();
 
-                    final TableItem item = resourceTable.getItem(new Point(0, e.y));
-                    if (item == null) {
-                        return;
-                    }
-                    int columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
-                    if (columnIndex <= 0) {
-                        return;
-                    }
-                    if (columnIndex == 1) {
-                        final String resourcePath = item.getText(1);
-                        if (project != null) {
-                            final IFolder folder = project.getFolder(resourcePath);
-                            ContainerSelectionDialog dialog = new ContainerSelectionDialog(resourceTable.getShell(), folder, true, UINavigatorMessages.pref_page_projects_settings_label_select + item.getText(0) + UINavigatorMessages.pref_page_projects_settings_label_root_folder);
-                            dialog.showClosedProjects(false);
-                            dialog.setValidator(selection -> {
-                                if (selection instanceof IPath) {
-                                    IPath path = (IPath) selection;
-                                    if (CommonUtils.isEmptyTrimmed(convertToString(path))) {
-                                        return UINavigatorMessages.pref_page_projects_settings_label_not_use_project_root;
+            if (!isReadOnly) {
+                resourceTable.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseUp(MouseEvent e) {
+                        disposeOldEditor();
+
+                        final TableItem item = resourceTable.getItem(new Point(0, e.y));
+                        if (item == null) {
+                            return;
+                        }
+                        int columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
+                        if (columnIndex <= 0) {
+                            return;
+                        }
+                        if (columnIndex == 1) {
+                            final String resourcePath = item.getText(1);
+                            if (project != null) {
+                                final IFolder folder = project.getFolder(resourcePath);
+                                ContainerSelectionDialog dialog = new ContainerSelectionDialog(resourceTable.getShell(), folder, true, UINavigatorMessages.pref_page_projects_settings_label_select + item.getText(0) + UINavigatorMessages.pref_page_projects_settings_label_root_folder);
+                                dialog.showClosedProjects(false);
+                                dialog.setValidator(selection -> {
+                                    if (selection instanceof IPath) {
+                                        IPath path = (IPath) selection;
+                                        if (CommonUtils.isEmptyTrimmed(convertToString(path))) {
+                                            return UINavigatorMessages.pref_page_projects_settings_label_not_use_project_root;
+                                        }
+                                        final File file = path.toFile();
+                                        if (file.isHidden() || file.getName().startsWith(".")) {
+                                            return UINavigatorMessages.pref_page_projects_settings_label_not_use_hidden_folders;
+                                        }
+                                        final String[] segments = ((IPath) selection).segments();
+                                        if (!project.getName().equals(segments[0])) {
+                                            return UINavigatorMessages.pref_page_projects_settings_label_not_store_resources_in_another_project;
+                                        }
                                     }
-                                    final File file = path.toFile();
-                                    if (file.isHidden() || file.getName().startsWith(".")) {
-                                        return UINavigatorMessages.pref_page_projects_settings_label_not_use_hidden_folders;
-                                    }
-                                    final String[] segments = ((IPath) selection).segments();
-                                    if (!project.getName().equals(segments[0])) {
-                                        return UINavigatorMessages.pref_page_projects_settings_label_not_store_resources_in_another_project;
+                                    return null;
+                                });
+                                if (dialog.open() == IDialogConstants.OK_ID) {
+                                    final Object[] result = dialog.getResult();
+                                    if (result.length == 1 && result[0] instanceof IPath) {
+                                        item.setText(1, convertToString((IPath) result[0]));
                                     }
                                 }
-                                return null;
-                            });
-                            if (dialog.open() == IDialogConstants.OK_ID) {
-                                final Object[] result = dialog.getResult();
-                                if (result.length == 1 && result[0] instanceof IPath) {
-                                    item.setText(1, convertToString((IPath) result[0]));
-                                }
+                            } else {
+                                final Text editor = new Text(resourceTable, SWT.NONE);
+                                editor.setText(resourcePath);
+                                editor.selectAll();
+                                handlerTableEditor.setEditor(editor, item, 1);
+                                editor.setFocus();
+                                editor.addFocusListener(new FocusAdapter() {
+                                    @Override
+                                    public void focusLost(FocusEvent e) {
+                                        item.setText(1, editor.getText());
+                                    }
+                                });
                             }
-                        } else {
-                            final Text editor = new Text(resourceTable, SWT.NONE);
-                            editor.setText(resourcePath);
-                            editor.selectAll();
-                            handlerTableEditor.setEditor(editor, item, 1);
-                            editor.setFocus();
-                            editor.addFocusListener(new FocusAdapter() {
-                                @Override
-                                public void focusLost(FocusEvent e) {
-                                    item.setText(1, editor.getText());
-                                }
-                            });
                         }
                     }
-                }
-            });
+                });
 
-            UIUtils.createInfoLabel(composite, UINavigatorMessages.pref_page_projects_settings_label_restart_require_refresh_global_settings);
+                UIUtils.createInfoLabel(composite, UINavigatorMessages.pref_page_projects_settings_label_restart_require_refresh_global_settings);
+            }
+
         }
 
         performDefaults();

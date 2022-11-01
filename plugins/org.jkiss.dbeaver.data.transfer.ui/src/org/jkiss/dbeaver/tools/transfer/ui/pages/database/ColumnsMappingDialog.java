@@ -118,7 +118,7 @@ class ColumnsMappingDialog extends DialogPage {
                         DatabaseMappingAttribute attribute = (DatabaseMappingAttribute) item.getData();
                         attribute.setMappingType(DatabaseMappingType.existing);
                         try {
-                            attribute.updateMappingType(new VoidProgressMonitor(), false);
+                            attribute.updateMappingType(new VoidProgressMonitor(), false, false);
                         } catch (DBException e1) {
                             DBWorkbench.getPlatformUI().showError("Bad mapping", "Invalid column mapping", e1);
                         }

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.meta.DBSerializable;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
@@ -38,12 +40,18 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.serialize.DBPObjectSerializer;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferEventProcessor;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.BlobFileConflictBehavior;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.ConsumerRuntimeParameters;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.DataFileConflictBehavior;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -113,6 +121,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private IStreamDataExporter processor;
     private StreamConsumerSettings settings;
+    private ConsumerRuntimeParameters runtimeParameters;
     private DBSDataContainer dataContainer;
 
     private OutputStream outputStream;
@@ -135,7 +144,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private final List<File> outputFiles = new ArrayList<>();
     private StatOutputStream statStream;
-
+    
     public StreamTransferConsumer() {
     }
 
@@ -261,6 +270,46 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public void close() {
         columnBindings = null;
     }
+    
+    private boolean resolveOverwriteBlobFileConflict(@NotNull String fileName) {
+        BlobFileConflictBehavior behavior = runtimeParameters.blobFileConflictBehavior;
+    
+        if (behavior == BlobFileConflictBehavior.ASK) {
+            List<String> forAllLabels = settings.isUseSingleFile()
+                ? List.of(DTMessages.data_transfer_file_conflict_behavior_apply_to_all)
+                : List.of(
+                    DTMessages.data_transfer_file_conflict_behavior_apply_to_all,
+                    DTMessages.data_transfer_file_conflict_behavior_apply_to_all_for_current_object
+                );
+            UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
+                DTMessages.data_transfer_blob_file_conflict_title, NLS.bind(DTMessages.data_transfer_file_conflict_ask_message, fileName),
+                List.of(
+                    BlobFileConflictBehavior.PATCHNAME.title,
+                    BlobFileConflictBehavior.OVERWRITE.title,
+                    DTMessages.data_transfer_file_conflict_cancel
+                ),
+                forAllLabels, runtimeParameters.blobFileConflictPreviousChoice
+            );
+            if (response.choiceIndex < 0) {
+                throw new RuntimeException("Blob file name conflict behavior is not specified while " + fileName + " already exists");
+            }
+            if (response.choiceIndex > 1) {
+                throw new RuntimeException("User cancel during existing file resolution for blob " + fileName);
+            }
+            behavior = new BlobFileConflictBehavior[] {
+                BlobFileConflictBehavior.PATCHNAME,
+                BlobFileConflictBehavior.OVERWRITE
+            }[response.choiceIndex];
+            
+            runtimeParameters.blobFileConflictPreviousChoice = response.choiceIndex;
+            if (response.forAllChoiceIndex != null) {
+                runtimeParameters.blobFileConflictBehavior = behavior;
+                runtimeParameters.dontDropBlobFileConflictBehavior = response.forAllChoiceIndex == 0;
+            }
+        }
+        
+        return behavior == BlobFileConflictBehavior.OVERWRITE;
+    }
 
     private File saveContentToFile(DBRProgressMonitor monitor, DBDContent content)
         throws IOException, DBCException {
@@ -279,11 +328,36 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         lobCount++;
         Boolean extractImages = (Boolean) processorProperties.get(StreamConsumerSettings.PROP_EXTRACT_IMAGES);
         String fileExt = (extractImages != null && extractImages) ? ".jpg" : ".data";
-        File lobFile = new File(lobDirectory, outputFile.getName() + "-" + lobCount + fileExt); //$NON-NLS-1$ //$NON-NLS-2$
+        File lobFile = makeLobFileName(null, fileExt);
+        if (lobFile.isFile()) {
+            if (!resolveOverwriteBlobFileConflict(lobFile.getName())) {
+                lobFile = makeLobFileName("-" + System.currentTimeMillis(), fileExt);
+                // I believe that we can't generate two System.currentTimeMillis() in the same time,
+                // but if it accidentally happen, let's just wait and generate it again
+                while (lobFile.isFile()) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        // ignore
+                    }
+                    lobFile = makeLobFileName("-" + System.currentTimeMillis(), fileExt);
+                }
+            }
+        }
+        
         try (InputStream cs = contents.getContentStream()) {
             ContentUtils.saveContentToFile(cs, lobFile, monitor);
         }
+
         return lobFile;
+    }
+    
+    private File makeLobFileName(String suffix, String fileExt) {
+        String name = outputFile.getName() + "-" + lobCount;
+        if (CommonUtils.isNotEmpty(suffix)) {
+            name += suffix;
+        }
+        return new File(lobDirectory, name + fileExt); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     private void initExporter(DBCSession session) throws DBCException {
@@ -302,7 +376,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             outputFile = null;
         }
 
-        if (processor instanceof IAppendableDataExporter && (settings.isAppendToFileEnd() || (settings.isUseSingleFile() && parameters.orderNumber > 0))) {
+        if (processor instanceof IAppendableDataExporter && (settings.getDataFileConflictBehavior() == DataFileConflictBehavior.APPEND
+            || (settings.isUseSingleFile() && parameters.orderNumber > 0))
+        ) {
             try {
                 ((IAppendableDataExporter) processor).importData(exportSite);
             } catch (DBException e) {
@@ -350,14 +426,82 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
         closeOutputStreams();
     }
-
+    
+    private DataFileConflictBehavior getDataFileConflictBehavior(String fileName) {
+        DataFileConflictBehavior behavior = runtimeParameters.dataFileConflictBehavior;
+        
+        if (behavior == DataFileConflictBehavior.ASK) {
+            List<String> forAllLabels = settings.isUseSingleFile()
+                ? List.of()
+                : List.of(DTMessages.data_transfer_file_conflict_behavior_apply_to_all);
+            UserChoiceResponse response = DBWorkbench.getPlatformUI().showUserChoice(
+                DTMessages.data_transfer_file_conflict_ask_title, NLS.bind(DTMessages.data_transfer_file_conflict_ask_message, fileName),
+                Arrays.asList(
+                    processor instanceof IAppendableDataExporter ? DataFileConflictBehavior.APPEND.title : null,
+                    DataFileConflictBehavior.PATCHNAME.title,
+                    DataFileConflictBehavior.OVERWRITE.title,
+                    DTMessages.data_transfer_file_conflict_cancel
+                ),
+                forAllLabels, runtimeParameters.dataFileConflictPreviousChoice
+            );
+            if (response.choiceIndex > 2) {
+                throw new RuntimeException("User cancel during existing file resolution for data " + fileName);
+            }
+            if (response.choiceIndex < 0) {
+                throw new RuntimeException("Data file name conflict behavior is not specified while " + fileName + " already exists");
+            }
+            behavior = new DataFileConflictBehavior[] {
+                DataFileConflictBehavior.APPEND,
+                DataFileConflictBehavior.PATCHNAME,
+                DataFileConflictBehavior.OVERWRITE
+            }[response.choiceIndex];
+            
+            runtimeParameters.dataFileConflictPreviousChoice = response.choiceIndex;
+            if (response.forAllChoiceIndex != null || settings.isUseSingleFile()) {
+                runtimeParameters.dataFileConflictBehavior = behavior;
+            }
+        }
+        
+        if ((behavior == DataFileConflictBehavior.OVERWRITE || behavior == DataFileConflictBehavior.PATCHNAME) && 
+            settings.isUseSingleFile() && parameters.orderNumber == 0) {
+            return behavior;
+        } else if ((behavior == DataFileConflictBehavior.APPEND || settings.isUseSingleFile()) &&
+            processor instanceof IAppendableDataExporter &&  !((IAppendableDataExporter) processor).shouldTruncateOutputFileBeforeExport()) {
+            return DataFileConflictBehavior.APPEND;
+        } else {
+            return DataFileConflictBehavior.OVERWRITE;
+        }
+    }
+    
     private void openOutputStreams() throws IOException {
         final boolean truncate;
-
-        if (!settings.isAppendToFileEnd() && settings.isUseSingleFile() && parameters.orderNumber == 0) {
-            truncate = true;
-        } else if (processor instanceof IAppendableDataExporter && (settings.isAppendToFileEnd() || settings.isUseSingleFile())) {
-            truncate = ((IAppendableDataExporter) processor).shouldTruncateOutputFileBeforeExport();
+        
+        if (outputFile.isFile()) {
+            DataFileConflictBehavior behavior = getDataFileConflictBehavior(outputFile.getName());
+            switch (behavior) {
+                case APPEND:
+                    truncate = false;
+                    break;
+                case PATCHNAME:
+                    truncate = false;
+                    outputFile = makeOutputFile("-" + System.currentTimeMillis());
+                    // I believe that we can't generate two System.currentTimeMillis() in the same time,
+                    // but if it accidentally happen, let's just wait and generate it again
+                    while (outputFile.isFile()) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ex) {
+                            // ignore
+                        }
+                        outputFile = makeOutputFile("-" + System.currentTimeMillis());
+                    }
+                    break;
+                case OVERWRITE:
+                    truncate = true;
+                    break;
+                default:
+                    throw new RuntimeException("Unexpected data file conflict behavior " + behavior);
+            }
         } else {
             truncate = true;
         }
@@ -435,12 +579,33 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, TransferParameters parameters, IStreamDataExporter processor, Map<String, Object> processorProperties) {
+    public void initTransfer(
+        @NotNull DBSObject sourceObject,
+        @NotNull StreamConsumerSettings settings,
+        @NotNull TransferParameters parameters,
+        @NotNull IStreamDataExporter processor,
+        @NotNull Map<String, Object> processorProperties
+    ) {
         this.dataContainer = (DBSDataContainer) sourceObject;
         this.parameters = parameters;
         this.processor = processor;
         this.settings = settings;
         this.processorProperties = processorProperties;
+        
+        if (runtimeParameters == null) {
+            runtimeParameters = settings.prepareRuntimeParameters();
+        } else {
+            runtimeParameters.initForConsumer();
+        }
+    }
+    
+    @Override
+    public void setRuntimeParameters(Object runtimeParameters) {
+        if (runtimeParameters instanceof ConsumerRuntimeParameters) {
+            this.runtimeParameters = (ConsumerRuntimeParameters) runtimeParameters;
+        } else {
+            throw new IllegalStateException("Unsupported stream transfer consumer runtime parameters " + runtimeParameters);
+        }
     }
 
     @Override
@@ -532,17 +697,24 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return outputFiles;
     }
 
+    @NotNull
     public String getOutputFileName() {
+        return getOutputFileName(null);
+    }
+    
+    @NotNull
+    private String getOutputFileName(@Nullable String suffix) {
         Object extension = processorProperties == null ? null : processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
-        String fileName = translatePattern(
-            settings.getOutputFilePattern(),
-            null).trim();
+        String fileName = translatePattern(settings.getOutputFilePattern(), null).trim();
         // Can't rememeber why did we need this. It breaks file names in case of multiple tables export (#6911)
-//        if (parameters.orderNumber > 0 && !settings.isUseSingleFile()) {
-//            fileName += "_" + String.valueOf(parameters.orderNumber + 1);
-//        }
+        // if (parameters.orderNumber > 0 && !settings.isUseSingleFile()) {
+        //    fileName += "_" + String.valueOf(parameters.orderNumber + 1);
+        //}
         if (multiFileNumber > 0) {
             fileName += "_" + (multiFileNumber + 1);
+        }
+        if (CommonUtils.isNotEmpty(suffix)) {
+            fileName += suffix;
         }
         if (extension != null) {
             return fileName + "." + extension;
@@ -551,12 +723,29 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
     }
 
+    @NotNull
     public File makeOutputFile() {
-        File dir = new File(getOutputFolder());
+        return makeOutputFile(null);
+    }
+    
+    @NotNull
+    private File makeOutputFile(@Nullable String suffix) {
+        final File file = makeOutputFile(suffix, getOutputFolder());
+
+        try (FileOutputStream ignored = new FileOutputStream(file)) {
+            return file;
+        } catch (IOException e) {
+            return makeOutputFile(suffix, getFallbackOutputFolder());
+        }
+    }
+
+    @NotNull
+    private File makeOutputFile(@Nullable String suffix, @NotNull String outputFolder) {
+        File dir = new File(outputFolder);
         if (!dir.exists() && !dir.mkdirs()) {
             log.error("Can't create output directory '" + dir.getAbsolutePath() + "'");
         }
-        String fileName = getOutputFileName();
+        String fileName = getOutputFileName(suffix);
         if (settings.isCompressResults()) {
             fileName += ".zip";
         }
@@ -726,6 +915,18 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @NotNull
     public StreamConsumerSettings getSettings() {
         return settings;
+    }
+
+    @NotNull
+    private static String getFallbackOutputFolder() {
+        final DBPPreferenceStore prefs = DTActivator.getDefault().getPreferences();
+        final String value = prefs.getString(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY);
+
+        if (CommonUtils.isEmpty(value)) {
+            return DTConstants.DEFAULT_FALLBACK_OUTPUT_DIRECTORY;
+        } else {
+            return value;
+        }
     }
 
     private class StreamExportSite implements IStreamDataExporterSite {

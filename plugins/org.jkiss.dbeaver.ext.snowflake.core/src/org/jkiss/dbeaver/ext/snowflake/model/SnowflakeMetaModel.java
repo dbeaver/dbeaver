@@ -63,7 +63,8 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
         boolean isView = sourceObject.isView();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Snowflake object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT GET_DDL('" + (isView ? "VIEW" : "TABLE") + "', '" + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + "') "))
+                    "SELECT GET_DDL('" + (isView ? "VIEW" : "TABLE") + "', '" +
+                        sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + "', TRUE) "))
             {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
@@ -97,7 +98,8 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
         boolean isFunction = sourceObject.getProcedureType() == DBSProcedureType.FUNCTION;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Snowflake object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT GET_DDL('"  + sourceObject.getProcedureType() + "', '" + sourceObject.getProcedureSignature(monitor, false) + "')"))
+                "SELECT GET_DDL('"  + sourceObject.getProcedureType() + "', '" +
+                    sourceObject.getProcedureSignature(monitor, false) + "', TRUE)"))
             {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();

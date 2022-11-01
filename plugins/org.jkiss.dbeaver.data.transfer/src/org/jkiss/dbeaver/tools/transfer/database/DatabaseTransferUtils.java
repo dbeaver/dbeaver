@@ -107,7 +107,7 @@ public class DatabaseTransferUtils {
             if (updateMappingAttributes || force) {
                 for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
                     if (attr.getMappingType() == DatabaseMappingType.create || (attr.getMappingType().isValid() && force)) {
-                        attr.updateMappingType(monitor, false);
+                        attr.updateMappingType(monitor, false, false);
                         if (attr.getTarget() == null) {
                             log.debug("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
                         }

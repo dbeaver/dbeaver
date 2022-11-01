@@ -58,6 +58,9 @@ public class QueryLogCommandHandler extends AbstractHandler {
             case IWorkbenchCommandConstants.EDIT_COPY:
                 logViewer.copySelectionToClipboard(false);
                 return null;
+            case IWorkbenchCommandConstants.EDIT_DELETE:
+                logViewer.deleteSelectedItems();
+                return null;
             case IActionConstants.CMD_COPY_SPECIAL:
                 logViewer.copySelectionToClipboard(true);
                 return null;

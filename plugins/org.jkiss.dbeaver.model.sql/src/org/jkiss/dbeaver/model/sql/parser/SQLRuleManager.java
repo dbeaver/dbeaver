@@ -217,6 +217,11 @@ public class SQLRuleManager {
         }
 
         if (!minimalRules) {
+            // Parameter rule
+            for (String npPrefix : syntaxManager.getNamedParameterPrefixes()) {
+                rules.add(new ScriptParameterRule(syntaxManager, parameterToken, npPrefix));
+            }
+            
             // Add word rule for keywords, functions, types, and constants.
             SQLWordRule wordRule = new SQLWordRule(delimRule, typeToken, otherToken, dialect);
             for (String reservedWord : dialect.getReservedWords()) {
@@ -253,11 +258,6 @@ public class SQLRuleManager {
                 }
             }
             rules.add(wordRule);
-
-            // Parameter rule
-            for (String npPrefix : syntaxManager.getNamedParameterPrefixes()) {
-                rules.add(new ScriptParameterRule(syntaxManager, parameterToken, npPrefix));
-            }
         }
 
         if (ruleProvider != null) {
