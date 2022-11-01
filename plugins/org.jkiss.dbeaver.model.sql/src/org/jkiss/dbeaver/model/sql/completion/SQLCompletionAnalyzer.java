@@ -794,7 +794,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         // There could be multiple selected objects on different hierarchy levels (e.g. PG)
         DBSObjectContainer[] selectedContainers;
         {
-            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(monitor, executionContext);
+            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(executionContext);
             selectedContainers = new DBSObjectContainer[selectedObjects.length];
             for (int i = 0; i < selectedObjects.length; i++) {
                 selectedContainers[i] = DBUtils.getAdapter(DBSObjectContainer.class, selectedObjects[i]);
