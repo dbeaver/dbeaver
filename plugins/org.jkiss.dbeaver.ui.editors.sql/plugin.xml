@@ -1270,13 +1270,14 @@
         </generator>
     </extension>
     
-	<extension point="org.eclipse.ui.propertyPages">
-		<page class="org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptEditorPropertyPage" 
-              id="org.jkiss.dbeaver.ui.editors.sql.scripts.scriptEditorPropertyPage" 
-              name="%scriptEditorPropertyPage.name" nameFilter="*.sql">
-			<enabledWhen>
-				<adapt type="org.eclipse.core.resources.IFile" />
-			</enabledWhen>
-		</page>
-	</extension>
+    <extension point="org.eclipse.ui.propertyPages">
+        <page
+            class="org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptEditorPropertyPage" 
+            id="org.jkiss.dbeaver.ui.editors.sql.scripts.scriptEditorPropertyPage" 
+            name="%scriptEditorPropertyPage.name" nameFilter="*.sql">
+            <enabledWhen>
+                <adapt type="org.eclipse.core.resources.IFile"/>
+            </enabledWhen>
+        </page>
+    </extension>
 </plugin>

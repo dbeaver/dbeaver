@@ -33,7 +33,7 @@ import java.util.Map;
 
 public class DisableEditorServicesHandler extends AbstractHandler implements IElementUpdater {
     
-    public static final String COMMAND_ID  = "org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices";
+    public static final String COMMAND_ID = "org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices";
 
     @Nullable
     @Override
@@ -41,8 +41,7 @@ public class DisableEditorServicesHandler extends AbstractHandler implements IEl
         final SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
 
         if (editor != null && editor.getDocument() != null) {
-            final boolean servicesEnabled = editor.isEditorServicesEnabled();
-            editor.setEditorServicesEnabled(!servicesEnabled);
+            editor.setEditorServicesEnabled(!editor.isEditorServicesEnabled());
         }
         return null;
     }
