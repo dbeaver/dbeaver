@@ -42,6 +42,15 @@ public class SnowflakeDataSource extends GenericDataSource {
     {
         super(monitor, container, metaModel, new SnowflakeSQLDialect());
     }
+    
+    public SnowflakeDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull SnowflakeMetaModel metaModel,
+        @NotNull SnowflakeSQLDialect dialect
+    ) throws DBException {
+        super(monitor, container, metaModel, dialect);
+    }
 
     @Override
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) {
