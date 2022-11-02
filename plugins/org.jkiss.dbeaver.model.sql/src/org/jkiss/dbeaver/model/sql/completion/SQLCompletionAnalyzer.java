@@ -939,7 +939,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         MATCHED
     };
 
-    @Nullable
+    @NotNull
     private List<Pair<String, String>> extractTableNames(@Nullable String tableAlias, boolean allowPartialMatch) {
         final SQLScriptElement activeQuery = request.getActiveQuery();
         if (activeQuery == null) {
@@ -1317,7 +1317,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             if (aliases.contains(s) || sqlDialect.getKeywordType(s) != null) {
                                 return true;
                             }
-                            return extractTableNames(s, false).isEmpty();
+                            return !extractTableNames(s, false).isEmpty();
                         });
                         if (alias.equalsIgnoreCase(object.getName())) {
                             // Don't use alias, when it's identical to entity name
