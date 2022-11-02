@@ -184,7 +184,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         filterPreferencePages();
         filterWizards();
 
-        startVersionChecker();
+        if (!application.isDistributed()) {
+            startVersionChecker();
+        }
     }
 
     @Override

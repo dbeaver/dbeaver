@@ -14,23 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer;
 
-import org.jkiss.utils.StandardConstants;
+package org.jkiss.dbeaver.registry;
 
 /**
- * DataTransfer constants
+ * DBConnectionConstants
  */
-public class DTConstants {
+public class DBConnectionConstants {
 
-    public static final String TASK_IMPORT = "dataImport";
-    public static final String TASK_EXPORT = "dataExport";
-
-    public static final String DEFAULT_TABLE_NAME_EXPORT = "export";
-
-    public static final String PREF_FALLBACK_OUTPUT_DIRECTORY = "fallbackOutputDirectory";
-    public static final String DEFAULT_FALLBACK_OUTPUT_DIRECTORY = System.getProperty(StandardConstants.ENV_TMP_DIR);
-
-    public static final String PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER = "database/data/transfer/advanced";
+    public static final String PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION = "database/administration/advanced";
 
 }
