@@ -665,7 +665,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 return;
             }
             final List<Pair<String, String>> names = extractTableNames(wordPart, true);
-            for (Pair<String, String> name: names) {
+            for (Pair<String, String> name : names) {
                 final String tableName = name.getFirst();
                 final String tableAlias = name.getSecond();
                 if (!hasProposal(proposals, tableName)) {
@@ -919,7 +919,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
 
         final List<Pair<String, String>> names = extractTableNames(token, false);
-        for (Pair<String, String> name: names) {
+        for (Pair<String, String> name : names) {
             if (name != null && CommonUtils.isNotEmpty(name.getFirst())) {
                 final String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
                 final String[] allNames = SQLUtils.splitFullIdentifier(name.getFirst(), catalogSeparator, quoteStrings, false);
@@ -979,7 +979,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
             while (true) {
                 final TPToken tok = scanner.nextToken();
-                if (tok.isEOF() || scanner.getOffset() >= request.getDocumentOffset()) {
+                if (tok.isEOF()) {
                     break;
                 }
                 if (!(tok instanceof TPTokenAbstract) || tok.isWhitespace()) {
@@ -1317,7 +1317,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                             if (aliases.contains(s) || sqlDialect.getKeywordType(s) != null) {
                                 return true;
                             }
-                            return extractTableNames(s, false).size() > 0;
+                            return extractTableNames(s, false).isEmpty();
                         });
                         if (alias.equalsIgnoreCase(object.getName())) {
                             // Don't use alias, when it's identical to entity name
