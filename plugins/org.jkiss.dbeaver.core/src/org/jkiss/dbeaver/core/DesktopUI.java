@@ -34,10 +34,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -647,7 +644,11 @@ public class DesktopUI implements DBPPlatformUI {
         Display currentDisplay = Display.getCurrent();
         if (currentDisplay != null) {
             if (!currentDisplay.readAndDispatch()) {
-                currentDisplay.sleep();
+                IWorkbench workbench = PlatformUI.getWorkbench();
+                if (!workbench.isStarting() && !workbench.isClosing()) {
+                    // Do not sleep during startup/shutdown because you may have no chance to get UI event anymore
+                    currentDisplay.sleep();
+                }
             }
             return true;
         } else {
