@@ -16,10 +16,16 @@
  */
 package org.jkiss.dbeaver.core;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.operation.ModalContext;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -74,6 +80,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -491,6 +499,99 @@ public class DesktopUI implements DBPPlatformUI {
         runnable.run(new VoidProgressMonitor());
     }
 
+    /**
+     * Execute runnable task synchronously while displaying job indeterminate indicator and blocking the UI, when called from the UI thread
+     */
+    @NotNull
+    @Override
+    public <T> Future<T> executeWithProgressBlocking(
+        @NotNull String operationDescription,
+        @NotNull DBRRunnableWithResult<Future<T>> runnable
+    ) {
+        final AbstractJob job = new AbstractJob(operationDescription) {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
+                try {
+                    runnable.run(monitor);
+                    return Status.OK_STATUS;
+                } catch (Exception ex) {
+                    return GeneralUtils.makeExceptionStatus(ex);
+                } finally {
+                    monitor.done();
+                }
+            }
+            
+            @Override
+            protected void canceling() {
+                runnable.cancel();
+            }
+        };
+        job.schedule();
+        
+        if (UIUtils.isUIThread()) {
+            Display display = UIUtils.getDisplay();
+            if (!display.isDisposed()) {
+                CompletableFuture<Boolean> shortWaitResult = new CompletableFuture<>();
+                Runnable modalShortWait = () -> {
+                    try {
+                        ModalContext.run(monitor -> { 
+                            try {
+                                shortWaitResult.complete(!job.join(getLongOperationTime(), new NullProgressMonitor()));
+                            } catch (Exception ex) {
+                                shortWaitResult.completeExceptionally(ex);
+                            }
+                        }, true, new NullProgressMonitor(), display);
+                    } catch (Exception ex) {
+                        shortWaitResult.completeExceptionally(ex);
+                    }
+                };
+
+                for (Shell shell : display.getShells()) {
+                    shell.setEnabled(false);
+                }
+                try {
+                    BusyIndicator.showWhile(display, modalShortWait);
+                } finally {
+                    for (Shell shell : display.getShells()) {
+                        shell.setEnabled(true);
+                    }
+                }
+                
+                try {
+                    if (shortWaitResult.get()) {
+                        ProgressMonitorDialog progress = new ProgressMonitorDialog(display.getActiveShell()) {
+                            @Override
+                            protected void cancelPressed() {
+                                job.cancel();
+                                super.cancelPressed();
+                            }  
+                        };
+                        
+                        progress.run(true, runnable != null, new IRunnableWithProgress() {
+                            @Override
+                            public void run(IProgressMonitor monitor) throws InterruptedException {
+                                monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
+                                job.join();
+                                monitor.done();
+                            }
+                        });
+                    }
+                } catch (Exception ex) {
+                    return CompletableFuture.failedFuture(ex);
+                }
+            }
+        }
+
+        try {
+            job.join();
+        } catch (InterruptedException ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
+        
+        return job.getResult().isOK() ? runnable.getResult() : CompletableFuture.failedFuture(job.getResult().getException());
+    }
+    
     @NotNull
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
@@ -550,6 +651,14 @@ public class DesktopUI implements DBPPlatformUI {
             return true;
         } else {
             return false;
+        }
+    }
+    
+    private static long getLongOperationTime() {
+        try {
+            return PlatformUI.getWorkbench().getProgressService().getLongOperationTime();
+        } catch (Exception ex) { // when workbench is not initialized yet during startup
+            return 800; // see org.eclipse.ui.internal.progress.ProgressManager.getLongOperationTime()
         }
     }
 
