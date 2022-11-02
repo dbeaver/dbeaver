@@ -775,7 +775,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
     }
 
-    private void makeDataSourceProposals(Map<String, Object> parameters) throws DBException {
+    private void makeDataSourceProposals(@NotNull Map<String, Object> parameters) throws DBException {
         DBPDataSource dataSource = request.getContext().getDataSource();
         final DBSObjectContainer rootContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         if (rootContainer == null) {
