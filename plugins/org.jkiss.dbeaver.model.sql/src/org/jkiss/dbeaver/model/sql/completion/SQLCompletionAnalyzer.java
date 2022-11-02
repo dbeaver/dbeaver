@@ -234,7 +234,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         rootObject = dataSource;
                     }
                     if (!(rootObject instanceof DBPDataSource)) {
-                        makeDataSourceProposals();
+                        makeDataSourceProposals(parameters);
                     }
                 }
                 if (!isInLiteral) {
@@ -303,7 +303,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 } else {
                     // Get root object or objects from active database (if any)
                     if (queryType != SQLCompletionRequest.QueryType.COLUMN && queryType != SQLCompletionRequest.QueryType.EXEC) {
-                        makeDataSourceProposals();
+                        makeDataSourceProposals(parameters);
                     }
                 }
             }
@@ -775,7 +775,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
     }
 
-    private void makeDataSourceProposals() throws DBException {
+    private void makeDataSourceProposals(@NotNull Map<String, Object> parameters) throws DBException {
         DBPDataSource dataSource = request.getContext().getDataSource();
         final DBSObjectContainer rootContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         if (rootContainer == null) {
@@ -865,10 +865,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
         if (lastToken == null) {
             // Get all children objects as proposals
-            makeProposalsFromChildren(childObject, null, false, Collections.emptyMap());
+            makeProposalsFromChildren(childObject, null, false, parameters);
         } else {
             // Get matched children
-            makeProposalsFromChildren(childObject, lastToken, false, Collections.emptyMap());
+            makeProposalsFromChildren(childObject, lastToken, false, parameters);
             if (tokens.length == 1) {
                 // Get children from selected object
             }
@@ -876,7 +876,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 // Try in active object
                 for (DBSObjectContainer selectedContainer : selectedContainers) {
                     if (selectedContainer != null && selectedContainer != childObject) {
-                        makeProposalsFromChildren(selectedContainer, lastToken, true, Collections.emptyMap());
+                        makeProposalsFromChildren(selectedContainer, lastToken, true, parameters);
                     }
                 }
 
@@ -890,7 +890,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         }
                     }
                     if (structureAssistant != null) {
-                        makeProposalsFromAssistant(structureAssistant, sc, null, lastToken, Collections.emptyMap());
+                        makeProposalsFromAssistant(structureAssistant, sc, null, lastToken, parameters);
                     }
                 }
             }
