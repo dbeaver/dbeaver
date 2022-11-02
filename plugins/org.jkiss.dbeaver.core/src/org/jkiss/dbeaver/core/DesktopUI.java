@@ -296,11 +296,12 @@ public class DesktopUI implements DBPPlatformUI {
     public UserChoiceResponse showUserChoice(
         @NotNull String title,
         @Nullable String message,
-        @NotNull List<String> choiceLabels,
+        @NotNull List<String> labels,
         @NotNull List<String> forAllLabels,
-        @Nullable Integer defaultChoice
+        @Nullable Integer previousChoice,
+        @NotNull int defaultChoice
     ) {
-        final List<Reply> reply = choiceLabels.stream()
+        final List<Reply> reply = labels.stream()
             .map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s))
             .collect(Collectors.toList());
 
@@ -314,8 +315,8 @@ public class DesktopUI implements DBPPlatformUI {
                     .setReplies(reply.stream().filter(Objects::nonNull).toArray(Reply[]::new))
                     .setPrimaryImage(DBIcon.STATUS_WARNING);
                 
-                if (defaultChoice != null && reply.get(defaultChoice) != null) {
-                    mbb.setDefaultReply(reply.get(defaultChoice));
+                if (previousChoice != null && reply.get(previousChoice) != null) {
+                    mbb.setDefaultReply(reply.get(previousChoice));
                 }
                 if (forAllLabels.size() > 0) {
                     mbb.setCustomArea(pp -> {

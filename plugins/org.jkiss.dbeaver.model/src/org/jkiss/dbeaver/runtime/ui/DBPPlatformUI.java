@@ -79,13 +79,25 @@ public interface DBPPlatformUI {
     void showWarningMessageBox(@NotNull final String title, @Nullable final String message);
     boolean confirmAction(String title, String message);
     boolean confirmAction(String title, String message, boolean isWarning);
+
+    /**
+     * Show user-choice dialog for a user to mandatory select one of the options described with the labels
+     * @param title Dialog window title
+     * @param message Dialog window content explaining the choice in question
+     * @param labels Options to choose of
+     * @param forAllLabels Options to remember the choice
+     * @param previousChoice Previous choice made by the user to be focused initially on dialog show
+     * @param defaultChoice Choice to use when the UI platform does not support dialogs
+     * @return Description of the choice made by the user
+     */
     @NotNull
     UserChoiceResponse showUserChoice(
         @NotNull final String title,
         @Nullable final String message,
         @NotNull List<String> labels,
         @NotNull List<String> forAllLabels,
-        @Nullable Integer defaultChoice
+        @Nullable Integer previousChoice,
+        @NotNull int defaultChoice
     );
 
     UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue);
