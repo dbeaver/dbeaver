@@ -943,7 +943,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     private List<Pair<String, String>> extractTableNames(@Nullable String tableAlias, boolean allowPartialMatch) {
         final SQLScriptElement activeQuery = request.getActiveQuery();
         if (activeQuery == null) {
-            return null;
+            return Collections.emptyList();
         }
         final IDocument document = request.getDocument();
         final SQLRuleManager ruleManager = request.getContext().getRuleManager();
