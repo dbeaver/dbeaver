@@ -104,9 +104,10 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         @Nullable final String message,
         @NotNull List<String> labels,
         @NotNull List<String> forAllLabels,
-        @Nullable Integer defaultChoice
+        @Nullable Integer previousChoice,
+        @NotNull int defaultChoice
     ) {
-        return new UserChoiceResponse(-1, null);
+        return new UserChoiceResponse(defaultChoice, null);
     }
 
     @Override
