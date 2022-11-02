@@ -35,7 +35,6 @@ public final class DBRFeature {
     private final String description;
     private final String helpURL;
     private final boolean isAbstract;
-    private final DBRNotificationDescriptor notificationDefaults;
     private final String commandId;
 
     private DBRFeature(@NotNull String id, @NotNull String name) {
@@ -45,7 +44,6 @@ public final class DBRFeature {
         this.description = null;
         this.helpURL = null;
         this.isAbstract = true;
-        this.notificationDefaults = null;
         this.commandId = null;
     }
 
@@ -55,7 +53,6 @@ public final class DBRFeature {
         String description,
         String helpURL,
         boolean isAbstract,
-        DBRNotificationDescriptor notificationDefaults,
         String commandId)
     {
         this.parentFeature = parentFeature;
@@ -63,12 +60,11 @@ public final class DBRFeature {
         this.description = description;
         this.helpURL = helpURL;
         this.isAbstract = isAbstract;
-        this.notificationDefaults = notificationDefaults;
         this.commandId = commandId;
     }
 
     private DBRFeature(@NotNull DBRFeature parentFeature, @NotNull String name) {
-        this(parentFeature, name, null, null, false, null, null);
+        this(parentFeature, name, null, null, false, null);
     }
 
     public static DBRFeature createCategory(@NotNull String name, String description) {
@@ -76,7 +72,7 @@ public final class DBRFeature {
     }
 
     public static DBRFeature createCategory(@NotNull DBRFeature parentFeature, @NotNull String name, @Nullable String description) {
-        return new DBRFeature(parentFeature, name, description, null, true, null, null);
+        return new DBRFeature(parentFeature, name, description, null, true, null);
     }
 
     public static DBRFeature createFeature(@NotNull DBRFeature parentFeature, @NotNull String name) {
@@ -84,7 +80,7 @@ public final class DBRFeature {
     }
 
     public static DBRFeature createCommandFeature(@NotNull DBRFeature parentFeature, @NotNull String commandId) {
-        return new DBRFeature(parentFeature, commandId, null, null, false, null, commandId);
+        return new DBRFeature(parentFeature, commandId, null, null, false, commandId);
     }
 
     public DBRFeature getParentFeature() {
@@ -113,10 +109,6 @@ public final class DBRFeature {
 
     public boolean isAbstract() {
         return isAbstract;
-    }
-
-    public DBRNotificationDescriptor getNotificationDefaults() {
-        return notificationDefaults;
     }
 
     public String getCommandId() {

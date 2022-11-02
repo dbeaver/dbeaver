@@ -800,6 +800,9 @@
                             </adapt>
                         </iterate>
                     </with>
+                    <not>
+                        <test property="org.jkiss.dbeaver.core.global.distributed"/>
+                    </not>
                 </and>
             </enabledWhen>
         </handler>

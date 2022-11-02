@@ -17,13 +17,10 @@
 
 package org.jkiss.dbeaver.model.runtime.features;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -37,11 +34,9 @@ import java.util.Map;
 public class DBRFeatureRegistry {
 
     private static final Log log = Log.getLog(DBRFeatureRegistry.class);
-    private static final String NOTIFICATIONS_CONFIG_FILE = "notifications-config.xml";
 
     private final Map<String, DBRFeature> allFeatures = new HashMap<>();
     private final Map<String, DBRFeature> commandFeatures = new HashMap<>();
-    private final Map<String, DBRNotificationDescriptor> notificationSettings = new HashMap<>();
 
     private static DBRFeatureRegistry instance = null;
 
@@ -53,16 +48,7 @@ public class DBRFeatureRegistry {
     }
 
     private DBRFeatureRegistry() {
-        // Load notifications settings
-        File ncFile = getNotificationsConfigFile();
-        if (ncFile.exists()) {
 
-        }
-    }
-
-    @NotNull
-    private static File getNotificationsConfigFile() {
-        return new File(ModelActivator.getInstance().getStateLocation().toFile(), NOTIFICATIONS_CONFIG_FILE);
     }
 
     public synchronized void registerFeatures(Class<?> theClass) {
@@ -92,10 +78,6 @@ public class DBRFeatureRegistry {
 
     public DBRFeature findCommandFeature(String commandId) {
         return commandFeatures.get(commandId);
-    }
-
-    public void setNotificationSettings(DBRFeature feature, DBRNotificationDescriptor notificationDescriptor) {
-        notificationSettings.put(feature.getId(), notificationDescriptor);
     }
 
     public static void useFeature(DBRFeature feature, Map<String, Object> parameters) {

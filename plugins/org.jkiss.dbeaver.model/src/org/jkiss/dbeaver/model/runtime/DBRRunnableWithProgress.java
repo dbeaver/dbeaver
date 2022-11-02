@@ -28,4 +28,10 @@ public interface DBRRunnableWithProgress {
 
     void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException;
 
+    /**
+     * Cancel execution
+     */
+    default void cancel() {
+        // do nothing by default
+    }
 }

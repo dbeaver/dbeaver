@@ -181,7 +181,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         }
         DBSObjectContainer container = (DBSObjectContainer) session.getDataSource();
         if (names.length == 1) {
-            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(session.getProgressMonitor(), session.getExecutionContext());
+            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(session.getExecutionContext());
             if (selectedObjects.length > 0 && selectedObjects[selectedObjects.length - 1] instanceof DBSObjectContainer) {
                 container = (DBSObjectContainer) selectedObjects[selectedObjects.length - 1];
             }

@@ -297,7 +297,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
         if (syntaxManager.getDialect().getKeywordType(keyword) == DBPKeywordType.KEYWORD) {
             final String fixedKeyword = syntaxManager.getKeywordCase().transform(keyword);
-            if (!fixedKeyword.equals(keyword)) {
+            if (!fixedKeyword.equalsIgnoreCase(keyword)) {
                 command.addCommand(startPos, endPos - startPos, fixedKeyword, null);
                 command.doit = false;
                 return true;
