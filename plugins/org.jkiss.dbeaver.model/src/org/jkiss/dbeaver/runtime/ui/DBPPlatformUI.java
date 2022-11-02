@@ -82,6 +82,7 @@ public interface DBPPlatformUI {
 
     /**
      * Show user-choice dialog for a user to mandatory select one of the options described with the labels
+     * 
      * @param title Dialog window title
      * @param message Dialog window content explaining the choice in question
      * @param labels Options to choose of
