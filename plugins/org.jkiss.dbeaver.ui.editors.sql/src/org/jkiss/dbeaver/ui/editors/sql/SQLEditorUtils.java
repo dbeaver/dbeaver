@@ -20,6 +20,12 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -32,6 +38,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.commands.DisableEditorServicesHandler;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
@@ -45,8 +52,10 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * SQLEditor utils
@@ -56,6 +65,13 @@ public class SQLEditorUtils {
     private static final Log log = Log.getLog(SQLEditorUtils.class);
 
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
+    
+    private static final String DISABLE_EDITOR_SERVICES_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.scripts.disableEditorServices";
+    
+    private static final QualifiedName DISABLE_EDITOR_SERVICES_PROP_NAME = new QualifiedName(
+        SQLEditorActivator.PLUGIN_ID, DISABLE_EDITOR_SERVICES_PROPERTY
+    );
+
 
     /**
      * A {@link IResource}'s session property to distinguish between persisted and newly created resources.
@@ -349,5 +365,77 @@ public class SQLEditorUtils {
         public String toString() {
             return getName();
         }
+    }
+    
+    /**
+     * Returns state of Disable SQL Editor services property
+     */
+    public static boolean getDisableEditorServicesProp(@NotNull IFile file) {
+        try {
+            return CommonUtils.getBoolean(file.getPersistentProperty(DISABLE_EDITOR_SERVICES_PROP_NAME), false);
+        } catch (CoreException e) {
+            log.debug(e.getMessage(), e);
+            return false;            
+        }
+    }
+    
+    /**
+     * Sets value to Disable SQL Editor services property
+     */
+    public static void setDisableEditorServicesProp(@NotNull IFile file, boolean value) throws CoreException {
+        file.setPersistentProperty(DISABLE_EDITOR_SERVICES_PROP_NAME, Boolean.toString(value));
+        notifyAssociatedServices(file, value);
+    }
+    
+    private static void notifyAssociatedServices(@NotNull IFile file, boolean newServicesEnabled) {
+        Set<DBPPreferenceStore> affectedPrefs = new HashSet<>();
+        for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+            for (IWorkbenchPage page : window.getPages()) {
+                for (IEditorReference editorRef : page.getEditorReferences()) {
+                    IEditorPart editor = editorRef.getEditor(false);
+                    if (editor instanceof SQLEditorBase) {
+                        SQLEditorBase sqlEditor = (SQLEditorBase) editor;
+                        IFile editorFile = editor.getEditorInput().getAdapter(IFile.class);
+                        if (editorFile.equals(file)) {
+                            affectedPrefs.add(sqlEditor.getActivePreferenceStore());
+                        }
+                    }
+                }
+            }
+        }
+        for (DBPPreferenceStore prefs : affectedPrefs) {
+            notifyPrefs(prefs, newServicesEnabled);
+        }
+
+        PlatformUI.getWorkbench().getService(ICommandService.class).refreshElements(DisableEditorServicesHandler.COMMAND_ID, null);
+    }
+    
+    private static void notifyPrefs(@NotNull DBPPreferenceStore prefStore, boolean newServicesEnabled) {
+        final boolean foldingEnabled = prefStore.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+        final boolean autoActivationEnabled = prefStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
+        final boolean markWordUnderCursorEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
+        final boolean markWordForSelectionEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
+        final boolean oldServicesEnabled = !newServicesEnabled;
+        
+        prefStore.firePropertyChangeEvent(
+            SQLPreferenceConstants.FOLDING_ENABLED,
+            oldServicesEnabled && foldingEnabled,
+            newServicesEnabled && foldingEnabled
+        );
+        prefStore.firePropertyChangeEvent(
+            SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION,
+            oldServicesEnabled && autoActivationEnabled,
+            newServicesEnabled && autoActivationEnabled
+        );
+        prefStore.firePropertyChangeEvent(
+            SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR,
+            oldServicesEnabled && markWordUnderCursorEnabled,
+            newServicesEnabled && markWordUnderCursorEnabled
+        );
+        prefStore.firePropertyChangeEvent(
+            SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION,
+            oldServicesEnabled && markWordForSelectionEnabled,
+            newServicesEnabled && markWordForSelectionEnabled
+        );
     }
 }

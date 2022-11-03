@@ -191,7 +191,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     public boolean isEditorServicesEnabled() {
         IEditorInput input = getEditorInput();
         IFile file = input == null ? null : input.getAdapter(IFile.class);
-        return file == null ? true : !ScriptEditorPropertyPage.getDisableEditorServicesProp(file);
+        return file == null ? true : !SQLEditorUtils.getDisableEditorServicesProp(file);
     }
 
     /*
@@ -203,7 +203,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             IFile file = input.getAdapter(IFile.class);
             if (file != null) {
                 try {
-                    ScriptEditorPropertyPage.setDisableEditorServicesProp(file, !value);
+                    SQLEditorUtils.setDisableEditorServicesProp(file, !value);
                 } catch (CoreException e) {
                     log.debug(e);
                 }
