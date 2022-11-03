@@ -36,6 +36,7 @@ public class ResetWorkspaceStateAction extends Action
 
     public ResetWorkspaceStateAction(IWorkbenchWindow window) {
         super(CoreApplicationMessages.actions_menu_reset_workspace_state_title);
+        setId(getClass().getName());
         this.window = window;
     }
 

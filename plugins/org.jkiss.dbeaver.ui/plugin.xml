@@ -9,6 +9,11 @@
               <equals value="org.jkiss.dbeaver.core.perspective"/>
           </with>
       </definition>
+       <definition id="LocalWorkspace">
+           <not>
+               <test property="org.jkiss.dbeaver.core.global.distributed"/>
+           </not>
+       </definition>
    </extension>
 
 <!--

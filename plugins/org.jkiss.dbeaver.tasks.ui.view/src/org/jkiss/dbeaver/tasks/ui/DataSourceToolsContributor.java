@@ -175,6 +175,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                             new ExecuteToolHandler(workbenchWindow, tool),
                             activePart.getSite(),
                             selection,
+                            "execute-tool",
                             tool.getLabel(),
                             tool.getIcon() == null ? null : DBeaverIcons.getImageDescriptor(tool.getIcon()),
                             tool.getDescription());
