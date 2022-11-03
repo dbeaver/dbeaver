@@ -304,6 +304,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
             prevPage = page;
             pageArea.layout();
+            prevPage.getControl().setFocus();
             if (pageCreated && isAutoLayoutAvailable()) {
                 UIUtils.asyncExec(() -> {
                     if (wizard.getContainer().getShell() != null) {
