@@ -748,7 +748,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private class TreeFilter extends PatternFilter {
         private final INavigatorFilter filter;
         private boolean hasPattern = false;
-        private boolean hasDotPattern = false;
         private TextMatcherExt matcher;
         private TextMatcherExt matcherShort;
         private String[] dotPattern;
@@ -772,7 +771,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         @Override
         public void setPattern(String patternString) {
             this.hasPattern = !CommonUtils.isEmpty(patternString);
-            this.hasDotPattern = false;
+            this.dotPattern = null;
             if (patternString != null) {
                 String pattern = patternString;
                 if (!patternString.endsWith(" ")) {
@@ -782,7 +781,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 this.matcher = new TextMatcherExt(pattern, true, false);
                 this.dotPattern = patternString.split("\\.");
                 if (dotPattern.length == 2) {
-                    this.hasDotPattern = true;
                     String patternShort = dotPattern[1];
                     if (!patternShort.endsWith(" ")) {
                         patternShort = patternShort + "*";
@@ -858,9 +856,13 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             if (labelText == null) {
                 return false;
             }
+            return isPatternMatched(labelText, element);
+        }
+        
+        private boolean isPatternMatched(String labelText, Object element) {
             boolean patternMatched = wordMatches(labelText);
             if (!patternMatched) { // pattern is not matched - so we'll check, maybe format is schema.object
-                if (hasDotPattern) {
+                if (dotPattern != null) {
                     Object item = null;
                     if (element instanceof DBNDatabaseItem) {
                         item = ((DBNDatabaseItem) element).getParentNode();
@@ -890,11 +892,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             }
             if (!patternMatched) { // Analyze description too
                 if (element instanceof DBNDatabaseItem) {
-                    Object obj = ((DBNDatabaseItem) element).getObject();
-                    if (obj instanceof DBSObject) {
-                        labelText = ((DBSObject) obj).getDescription();
-                        patternMatched = wordMatches(labelText);
-                    }
+                    DBSObject obj = ((DBNDatabaseItem) element).getObject();                    
+                    labelText = ((DBSObject) obj).getDescription();
+                    patternMatched = wordMatches(labelText);
                 }
             }
             return patternMatched;
