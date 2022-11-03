@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -140,12 +139,15 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
         if (sshClient != null) {
             RuntimeUtils.runTask(monitor1 -> {
                 try {
-                    sshClient.disconnect();
+                    SSHClient sshClient = this.sshClient;
+                    if (sshClient != null) {
+                        sshClient.disconnect();
+                    }
+                    this.sshClient = null;
                 } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                    log.debug("SSHJ disconnect error: " + e.getMessage());
                 }
             }, "Close SSH client", 1000);
-            sshClient = null;
         }
     }
 

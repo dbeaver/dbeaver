@@ -249,31 +249,18 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         IWorkbenchWindow workbenchWindow = getActionBarConfigurer().getWindowConfigurer().getWindow();
         {
             // File
-
-            /*fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
-            fileMenu.add(new Separator());
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.CLOSE_EXT));
-            fileMenu.add(new Separator());
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.PRINT_EXT));
-            fileMenu.add(new Separator());
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.OPEN_EXT));
-            fileMenu.add(new Separator());
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.IMPORT_EXT));
-            fileMenu.add(new Separator());
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
-            fileMenu.add(new Separator());*/
-
             MenuManager recentEditors = new MenuManager(CoreApplicationMessages.actions_menu_recent_editors);
             recentEditors.add(ContributionItemFactory.REOPEN_EDITORS.create(workbenchWindow));
             recentEditors.add(new GroupMarker(IWorkbenchActionConstants.MRU));
             fileMenu.add(recentEditors);
 
-            fileMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.edit.text.openLocalFile"));
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
+            if (!DBWorkbench.isDistributed()) {
+                // Local FS operations are not needed
+                fileMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.edit.text.openLocalFile"));
+                fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+                fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
+            }
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-
 
             fileMenu.add(openWorkspaceAction);
 
@@ -342,7 +329,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         {
             // Help
-            helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, CoreMessages.actions_menu_about, null, null));
+            helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, "about-box", CoreMessages.actions_menu_about, null, null));
             helpMenu.add(showHelpAction);
             helpMenu.add(new Separator());
             helpMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.help.installationDialog"));
