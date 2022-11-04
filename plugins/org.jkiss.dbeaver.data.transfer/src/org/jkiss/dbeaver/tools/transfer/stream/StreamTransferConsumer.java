@@ -366,16 +366,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             outputFile = null;
         }
 
-        if (processor instanceof IAppendableDataExporter && (settings.getDataFileConflictBehavior() == DataFileConflictBehavior.APPEND
-            || (settings.isUseSingleFile() && parameters.orderNumber > 0))
-        ) {
-            try {
-                ((IAppendableDataExporter) processor).importData(exportSite);
-            } catch (DBException e) {
-                log.warn("Error importing existing data for appending, data loss might occur", e);
-            }
-        }
-
         try {
             if (outputClipboard) {
                 this.outputBuffer = new StringWriter(2048);
@@ -417,7 +407,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         closeOutputStreams();
     }
     
-    private DataFileConflictBehavior getDataFileConflictBehavior(String fileName) {
+    private DataFileConflictBehavior prepareDataFileConflictBehavior(String fileName) {
         DataFileConflictBehavior behavior = runtimeParameters.dataFileConflictBehavior;
         
         if (behavior == DataFileConflictBehavior.ASK) {
@@ -451,23 +441,37 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 runtimeParameters.dataFileConflictBehavior = behavior;
             }
         }
-        
-        if ((behavior == DataFileConflictBehavior.OVERWRITE || behavior == DataFileConflictBehavior.PATCHNAME) && 
-            settings.isUseSingleFile() && parameters.orderNumber == 0) {
-            return behavior;
-        } else if ((behavior == DataFileConflictBehavior.APPEND || settings.isUseSingleFile()) &&
-            processor instanceof IAppendableDataExporter &&  !((IAppendableDataExporter) processor).shouldTruncateOutputFileBeforeExport()) {
-            return DataFileConflictBehavior.APPEND;
-        } else {
-            return DataFileConflictBehavior.OVERWRITE;
+
+        if (settings.isUseSingleFile() && parameters.orderNumber > 0) { 
+            // all consequent sources in a session should be appended  to the first file 
+            behavior = DataFileConflictBehavior.APPEND;
         }
+
+        if (behavior == DataFileConflictBehavior.APPEND) {
+            if (processor instanceof IAppendableDataExporter) {
+                try {
+                    ((IAppendableDataExporter) processor).importData(exportSite);
+                } catch (DBException e) {
+                    log.warn("Error importing existing data for appending, data loss might occur", e);
+                }
+                if (((IAppendableDataExporter) processor).shouldTruncateOutputFileBeforeExport()) {
+                    // appendable but not patchable file should be overwritten after the old data was preloaded
+                    behavior = DataFileConflictBehavior.OVERWRITE;
+                }
+            } else {
+                // if we still want to append but the file is non-appendable, so it should be patchnamed
+                behavior = DataFileConflictBehavior.PATCHNAME;                
+            }
+        }
+        
+        return behavior;
     }
     
     private void openOutputStreams() throws IOException {
         final boolean truncate;
         
         if (outputFile.isFile()) {
-            DataFileConflictBehavior behavior = getDataFileConflictBehavior(outputFile.getName());
+            DataFileConflictBehavior behavior = prepareDataFileConflictBehavior(outputFile.getName());
             switch (behavior) {
                 case APPEND:
                     truncate = false;
@@ -685,16 +689,23 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @NotNull
     private String getOutputFileName(@Nullable String suffix) {
         Object extension = processorProperties == null ? null : processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
-        String fileName = translatePattern(settings.getOutputFilePattern(), null).trim();
+        String fileName = CommonUtils.notNull(
+            runtimeParameters.outputFileNameToReuse, 
+            translatePattern(settings.getOutputFilePattern(), null).trim()
+        );
         // Can't rememeber why did we need this. It breaks file names in case of multiple tables export (#6911)
         // if (parameters.orderNumber > 0 && !settings.isUseSingleFile()) {
         //    fileName += "_" + String.valueOf(parameters.orderNumber + 1);
         //}
-        if (multiFileNumber > 0) {
-            fileName += "_" + (multiFileNumber + 1);
-        }
         if (CommonUtils.isNotEmpty(suffix)) {
             fileName += suffix;
+        }
+        if (settings.isUseSingleFile() && suffix != null) {
+            runtimeParameters.outputFileNameToReuse = fileName;
+        }
+
+        if (multiFileNumber > 0) {
+            fileName += "_" + (multiFileNumber + 1);
         }
         if (extension != null) {
             return fileName + "." + extension;
@@ -712,11 +723,16 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private File makeOutputFile(@Nullable String suffix) {
         final File file = makeOutputFile(suffix, getOutputFolder());
 
-        try (FileOutputStream ignored = new FileOutputStream(file)) {
-            return file;
-        } catch (IOException e) {
-            return makeOutputFile(suffix, getFallbackOutputFolder());
+        if (!file.exists()) {
+            try (FileOutputStream ignored = new FileOutputStream(file)) {
+                return file;
+            } catch (IOException ignored) {
+                return makeOutputFile(suffix, getFallbackOutputFolder());
+            } finally {
+                file.delete();
+            }
         }
+        return file;
     }
 
     @NotNull
