@@ -324,6 +324,9 @@ public final class IOUtils {
             }
         }
         Path localFile = targetFolder.resolve(zipEntry.getName());
+      if (!localFile.normalize().startsWith(targetFolder.normalize())) {
+        throw new IOException("Bad zip entry");
+      }
         if (Files.exists(localFile)) {
             // Already extracted?
             return;
