@@ -55,6 +55,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         public BlobFileConflictBehavior blobFileConflictBehavior;
         public Integer blobFileConflictPreviousChoice = null;
         public boolean dontDropBlobFileConflictBehavior = false;
+        public String outputFileNameToReuse = null;
         
         public ConsumerRuntimeParameters() {
             this.dataFileConflictBehavior = StreamConsumerSettings.this.dataFileConflictBehavior;
