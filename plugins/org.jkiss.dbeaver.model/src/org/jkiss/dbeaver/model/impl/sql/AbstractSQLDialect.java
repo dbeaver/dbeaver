@@ -810,7 +810,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
+    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters, boolean castParams) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         if (parameters != null) {
             inParameters.addAll(parameters);
@@ -822,25 +822,35 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         if (!inParameters.isEmpty()) {
             boolean first = true;
             for (DBSProcedureParameter parameter : inParameters) {
+                String typeName = parameter.getParameterType().getFullTypeName();
                 switch (parameter.getParameterKind()) {
                     case IN:
                         if (!first) {
-                            sql.append(",");
+                            sql.append(", ");
                         }
-                        sql.append(":").append(CommonUtils.escapeIdentifier(parameter.getName()));
+                        if (castParams) {
+                            sql.append("cast(:").append(CommonUtils.escapeIdentifier(parameter.getName()))
+                                .append(" as ").append(typeName).append(")");
+                        } else {
+                            sql.append(":").append(CommonUtils.escapeIdentifier(parameter.getName()));
+                        }
                         break;
                     case RETURN:
                         continue;
                     default:
                         if (isStoredProcedureCallIncludesOutParameters()) {
                             if (!first) {
-                                sql.append(",");
+                                sql.append(", ");
                             }
-                            sql.append("?");
+                            if (castParams) {
+                                sql.append("cast(?")
+                                    .append(" as ").append(typeName).append(")");
+                            } else {
+                                sql.append("?");
+                            }
                         }
                         break;
-                }
-                String typeName = parameter.getParameterType().getFullTypeName();
+                }                
 //                sql.append("\t-- put the ").append(parameter.getName())
 //                    .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")");
                 first = false;

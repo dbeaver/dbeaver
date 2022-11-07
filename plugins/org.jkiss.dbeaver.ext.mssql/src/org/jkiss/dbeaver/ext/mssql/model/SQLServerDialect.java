@@ -262,7 +262,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     }
 
     @Override
-    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
+    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters, boolean castParams) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         int maxParamLength = getMaxParameterLength(parameters, inParameters);
         String schemaName = proc.getContainer().getParentObject().getName();

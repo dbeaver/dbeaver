@@ -43,6 +43,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     private boolean useCustomDataFormat = false;
     private boolean useSeparateForeignKeys = true;
     private boolean showPartitionsDDL = false;
+    private boolean showCastParams = false;
 
     private final Map<String, Object> generatorOptions = new LinkedHashMap<>();
 
@@ -122,8 +123,16 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
         return showPartitionsDDL;
     }
 
+    public boolean isShowCastParams() {
+        return showCastParams;
+    }
+
     public void setShowPartitionsDDL(boolean showPartitionsDDL) {
         this.showPartitionsDDL = showPartitionsDDL;
+    }
+
+    public void setShowCastParams(boolean showCastParams) {
+        this.showCastParams = showCastParams;
     }
 
     public boolean isDDLOption() {
@@ -135,6 +144,10 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     }
 
     public boolean isInsertOption() {
+        return false;
+    }
+    
+    public boolean supportCastParams() {
         return false;
     }
 
@@ -177,6 +190,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
         options.put(DBPScriptObject.OPTION_SCRIPT_USE_CUSTOM_DATA_FORMAT, isUseCustomDataFormat());
         options.put(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, isUseSeparateForeignKeys());
         options.put(DBPScriptObject.OPTION_INCLUDE_PARTITIONS, isShowPartitionsDDL());
+        options.put(DBPScriptObject.OPTION_CAST_PARAMS, isShowCastParams());
         options.putAll(generatorOptions);
     }
 

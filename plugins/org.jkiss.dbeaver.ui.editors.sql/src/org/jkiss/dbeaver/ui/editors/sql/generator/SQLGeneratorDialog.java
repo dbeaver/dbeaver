@@ -67,6 +67,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
         boolean supportFullDDL = false;
         boolean supportSeparateFKStatements = false;
         boolean supportsPartitionsDDL = false;
+        boolean supportsCastParams = sqlGenerator.supportCastParams();
         for (Object object : sqlGenerator.getObjects()) {
             if (object instanceof DBPScriptObjectExt2) {
                 DBPScriptObjectExt2 sourceObject = (DBPScriptObjectExt2) object;
@@ -257,6 +258,26 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 public void widgetSelected(SelectionEvent e) {
                     sqlGenerator.setShowPartitionsDDL(supportsPartitionsDDLButton.getSelection());
                     getDialogBoundsSettings().put(DBPScriptObject.OPTION_INCLUDE_PARTITIONS, supportsPartitionsDDLButton.getSelection());
+
+                    UIUtils.runInUI(sqlGenerator);
+                    Object sql = sqlGenerator.getResult();
+                    if (sql != null) {
+                        setSQLText(CommonUtils.toString(sql));
+                        updateSQL();
+                    }
+                }
+            });
+        }
+        if (supportsCastParams) {
+            Button supportsCastParamsButton = UIUtils.createCheckbox(
+                    settings,
+                    SQLEditorMessages.sql_generator_dialog_button_show_cast_params,
+                    sqlGenerator.isShowCastParams());
+            supportsCastParamsButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    sqlGenerator.setShowCastParams(supportsCastParamsButton.getSelection());
+                    getDialogBoundsSettings().put(DBPScriptObject.OPTION_CAST_PARAMS, supportsCastParamsButton.getSelection());
 
                     UIUtils.runInUI(sqlGenerator);
                     Object sql = sqlGenerator.getResult();
