@@ -45,12 +45,6 @@
         <generator id="tableDDL" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorDDL" label="DDL" description="Get table DDL" order="1001">
             <objectType name="org.jkiss.dbeaver.model.DBPScriptObject"/>
         </generator>
-        <generator id="ColumnNameType" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorColumnNameType" label="%sql.generator.name_type" description="%sql.generator.name_type_long" order="1051">
-            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityAttribute"/>
-        </generator>
-        <generator id="ColumnNameTypeNN" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorColumnNameTypeNN" label="%sql.generator.name_type_nn" description="%sql.generator.name_type_nn_long" order="1052">
-            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityAttribute"/>
-        </generator>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
