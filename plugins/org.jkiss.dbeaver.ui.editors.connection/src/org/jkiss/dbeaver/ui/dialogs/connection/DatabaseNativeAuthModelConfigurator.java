@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -47,6 +48,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     protected Text passwordText;
 
     protected Button savePasswordCheck;
+    protected Button sharedCredentialsCheck;
     protected ToolBar userManagementToolbar;
 
     protected DBPDataSourceContainer dataSource;
@@ -99,6 +101,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             this.savePasswordCheck.setSelection(dataSource.isSavePassword());
             this.passwordText.setEnabled(dataSource.isSavePassword());
         }
+        if (this.sharedCredentialsCheck != null) {
+            this.sharedCredentialsCheck.setSelection(((DataSourceDescriptor)dataSource).isSharedCredentials());
+        }
     }
 
     @Override
@@ -113,6 +118,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
         if (this.savePasswordCheck != null) {
             dataSource.setSavePassword(this.savePasswordCheck.getSelection());
+        }
+        if (this.sharedCredentialsCheck != null) {
+            ((DataSourceDescriptor)dataSource).setSharedCredentials(this.sharedCredentialsCheck.getSelection());
         }
     }
 
@@ -154,8 +162,12 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         // We don't support password preview in standard project secure storage (as we need password encryption)
         UIServiceSecurity serviceSecurity = DBWorkbench.getService(UIServiceSecurity.class);
         boolean supportsPasswordView = serviceSecurity != null;
+        boolean supportsSharedCreds = DBWorkbench.isDistributed();
 
-        Composite panel = UIUtils.createComposite(passPlaceholder, supportsPasswordView ? 2 : 1);
+        int colCount = 1;
+        if (supportsPasswordView) colCount++;
+        if (supportsSharedCreds) colCount++;
+        Composite panel = UIUtils.createComposite(passPlaceholder, colCount);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         panel.setLayoutData(gd);
 
@@ -181,6 +193,23 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
                     showPasswordText(serviceSecurity);
                 }
             });
+        }
+        if (supportsSharedCreds) {
+            sharedCredentialsCheck = UIUtils.createCheckbox(panel,
+                "Shared",
+                dataSource == null || ((DataSourceDescriptor)dataSource).isSharedCredentials());
+            sharedCredentialsCheck.setToolTipText("Saved credentials will be accessible to all users who have access to this connection configuration");
+            sharedCredentialsCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (sharedCredentialsCheck.getSelection()) {
+                        savePasswordCheck.setEnabled(true);
+                    }
+                }
+            });
+            if (sharedCredentialsCheck.getSelection()) {
+                savePasswordCheck.setEnabled(true);
+            }
         }
 
     }
