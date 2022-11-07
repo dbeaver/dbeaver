@@ -800,6 +800,7 @@
                             </adapt>
                         </iterate>
                     </with>
+                    <reference definitionId="LocalWorkspace"/>
                 </and>
             </enabledWhen>
         </handler>

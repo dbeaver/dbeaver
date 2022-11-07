@@ -93,9 +93,6 @@ public class ClickhouseDataSource extends GenericDataSource {
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
-        } else {
-            // Newer MySQL servers/connectors requires explicit SSL disable
-            properties.put(ClickhouseConstants.SSL_PARAM, "false");
         }
         return properties;
     }
@@ -103,39 +100,48 @@ public class ClickhouseDataSource extends GenericDataSource {
     private void initSSL(DBRProgressMonitor monitor, Properties properties, DBWHandlerConfiguration sslConfig) throws DBException {
         monitor.subTask("Initialising SSL configuration");
         properties.put(ClickhouseConstants.SSL_PARAM, "true");
-        if ("com_clickhouse".equals(getContainer().getDriver().getId())) {
-            if (!DBWorkbench.isDistributed()) {
-                try {
-                    String clientCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT);
+        try {
+            if ("com_clickhouse".equals(getContainer().getDriver().getId())) {
+                if (DBWorkbench.isDistributed()) {
+                    String clientCertProp =
+                        sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT_VALUE);
                     if (!CommonUtils.isEmpty(clientCertProp)) {
                         properties.put(ClickhouseConstants.SSL_PATH, saveCertificateToFile(clientCertProp));
                     }
-                    String clientKeyProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+                    String clientKeyProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY_VALUE);
                     if (!CommonUtils.isEmpty(clientKeyProp)) {
                         properties.put(ClickhouseConstants.SSL_KEY_PASSWORD, saveCertificateToFile(clientKeyProp));
                     }
-                    String caCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT);
-                    if (!CommonUtils.isEmpty(caCertProp)) {
-                        properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE, saveCertificateToFile(caCertProp));
-                    }
-                } catch (IOException e) {
-                    throw new DBException("Can not configure SSL", e);
+                } else {
+                    properties.put(ClickhouseConstants.SSL_PATH,
+                        sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT)
+                    );
+                    properties.put(ClickhouseConstants.SSL_KEY_PASSWORD,
+                        sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY)
+                    );
+                }
+                properties.put(ClickhouseConstants.SSL_MODE,
+                    sslConfig.getStringProperty(ClickhouseConstants.SSL_MODE_CONF)
+                );
+            } else {
+                // Old clickhouse used lowercase for sslmode, we should send it in the lowercase
+                String mode = sslConfig.getStringProperty(ClickhouseConstants.SSL_MODE_CONF);
+                if (mode != null) {
+                    properties.put(ClickhouseConstants.SSL_MODE, mode.toLowerCase());
+                }
+            }
+            if (DBWorkbench.isDistributed()) {
+                String caCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT_VALUE);
+                if (!CommonUtils.isEmpty(caCertProp)) {
+                    properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE, saveCertificateToFile(caCertProp));
                 }
             } else {
-                properties.put(ClickhouseConstants.SSL_PATH,
-                    sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT));
-                properties.put(ClickhouseConstants.SSL_KEY_PASSWORD,
-                    sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY));
                 properties.put(ClickhouseConstants.SSL_ROOT_CERTIFICATE,
-                    sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT));
+                    sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CA_CERT)
+                );
             }
-            properties.put(ClickhouseConstants.SSL_MODE, sslConfig.getStringProperty(ClickhouseConstants.SSL_MODE_CONF));
-        } else {
-            // Old clickhouse used lowercase for sslmode, we should send it in the lowercase
-            String mode = sslConfig.getStringProperty(ClickhouseConstants.SSL_MODE_CONF);
-            if (mode != null) {
-                properties.put(ClickhouseConstants.SSL_MODE, mode.toLowerCase());
-            }
+        } catch (IOException e) {
+            throw new DBException("Can not configure SSL", e);
         }
     }
 
@@ -156,7 +162,6 @@ public class ClickhouseDataSource extends GenericDataSource {
         // For now - Clickhouse driver return us empty list as indexInfo and we can't create Clickhouse indexes via DBeaver UI
         // So far we turn off indexes
         info.setSupportsIndexes(false);
-        this.getContainer().getPreferenceStore().setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, true);
         return info;
     }
 

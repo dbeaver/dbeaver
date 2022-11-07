@@ -192,6 +192,7 @@ public class DataSourceDescriptor
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
         this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
+        this.forceUseSingleConnection = driver.isSingleConnection();
     }
 
     // Copy constructor
@@ -322,6 +323,7 @@ public class DataSourceDescriptor
 
     public void setDriver(@NotNull DriverDescriptor driver) {
         this.driver = driver;
+        this.forceUseSingleConnection = driver.isSingleConnection();
     }
 
     @NotNull
@@ -964,8 +966,13 @@ public class DataSourceDescriptor
                                     return false;
                                 }
                             }
+                            if (!askForSSHJumpServerPassword(tunnelConfiguration)) {
+                                updateDataSourceObject(this);
+                                tunnelHandler = null;
+                                return false;
+                            }
                         }
-
+                        // We need to resolve jump server differently due to it being a part of ssh configuration
                         DBExecUtils.startContextInitiation(this);
                         try {
                             resolvedConnectionInfo = tunnelHandler.initializeHandler(monitor, tunnelConfiguration, resolvedConnectionInfo);
@@ -1042,11 +1049,46 @@ public class DataSourceDescriptor
         }
     }
 
-    public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
-        if (this.getDriver().isSingleConnection()) {
-            this.setForceUseSingleConnection(true);
-        }
+    private boolean askForSSHJumpServerPassword(@NotNull DBWHandlerConfiguration tunnelConfiguration) {
+        if (tunnelConfiguration.getBooleanProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_ENABLED)) {
+            DBPConnectionConfiguration actualConfig = getActualConnectionConfiguration();
+            DBPConnectionConfiguration connConfig = getConnectionConfiguration();
+            String prompt = NLS.bind(RegistryMessages.dialog_connection_auth_title_for_handler, "SSH jump server");
+            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration, getJumpServerSettingsPrefix(0));
+            if (rc != DBWTunnel.AuthCredentials.NONE) {
+                DBPAuthInfo dbpAuthInfo = askCredentials(this, rc, prompt,
+                    tunnelConfiguration.getStringProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_NAME),
+                    //$NON-NLS-1$
+                    tunnelConfiguration.getSecureProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_FEATURE_PASSWORD),
+                    //$NON-NLS-1$
+                    false
+                );
+                if (dbpAuthInfo != null) {
+                    if (rc.equals(DBWTunnel.AuthCredentials.PASSWORD)) {
+                        tunnelConfiguration.setProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_ID_NAME, //$NON
+                            // -NLS-1$
+                            dbpAuthInfo.getUserName()
+                        );
+                    }
+                    tunnelConfiguration.setSecureProperty(getJumpServerSettingsPrefix(0) + DBConstants.PROP_FEATURE_PASSWORD, //$NON
+                        // -NLS-1$
+                        dbpAuthInfo.getUserPassword()
+                    );
+                    actualConfig.updateHandler(tunnelConfiguration);
 
+                    if (tunnelConfiguration.isSavePassword() && connConfig != actualConfig) {
+                        // Save changes in real connection info
+                        connConfig.updateHandler(tunnelConfiguration);
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
         final DBPDataSourceProvider provider = getDriver().getDataSourceProvider();
         if (provider instanceof DBPDataSourceProviderSynchronizable) {
             try {
@@ -1663,16 +1705,7 @@ public class DataSourceDescriptor
 
         DBPAuthInfo authInfo;
         try {
-            authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt,
-                RegistryMessages.dialog_connection_auth_username,
-                user,
-                authType == DBWTunnel.AuthCredentials.PASSWORD
-                    ? RegistryMessages.dialog_connection_auth_passphrase
-                    : RegistryMessages.dialog_connection_auth_password,
-                password,
-                authType != DBWTunnel.AuthCredentials.CREDENTIALS,
-                !dataSourceContainer.isTemporary()
-            );
+            authInfo = askCredentials(dataSourceContainer, authType, prompt, user, password, !dataSourceContainer.isTemporary());
         } catch (Exception e) {
             log.debug(e);
             authInfo = new DBPAuthInfo(user, password, false);
@@ -1724,6 +1757,29 @@ public class DataSourceDescriptor
         }
 
         return true;
+    }
+
+    public static String getJumpServerSettingsPrefix(int index) {
+        return "jumpServer" + index + ".";
+    }
+
+    private static DBPAuthInfo askCredentials(@NotNull DataSourceDescriptor dataSourceContainer,
+        @NotNull DBWTunnel.AuthCredentials authType,
+        String prompt,
+        String user,
+        String password,
+        boolean canSavePassword)
+    {
+        DBPAuthInfo authInfo;
+        authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt,
+            RegistryMessages.dialog_connection_auth_username, user,
+            authType == DBWTunnel.AuthCredentials.PASSWORD
+                ? RegistryMessages.dialog_connection_auth_passphrase
+                : RegistryMessages.dialog_connection_auth_password, password,
+            authType != DBWTunnel.AuthCredentials.CREDENTIALS,
+            canSavePassword
+        );
+        return authInfo;
     }
 
     public void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor) {

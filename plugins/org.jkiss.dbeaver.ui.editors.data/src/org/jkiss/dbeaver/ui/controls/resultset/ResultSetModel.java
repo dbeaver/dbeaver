@@ -276,7 +276,8 @@ public class ResultSetModel {
             constraint.setVisible(visible);
             if (attribute.getParentObject() == null || attribute.getParentObject() == documentAttribute) {
                 if (visible) {
-                    visibleAttributes.add(attribute);
+                    final int position = Math.min(constraint.getVisualPosition(), visibleAttributes.size());
+                    visibleAttributes.add(position, attribute);
                 } else {
                     visibleAttributes.remove(attribute);
                 }

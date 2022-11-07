@@ -339,7 +339,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     int offset = widget.getOffsetAtPoint(new Point(e.x, e.y));
 
                     if (offset < 0) {
-                        offset = widget.getOffsetAtLine(widget.getLineIndex(e.y));
+                        int lineIndex = widget.getLineIndex(e.y);
+                        if (lineIndex + 1 >= widget.getLineCount()) {
+                            offset = widget.getCharCount();
+                        } else {
+                            offset = widget.getOffsetAtLine(lineIndex + 1) - widget.getLineDelimiter().length();
+                        }
                     }
 
                     if (offset < 0) {
@@ -365,7 +370,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 }
 
                 private boolean within(@NotNull IRegion region, int index) {
-                    return region.getOffset() <= index && index < region.getOffset() + region.getLength();
+                    return region.getLength() > 0 && region.getOffset() >= index && index < region.getOffset() + region.getLength();
                 }
             });
         }
@@ -787,7 +792,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             return null;
         }
         SQLParserContext context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
-        return SQLScriptParser.parseParameters(context, 0, query.getLength());
+        return SQLScriptParser.parseParametersAndVariables(context, 0, query.getLength());
     }
 
     public boolean isDisposed() {

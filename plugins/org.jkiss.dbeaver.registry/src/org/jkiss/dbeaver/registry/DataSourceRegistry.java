@@ -94,23 +94,23 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
         loadDataSources(true);
 
-        if (!isVirtual()) {
+        if (!isMultiUser()) {
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
 
             addDataSourceListener(modelChangeListener);
         }
     }
 
-    // Virtual registry:
+    // Multi-user registry:
     // - doesn't register listeners
     // -
-    private boolean isVirtual() {
-        return project.isVirtual();
+    private boolean isMultiUser() {
+        return DBWorkbench.getPlatform().getApplication().isMultiuser();
     }
 
     @Override
     public void dispose() {
-        if (!isVirtual()) {
+        if (!isMultiUser()) {
             removeDataSourceListener(modelChangeListener);
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, false);
         }
@@ -803,7 +803,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     private void updateProjectNature() {
-        if (isVirtual()) {
+        if (isMultiUser()) {
             return;
         }
         try {
@@ -812,14 +812,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 final IProjectDescription description = eclipseProject.getDescription();
                 if (description != null) {
                     String[] natureIds = description.getNatureIds();
-                    if (dataSources.isEmpty()) {
-                        // Remove nature
-                        if (ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
-                            description.setNatureIds(ArrayUtils.remove(String.class, natureIds, DBeaverNature.NATURE_ID));
-                            eclipseProject.setDescription(description, new NullProgressMonitor());
-                        }
-
-                    } else {
+                    if (!dataSources.isEmpty()) {
                         // Add nature
                         if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
                             description.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));

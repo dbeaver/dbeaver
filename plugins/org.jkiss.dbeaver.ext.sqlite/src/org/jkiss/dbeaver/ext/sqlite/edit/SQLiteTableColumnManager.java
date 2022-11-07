@@ -47,6 +47,17 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager implemen
     }
 
     @Override
+    protected ColumnModifier[] getSupportedModifiers(
+        GenericTableColumn column, Map<String, Object> options
+    ) {
+        return new ColumnModifier[]{
+            DataTypeModifier, sqliteDefaultModifier
+        };
+    }
+
+    protected SQLiteDefaultModifier sqliteDefaultModifier = new SQLiteDefaultModifier();
+
+    @Override
     public boolean canDeleteObject(GenericTableColumn object) {
         return true;
     }
@@ -93,6 +104,15 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager implemen
     @Override
     public void renameObject(@NotNull DBECommandContext commandContext, @NotNull GenericTableColumn object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
+    }
+
+    private class SQLiteDefaultModifier extends BaseDefaultModifier {
+        @Override
+        protected void appendDefaultValue(@NotNull StringBuilder sql, @NotNull String defaultValue, boolean useQuotes) {
+            sql.append("(");
+            super.appendDefaultValue(sql, defaultValue, useQuotes);
+            sql.append(")");
+        }
     }
 
 }

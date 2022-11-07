@@ -29,11 +29,14 @@ import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * User interface interactions
@@ -52,6 +55,20 @@ public interface DBPPlatformUI {
         STOP,
         RETRY,
     }
+    
+    public static class UserChoiceResponse {
+        /**
+         * index of the user's choice or out of range value (-1) on dialog failure
+         */
+        public final int choiceIndex;
+        @Nullable
+        public final Integer forAllChoiceIndex;
+
+        public UserChoiceResponse(int choiceIndex, Integer forAllChoiceIndex) {
+            this.choiceIndex = choiceIndex;
+            this.forAllChoiceIndex = forAllChoiceIndex;
+        }
+    }
 
     UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status);
     UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final Throwable e);
@@ -62,6 +79,27 @@ public interface DBPPlatformUI {
     void showWarningMessageBox(@NotNull final String title, @Nullable final String message);
     boolean confirmAction(String title, String message);
     boolean confirmAction(String title, String message, boolean isWarning);
+
+    /**
+     * Show user-choice dialog for a user to mandatory select one of the options described with the labels
+     * 
+     * @param title Dialog window title
+     * @param message Dialog window content explaining the choice in question
+     * @param labels Options to choose of
+     * @param forAllLabels Options to remember the choice
+     * @param previousChoice Previous choice made by the user to be focused initially on dialog show
+     * @param defaultChoice Choice to use when the UI platform does not support dialogs
+     * @return Description of the choice made by the user
+     */
+    @NotNull
+    UserChoiceResponse showUserChoice(
+        @NotNull final String title,
+        @Nullable final String message,
+        @NotNull List<String> labels,
+        @NotNull List<String> forAllLabels,
+        @Nullable Integer previousChoice,
+        @NotNull int defaultChoice
+    );
 
     UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue);
 
@@ -108,6 +146,12 @@ public interface DBPPlatformUI {
 
     void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException;
 
+    /**
+     * Execute runnable task synchronously while displaying job indicator if needed
+     */
+    @NotNull
+    <T> Future<T> executeWithProgressBlocking(@NotNull String operationDescription, @NotNull DBRRunnableWithResult<Future<T>> runnable);
+
     @NotNull
     <RESULT> Job createLoadingService(
         ILoadService<RESULT> loadingService,
@@ -126,5 +170,4 @@ public interface DBPPlatformUI {
     void showInSystemExplorer(@NotNull String path);
 
     boolean readAndDispatchEvents();
-
 }

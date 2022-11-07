@@ -35,7 +35,10 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintStream;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +48,7 @@ public class DBTaskUtils {
     private static final Log log = Log.getLog(DBTaskUtils.class);
 
     public static final String TASK_VARIABLES = "taskVariables";
+    public static final String TASK_PROMPT_VARIABLES = "promptTaskVariables";
     public static final String TASK_CONTEXT = "taskContext";
 
     @NotNull

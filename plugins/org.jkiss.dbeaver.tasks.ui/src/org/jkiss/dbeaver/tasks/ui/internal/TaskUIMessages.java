@@ -37,7 +37,10 @@ public class TaskUIMessages extends NLS {
 	public static String task_config_wizard_button_save_task;
 	public static String task_config_wizard_link_open_tasks_view;
 	public static String task_config_wizard_button_variables;
-	
+	public static String task_config_wizard_button_variables_configure;
+	public static String task_config_wizard_button_variables_prompt;
+	public static String task_config_wizard_button_variables_prompt_tip;
+
 	public static String task_config_wizard_dialog_button_save;
 	
 	public static String task_config_wizard_page_settings_create_task;
@@ -55,7 +58,8 @@ public class TaskUIMessages extends NLS {
 	public static String task_config_wizard_page_task_control_label_descr;
 	public static String task_config_wizard_page_task_text_label_task_id;
 	public static String task_config_wizard_page_task_create_folder_label;
-	
+	public static String task_config_wizard_page_task_no_task_types_available;
+
 	public static String task_config_wizard_stub_title_create_task;
 	public static String task_config_wizard_stub_page_name_void;
 	

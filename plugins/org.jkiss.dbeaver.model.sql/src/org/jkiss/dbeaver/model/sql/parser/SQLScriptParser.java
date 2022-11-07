@@ -642,14 +642,14 @@ public class SQLScriptParser {
         if (element == null || CommonUtils.isEmpty(element.getText())) {
             return null;
         }
-        if (element instanceof SQLQuery && context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
+        if (element instanceof SQLQuery) {
             SQLQuery query = (SQLQuery) element;
-            query.setParameters(parseParameters(context, query.getOffset(), query.getLength()));
+            query.setParameters(parseParametersAndVariables(context, query.getOffset(), query.getLength()));
         }
         return element;
     }
 
-    public static List<SQLQueryParameter> parseParameters(SQLParserContext context, int queryOffset, int queryLength) {
+    public static List<SQLQueryParameter> parseParametersAndVariables(SQLParserContext context, int queryOffset, int queryLength) {
         final SQLDialect sqlDialect = context.getDialect();
         IDocument document = context.getDocument();
         if (queryOffset + queryLength > document.getLength()) {
@@ -657,7 +657,8 @@ public class SQLScriptParser {
             queryLength = document.getLength() - queryOffset;
         }
         SQLSyntaxManager syntaxManager = context.getSyntaxManager();
-        boolean supportParamsInEmbeddedCode = context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED);
+        boolean supportParamsInEmbeddedCode =
+            context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED);
         boolean execQuery = false;
         boolean ddlQuery = false;
         boolean insideDollarQuote = false;
@@ -666,65 +667,70 @@ public class SQLScriptParser {
         ruleScanner.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;
-        for (; ; ) {
-            TPToken token = ruleScanner.nextToken();
-            final int tokenOffset = ruleScanner.getTokenOffset();
-            final int tokenLength = ruleScanner.getTokenLength();
-            if (token.isEOF() || tokenOffset > queryOffset + queryLength) {
-                break;
-            }
-            // Handle only parameters which are not in SQL blocks
-            SQLTokenType tokenType = token instanceof TPTokenDefault ? (SQLTokenType) ((TPTokenDefault)token).getData() : null;
-            if (token.isWhitespace() || tokenType == SQLTokenType.T_COMMENT) {
-                continue;
-            }
-            if (firstKeyword) {
-                // Detect query type
-                try {
-                    String tokenText = document.get(tokenOffset, tokenLength);
-                    if (ArrayUtils.containsIgnoreCase(sqlDialect.getDDLKeywords(), tokenText)) {
-                        // DDL doesn't support parameters
-                        ddlQuery = true;
-                    } else {
-                        execQuery = ArrayUtils.containsIgnoreCase(sqlDialect.getExecuteKeywords(), tokenText);
-                    }
-                } catch (BadLocationException e) {
-                    log.warn(e);
+        if (syntaxManager.isParametersEnabled()) {
+            for (; ; ) {
+                TPToken token = ruleScanner.nextToken();
+                final int tokenOffset = ruleScanner.getTokenOffset();
+                final int tokenLength = ruleScanner.getTokenLength();
+                if (token.isEOF() || tokenOffset > queryOffset + queryLength) {
+                    break;
                 }
-                firstKeyword = false;
-            }
-
-
-            if (tokenType == SQLTokenType.T_BLOCK_TOGGLE) {
-                insideDollarQuote = !insideDollarQuote;
-            }
-
-            if (tokenType == SQLTokenType.T_PARAMETER && tokenLength > 0) {
-                try {
-                    String paramName = document.get(tokenOffset, tokenLength);
-                    if (!supportParamsInEmbeddedCode && (ddlQuery || insideDollarQuote)) {
-                        continue;
+                // Handle only parameters which are not in SQL blocks
+                SQLTokenType tokenType = token instanceof TPTokenDefault
+                                         ? (SQLTokenType) ((TPTokenDefault) token).getData()
+                                         : null;
+                if (token.isWhitespace() || tokenType == SQLTokenType.T_COMMENT) {
+                    continue;
+                }
+                if (firstKeyword) {
+                    // Detect query type
+                    try {
+                        String tokenText = document.get(tokenOffset, tokenLength);
+                        if (ArrayUtils.containsIgnoreCase(sqlDialect.getDDLKeywords(), tokenText)) {
+                            // DDL doesn't support parameters
+                            ddlQuery = true;
+                        } else {
+                            execQuery = ArrayUtils.containsIgnoreCase(sqlDialect.getExecuteKeywords(), tokenText);
+                        }
+                    } catch (BadLocationException e) {
+                        log.warn(e);
                     }
-                    if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {
-                        // Skip ? parameters for stored procedures (they have special meaning? [DB2])
-                        continue;
+                    firstKeyword = false;
+                }
+
+
+                if (tokenType == SQLTokenType.T_BLOCK_TOGGLE) {
+                    insideDollarQuote = !insideDollarQuote;
+                }
+
+                if (tokenType == SQLTokenType.T_PARAMETER && tokenLength > 0) {
+                    try {
+                        String paramName = document.get(tokenOffset, tokenLength);
+                        if (!supportParamsInEmbeddedCode && (ddlQuery || insideDollarQuote)) {
+                            continue;
+                        }
+                        if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {
+                            // Skip ? parameters for stored procedures (they have special meaning? [DB2])
+                            continue;
+                        }
+
+                        if (parameters == null) {
+                            parameters = new ArrayList<>();
+                        }
+
+                        SQLQueryParameter parameter = new SQLQueryParameter(
+                            syntaxManager,
+                            parameters.size(),
+                            paramName,
+                            tokenOffset - queryOffset,
+                            tokenLength
+                        );
+
+                        parameter.setPrevious(getPreviousParameter(parameters, parameter));
+                        parameters.add(parameter);
+                    } catch (BadLocationException e) {
+                        log.warn("Can't extract query parameter", e);
                     }
-
-                    if (parameters == null) {
-                        parameters = new ArrayList<>();
-                    }
-
-                    SQLQueryParameter parameter = new SQLQueryParameter(
-                        syntaxManager,
-                        parameters.size(),
-                        paramName,
-                        tokenOffset - queryOffset,
-                        tokenLength);
-
-                    parameter.setPrevious(getPreviousParameter(parameters, parameter));
-                    parameters.add(parameter);
-                } catch (BadLocationException e) {
-                    log.warn("Can't extract query parameter", e);
                 }
             }
         }
@@ -807,12 +813,12 @@ public class SQLScriptParser {
             parserContext.endScriptEvaluation();
         }
 
-        if (parseParameters && parserContext.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
+        if (parseParameters) {
             // Parse parameters
             for (SQLScriptElement element : queryList) {
                 if (element instanceof SQLQuery) {
                     SQLQuery query = (SQLQuery) element;
-                    (query).setParameters(parseParameters(parserContext, query.getOffset(), query.getLength()));
+                    (query).setParameters(parseParametersAndVariables(parserContext, query.getOffset(), query.getLength()));
                 }
             }
         }

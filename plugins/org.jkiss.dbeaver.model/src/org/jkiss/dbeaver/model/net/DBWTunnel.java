@@ -34,6 +34,8 @@ public interface DBWTunnel extends DBWNetworkHandler, DBWForwarder {
 
     AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration);
 
+    AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration, String prefix);
+
     void closeTunnel(DBRProgressMonitor monitor)
         throws DBException, IOException;
 

@@ -303,7 +303,11 @@ public class JSONUtils {
 
     @NotNull
     public static Map<String, Object> parseMap(@NotNull Gson gson, @NotNull Reader reader) {
-        return gson.fromJson(reader, new TypeToken<Map<String, Object>>(){}.getType());
+        Map<String, Object> result = gson.fromJson(reader, new TypeToken<Map<String, Object>>() {}.getType());
+        if (result == null) {
+            return new LinkedHashMap<>();
+        }
+        return result;
     }
 
     @NotNull

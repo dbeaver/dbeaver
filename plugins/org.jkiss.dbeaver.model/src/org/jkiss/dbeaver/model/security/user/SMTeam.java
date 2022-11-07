@@ -19,25 +19,24 @@ package org.jkiss.dbeaver.model.security.user;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class SMTeam {
-    private final String teamId;
+public class SMTeam extends SMSubject {
+
     private String name;
     private String description;
-
     private Set<String> permissions = new LinkedHashSet<>();
 
     public SMTeam(String teamId) {
-        this.teamId = teamId;
+        this(teamId, null, null);
     }
 
     public SMTeam(String teamId, String name, String description) {
-        this.teamId = teamId;
+        super(teamId, null);
         this.name = name;
         this.description = description;
     }
 
     public String getTeamId() {
-        return teamId;
+        return subjectId;
     }
 
     public String getName() {
@@ -70,7 +69,7 @@ public class SMTeam {
 
     @Override
     public String toString() {
-        return teamId;
+        return getTeamId();
     }
 }
 
