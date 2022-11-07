@@ -818,6 +818,9 @@ public class DataSourceDescriptor
 
     @Override
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
+        if (secretsResolved) {
+            return;
+        }
         String secretValue = secretController.getSecretValue(
             getSecretKeyId());
         if (secretValue != null) {
