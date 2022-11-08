@@ -810,7 +810,8 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters, boolean castParams) {
+    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters, 
+	                                        boolean castParams) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         if (parameters != null) {
             inParameters.addAll(parameters);
