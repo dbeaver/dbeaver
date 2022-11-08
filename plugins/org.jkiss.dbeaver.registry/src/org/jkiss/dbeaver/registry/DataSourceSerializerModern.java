@@ -548,14 +548,18 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 }
                 dataSource.setName(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME));
                 dataSource.setDescription(JSONUtils.getString(conObject, RegistryConstants.TAG_DESCRIPTION));
-                dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
+                boolean savePassword = JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD);
+                dataSource.setSavePassword(savePassword);
                 dataSource.setSharedCredentials(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SHARED_CREDENTIALS));
                 dataSource.setTemplate(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_TEMPLATE));
 
                 DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
-                navSettings.setShowSystemObjects(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS));
-                navSettings.setShowUtilityObjects(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
-                navSettings.setShowOnlyEntities(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
+                navSettings.setShowSystemObjects(JSONUtils.getBoolean(conObject,
+                    DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS));
+                navSettings.setShowUtilityObjects(JSONUtils.getBoolean(conObject,
+                    DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
+                navSettings.setShowOnlyEntities(JSONUtils.getBoolean(conObject,
+                    DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
                 navSettings.setHideFolders(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS));
                 navSettings.setHideSchemas(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS));
                 navSettings.setHideVirtualModel(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL));
@@ -582,9 +586,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                             readPlainCredentials(cfgObject) :
                             readSecuredCredentials(dataSource, null, null);
                         config.setUserName(creds.getUserName());
-                        if (dataSource.isSavePassword()) {
+                        if (savePassword) {
                             config.setUserPassword(creds.getUserPassword());
                         }
+                        dataSource.forgetSecrets();
                     }
                     {
                         // Still try to read credentials directly from configuration (#6564)

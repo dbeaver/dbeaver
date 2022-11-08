@@ -493,10 +493,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     public void addDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         addDataSourceToList(descriptor);
+        descriptor.persistSecretIfNeeded(true);
         if (!descriptor.isDetached()) {
             persistDataSourceUpdate(dataSource);
         }
-        descriptor.persistSecretIfNeeded(true);
         notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
     }
 

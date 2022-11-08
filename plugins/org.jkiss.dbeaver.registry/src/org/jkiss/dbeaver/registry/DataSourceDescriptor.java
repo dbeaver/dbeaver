@@ -158,7 +158,10 @@ public class DataSourceDescriptor
     private volatile boolean disposed = false;
     private volatile boolean connecting = false;
 
+    // secrets resolved from secret controller
     private volatile boolean secretsResolved = false;
+    // secrets resolved from secret controller and secret not null
+    private volatile boolean secretExist = false;
 
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWNetworkHandler proxyHandler;
@@ -371,6 +374,15 @@ public class DataSourceDescriptor
     }
 
     public boolean isSavePassword() {
+        try {
+            resolveSecretsIfNeeded();
+        } catch (DBException e) {
+            log.error("Error during credentials resolving", e);
+            return false;
+        }
+        if (getProject().isUseSecretStorage()) {
+            return (secretsResolved && secretExist) || sharedCredentials;
+        }
         return savePassword;
     }
 
@@ -446,6 +458,11 @@ public class DataSourceDescriptor
         } else {
             connectionInfo.getBootstrap().setDefaultAutoCommit(autoCommit);
         }
+    }
+
+    public void forgetSecrets() {
+        this.secretsResolved = false;
+        this.secretExist = false;
     }
 
     @Override
@@ -810,22 +827,21 @@ public class DataSourceDescriptor
 
     @Override
     public void persistSecrets(DBSSecretController secretController) throws DBException {
+        var secret = saveToSecret();
         secretController.setSecretValue(
             getSecretKeyId(),
-            saveToSecret()
+            secret
         );
 
         secretsResolved = true;
+        secretExist = secret != null;
     }
 
     @Override
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
-        if (secretsResolved) {
-            return;
-        }
-        String secretValue = secretController.getSecretValue(
-            getSecretKeyId());
-        if (secretValue != null) {
+        String secretValue = secretController.getSecretValue(getSecretKeyId());
+        this.secretExist = secretValue != null;
+        if (secretExist) {
             loadFromSecret(secretValue);
         } else {
             if (!DBWorkbench.isDistributed()) {
@@ -857,8 +873,8 @@ public class DataSourceDescriptor
         if (getProject().isUseSecretStorage()) {
             // Resolve secrets
             secretController = DBSSecretController.getProjectSecretController(getProject());
-            resolveSecrets(secretController);
         }
+        resolveSecretsIfNeeded();
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
 
@@ -1052,6 +1068,14 @@ public class DataSourceDescriptor
             monitor.done();
             connecting = false;
         }
+    }
+
+    private void resolveSecretsIfNeeded() throws DBException {
+        if (secretsResolved || !getProject().isUseSecretStorage()) {
+            return;
+        }
+        var secretController = DBSSecretController.getProjectSecretController(getProject());
+        resolveSecrets(secretController);
     }
 
     private boolean askForSSHJumpServerPassword(@NotNull DBWHandlerConfiguration tunnelConfiguration) {
@@ -1799,7 +1823,7 @@ public class DataSourceDescriptor
      */
     @Nullable
     private String saveToSecret() {
-        if (isSharedCredentials()) {
+        if (isSharedCredentials() || !savePassword) {
             return null;
         }
         Map<String, Object> props = new LinkedHashMap<>();
