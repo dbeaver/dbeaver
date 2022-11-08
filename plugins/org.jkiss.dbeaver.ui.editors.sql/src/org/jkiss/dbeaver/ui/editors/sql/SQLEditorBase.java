@@ -512,7 +512,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             ruler,
             overviewRuler,
             true,
-            styles);
+            styles,
+            this::getActivePreferenceStore
+        );
     }
 
     @Override
