@@ -146,7 +146,11 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     public boolean isInsertOption() {
         return false;
     }
-    
+
+    /*
+    Whether generator supports 'cast parameters' (or not) feature -
+    if yes, additional checkbox in the SQL dialog will be shown
+     */
     public boolean supportCastParams() {
         return false;
     }
