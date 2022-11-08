@@ -150,6 +150,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     /**
     Whether generator supports 'cast parameters' (or not) feature -
     if yes, additional checkbox in the SQL dialog will be shown
+    
     @return boolean
     */
     public boolean supportCastParams() {

@@ -67,7 +67,6 @@ class SQLGeneratorDialog extends ViewSQLDialog {
         boolean supportFullDDL = false;
         boolean supportSeparateFKStatements = false;
         boolean supportsPartitionsDDL = false;
-        boolean supportsCastParams = sqlGenerator.supportCastParams();
         for (Object object : sqlGenerator.getObjects()) {
             if (object instanceof DBPScriptObjectExt2) {
                 DBPScriptObjectExt2 sourceObject = (DBPScriptObjectExt2) object;
@@ -268,7 +267,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 }
             });
         }
-        if (supportsCastParams) {
+        if (sqlGenerator.supportCastParams()) {
             Button supportsCastParamsButton = UIUtils.createCheckbox(
                     settings,
                     SQLEditorMessages.sql_generator_dialog_button_show_cast_params,
