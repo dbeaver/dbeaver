@@ -341,7 +341,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver.addDriverLibrary(lib, false);
                     } else if (!CommonUtils.isEmpty(version)) {
                         // Overwrite version only if it is higher than the original one
-                        String preferredVersion = lib.getPreferredVersion();
+                        String preferredVersion = CommonUtils.toString(lib.getPreferredVersion(), "0");
                         int versionMatch = VersionUtils.compareVersions(version, preferredVersion);
                         if (versionMatch > 0) {
                             // Version in config higher than in bundles. Probably a manual update - just overwrite it.

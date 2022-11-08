@@ -229,6 +229,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 }
             });
         }
+
+        UIUtils.executeOnResize(parent, () -> parent.getParent().layout(true, true));
     }
 
     private static void setNumberEditStyles(Text text) {
@@ -688,8 +690,6 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 default:
                     break;
             }
-
-            getParent().getParent().getParent().layout(true, true);
         }
 
         private void showPasswordField(boolean show, String passwordLabelText) {

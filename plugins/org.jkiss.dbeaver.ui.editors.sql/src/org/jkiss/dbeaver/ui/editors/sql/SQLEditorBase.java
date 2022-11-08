@@ -792,7 +792,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             return null;
         }
         SQLParserContext context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
-        return SQLScriptParser.parseParameters(context, 0, query.getLength());
+        return SQLScriptParser.parseParametersAndVariables(context, 0, query.getLength());
     }
 
     public boolean isDisposed() {

@@ -61,4 +61,10 @@
         </propertyTester>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.productFeature">
+        <feature id="database"/>
+        <feature parent="database" id="administration"/>
+        <feature parent="database/administration" id="advanced"/>
+    </extension>
+
 </plugin>

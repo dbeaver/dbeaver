@@ -162,7 +162,6 @@ public class ClickhouseDataSource extends GenericDataSource {
         // For now - Clickhouse driver return us empty list as indexInfo and we can't create Clickhouse indexes via DBeaver UI
         // So far we turn off indexes
         info.setSupportsIndexes(false);
-        this.getContainer().getPreferenceStore().setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, true);
         return info;
     }
 
