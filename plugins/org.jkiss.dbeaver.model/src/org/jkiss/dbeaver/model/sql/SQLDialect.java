@@ -440,8 +440,12 @@ public interface SQLDialect {
      * Formats stored procedure call. By default returns @sqlText.
      */
     String formatStoredProcedureCall(DBPDataSource dataSource, String sqlText);
-    
-    void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters, boolean castParams);
+
+    /**
+     * Generates stored procedure call. Parameters (optionally) can be surrounded by cast(:param as paramType).
+     */
+    void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters,
+                                     boolean castParams);
 
     boolean isDisableScriptEscapeProcessing();
 
