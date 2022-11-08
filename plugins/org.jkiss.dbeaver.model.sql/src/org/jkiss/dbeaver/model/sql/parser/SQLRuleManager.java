@@ -75,7 +75,8 @@ public class SQLRuleManager {
                 if (predicateRule.getSuccessToken() instanceof TPTokenAbstract) {
                     final TPTokenAbstract<?> token = (TPTokenAbstract<?>) predicateRule.getSuccessToken();
                     final Object tokenData = token.getData();
-                    if (tokenData instanceof TPTokenType && ((TPTokenType) tokenData).getTokenType() == requiredType.getTokenType()) {
+                    if ((tokenData instanceof TPTokenType && ((TPTokenType) tokenData).getTokenType() == requiredType.getTokenType()) ||
+                        (syntaxManager.commandsInComments() && requiredType == SQLTokenType.T_COMMENT && rule instanceof SQLCommandRule)) {
                         rules.add(rule);
                     }
                 }
@@ -114,20 +115,16 @@ public class SQLRuleManager {
             ruleProvider.extendRules(dataSourceContainer, rules, TPRuleProvider.RulePosition.INITIAL);
         }
 
-        // Add rule for single-line comments.
-        for (String lineComment : dialect.getSingleLineComments()) {
-            if (lineComment.startsWith("^")) {
-                rules.add(new LineCommentRule(lineComment, commentToken, (char) 0, false, true));
-            } else {
-                rules.add(new EndOfLineRule(lineComment, commentToken, (char) 0, false, true));
-            }
-        }
-
         if (ruleProvider != null) {
             ruleProvider.extendRules(dataSourceContainer, rules, TPRuleProvider.RulePosition.CONTROL);
         }
 
         if (!minimalRules) {
+            // Parameter rule
+            for (String npPrefix : syntaxManager.getNamedParameterPrefixes()) {
+                rules.add(new ScriptParameterRule(syntaxManager, parameterToken, npPrefix));
+            }
+            
             final SQLControlToken controlToken = new SQLControlToken();
 
             try {
@@ -141,11 +138,10 @@ public class SQLRuleManager {
                 log.error(e);
             }
         }
-        {
-            if (!minimalRules && syntaxManager.isVariablesEnabled()) {
-                // Variable rule
-                rules.add(new ScriptVariableRule(parameterToken));
-            }
+        
+        if (!minimalRules && syntaxManager.isVariablesEnabled()) {
+            // Variable rule
+            rules.add(new ScriptVariableRule(parameterToken));
         }
 
         // Decides whether the pattern can be accepted by hitting EOF instead of the end sequence.
@@ -178,6 +174,15 @@ public class SQLRuleManager {
         }
         if (ruleProvider != null) {
             ruleProvider.extendRules(dataSourceContainer, rules, TPRuleProvider.RulePosition.QUOTES);
+        }
+        
+        // Add rule for single-line comments.
+        for (String lineComment : dialect.getSingleLineComments()) {
+            if (lineComment.startsWith("^")) {
+                rules.add(new LineCommentRule(lineComment, commentToken, (char) 0, false, true));
+            } else {
+                rules.add(new EndOfLineRule(lineComment, commentToken, (char) 0, false, true));
+            }
         }
 
         // Add rules for multi-line comments
@@ -217,11 +222,6 @@ public class SQLRuleManager {
         }
 
         if (!minimalRules) {
-            // Parameter rule
-            for (String npPrefix : syntaxManager.getNamedParameterPrefixes()) {
-                rules.add(new ScriptParameterRule(syntaxManager, parameterToken, npPrefix));
-            }
-            
             // Add word rule for keywords, functions, types, and constants.
             SQLWordRule wordRule = new SQLWordRule(delimRule, typeToken, otherToken, dialect);
             for (String reservedWord : dialect.getReservedWords()) {

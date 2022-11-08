@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Stream;
 
 /**
  * SQLSyntaxManager.
@@ -52,6 +53,7 @@ public class SQLSyntaxManager {
     private String[] namedParameterPrefixes;
     private String controlCommandPrefix;
     private boolean variablesEnabled;
+    private boolean commandsInComments;
     @NotNull
     private String catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
     @NotNull
@@ -132,6 +134,10 @@ public class SQLSyntaxManager {
         return variablesEnabled;
     }
 
+    public boolean commandsInComments() {
+        return commandsInComments;
+    }
+    
     public void init(@NotNull SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)
     {
         this.statementDelimiters = new String[0];
@@ -181,6 +187,8 @@ public class SQLSyntaxManager {
         if (CommonUtils.isEmpty(this.controlCommandPrefix)) {
             this.controlCommandPrefix = SQLConstants.DEFAULT_CONTROL_COMMAND_PREFIX;
         }
+        
+        this.commandsInComments = Stream.of(dialect.getSingleLineComments()).anyMatch(c -> this.controlCommandPrefix.startsWith(c));
     }
 
     @NotNull
