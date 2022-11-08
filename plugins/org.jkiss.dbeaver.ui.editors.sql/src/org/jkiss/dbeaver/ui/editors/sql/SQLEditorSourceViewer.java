@@ -22,11 +22,21 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.VerifyKeyListener;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class SQLEditorSourceViewer extends ProjectionViewer {
 
+    private final LinkedList<VerifyKeyListener> verifyKeyListeners = new LinkedList<>(); 
+    
     /**
      * Creates an instance of this class with the given parameters.
      *
@@ -50,6 +60,25 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
     @Override
     protected StyledText createTextWidget(Composite parent, int styles) {
         StyledText textWidget = super.createTextWidget(parent, styles);
+        textWidget.addListener(ST.VerifyKey, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                switch (event.type) {
+                    case ST.VerifyKey: {
+                        if (event.character == '\t') {
+                            VerifyEvent verifyEvent = new VerifyEvent(event);
+                            verifyEvent.character = '\n';
+                            for (VerifyKeyListener listener : List.copyOf(verifyKeyListeners)) {
+                                listener.verifyKey(verifyEvent);
+                            }
+                            event.doit = verifyEvent.doit;
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+        
         //textWidget.setAlwaysShowScrollBars(false);
         return textWidget;
     }
@@ -62,5 +91,22 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
         }
         super.setHyperlinkPresenter(hyperlinkPresenter);
     }
-
+    
+    @Override
+    public void prependVerifyKeyListener(VerifyKeyListener listener) {
+        verifyKeyListeners.addFirst(listener);
+        super.prependVerifyKeyListener(listener);
+    }
+    
+    @Override
+    public void appendVerifyKeyListener(VerifyKeyListener listener) {
+        verifyKeyListeners.addLast(listener);
+        super.appendVerifyKeyListener(listener);
+    }
+    
+    @Override
+    public void removeVerifyKeyListener(VerifyKeyListener listener) {
+        verifyKeyListeners.remove(listener);
+        super.removeVerifyKeyListener(listener);
+    }
 }
