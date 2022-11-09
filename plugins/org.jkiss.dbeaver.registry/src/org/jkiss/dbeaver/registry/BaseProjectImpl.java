@@ -377,6 +377,20 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     @Override
+    public void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath) {
+        loadMetadata();
+        oldResourcePath = normalizeResourcePath(oldResourcePath);
+        newResourcePath = normalizeResourcePath(newResourcePath);
+        synchronized (metadataSync) {
+            Map<String, Object> resProps = resourceProperties.remove(oldResourcePath);
+            if (resProps != null) {
+                resourceProperties.put(newResourcePath, resProps);
+            }
+        }
+        flushMetadata();
+    }
+
+    @Override
     public void refreshProject(DBRProgressMonitor monitor) {
 
     }
