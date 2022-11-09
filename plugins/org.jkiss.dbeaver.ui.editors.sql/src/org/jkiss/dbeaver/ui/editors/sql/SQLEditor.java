@@ -128,8 +128,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -423,7 +423,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         checkConnected(false, status -> UIUtils.asyncExec(() -> {
             if (!status.isOK()) {
-                DBWorkbench.getPlatformUI().showError("Can't connect to database", "Error connecting to datasource", status);
+                DBWorkbench.getPlatformUI().showError(
+                    "Can't connect to database", "Connection to '" + container.getName() + "' cannot be established.", status);
             }
             setFocus();
         }));
