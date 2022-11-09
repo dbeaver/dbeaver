@@ -40,6 +40,8 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
+import org.eclipse.ui.internal.IWorkbenchGraphicConstants;
+import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
@@ -1410,7 +1412,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void addDefaultPanelActions() {
-        panelToolBar.add(new Action(ResultSetMessages.result_set_view_menu_text, DBeaverIcons.getViewMenuImageDescriptor()) {
+        panelToolBar.add(new Action(ResultSetMessages.result_set_view_menu_text, WorkbenchImages.getImageDescriptor(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU)) {
             @Override
             public void run() {
                 ToolBar tb = panelToolBar.getControl();
