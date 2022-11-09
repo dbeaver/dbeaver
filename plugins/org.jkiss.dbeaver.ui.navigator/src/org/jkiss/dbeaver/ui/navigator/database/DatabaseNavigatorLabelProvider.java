@@ -211,6 +211,9 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
                 if (ds.isProvided()) {
                     info.append("Provided connection\n");
                 }
+                if (ds.getConnectionError() != null) {
+                    info.append("\nError:").append(ds.getConnectionError());
+                }
 
                 return info.toString().trim();
 
