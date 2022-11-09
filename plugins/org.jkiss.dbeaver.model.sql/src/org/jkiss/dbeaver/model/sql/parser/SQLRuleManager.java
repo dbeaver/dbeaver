@@ -75,8 +75,7 @@ public class SQLRuleManager {
                 if (predicateRule.getSuccessToken() instanceof TPTokenAbstract) {
                     final TPTokenAbstract<?> token = (TPTokenAbstract<?>) predicateRule.getSuccessToken();
                     final Object tokenData = token.getData();
-                    if ((tokenData instanceof TPTokenType && ((TPTokenType) tokenData).getTokenType() == requiredType.getTokenType()) ||
-                        (syntaxManager.commandsInComments() && requiredType == SQLTokenType.T_COMMENT && rule instanceof SQLCommandRule)) {
+                    if (tokenData instanceof TPTokenType && ((TPTokenType) tokenData).getTokenType() == requiredType.getTokenType()) {
                         rules.add(rule);
                     }
                 }
