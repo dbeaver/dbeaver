@@ -2022,7 +2022,11 @@ public class ResultSetViewer extends Viewer
         if (statusLabel == null || statusLabel.isDisposed()) {
             return;
         }
+        if (statusLabel.getMessageType() == messageType && CommonUtils.equalObjects(statusLabel.getMessage(), status)) {
+            return;
+        }
         statusLabel.setStatus(status, messageType);
+        ((RowData)statusLabel.getLayoutData()).width = statusLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         rowCountLabel.updateActionState();
 
 /*
