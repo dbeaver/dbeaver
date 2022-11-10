@@ -537,6 +537,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                             if (obj instanceof DriverLibraryAbstract) {
                                 driver.resetDriverInstance();
                                 libraries.remove(obj);
+                                changeLibContent();
                             }
                         }
                     }
@@ -738,6 +739,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         if (updateVersionButton != null) {
             updateVersionButton.setEnabled(hasDownloads);
         }
+        detailsButton.setEnabled(hasFiles);
+        classListCombo.setEnabled(hasFiles);
     }
 
     private void changeLibSelection() {
