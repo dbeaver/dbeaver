@@ -55,6 +55,10 @@
             'org.jkiss.dbeaver.hex.editor.color.caret=80,80,80'
             'org.jkiss.dbeaver.hex.editor.color.text=255,255,255'
 
+            'org.jkiss.dbeaver.xml.editor.color.tag=0,143,207'
+            'org.jkiss.dbeaver.xml.editor.color.text=255,255,255'
+            'org.jkiss.dbeaver.xml.editor.color.comment=255,0,0'
+
             'org.jkiss.dbeaver.color.connectionType.qa.background=0,115,0'
             'org.jkiss.dbeaver.color.connectionType.prod.background=140,0,0'
 
