@@ -839,14 +839,16 @@ public class DataSourceDescriptor
 
     @Override
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
-        String secretValue = secretController.getSecretValue(getSecretKeyId());
-        this.secretExist = secretValue != null;
-        if (secretExist) {
-            loadFromSecret(secretValue);
-        } else {
-            if (!DBWorkbench.isDistributed()) {
-                // Backward compatibility
-                loadFromLegacySecret(secretController);
+        if (!isSharedCredentials()) {
+            String secretValue = secretController.getSecretValue(getSecretKeyId());
+            this.secretExist = secretValue != null;
+            if (secretExist) {
+                loadFromSecret(secretValue);
+            } else {
+                if (!DBWorkbench.isDistributed()) {
+                    // Backward compatibility
+                    loadFromLegacySecret(secretController);
+                }
             }
         }
         secretsResolved = true;
