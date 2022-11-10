@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.source.IOverviewRuler;
@@ -28,8 +27,6 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -72,23 +69,22 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
     @Override
     protected StyledText createTextWidget(Composite parent, int styles) {
         StyledText textWidget = super.createTextWidget(parent, styles);
-        textWidget.addListener(ST.VerifyKey, new Listener() {
-            @Override
-            public void handleEvent(Event event) {
-                switch (event.type) {
-                    case ST.VerifyKey: {
-                        if (currentPrefStoreSupplier.get().getBoolean(SQLPreferenceConstants.TAB_AUTOCOMPLETION)
-                            && event.character == '\t'
-                        ) {
-                            VerifyEvent verifyEvent = new VerifyEvent(event);
-                            verifyEvent.character = '\n';
-                            for (VerifyKeyListener listener : List.copyOf(verifyKeyListeners)) {
-                                listener.verifyKey(verifyEvent);
-                            }
-                            event.doit = verifyEvent.doit;
+        textWidget.addListener(ST.VerifyKey, event -> {
+            // It is a hack to allow auto-complete with TAB key (#2316)
+            // TODO: perhaps we should test ContentAssistant.isProposalPopupActive() here?
+            switch (event.type) {
+                case ST.VerifyKey: {
+                    if (event.character == '\t'
+                        && currentPrefStoreSupplier.get().getBoolean(SQLPreferenceConstants.TAB_AUTOCOMPLETION)
+                    ) {
+                        VerifyEvent verifyEvent = new VerifyEvent(event);
+                        verifyEvent.character = '\n';
+                        for (VerifyKeyListener listener : List.copyOf(verifyKeyListeners)) {
+                            listener.verifyKey(verifyEvent);
                         }
-                        break;
+                        event.doit = verifyEvent.doit;
                     }
+                    break;
                 }
             }
         });
