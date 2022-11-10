@@ -1001,16 +1001,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return false;
     }
 
-    public boolean removeDriverLibrary(DBPDriverLibrary lib) {
-        resetDriverInstance();
-        if (!lib.isCustom()) {
-            lib.setDisabled(true);
-            return true;
-        } else {
-            return this.libraries.remove(lib);
-        }
-    }
-
     public void disabledAllDefaultLibraries() {
         libraries.stream()
                 .filter(s -> !s.isCustom())

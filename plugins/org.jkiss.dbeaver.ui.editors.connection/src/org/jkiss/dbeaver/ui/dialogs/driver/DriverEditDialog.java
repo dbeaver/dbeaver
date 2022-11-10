@@ -535,7 +535,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
                     if (UIUtils.confirmAction(getShell(), UIConnectionMessages.dialog_edit_driver_dialog_delete_library_title, UIConnectionMessages.dialog_edit_driver_dialog_delete_library_message)) {
                         for (Object obj : selection.toArray()) {
                             if (obj instanceof DriverLibraryAbstract) {
-                                libraries.remove((DriverLibraryAbstract) obj);
+                                driver.resetDriverInstance();
+                                libraries.remove(obj);
                             }
                         }
                     }
