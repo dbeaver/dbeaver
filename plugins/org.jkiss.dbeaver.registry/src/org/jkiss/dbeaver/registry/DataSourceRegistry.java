@@ -306,6 +306,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             }
         }
         dataSourceFolders.remove(folderImpl);
+        persistDataFolderDelete(folder, dropContents);
     }
 
     private DataSourceFolder findRootFolder(String name) {
@@ -545,6 +546,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     protected void persistDataSourceUpdate(@NotNull DBPDataSourceContainer container) {
+        saveDataSources();
+    }
+
+    protected void persistDataFolderDelete(@NotNull DBPDataSourceFolder folder, boolean dropContents) {
         saveDataSources();
     }
 

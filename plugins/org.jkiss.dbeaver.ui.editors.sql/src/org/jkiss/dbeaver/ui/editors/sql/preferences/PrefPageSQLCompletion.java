@@ -47,6 +47,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     private Spinner csAutoActivationDelaySpinner;
     private Button csAutoActivateOnKeystroke;
     private Button csAutoInsertCheck;
+    private Button csTabChoice;
     private Combo csInsertCase;
     private Button csReplaceWordAfter;
     private Button csHideDuplicates;
@@ -76,6 +77,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY) ||
             store.contains(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION) ||
             store.contains(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO) ||
+            store.contains(SQLPreferenceConstants.TAB_AUTOCOMPLETION) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_INSERT_CASE) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD) ||
             store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) ||
@@ -129,7 +131,12 @@ public class PrefPageSQLCompletion extends TargetPrefPage
                 SQLEditorMessages.pref_page_sql_completion_label_auto_insert_proposal,
                 SQLEditorMessages.pref_page_sql_completion_label_auto_insert_proposal_tip,
                 false, 2);
-
+            csTabChoice = UIUtils.createCheckbox(
+                    assistGroup,
+                    SQLEditorMessages.pref_page_sql_completion_label_autocomplete_by_tab,
+                    SQLEditorMessages.pref_page_sql_completion_label_autocomplete_by_tab_tip,
+                    false, 2);
+            
             UIUtils.createControlLabel(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_insert_case);
             csInsertCase = new Combo(assistGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             csInsertCase.add(SQLEditorMessages.pref_page_sql_insert_case_default);
@@ -173,6 +180,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
             csAutoActivateOnKeystroke.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
+            csTabChoice.setSelection(store.getBoolean(SQLPreferenceConstants.TAB_AUTOCOMPLETION));
             csInsertCase.select(store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE));
 
             csReplaceWordAfter.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD));
@@ -202,6 +210,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, csAutoActivationDelaySpinner.getSelection());
             store.setValue(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION, csAutoActivateOnKeystroke.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, csAutoInsertCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.TAB_AUTOCOMPLETION, csTabChoice.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());
             store.setValue(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD, csReplaceWordAfter.getSelection());
             store.setValue(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, csHideDuplicates.getSelection());
@@ -228,6 +237,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY);
         store.setToDefault(SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION);
         store.setToDefault(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO);
+        store.setToDefault(SQLPreferenceConstants.TAB_AUTOCOMPLETION);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
         store.setToDefault(SQLPreferenceConstants.ENABLE_HIPPIE);
 

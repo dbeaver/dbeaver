@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
@@ -40,10 +41,8 @@ import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * ObjectPropertyDescriptor
@@ -225,7 +224,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     @Nullable
     @Override
     public String[] getFeatures() {
-        List<String> features = new ArrayList<>();
+
+        List<String> features = Arrays.stream(propInfo.features())
+            .collect(Collectors.toList());
+
         if (this.isRequired()) features.add(DBConstants.PROP_FEATURE_REQUIRED);
         if (this.isSpecific()) features.add(DBConstants.PROP_FEATURE_SPECIFIC);
         if (this.isOptional()) features.add(DBConstants.PROP_FEATURE_OPTIONAL);
@@ -243,11 +245,13 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (this.isHref()) features.add(DBConstants.PROP_FEATURE_HREF);
         if (this.isViewable()) features.add(DBConstants.PROP_FEATURE_VIEWABLE);
         if (this.isPassword()) features.add(DBConstants.PROP_FEATURE_PASSWORD);
+
         return features.toArray(new String[0]);
     }
 
     @Override
     public boolean hasFeature(@NotNull String feature) {
+
         switch (feature) {
             case DBConstants.PROP_FEATURE_REQUIRED:
                 return this.isRequired();
@@ -280,7 +284,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             case DBConstants.PROP_FEATURE_PASSWORD:
                 return this.isPassword();
         }
-        return false;
+
+        return ArrayUtils.contains(propInfo.features(), feature);
     }
 
     private boolean getEditableValue(Object object)

@@ -533,6 +533,9 @@ public class GeneralUtils {
     }
 
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested) {
+        if (ex instanceof CoreException) {
+            return ((CoreException) ex).getStatus();
+        }
         // Skip chain of nested DBExceptions. Show only last message
         while (ex.getCause() != null && ex.getMessage() != null && ex.getMessage().equals(ex.getCause().getMessage())) {
             ex = ex.getCause();
