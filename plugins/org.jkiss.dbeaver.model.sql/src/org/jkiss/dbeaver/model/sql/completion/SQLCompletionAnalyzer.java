@@ -1061,7 +1061,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         return tableRefs;
     }
 
-    private static boolean isNamePartToken(TPToken tok) {
+    /**
+     * Checks if token is the name part token
+     */
+    public static boolean isNamePartToken(TPToken tok) {
         return tok.getData() == SQLTokenType.T_QUOTED
             || tok.getData() == SQLTokenType.T_KEYWORD
             || tok.getData() == SQLTokenType.T_OTHER;
