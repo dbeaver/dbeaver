@@ -84,9 +84,9 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
-        Composite group = (Composite) super.createDialogArea(parent);
+        Composite group = super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 

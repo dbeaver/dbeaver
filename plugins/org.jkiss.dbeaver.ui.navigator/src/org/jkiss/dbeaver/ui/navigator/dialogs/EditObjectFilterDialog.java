@@ -69,11 +69,11 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Composite createDialogArea(Composite parent) {
         getShell().setText(NLS.bind(UINavigatorMessages.dialog_filter_title, objectTitle));
         //getShell().setImage(DBIcon.EVENT.getImage());
 
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite composite = super.createDialogArea(parent);
 
         Composite topPanel = UIUtils.createPlaceholder(composite, globalFilter ? 1 : 2);
         topPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

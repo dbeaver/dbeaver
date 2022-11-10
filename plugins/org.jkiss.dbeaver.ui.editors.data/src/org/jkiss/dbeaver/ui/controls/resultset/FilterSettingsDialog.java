@@ -100,12 +100,12 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
         getShell().setText(ResultSetMessages.controls_resultset_filter_title);
         getShell().setImage(DBeaverIcons.getImage(UIIcon.FILTER));
 
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite composite = super.createDialogArea(parent);
 
         TabFolder tabFolder = new TabFolder(composite, SWT.NONE);
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));

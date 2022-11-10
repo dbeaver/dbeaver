@@ -45,8 +45,8 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
 {
     private static final String DIALOG_ID = "DBeaver.DriverLibraryDetailsDialog";//$NON-NLS-1$
 
-    private DBPDriver driver;
-    private DBPDriverLibrary library;
+    private final DBPDriver driver;
+    private final DBPDriverLibrary library;
 
     public DriverLibraryDetailsDialog(Shell shell, DBPDriver driver, DBPDriverLibrary library)
     {
@@ -62,12 +62,12 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
         getShell().setText(NLS.bind(UIConnectionMessages.dialog_edit_driver_text_driver_library, driver.getName(), library.getDisplayName())); //$NON-NLS-2$
         getShell().setImage(DBeaverIcons.getImage(library.getIcon()));
 
-        Composite group = (Composite) super.createDialogArea(parent);
+        Composite group = super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         group.setLayoutData(gd);

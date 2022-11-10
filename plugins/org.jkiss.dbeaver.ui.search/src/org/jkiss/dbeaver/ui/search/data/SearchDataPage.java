@@ -85,7 +85,6 @@ public class SearchDataPage extends AbstractSearchPage {
 
         Composite searchGroup = UIUtils.createComposite(parent, 1);
         searchGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-        setControl(searchGroup);
 
         searchText = new Combo(searchGroup, SWT.DROP_DOWN);
         searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -273,6 +272,8 @@ public class SearchDataPage extends AbstractSearchPage {
         }
 
         navigatorTree.setEnabled(true);
+
+        setControl(searchGroup);
     }
 
     @Override
