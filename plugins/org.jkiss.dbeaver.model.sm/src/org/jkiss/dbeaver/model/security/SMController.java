@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
 import org.jkiss.dbeaver.model.auth.SMAuthInfo;
+import org.jkiss.dbeaver.model.auth.SMSessionType;
 import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMObjectPermissions;
 import org.jkiss.dbeaver.model.security.user.SMTeam;
@@ -177,6 +178,11 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
      * @throws DBException the db exception
      */
     SMAuthPermissions getTokenPermissions() throws DBException;
+
+    ///////////////////////////////////////////
+    // API
+
+
 
     ///////////////////////////////////////////
     // Auth providers
