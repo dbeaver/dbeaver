@@ -171,6 +171,11 @@ public abstract class BaseProjectImpl implements DBPProject {
         return false;
     }
 
+    @Override
+    public boolean isPrivateProject() {
+        return true;
+    }
+
     @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
