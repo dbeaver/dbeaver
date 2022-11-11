@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IDataController;
@@ -139,6 +140,20 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
             }
         }
         leafletViewer.setGeometryData(geometries.toArray(new DBGeometry[0]));
+    }
+
+    @Override
+    public void dispose() {
+        // Edge uses its own callbacks which are not synchronized in any way with UI
+        // So if dispose is sent during that operation this will lead to initialization
+        // on already disposed composite, we don't want this at all
+        // We can prevent this error by delaying dispose operation to allow Edge to finish its
+        // initialization to be disposed properly
+        if (leafletViewer.getBrowser() != null) {
+            super.dispose();
+        } else {
+            UIUtils.timerExec(1000, super::dispose);
+        }
     }
 
     @Override

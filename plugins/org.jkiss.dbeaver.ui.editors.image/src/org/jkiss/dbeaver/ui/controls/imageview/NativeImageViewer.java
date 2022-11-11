@@ -34,17 +34,16 @@ import java.io.InputStream;
 /**
  * Image viewer control
  */
-public class ImageViewer extends Composite {
+public class NativeImageViewer extends AbstractImageViewer {
 
-    private ImageViewCanvas canvas;
+    private final ImageViewCanvas canvas;
     private IAction itemZoomIn;
     private IAction itemZoomOut;
     private IAction itemRotate;
     private IAction itemFit;
     private IAction itemOriginal;
 
-    public ImageViewer(Composite parent, int style)
-    {
+    public NativeImageViewer(Composite parent, int style) {
         super(parent, style);
 
         GridLayout gl = new GridLayout(1, false);
@@ -58,23 +57,25 @@ public class ImageViewer extends Composite {
         canvas.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Add DND support
-        Transfer[] types = new Transfer[] {ImageTransfer.getInstance()};
+        Transfer[] types = new Transfer[]{ImageTransfer.getInstance()};
         int operations = DND.DROP_COPY;
 
         final DragSource source = new DragSource(canvas, operations);
         source.setTransfer(types);
-        source.addDragListener (new DragSourceListener() {
+        source.addDragListener(new DragSourceListener() {
             @Override
             public void dragStart(DragSourceEvent event) {
             }
+
             @Override
-            public void dragSetData (DragSourceEvent event) {
+            public void dragSetData(DragSourceEvent event) {
                 if (canvas.getImageData() != null) {
                     event.data = canvas.getImageData();
                 } else {
                     event.data = null;
                 }
             }
+
             @Override
             public void dragFinished(DragSourceEvent event) {
             }
@@ -82,54 +83,65 @@ public class ImageViewer extends Composite {
 
     }
 
-    ImageViewCanvas getCanvas()
-    {
+    ImageViewCanvas getCanvas() {
         return canvas;
     }
 
-    public boolean loadImage(InputStream inputStream)
-    {
+    @Override
+    public boolean loadImage(InputStream inputStream) {
         canvas.loadImage(inputStream);
         return canvas.getError() == null;
     }
 
-    public boolean clearImage()
-    {
+    @Override
+    public boolean clearImage() {
         canvas.loadImage(null);
         return true;
     }
 
-    public SWTException getLastError()
-    {
+    public SWTException getLastError() {
         return canvas.getError();
     }
 
-    public String getImageDescription()
-    {
+    protected String getImageDescription() {
         ImageData imageData = getCanvas().getImageData();
 
-        return getImageType(imageData.type) + " " +
-            imageData.width + "x" + imageData.height + "x" + imageData.depth + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                "  "; //$NON-NLS-1$
+        return getImageType(imageData.type)
+               + " "
+               + imageData.width
+               + "x"
+               + imageData.height
+               + "x"
+               + imageData.depth
+               +
+               //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+               "  "; //$NON-NLS-1$
     }
 
-    public static String getImageType(int type)
-    {
+    protected String getImageType(int type) {
         switch (type) {
-        case SWT.IMAGE_BMP: return "BMP"; //$NON-NLS-1$
-        case SWT.IMAGE_BMP_RLE: return "BMP RLE"; //$NON-NLS-1$
-        case SWT.IMAGE_GIF: return "GIF"; //$NON-NLS-1$
-        case SWT.IMAGE_ICO: return "ICO"; //$NON-NLS-1$
-        case SWT.IMAGE_JPEG: return "JPEG"; //$NON-NLS-1$
-        case SWT.IMAGE_PNG: return "PNG"; //$NON-NLS-1$
-        case SWT.IMAGE_TIFF: return "TIFF"; //$NON-NLS-1$
-        case SWT.IMAGE_OS2_BMP: return "OS2 BMP"; //$NON-NLS-1$
-        default: return "UNKNOWN"; //$NON-NLS-1$
+            case SWT.IMAGE_BMP:
+                return "BMP"; //$NON-NLS-1$
+            case SWT.IMAGE_BMP_RLE:
+                return "BMP RLE"; //$NON-NLS-1$
+            case SWT.IMAGE_GIF:
+                return "GIF"; //$NON-NLS-1$
+            case SWT.IMAGE_ICO:
+                return "ICO"; //$NON-NLS-1$
+            case SWT.IMAGE_JPEG:
+                return "JPEG"; //$NON-NLS-1$
+            case SWT.IMAGE_PNG:
+                return "PNG"; //$NON-NLS-1$
+            case SWT.IMAGE_TIFF:
+                return "TIFF"; //$NON-NLS-1$
+            case SWT.IMAGE_OS2_BMP:
+                return "OS2 BMP"; //$NON-NLS-1$
+            default:
+                return "UNKNOWN"; //$NON-NLS-1$
         }
     }
 
-    public void updateActions()
-    {
+    protected void updateActions() {
         boolean hasImage = getCanvas().getSourceImage() != null;
         itemZoomIn.setEnabled(hasImage);
         itemZoomOut.setEnabled(hasImage);
@@ -138,12 +150,37 @@ public class ImageViewer extends Composite {
         itemOriginal.setEnabled(hasImage);
     }
 
-    public void fillToolBar(IContributionManager toolBar) {
-        itemZoomIn = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN, ImageViewMessages.controls_imageview_zoom_in, UIIcon.ZOOM_IN);
-        itemZoomOut = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT, ImageViewMessages.controls_imageview_zoom_out, UIIcon.ZOOM_OUT);
-        itemRotate = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE, ImageViewMessages.controls_imageview_rotate, UIIcon.ROTATE_LEFT);
-        itemFit = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT, ImageViewMessages.controls_imageview_fit_window, UIIcon.FIT_WINDOW);
-        itemOriginal = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL, ImageViewMessages.controls_imageview_original_size, UIIcon.ORIGINAL_SIZE);
+    protected void fillToolBar(IContributionManager toolBar) {
+        itemZoomIn = new ImageActionDelegate(
+            this,
+            ImageActionDelegate.TOOLBAR_ZOOMIN,
+            ImageViewMessages.controls_imageview_zoom_in,
+            UIIcon.ZOOM_IN
+        );
+        itemZoomOut = new ImageActionDelegate(
+            this,
+            ImageActionDelegate.TOOLBAR_ZOOMOUT,
+            ImageViewMessages.controls_imageview_zoom_out,
+            UIIcon.ZOOM_OUT
+        );
+        itemRotate = new ImageActionDelegate(
+            this,
+            ImageActionDelegate.TOOLBAR_ROTATE,
+            ImageViewMessages.controls_imageview_rotate,
+            UIIcon.ROTATE_LEFT
+        );
+        itemFit = new ImageActionDelegate(
+            this,
+            ImageActionDelegate.TOOLBAR_FIT,
+            ImageViewMessages.controls_imageview_fit_window,
+            UIIcon.FIT_WINDOW
+        );
+        itemOriginal = new ImageActionDelegate(
+            this,
+            ImageActionDelegate.TOOLBAR_ORIGINAL,
+            ImageViewMessages.controls_imageview_original_size,
+            UIIcon.ORIGINAL_SIZE
+        );
         if (toolBar.find(IValueManager.GROUP_ACTIONS_ADDITIONAL) != null) {
             toolBar.insertBefore(IValueManager.GROUP_ACTIONS_ADDITIONAL, itemZoomIn);
             toolBar.insertBefore(IValueManager.GROUP_ACTIONS_ADDITIONAL, itemZoomOut);

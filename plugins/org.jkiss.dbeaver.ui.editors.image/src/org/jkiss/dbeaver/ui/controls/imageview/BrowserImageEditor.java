@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.controls.imageview;
 
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -31,14 +30,14 @@ import java.io.InputStream;
 /**
  * Image editor, based on image viewer.
  */
-public class ImageEditor extends ImageViewer {
+public class BrowserImageEditor extends BrowserImageViewer {
 
     private Color redColor = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
     private Color blackColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
 
     private Text messageLabel;
 
-    public ImageEditor(Composite parent, int style)
+    public BrowserImageEditor(Composite parent, int style)
     {
         super(parent, style);
 
@@ -65,32 +64,14 @@ public class ImageEditor extends ImageViewer {
 //                gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
 //                toolBar.setLayoutData(gd);
 
-                fillToolBar(toolBar);
                 toolBar.createControl(statusGroup);
             }
-        }
-        updateActions();
-    }
+        }}
 
     @Override
     public boolean loadImage(InputStream inputStream)
     {
         super.loadImage(inputStream);
-        try {
-            SWTException lastError = getLastError();
-            if (lastError != null) {
-                messageLabel.setText(lastError.getMessage());
-                messageLabel.setForeground(redColor);
-                return false;
-            } else {
-                messageLabel.setText(getImageDescription());
-                messageLabel.setForeground(blackColor);
-                return true;
-            }
-        }
-        finally {
-            updateActions();
-        }
+        return true;
     }
-
 }

@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
+import org.jkiss.dbeaver.ui.controls.imageview.NativeImageViewer;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
@@ -35,16 +35,16 @@ import java.io.InputStream;
 /**
 * ImagePanelEditor
 */
-public class ImagePanelEditor implements IStreamValueEditor<ImageViewer> {
+public class ImagePanelEditor implements IStreamValueEditor<NativeImageViewer> {
 
     @Override
-    public ImageViewer createControl(IValueController valueController)
+    public NativeImageViewer createControl(IValueController valueController)
     {
-        return new ImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
+        return new NativeImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
     }
 
     @Override
-    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull ImageViewer control, @NotNull DBDContent value) throws DBException
+    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull NativeImageViewer control, @NotNull DBDContent value) throws DBException
     {
         monitor.subTask("Read image value");
         DBDContentStorage data = value.getContents(monitor);
@@ -59,10 +59,8 @@ public class ImagePanelEditor implements IStreamValueEditor<ImageViewer> {
                             return true; // already read
                         }
                     }
-                }).execute())
-                {
-                    throw new DBException("Can't load image: " + control.getLastError().getMessage());
-                }
+                }).runTask());
+
             } catch (IOException e) {
                 throw new DBException("Error reading stream value", e);
             }
@@ -72,18 +70,17 @@ public class ImagePanelEditor implements IStreamValueEditor<ImageViewer> {
     }
 
     @Override
-    public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull ImageViewer control, @NotNull DBDContent value) throws DBException
+    public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull NativeImageViewer control, @NotNull DBDContent value) throws DBException
     {
         // Not implemented
     }
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final ImageViewer control) throws DBCException {
-        control.fillToolBar(manager);
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull final NativeImageViewer control) throws DBCException {
     }
 
     @Override
-    public void contributeSettings(@NotNull IContributionManager manager, @NotNull ImageViewer control) throws DBCException {
+    public void contributeSettings(@NotNull IContributionManager manager, @NotNull NativeImageViewer control) throws DBCException {
 
     }
 
