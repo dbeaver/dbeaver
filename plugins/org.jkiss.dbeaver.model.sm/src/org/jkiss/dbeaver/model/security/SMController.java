@@ -180,11 +180,6 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
     SMAuthPermissions getTokenPermissions() throws DBException;
 
     ///////////////////////////////////////////
-    // API
-
-
-
-    ///////////////////////////////////////////
     // Auth providers
 
     SMAuthProviderDescriptor[] getAvailableAuthProviders() throws DBException;
