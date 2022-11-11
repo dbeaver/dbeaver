@@ -16,33 +16,38 @@
  */
 package org.jkiss.dbeaver.ui.controls.imageview;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.Locale;
+
 
 /**
  * Image viewer control
  */
 public class BrowserImageViewer extends AbstractImageViewer {
 
-    private Browser browser;
+    private final Browser browser;
 
+    private volatile boolean browserCreating = false;
     private Path tempFile;
     private ImageData imageData;
 
@@ -57,8 +62,12 @@ public class BrowserImageViewer extends AbstractImageViewer {
         setLayout(gl);
         int i = 0;
 
-
-        browser = new Browser(this, SWT.NONE);
+        browserCreating = true;
+        try {
+            browser = new Browser(this, SWT.NONE);
+        } finally {
+            browserCreating = false;
+        }
         browser.setLayoutData(new GridData(GridData.FILL_BOTH));
         browser.setJavascriptEnabled(false); // We don't need java script to open images
 
@@ -71,24 +80,20 @@ public class BrowserImageViewer extends AbstractImageViewer {
     @Override
     public boolean loadImage(InputStream inputStream) {
         try {
-            ImageInputStream stream = ImageIO.createImageInputStream(inputStream); // assuming imgData
-            // is byte[] as in your question
-
-            imageData = new ImageData(inputStream);
-            tempFile = Files.createTempFile("image", getImageType(imageData.type));
-            ImageLoader imageLoader = new ImageLoader();
-            imageLoader.data = new ImageData[1];
-            imageLoader.data[0] = imageData;
-            try (OutputStream fos = new FileOutputStream(tempFile.toFile())) {
-                imageLoader.save(fos, imageData.type);
-            } catch (IOException e) {
-                DBWorkbench.getPlatformUI().showError("Image save error", "Error saving as picture", e);
+            ImageInputStream stream = ImageIO.createImageInputStream(inputStream);
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+            if (!readers.hasNext()) {
+                return false;
             }
+            ImageReader reader = readers.next();
+            reader.setInput(stream);
+
+            tempFile = Files.createTempFile("image", "." + reader.getFormatName().toLowerCase(Locale.ROOT));
+            ImageIO.write(ImageIO.read(stream), reader.getFormatName().toLowerCase(Locale.ROOT), tempFile.toFile());
             URL url = tempFile.toUri().toURL();
             browser.setUrl(url.toString());
         } catch (IOException exception) {
-            DBWorkbench.getPlatformUI().showError("Can't create a temp file", exception.getMessage());
-            return false;
+            exception.printStackTrace();
         }
         return true;
     }
@@ -111,33 +116,22 @@ public class BrowserImageViewer extends AbstractImageViewer {
         // Edge uses its own callbacks which are not synchronized in any way with UI
         // So if dispose is sent during that operation this will lead to initialization
         // on already disposed composite, we don't want this at all
-        // We can prevent this error by delaying dispose operation to allow Edge to finish its
+        // We can prevent this error by delaying dispose in independent thread operation to allow Edge to finish its
         // initialization to be disposed properly
+        //FIXME That should be removed as soon as Edge will be fixed, this is an awfull hack
         if (browser != null) {
             super.dispose();
         } else {
-            UIUtils.timerExec(1000, super::dispose);
-        }
-    }
+            new Job("Disposing browser") {
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    while (browserCreating) {
 
-    public String getImageType(int type) {
-        switch (type) {
-            case SWT.IMAGE_BMP:
-            case SWT.IMAGE_OS2_BMP:
-            case SWT.IMAGE_BMP_RLE:
-                return ".bmp"; //$NON-NLS-1$
-            case SWT.IMAGE_GIF:
-                return ".gif"; //$NON-NLS-1$
-            case SWT.IMAGE_ICO:
-                return ".ico"; //$NON-NLS-1$
-            case SWT.IMAGE_JPEG:
-                return ".jpeg"; //$NON-NLS-1$
-            case SWT.IMAGE_PNG:
-                return ".png"; //$NON-NLS-1$
-            case SWT.IMAGE_TIFF:
-                return ".tiff"; //$NON-NLS-1$
-            default:
-                return ""; //$NON-NLS-1$
+                    }
+                    UIUtils.syncExec(BrowserImageViewer.super::dispose);
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
         }
     }
 

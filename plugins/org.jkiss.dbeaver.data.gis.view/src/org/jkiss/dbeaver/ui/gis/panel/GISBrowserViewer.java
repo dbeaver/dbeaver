@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.gis.panel;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
@@ -37,7 +41,9 @@ import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeometryViewer {
 
@@ -147,15 +153,24 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         // Edge uses its own callbacks which are not synchronized in any way with UI
         // So if dispose is sent during that operation this will lead to initialization
         // on already disposed composite, we don't want this at all
-        // We can prevent this error by delaying dispose operation to allow Edge to finish its
+        // We can prevent this error by delaying dispose in independent thread operation to allow Edge to finish its
         // initialization to be disposed properly
+        //FIXME That should be removed as soon as Edge will be fixed, this is an awfull hack
         if (leafletViewer.getBrowser() != null) {
             super.dispose();
         } else {
-            UIUtils.timerExec(1000, super::dispose);
+            new Job("Disposing browser") {
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    while (leafletViewer.isBrowserCreating()) {
+
+                    }
+                    UIUtils.syncExec(GISBrowserViewer.super::dispose);
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
         }
     }
-
     @Override
     public boolean isReadOnly() {
         return true;

@@ -351,6 +351,10 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
              <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text"/>
         </page>
+        <page category="org.jkiss.dbeaver.preferences.main.resultset.presentation" id="org.jkiss.dbeaver.preferences.main.resultset.image" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentationImage" name="%pref.page.name.resultset.image">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.resultset.image"/>
+        </page>
         <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat" name="%pref.page.name.data.formats">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>

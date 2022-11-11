@@ -20,12 +20,16 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.controls.imageview.AbstractImageViewer;
+import org.jkiss.dbeaver.ui.controls.imageview.BrowserImageViewer;
 import org.jkiss.dbeaver.ui.controls.imageview.NativeImageViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
@@ -35,17 +39,19 @@ import java.io.InputStream;
 /**
 * ImagePanelEditor
 */
-public class ImagePanelEditor implements IStreamValueEditor<NativeImageViewer> {
+public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer> {
 
     @Override
-    public NativeImageViewer createControl(IValueController valueController)
-    {
-        return new NativeImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
+    public AbstractImageViewer createControl(IValueController valueController) {
+        if (ModelPreferences.getPreferences().getBoolean(ResultSetPreferences.RESULT_IMAGE_BROWSER)) {
+            return new BrowserImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
+        } else {
+            return new NativeImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
+        }
     }
 
     @Override
-    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull NativeImageViewer control, @NotNull DBDContent value) throws DBException
-    {
+    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull AbstractImageViewer control, @NotNull DBDContent value) throws DBException {
         monitor.subTask("Read image value");
         DBDContentStorage data = value.getContents(monitor);
         if (data != null) {
@@ -70,17 +76,16 @@ public class ImagePanelEditor implements IStreamValueEditor<NativeImageViewer> {
     }
 
     @Override
-    public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull NativeImageViewer control, @NotNull DBDContent value) throws DBException
-    {
+    public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull AbstractImageViewer control, @NotNull DBDContent value) throws DBException {
         // Not implemented
     }
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final NativeImageViewer control) throws DBCException {
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull final AbstractImageViewer control) throws DBCException {
     }
 
     @Override
-    public void contributeSettings(@NotNull IContributionManager manager, @NotNull NativeImageViewer control) throws DBCException {
+    public void contributeSettings(@NotNull IContributionManager manager, @NotNull AbstractImageViewer control) throws DBCException {
 
     }
 
