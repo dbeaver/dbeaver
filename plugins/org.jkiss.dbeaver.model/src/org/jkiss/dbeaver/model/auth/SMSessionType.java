@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security;
+package org.jkiss.dbeaver.model.auth;
 
 public class SMSessionType {
     private final String sessionType;
