@@ -82,7 +82,8 @@ public class SQLEditorPropertyTester extends PropertyTester
                             editor.getSyntaxManager().getDialect(),
                             editor.getSyntaxManager().getStructSeparator(),
                             editor.getSyntaxManager().getIdentifierQuoteStrings())
-                            .detectIdentifier(document, new Region(selection.getOffset(), selection.getLength())).isEmpty();
+                            .extractIdentifier(document, new Region(selection.getOffset(), selection.getLength()), editor.getRuleManager())
+                            .isEmpty();
             }
             case PROP_CAN_EXPORT:
                 return hasConnection && editor.hasActiveQuery();

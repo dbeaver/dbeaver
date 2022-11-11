@@ -44,7 +44,7 @@ public abstract class TreeNodeSpecial implements ILabelProvider {
         return disposed;
     }
 
-    public void dispose(Object parent) {
+    public void dispose(DBNNode parent) {
         disposed = true;
     }
 
