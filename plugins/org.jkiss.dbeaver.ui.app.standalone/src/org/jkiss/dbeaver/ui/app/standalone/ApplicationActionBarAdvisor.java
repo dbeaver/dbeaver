@@ -337,25 +337,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             helpMenu.add(new GroupMarker("installation_help"));
             helpMenu.add(new Separator());
             helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-/*
-            if (showAltHelp) {
-                //helpMenu.add(searchHelpAction);
-                //helpMenu.add(dynamicHelpAction);
-                helpMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST, CoreMessages.action_menu_showKeyAssist, null));
-                helpMenu.add(new Separator());
-                helpMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.equinox.p2.ui.sdk.install"));
-
-                helpMenu.add(new Separator());
-                helpMenu.add(checkUpdatesAction);
-
-                helpMenu.add(new ExternalPageAction(
-                    NLS.bind(CoreMessages.action_menu_marketplace_extensions, GeneralUtils.getProductName()),
-                    UIIcon.DBEAVER_MARKETPLACE, "https://marketplace.eclipse.org/search/site/dbeaver"));
-                helpMenu.add(new ExternalPageAction(CoreMessages.action_menu_enterpriseEdition, UIIcon.DBEAVER_LOGO_SMALL, "https://dbeaver.com"));
-            } else {
-                helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-            }
-*/
         }
     }
 

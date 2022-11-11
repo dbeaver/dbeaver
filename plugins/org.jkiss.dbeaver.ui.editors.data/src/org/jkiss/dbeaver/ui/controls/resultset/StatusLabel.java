@@ -72,7 +72,7 @@ class StatusLabel extends Composite {
         final ToolBar tb = new ToolBar(this, SWT.FLAT | SWT.HORIZONTAL);
         CSSUtils.setCSSClass(tb, DBStyles.COLORED_BY_CONNECTION_TYPE);
         detailsIcon = new ToolItem(tb, SWT.NONE);
-        detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
+        detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
         tb.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         detailsIcon.addSelectionListener(new SelectionAdapter() {
@@ -156,7 +156,7 @@ class StatusLabel extends Composite {
         if (statusIcon != null) {
             detailsIcon.setImage(DBeaverIcons.getImage(statusIcon));
         } else {
-            detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
+            detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
         }
         statusText.setText(CommonUtils.getSingleLineString(message));
         if (messageType != DBPMessageType.INFORMATION) {

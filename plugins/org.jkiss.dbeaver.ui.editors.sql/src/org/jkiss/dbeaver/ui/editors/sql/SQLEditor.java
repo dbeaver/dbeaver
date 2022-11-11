@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -85,6 +86,7 @@ import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
@@ -128,8 +130,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.*;
 import java.net.URI;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -206,6 +208,7 @@ public class SQLEditor extends SQLEditorBase implements
     private FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<>();
     private QueryResultsContainer curResultsContainer;
+    private Image baseEditorImage;
     private Image editorImage;
     private Composite leftToolPanel;
     private ToolBarManager topBarMan;
@@ -423,7 +426,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         checkConnected(false, status -> UIUtils.asyncExec(() -> {
             if (!status.isOK()) {
-                DBWorkbench.getPlatformUI().showError("Can't connect to database", "Error connecting to datasource", status);
+                DBWorkbench.getPlatformUI().showError(
+                    "Can't connect to database", "Connection to '" + container.getName() + "' cannot be established.", status);
             }
             setFocus();
         }));
@@ -997,7 +1001,7 @@ public class SQLEditor extends SQLEditorBase implements
         topBar.setData(VIEW_PART_PROP_NAME, this);
         topBarMan = new ToolBarManager(topBar);
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT));
-        topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW));
+        //topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW));
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT));
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXPLAIN_PLAN));
         
@@ -2069,7 +2073,8 @@ public class SQLEditor extends SQLEditorBase implements
         if (isNonPersistentEditor()) {
             setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
         }
-        editorImage = getTitleImage();
+        baseEditorImage = getTitleImage();
+        editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
     }
 
     @Override
@@ -2107,9 +2112,9 @@ public class SQLEditor extends SQLEditorBase implements
         StringBuilder tip = new StringBuilder();
         tip
             .append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_path, scriptPath))
-            .append(" \n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_connecton, dataSourceContainer.getName()))
-            .append(" \n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_type, dataSourceContainer.getDriver().getFullName()))
-            .append(" \n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_url, dataSourceContainer.getConnectionConfiguration().getUrl()));
+            .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_connecton, dataSourceContainer.getName()))
+            .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_type, dataSourceContainer.getDriver().getFullName()))
+            .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_url, dataSourceContainer.getConnectionConfiguration().getUrl()));
 
         SQLEditorVariablesResolver scriptNameResolver = new SQLEditorVariablesResolver(dataSourceContainer,
                 dataSourceContainer.getConnectionConfiguration(),
@@ -2118,12 +2123,15 @@ public class SQLEditor extends SQLEditorBase implements
                 null,
                 getProject());
         if (scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_DATABASE) != null) {
-            tip.append(" \n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_database, scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_DATABASE)));
+            tip.append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_database, scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_DATABASE)));
         }
         if (scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA) != null) {
-            tip.append(" \n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_schema, scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA)));
+            tip.append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_schema, scriptNameResolver.get(SQLPreferenceConstants.VAR_ACTIVE_SCHEMA)));
         }
 
+        if (dataSourceContainer.getConnectionError() != null) {
+            tip.append("\n\nConnection error:\n").append(dataSourceContainer.getConnectionError());
+        }
         return tip.toString();
     }
 
@@ -2718,6 +2726,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
         refreshActions();
 
+        refreshEditorIconAndTitle(dsContainer);
+
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
         }
@@ -2758,8 +2768,29 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             globalScriptContext.clearVariables();
         }
+    }
 
+    private void refreshEditorIconAndTitle(DBPDataSourceContainer dsContainer) {
         setPartName(getEditorName());
+
+        // Update icon
+        if (editorImage != null) {
+            editorImage.dispose();
+        }
+        if (executionContext == null) {
+            if (dsContainer instanceof DBPStatefulObject && ((DBPStatefulObject) dsContainer).getObjectState() == DBSObjectState.INVALID) {
+                OverlayImageDescriptorLegacy oid = new OverlayImageDescriptorLegacy(baseEditorImage.getImageData());
+                oid.setBottomRight(new ImageDescriptor[] { DBeaverIcons.getImageDescriptor(DBIcon.OVER_ERROR) });
+                editorImage = oid.createImage();
+            } else {
+                editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+            }
+        } else {
+            OverlayImageDescriptorLegacy oid = new OverlayImageDescriptorLegacy(baseEditorImage.getImageData());
+            oid.setBottomRight(new ImageDescriptor[] { DBeaverIcons.getImageDescriptor(DBIcon.OVER_SUCCESS) });
+            editorImage = oid.createImage();
+        }
+        setTitleImage(editorImage);
     }
 
     @Override
@@ -2774,8 +2805,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         if (extraPresentation != null) {
             extraPresentation.dispose();
             extraPresentation = null;
@@ -2811,6 +2841,10 @@ public class SQLEditor extends SQLEditorBase implements
         if (sqlFile != null && !PlatformUI.getWorkbench().isClosing()) {
             deleteFileIfEmpty(sqlFile);
         }
+
+        UIUtils.dispose(editorImage);
+        baseEditorImage = null;
+        editorImage = null;
     }
 
     private void deleteFileIfEmpty(IFile sqlFile) {

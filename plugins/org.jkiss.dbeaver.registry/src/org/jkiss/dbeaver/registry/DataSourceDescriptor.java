@@ -139,6 +139,8 @@ public class DataSourceDescriptor
     private final DataSourcePreferenceStore preferenceStore;
     @Nullable
     private DBPDataSource dataSource;
+    @Nullable
+    private String lastConnectionError;
 
     private boolean temporary;
     private boolean hidden;
@@ -839,6 +841,12 @@ public class DataSourceDescriptor
         return dataSource != null && !connecting;
     }
 
+    @Nullable
+    @Override
+    public String getConnectionError() {
+        return lastConnectionError;
+    }
+
     public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect)
         throws DBException {
         if (connecting) {
@@ -863,6 +871,7 @@ public class DataSourceDescriptor
         // Update auth properties if possible
 
         connecting = true;
+        lastConnectionError = null;
         try {
             processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
 
@@ -1012,6 +1021,7 @@ public class DataSourceDescriptor
             }
             return true;
         } catch (Throwable e) {
+            lastConnectionError = e.getMessage();
             log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
                 try {
