@@ -31,7 +31,7 @@ public class SMAuthInfo {
     private final String authAttemptId;
 
     @NotNull
-    private final Map<String, Object> authData;
+    private final Map<SMAuthConfigurationReference, Object> authData;
 
     @Nullable
     private final String redirectUrl;
@@ -49,7 +49,7 @@ public class SMAuthInfo {
         @NotNull SMAuthStatus authStatus,
         @Nullable String error,
         @NotNull String authAttemptId,
-        @NotNull Map<String, Object> authData,
+        @NotNull Map<SMAuthConfigurationReference, Object> authData,
         @Nullable String redirectUrl,
         @Nullable String smAuthToken,
         @Nullable String smRefreshToken,
@@ -86,7 +86,7 @@ public class SMAuthInfo {
     public static SMAuthInfo inProgress(
         @NotNull String authAttemptId,
         @Nullable String redirectUrl,
-        @NotNull Map<String, Object> authData
+        @NotNull Map<SMAuthConfigurationReference, Object> authData
     ) {
         return new Builder()
             .setAuthStatus(SMAuthStatus.IN_PROGRESS)
@@ -101,7 +101,7 @@ public class SMAuthInfo {
         @NotNull String accessToken,
         @Nullable String refreshToken,
         @NotNull SMAuthPermissions smAuthPermissions,
-        @NotNull Map<String, Object> authData,
+        @NotNull Map<SMAuthConfigurationReference, Object> authData,
         @Nullable String authRole
     ) {
         return new Builder()
@@ -147,7 +147,7 @@ public class SMAuthInfo {
     }
 
     @NotNull
-    public Map<String, Object> getAuthData() {
+    public Map<SMAuthConfigurationReference, Object> getAuthData() {
         return authData;
     }
 
@@ -166,7 +166,7 @@ public class SMAuthInfo {
         private SMAuthStatus authStatus;
         private String error;
         private String authAttemptId;
-        private Map<String, Object> authData;
+        private Map<SMAuthConfigurationReference, Object> authData;
         private String redirectUrl;
         private String smAuthToken;
         private String smRefreshToken;
@@ -191,7 +191,7 @@ public class SMAuthInfo {
             return this;
         }
 
-        public Builder setAuthData(Map<String, Object> authData) {
+        public Builder setAuthData(Map<SMAuthConfigurationReference, Object> authData) {
             this.authData = authData;
             return this;
         }
