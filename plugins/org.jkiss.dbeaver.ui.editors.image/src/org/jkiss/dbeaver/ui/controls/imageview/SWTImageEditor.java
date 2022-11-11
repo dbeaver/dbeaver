@@ -25,20 +25,21 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 
 import java.io.InputStream;
 
 /**
  * Image editor, based on image viewer.
  */
-public class NativeImageEditor extends NativeImageViewer {
+public class SWTImageEditor extends SWTImageViewer {
 
     private final Color redColor = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
     private final Color blackColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
 
     private final Text messageLabel;
 
-    public NativeImageEditor(Composite parent, int style) {
+    public SWTImageEditor(Composite parent, int style) {
         super(parent, style);
 
         //setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
@@ -71,7 +72,7 @@ public class NativeImageEditor extends NativeImageViewer {
     }
 
     @Override
-    public boolean loadImage(InputStream inputStream) {
+    public boolean loadImage(@NotNull InputStream inputStream) {
         super.loadImage(inputStream);
         try {
             SWTException lastError = getLastError();

@@ -16,11 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.controls.imageview;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 
-public abstract class AbstractImageViewer extends Composite implements IImageViewer {
+public abstract class AbstractImageViewer extends Composite implements ImageViewer {
 
     public AbstractImageViewer(Composite parent, int style) {
         super(parent, style);
+    }
+
+    /**
+     * Fills provided toolbar with actions
+     *
+     * @param toolBar toolbar to fill
+     */
+    public void fillToolBar(IContributionManager toolBar) {
+
     }
 }

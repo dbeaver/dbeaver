@@ -20,15 +20,15 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.controls.imageview.AbstractImageViewer;
 import org.jkiss.dbeaver.ui.controls.imageview.BrowserImageViewer;
-import org.jkiss.dbeaver.ui.controls.imageview.NativeImageViewer;
+import org.jkiss.dbeaver.ui.controls.imageview.SWTImageViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -43,10 +43,14 @@ public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer>
 
     @Override
     public AbstractImageViewer createControl(IValueController valueController) {
-        if (ModelPreferences.getPreferences().getBoolean(ResultSetPreferences.RESULT_IMAGE_BROWSER)) {
+        DBPPreferenceStore preferenceStore = valueController.getExecutionContext()
+            .getDataSource()
+            .getContainer()
+            .getPreferenceStore();
+        if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER)) {
             return new BrowserImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
         } else {
-            return new NativeImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
+            return new SWTImageViewer(valueController.getEditPlaceholder(), SWT.NONE);
         }
     }
 
@@ -82,6 +86,7 @@ public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer>
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull final AbstractImageViewer control) throws DBCException {
+        control.fillToolBar(manager);
     }
 
     @Override

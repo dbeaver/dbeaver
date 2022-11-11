@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 
@@ -34,7 +35,7 @@ import java.io.InputStream;
 /**
  * Image viewer control
  */
-public class NativeImageViewer extends AbstractImageViewer {
+public class SWTImageViewer extends AbstractImageViewer {
 
     private final ImageViewCanvas canvas;
     private IAction itemZoomIn;
@@ -43,7 +44,7 @@ public class NativeImageViewer extends AbstractImageViewer {
     private IAction itemFit;
     private IAction itemOriginal;
 
-    public NativeImageViewer(Composite parent, int style) {
+    public SWTImageViewer(Composite parent, int style) {
         super(parent, style);
 
         GridLayout gl = new GridLayout(1, false);
@@ -88,7 +89,7 @@ public class NativeImageViewer extends AbstractImageViewer {
     }
 
     @Override
-    public boolean loadImage(InputStream inputStream) {
+    public boolean loadImage(@NotNull InputStream inputStream) {
         canvas.loadImage(inputStream);
         return canvas.getError() == null;
     }
@@ -106,14 +107,7 @@ public class NativeImageViewer extends AbstractImageViewer {
     protected String getImageDescription() {
         ImageData imageData = getCanvas().getImageData();
 
-        return getImageType(imageData.type)
-               + " "
-               + imageData.width
-               + "x"
-               + imageData.height
-               + "x"
-               + imageData.depth
-               +
+        return getImageType(imageData.type) + " " + imageData.width + "x" + imageData.height + "x" + imageData.depth +
                //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                "  "; //$NON-NLS-1$
     }
@@ -150,33 +144,29 @@ public class NativeImageViewer extends AbstractImageViewer {
         itemOriginal.setEnabled(hasImage);
     }
 
-    protected void fillToolBar(IContributionManager toolBar) {
-        itemZoomIn = new ImageActionDelegate(
-            this,
+    @Override
+    public void fillToolBar(IContributionManager toolBar) {
+        itemZoomIn = new ImageActionDelegate(this,
             ImageActionDelegate.TOOLBAR_ZOOMIN,
             ImageViewMessages.controls_imageview_zoom_in,
             UIIcon.ZOOM_IN
         );
-        itemZoomOut = new ImageActionDelegate(
-            this,
+        itemZoomOut = new ImageActionDelegate(this,
             ImageActionDelegate.TOOLBAR_ZOOMOUT,
             ImageViewMessages.controls_imageview_zoom_out,
             UIIcon.ZOOM_OUT
         );
-        itemRotate = new ImageActionDelegate(
-            this,
+        itemRotate = new ImageActionDelegate(this,
             ImageActionDelegate.TOOLBAR_ROTATE,
             ImageViewMessages.controls_imageview_rotate,
             UIIcon.ROTATE_LEFT
         );
-        itemFit = new ImageActionDelegate(
-            this,
+        itemFit = new ImageActionDelegate(this,
             ImageActionDelegate.TOOLBAR_FIT,
             ImageViewMessages.controls_imageview_fit_window,
             UIIcon.FIT_WINDOW
         );
-        itemOriginal = new ImageActionDelegate(
-            this,
+        itemOriginal = new ImageActionDelegate(this,
             ImageActionDelegate.TOOLBAR_ORIGINAL,
             ImageViewMessages.controls_imageview_original_size,
             UIIcon.ORIGINAL_SIZE

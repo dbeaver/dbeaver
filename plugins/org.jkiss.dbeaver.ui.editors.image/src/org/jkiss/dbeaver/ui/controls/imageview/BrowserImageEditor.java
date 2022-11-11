@@ -18,12 +18,11 @@ package org.jkiss.dbeaver.ui.controls.imageview;
 
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 
 import java.io.InputStream;
 
@@ -32,16 +31,8 @@ import java.io.InputStream;
  */
 public class BrowserImageEditor extends BrowserImageViewer {
 
-    private Color redColor = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
-    private Color blackColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
-
-    private Text messageLabel;
-
-    public BrowserImageEditor(Composite parent, int style)
-    {
+    public BrowserImageEditor(Composite parent, int style) {
         super(parent, style);
-
-        //setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
         {
             // Status & toolbar
@@ -54,23 +45,20 @@ public class BrowserImageEditor extends BrowserImageViewer {
             layout.horizontalSpacing = 0;
             statusGroup.setLayout(layout);
 
-            messageLabel = new Text(statusGroup, SWT.READ_ONLY);
+            Text messageLabel = new Text(statusGroup, SWT.READ_ONLY);
             messageLabel.setText(""); //$NON-NLS-1$
             gd = new GridData(GridData.FILL_HORIZONTAL);
             messageLabel.setLayoutData(gd);
 
             {
                 ToolBarManager toolBar = new ToolBarManager(SWT.NONE);
-//                gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-//                toolBar.setLayoutData(gd);
-
                 toolBar.createControl(statusGroup);
             }
-        }}
+        }
+    }
 
     @Override
-    public boolean loadImage(InputStream inputStream)
-    {
+    public boolean loadImage(@NotNull InputStream inputStream) {
         super.loadImage(inputStream);
         return true;
     }

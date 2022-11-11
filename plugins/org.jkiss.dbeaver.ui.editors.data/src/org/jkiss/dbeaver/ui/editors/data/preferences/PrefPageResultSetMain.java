@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -72,6 +73,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
     private Button ignoreColumnLabelCheck;
     private Button useDateTimeEditor;
+    private Button useBrowserCheckbox;
 
     public PrefPageResultSetMain()
     {
@@ -99,8 +101,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
             store.contains(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES) ||
-            store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
-            ;
+            store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL) ||
+            store.contains(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER);
     }
 
     @Override
@@ -188,6 +190,12 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
             showErrorsInDialog = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_content_editor_ui_show_errors_in_dialog, ResultSetMessages.pref_page_content_editor_ui_show_errors_in_dialog_tip, false, 1);
             markCellValueOccurrences = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_content_editor_ui_mark_cell_value_occurrences, ResultSetMessages.pref_page_content_editor_ui_mark_cell_value_occurrences_tip, false, 1);
+            useBrowserCheckbox = UIUtils.createCheckbox(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_image_browser,
+                false
+            );
+            useBrowserCheckbox.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_image_browser_tip);
+
         }
 
         return composite;
@@ -215,6 +223,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             readQueryReferences.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES));
             queryCancelTimeout.setText(store.getString(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT));
             filterForceSubselect.setSelection(store.getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
+            useBrowserCheckbox.setSelection(store.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN));
             alwaysUseAllColumns.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS));
@@ -248,6 +257,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getText());
             store.setValue(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT, filterForceSubselect.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER, useBrowserCheckbox.getSelection());
 
             store.setValue(ResultSetPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
@@ -267,8 +277,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store)
-    {
+    protected void clearPreferences(DBPPreferenceStore store) {
+        store.setToDefault(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER);
         store.setToDefault(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
         store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         store.setToDefault(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);

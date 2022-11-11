@@ -150,7 +150,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
 
     @Override
     public void dispose() {
-        // Edge uses its own callbacks which are not synchronized in any way with UI
+        // Edge uses callbacks which have a lowest priority in UI
         // So if dispose is sent during that operation this will lead to initialization
         // on already disposed composite, we don't want this at all
         // We can prevent this error by delaying dispose in independent thread operation to allow Edge to finish its
@@ -163,7 +163,11 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     while (leafletViewer.isBrowserCreating()) {
-
+                        try {
+                            wait(50);
+                        } catch (InterruptedException ignore) {
+                            // ignore
+                        }
                     }
                     UIUtils.syncExec(GISBrowserViewer.super::dispose);
                     return Status.OK_STATUS;

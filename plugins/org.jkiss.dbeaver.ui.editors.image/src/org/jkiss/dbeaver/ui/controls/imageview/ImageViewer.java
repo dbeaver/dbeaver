@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.controls.imageview;
 
+
+import org.jkiss.code.NotNull;
+
 import java.io.InputStream;
 
-public interface IImageViewer {
+interface ImageViewer {
 
     /**
      * Loads inputStream and produces image from it
@@ -26,7 +29,7 @@ public interface IImageViewer {
      * @param inputStream image input stream
      * @return is image loaded successfully
      */
-    boolean loadImage(InputStream inputStream);
+    boolean loadImage(@NotNull InputStream inputStream);
 
     /**
      * Removes an active image from viewer

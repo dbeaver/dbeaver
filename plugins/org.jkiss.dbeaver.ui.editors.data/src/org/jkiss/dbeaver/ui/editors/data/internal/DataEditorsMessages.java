@@ -79,7 +79,6 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_max_def_column_width_tip;
     public static String pref_page_database_resultsets_link_colors_and_fonts;
 
-    public static String pref_page_database_resultsets_group_image;
     public static String pref_page_database_resultsets_label_image_browser;
     public static String pref_page_database_resultsets_label_image_browser_tip;
 

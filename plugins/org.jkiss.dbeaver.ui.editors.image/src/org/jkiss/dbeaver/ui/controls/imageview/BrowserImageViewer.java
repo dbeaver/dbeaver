@@ -26,6 +26,8 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import javax.imageio.ImageIO;
@@ -44,6 +46,7 @@ import java.util.Locale;
  * Image viewer control
  */
 public class BrowserImageViewer extends AbstractImageViewer {
+    private static final Log log = Log.getLog(BrowserImageViewer.class);
 
     private final Browser browser;
 
@@ -78,7 +81,7 @@ public class BrowserImageViewer extends AbstractImageViewer {
     }
 
     @Override
-    public boolean loadImage(InputStream inputStream) {
+    public boolean loadImage(@NotNull InputStream inputStream) {
         try {
             ImageInputStream stream = ImageIO.createImageInputStream(inputStream);
             Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
@@ -93,7 +96,7 @@ public class BrowserImageViewer extends AbstractImageViewer {
             URL url = tempFile.toUri().toURL();
             browser.setUrl(url.toString());
         } catch (IOException exception) {
-            exception.printStackTrace();
+            log.error(exception);
         }
         return true;
     }
@@ -110,10 +113,11 @@ public class BrowserImageViewer extends AbstractImageViewer {
             try {
                 Files.delete(tempFile);
             } catch (IOException e) {
-                // ignore
+                log.warn(e);
             }
+            tempFile = null;
         }
-        // Edge uses its own callbacks which are not synchronized in any way with UI
+        // Edge uses callbacks which have a lowest priority in UI
         // So if dispose is sent during that operation this will lead to initialization
         // on already disposed composite, we don't want this at all
         // We can prevent this error by delaying dispose in independent thread operation to allow Edge to finish its
@@ -126,7 +130,11 @@ public class BrowserImageViewer extends AbstractImageViewer {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     while (browserCreating) {
-
+                        try {
+                            wait(50);
+                        } catch (InterruptedException ignore) {
+                            // ignore
+                        }
                     }
                     UIUtils.syncExec(BrowserImageViewer.super::dispose);
                     return Status.OK_STATUS;
