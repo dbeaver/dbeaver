@@ -224,6 +224,9 @@ public class PostgreMessages extends NLS {
     public static String dialog_query_planner_settings_summary;
     public static String dialog_query_planner_settings_summary_tip;
 
+    public static String dialog_connection_pgpass_hostname_override;
+    public static String dialog_connection_pgpass_hostname_override_tip;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, PostgreMessages.class);
