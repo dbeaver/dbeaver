@@ -374,14 +374,20 @@ public class DataSourceDescriptor
     }
 
     public boolean isSavePassword() {
-        try {
-            resolveSecretsIfNeeded();
-        } catch (DBException e) {
-            log.error("Error during credentials resolving", e);
-            return false;
+        if (sharedCredentials) {
+            // Shared credentials are always saved
+            return true;
         }
         if (getProject().isUseSecretStorage()) {
-            return (secretsResolved && secretExist) || sharedCredentials;
+            // Check in secret controller
+            // Password is saved only if secret exists
+            try {
+                resolveSecretsIfNeeded();
+            } catch (DBException e) {
+                log.error("Error during credentials resolving", e);
+                return false;
+            }
+            return secretExist;
         }
         return savePassword;
     }
