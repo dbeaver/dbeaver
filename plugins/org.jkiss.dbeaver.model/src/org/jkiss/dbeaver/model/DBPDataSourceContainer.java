@@ -113,9 +113,18 @@ public interface DBPDataSourceContainer extends
 
     boolean isConnectionReadOnly();
 
+    /**
+     * Flag saying that password value was saved in configuration.
+     * It is a legacy flag, to determine that credentials are really saved use isCredentialsSaved.
+     */
     boolean isSavePassword();
 
     void setSavePassword(boolean savePassword);
+
+    /**
+     * Determines that credentials for this datasource are saved
+     */
+    boolean isCredentialsSaved() throws DBException;
 
     void setDescription(String description);
 

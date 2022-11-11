@@ -155,6 +155,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public boolean isCredentialsSaved() {
+        return false;
+    }
+
+    @Override
     public void setDescription(String description) {
 
     }

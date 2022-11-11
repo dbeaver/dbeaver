@@ -374,27 +374,23 @@ public class DataSourceDescriptor
     }
 
     public boolean isSavePassword() {
-        if (sharedCredentials) {
-            // Shared credentials are always saved
-            return true;
-        }
-        if (getProject().isUseSecretStorage()) {
-            // Check in secret controller
-            // Password is saved only if secret exists
-            try {
-                resolveSecretsIfNeeded();
-            } catch (DBException e) {
-                log.error("Error during credentials resolving", e);
-                return false;
-            }
-            return secretExist;
-        }
         return savePassword;
     }
 
     @Override
     public void setSavePassword(boolean savePassword) {
         this.savePassword = savePassword;
+    }
+
+    public boolean isCredentialsSaved() throws DBException {
+        if (sharedCredentials) {
+            return true;
+        }
+        if (!getProject().isUseSecretStorage()) {
+            return savePassword;
+        }
+        resolveSecretsIfNeeded();
+        return secretsResolved && secretExist;
     }
 
     @Override
@@ -910,7 +906,7 @@ public class DataSourceDescriptor
                 authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
             } else {
                 // 3. USe legacy password provider
-                if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
+                if (!isCredentialsSaved() && !getDriver().isAnonymousAccess()) {
                     // Ask for password
                     authProvided = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
                 }
