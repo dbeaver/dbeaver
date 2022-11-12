@@ -694,6 +694,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 default:
                     break;
             }
+            authMethodCombo.getShell().layout(true, true);
         }
 
         private void showPasswordField(boolean show, String passwordLabelText) {

@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -440,7 +441,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     @NotNull
-    public DBAAuthModel getAuthModel() {
+    public <T extends DBAAuthCredentials> DBAAuthModel<T> getAuthModel() {
         if (!CommonUtils.isEmpty(authModelId)) {
             DBPAuthModelDescriptor authModelDesc = getAuthModelDescriptor(authModelId);
             if (authModelDesc != null) {

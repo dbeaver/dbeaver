@@ -139,7 +139,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         final JDBCConnectionConfigurer connectionConfigurer = GeneralUtils.adapt(this, JDBCConnectionConfigurer.class);
 
         DBPAuthModelDescriptor authModelDescriptor = driver.getDataSourceProvider().detectConnectionAuthModel(driver, connectionInfo);
-        DBAAuthModel authModel = authModelDescriptor.getInstance();
+        DBAAuthModel<DBAAuthCredentials> authModel = authModelDescriptor.getInstance();
 
         // Obtain connection
         try {
