@@ -31,6 +31,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -147,11 +148,13 @@ public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
                 deleter.setDeleteContents(deleteContentsCheck.getSelection());
             }
         });
-        UIUtils.createLabelText(ph,
-            UINavigatorMessages.confirm_deleting_project_location_label,
-            project.getLocation().toFile().getAbsolutePath(),
-            SWT.READ_ONLY
-        );
+        if (!DBWorkbench.isDistributed()) {
+            UIUtils.createLabelText(ph,
+                UINavigatorMessages.confirm_deleting_project_location_label,
+                project.getLocation().toFile().getAbsolutePath(),
+                SWT.READ_ONLY
+            );
+        }
     }
 
     private void createCheckbox(Composite checkboxesComposite, NavigatorObjectsDeleter.Option option) {

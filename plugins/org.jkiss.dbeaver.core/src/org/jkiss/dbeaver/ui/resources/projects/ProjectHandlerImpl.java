@@ -49,7 +49,8 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
             DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
             if (activeProject == null || resource != activeProject.getEclipseProject()) {
                 // FIXME: restrict private projects delete
-                if (!DBWorkbench.isDistributed()/* || !activeProject.isPrivateProject()*/) {
+                boolean isPrivateProject = false;//activeProject.isPrivateProject()
+                if (!(DBWorkbench.isDistributed() && isPrivateProject)) {
                     features |= FEATURE_DELETE;
                 }
             }
