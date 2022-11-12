@@ -19,14 +19,18 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -276,6 +280,43 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
         } catch (Throwable e) {
             log.error("Error refreshing workspce contents", e);
+        }
+    }
+
+    @NotNull
+    @Override
+    public DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException {
+        IProject project = null;
+        try {
+            project = getEclipseWorkspace().getRoot().getProject(name);
+            NullProgressMonitor monitor = new NullProgressMonitor();
+            if (project.exists()) {
+                project.create(monitor);
+            }
+            final IProjectDescription pDescription = getEclipseWorkspace().newProjectDescription(project.getName());
+            if (!CommonUtils.isEmpty(description)) {
+                pDescription.setComment(description);
+            }
+            pDescription.setNatureIds(new String[]{DBeaverNature.NATURE_ID});
+            project.setDescription(pDescription, monitor);
+            project.open(monitor);
+        } catch (Exception e) {
+            throw new DBException("Error creating Eclipse project", e);
+        }
+
+        return getProject(project);
+    }
+
+    @Override
+    public void deleteProject(@NotNull DBPProject project, boolean deleteContents) throws DBException {
+        IProject eclipseProject = project.getEclipseProject();
+        if (eclipseProject == null) {
+            throw new DBException("Project '" + project.getName() + "' is not an Eclipse project");
+        }
+        try {
+            eclipseProject.delete(deleteContents, true, new NullProgressMonitor());
+        } catch (CoreException e) {
+            throw new DBException("Error deleting Eclipse project '" + project.getName() + "'", e);
         }
     }
 

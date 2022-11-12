@@ -1213,7 +1213,7 @@
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
         <handler id="default" class="org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl"/>
-        <handler id="projects" class="org.jkiss.dbeaver.ui.resources.ProjectHandlerImpl">
+        <handler id="projects" class="org.jkiss.dbeaver.ui.resources.projects.ProjectHandlerImpl">
             <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
         </handler>
         <handler id="bookmarks" class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl" name="%resourceHandler.bookmarks.name" managable="true" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png">

@@ -56,7 +56,7 @@ public interface DBPPlatformUI {
         RETRY,
     }
     
-    public static class UserChoiceResponse {
+    class UserChoiceResponse {
         /**
          * index of the user's choice or out of range value (-1) on dialog failure
          */
@@ -64,14 +64,14 @@ public interface DBPPlatformUI {
         @Nullable
         public final Integer forAllChoiceIndex;
 
-        public UserChoiceResponse(int choiceIndex, Integer forAllChoiceIndex) {
+        public UserChoiceResponse(int choiceIndex, @Nullable Integer forAllChoiceIndex) {
             this.choiceIndex = choiceIndex;
             this.forAllChoiceIndex = forAllChoiceIndex;
         }
     }
 
     UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status);
-    UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final Throwable e);
+    UserResponse showError(@Nullable final String title, @Nullable final String message, @NotNull final Throwable e);
     UserResponse showError(@NotNull final String title, @Nullable final String message);
     void showNotification(@NotNull final String title, @Nullable final String message, boolean error);
     void showWarningNotification(@NotNull final String title, @Nullable final String message);
@@ -93,12 +93,12 @@ public interface DBPPlatformUI {
      */
     @NotNull
     UserChoiceResponse showUserChoice(
-        @NotNull final String title,
-        @Nullable final String message,
+        @NotNull String title,
+        @Nullable String message,
         @NotNull List<String> labels,
         @NotNull List<String> forAllLabels,
         @Nullable Integer previousChoice,
-        @NotNull int defaultChoice
+        int defaultChoice
     );
 
     UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue);

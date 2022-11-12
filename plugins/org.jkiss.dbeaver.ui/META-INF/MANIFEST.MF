@@ -9,6 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Activator: org.jkiss.dbeaver.ui.internal.UIActivator
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.runtime,
+ org.jkiss.dbeaver.runtime.ui,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.css,
  org.jkiss.dbeaver.ui.contentassist,

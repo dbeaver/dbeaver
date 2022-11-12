@@ -35,9 +35,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -250,17 +248,6 @@ public class DatabaseTasksTree {
         taskColumnController.createColumns(true);
 
         taskViewer.setContentProvider(new TreeListContentProvider());
-
-
-        DBPProjectListener projectListener = new DBPProjectListener() {
-            @Override
-            public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
-                refresh();
-            }
-        };
-        DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
-        taskTree.addDisposeListener(e ->
-            DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener));
     }
 
     public TreeViewer getViewer() {
