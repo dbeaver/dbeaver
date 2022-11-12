@@ -131,7 +131,9 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     @Nullable
     @Override
     public DBPAuthModelDescriptor getReplacedBy(@NotNull DBPDriver driver) {
-        for (DataSourceAuthModelDescriptor amd : DataSourceProviderRegistry.getInstance().getAllAuthModels()) {
+        List<DataSourceAuthModelDescriptor> allAuthModels = DataSourceProviderRegistry.getInstance().getAllAuthModels();
+        for (int i = allAuthModels.size(); i > 0; i--) {
+            DataSourceAuthModelDescriptor amd = allAuthModels.get(i - 1);
             if (amd.getReplaces(driver).contains(id) && amd.isDriverApplicable(driver)) {
                 return amd;
             }
