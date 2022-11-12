@@ -1047,7 +1047,6 @@
 
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles"
               id="org.jkiss.dbeaver.project.settings.networkProfiles"
-              category="org.jkiss.dbeaver.preferences.projectSettings"
               name="%page.org.jkiss.dbeaver.project.settings.networkProfiles.name" >
             <enabledWhen>
                 <adapt type="org.eclipse.core.resources.IProject">

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.dbeaver.ui.project.EditProjectWizard;
 
@@ -41,13 +42,14 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
 
     @Override
     public int getFeatures(IResource resource) {
-        boolean distributed = DBWorkbench.isDistributed();
         int features = FEATURE_CREATE_FOLDER;
-        if (!distributed) {
+        if (GlobalPropertyTester.canManageProjects()) {
             features |= FEATURE_RENAME;
             DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
             if (activeProject == null || resource != activeProject.getEclipseProject()) {
-                features |= FEATURE_DELETE;
+                if (!DBWorkbench.isDistributed()/* || !activeProject.isPrivateProject()*/) {
+                    features |= FEATURE_DELETE;
+                }
             }
         }
         return features;
