@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.model.data.aggregate;
 
+import org.jkiss.dbeaver.model.DBUtils;
+
 public class FunctionCountNulls implements IAggregateFunction {
     private long count = 0;
 
     @Override
     public boolean accumulate(Object value, boolean aggregateAsStrings) {
-        if (value == null) {
+        if (DBUtils.isNullValue(value)) {
             count++;
         }
         return true;
