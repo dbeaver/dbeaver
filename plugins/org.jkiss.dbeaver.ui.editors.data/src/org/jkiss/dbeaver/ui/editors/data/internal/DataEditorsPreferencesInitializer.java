@@ -75,7 +75,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL, true);
 
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS, true);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_INLINE_ENTER, false);

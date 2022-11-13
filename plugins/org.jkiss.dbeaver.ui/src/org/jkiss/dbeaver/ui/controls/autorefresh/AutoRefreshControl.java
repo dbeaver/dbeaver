@@ -31,9 +31,11 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class AutoRefreshControl {
 
@@ -48,6 +50,7 @@ public class AutoRefreshControl {
     private DBPImage defRefreshIcon;
     private Menu schedulerMenu;
     private String defRefreshText;
+    private Supplier<String> hintSupplier;
 
     public AutoRefreshControl(Control parent, String controlId, DBRRunnableWithProgress runnable) {
         this.parent = parent;
@@ -68,6 +71,10 @@ public class AutoRefreshControl {
 
     public DBRRunnableWithProgress getRunnable() {
         return runnable;
+    }
+
+    public void setHintSupplier(Supplier<String> hintSupplier) {
+        this.hintSupplier = hintSupplier;
     }
 
     private synchronized RefreshSettings getRefreshSettings() {
@@ -133,7 +140,7 @@ public class AutoRefreshControl {
         if (autoRefreshButton != null && !autoRefreshButton.isDisposed()) {
             autoRefreshButton.dispose();
         }
-        this.defRefreshText = defRefreshText;
+        this.defRefreshText = defTooltip;
         this.defRefreshIcon = defImage;
         autoRefreshButton = new ToolItem(toolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
         autoRefreshButton.setImage(DBeaverIcons.getImage(defRefreshIcon));
@@ -246,6 +253,16 @@ public class AutoRefreshControl {
                                 runPreset(timeout);
                             }
                         });
+                    }
+                }
+                if (hintSupplier != null) {
+                    String hintText = hintSupplier.get();
+                    if (!CommonUtils.isEmpty(hintText)) {
+                        new MenuItem(schedulerMenu, SWT.SEPARATOR);
+                        // We need hint item not just for hint. It also fills last menu element to avoid accidental miss-click in dropdown falls up
+                        MenuItem hintItem = new MenuItem(schedulerMenu, SWT.PUSH);
+                        hintItem.setText(hintText);
+                        hintItem.setEnabled(false);
                     }
                 }
 

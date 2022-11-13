@@ -264,6 +264,24 @@ public class ResultSetViewer extends Viewer
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
+        this.autoRefreshControl.setHintSupplier(() -> {
+            DBCExecutionContext executionContext = getExecutionContext();
+            if (executionContext != null) {
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
+                if (txnManager != null) {
+                    try {
+                        if (txnManager.isAutoCommit()) {
+                            return "Hint: frequent refresh may cause high server load";
+                        } else {
+                            return "Hint: switch to auto-commit to see external changes";
+                        }
+                    } catch (DBCException e) {
+                        log.debug(e);
+                    }
+                }
+            }
+            return null;
+        });
 
         if ((decoratorFeatures & IResultSetDecorator.FEATURE_FILTERS) != 0) {
             this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel);
@@ -1639,10 +1657,12 @@ public class ResultSetViewer extends Viewer
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
             // handle own commands
-            editToolBarManager.add(new Separator());
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES, ResultSetMessages.controls_resultset_edit_save, null, null, true));
+            editToolBarManager.add(new ToolbarSeparatorContribution(true));
+            CommandContributionItem saveItem = ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES, CommandContributionItem.STYLE_PULLDOWN, ResultSetMessages.controls_resultset_edit_save, null, null, true, null);
+            saveItem.setId("org.jkiss.dbeaver.resultset.save.pulldown");
+            editToolBarManager.add(saveItem);
             editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_REJECT_CHANGES, ResultSetMessages.controls_resultset_edit_cancel, null, null, true));
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT, ResultSetMessages.controls_resultset_edit_script, null, null, true));
+            //editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT, ResultSetMessages.controls_resultset_edit_script, null, null, true));
             editToolBarManager.add(new Separator());
             editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
             editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
@@ -1769,15 +1789,17 @@ public class ResultSetViewer extends Viewer
             CSSUtils.setCSSClass(rowCountLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             rowCountLabel.setMessage("Row Count");
             rowCountLabel.setToolTipText("Calculates total row count in the current dataset");
+            UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
 
             selectionStatLabel = new Text(statusBar, SWT.READ_ONLY);
             selectionStatLabel.setToolTipText(ResultSetMessages.result_set_viewer_selection_stat_tooltip);
             CSSUtils.setCSSClass(selectionStatLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            selectionStatLabel.setText(" ");
 
 //            Label filler = new Label(statusComposite, SWT.NONE);
 //            filler.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
+            //UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
 
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
             RowData rd = new RowData();
@@ -3932,7 +3954,11 @@ public class ResultSetViewer extends Viewer
         if (stats.equals(selectionStatLabel.getText())) {
             return;
         }
-        selectionStatLabel.setText(stats);
+        if (CommonUtils.isEmptyTrimmed(stats)) {
+            selectionStatLabel.setText(" ");
+        } else {
+            selectionStatLabel.setText(stats);
+        }
         statusBar.layout(true, true);
     }
 
