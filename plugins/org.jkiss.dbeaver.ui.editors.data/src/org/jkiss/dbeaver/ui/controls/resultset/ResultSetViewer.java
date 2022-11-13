@@ -186,7 +186,7 @@ public class ResultSetViewer extends Viewer
 
     private final Map<ResultSetPresentationDescriptor, PresentationSettings> presentationSettings = new HashMap<>();
     private final Map<String, IResultSetPanel> activePanels = new HashMap<>();
-    private final Map<String, ToolBarManager> activeToolBars = new HashMap<>();
+    //private final Map<String, ToolBarManager> activeToolBars = new HashMap<>();
 
     @NotNull
     private final IResultSetContainer container;
@@ -409,9 +409,7 @@ public class ResultSetViewer extends Viewer
                     return;
                 }
                 lastThemeUpdateTime = System.currentTimeMillis();
-                UIUtils.asyncExec(() -> {
-                    applyCurrentPresentationThemeSettings();
-                });
+                UIUtils.asyncExec(this::applyCurrentPresentationThemeSettings);
             }
         };
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
@@ -538,11 +536,12 @@ public class ResultSetViewer extends Viewer
 
     public void saveDataFilter() {
         DBCExecutionContext context = getExecutionContext();
-        if (context == null) {
+        DBSDataContainer dataContainer = getDataContainer();
+        if (context == null || dataContainer == null) {
             log.error("Can't save data filter with null context");
             return;
         }
-        DataFilterRegistry.getInstance().saveDataFilter(getDataContainer(), model.getDataFilter());
+        DataFilterRegistry.getInstance().saveDataFilter(dataContainer, model.getDataFilter());
 
         if (filtersPanel != null) {
             DBeaverNotifications.showNotification(DBeaverNotifications.NT_GENERAL,
@@ -588,9 +587,7 @@ public class ResultSetViewer extends Viewer
 
             DBCExecutionContext context = getExecutionContext();
             if (context != null) {
-                if (activePresentation instanceof StatisticsPresentation) {
-                    enableFilters = false;
-                } else {
+                if (!(activePresentation instanceof StatisticsPresentation)) {
                     StringBuilder where = new StringBuilder();
                     SQLUtils.appendConditionString(
                         model.getDataFilter(),
@@ -613,6 +610,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
             filtersPanel.enableFilters(enableFilters);
+            getAutoRefresh().enableControls(enableFilters);
             //presentationSwitchToolbar.setEnabled(enableFilters);
         } finally {
             this.viewerPanel.setRedraw(true);
@@ -1135,6 +1133,7 @@ public class ResultSetViewer extends Viewer
         return isPanelsVisible() ? activePanels.get(getPresentationSettings().activePanelId) : null;
     }
 
+/*
     String getActivePanelId() {
         return getPresentationSettings().activePanelId;
     }
@@ -1148,6 +1147,7 @@ public class ResultSetViewer extends Viewer
             showPanels(false, true, true);
         }
     }
+*/
 
     @Override
     public IResultSetPanel[] getActivePanels() {
@@ -1619,6 +1619,23 @@ public class ResultSetViewer extends Viewer
         statusBar.setLayout(toolbarsLayout);
 
         {
+            ToolBar rsToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            // Refresh
+            getAutoRefresh().populateRefreshButton(
+                rsToolbar,
+                ActionUtils.findCommandName(IWorkbenchCommandConstants.FILE_REFRESH),
+                ResultSetMessages.controls_resultset_viewer_action_refresh + " (" +
+                    ActionUtils.findCommandDescription(IWorkbenchCommandConstants.FILE_REFRESH, getSite(), true) + ")",
+                UIIcon.REFRESH,
+                () -> {
+                    if (!isRefreshInProgress()) {
+                        refreshData(null);
+                    }
+                }
+            );
+            getAutoRefresh().enableControls(false);
+        }
+        {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
             // handle own commands
@@ -1734,7 +1751,7 @@ public class ResultSetViewer extends Viewer
 
                 @Override
                 protected ILoadService<String> createLoadService() {
-                    return new DatabaseLoadService<String>("Load row count", getExecutionContext()) {
+                    return new DatabaseLoadService<>("Load row count", getExecutionContext()) {
                         @Override
                         public String evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                             try {
@@ -2146,7 +2163,7 @@ public class ResultSetViewer extends Viewer
         }
         long fetchTime = statistics.getFetchTime();
         long totalTime = statistics.getTotalTime();
-        Object endTime = null;
+        Object endTime;
         if (extended) {
             endTime = LocalDateTime
                 .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
@@ -2945,8 +2962,7 @@ public class ResultSetViewer extends Viewer
             layoutMenu.add(new Separator());
             for (ResultSetPresentationDescriptor pd : getAvailablePresentations()) {
                 Action psAction = new Action(pd.getLabel(), Action.AS_CHECK_BOX) {
-                    ResultSetPresentationDescriptor presentation;
-
+                    final ResultSetPresentationDescriptor presentation;
                     {
                         presentation = pd;
                         setImageDescriptor(DBeaverIcons.getImageDescriptor(presentation.getIcon()));
@@ -3123,7 +3139,7 @@ public class ResultSetViewer extends Viewer
                     prefId,
                     prefValue.toLowerCase());
             getTransformSettings().setCustomTransformer(prefId);
-            attribute.getDataSource().getContainer().persistConfiguration();
+            dataSource.getContainer().persistConfiguration();
             refreshData(null);
         }
 
@@ -4642,16 +4658,12 @@ public class ResultSetViewer extends Viewer
 
         @Override
         public void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) {
-            List<String> filters = filterHistory.get(query);
-            if (filters == null) {
-                filters = new ArrayList<>();
-                filterHistory.put(query, filters);
-            }
+            List<String> filters = filterHistory.computeIfAbsent(query, k -> new ArrayList<>());
             filters.add(filterValue);
         }
 
         @Override
-        public void deleteQueryFilterValue(@NotNull String query, String filterValue) throws DBException {
+        public void deleteQueryFilterValue(@NotNull String query, String filterValue) {
             List<String> filters = filterHistory.get(query);
             if (filters != null) {
                 filters.add(filterValue);
@@ -5007,7 +5019,10 @@ public class ResultSetViewer extends Viewer
             model.setUpdateInProgress(this);
             model.setStatistics(null);
             if (filtersPanel != null) {
-                UIUtils.asyncExec(() -> filtersPanel.enableFilters(false));
+                UIUtils.asyncExec(() -> {
+                    filtersPanel.enableFilters(false);
+                    getAutoRefresh().enableControls(false);
+;               });
             }
         }
 

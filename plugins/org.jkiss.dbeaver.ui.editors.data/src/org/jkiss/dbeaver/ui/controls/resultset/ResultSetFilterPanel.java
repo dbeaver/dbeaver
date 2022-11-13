@@ -101,7 +101,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private final ToolBar filterToolbar;
     private final ToolItem filtersClearButton;
     private final ToolItem filtersSaveButton;
-    private final ToolItem refreshButton;
     private final ToolItem historyBackButton;
     private final ToolItem historyForwardButton;
 
@@ -281,21 +280,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             UIUtils.createToolBarSeparator(filterToolbar, SWT.VERTICAL);
 
-            refreshButton = rsv.getAutoRefresh().populateRefreshButton(
-                filterToolbar,
-                ResultSetMessages.controls_resultset_viewer_action_refresh + " (" +
-                    ActionUtils.findCommandDescription(IWorkbenchCommandConstants.FILE_REFRESH, viewer.getSite(), true) + ")",
-                UIIcon.REFRESH,
-                () -> {
-                    if (!viewer.isRefreshInProgress()) {
-                        viewer.refreshData(null);
-                    }
-                }
-            );
-            refreshButton.setEnabled(false);
-
-            UIUtils.createToolBarSeparator(filterToolbar, SWT.VERTICAL);
-
             historyBackButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
             historyBackButton.setImage(DBeaverIcons.getImage(UIIcon.RS_BACK));
             historyBackButton.setEnabled(false);
@@ -390,7 +374,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         try {
             filterToolbar.setEnabled(enable);
             this.filterExpandPanel.setEnabled(enable);
-            refreshButton.setEnabled(enable);
             historyPanel.setEnabled(enable);
             filtersText.setEditable(viewer.supportsDataFilter());
             executePanel.setEnabled(enable);

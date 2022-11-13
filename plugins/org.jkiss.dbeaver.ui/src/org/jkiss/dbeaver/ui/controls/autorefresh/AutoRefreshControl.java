@@ -93,6 +93,12 @@ public class AutoRefreshControl {
         updateAutoRefreshToolbar();
     }
 
+    public synchronized void enableControls(boolean enable) {
+        if (autoRefreshButton != null) {
+            autoRefreshButton.setEnabled(enable);
+        }
+    }
+
     public synchronized void scheduleAutoRefresh(boolean afterError) {
         if (autoRefreshJob != null) {
             autoRefreshJob.cancel();
@@ -120,10 +126,10 @@ public class AutoRefreshControl {
     }
 
     public ToolItem populateRefreshButton(ToolBar toolbar) {
-        return populateRefreshButton(toolbar, UIMessages.sql_editor_resultset_filter_panel_btn_config_refresh, UIIcon.CLOCK_START, createDefaultRefreshAction());
+        return populateRefreshButton(toolbar, null, UIMessages.sql_editor_resultset_filter_panel_btn_config_refresh, UIIcon.CLOCK_START, createDefaultRefreshAction());
     }
 
-    public ToolItem populateRefreshButton(ToolBar toolbar, String defRefreshText, DBPImage defImage, Runnable defAction) {
+    public ToolItem populateRefreshButton(ToolBar toolbar, String itemText, String defTooltip, DBPImage defImage, Runnable defAction) {
         if (autoRefreshButton != null && !autoRefreshButton.isDisposed()) {
             autoRefreshButton.dispose();
         }
@@ -131,6 +137,9 @@ public class AutoRefreshControl {
         this.defRefreshIcon = defImage;
         autoRefreshButton = new ToolItem(toolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
         autoRefreshButton.setImage(DBeaverIcons.getImage(defRefreshIcon));
+        if (itemText != null) {
+            autoRefreshButton.setText(itemText);
+        }
         autoRefreshButton.addSelectionListener(new AutoRefreshMenuListener(autoRefreshButton, defAction));
         updateAutoRefreshToolbar();
 
