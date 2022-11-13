@@ -4165,7 +4165,10 @@ public class ResultSetViewer extends Viewer
         if (dataSource == null) {
             return false;
         }
-        if (dataSource.getContainer().getConnectionConfiguration().getConnectionType().isConfirmDataChange()) {
+        if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE) ||
+            dataSource.getContainer().getConnectionConfiguration().getConnectionType().isConfirmDataChange()
+        ) {
+            // Show script as confirmation
             ResultSetSaveReport saveReport = generateChangesReport();
             if (saveReport == null) {
                 return false;
