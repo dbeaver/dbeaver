@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -312,6 +313,8 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_TOGGLE_CONFIRM_SAVE: {
+                DBPPreferenceStore store = rsv.getPreferenceStore();
+                store.setValue(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE, !store.getBoolean(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE));
                 break;
             }
             case CMD_COPY_COLUMN_NAMES: {
