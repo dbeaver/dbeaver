@@ -22,7 +22,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.gef3.commands.Command;
 import org.eclipse.gef3.commands.CompoundCommand;
 import org.eclipse.gef3.ui.actions.DeleteAction;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.IWorkbenchPart;
@@ -36,7 +35,8 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.navigator.dialogs.ConfirmNavigatorNodesDeleteDialog;
+import org.jkiss.dbeaver.ui.dialogs.Reply;
+import org.jkiss.dbeaver.ui.navigator.dialogs.NavigatorNodesDeletionConfirmations;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,11 +75,11 @@ public class ERDHandlerDelete extends AbstractHandler implements IElementUpdater
                             }
                         }
                     }
-                    if (!selectedNodes.isEmpty() && ConfirmNavigatorNodesDeleteDialog.of(
+                    if (!selectedNodes.isEmpty() && NavigatorNodesDeletionConfirmations.confirm(
                         HandlerUtil.getActiveShell(event),
                         selectedNodes,
                         null
-                    ).open() != IDialogConstants.YES_ID) {
+                    ) != Reply.YES) {
                         return null;
                     }
                     deleteAction.run();
