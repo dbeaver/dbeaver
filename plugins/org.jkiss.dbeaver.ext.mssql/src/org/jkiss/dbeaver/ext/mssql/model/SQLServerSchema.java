@@ -535,11 +535,13 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                     indexType = DBSIndexType.OTHER;
                     break;
             }
+            boolean isColumnstoreIndex = indexTypeNum == 5 || indexTypeNum == 6;
             return new SQLServerTableIndex(
                 parent,
                 indexName,
                 indexType,
-                dbResult);
+                dbResult,
+                isColumnstoreIndex);
         }
 
         @Nullable
