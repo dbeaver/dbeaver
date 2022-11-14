@@ -1836,11 +1836,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     return model.getVisibleAttributes().toArray();
                 } else {
                     int[] selectedRecords = controller.getSelectedRecords();
-                    Object[] rows = new Object[selectedRecords.length];
+                    List<Object> rows = new ArrayList<>(selectedRecords.length);
                     for (int i = 0; i < selectedRecords.length; i++) {
-                        rows[i] = controller.getModel().getRow(selectedRecords[i]);
+                        if (selectedRecords[i] < controller.getModel().getRowCount()) {
+                            rows.add(controller.getModel().getRow(selectedRecords[i]));
+                        }
                     }
-                    return rows;
+                    return rows.toArray();
                 }
             } else {
                 // rows
