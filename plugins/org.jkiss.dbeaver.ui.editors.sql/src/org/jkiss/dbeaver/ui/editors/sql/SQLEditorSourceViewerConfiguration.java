@@ -32,6 +32,7 @@ import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
+import org.eclipse.jface.text.rules.ITokenScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -287,34 +288,45 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         reconciler.setDocumentPartitioning(docPartitioning);
 
         // Add a "damager-repairer" for changes in default text (SQL code).
-        DefaultDamagerRepairer dr = new DefaultDamagerRepairer(ruleManager);
-
-        reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
-        reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
-
+        addContentTypeDamageRepairer(reconciler, IDocument.DEFAULT_CONTENT_TYPE);
+        
         // rule for multiline comments
         // We just need a scanner that does nothing but returns a token with
         // the corresponding text attributes
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
         // Add a "damager-repairer" for changes within one-line SQL comments.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
-        // Add a "damager-repairer" for changes within quoted literals.
+        // Add a "damager-repairer" for changes within string literals.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING, SQLConstants.CONFIG_COLOR_STRING);
         // Add a "damager-repairer" for changes within quoted literals.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED, SQLConstants.CONFIG_COLOR_DATATYPE);
+        // Add a "damager-repairer" for changes within control commands.
+        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_CONTROL);
 
         return reconciler;
     }
 
-    private void addContentTypeDamageRepairer(PresentationReconciler reconciler, String contentType, String colorId) {
-        DefaultDamagerRepairer dr = new DefaultDamagerRepairer(
-            new SingleTokenScanner(
-                new TextAttribute(ruleManager.getColor(colorId))));
-        reconciler.setDamager(dr, contentType);
-        reconciler.setRepairer(dr, contentType);
-
+    private void addContentTypeDamageRepairer(@NotNull PresentationReconciler reconciler, @NotNull String contentType) {
+        addContentTypeDamageRepairer(reconciler, contentType, ruleManager);
+    }
+    
+    private void addContentTypeDamageRepairer(
+        @NotNull PresentationReconciler reconciler,
+        @NotNull String contentType,
+        @NotNull String colorId
+    ) {
+        addContentTypeDamageRepairer(reconciler, contentType, new SingleTokenScanner(new TextAttribute(ruleManager.getColor(colorId))));
     }
 
+    private void addContentTypeDamageRepairer(
+        @NotNull PresentationReconciler reconciler,
+        @NotNull String contentType,
+        @NotNull ITokenScanner scanner
+    ) {
+        DefaultDamagerRepairer dr = new DefaultDamagerRepairer(scanner);
+        reconciler.setDamager(dr, contentType);
+        reconciler.setRepairer(dr, contentType);
+    }
 
     /**
      * Returns the SQLEditor associated with this object.
