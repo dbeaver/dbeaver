@@ -154,6 +154,12 @@ public interface DBPDataSourceContainer extends
     boolean isConnected();
 
     /**
+     * Returns last connection instantiation error if any
+     */
+    @Nullable
+    String getConnectionError();
+
+    /**
      * Connects to datasource.
      * This is sync method and returns after actual connection establishment.
      * @param monitor progress monitor

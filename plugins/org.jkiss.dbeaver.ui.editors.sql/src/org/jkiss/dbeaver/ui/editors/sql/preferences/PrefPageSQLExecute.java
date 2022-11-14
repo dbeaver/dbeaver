@@ -220,7 +220,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
             namedParameterPrefixText = UIUtils.createLabelText(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_named_parameter_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             namedParameterPrefixText.setTextLimit(1);
             controlCommandPrefixText = UIUtils.createLabelText(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_control_command_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
-            controlCommandPrefixText.setTextLimit(1);
             enableParametersInEmbeddedCode = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl_tip, false, 2);
             enableVariables = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_enable_variables, SQLEditorMessages.pref_page_sql_editor_enable_variables_tip, false, 2);
 

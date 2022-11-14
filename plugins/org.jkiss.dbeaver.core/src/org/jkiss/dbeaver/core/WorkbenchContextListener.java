@@ -27,7 +27,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
+import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarHandler;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;

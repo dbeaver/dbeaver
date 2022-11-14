@@ -78,8 +78,16 @@ public class DataSourceHandler {
         @Nullable final DBRProgressListener onFinish) {
         if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) dataSourceContainer;
-            if (!ArrayUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
+            Job[] connectJobs = Job.getJobManager().find(dataSourceDescriptor);
+            if (!ArrayUtils.isEmpty(connectJobs)) {
                 // Already connecting/disconnecting - just return
+                if (monitor != null && connectJobs.length == 1) {
+                    try {
+                        connectJobs[0].join(0, monitor.getNestedMonitor());
+                    } catch (InterruptedException e) {
+                        log.debug(e);
+                    }
+                }
                 return;
             }
 

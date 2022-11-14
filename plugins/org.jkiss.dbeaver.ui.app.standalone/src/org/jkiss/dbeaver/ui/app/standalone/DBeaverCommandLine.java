@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
+import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.InstanceClient;
 import org.jkiss.dbeaver.utils.GeneralUtils;

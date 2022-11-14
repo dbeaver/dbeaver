@@ -222,6 +222,12 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
         return false;
     }
 
+    @Nullable
+    @Override
+    public String getConnectionError() {
+        return null;
+    }
+
     @Override
     public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
         throw new DBCFeatureNotSupportedException();
