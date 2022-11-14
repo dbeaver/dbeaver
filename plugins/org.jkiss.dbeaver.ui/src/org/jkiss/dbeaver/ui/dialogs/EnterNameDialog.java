@@ -69,7 +69,7 @@ public class EnterNameDialog extends Dialog {
         gl.marginWidth = 10;
         propGroup.setLayout(gl);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 300;
+        gd.minimumWidth = 300;
         propGroup.setLayoutData(gd);
 
         createControlsBeforeName(propGroup);

@@ -334,6 +334,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     @Nullable
+    @Override
     public Map<String, Object> getResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
         resourcePath = normalizeResourcePath(resourcePath);

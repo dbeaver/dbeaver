@@ -39,9 +39,12 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.views.IViewDescriptor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
@@ -81,6 +84,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     private TreeViewer taskRunViewer;
     private ViewerColumnController<?,?> taskRunColumnController;
+    private DBPProjectListener projectListener;
 
     public DatabaseTasksView() {
     }
@@ -104,6 +108,15 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         loadViewConfig();
         loadTasks();
+        updateViewTitle();
+
+        projectListener = new DBPProjectListener() {
+            @Override
+            public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
+                refresh();
+            }
+        };
+        DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
     }
 
     private void createTaskTree(Composite composite) {
@@ -296,6 +309,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     @Override
     public void dispose() {
+        DBPPlatformDesktop.getInstance().getWorkspace().removeProjectListener(projectListener);
         TaskRegistry.getInstance().removeTaskListener(this);
         super.dispose();
     }
@@ -346,13 +360,21 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
     private void loadViewConfig() {
         tasksTree.loadViewConfig();
-
     }
 
     public void refresh() {
+        updateViewTitle();
+
         tasksTree.refresh();
 
         loadTaskRuns();
+    }
+
+    private void updateViewTitle() {
+        IViewDescriptor viewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(VIEW_ID);
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        setPartName(Objects.requireNonNull(viewDescriptor == null ? null : viewDescriptor.getLabel(), "") +
+            " - " + Objects.requireNonNull(activeProject == null ? null : activeProject.getName(), ""));
     }
 
     private void loadTasks() {
