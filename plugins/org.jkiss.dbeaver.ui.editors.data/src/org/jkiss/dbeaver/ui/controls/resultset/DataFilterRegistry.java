@@ -265,7 +265,7 @@ class DataFilterRegistry {
         }
     }
 
-    @NotNull
+    @Nullable
     public SavedDataFilter getSavedConfig(@NotNull DBSDataContainer object) {
         String objectId = makeObjectId(object);
         synchronized (savedFilters) {

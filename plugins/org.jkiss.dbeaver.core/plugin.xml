@@ -164,6 +164,13 @@
                 <equals value="org.jkiss.dbeaver.ui.qm.log"/>
             </with>
         </definition>
+        <definition id="org.jkiss.dbeaver.core.transactionActive">
+            <with variable="activeEditor">
+                <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                    <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
+                </adapt>
+            </with>
+        </definition>
 <!--
         <definition id="org.jkiss.dbeaver.core.ui.inlineWidgetEditor">
             <with variable="activeFocusControlId">
@@ -357,20 +364,12 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
             <enabledWhen>
-                <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
-                    </adapt>
-                </with>
+                <reference definitionId="org.jkiss.dbeaver.core.transactionActive"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.rollback" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceRollbackHandler">
             <enabledWhen>
-                <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
-                    </adapt>
-                </with>
+                <reference definitionId="org.jkiss.dbeaver.core.transactionActive"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.txn.autocommit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceAutoCommitHandler">
@@ -1047,7 +1046,6 @@
 
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles"
               id="org.jkiss.dbeaver.project.settings.networkProfiles"
-              category="org.jkiss.dbeaver.preferences.projectSettings"
               name="%page.org.jkiss.dbeaver.project.settings.networkProfiles.name" >
             <enabledWhen>
                 <adapt type="org.eclipse.core.resources.IProject">
@@ -1214,7 +1212,7 @@
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
         <handler id="default" class="org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl"/>
-        <handler id="projects" class="org.jkiss.dbeaver.ui.resources.ProjectHandlerImpl">
+        <handler id="projects" class="org.jkiss.dbeaver.ui.resources.projects.ProjectHandlerImpl">
             <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
         </handler>
         <handler id="bookmarks" class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl" name="%resourceHandler.bookmarks.name" managable="true" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png">

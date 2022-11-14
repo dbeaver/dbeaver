@@ -449,4 +449,20 @@
             handler="org.jkiss.dbeaver.ui.app.standalone.cli.SQLTranslatorHandler"/>
     </extension>
 
+    <!-- Disable Eclipse debug and refactoring in standalone applications -->
+    <extension point="org.eclipse.ui.activities">
+        <activity id="dbeaver.app.StandaloneActivity" name="DBeaver standalone application activity"/>
+        <category id="dbeaver.app.StandaloneCategory" name="DBeaver standalone application activity category"/>
+
+        <!-- put the activity in the category -->
+        <categoryActivityBinding activityId="dbeaver.app.StandaloneActivity" categoryId="dbeaver.app.StandaloneCategory"/>
+        <!-- bind patterns -->
+        <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.ltk.ui.refactoring/.*"/>
+        <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.ui.ide/org.eclipse.ui.propertypages.resource.filters"/>
+        <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.ui.ide/org.eclipse.ui.propertypages.project.reference"/>
+        <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.ui.ide/org.eclipse.ui.propertypages.project.natures"/>
+        <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.ui.ide/org.eclipse.ui.propertypages.project.linkedResourcesPage"/>
+        <activityPatternBinding activityId="dbeaver.app.StandaloneActivity" pattern="org.eclipse.debug.ui/org.eclipse.debug.ui.properties.defaultLaunchConfigurations"/>
+    </extension>
+
 </plugin>
