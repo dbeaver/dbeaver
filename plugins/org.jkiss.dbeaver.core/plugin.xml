@@ -164,6 +164,13 @@
                 <equals value="org.jkiss.dbeaver.ui.qm.log"/>
             </with>
         </definition>
+        <definition id="org.jkiss.dbeaver.core.transactionActive">
+            <with variable="activeEditor">
+                <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                    <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
+                </adapt>
+            </with>
+        </definition>
 <!--
         <definition id="org.jkiss.dbeaver.core.ui.inlineWidgetEditor">
             <with variable="activeFocusControlId">
@@ -357,20 +364,12 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
             <enabledWhen>
-                <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
-                    </adapt>
-                </with>
+                <reference definitionId="org.jkiss.dbeaver.core.transactionActive"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.rollback" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceRollbackHandler">
             <enabledWhen>
-                <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
-                    </adapt>
-                </with>
+                <reference definitionId="org.jkiss.dbeaver.core.transactionActive"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.txn.autocommit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceAutoCommitHandler">
