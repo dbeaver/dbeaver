@@ -419,4 +419,20 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
         }
     }
 
+    @Override
+    public void applyData(Object data) {
+        final DBWNetworkProfile profile = projectMeta.getDataSourceRegistry().getNetworkProfile(CommonUtils.toString(data));
+
+        if (profile != null) {
+            final TableItem[] items = profilesTable.getItems();
+
+            for (int i = 0; i < items.length; i++) {
+                if (items[i].getData() == profile) {
+                    profilesTable.select(i);
+                    profilesTable.notifyListeners(SWT.Selection, new Event());
+                    break;
+                }
+            }
+        }
+    }
 }
