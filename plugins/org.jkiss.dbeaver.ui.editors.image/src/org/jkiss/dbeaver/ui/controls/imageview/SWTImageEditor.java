@@ -25,21 +25,21 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 
 import java.io.InputStream;
 
 /**
  * Image editor, based on image viewer.
  */
-public class ImageEditor extends ImageViewer {
+public class SWTImageEditor extends SWTImageViewer {
 
-    private Color redColor = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
-    private Color blackColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
+    private final Color redColor = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+    private final Color blackColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
 
-    private Text messageLabel;
+    private final Text messageLabel;
 
-    public ImageEditor(Composite parent, int style)
-    {
+    public SWTImageEditor(Composite parent, int style) {
         super(parent, style);
 
         //setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
@@ -64,7 +64,6 @@ public class ImageEditor extends ImageViewer {
                 ToolBarManager toolBar = new ToolBarManager(SWT.NONE);
 //                gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
 //                toolBar.setLayoutData(gd);
-
                 fillToolBar(toolBar);
                 toolBar.createControl(statusGroup);
             }
@@ -73,8 +72,7 @@ public class ImageEditor extends ImageViewer {
     }
 
     @Override
-    public boolean loadImage(InputStream inputStream)
-    {
+    public boolean loadImage(@NotNull InputStream inputStream) {
         super.loadImage(inputStream);
         try {
             SWTException lastError = getLastError();
@@ -87,10 +85,8 @@ public class ImageEditor extends ImageViewer {
                 messageLabel.setForeground(blackColor);
                 return true;
             }
-        }
-        finally {
+        } finally {
             updateActions();
         }
     }
-
 }

@@ -40,13 +40,13 @@ public class ImageActionDelegate extends Action {
     /**
      * pointer to image view
      */
-    public ImageViewer imageViewControl = null;
+    public SWTImageViewer imageViewControl = null;
     /**
      * Action id of this delegate
      */
     public String id;
 
-    public ImageActionDelegate(ImageViewer viewControl, String id, String name, DBPImage image) {
+    public ImageActionDelegate(SWTImageViewer viewControl, String id, String name, DBPImage image) {
         super(name, DBeaverIcons.getImageDescriptor(image));
         this.imageViewControl = viewControl;
         this.id = id;
