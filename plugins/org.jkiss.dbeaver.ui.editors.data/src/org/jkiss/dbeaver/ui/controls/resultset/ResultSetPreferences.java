@@ -75,6 +75,7 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_STRING_USE_CONTENT_EDITOR = "resultset.string.use.content.editor"; //$NON-NLS-1$
     public static final String RESULT_SET_USE_NAVIGATOR_FILTERS = "resultset.filter.use.navigator"; //$NON-NLS-1$
 
+    public static final String RESULT_SET_CONFIRM_BEFORE_SAVE = "resultset.confirm.beforeSave"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ERRORS_IN_DIALOG = "resultset.show.errorDialog"; //$NON-NLS-1$
     public static final String RESULT_SET_MARK_CELL_VALUE_OCCURRENCES = "resultset.mark.cell.value.occurrences"; //$NON-NLS-1$
 
@@ -90,6 +91,8 @@ public final class ResultSetPreferences {
     public static final String RESULT_TEXT_DELIMITER_BOTTOM = "resultset.text.delimiter.bottom"; //$NON-NLS-1$
     public static final String RESULT_TEXT_EXTRA_SPACES = "resultset.text.extra.spaces"; //$NON-NLS-1$
     public static final String RESULT_TEXT_LINE_NUMBER = "resultset.text.line.number";
+
+    public static final String RESULT_IMAGE_USE_BROWSER_BASED_RENDERER = "resultset.image.browser";
 
     // Confirmations
     public static final String CONFIRM_ORDER_RESULTSET = "order_resultset"; //$NON-NLS-1$

@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Tasks - SQL Tools UI
 Bundle-SymbolicName: org.jkiss.dbeaver.tasks.sql.ui;singleton:=true
-Bundle-Version: 1.0.58.qualifier
-Bundle-Release-Date: 20221024
+Bundle-Version: 1.0.60.qualifier
+Bundle-Release-Date: 20221121
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,

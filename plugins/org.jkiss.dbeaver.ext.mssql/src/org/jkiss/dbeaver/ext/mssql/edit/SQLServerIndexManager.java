@@ -100,25 +100,33 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
         if (index.isUnique()) {
             ddl.append("UNIQUE ");
         }
+        boolean columnStore = index.isColumnStore();
         if (sqlServerIndexType != null) {
             ddl.append(sqlServerIndexType).append(" ");
+            if (columnStore) {
+                ddl.append("COLUMNSTORE ");
+            }
         }
         ddl.append("INDEX ").append(index.getName()).append(" ON ").append(indexTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
         List<SQLServerTableIndexColumn> indexColumns = index.getAttributeReferences(monitor);
-        if (indexColumns != null) {
+        if (columnStore && index.getIndexType() == DBSIndexType.CLUSTERED) {
+            // Do not add columns list in this case, it will not work (SQL Error [35335] [S0001])
+        } else if (indexColumns != null) {
             ddl.append(indexColumns.stream()
-                .filter(x -> !x.isIncluded())
+                .filter(x -> !x.isIncluded() || columnStore)
                 .map(DBUtils::getQuotedIdentifier)
                 .collect(Collectors.joining(", ", " (", ")"))
             );
 
-            final String includedColumns = indexColumns.stream()
-                .filter(SQLServerTableIndexColumn::isIncluded)
-                .map(DBUtils::getQuotedIdentifier)
-                .collect(Collectors.joining(", "));
+            if (!columnStore) {
+                final String includedColumns = indexColumns.stream()
+                    .filter(SQLServerTableIndexColumn::isIncluded)
+                    .map(DBUtils::getQuotedIdentifier)
+                    .collect(Collectors.joining(", "));
 
-            if (!includedColumns.isEmpty()) {
-                ddl.append(" INCLUDE (").append(includedColumns).append(")");
+                if (!includedColumns.isEmpty()) {
+                    ddl.append(" INCLUDE (").append(includedColumns).append(")");
+                }
             }
         } else {
             super.addObjectCreateActions(monitor, executionContext, actions, command, options);

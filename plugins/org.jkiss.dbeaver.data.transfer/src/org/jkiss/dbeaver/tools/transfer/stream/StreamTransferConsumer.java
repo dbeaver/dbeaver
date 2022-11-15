@@ -288,7 +288,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     BlobFileConflictBehavior.OVERWRITE.title,
                     DTMessages.data_transfer_file_conflict_cancel
                 ),
-                forAllLabels, runtimeParameters.blobFileConflictPreviousChoice
+                forAllLabels, runtimeParameters.blobFileConflictPreviousChoice, 1
             );
             if (response.choiceIndex < 0) {
                 throw new RuntimeException("Blob file name conflict behavior is not specified while " + fileName + " already exists");
@@ -332,16 +332,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         if (lobFile.isFile()) {
             if (!resolveOverwriteBlobFileConflict(lobFile.getName())) {
                 lobFile = makeLobFileName("-" + System.currentTimeMillis(), fileExt);
-                // I believe that we can't generate two System.currentTimeMillis() in the same time,
-                // but if it accidentally happen, let's just wait and generate it again
-                while (lobFile.isFile()) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ex) {
-                        // ignore
-                    }
-                    lobFile = makeLobFileName("-" + System.currentTimeMillis(), fileExt);
-                }
             }
         }
         
@@ -374,16 +364,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             outputFiles.add(outputFile);
         } else {
             outputFile = null;
-        }
-
-        if (processor instanceof IAppendableDataExporter && (settings.getDataFileConflictBehavior() == DataFileConflictBehavior.APPEND
-            || (settings.isUseSingleFile() && parameters.orderNumber > 0))
-        ) {
-            try {
-                ((IAppendableDataExporter) processor).importData(exportSite);
-            } catch (DBException e) {
-                log.warn("Error importing existing data for appending, data loss might occur", e);
-            }
         }
 
         try {
@@ -427,7 +407,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         closeOutputStreams();
     }
     
-    private DataFileConflictBehavior getDataFileConflictBehavior(String fileName) {
+    private DataFileConflictBehavior prepareDataFileConflictBehavior(String fileName) {
         DataFileConflictBehavior behavior = runtimeParameters.dataFileConflictBehavior;
         
         if (behavior == DataFileConflictBehavior.ASK) {
@@ -442,7 +422,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     DataFileConflictBehavior.OVERWRITE.title,
                     DTMessages.data_transfer_file_conflict_cancel
                 ),
-                forAllLabels, runtimeParameters.dataFileConflictPreviousChoice
+                forAllLabels, runtimeParameters.dataFileConflictPreviousChoice, 2
             );
             if (response.choiceIndex > 2) {
                 throw new RuntimeException("User cancel during existing file resolution for data " + fileName);
@@ -461,23 +441,37 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 runtimeParameters.dataFileConflictBehavior = behavior;
             }
         }
-        
-        if ((behavior == DataFileConflictBehavior.OVERWRITE || behavior == DataFileConflictBehavior.PATCHNAME) && 
-            settings.isUseSingleFile() && parameters.orderNumber == 0) {
-            return behavior;
-        } else if ((behavior == DataFileConflictBehavior.APPEND || settings.isUseSingleFile()) &&
-            processor instanceof IAppendableDataExporter &&  !((IAppendableDataExporter) processor).shouldTruncateOutputFileBeforeExport()) {
-            return DataFileConflictBehavior.APPEND;
-        } else {
-            return DataFileConflictBehavior.OVERWRITE;
+
+        if (settings.isUseSingleFile() && parameters.orderNumber > 0) { 
+            // all consequent sources in a session should be appended  to the first file 
+            behavior = DataFileConflictBehavior.APPEND;
         }
+
+        if (behavior == DataFileConflictBehavior.APPEND) {
+            if (processor instanceof IAppendableDataExporter) {
+                try {
+                    ((IAppendableDataExporter) processor).importData(exportSite);
+                } catch (DBException e) {
+                    log.warn("Error importing existing data for appending, data loss might occur", e);
+                }
+                if (((IAppendableDataExporter) processor).shouldTruncateOutputFileBeforeExport()) {
+                    // appendable but not patchable file should be overwritten after the old data was preloaded
+                    behavior = DataFileConflictBehavior.OVERWRITE;
+                }
+            } else {
+                // if we still want to append but the file is non-appendable, so it should be patchnamed
+                behavior = DataFileConflictBehavior.PATCHNAME;                
+            }
+        }
+        
+        return behavior;
     }
     
     private void openOutputStreams() throws IOException {
         final boolean truncate;
         
         if (outputFile.isFile()) {
-            DataFileConflictBehavior behavior = getDataFileConflictBehavior(outputFile.getName());
+            DataFileConflictBehavior behavior = prepareDataFileConflictBehavior(outputFile.getName());
             switch (behavior) {
                 case APPEND:
                     truncate = false;
@@ -485,16 +479,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 case PATCHNAME:
                     truncate = false;
                     outputFile = makeOutputFile("-" + System.currentTimeMillis());
-                    // I believe that we can't generate two System.currentTimeMillis() in the same time,
-                    // but if it accidentally happen, let's just wait and generate it again
-                    while (outputFile.isFile()) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException ex) {
-                            // ignore
-                        }
-                        outputFile = makeOutputFile("-" + System.currentTimeMillis());
-                    }
                     break;
                 case OVERWRITE:
                     truncate = true;
@@ -705,16 +689,23 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @NotNull
     private String getOutputFileName(@Nullable String suffix) {
         Object extension = processorProperties == null ? null : processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
-        String fileName = translatePattern(settings.getOutputFilePattern(), null).trim();
+        String fileName = CommonUtils.notNull(
+            runtimeParameters.outputFileNameToReuse, 
+            translatePattern(settings.getOutputFilePattern(), null).trim()
+        );
         // Can't rememeber why did we need this. It breaks file names in case of multiple tables export (#6911)
         // if (parameters.orderNumber > 0 && !settings.isUseSingleFile()) {
         //    fileName += "_" + String.valueOf(parameters.orderNumber + 1);
         //}
-        if (multiFileNumber > 0) {
-            fileName += "_" + (multiFileNumber + 1);
-        }
         if (CommonUtils.isNotEmpty(suffix)) {
             fileName += suffix;
+        }
+        if (settings.isUseSingleFile() && suffix != null) {
+            runtimeParameters.outputFileNameToReuse = fileName;
+        }
+
+        if (multiFileNumber > 0) {
+            fileName += "_" + (multiFileNumber + 1);
         }
         if (extension != null) {
             return fileName + "." + extension;
@@ -732,11 +723,16 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private File makeOutputFile(@Nullable String suffix) {
         final File file = makeOutputFile(suffix, getOutputFolder());
 
-        try (FileOutputStream ignored = new FileOutputStream(file)) {
-            return file;
-        } catch (IOException e) {
-            return makeOutputFile(suffix, getFallbackOutputFolder());
+        if (!file.exists()) {
+            try (FileOutputStream ignored = new FileOutputStream(file)) {
+                return file;
+            } catch (IOException ignored) {
+                return makeOutputFile(suffix, getFallbackOutputFolder());
+            } finally {
+                file.delete();
+            }
         }
+        return file;
     }
 
     @NotNull

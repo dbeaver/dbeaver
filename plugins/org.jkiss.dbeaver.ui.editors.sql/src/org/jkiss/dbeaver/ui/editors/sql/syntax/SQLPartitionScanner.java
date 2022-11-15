@@ -53,6 +53,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
     private final IToken multilineCommentToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT);
     private final IToken sqlStringToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
     private final IToken sqlQuotedToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
+    private final IToken controlToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_CONTROL);
 
     private void setupRules() {
         IPredicateRule[] result = new IPredicateRule[rules.size()];
@@ -75,6 +76,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
             }
         }
 
+        adaptRules(ruleManager.getRulesByType(SQLTokenType.T_CONTROL));
         adaptRules(ruleManager.getRulesByType(SQLTokenType.T_COMMENT));
         adaptRules(ruleManager.getRulesByType(SQLTokenType.T_QUOTED));
         adaptRules(ruleManager.getRulesByType(SQLTokenType.T_STRING));
@@ -167,6 +169,8 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
                         return sqlQuotedToken;
                     case T_COMMENT:
                         return token instanceof SQLMultilineCommentToken ? multilineCommentToken : commentToken;
+                    case T_CONTROL:
+                        return controlToken;
                 }
             }
         }

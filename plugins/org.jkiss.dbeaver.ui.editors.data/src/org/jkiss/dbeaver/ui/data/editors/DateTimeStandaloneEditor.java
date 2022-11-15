@@ -54,10 +54,10 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Composite createDialogArea(Composite parent) {
         valueController = getValueController();
         Object value = valueController.getValue();
-        Composite dialogGroup = (Composite) super.createDialogArea(parent);
+        Composite dialogGroup = super.createDialogArea(parent);
         Composite panel = UIUtils.createComposite(dialogGroup, 3);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         int style = SWT.NONE;

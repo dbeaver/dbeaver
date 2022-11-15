@@ -101,7 +101,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
     }
 
     protected boolean isDefaultProjectNeeded() {
-        return true;
+        return DBWorkbench.getPlatform().getApplication().getDefaultProjectName() != null;
     }
 
     @Override

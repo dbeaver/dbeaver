@@ -87,9 +87,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         //"org.eclipse.ui.preferencePages.FileEditors",
         WORKBENCH_PREF_PAGE_ID + "/" + APPEARANCE_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Decorators",
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace",
-        //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
-        //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace/org.eclipse.ui.preferencePages.BuildOrder",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.General.LinkHandlers",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.trace.tracingPage",
 
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",
@@ -184,7 +186,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         filterPreferencePages();
         filterWizards();
 
-        startVersionChecker();
+        if (!application.isDistributed()) {
+            startVersionChecker();
+        }
     }
 
     @Override

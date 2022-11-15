@@ -168,7 +168,10 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     @Override
     protected SourceViewer createPatternViewer(Composite parent) {
         IDocument document = new Document();
-        SQLEditorSourceViewer viewer = new SQLEditorSourceViewer(parent, null, null, false, SWT.V_SCROLL | SWT.H_SCROLL);
+        SQLEditorSourceViewer viewer = new SQLEditorSourceViewer(
+                parent, null, null, false, SWT.V_SCROLL | SWT.H_SCROLL,
+                DBWorkbench.getPlatform()::getPreferenceStore
+        );
         //FIXME: reconciling is turned off here because it's a cause of deadlocks and severe UI glitches. The exact cause is unknown, find a more precise solution. [dbeaver/dbeaver#11452]
         SQLEditorSourceViewerConfiguration configuration = new SQLEditorSourceViewerConfiguration(sqlEditor, EditorsPlugin.getDefault().getPreferenceStore(), null);
         viewer.configure(configuration);

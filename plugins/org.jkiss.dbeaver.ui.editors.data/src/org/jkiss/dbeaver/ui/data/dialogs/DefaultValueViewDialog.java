@@ -47,9 +47,9 @@ public class DefaultValueViewDialog extends ValueViewDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
-        Composite dialogGroup = (Composite)super.createDialogArea(parent);
+        Composite dialogGroup = super.createDialogArea(parent);
 
         Label label = new Label(dialogGroup, SWT.NONE);
         label.setText(ResultSetMessages.dialog_data_label_value);

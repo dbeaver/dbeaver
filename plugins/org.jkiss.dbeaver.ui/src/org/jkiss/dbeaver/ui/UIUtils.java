@@ -85,6 +85,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.SortedMap;
+import java.util.function.Supplier;
 
 /**
  * UI Utils
@@ -489,17 +490,14 @@ public class UIUtils {
     }
 
     public static boolean confirmAction(@Nullable Shell shell, String title, String message, @NotNull DBPImage image) {
-        final Reply[] reply = {null};
-        syncExec(() -> reply[0] = MessageBoxBuilder.builder(shell != null ? shell : getActiveWorkbenchShell())
+        MessageBoxBuilder builder = MessageBoxBuilder.builder(shell != null ? shell : getActiveWorkbenchShell())
             .setTitle(title)
             .setMessage(message)
             .setReplies(Reply.YES, Reply.NO)
             .setDefaultReply(Reply.NO)
-            .setPrimaryImage(image)
-            .showMessageBox()
-        );
-
-        return reply[0] == Reply.YES;
+            .setPrimaryImage(image);
+        Reply reply = syncExec(builder::showMessageBox);
+        return reply == Reply.YES;
     }
 
     public static int getFontHeight(Control control) {
@@ -885,8 +883,7 @@ public class UIUtils {
         return createPlaceholder(parent, columns, 0);
     }
 
-    public static Composite createComposite(Composite parent, int columns)
-    {
+    public static Composite createComposite(@NotNull Composite parent, int columns) {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
         gl.marginWidth = 0;
@@ -895,8 +892,7 @@ public class UIUtils {
         return ph;
     }
 
-    public static Composite createPlaceholder(Composite parent, int columns, int spacing)
-    {
+    public static Composite createPlaceholder(@NotNull Composite parent, int columns, int spacing) {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
         gl.verticalSpacing = spacing;
@@ -1802,6 +1798,22 @@ public class UIUtils {
             log.debug(e);
             return null;
         }
+    }
+
+    /**
+     * Executes a piece of code in the UI thread and retrieves the result of its calculation.
+     *
+     * @param supplier code to execute
+     * @return result of computation
+     * @param <T> result type
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T syncExec(@NotNull Supplier<T> supplier) {
+        final Object[] obj = {null};
+        syncExec(() -> {
+            obj[0] = supplier.get();
+        });
+        return (T) obj[0];
     }
 
     @Nullable

@@ -301,8 +301,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor consumer : DataTransferRegistry.getInstance().getAvailableConsumers(objects)) {
-            if (consumer.isAdvancedNode() &&
-                DBWorkbench.getPlatform().getApplication().hasProductFeature(DTConstants.PRODUCT_FEATURE_SIMPLE_DATA_TRANSFER)) {
+            if (consumer.isAdvancedNode() && !DBWorkbench.hasFeature(DTConstants.PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER)) {
                 continue;
             }
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objects);
@@ -323,8 +322,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor producer : DataTransferRegistry.getInstance().getAvailableProducers(objects)) {
-            if (producer.isAdvancedNode() &&
-                DBWorkbench.getPlatform().getApplication().hasProductFeature(DTConstants.PRODUCT_FEATURE_SIMPLE_DATA_TRANSFER)) {
+            if (producer.isAdvancedNode() && !DBWorkbench.hasFeature(DTConstants.PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER)) {
                 continue;
             }
 

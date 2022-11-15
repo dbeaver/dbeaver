@@ -28,6 +28,7 @@ public class EmergentExitAction extends Action {
 
     public EmergentExitAction(IWorkbenchWindow window) {
         super(CoreApplicationMessages.actions_menu_exit_emergency);
+        setId(getClass().getName());
         this.window = window;
     }
 

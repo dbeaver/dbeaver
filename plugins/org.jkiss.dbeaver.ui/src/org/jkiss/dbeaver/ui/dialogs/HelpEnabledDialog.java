@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -25,13 +24,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * Dialog with enabled help
  */
-public abstract class HelpEnabledDialog extends TrayDialog {
+public abstract class HelpEnabledDialog extends BaseDialog {
 
     protected final String helpContextID;
 
     protected HelpEnabledDialog(Shell shell, String helpContextID)
     {
-        super(shell);
+        super(shell, null, null);
         this.helpContextID = helpContextID;
     }
 

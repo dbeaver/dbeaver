@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -243,6 +244,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 });
             }
 
+            Dialog.applyDialogFont(tabFolder);
             UIUtils.setHelp(getControl(), IHelpContextIds.CTX_CON_WIZARD_SETTINGS);
         } catch (Exception ex) {
             log.warn(ex);

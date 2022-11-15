@@ -1893,8 +1893,14 @@ public final class DBUtils {
         return null;
     }
 
+    /**
+     * Sometimes it is all info that we know about datasource - default catalog or default schema. This method returns an array of them.
+     *
+     * @param context execution context contains info about default table containers
+     * @return array of the default table containers. First - default catalog, second - default schema. If they exist.
+     */
     @NotNull
-    public static DBSObject[] getSelectedObjects(DBRProgressMonitor monitor, @NotNull DBCExecutionContext context) {
+    public static DBSObject[] getSelectedObjects(@NotNull DBCExecutionContext context) {
         DBCExecutionContextDefaults contextDefaults = context.getContextDefaults();
         if (contextDefaults != null) {
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();

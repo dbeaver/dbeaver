@@ -155,6 +155,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public boolean isCredentialsSaved() {
+        return false;
+    }
+
+    @Override
     public void setDescription(String description) {
 
     }
@@ -220,6 +225,12 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public boolean isConnected() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public String getConnectionError() {
+        return null;
     }
 
     @Override
@@ -398,13 +409,23 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public boolean isSharedCredentials() {
+        return false;
+    }
+
+    @Override
+    public void setSharedCredentials(boolean sharedCredentials) {
+
+    }
+
+    @Override
     public boolean isForceUseSingleConnection() {
         return false;
     }
 
     @Override
     public void setForceUseSingleConnection(boolean value) {
-        throw new IllegalStateException("Not supported");   
+        throw new IllegalStateException("Not supported");
     }
 
     @Override

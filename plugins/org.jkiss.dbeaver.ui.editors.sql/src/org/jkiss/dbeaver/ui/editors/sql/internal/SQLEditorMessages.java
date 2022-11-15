@@ -228,6 +228,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_activate_on_typing_tip;
     public static String pref_page_sql_completion_label_auto_insert_proposal;
     public static String pref_page_sql_completion_label_auto_insert_proposal_tip;
+    public static String pref_page_sql_completion_label_autocomplete_by_tab;
+    public static String pref_page_sql_completion_label_autocomplete_by_tab_tip;
     public static String pref_page_sql_completion_label_insert_case;
     public static String pref_page_sql_completion_label_replace_word_after;
     public static String pref_page_sql_completion_label_replace_word_after_tip;

@@ -185,7 +185,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Composite createDialogArea(Composite parent) {
         if (newDriver) {
             getShell().setText(UIConnectionMessages.dialog_edit_driver_title_create_driver);
         } else {
@@ -193,7 +193,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             getShell().setImage(DBeaverIcons.getImage(driver.getPlainIcon()));
         }
 
-        final Composite group = (Composite) super.createDialogArea(parent);
+        final Composite group = super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         group.setLayoutData(gd);
@@ -535,7 +535,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
                     if (UIUtils.confirmAction(getShell(), UIConnectionMessages.dialog_edit_driver_dialog_delete_library_title, UIConnectionMessages.dialog_edit_driver_dialog_delete_library_message)) {
                         for (Object obj : selection.toArray()) {
                             if (obj instanceof DriverLibraryAbstract) {
-                                libraries.remove((DriverLibraryAbstract) obj);
+                                driver.resetDriverInstance();
+                                libraries.remove(obj);
+                                changeLibContent();
                             }
                         }
                     }
@@ -737,6 +739,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         if (updateVersionButton != null) {
             updateVersionButton.setEnabled(hasDownloads);
         }
+        detailsButton.setEnabled(hasFiles);
+        classListCombo.setEnabled(hasFiles);
     }
 
     private void changeLibSelection() {

@@ -35,13 +35,13 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
     private static final Log log = Log.getLog(ConsoleUserInterface.class);
@@ -67,7 +67,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void showMessageBox(String title, String message, boolean error) {
+    public void showMessageBox(@NotNull String title, String message, boolean error) {
         System.out.println(title + (message == null ? "" : ": " + message));
     }
 
@@ -96,15 +96,17 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         return false;
     }
     
+    @NotNull
     @Override
     public UserChoiceResponse showUserChoice(
         @NotNull final String title,
         @Nullable final String message,
         @NotNull List<String> labels,
         @NotNull List<String> forAllLabels,
-        @Nullable Integer defaultChoice
+        @Nullable Integer previousChoice,
+        int defaultChoice
     ) {
-        return new UserChoiceResponse(-1, null);
+        return new UserChoiceResponse(defaultChoice, null);
     }
 
     @Override
@@ -197,6 +199,20 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         runnable.run(new LoggingProgressMonitor());
+    }
+
+    @NotNull
+    @Override
+    public <T> Future<T> executeWithProgressBlocking(
+        @NotNull String operationDescription,
+        @NotNull DBRRunnableWithResult<Future<T>> runnable
+    ) {
+        try {
+            runnable.run(new LoggingProgressMonitor());
+            return runnable.getResult();
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
     }
 
     @NotNull

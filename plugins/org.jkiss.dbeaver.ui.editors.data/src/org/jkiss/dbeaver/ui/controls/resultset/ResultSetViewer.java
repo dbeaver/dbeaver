@@ -29,7 +29,10 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -37,6 +40,8 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
+import org.eclipse.ui.internal.IWorkbenchGraphicConstants;
+import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
@@ -93,12 +98,10 @@ import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -171,7 +174,7 @@ public class ResultSetViewer extends Viewer
     private StatusLabel statusLabel;
     private ActiveStatusMessage rowCountLabel;
     private Text selectionStatLabel;
-    private Text resultSetSize;
+    //private Text resultSetSize;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
 
@@ -183,7 +186,7 @@ public class ResultSetViewer extends Viewer
 
     private final Map<ResultSetPresentationDescriptor, PresentationSettings> presentationSettings = new HashMap<>();
     private final Map<String, IResultSetPanel> activePanels = new HashMap<>();
-    private final Map<String, ToolBarManager> activeToolBars = new HashMap<>();
+    //private final Map<String, ToolBarManager> activeToolBars = new HashMap<>();
 
     @NotNull
     private final IResultSetContainer container;
@@ -261,6 +264,24 @@ public class ResultSetViewer extends Viewer
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
+        this.autoRefreshControl.setHintSupplier(() -> {
+            DBCExecutionContext executionContext = getExecutionContext();
+            if (executionContext != null) {
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
+                if (txnManager != null) {
+                    try {
+                        if (txnManager.isAutoCommit()) {
+                            return "Hint: frequent refresh may cause high server load";
+                        } else {
+                            return "Hint: switch to auto-commit to see external changes";
+                        }
+                    } catch (DBCException e) {
+                        log.debug(e);
+                    }
+                }
+            }
+            return null;
+        });
 
         if ((decoratorFeatures & IResultSetDecorator.FEATURE_FILTERS) != 0) {
             this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel);
@@ -406,9 +427,7 @@ public class ResultSetViewer extends Viewer
                     return;
                 }
                 lastThemeUpdateTime = System.currentTimeMillis();
-                UIUtils.asyncExec(() -> {
-                    applyCurrentPresentationThemeSettings();
-                });
+                UIUtils.asyncExec(this::applyCurrentPresentationThemeSettings);
             }
         };
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
@@ -535,11 +554,12 @@ public class ResultSetViewer extends Viewer
 
     public void saveDataFilter() {
         DBCExecutionContext context = getExecutionContext();
-        if (context == null) {
+        DBSDataContainer dataContainer = getDataContainer();
+        if (context == null || dataContainer == null) {
             log.error("Can't save data filter with null context");
             return;
         }
-        DataFilterRegistry.getInstance().saveDataFilter(getDataContainer(), model.getDataFilter());
+        DataFilterRegistry.getInstance().saveDataFilter(dataContainer, model.getDataFilter());
 
         if (filtersPanel != null) {
             DBeaverNotifications.showNotification(DBeaverNotifications.NT_GENERAL,
@@ -573,9 +593,11 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel == null || this.viewerPanel.isDisposed()) {
             return;
         }
+/*
         if (resultSetSize != null && !resultSetSize.isDisposed()) {
             resultSetSize.setEnabled(getDataContainer() != null);
         }
+*/
 
         this.viewerPanel.setRedraw(false);
         try {
@@ -583,9 +605,7 @@ public class ResultSetViewer extends Viewer
 
             DBCExecutionContext context = getExecutionContext();
             if (context != null) {
-                if (activePresentation instanceof StatisticsPresentation) {
-                    enableFilters = false;
-                } else {
+                if (!(activePresentation instanceof StatisticsPresentation)) {
                     StringBuilder where = new StringBuilder();
                     SQLUtils.appendConditionString(
                         model.getDataFilter(),
@@ -608,6 +628,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
             filtersPanel.enableFilters(enableFilters);
+            getAutoRefresh().enableControls(enableFilters);
             //presentationSwitchToolbar.setEnabled(enableFilters);
         } finally {
             this.viewerPanel.setRedraw(true);
@@ -1130,6 +1151,7 @@ public class ResultSetViewer extends Viewer
         return isPanelsVisible() ? activePanels.get(getPresentationSettings().activePanelId) : null;
     }
 
+/*
     String getActivePanelId() {
         return getPresentationSettings().activePanelId;
     }
@@ -1143,6 +1165,7 @@ public class ResultSetViewer extends Viewer
             showPanels(false, true, true);
         }
     }
+*/
 
     @Override
     public IResultSetPanel[] getActivePanels() {
@@ -1407,7 +1430,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void addDefaultPanelActions() {
-        panelToolBar.add(new Action(ResultSetMessages.result_set_view_menu_text, DBeaverIcons.getViewMenuImageDescriptor()) {
+        panelToolBar.add(new Action(ResultSetMessages.result_set_view_menu_text, WorkbenchImages.getImageDescriptor(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU)) {
             @Override
             public void run() {
                 ToolBar tb = panelToolBar.getControl();
@@ -1614,13 +1637,32 @@ public class ResultSetViewer extends Viewer
         statusBar.setLayout(toolbarsLayout);
 
         {
+            ToolBar rsToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            // Refresh
+            getAutoRefresh().populateRefreshButton(
+                rsToolbar,
+                ActionUtils.findCommandName(IWorkbenchCommandConstants.FILE_REFRESH),
+                ResultSetMessages.controls_resultset_viewer_action_refresh + " (" +
+                    ActionUtils.findCommandDescription(IWorkbenchCommandConstants.FILE_REFRESH, getSite(), true) + ")",
+                UIIcon.REFRESH,
+                () -> {
+                    if (!isRefreshInProgress()) {
+                        refreshData(null);
+                    }
+                }
+            );
+            getAutoRefresh().enableControls(false);
+        }
+        {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
             // handle own commands
-            editToolBarManager.add(new Separator());
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES, ResultSetMessages.controls_resultset_edit_save, null, null, true));
+            editToolBarManager.add(new ToolbarSeparatorContribution(true));
+            CommandContributionItem saveItem = ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES, CommandContributionItem.STYLE_PULLDOWN, ResultSetMessages.controls_resultset_edit_save, null, null, true, null);
+            saveItem.setId("org.jkiss.dbeaver.resultset.save.pulldown");
+            editToolBarManager.add(saveItem);
             editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_REJECT_CHANGES, ResultSetMessages.controls_resultset_edit_cancel, null, null, true));
-            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT, ResultSetMessages.controls_resultset_edit_script, null, null, true));
+            //editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT, ResultSetMessages.controls_resultset_edit_script, null, null, true));
             editToolBarManager.add(new Separator());
             editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
             editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
@@ -1639,9 +1681,12 @@ public class ResultSetViewer extends Viewer
             navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_PREVIOUS));
             navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_NEXT));
             navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_LAST));
+            // Keep fetch page/all in context menu only
+/*
             navToolBarManager.add(new Separator());
             navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
             navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
+*/
             navToolBarManager.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
             ToolBar navToolBar = navToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(navToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
@@ -1651,20 +1696,6 @@ public class ResultSetViewer extends Viewer
         {
             ToolBarManager configToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             configToolBarManager.add(new ToolbarSeparatorContribution(true));
-
-/*
-            if (supportsPanels()) {
-                CommandContributionItemParameter ciParam = new CommandContributionItemParameter(
-                    site,
-                    "org.jkiss.dbeaver.core.resultset.panels",
-                    ResultSetHandlerMain.CMD_TOGGLE_PANELS,
-                    CommandContributionItem.STYLE_PULLDOWN);
-                ciParam.label = ResultSetMessages.controls_resultset_config_panels;
-                ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
-                configToolBarManager.add(new CommandContributionItem(ciParam));
-            }
-            configToolBarManager.add(new ToolbarSeparatorContribution(true));
-*/
 
             ToolBar configToolBar = configToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
@@ -1699,6 +1730,7 @@ public class ResultSetViewer extends Viewer
         }
         {
             final int fontHeight = UIUtils.getFontHeight(statusBar);
+/*
 
             resultSetSize = new Text(statusBar, SWT.BORDER);
             resultSetSize.setLayoutData(new RowData(5 * fontHeight, SWT.DEFAULT));
@@ -1729,8 +1761,9 @@ public class ResultSetViewer extends Viewer
                 }
             });
             UIUtils.addDefaultEditActionsSupport(site, resultSetSize);
+*/
 
-            rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.RS_REFRESH), ResultSetMessages.controls_resultset_viewer_calculate_row_count, this) {
+            rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.COMPILE), ResultSetMessages.controls_resultset_viewer_calculate_row_count, this) {
                 @Override
                 protected boolean isActionEnabled() {
                     return hasData();
@@ -1738,7 +1771,7 @@ public class ResultSetViewer extends Viewer
 
                 @Override
                 protected ILoadService<String> createLoadService() {
-                    return new DatabaseLoadService<String>("Load row count", getExecutionContext()) {
+                    return new DatabaseLoadService<>("Load row count", getExecutionContext()) {
                         @Override
                         public String evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                             try {
@@ -1756,15 +1789,17 @@ public class ResultSetViewer extends Viewer
             CSSUtils.setCSSClass(rowCountLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             rowCountLabel.setMessage("Row Count");
             rowCountLabel.setToolTipText("Calculates total row count in the current dataset");
-
             UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
 
             selectionStatLabel = new Text(statusBar, SWT.READ_ONLY);
             selectionStatLabel.setToolTipText(ResultSetMessages.result_set_viewer_selection_stat_tooltip);
             CSSUtils.setCSSClass(selectionStatLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            selectionStatLabel.setText(" ");
 
 //            Label filler = new Label(statusComposite, SWT.NONE);
 //            filler.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            //UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
 
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
             RowData rd = new RowData();
@@ -1772,9 +1807,9 @@ public class ResultSetViewer extends Viewer
             statusLabel.setLayoutData(rd);
             CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
-            statusBar.addListener(SWT.Resize, event -> {
-
-            });
+//            statusBar.addListener(SWT.Resize, event -> {
+//                ((RowData)statusLabel.getLayoutData()).width = statusBar.getSize().x - 500;
+//            });
         }
     }
 
@@ -1859,7 +1894,7 @@ public class ResultSetViewer extends Viewer
         for (int i = 0; i < selectedRows.size(); i++) {
             this.selectedRecords[i] = selectedRows.get(i).getVisualNumber();
         }
-        if (selectedRecords.length > 0) {
+        if (selectedRecords.length > 0 && selectedRecords[0] < model.getRowCount()) {
             curRow = model.getRow(selectedRecords[0]);
         } else {
             curRow = null;
@@ -2028,13 +2063,19 @@ public class ResultSetViewer extends Viewer
         if (statusLabel == null || statusLabel.isDisposed()) {
             return;
         }
+        if (statusLabel.getMessageType() == messageType && CommonUtils.equalObjects(statusLabel.getMessage(), status)) {
+            return;
+        }
         statusLabel.setStatus(status, messageType);
+        ((RowData)statusLabel.getLayoutData()).width = statusLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         rowCountLabel.updateActionState();
 
+/*
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && dataContainer.getDataSource() != null) {
             resultSetSize.setText(String.valueOf(getSegmentMaxRows()));
         }
+*/
     }
 
     private void setStatusTooltip(String message) {
@@ -2144,7 +2185,7 @@ public class ResultSetViewer extends Viewer
         }
         long fetchTime = statistics.getFetchTime();
         long totalTime = statistics.getTotalTime();
-        Object endTime = null;
+        Object endTime;
         if (extended) {
             endTime = LocalDateTime
                 .ofInstant(Instant.ofEpochMilli(statistics.getEndTime()), TimeZone.getDefault().toZoneId())
@@ -2943,8 +2984,7 @@ public class ResultSetViewer extends Viewer
             layoutMenu.add(new Separator());
             for (ResultSetPresentationDescriptor pd : getAvailablePresentations()) {
                 Action psAction = new Action(pd.getLabel(), Action.AS_CHECK_BOX) {
-                    ResultSetPresentationDescriptor presentation;
-
+                    final ResultSetPresentationDescriptor presentation;
                     {
                         presentation = pd;
                         setImageDescriptor(DBeaverIcons.getImageDescriptor(presentation.getIcon()));
@@ -3121,7 +3161,7 @@ public class ResultSetViewer extends Viewer
                     prefId,
                     prefValue.toLowerCase());
             getTransformSettings().setCustomTransformer(prefId);
-            attribute.getDataSource().getContainer().persistConfiguration();
+            dataSource.getContainer().persistConfiguration();
             refreshData(null);
         }
 
@@ -3914,7 +3954,11 @@ public class ResultSetViewer extends Viewer
         if (stats.equals(selectionStatLabel.getText())) {
             return;
         }
-        selectionStatLabel.setText(stats);
+        if (CommonUtils.isEmptyTrimmed(stats)) {
+            selectionStatLabel.setText(" ");
+        } else {
+            selectionStatLabel.setText(stats);
+        }
         statusBar.layout(true, true);
     }
 
@@ -4121,7 +4165,10 @@ public class ResultSetViewer extends Viewer
         if (dataSource == null) {
             return false;
         }
-        if (dataSource.getContainer().getConnectionConfiguration().getConnectionType().isConfirmDataChange()) {
+        if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE) ||
+            dataSource.getContainer().getConnectionConfiguration().getConnectionType().isConfirmDataChange()
+        ) {
+            // Show script as confirmation
             ResultSetSaveReport saveReport = generateChangesReport();
             if (saveReport == null) {
                 return false;
@@ -4640,16 +4687,12 @@ public class ResultSetViewer extends Viewer
 
         @Override
         public void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) {
-            List<String> filters = filterHistory.get(query);
-            if (filters == null) {
-                filters = new ArrayList<>();
-                filterHistory.put(query, filters);
-            }
+            List<String> filters = filterHistory.computeIfAbsent(query, k -> new ArrayList<>());
             filters.add(filterValue);
         }
 
         @Override
-        public void deleteQueryFilterValue(@NotNull String query, String filterValue) throws DBException {
+        public void deleteQueryFilterValue(@NotNull String query, String filterValue) {
             List<String> filters = filterHistory.get(query);
             if (filters != null) {
                 filters.add(filterValue);
@@ -5005,7 +5048,10 @@ public class ResultSetViewer extends Viewer
             model.setUpdateInProgress(this);
             model.setStatistics(null);
             if (filtersPanel != null) {
-                UIUtils.asyncExec(() -> filtersPanel.enableFilters(false));
+                UIUtils.asyncExec(() -> {
+                    filtersPanel.enableFilters(false);
+                    getAutoRefresh().enableControls(false);
+;               });
             }
         }
 
