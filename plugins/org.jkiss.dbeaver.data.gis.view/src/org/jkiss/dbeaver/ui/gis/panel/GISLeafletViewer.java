@@ -88,6 +88,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     private static final String PROP_FLIP_COORDINATES = "gis.flipCoords";
     private static final String PROP_SRID = "gis.srid";
 
+    private volatile boolean browserCreating = false;
+
     private static final Gson gson = new GsonBuilder()
             .registerTypeHierarchyAdapter(DBDContent.class, new DBDContentAdapter()).create();
 
@@ -111,7 +113,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
         composite = UIUtils.createPlaceholder(parent, 1);
         CSSUtils.setCSSClass(composite, DBStyles.COLORED_BY_CONNECTION_TYPE);
-
+        browserCreating = true;
         try {
             browser = new Browser(composite, SWT.NONE);
         } catch (SWTError error) {
@@ -123,6 +125,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             if (error.code != SWT.ERROR_NOT_IMPLEMENTED) {
                 throw error;
             }
+        } finally {
+            browserCreating = false;
         }
 
         if (browser != null) {
@@ -463,6 +467,10 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     @Nullable
     public Browser getBrowser() {
         return browser;
+    }
+
+    public boolean isBrowserCreating() {
+        return browserCreating;
     }
 
     public DBGeometry[] getCurrentValue() {

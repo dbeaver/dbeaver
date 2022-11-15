@@ -16,26 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.controls.imageview;
 
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.swt.widgets.Composite;
 
-import org.jkiss.code.NotNull;
+public abstract class AbstractImageViewer extends Composite implements ImageViewer {
 
-import java.io.InputStream;
-
-interface ImageViewer {
-
-    /**
-     * Loads inputStream and produces image from it
-     *
-     * @param inputStream image input stream
-     * @return is image loaded successfully
-     */
-    boolean loadImage(@NotNull InputStream inputStream);
+    public AbstractImageViewer(Composite parent, int style) {
+        super(parent, style);
+    }
 
     /**
-     * Removes an active image from viewer
+     * Fills provided toolbar with actions
      *
-     * @return is image removed successfully
+     * @param toolBar toolbar to fill
      */
-    boolean clearImage();
+    public void fillToolBar(IContributionManager toolBar) {
 
+    }
 }

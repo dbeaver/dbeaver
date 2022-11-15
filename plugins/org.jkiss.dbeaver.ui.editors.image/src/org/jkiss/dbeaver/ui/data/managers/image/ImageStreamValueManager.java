@@ -65,7 +65,7 @@ public class ImageStreamValueManager implements IStreamValueManager {
 
     @Override
     public IEditorPart createEditorPart(@NotNull IValueController controller) {
-        return new ImageEditorPart();
+        return new ImageEditorPart(controller);
     }
 
     private static class ImageDetector implements DBRRunnableWithProgress {

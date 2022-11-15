@@ -92,6 +92,8 @@ public final class ResultSetPreferences {
     public static final String RESULT_TEXT_EXTRA_SPACES = "resultset.text.extra.spaces"; //$NON-NLS-1$
     public static final String RESULT_TEXT_LINE_NUMBER = "resultset.text.line.number";
 
+    public static final String RESULT_IMAGE_USE_BROWSER_BASED_RENDERER = "resultset.image.browser";
+
     // Confirmations
     public static final String CONFIRM_ORDER_RESULTSET = "order_resultset"; //$NON-NLS-1$
     public static final String CONFIRM_FILTER_RESULTSET = "filter_resultset"; //$NON-NLS-1$
