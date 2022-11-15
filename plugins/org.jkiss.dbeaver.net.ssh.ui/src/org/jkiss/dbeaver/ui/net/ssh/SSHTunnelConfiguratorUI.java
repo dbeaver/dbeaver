@@ -476,8 +476,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 break;
             }
         }
-        
-        configuration.setProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION, fingerprintVerificationCheck.getSelection());
+
+        if (fingerprintVerificationCheck.getSelection()) {
+            configuration.setProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION, true);
+        } else {
+            configuration.setProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION, null);
+        }
 
         configuration.setProperty(SSHConstants.PROP_LOCAL_HOST, localHostText.getText().trim());
         int localPort = CommonUtils.toInt(localPortSpinner.getText());
@@ -690,6 +694,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 default:
                     break;
             }
+            authMethodCombo.getShell().layout(true, true);
         }
 
         private void showPasswordField(boolean show, String passwordLabelText) {

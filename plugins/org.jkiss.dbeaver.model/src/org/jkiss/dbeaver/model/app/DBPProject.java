@@ -95,6 +95,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
      */
     boolean isUseSecretStorage();
 
+    boolean isPrivateProject();
+
     /**
      * Secret key is used encrypt project data
      */

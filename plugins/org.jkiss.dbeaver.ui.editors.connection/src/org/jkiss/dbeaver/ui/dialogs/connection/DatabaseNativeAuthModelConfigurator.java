@@ -155,7 +155,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         UIServiceSecurity serviceSecurity = DBWorkbench.getService(UIServiceSecurity.class);
         boolean supportsPasswordView = serviceSecurity != null;
 
-        Composite panel = UIUtils.createComposite(passPlaceholder, supportsPasswordView ? 2 : 1);
+        int colCount = 1;
+        if (supportsPasswordView) colCount++;
+        Composite panel = UIUtils.createComposite(passPlaceholder, colCount);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         panel.setLayoutData(gd);
 
@@ -182,7 +184,6 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
                 }
             });
         }
-
     }
 
     protected String getPasswordFieldLabel() {

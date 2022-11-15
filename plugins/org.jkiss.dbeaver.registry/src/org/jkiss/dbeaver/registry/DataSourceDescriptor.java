@@ -160,7 +160,10 @@ public class DataSourceDescriptor
     private volatile boolean disposed = false;
     private volatile boolean connecting = false;
 
+    // secrets resolved from secret controller
     private volatile boolean secretsResolved = false;
+    // secrets resolved from secret controller and secret not null
+    private volatile boolean secretExist = false;
 
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWNetworkHandler proxyHandler;
@@ -207,8 +210,7 @@ public class DataSourceDescriptor
      *
      * @param setDefaultStorage sets storage to default (in order to allow connection copy-paste with following save in default configuration)
      */
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry,
-                                boolean setDefaultStorage) {
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultStorage) {
         this.registry = registry;
         this.storage = setDefaultStorage ? ((DataSourceRegistry) registry).getDefaultStorage() : source.storage;
         this.origin = source.origin;
@@ -218,6 +220,7 @@ public class DataSourceDescriptor
         this.name = source.name;
         this.description = source.description;
         this.savePassword = source.savePassword;
+        this.sharedCredentials = source.sharedCredentials;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
         this.connectionReadOnly = source.connectionReadOnly;
         this.forceUseSingleConnection = source.forceUseSingleConnection;
@@ -381,10 +384,23 @@ public class DataSourceDescriptor
         this.savePassword = savePassword;
     }
 
+    public boolean isCredentialsSaved() throws DBException {
+        if (sharedCredentials) {
+            return true;
+        }
+        if (!getProject().isUseSecretStorage()) {
+            return savePassword;
+        }
+        resolveSecretsIfNeeded();
+        return secretsResolved && secretExist;
+    }
+
+    @Override
     public boolean isSharedCredentials() {
         return sharedCredentials;
     }
 
+    @Override
     public void setSharedCredentials(boolean sharedCredentials) {
         this.sharedCredentials = sharedCredentials;
     }
@@ -446,6 +462,11 @@ public class DataSourceDescriptor
         } else {
             connectionInfo.getBootstrap().setDefaultAutoCommit(autoCommit);
         }
+    }
+
+    public void forgetSecrets() {
+        this.secretsResolved = false;
+        this.secretExist = false;
     }
 
     @Override
@@ -810,27 +831,28 @@ public class DataSourceDescriptor
 
     @Override
     public void persistSecrets(DBSSecretController secretController) throws DBException {
+        var secret = saveToSecret();
         secretController.setSecretValue(
             getSecretKeyId(),
-            saveToSecret()
+            secret
         );
 
         secretsResolved = true;
+        secretExist = secret != null;
     }
 
     @Override
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
-        if (secretsResolved) {
-            return;
-        }
-        String secretValue = secretController.getSecretValue(
-            getSecretKeyId());
-        if (secretValue != null) {
-            loadFromSecret(secretValue);
-        } else {
-            if (!DBWorkbench.isDistributed()) {
-                // Backward compatibility
-                loadFromLegacySecret(secretController);
+        if (!isSharedCredentials()) {
+            String secretValue = secretController.getSecretValue(getSecretKeyId());
+            this.secretExist = secretValue != null;
+            if (secretExist) {
+                loadFromSecret(secretValue);
+            } else {
+                if (!DBWorkbench.isDistributed()) {
+                    // Backward compatibility
+                    loadFromLegacySecret(secretController);
+                }
             }
         }
         secretsResolved = true;
@@ -863,8 +885,8 @@ public class DataSourceDescriptor
         if (getProject().isUseSecretStorage()) {
             // Resolve secrets
             secretController = DBSSecretController.getProjectSecretController(getProject());
-            resolveSecrets(secretController);
         }
+        resolveSecretsIfNeeded();
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
 
@@ -893,7 +915,7 @@ public class DataSourceDescriptor
                 authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
             } else {
                 // 3. USe legacy password provider
-                if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
+                if (!isCredentialsSaved() && !getDriver().isAnonymousAccess()) {
                     // Ask for password
                     authProvided = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
                 }
@@ -1060,6 +1082,14 @@ public class DataSourceDescriptor
             monitor.done();
             connecting = false;
         }
+    }
+
+    private void resolveSecretsIfNeeded() throws DBException {
+        if (secretsResolved || !getProject().isUseSecretStorage()) {
+            return;
+        }
+        var secretController = DBSSecretController.getProjectSecretController(getProject());
+        resolveSecrets(secretController);
     }
 
     private boolean askForSSHJumpServerPassword(@NotNull DBWHandlerConfiguration tunnelConfiguration) {
@@ -1807,6 +1837,9 @@ public class DataSourceDescriptor
      */
     @Nullable
     private String saveToSecret() {
+        if (isSharedCredentials() || !savePassword) {
+            return null;
+        }
         Map<String, Object> props = new LinkedHashMap<>();
 
         // Primary props

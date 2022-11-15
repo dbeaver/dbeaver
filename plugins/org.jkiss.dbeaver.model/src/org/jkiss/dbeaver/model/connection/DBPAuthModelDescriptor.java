@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 
@@ -54,7 +55,7 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
     DBPAuthModelDescriptor getReplacedBy(@NotNull DBPDriver driver);
 
     @NotNull
-    DBAAuthModel<?> getInstance();
+    <T extends DBAAuthCredentials> DBAAuthModel<T> getInstance();
 
     @NotNull
     DBPPropertySource createCredentialsSource(@Nullable DBPDataSourceContainer dataSource, @Nullable DBPConnectionConfiguration configuration);
