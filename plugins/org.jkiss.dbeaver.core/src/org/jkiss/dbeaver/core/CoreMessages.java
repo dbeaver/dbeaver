@@ -508,6 +508,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_network_profiles_tool_create_dialog_error_info;
 	public static String pref_page_network_profiles_tool_delete_title;
 	public static String pref_page_network_profiles_tool_delete_text;
+	public static String pref_page_network_profiles_tool_copy_title;
+	public static String pref_page_network_profiles_tool_copy_text;
 	public static String pref_page_network_profiles_tool_delete_dialog_error_title;
 	public static String pref_page_network_profiles_tool_delete_dialog_error_info;
 	public static String pref_page_network_profiles_tool_delete_confirmation_title;
