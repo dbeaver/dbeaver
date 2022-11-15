@@ -40,7 +40,7 @@ import java.io.IOException;
 public class SSHTunnelImpl implements DBWTunnel {
 
     private static final Log log = Log.getLog(SSHTunnelImpl.class);
-    private static final String DEF_IMPLEMENTATION = "jsch";
+    private static final String DEF_IMPLEMENTATION = "sshj";
 
     private DBWHandlerConfiguration configuration;
     private SSHImplementation implementation;
