@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -114,6 +115,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
             }
         }
 
+        Dialog.applyDialogFont(placeholder);
         UIUtils.setHelp(placeholder, IHelpContextIds.CTX_CON_WIZARD_DRIVER);
         UIUtils.asyncExec(() -> driverSelectViewer.getControl().setFocus());
     }

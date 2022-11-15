@@ -1894,7 +1894,7 @@ public class ResultSetViewer extends Viewer
         for (int i = 0; i < selectedRows.size(); i++) {
             this.selectedRecords[i] = selectedRows.get(i).getVisualNumber();
         }
-        if (selectedRecords.length > 0) {
+        if (selectedRecords.length > 0 && selectedRecords[0] < model.getRowCount()) {
             curRow = model.getRow(selectedRecords[0]);
         } else {
             curRow = null;

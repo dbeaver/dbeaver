@@ -131,22 +131,8 @@ public class ScriptSelectorPanel extends AbstractPopupPanel {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
-        Composite composite = (Composite) super.createDialogArea(parent);
-        /*Rectangle bounds = new Rectangle(100, 100, 500, 200);
-        final String boundsStr = getBoundsSettings().get(CONFIG_BOUNDS_PARAM);
-        if (boundsStr != null && !boundsStr.isEmpty()) {
-            final String[] bc = boundsStr.split(",");
-            try {
-                bounds = new Rectangle(
-                    Integer.parseInt(bc[0]),
-                    Integer.parseInt(bc[1]),
-                    Integer.parseInt(bc[2]),
-                    Integer.parseInt(bc[3]));
-            } catch (NumberFormatException e) {
-                log.warn(e);
-            }
-        }*/
+    protected Composite createDialogArea(Composite parent) {
+        Composite composite = super.createDialogArea(parent);
 
         patternText = new Text(composite, SWT.BORDER);
         patternText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

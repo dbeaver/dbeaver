@@ -71,15 +71,26 @@ public class BaseDialog extends Dialog
     }
 
     @Override
+    protected Control createContents(Composite parent) {
+        Control contents = super.createContents(parent);
+        applyDialogFont(dialogArea);
+        return contents;
+    }
+
+    @Override
     protected Composite createDialogArea(Composite parent) {
-        return (Composite)super.createDialogArea(parent);
+        Composite dialogArea1 = (Composite) super.createDialogArea(parent);
+
+        return dialogArea1;
     }
 
     @Override
     public void create()
     {
         super.create();
-        getShell().setText(title);
+        if (title != null) {
+            getShell().setText(title);
+        }
         if (icon != null) {
             getShell().setImage(DBeaverIcons.getImage(icon));
         }

@@ -86,7 +86,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Composite createDialogArea(Composite parent) {
         List<DBPDataSourceProviderDescriptor> enabledProviders = DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders();
         {
             DBPDataSourceProviderDescriptor manProvider = null;

@@ -68,9 +68,9 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite composite = super.createDialogArea(parent);
 
         contextTree = new Tree(composite, SWT.FULL_SELECTION | SWT.BORDER);
         contextTree.setHeaderVisible(true);

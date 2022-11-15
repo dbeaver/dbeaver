@@ -185,7 +185,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Composite createDialogArea(Composite parent) {
         if (newDriver) {
             getShell().setText(UIConnectionMessages.dialog_edit_driver_title_create_driver);
         } else {
@@ -193,7 +193,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             getShell().setImage(DBeaverIcons.getImage(driver.getPlainIcon()));
         }
 
-        final Composite group = (Composite) super.createDialogArea(parent);
+        final Composite group = super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         group.setLayoutData(gd);
