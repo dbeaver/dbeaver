@@ -133,7 +133,8 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                     new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
-                            List<? extends DBPDataSourceContainer> usedBy = projectMeta.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile);
+                            List<? extends DBPDataSourceContainer> usedBy = projectMeta
+                                .getDataSourceRegistry().getDataSourcesByProfile(selectedProfile);
                             if (!usedBy.isEmpty()) {
                                 UIUtils.showMessageBox(
                                     getShell(),
@@ -150,20 +151,24 @@ public class PrefPageProjectNetworkProfiles extends AbstractPrefPage implements 
                                 );
                                 return;
                             }
-                            if (!UIUtils.confirmAction(getShell(), CoreMessages.pref_page_network_profiles_tool_delete_confirmation_title,
-                                NLS.bind(CoreMessages.pref_page_network_profiles_tool_delete_confirmation_question, selectedProfile.getProfileName()))) {
-                                return;
+                            if (UIUtils.confirmAction(
+                                getShell(),
+                                CoreMessages.pref_page_network_profiles_tool_delete_confirmation_title,
+                                NLS.bind(
+                                    CoreMessages.pref_page_network_profiles_tool_delete_confirmation_question,
+                                    selectedProfile.getProfileName()
+                                )
+                            )) {
+                                projectMeta.getDataSourceRegistry().removeNetworkProfile(selectedProfile);
+                                projectMeta.getDataSourceRegistry().flushConfig();
+
+                                final int index = profilesTable.getSelectionIndex();
+                                profilesTable.remove(index);
+                                profilesTable.select(CommonUtils.clamp(index, 0, profilesTable.getItemCount() - 1));
+                                profilesTable.notifyListeners(SWT.Selection, new Event());
+
+                                updateControlsState();
                             }
-
-                            projectMeta.getDataSourceRegistry().removeNetworkProfile(selectedProfile);
-                            projectMeta.getDataSourceRegistry().flushConfig();
-
-                            final int index = profilesTable.getSelectionIndex();
-                            profilesTable.remove(index);
-                            profilesTable.select(CommonUtils.clamp(index, 0, profilesTable.getItemCount() - 1));
-                            profilesTable.notifyListeners(SWT.Selection, new Event());
-
-                            updateControlsState();
                         }
                     });
 
