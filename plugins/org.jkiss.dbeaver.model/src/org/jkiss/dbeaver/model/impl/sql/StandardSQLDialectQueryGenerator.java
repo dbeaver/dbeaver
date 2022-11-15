@@ -19,13 +19,16 @@ package org.jkiss.dbeaver.model.impl.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPAttributeReferencePurpose;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSContextBoundAttribute;
 import org.jkiss.utils.CommonUtils;
@@ -38,6 +41,7 @@ import java.util.stream.Collectors;
 
 public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerator {
     private Log log = Log.getLog(StandardSQLDialectQueryGenerator.class);
+    private static final String NESTED_QUERY_AlIAS = "z_q";
 
     public static StandardSQLDialectQueryGenerator INSTANCE = new StandardSQLDialectQueryGenerator();
 
@@ -149,7 +153,8 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                         // Seems to a reference on a table column.
                         // It is better to use real table column in expressions because aliases may not work
                         attrName = DBUtils.getQuotedIdentifier(dataSource,
-                            subQuery ? constraint.getAttributeLabel() : constraint.getAttributeName());
+                            subQuery ? constraint.getAttributeLabel() : constraint.getAttributeName()
+                        );
                     } else {
                         // Most likely it is an expression so we don't want to quote it
                         attrName = binding.getMetaAttribute().getName();
@@ -176,6 +181,50 @@ public class StandardSQLDialectQueryGenerator implements SQLDialectQueryGenerato
                 query.append(filter.getWhere());
             }
         }
+    }
+
+    @Override
+    public @NotNull String getQueryWithAppliedFilters(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull String sqlQuery,
+        @NotNull DBDDataFilter dataFilter
+    ) {
+        boolean isForceFilterSubQuery = dataSource.getSQLDialect().supportsSubqueries() && dataSource.getContainer()
+            .getPreferenceStore()
+            .getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
+        if (isForceFilterSubQuery) {
+            return getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
+        }
+        String newQuery = SQLSemanticProcessor.injectFiltersToQuery(monitor, dataSource, sqlQuery, dataFilter);
+        if (newQuery == null) {
+            // Let's try subquery though.
+            return getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
+        }
+        return newQuery;
+    }
+
+
+    @Override
+    @NotNull
+    public String getWrappedFilterQuery(
+        @NotNull DBPDataSource dataSource,
+        @NotNull String sqlQuery,
+        @NotNull DBDDataFilter dataFilter
+    ) {
+        StringBuilder modifiedQuery = new StringBuilder(sqlQuery.length() + 100);
+        modifiedQuery.append("SELECT * FROM (\n");
+        modifiedQuery.append(sqlQuery);
+        modifiedQuery.append("\n) ").append(NESTED_QUERY_AlIAS);
+        if (dataFilter.hasConditions()) {
+            modifiedQuery.append(" WHERE ");
+            SQLUtils.appendConditionString(dataFilter, dataSource, NESTED_QUERY_AlIAS, modifiedQuery, true, true);
+        }
+        if (dataFilter.hasOrdering()) {
+            modifiedQuery.append(" ORDER BY "); //$NON-NLS-1$
+            SQLUtils.appendOrderString(dataFilter, dataSource, NESTED_QUERY_AlIAS, true, modifiedQuery);
+        }
+        return modifiedQuery.toString();
     }
 
     @Override
