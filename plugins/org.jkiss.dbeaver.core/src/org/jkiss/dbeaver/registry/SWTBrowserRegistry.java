@@ -39,6 +39,12 @@ public class SWTBrowserRegistry {
         "Windows 7", //$NON-NLS-1$
         "Windows 8", //$NON-NLS-1$
         "Windows 8.1", //$NON-NLS-1$
+        "Windows Server 2008", //$NON-NLS-1$
+        "Windows Server 2008 R2", //$NON-NLS-1$
+        "Windows Server 2012", //$NON-NLS-1$
+        "Windows Server 2012 R2", //$NON-NLS-1$
+        "Windows Server 2016", //$NON-NLS-1$
+        "Windows Server 2019", //$NON-NLS-1$
     };
 
     public enum BrowserSelection {

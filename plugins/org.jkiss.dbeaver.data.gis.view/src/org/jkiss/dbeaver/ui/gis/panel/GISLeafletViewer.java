@@ -117,13 +117,16 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         try {
             browser = new Browser(composite, SWT.NONE);
         } catch (SWTError error) {
-            log.error("Internal web browser initialization failed", error);
-            for (Control control : composite.getChildren()) {
-                control.dispose();
-            }
+            log.warn("Internal web browser initialization failed", error);
             browser = null;
             if (error.code != SWT.ERROR_NOT_IMPLEMENTED) {
+                for (Control control : composite.getChildren()) {
+                    control.dispose();
+                }
                 throw error;
+            } else {
+                // HACK: Will force SWT to use IE instead. We can't use SWT.DEFAULT because it might resolve to SWT.EDGE
+                browser = new Browser(composite, SWT.WEBKIT);
             }
         } finally {
             browserCreating = false;

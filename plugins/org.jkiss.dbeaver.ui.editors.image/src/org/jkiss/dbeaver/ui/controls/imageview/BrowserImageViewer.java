@@ -21,13 +21,17 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import javax.imageio.ImageIO;
@@ -48,7 +52,7 @@ import java.util.Locale;
 public class BrowserImageViewer extends AbstractImageViewer {
     private static final Log log = Log.getLog(BrowserImageViewer.class);
 
-    private final Browser browser;
+    private Browser browser;
 
     private volatile boolean browserCreating = false;
     private Path tempFile;
@@ -68,6 +72,17 @@ public class BrowserImageViewer extends AbstractImageViewer {
         browserCreating = true;
         try {
             browser = new Browser(this, SWT.NONE);
+        } catch (SWTError error) {
+            if (error.code == SWT.ERROR_NOT_IMPLEMENTED) {
+                browser = null;
+                // HACK: Will force SWT to use IE instead. We can't use SWT.DEFAULT because it might resolve to SWT.EDGE
+                browser = new Browser(this, SWT.WEBKIT);
+            } else {
+                for (Control control : getChildren()) {
+                    control.dispose();
+                }
+                throw error;
+            }
         } finally {
             browserCreating = false;
         }
@@ -83,6 +98,9 @@ public class BrowserImageViewer extends AbstractImageViewer {
     @Override
     public boolean loadImage(@NotNull InputStream inputStream) {
         try {
+            if (tempFile != null) {
+                Files.delete(tempFile);
+            }
             ImageInputStream stream = ImageIO.createImageInputStream(inputStream);
             Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
             if (!readers.hasNext()) {
@@ -90,8 +108,11 @@ public class BrowserImageViewer extends AbstractImageViewer {
             }
             ImageReader reader = readers.next();
             reader.setInput(stream);
-
-            tempFile = Files.createTempFile("image", "." + reader.getFormatName().toLowerCase(Locale.ROOT));
+            tempFile = Files.createTempFile(
+                DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-images"),
+                "image",
+                "." + reader.getFormatName().toLowerCase(Locale.ROOT)
+            );
             ImageIO.write(ImageIO.read(stream), reader.getFormatName().toLowerCase(Locale.ROOT), tempFile.toFile());
             URL url = tempFile.toUri().toURL();
             browser.setUrl(url.toString());
@@ -103,6 +124,13 @@ public class BrowserImageViewer extends AbstractImageViewer {
 
     @Override
     public boolean clearImage() {
+        if (tempFile != null) {
+            try {
+                Files.delete(tempFile);
+            } catch (IOException e) {
+                log.error(e);
+            }
+        }
         browser.setUrl(null);
         return true;
     }
@@ -131,9 +159,9 @@ public class BrowserImageViewer extends AbstractImageViewer {
                 protected IStatus run(IProgressMonitor monitor) {
                     while (browserCreating) {
                         try {
-                            wait(50);
-                        } catch (InterruptedException ignore) {
-                            // ignore
+                            Thread.sleep(50);
+                        } catch (InterruptedException ex) {
+                            break;
                         }
                     }
                     UIUtils.syncExec(BrowserImageViewer.super::dispose);
