@@ -125,6 +125,8 @@ public class ResultSetHandlerMain extends AbstractHandler {
 
     public static final String CMD_TOGGLE_ORDER = "org.jkiss.dbeaver.core.resultset.toggleOrder";
 
+    public static final String PARAM_EXPORT_WITH_PARAM = "exportWithParameter";
+
     public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart != null) {
             IWorkbenchPartSite site = activePart.getSite();
@@ -504,12 +506,14 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_EXPORT: {
-                String defProc = ResultSetHandlerOpenWith.getDefaultOpenWithProcessor();
-                if (!CommonUtils.isEmpty(defProc)) {
-                    // Run "open with"
-                    ActionUtils.runCommand(
-                        ResultSetHandlerOpenWith.CMD_OPEN_WITH, null, Map.of(ResultSetHandlerOpenWith.PARAM_PROCESSOR_ID, defProc), rsv.getSite());
-                    return null;
+                if (event.getParameter(PARAM_EXPORT_WITH_PARAM) != null) {
+                    String defProc = ResultSetHandlerOpenWith.getDefaultOpenWithProcessor();
+                    if (!CommonUtils.isEmpty(defProc)) {
+                        // Run "open with"
+                        ActionUtils.runCommand(
+                            ResultSetHandlerOpenWith.CMD_OPEN_WITH, null, Map.of(ResultSetHandlerOpenWith.PARAM_PROCESSOR_ID, defProc), rsv.getSite());
+                        return null;
+                    }
                 }
                 List<Integer> selectedRows = new ArrayList<>();
                 for (ResultSetRow selectedRow : rsv.getSelection().getSelectedRows()) {

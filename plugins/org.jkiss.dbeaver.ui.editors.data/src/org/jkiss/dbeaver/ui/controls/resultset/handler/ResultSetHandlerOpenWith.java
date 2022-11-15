@@ -304,8 +304,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             // Def processor is null
             menu.add(new Action(ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_EXPORT, rsv.getSite(), false), Action.AS_RADIO_BUTTON) {
                 {
-                    setChecked(CommonUtils.isEmpty(
-                        getDefaultOpenWithProcessor()));
+                    setChecked(CommonUtils.isEmpty(getDefaultOpenWithProcessor()));
                 }
                 @Override
                 public void run() {
@@ -319,8 +318,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                         if (!CommonUtils.isEmpty(processor.getDescription())) {
                             setToolTipText(processor.getDescription());
                         }
-                        setChecked(processor.getFullId().equals(
-                            getDefaultOpenWithProcessor()));
+                        setChecked(processor.getFullId().equals(getDefaultOpenWithProcessor()));
                     }
 
                     @Override
