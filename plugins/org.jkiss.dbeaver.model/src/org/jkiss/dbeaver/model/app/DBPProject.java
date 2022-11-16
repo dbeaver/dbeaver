@@ -143,6 +143,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue);
 
+    void setResourceProperty(@NotNull IResource resource, @NotNull String propName, @Nullable Object propValue);
+
     void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath);
 
     void refreshProject(DBRProgressMonitor monitor);

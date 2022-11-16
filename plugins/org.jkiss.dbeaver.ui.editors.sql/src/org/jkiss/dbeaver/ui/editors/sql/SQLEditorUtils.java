@@ -53,6 +53,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,6 +68,8 @@ public class SQLEditorUtils {
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
     
     private static final String DISABLE_EDITOR_SERVICES_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.scripts.disableEditorServices";
+    
+    private static final String DISABLE_EDITOR_SERVICES_RESOURCE_PROPERTY = "disable-sql-editor-services"; 
     
     private static final QualifiedName DISABLE_EDITOR_SERVICES_PROP_NAME = new QualifiedName(
         SQLEditorActivator.PLUGIN_ID, DISABLE_EDITOR_SERVICES_PROPERTY
@@ -371,11 +374,11 @@ public class SQLEditorUtils {
      * Returns state of Disable SQL Editor services property
      */
     public static boolean getDisableEditorServicesProp(@NotNull IFile file) {
-        try {
-            return CommonUtils.getBoolean(file.getPersistentProperty(DISABLE_EDITOR_SERVICES_PROP_NAME), false);
-        } catch (CoreException e) {
-            log.debug(e.getMessage(), e);
-            return false;            
+        if (file != null){
+            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+            return CommonUtils.getBoolean(project.getResourceProperty(file, DISABLE_EDITOR_SERVICES_RESOURCE_PROPERTY), false);
+        } else {
+            return false;
         }
     }
     
@@ -383,12 +386,17 @@ public class SQLEditorUtils {
      * Sets value to Disable SQL Editor services property
      */
     public static void setDisableEditorServicesProp(@NotNull IFile file, boolean value) throws CoreException {
-        file.setPersistentProperty(DISABLE_EDITOR_SERVICES_PROP_NAME, Boolean.toString(value));
-        notifyAssociatedServices(file, value);
+        if (file != null) {
+            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+            project.setResourceProperty(file, DISABLE_EDITOR_SERVICES_RESOURCE_PROPERTY, Boolean.toString(value));
+            notifyAssociatedServices(file, value);
+        }
     }
     
     private static void notifyAssociatedServices(@NotNull IFile file, boolean newServicesEnabled) {
         Set<DBPPreferenceStore> affectedPrefs = new HashSet<>();
+        List<SQLEditor> affectedEditors = new LinkedList<>();
+        
         for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
             for (IWorkbenchPage page : window.getPages()) {
                 for (IEditorReference editorRef : page.getEditorReferences()) {
@@ -398,13 +406,20 @@ public class SQLEditorUtils {
                         IFile editorFile = editor.getEditorInput().getAdapter(IFile.class);
                         if (editorFile.equals(file)) {
                             affectedPrefs.add(sqlEditor.getActivePreferenceStore());
+                            if (editor instanceof SQLEditor) {
+                                affectedEditors.add((SQLEditor)editor);
+                            }
                         }
                     }
                 }
             }
         }
+        
         for (DBPPreferenceStore prefs : affectedPrefs) {
             notifyPrefs(prefs, newServicesEnabled);
+        }
+        for (SQLEditor sqlEditor : affectedEditors) {
+            sqlEditor.refreshEditorIconAndTitle();
         }
 
         PlatformUI.getWorkbench().getService(ICommandService.class).refreshElements(DisableEditorServicesHandler.COMMAND_ID, null);

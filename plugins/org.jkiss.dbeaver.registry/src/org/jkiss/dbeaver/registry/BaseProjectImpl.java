@@ -348,6 +348,12 @@ public abstract class BaseProjectImpl implements DBPProject {
         }
     }
 
+    @Nullable
+    @Override
+    public void setResourceProperty(@NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
+        setResourceProperty(getResourcePath(resource), propName, value);
+    }
+
     @Override
     public void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue) {
         loadMetadata();

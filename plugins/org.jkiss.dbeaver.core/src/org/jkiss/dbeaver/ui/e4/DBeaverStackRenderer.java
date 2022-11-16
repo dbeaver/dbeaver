@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -51,9 +52,13 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
 public class DBeaverStackRenderer extends StackRenderer {
+
+    private static final Log log = Log.getLog(DBeaverStackRenderer.class);
 
     @Override
     public void showAvailableItems(MElementContainer<?> stack, CTabFolder folder, boolean forceCenter) {
@@ -179,6 +184,21 @@ public class DBeaverStackRenderer extends StackRenderer {
                     }
                 });
             }
+        }
+        if (ActionUtils.isCommandEnabled(SQLEditorCommands.CMD_DISABLE_SQL_EDITOR_SERVICES, workbenchPart.getSite())) {
+            new MenuItem(menu, SWT.SEPARATOR);
+            MenuItem menuItemDisableEditorServices = new MenuItem(menu, SWT.CHECK);
+            menuItemDisableEditorServices.setText(SQLEditorMessages.sql_editor_prefs_disable_services_text);
+            menuItemDisableEditorServices.setToolTipText(SQLEditorMessages.sql_editor_prefs_disable_services_tip);
+            menuItemDisableEditorServices.setSelection(SQLEditorUtils.getDisableEditorServicesProp(inputFile));
+
+            menuItemDisableEditorServices.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    ActionUtils.runCommand(SQLEditorCommands.CMD_DISABLE_SQL_EDITOR_SERVICES, workbenchPart.getSite());
+                    menuItemDisableEditorServices.setSelection(SQLEditorUtils.getDisableEditorServicesProp(inputFile));
+                }
+            });
         }
 
     }

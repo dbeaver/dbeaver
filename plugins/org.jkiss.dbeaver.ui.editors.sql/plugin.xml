@@ -1022,6 +1022,10 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file">
                     <visibleWhen checkEnabled="true"/>
                 </command>
+                <separator name="editor_file" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices" style="toggle" tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices.description">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
             </menu>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">
@@ -1269,15 +1273,5 @@
             <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
         </generator>
     </extension>
-    
-    <extension point="org.eclipse.ui.propertyPages">
-        <page
-            class="org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptEditorPropertyPage" 
-            id="org.jkiss.dbeaver.ui.editors.sql.scripts.scriptEditorPropertyPage" 
-            name="%scriptEditorPropertyPage.name" nameFilter="*.sql">
-            <enabledWhen>
-                <adapt type="org.eclipse.core.resources.IFile"/>
-            </enabledWhen>
-        </page>
-    </extension>
+
 </plugin>

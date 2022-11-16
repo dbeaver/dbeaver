@@ -51,6 +51,7 @@ public interface SQLEditorCommands
     String CMD_SQL_DELETE_THIS_SCRIPT = "org.jkiss.dbeaver.ui.editors.sql.deleteThisScript";
     String CMD_OPEN_FILE = "org.jkiss.dbeaver.ui.editors.sql.open.file"; //$NON-NLS-1$
     String CMD_SAVE_FILE = "org.jkiss.dbeaver.ui.editors.sql.save.file"; //$NON-NLS-1$
+    String CMD_DISABLE_SQL_EDITOR_SERVICES = "org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices";
 
     String CMD_NAVIGATE_OBJECT = "org.jkiss.dbeaver.ui.editors.sql.navigate.object";
     String CMD_TOGGLE_LAYOUT = "org.jkiss.dbeaver.ui.editors.sql.toggleLayout";

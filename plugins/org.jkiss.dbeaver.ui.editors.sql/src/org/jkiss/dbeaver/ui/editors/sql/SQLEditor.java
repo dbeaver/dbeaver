@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -2731,7 +2730,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         refreshActions();
 
-        refreshEditorIconAndTitle(dsContainer);
+        refreshEditorIconAndTitle();
 
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
@@ -2775,25 +2774,43 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void refreshEditorIconAndTitle(DBPDataSourceContainer dsContainer) {
+    /**
+     * Build and update icon and title
+     */
+    public void refreshEditorIconAndTitle() {
+        DBPDataSourceContainer dsContainer = getDataSourceContainer();
         setPartName(getEditorName());
-
+        
         // Update icon
         if (editorImage != null) {
             editorImage.dispose();
         }
+        
+        DBPImage bottomLeft;
+        DBPImage bottomRight;
+        
         if (executionContext == null) {
             if (dsContainer instanceof DBPStatefulObject && ((DBPStatefulObject) dsContainer).getObjectState() == DBSObjectState.INVALID) {
-                OverlayImageDescriptorLegacy oid = new OverlayImageDescriptorLegacy(baseEditorImage.getImageData());
-                oid.setBottomRight(new ImageDescriptor[] { DBeaverIcons.getImageDescriptor(DBIcon.OVER_ERROR) });
-                editorImage = oid.createImage();
+                bottomRight = DBIcon.OVER_ERROR;
             } else {
-                editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+                bottomRight = null;
             }
         } else {
-            OverlayImageDescriptorLegacy oid = new OverlayImageDescriptorLegacy(baseEditorImage.getImageData());
-            oid.setBottomRight(new ImageDescriptor[] { DBeaverIcons.getImageDescriptor(DBIcon.OVER_SUCCESS) });
-            editorImage = oid.createImage();
+            bottomRight = DBIcon.OVER_SUCCESS;
+        }
+        
+        IFile file = EditorUtils.getFileFromInput(getEditorInput());
+        if (file != null && SQLEditorUtils.getDisableEditorServicesProp(file)) {
+            bottomLeft = DBIcon.OVER_RED_LAMP;
+        } else {
+            bottomLeft = null;
+        }
+
+        if (bottomLeft != null || bottomRight != null) {
+            DBPImage image = new DBIconComposite(new DBIconBinary(null, baseEditorImage), false, null, null, bottomLeft, bottomRight);
+            editorImage = DBeaverIcons.getImage(image, false);
+        } else {
+            editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
         }
         setTitleImage(editorImage);
     }
