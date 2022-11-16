@@ -19,49 +19,46 @@ package org.jkiss.dbeaver.ui.navigator.dialogs;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
-import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorObjectsDeleter;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-public final class NavigatorNodesDeletionConfirmations {
-    public static final Reply SHOW_SCRIPT = new Reply(UINavigatorMessages.actions_navigator_view_script_button);
+public class ConfirmNavigatorNodesDeleteDialog extends MessageDialog {
+    private final List<?> selectedObjects;
 
-    /**
-     * Asks the user if they want to delete navigator objects.
-     *
-     * @param shell confirmation's parent shell
-     * @param selectedObjects objects to delete
-     * @param deleter deleter
-     * @return user's reply
-     */
-    public static Reply confirm(
-        @NotNull Shell shell,
-        @NotNull Collection<?> selectedObjects,
-        @Nullable NavigatorObjectsDeleter deleter
-    ) {
+    private final NavigatorObjectsDeleter deleter;
+
+    private ConfirmNavigatorNodesDeleteDialog(Shell shell, String title, String message, List<?> selectedObjects, @Nullable NavigatorObjectsDeleter deleter) {
+        super(shell, title, DBeaverIcons.getImage(UIIcon.REJECT), message, MessageDialog.ERROR, null, 0);
+        this.selectedObjects = selectedObjects;
+        this.deleter = deleter;
+    }
+
+    public static ConfirmNavigatorNodesDeleteDialog of(Shell shell, String title, String message, List<?> selectedObjects, NavigatorObjectsDeleter deleter) {
+        return new ConfirmNavigatorNodesDeleteDialog(shell, title, message, selectedObjects, deleter);
+    }
+
+    public static ConfirmNavigatorNodesDeleteDialog of(Shell shell, List<?> selectedObjects, NavigatorObjectsDeleter deleter) {
         if (selectedObjects.size() > 1) {
-            return confirm(
+            return new ConfirmNavigatorNodesDeleteDialog(
                 shell,
                 UINavigatorMessages.confirm_deleting_multiple_objects_title,
                 NLS.bind(UINavigatorMessages.confirm_deleting_multiple_objects_message, selectedObjects.size()),
@@ -69,72 +66,31 @@ public final class NavigatorNodesDeletionConfirmations {
                 deleter
             );
         }
-        DBNNode node = (DBNNode) selectedObjects.iterator().next();
+        DBNNode node = (DBNNode) selectedObjects.get(0);
         String title = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_title : UINavigatorMessages.confirm_entity_delete_title, node.getNodeType(), node.getNodeName());
         String message = NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message, node.getNodeType(), node.getNodeName());
-        return confirm(shell, title, message, selectedObjects, deleter);
+        return new ConfirmNavigatorNodesDeleteDialog(shell, title, message, selectedObjects, deleter);
     }
 
-    /**
-     * Asks the user if they want to delete navigator objects.
-     *
-     * @param shell confirmation's parent shell
-     * @param title confirmation's title
-     * @param message confirmation's message
-     * @param selectedObjects objects to delete
-     * @param deleter deleter
-     * @return user's reply
-     */
-    public static Reply confirm(
-        @NotNull Shell shell,
-        @NotNull String title,
-        @NotNull String message,
-        @NotNull Collection<?> selectedObjects,
-        @Nullable NavigatorObjectsDeleter deleter
-    ) {
-        List<Reply> replies = new ArrayList<>(3);
-        replies.add(Reply.YES);
-        if (deleter != null && deleter.supportsShowViewScript()) {
-            replies.add(SHOW_SCRIPT);
-        }
-        replies.add(Reply.CANCEL);
-
-        MessageBoxBuilder messageBoxBuilder = MessageBoxBuilder.builder(shell)
-            .setTitle(title)
-            .setMessage(message)
-            .setPrimaryImage(DBIcon.STATUS_WARNING)
-            .setReplies(replies)
-            .setDefaultReply(Reply.CANCEL)
-            .setCustomArea(parent -> createCustomArea(parent, selectedObjects, deleter));
-        return UIUtils.syncExec(messageBoxBuilder::showMessageBox);
-    }
-
-    private static void createCustomArea(
-        @NotNull Composite parent,
-        @NotNull Collection<?> selectedObjects,
-        @Nullable NavigatorObjectsDeleter deleter
-    ) {
+    @Override
+    protected Control createCustomArea(Composite parent) {
         if (selectedObjects.size() > 1) {
-            createObjectsTable(parent, selectedObjects);
+            createObjectsTable(parent);
         }
         if (deleter != null) {
-            createDeleteContents(parent, deleter);
+            createDeleteContents(parent);
+
             for (NavigatorObjectsDeleter.Option option : deleter.getSupportedOptions()) {
-                createCheckbox(parent, option, deleter);
+                createCheckbox(parent, option);
             }
         }
+        return super.createCustomArea(parent);
     }
 
-    private static void createObjectsTable(@NotNull Composite parent, @NotNull Collection<?> selectedObjects) {
+    private void createObjectsTable(Composite parent) {
         Composite placeholder = UIUtils.createComposite(parent, 1);
         placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
-        Group tableGroup = UIUtils.createControlGroup(
-            placeholder,
-            UINavigatorMessages.confirm_deleting_multiple_objects_table_group_name,
-            1,
-            GridData.FILL_BOTH,
-            0
-        );
+        Group tableGroup = UIUtils.createControlGroup(placeholder, UINavigatorMessages.confirm_deleting_multiple_objects_table_group_name, 1, GridData.FILL_BOTH, 0);
         tableGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         Table objectsTable = new Table(tableGroup, SWT.BORDER | SWT.FULL_SELECTION);
         objectsTable.setHeaderVisible(false);
@@ -155,10 +111,10 @@ public final class NavigatorNodesDeletionConfirmations {
             DBNNode node = (DBNNode) obj;
             TableItem item = new TableItem(objectsTable, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(node.getNodeIcon()));
-            if (node instanceof DBNResource) {
+            if (node instanceof DBNResource && ((DBNResource) node).getResource() != null) {
                 item.setText(0, node.getName());
                 IResource resource = ((DBNResource) node).getResource();
-                IPath resLocation = resource.getLocation();
+                IPath resLocation = resource == null ? null : resource.getLocation();
                 item.setText(1, "File");
                 item.setText(2, resLocation == null ? "" : resLocation.toFile().getAbsolutePath());
             } else {
@@ -170,7 +126,7 @@ public final class NavigatorNodesDeletionConfirmations {
         UIUtils.asyncExec(() -> UIUtils.packColumns(objectsTable, true));
     }
 
-    private static void createDeleteContents(@NotNull Composite parent, @NotNull NavigatorObjectsDeleter deleter) {
+    private void createDeleteContents(Composite parent) {
         if (!deleter.supportsDeleteContents()) {
             return;
         }
@@ -201,11 +157,7 @@ public final class NavigatorNodesDeletionConfirmations {
         }
     }
 
-    private static void createCheckbox(
-        @NotNull Composite checkboxesComposite,
-        @NotNull NavigatorObjectsDeleter.Option option,
-        @NotNull NavigatorObjectsDeleter deleter
-    ) {
+    private void createCheckbox(Composite checkboxesComposite, NavigatorObjectsDeleter.Option option) {
         Composite placeholder = UIUtils.createPlaceholder(checkboxesComposite, 1, 5);
         Button checkbox = UIUtils.createCheckbox(placeholder, option.getLabel(), option.getTip(), false, 0);
         checkbox.addSelectionListener(new SelectionAdapter() {
@@ -220,7 +172,17 @@ public final class NavigatorNodesDeletionConfirmations {
         });
     }
 
-    private NavigatorNodesDeletionConfirmations() {
-        // This is a utility class, no instances for you!
+    @Override
+    protected void createButtonsForButtonBar(final Composite parent) {
+        createButton(parent, IDialogConstants.YES_ID, IDialogConstants.YES_LABEL, false);
+        createButton(parent, IDialogConstants.NO_ID, IDialogConstants.NO_LABEL, true);
+        if (deleter != null && deleter.supportsShowViewScript()) {
+            createButton(parent, IDialogConstants.DETAILS_ID, UINavigatorMessages.actions_navigator_view_script_button, false);
+        }
+    }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
     }
 }

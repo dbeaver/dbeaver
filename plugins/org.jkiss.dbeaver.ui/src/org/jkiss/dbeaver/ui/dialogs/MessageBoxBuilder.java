@@ -75,18 +75,6 @@ public final class MessageBoxBuilder {
         return this;
     }
 
-    /**
-     * Sets replies for the dialog. Replaces previously set replies.
-     *
-     * @param replies to set
-     * @return builder
-     */
-    @NotNull
-    public MessageBoxBuilder setReplies(@NotNull List<Reply> replies) {
-        this.replies = new ArrayList<>(replies);
-        return this;
-    }
-
     @NotNull
     public MessageBoxBuilder setDefaultReply(@NotNull Reply defaultReply) {
         this.defaultReply = defaultReply;
