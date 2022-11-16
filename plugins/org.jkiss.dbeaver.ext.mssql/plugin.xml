@@ -183,6 +183,7 @@
 
                     <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[9.2.0.jre8]" bundle="!drivers.mssql.new"/>
                     <file type="lib" path="maven:/com.microsoft.sqlserver:mssql-jdbc_auth:RELEASE[9.2.0.x64]" os="win32" arch="x86_64" optional="true" bundle="!drivers.mssql.new"/>
+                    <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
 
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64" optional="true" bundle="drivers.mssql.new"/>
@@ -208,10 +209,12 @@
                     <replace provider="mssql" driver="mssql_jdbc_azure"/>
 
                     <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[9.2.0.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
 
                     <!-- Active directory auth -->
                     <file type="jar" path="maven:/com.microsoft.azure:msal4j[1.12.0]" optional="true" bundle="!drivers.mssql.new"/>
+                    <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
                 </driver>
 
                 <driver
@@ -233,7 +236,9 @@
                     <replace provider="mssql" driver="mssql_jdbc_babelfish"/>
 
                     <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[9.2.0.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
+                    <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
                 </driver>
 
                 <!-- jTDS driver - deprecated -->
@@ -360,6 +365,7 @@
 
                     <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[8.2.0.jre8]" bundle="!drivers.mssql.new"/>
                     <file type="lib" path="maven:/com.microsoft.sqlserver:mssql-jdbc_auth:RELEASE[8.2.0.x64]" os="win32" arch="x86_64" bundle="!drivers.mssql.new"/>
+                    <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
 
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64" bundle="drivers.mssql.new"/>
@@ -396,6 +402,7 @@
                     <parameter name="script-delimiter-after-query" value="true"/>
 
                     <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.jtds"/>
                     <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll" bundle="!drivers.jtds"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll" bundle="!drivers.jtds"/>
 
@@ -434,6 +441,7 @@
                     <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
 
                     <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.jtds"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
                     <file type="jar" path="drivers/jtds" bundle="drivers.jtds"/>
                 </driver>
