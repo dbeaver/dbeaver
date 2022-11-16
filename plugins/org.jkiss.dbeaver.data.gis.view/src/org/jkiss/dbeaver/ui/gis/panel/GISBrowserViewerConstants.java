@@ -22,7 +22,6 @@ public class GISBrowserViewerConstants {
         "leaflet.css",
         "leaflet.js",
         "leaflet-lasso.min.js",
-        "wkx.js",
         "wkx.min.js",
         "layers.png"
     };
