@@ -659,9 +659,6 @@ public class SQLEditor extends SQLEditorBase implements
         topBarMan.getControl().redraw();
         bottomBarMan.getControl().redraw();
     }
-
-    
-    
     
     private class OpenContextJob extends AbstractJob {
         private final DBSInstance instance;

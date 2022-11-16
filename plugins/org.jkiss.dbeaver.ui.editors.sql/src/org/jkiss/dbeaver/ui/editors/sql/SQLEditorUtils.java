@@ -365,87 +365,119 @@ public class SQLEditorUtils {
             return getName();
         }
     }
+    
+    private abstract static class EditorFileInfo {
+
+        public abstract void setPropertyValue(@NotNull String propertyName, @NotNull Object value);
+
+        @Nullable
+        public abstract Object getPropertyValue(@NotNull String propertyName);
+        
+        @Nullable
+        public static EditorFileInfo getFromEditor(@Nullable IEditorInput input) {
+            if (input != null) {
+                IFile projectFile = EditorUtils.getFileFromInput(input);
+                if (projectFile != null) {
+                    return new EditorProjectFileInfo(projectFile);
+                } else {
+                    File platformFile = EditorUtils.getLocalFileFromInput(input);
+                    if (platformFile != null) {
+                        return new EditorPlatformFileInfo(platformFile);
+                    } else {
+                        return null;
+                    }
+                }
+            } else {
+                return null;
+            }
+        }   
+    }
+    
+    private static class EditorProjectFileInfo extends EditorFileInfo {
+        private final IFile projectFile;
+        
+        public EditorProjectFileInfo(@Nullable IFile projectFile) {
+            this.projectFile = projectFile;
+        }
+        
+        @Nullable
+        @Override
+        public Object getPropertyValue(@NotNull String propertyName) {
+            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            return project.getResourceProperty(projectFile, propertyName);
+        }
+        
+        @Override
+        public void setPropertyValue(@NotNull String propertyName, @NotNull Object value) {
+            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            project.setResourceProperty(projectFile, propertyName, value);
+        }
+        
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            EditorProjectFileInfo other = obj instanceof EditorProjectFileInfo ? (EditorProjectFileInfo) obj : null;
+            return other != null && projectFile != null && projectFile.equals(other.projectFile);
+        }
+    }
+    
+    private static class EditorPlatformFileInfo extends EditorFileInfo {
+        private final File platformFile;
+        
+        public EditorPlatformFileInfo(@Nullable File platformFile) {
+            this.platformFile = platformFile;
+        }
+
+        @Nullable
+        @Override
+        public Object getPropertyValue(@NotNull String propertyName) {
+            final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
+            return efManager.getFileProperty(platformFile, propertyName);
+        }
+    
+        @Override
+        public void setPropertyValue(@NotNull String propertyName, @NotNull Object value) {
+            final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
+            efManager.setFileProperty(platformFile, propertyName, value);
+        }
+        
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            EditorPlatformFileInfo other = obj instanceof EditorPlatformFileInfo ? (EditorPlatformFileInfo)obj : null;
+            return other != null && platformFile != null && platformFile.equals(other.platformFile);
+        }
+    }
 
     /**
      * Checks whether Disable SQL syntax parser property is set
      */
-    public static boolean isSQLSyntaxParserEnabled(IEditorInput input) {
-        if (input == null) {
-            return true;
-        }
-        IFile file = EditorUtils.getFileFromInput(input);
+    public static boolean isSQLSyntaxParserEnabled(@Nullable IEditorInput input) {
+        EditorFileInfo file = EditorFileInfo.getFromEditor(input);
         if (file != null) {
-            return !SQLEditorUtils.getDisableSQLSyntaxParserProp(file);
-        } else {
-            File localFile = EditorUtils.getLocalFileFromInput(input);
-            return !SQLEditorUtils.getDisableSQLSyntaxParserProp(localFile);
+            try {
+                return !CommonUtils.getBoolean(file.getPropertyValue(DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY), false);
+            } catch (Throwable e) {
+                log.debug(e);
+            }
         }
+        return true;
     }
 
-    /*
+    /**
      * Sets value to Disable SQL syntax parser property
      */
-    public static void setSQLSyntaxParserEnabled(IEditorInput input, boolean value) {
-        if (input != null) {
-            IFile file = EditorUtils.getFileFromInput(input);
-            if (file != null) {
-                try {
-                    SQLEditorUtils.setDisableSQLSyntaxParserProp(file, !value);
-                } catch (CoreException e) {
-                    log.debug(e);
-                }
-            } else {
-                File localFile = EditorUtils.getLocalFileFromInput(input);
-                try {
-                    SQLEditorUtils.setDisableSQLSyntaxParserProp(localFile, !value);
-                } catch (CoreException e) {
-                    log.debug(e);
-                }
+    public static void setSQLSyntaxParserEnabled(@Nullable IEditorInput input, boolean value) {
+        EditorFileInfo file = EditorFileInfo.getFromEditor(input);
+        if (file != null) {
+            try {
+                file.setPropertyValue(DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY, Boolean.toString(!value));
+                notifyAssociatedServices(file, value);
+            } catch (Throwable e) {
+                log.debug(e);
             }
         }
     }
     
-    /**
-     * Returns state of Disable SQL syntax parser property
-     */
-    private static boolean getDisableSQLSyntaxParserProp(@NotNull IFile file) {
-        if (file != null) {
-            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
-            return CommonUtils.getBoolean(project.getResourceProperty(file, DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY), false);
-        } else {
-            return false;
-        }
-    }
-    
-    /**
-     * Sets value to Disable SQL syntax parser property
-     */
-    private static void setDisableSQLSyntaxParserProp(@NotNull IFile file, boolean value) throws CoreException {
-        if (file != null) {
-            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
-            project.setResourceProperty(file, DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY, Boolean.toString(value));
-            notifyAssociatedServices(file, value);
-        }
-    }
-    
-    /**
-     * Returns state of Disable SQL syntax parser property
-     */
-    private static boolean getDisableSQLSyntaxParserProp(@NotNull File file) {
-        final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
-        return CommonUtils.getBoolean(efManager.getFileProperty(file, DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY), false);
-    }
-    
-    /**
-     * Sets value to Disable SQL syntax parser property
-     */
-    private static void setDisableSQLSyntaxParserProp(@NotNull File file, boolean value) throws CoreException {
-        final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
-        efManager.setFileProperty(file, DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY, value);
-        notifyAssociatedServices(file, value);
-    }
-    
-    private static void notifyAssociatedServices(@NotNull IFile file, boolean newServicesEnabled) {
+    private static void notifyAssociatedServices(@NotNull EditorFileInfo file, boolean newServicesEnabled) {
         Set<DBPPreferenceStore> affectedPrefs = new HashSet<>();
         List<SQLEditor> affectedEditors = new LinkedList<>();
         
@@ -455,39 +487,7 @@ public class SQLEditorUtils {
                     IEditorPart editor = editorRef.getEditor(false);
                     if (editor instanceof SQLEditorBase) {
                         SQLEditorBase sqlEditor = (SQLEditorBase) editor;
-                        IFile editorFile = EditorUtils.getFileFromInput(editor.getEditorInput());
-                        if (editorFile != null && editorFile.equals(file)) {
-                            affectedPrefs.add(sqlEditor.getActivePreferenceStore());
-                            if (editor instanceof SQLEditor) {
-                                affectedEditors.add((SQLEditor) editor);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        for (DBPPreferenceStore prefs : affectedPrefs) {
-            notifyPrefs(prefs, newServicesEnabled);
-        }
-        for (SQLEditor sqlEditor : affectedEditors) {
-            sqlEditor.refreshEditorIconAndTitle();
-        }
-
-        PlatformUI.getWorkbench().getService(ICommandService.class).refreshElements(DisableSQLSyntaxParserHandler.COMMAND_ID, null);
-    }
-    
-    private static void notifyAssociatedServices(@NotNull File file, boolean newServicesEnabled) {
-        Set<DBPPreferenceStore> affectedPrefs = new HashSet<>();
-        List<SQLEditor> affectedEditors = new LinkedList<>();
-        
-        for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-            for (IWorkbenchPage page : window.getPages()) {
-                for (IEditorReference editorRef : page.getEditorReferences()) {
-                    IEditorPart editor = editorRef.getEditor(false);
-                    if (editor instanceof SQLEditorBase) {
-                        SQLEditorBase sqlEditor = (SQLEditorBase) editor;
-                        File editorFile = EditorUtils.getLocalFileFromInput(editor.getEditorInput());
+                        EditorFileInfo editorFile = EditorFileInfo.getFromEditor(editor.getEditorInput());
                         if (editorFile != null && editorFile.equals(file)) {
                             affectedPrefs.add(sqlEditor.getActivePreferenceStore());
                             if (editor instanceof SQLEditor) {
