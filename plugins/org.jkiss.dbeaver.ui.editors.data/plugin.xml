@@ -833,10 +833,10 @@
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.resultset.export.pulldown">
             <command commandId="org.jkiss.dbeaver.core.resultset.export"/>
             <separator name="openwith" visible="true"/>
-            <dynamic class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerOpenWith$OpenWithMenuContributor"/>
+            <dynamic id="org.jkiss.dbeaver.resultset.export.openwith.list" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerOpenWith$OpenWithMenuContributor"/>
             <separator name="default" visible="true"/>
             <menu label="Default command">
-                <dynamic class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerOpenWith$OpenWithMenuDefaultContributor"/>
+                <dynamic id="org.jkiss.dbeaver.resultset.export.openwith.default" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerOpenWith$OpenWithMenuDefaultContributor"/>
             </menu>
             <command commandId="hint" label="%command.org.jkiss.dbeaver.core.resultset.export.pulldown.hint"/>
         </menuContribution>
