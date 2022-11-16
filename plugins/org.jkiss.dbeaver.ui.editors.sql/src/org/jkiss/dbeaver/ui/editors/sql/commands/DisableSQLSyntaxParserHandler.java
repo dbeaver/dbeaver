@@ -55,7 +55,7 @@ public class DisableSQLSyntaxParserHandler extends AbstractHandler implements IE
         if (activePage != null) {
             IEditorPart editor = activePage.getActiveEditor();
             if (editor instanceof SQLEditor) {
-                element.setChecked(!SQLEditorUtils.isSQLSyntaxParserEnabled(((SQLEditor)editor).getEditorInput()));
+                element.setChecked(!SQLEditorUtils.isSQLSyntaxParserEnabled(((SQLEditor) editor).getEditorInput()));
             }
         }
     }

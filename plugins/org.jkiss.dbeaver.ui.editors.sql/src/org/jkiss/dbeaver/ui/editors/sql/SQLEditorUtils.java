@@ -404,13 +404,13 @@ public class SQLEditorUtils {
         @Override
         public Object getPropertyValue(@NotNull String propertyName) {
             DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
-            return project.getResourceProperty(projectFile, propertyName);
+            return EditorUtils.getResourceProperty(project, projectFile, propertyName);
         }
         
         @Override
         public void setPropertyValue(@NotNull String propertyName, @NotNull Object value) {
             DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
-            project.setResourceProperty(projectFile, propertyName, value);
+            EditorUtils.setResourceProperty(project, projectFile, propertyName, value);
         }
         
         @Override
@@ -442,7 +442,7 @@ public class SQLEditorUtils {
         
         @Override
         public boolean equals(@Nullable Object obj) {
-            EditorPlatformFileInfo other = obj instanceof EditorPlatformFileInfo ? (EditorPlatformFileInfo)obj : null;
+            EditorPlatformFileInfo other = obj instanceof EditorPlatformFileInfo ? (EditorPlatformFileInfo) obj : null;
             return other != null && platformFile != null && platformFile.equals(other.platformFile);
         }
     }

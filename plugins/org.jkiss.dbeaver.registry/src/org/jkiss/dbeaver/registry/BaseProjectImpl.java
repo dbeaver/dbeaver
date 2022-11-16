@@ -334,24 +334,12 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @Nullable
     @Override
-    public Object getResourceProperty(@NotNull IResource resource, @NotNull String propName) {
-        return getResourceProperty(getResourcePath(resource), propName);
-    }
-
-    @Nullable
-    @Override
     public Map<String, Object> getResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
         resourcePath = normalizeResourcePath(resourcePath);
         synchronized (metadataSync) {
             return resourceProperties.get(resourcePath);
         }
-    }
-
-    @Nullable
-    @Override
-    public void setResourceProperty(@NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
-        setResourceProperty(getResourcePath(resource), propName, value);
     }
 
     @Override
