@@ -224,15 +224,16 @@ class SQLOccurrencesHighlighter {
             uninstallOccurrencesFinder();
         } else {
             final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
+            boolean isSQLSyntaxParserEnabled = SQLEditorUtils.isSQLSyntaxParserEnabled(editor.getEditorInput());
             setMarkingOccurrences(
-                editor.isSQLSyntaxParserEnabled() && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
-                editor.isSQLSyntaxParserEnabled() && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
+                isSQLSyntaxParserEnabled && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
+                isSQLSyntaxParserEnabled && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         }
     }
 
     boolean handlePreferenceStoreChanged(PropertyChangeEvent event) {
         String property = event.getProperty();
-        if (editor.isSQLSyntaxParserEnabled()
+        if (SQLEditorUtils.isSQLSyntaxParserEnabled(editor.getEditorInput())
             && (SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR.equals(property)
             || SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION.equals(property))
         ) {

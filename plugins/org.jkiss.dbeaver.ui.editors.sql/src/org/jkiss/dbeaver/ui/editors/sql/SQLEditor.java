@@ -641,7 +641,7 @@ public class SQLEditor extends SQLEditorBase implements
     
     @Override
     public boolean isFoldingEnabled() {
-        return isSQLSyntaxParserEnabled() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+        return SQLEditorUtils.isSQLSyntaxParserEnabled(getEditorInput()) && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
     @Override
@@ -2799,13 +2799,12 @@ public class SQLEditor extends SQLEditorBase implements
             bottomRight = DBIcon.OVER_SUCCESS;
         }
         
-        IFile file = EditorUtils.getFileFromInput(getEditorInput());
-        if (file != null && SQLEditorUtils.getDisableSQLSyntaxParserProp(file)) {
-            bottomLeft = DBIcon.OVER_RED_LAMP;
-        } else {
+        if (SQLEditorUtils.isSQLSyntaxParserEnabled(getEditorInput())) {
             bottomLeft = null;
+        } else {
+            bottomLeft = DBIcon.OVER_RED_LAMP;
         }
-
+        
         if (bottomLeft != null || bottomRight != null) {
             DBPImage image = new DBIconComposite(new DBIconBinary(null, baseEditorImage), false, null, null, bottomLeft, bottomRight);
             editorImage = DBeaverIcons.getImage(image, false);

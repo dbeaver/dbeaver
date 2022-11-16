@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ui.editors.sql.commands;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -27,7 +29,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 
 import java.util.Map;
 
@@ -38,19 +40,23 @@ public class DisableSQLSyntaxParserHandler extends AbstractHandler implements IE
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
-        final SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
+        final IEditorPart editor = HandlerUtil.getActiveEditor(event);
 
-        if (editor != null && editor.getDocument() != null) {
-            editor.setSQLSyntaxParserEnabled(!editor.isSQLSyntaxParserEnabled());
+        if (editor instanceof SQLEditor) {
+            IEditorInput editorInput = editor.getEditorInput();
+            SQLEditorUtils.setSQLSyntaxParserEnabled(editorInput, !SQLEditorUtils.isSQLSyntaxParserEnabled(editorInput));
         }
         return null;
     }
 
     @Override
     public void updateElement(@NotNull UIElement element, @Nullable Map parameters) {
-        IEditorPart editor = element.getServiceLocator().getService(IWorkbenchWindow.class).getActivePage().getActiveEditor();
-        if (editor instanceof SQLEditor) {
-            element.setChecked(!((SQLEditor) editor).isSQLSyntaxParserEnabled());
+        IWorkbenchPage activePage = element.getServiceLocator().getService(IWorkbenchWindow.class).getActivePage();
+        if (activePage != null) {
+            IEditorPart editor = activePage.getActiveEditor();
+            if (editor instanceof SQLEditor) {
+                element.setChecked(!SQLEditorUtils.isSQLSyntaxParserEnabled(((SQLEditor)editor).getEditorInput()));
+            }
         }
     }
 }
