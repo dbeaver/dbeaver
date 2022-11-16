@@ -282,7 +282,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         }
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
 
-        if (!isSqlServer()) {
+        if (!isSqlServer() && encryptPassword != null) {
             encryptPassword.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD)));
         }
         boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
