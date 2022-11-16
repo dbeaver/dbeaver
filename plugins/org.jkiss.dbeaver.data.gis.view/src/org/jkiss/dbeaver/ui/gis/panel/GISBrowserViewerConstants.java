@@ -21,6 +21,7 @@ public class GISBrowserViewerConstants {
     public static final String[] INC_FILES = new String[] {
         "leaflet.css",
         "leaflet.js",
+        "leaflet-lasso.min.js",
         "wkx.js",
         "wkx.min.js",
         "layers.png"
