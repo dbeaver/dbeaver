@@ -16,7 +16,7 @@
             background-image: url(inc/layers.png);
             width: 30px;
             height: 30px;
-	    }
+        }
     </style>
 </head>
 
@@ -30,8 +30,8 @@
 
         var wkx = require('wkx');
         var geoMap = L.map('gisMap', {
-		    crs: L.CRS.${geomCRS}
-	    });
+            crs: L.CRS.${geomCRS}
+        });
 
         if (${showMap}) {
             let baseLayersObj = {
@@ -214,17 +214,17 @@
                 }
             });
 
-			geoMap.on('lasso.finished', function (e) {
-				if (e.originalEvent.ctrlKey !== true) {
+            geoMap.on('lasso.finished', function (e) {
+                if (e.originalEvent.ctrlKey !== true) {
                     clearSelection();
                 }
-				e.layers.forEach(function (layer) {
-					addSelection(vectorLayer, layer, true);
-				});
-				fireSelectionChanged();
-			});
+                e.layers.forEach(function (layer) {
+                    addSelection(vectorLayer, layer, true);
+                });
+                fireSelectionChanged();
+            });
 
-			L.control.lasso({ intersect: true }).addTo(geoMap);
+            L.control.lasso({ intersect: true }).addTo(geoMap);
         }
 
         showTools(${showTools});
