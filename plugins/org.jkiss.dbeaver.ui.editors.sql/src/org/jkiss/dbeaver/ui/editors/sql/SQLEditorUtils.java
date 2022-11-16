@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.commands.DisableEditorServicesHandler;
+import org.jkiss.dbeaver.ui.editors.sql.commands.DisableSQLSyntaxParserHandler;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
@@ -66,15 +66,8 @@ public class SQLEditorUtils {
     private static final Log log = Log.getLog(SQLEditorUtils.class);
 
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
-    
-    private static final String DISABLE_EDITOR_SERVICES_PROPERTY = "org.jkiss.dbeaver.ui.editors.sql.scripts.disableEditorServices";
-    
-    private static final String DISABLE_EDITOR_SERVICES_RESOURCE_PROPERTY = "disable-sql-editor-services"; 
-    
-    private static final QualifiedName DISABLE_EDITOR_SERVICES_PROP_NAME = new QualifiedName(
-        SQLEditorActivator.PLUGIN_ID, DISABLE_EDITOR_SERVICES_PROPERTY
-    );
 
+    private static final String DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY = "disable-sql-syntax-parser";
 
     /**
      * A {@link IResource}'s session property to distinguish between persisted and newly created resources.
@@ -371,24 +364,24 @@ public class SQLEditorUtils {
     }
     
     /**
-     * Returns state of Disable SQL Editor services property
+     * Returns state of Disable SQL syntax parser property
      */
-    public static boolean getDisableEditorServicesProp(@NotNull IFile file) {
-        if (file != null){
+    public static boolean getDisableSQLSyntaxParserProp(@NotNull IFile file) {
+        if (file != null) {
             DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
-            return CommonUtils.getBoolean(project.getResourceProperty(file, DISABLE_EDITOR_SERVICES_RESOURCE_PROPERTY), false);
+            return CommonUtils.getBoolean(project.getResourceProperty(file, DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY), false);
         } else {
             return false;
         }
     }
     
     /**
-     * Sets value to Disable SQL Editor services property
+     * Sets value to Disable SQL syntax parser property
      */
-    public static void setDisableEditorServicesProp(@NotNull IFile file, boolean value) throws CoreException {
+    public static void setDisableSQLSyntaxParserProp(@NotNull IFile file, boolean value) throws CoreException {
         if (file != null) {
             DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
-            project.setResourceProperty(file, DISABLE_EDITOR_SERVICES_RESOURCE_PROPERTY, Boolean.toString(value));
+            project.setResourceProperty(file, DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY, Boolean.toString(value));
             notifyAssociatedServices(file, value);
         }
     }
@@ -407,7 +400,7 @@ public class SQLEditorUtils {
                         if (editorFile.equals(file)) {
                             affectedPrefs.add(sqlEditor.getActivePreferenceStore());
                             if (editor instanceof SQLEditor) {
-                                affectedEditors.add((SQLEditor)editor);
+                                affectedEditors.add((SQLEditor) editor);
                             }
                         }
                     }
@@ -422,7 +415,7 @@ public class SQLEditorUtils {
             sqlEditor.refreshEditorIconAndTitle();
         }
 
-        PlatformUI.getWorkbench().getService(ICommandService.class).refreshElements(DisableEditorServicesHandler.COMMAND_ID, null);
+        PlatformUI.getWorkbench().getService(ICommandService.class).refreshElements(DisableSQLSyntaxParserHandler.COMMAND_ID, null);
     }
     
     private static void notifyPrefs(@NotNull DBPPreferenceStore prefStore, boolean newServicesEnabled) {

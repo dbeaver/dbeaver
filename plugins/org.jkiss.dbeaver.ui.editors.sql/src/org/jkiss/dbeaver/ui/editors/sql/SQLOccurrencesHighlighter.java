@@ -35,7 +35,6 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -226,14 +225,14 @@ class SQLOccurrencesHighlighter {
         } else {
             final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
             setMarkingOccurrences(
-                editor.isEditorServicesEnabled() && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
-                editor.isEditorServicesEnabled() && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
+                editor.isSQLSyntaxParserEnabled() && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
+                editor.isSQLSyntaxParserEnabled() && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         }
     }
 
     boolean handlePreferenceStoreChanged(PropertyChangeEvent event) {
         String property = event.getProperty();
-        if (editor.isEditorServicesEnabled()
+        if (editor.isSQLSyntaxParserEnabled()
             && (SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR.equals(property)
             || SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION.equals(property))
         ) {

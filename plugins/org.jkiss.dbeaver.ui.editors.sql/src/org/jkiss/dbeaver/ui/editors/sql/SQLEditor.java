@@ -641,7 +641,7 @@ public class SQLEditor extends SQLEditorBase implements
     
     @Override
     public boolean isFoldingEnabled() {
-        return isEditorServicesEnabled() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+        return isSQLSyntaxParserEnabled() && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
     @Override
@@ -2800,7 +2800,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         
         IFile file = EditorUtils.getFileFromInput(getEditorInput());
-        if (file != null && SQLEditorUtils.getDisableEditorServicesProp(file)) {
+        if (file != null && SQLEditorUtils.getDisableSQLSyntaxParserProp(file)) {
             bottomLeft = DBIcon.OVER_RED_LAMP;
         } else {
             bottomLeft = null;

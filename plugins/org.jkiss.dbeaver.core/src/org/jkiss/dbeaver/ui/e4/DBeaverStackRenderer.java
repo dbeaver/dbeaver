@@ -185,18 +185,18 @@ public class DBeaverStackRenderer extends StackRenderer {
                 });
             }
         }
-        if (ActionUtils.isCommandEnabled(SQLEditorCommands.CMD_DISABLE_SQL_EDITOR_SERVICES, workbenchPart.getSite())) {
+        if (ActionUtils.isCommandEnabled(SQLEditorCommands.CMD_DISABLE_SQL_SYNTAX_PARSER, workbenchPart.getSite())) {
             new MenuItem(menu, SWT.SEPARATOR);
-            MenuItem menuItemDisableEditorServices = new MenuItem(menu, SWT.CHECK);
-            menuItemDisableEditorServices.setText(SQLEditorMessages.sql_editor_prefs_disable_services_text);
-            menuItemDisableEditorServices.setToolTipText(SQLEditorMessages.sql_editor_prefs_disable_services_tip);
-            menuItemDisableEditorServices.setSelection(SQLEditorUtils.getDisableEditorServicesProp(inputFile));
+            MenuItem menuItemDisableSQLSyntaxParser = new MenuItem(menu, SWT.CHECK);
+            menuItemDisableSQLSyntaxParser.setText(SQLEditorMessages.sql_editor_prefs_disable_services_text);
+            menuItemDisableSQLSyntaxParser.setToolTipText(SQLEditorMessages.sql_editor_prefs_disable_services_tip);
+            menuItemDisableSQLSyntaxParser.setSelection(SQLEditorUtils.getDisableSQLSyntaxParserProp(inputFile));
 
-            menuItemDisableEditorServices.addSelectionListener(new SelectionAdapter() {
+            menuItemDisableSQLSyntaxParser.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    ActionUtils.runCommand(SQLEditorCommands.CMD_DISABLE_SQL_EDITOR_SERVICES, workbenchPart.getSite());
-                    menuItemDisableEditorServices.setSelection(SQLEditorUtils.getDisableEditorServicesProp(inputFile));
+                    ActionUtils.runCommand(SQLEditorCommands.CMD_DISABLE_SQL_SYNTAX_PARSER, workbenchPart.getSite());
+                    menuItemDisableSQLSyntaxParser.setSelection(SQLEditorUtils.getDisableSQLSyntaxParserProp(inputFile));
                 }
             });
         }

@@ -31,9 +31,9 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.Map;
 
-public class DisableEditorServicesHandler extends AbstractHandler implements IElementUpdater {
+public class DisableSQLSyntaxParserHandler extends AbstractHandler implements IElementUpdater {
     
-    public static final String COMMAND_ID = "org.jkiss.dbeaver.ui.editors.sql.turnOffEditorServices";
+    public static final String COMMAND_ID = "org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser";
 
     @Nullable
     @Override
@@ -41,7 +41,7 @@ public class DisableEditorServicesHandler extends AbstractHandler implements IEl
         final SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
 
         if (editor != null && editor.getDocument() != null) {
-            editor.setEditorServicesEnabled(!editor.isEditorServicesEnabled());
+            editor.setSQLSyntaxParserEnabled(!editor.isSQLSyntaxParserEnabled());
         }
         return null;
     }
@@ -50,7 +50,7 @@ public class DisableEditorServicesHandler extends AbstractHandler implements IEl
     public void updateElement(@NotNull UIElement element, @Nullable Map parameters) {
         IEditorPart editor = element.getServiceLocator().getService(IWorkbenchWindow.class).getActivePage().getActiveEditor();
         if (editor instanceof SQLEditor) {
-            element.setChecked(!((SQLEditor) editor).isEditorServicesEnabled());
+            element.setChecked(!((SQLEditor) editor).isSQLSyntaxParserEnabled());
         }
     }
 }

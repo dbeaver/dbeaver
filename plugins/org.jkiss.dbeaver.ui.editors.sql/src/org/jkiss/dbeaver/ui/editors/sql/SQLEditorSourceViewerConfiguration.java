@@ -212,7 +212,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             switch (event.getProperty()) {
                 case SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION:
                     assistant.enableAutoActivation(
-                        editor.isEditorServicesEnabled() && configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)
+                        editor.isSQLSyntaxParserEnabled() && configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)
                     );
                     break;
                 case SQLPreferenceConstants.AUTO_ACTIVATION_DELAY:

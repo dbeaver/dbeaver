@@ -185,24 +185,24 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     /**
-     * Checks whether Disable SQL Editor services property is set
+     * Checks whether Disable SQL syntax parser property is set
      */
-    public boolean isEditorServicesEnabled() {
+    public boolean isSQLSyntaxParserEnabled() {
         IEditorInput input = getEditorInput();
         IFile file = input == null ? null : input.getAdapter(IFile.class);
-        return file == null ? true : !SQLEditorUtils.getDisableEditorServicesProp(file);
+        return file == null ? true : !SQLEditorUtils.getDisableSQLSyntaxParserProp(file);
     }
 
     /*
-     * Sets value to Disable SQL Editor services property
+     * Sets value to Disable SQL syntax parser property
      */
-    public void setEditorServicesEnabled(boolean value) {
+    public void setSQLSyntaxParserEnabled(boolean value) {
         IEditorInput input = getEditorInput();
         if (input != null) {
             IFile file = input.getAdapter(IFile.class);
             if (file != null) {
                 try {
-                    SQLEditorUtils.setDisableEditorServicesProp(file, !value);
+                    SQLEditorUtils.setDisableSQLSyntaxParserProp(file, !value);
                 } catch (CoreException e) {
                     log.debug(e);
                 }
@@ -1043,7 +1043,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public boolean isFoldingEnabled() {
-        return isEditorServicesEnabled()
+        return isSQLSyntaxParserEnabled()
             && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
