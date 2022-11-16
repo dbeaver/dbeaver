@@ -260,6 +260,7 @@
                     categories="sql">
 
                     <file type="jar" path="maven:/com.ibm.informix:jdbc:RELEASE[4.50.4.1]" bundle="!drivers.informix"/>
+                    <file type="license" path="https://raw.githubusercontent.com/ibmdb/node-ibm_db/master/LICENSE" bundle="!drivers.informix"/>
 
                     <file type="jar" path="drivers/informix" bundle="drivers.informix"/>
                     <file type="license" path="drivers/informix/LICENSE.txt" bundle="drivers.informix"/>
@@ -358,6 +359,7 @@
                     <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.derby"/>
 
                     <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
@@ -389,7 +391,9 @@
                     <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.derby"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
+                    <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
@@ -475,6 +479,7 @@
                     description="InterSystems Cache"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.cache"/>
                     <file type="jar" path="drivers/cache" bundle="drivers.cache"/>
                     <file type="license" path="drivers/cache/LICENSE.txt" bundle="drivers.cache"/>
                 </driver>
@@ -505,8 +510,11 @@
                     iconBig="icons/ingres_icon_big.png"
                     categories="sql">
                     <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE" bundle="!drivers.ingres"/>
-                    <parameter name="supports-truncate" value="false"/>
+                    <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.ingres"/>
                     <file type="jar" path="drivers/ingres" bundle="drivers.ingres"/>
+                    <file type="license" path="drivers/ingres/LICENSE.txt" bundle="drivers.ingres"/>
+
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
                 <!-- SQLite -->
                 <driver
@@ -554,6 +562,7 @@
                         promoted="1"
                         categories="sql,embedded">
                     <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE"/>
+                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE"/>
                 </driver>
 
                 <!-- Teradata -->
@@ -617,7 +626,9 @@
                     <parameter name="read-only-meta-data" value="true"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.csvjdbc"/>
                     <file type="jar" path="drivers/csvjdbc" bundle="drivers.csvjdbc"/>
+                    <file type="license" path="drivers/csvjdbc/LICENSE.txt" bundle="drivers.csvjdbc"/>
                 </driver>
                 <driver
                     id="csvjdbc_dbf"
@@ -668,6 +679,7 @@
                     categories="sql,embedded,file">
 
                     <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.ucanaccess"/>
 
                     <file type="license" path="drivers/ucanaccess/LICENSE.txt" bundle="drivers.ucanaccess"/>
                     <file type="jar" path="drivers/ucanaccess" bundle="drivers.ucanaccess"/>
@@ -699,6 +711,7 @@
                     webURL="http://www.nuodb.com/"
                     categories="sql,cloud">
                     <file type="jar" path="maven:/com.nuodb.jdbc:nuodb-jdbc:RELEASE"/>
+                    <file type="license" path="https://raw.githubusercontent.com/nuodb/nuodb-odbc/main/LICENSE"/>
                 </driver>
                 <driver
                     id="sap_hana"
@@ -735,6 +748,7 @@
                     singleConnection="true">
                     <parameter name="omit-type-cache" value="true"/>
                     <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE[4.14.1-HBase-1.4]" ignore-dependencies="true"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
                 </driver>
                 <driver
                     id="gemfire_xd"
@@ -809,6 +823,7 @@
                     singleConnection="true">
                     <file type="jar" path="maven:/org.spark-project.hive:hive-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
@@ -847,6 +862,7 @@
                     categories="hadoop"
                     singleConnection="true">
                     <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
@@ -908,6 +924,7 @@
                     webURL="https://github.com/openlink/virtuoso-opensource"
                     categories="sql,object">
                     <file type="jar" path="https://github.com/openlink/virtuoso-opensource/raw/develop/7/libsrc/JDBCDriverType4/virtjdbc4.jar"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt"/>
                 </driver>
 
                 <!-- Machbase -->
@@ -962,6 +979,7 @@
                     webURL="https://github.com/orientechnologies/orientdb-jdbc"
                     categories="graph">
                     <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE[1.7]"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
 
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
@@ -980,6 +998,7 @@
                     webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
                     categories="graph">
                     <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
+                    <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt"/>
                     <parameter name="supports-truncate" value="false"/>
                     <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
                 </driver>
@@ -998,6 +1017,7 @@
                     webURL="https://prestodb.io/"
                     categories="sql,bigdata,hadoop">
                     <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
                     <parameter name="supports-ddl-transactions" value="false"/>
@@ -1042,6 +1062,7 @@
                     webURL="https://trino.io/"
                     categories="sql,bigdata,hadoop">
                     <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
                     <file type="jar" path="drivers/trino" bundle="drivers.trino"/>
                     <parameter name="read-only-meta-data" value="true"/>
                     <parameter name="use-search-string-escape" value="true"/>
@@ -1150,6 +1171,7 @@
                         webURL="https://apacheignite-sql.readme.io/docs/jdbc-driver"
                         categories="hadoop">
                     <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
                 </driver>
 
                 <!-- OmniSci MapD -->
