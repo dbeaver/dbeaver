@@ -92,6 +92,10 @@ public class EntityDiagram extends ERDDiagram implements ERDContainerDecorated {
         ERDViewStyle.setDefaultStyles(ERDUIActivator.getDefault().getPreferences(), attributeStyles);
     }
 
+    public void setAttributeStyles(ERDViewStyle[] attributeStyles) {
+        this.attributeStyles = attributeStyles;
+    }
+
     @Override
     public ERDAttributeVisibility getAttributeVisibility() {
         return attributeVisibility;
