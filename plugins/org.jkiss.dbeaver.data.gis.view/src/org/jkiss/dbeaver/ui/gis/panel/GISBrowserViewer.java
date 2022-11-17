@@ -164,9 +164,9 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                 protected IStatus run(IProgressMonitor monitor) {
                     while (leafletViewer.isBrowserCreating()) {
                         try {
-                            wait(50);
-                        } catch (InterruptedException ignore) {
-                            // ignore
+                            Thread.sleep(50);
+                        } catch (InterruptedException ex) {
+                            break;
                         }
                     }
                     UIUtils.syncExec(GISBrowserViewer.super::dispose);
