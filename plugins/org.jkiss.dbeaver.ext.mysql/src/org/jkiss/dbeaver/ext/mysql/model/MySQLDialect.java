@@ -206,9 +206,6 @@ public class MySQLDialect extends JDBCSQLDialect {
     @Override
     protected String quoteIdentifier(@NotNull String str, @NotNull String[][] quoteStrings) {
         // Escape with first (default) quote string
-        if (str.contains("@")) {
-            return quoteStrings[0][0] + escapeString(str).replace("@", quoteStrings[0][1] + "@" + quoteStrings[0][1]) + quoteStrings[0][1];
-        }
         return quoteStrings[0][0] + escapeString(str) + quoteStrings[0][1];
     }
     

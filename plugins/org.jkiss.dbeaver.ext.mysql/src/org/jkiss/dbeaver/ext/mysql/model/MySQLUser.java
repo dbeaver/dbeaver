@@ -95,7 +95,7 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
-        return userName + "@" + host;
+        return "`" + userName + "`@`" + host + "`";
     }
 
     public String getUserName() {
