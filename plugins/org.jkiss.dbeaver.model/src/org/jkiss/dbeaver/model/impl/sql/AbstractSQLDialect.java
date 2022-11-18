@@ -424,6 +424,9 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         }
     }
 
+    /**
+     * Returns quoted identifier for User.
+     */
     @NotNull
     public String getQuotedUserIdentifier(@NotNull String str) {
         return getQuotedIdentifier(str, true, false);
