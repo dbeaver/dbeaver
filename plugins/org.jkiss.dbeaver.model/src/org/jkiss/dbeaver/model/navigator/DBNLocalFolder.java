@@ -239,7 +239,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
-        folder.setName(newName);
+        getDataSourceRegistry().renameFolder(folder, newName);
         DBNModel.updateConfigAndRefreshDatabases(this);
     }
 

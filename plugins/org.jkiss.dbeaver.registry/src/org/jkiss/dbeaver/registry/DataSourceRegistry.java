@@ -340,6 +340,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         return parent;
     }
 
+    @Override
+    public void renameFolder(@NotNull DBPDataSourceFolder folder, @NotNull String newName) {
+        folder.setName(newName);
+        saveDataSources();
+    }
+
     void addDataSourceFolder(DataSourceFolder folder) {
         dataSourceFolders.add(folder);
     }

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Resource manager API.
@@ -97,6 +98,12 @@ public interface RMController extends DBPObjectController {
         @NotNull String projectId,
         @NotNull String[] folderPaths,
         boolean dropContents
+    ) throws DBException;
+
+
+    void renameProjectConnectionFolders(
+        @NotNull String projectId,
+        @NotNull Map<String, String> folderData
     ) throws DBException;
 
     ////////////////////////////////////////////

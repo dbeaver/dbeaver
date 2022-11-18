@@ -95,6 +95,8 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     DBPDataSourceFolder addFolder(DBPDataSourceFolder parent, String name);
 
+    void renameFolder(@NotNull DBPDataSourceFolder folder, @NotNull String newName);
+
     void removeFolder(DBPDataSourceFolder folder, boolean dropContents);
 
     @Nullable
