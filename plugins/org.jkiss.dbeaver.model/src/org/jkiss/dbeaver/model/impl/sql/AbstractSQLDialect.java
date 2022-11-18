@@ -423,6 +423,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             return str;
         }
     }
+    
+	@NotNull
+	public String getQuotedUserIdentifier(@NotNull String str) {
+		return getQuotedIdentifier(str, true, false);
+	}
 
     public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
         // Check for keyword conflict
