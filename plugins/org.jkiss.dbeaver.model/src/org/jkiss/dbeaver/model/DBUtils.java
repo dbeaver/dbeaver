@@ -1697,9 +1697,10 @@ public final class DBUtils {
             return ((DBDAttributeBinding) object).getFullyQualifiedName(context, purpose);
         } else if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullyQualifiedName(context);
-        } else if (((DBSObject) object) instanceof DBAUser && ((DBSObject) object).getDataSource().getSQLDialect() instanceof AbstractSQLDialect) {
-			return ((AbstractSQLDialect) ((DBSObject) object).getDataSource().getSQLDialect()).getQuotedUserIdentifier(object.getName());
-		} else {
+        } else if (((DBSObject) object) instanceof DBAUser &&
+            ((DBSObject) object).getDataSource().getSQLDialect() instanceof AbstractSQLDialect) {
+            return ((AbstractSQLDialect) ((DBSObject) object).getDataSource().getSQLDialect()).getQuotedUserIdentifier(object.getName());
+        } else {
             return getQuotedIdentifier(dataSource, object.getName());
         }
     }

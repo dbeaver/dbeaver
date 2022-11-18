@@ -208,12 +208,12 @@ public class MySQLDialect extends JDBCSQLDialect {
         // Escape with first (default) quote string
         return quoteStrings[0][0] + escapeString(str) + quoteStrings[0][1];
     }
-    
-	@NotNull
-	@Override
-	public String getQuotedUserIdentifier(@NotNull String str) {
-		return getQuotedIdentifier(str, false, false).replace("@", "`@`");
-	}
+
+    @NotNull
+    @Override
+    public String getQuotedUserIdentifier(@NotNull String str) {
+        return getQuotedIdentifier(str, false, false).replace("@", "`@`");
+    }
     
     @NotNull
     @Override
