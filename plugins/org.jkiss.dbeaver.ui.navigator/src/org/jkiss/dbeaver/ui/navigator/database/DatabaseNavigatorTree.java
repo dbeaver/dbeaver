@@ -787,6 +787,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     }
                     patternShort = "*" + patternShort;
                     this.matcherShort = new TextMatcherExt(patternShort, true, false);
+                } else {
+                    this.dotPattern = null;
                 }
             } else {
                 super.setPattern(null);
