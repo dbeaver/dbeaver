@@ -98,9 +98,7 @@ public class BrowserImageViewer extends AbstractImageViewer {
     @Override
     public boolean loadImage(@NotNull InputStream inputStream) {
         try {
-            if (tempFile != null) {
-                Files.delete(tempFile);
-            }
+            clearTempFile();
             ImageInputStream stream = ImageIO.createImageInputStream(inputStream);
             Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
             if (!readers.hasNext()) {
@@ -124,27 +122,14 @@ public class BrowserImageViewer extends AbstractImageViewer {
 
     @Override
     public boolean clearImage() {
-        if (tempFile != null) {
-            try {
-                Files.delete(tempFile);
-            } catch (IOException e) {
-                log.error(e);
-            }
-        }
+        clearTempFile();
         browser.setUrl(null);
         return true;
     }
 
     @Override
     public void dispose() {
-        if (tempFile != null) {
-            try {
-                Files.delete(tempFile);
-            } catch (IOException e) {
-                log.warn(e);
-            }
-            tempFile = null;
-        }
+        clearTempFile();
         // Edge uses callbacks which have a lowest priority in UI
         // So if dispose is sent during that operation this will lead to initialization
         // on already disposed composite, we don't want this at all
@@ -169,6 +154,17 @@ public class BrowserImageViewer extends AbstractImageViewer {
                 }
             }.schedule();
         }
+    }
+
+    private void clearTempFile() {
+        if (tempFile != null && Files.exists(tempFile)) {
+            try {
+                Files.delete(tempFile);
+            } catch (IOException e) {
+                log.warn(e);
+            }
+        }
+        tempFile = null;
     }
 
 }
