@@ -796,7 +796,11 @@ public final class DBUtils {
         @Nullable int[] nestedIndexes
     ) {
         if (attribute.isCustom()) {
-            return DBVUtils.executeExpression(((DBDAttributeBindingCustom) attribute).getEntityAttribute(), allAttributes, row);
+            try {
+                return DBVUtils.executeExpression(((DBDAttributeBindingCustom) attribute).getEntityAttribute(), allAttributes, row);
+            } catch (Exception e) {
+                return new DBDValueError(e);
+            }
         }
 
         final int depth = attribute.getLevel();

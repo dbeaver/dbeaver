@@ -325,6 +325,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     private IProject importProject(DBRProgressMonitor monitor, Element projectElement, ZipFile zipFile, Map<String, String> driverMap)
         throws DBException, CoreException, IOException
     {
+        if (DBWorkbench.isDistributed()) {
+            throw new DBException("Project import is not supported in distributed workspaces");
+        }
         String projectName = projectElement.getAttribute(ExportConstants.ATTR_NAME);
         String projectDescription = projectElement.getAttribute(ExportConstants.ATTR_DESCRIPTION);
         String targetProjectName = data.getTargetProjectName(projectName);

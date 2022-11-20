@@ -171,6 +171,11 @@ public abstract class BaseProjectImpl implements DBPProject {
         return false;
     }
 
+    @Override
+    public boolean isPrivateProject() {
+        return true;
+    }
+
     @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
@@ -334,6 +339,7 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     @Nullable
+    @Override
     public Map<String, Object> getResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
         resourcePath = normalizeResourcePath(resourcePath);
@@ -371,6 +377,20 @@ public abstract class BaseProjectImpl implements DBPProject {
                     // No changes
                     return;
                 }
+            }
+        }
+        flushMetadata();
+    }
+
+    @Override
+    public void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath) {
+        loadMetadata();
+        oldResourcePath = normalizeResourcePath(oldResourcePath);
+        newResourcePath = normalizeResourcePath(newResourcePath);
+        synchronized (metadataSync) {
+            Map<String, Object> resProps = resourceProperties.remove(oldResourcePath);
+            if (resProps != null) {
+                resourceProperties.put(newResourcePath, resProps);
             }
         }
         flushMetadata();

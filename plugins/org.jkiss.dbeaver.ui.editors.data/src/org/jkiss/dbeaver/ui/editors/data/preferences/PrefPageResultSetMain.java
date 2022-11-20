@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.data.preferences;
 
+import org.eclipse.core.commands.Command;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -24,6 +25,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -32,7 +34,9 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -65,6 +69,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button refreshAfterUpdate;
     private Button useNavigatorFilters;
 
+    private Button confirmDataSave;
     private Button showErrorsInDialog;
     private Button markCellValueOccurrences;
 
@@ -72,6 +77,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
     private Button ignoreColumnLabelCheck;
     private Button useDateTimeEditor;
+    private Button useBrowserCheckbox;
 
     public PrefPageResultSetMain()
     {
@@ -97,10 +103,11 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_ORDERING_MODE) ||
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
+            store.contains(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
             store.contains(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES) ||
-            store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)
-            ;
+            store.contains(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL) ||
+            store.contains(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER);
     }
 
     @Override
@@ -186,8 +193,25 @@ public class PrefPageResultSetMain extends TargetPrefPage
             Group uiGroup = UIUtils.createControlGroup(rightPane, "UI", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             uiGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
+            ICommandService commandService = UIUtils.getActiveWorkbenchWindow().getService(ICommandService.class);
+            if (commandService != null) {
+                Command toggleComand = commandService.getCommand(ResultSetHandlerMain.CMD_TOGGLE_CONFIRM_SAVE);
+                if (toggleComand != null) {
+                    try {
+                        confirmDataSave = UIUtils.createCheckbox(uiGroup, toggleComand.getName(), toggleComand.getDescription(), false, 1);
+                    } catch (Exception e) {
+                        log.debug(e);
+                    }
+                }
+            }
             showErrorsInDialog = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_content_editor_ui_show_errors_in_dialog, ResultSetMessages.pref_page_content_editor_ui_show_errors_in_dialog_tip, false, 1);
             markCellValueOccurrences = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_content_editor_ui_mark_cell_value_occurrences, ResultSetMessages.pref_page_content_editor_ui_mark_cell_value_occurrences_tip, false, 1);
+            useBrowserCheckbox = UIUtils.createCheckbox(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_image_browser,
+                false
+            );
+            useBrowserCheckbox.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_image_browser_tip);
+
         }
 
         return composite;
@@ -215,6 +239,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             readQueryReferences.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_READ_REFERENCES));
             queryCancelTimeout.setText(store.getString(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT));
             filterForceSubselect.setSelection(store.getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
+            useBrowserCheckbox.setSelection(store.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN));
             alwaysUseAllColumns.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS));
@@ -225,6 +250,9 @@ public class PrefPageResultSetMain extends TargetPrefPage
             advUseFetchSize.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE));
             ignoreColumnLabelCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL));
 
+            if (confirmDataSave != null) {
+                confirmDataSave.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE));
+            }
             showErrorsInDialog.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG));
             markCellValueOccurrences.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES));
 
@@ -248,6 +276,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getText());
             store.setValue(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT, filterForceSubselect.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER, useBrowserCheckbox.getSelection());
 
             store.setValue(ResultSetPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
@@ -258,6 +287,9 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_SET_USE_FETCH_SIZE, advUseFetchSize.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL, ignoreColumnLabelCheck.getSelection());
 
+            if (confirmDataSave != null) {
+                store.setValue(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE, confirmDataSave.getSelection());
+            }
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG, showErrorsInDialog.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES, markCellValueOccurrences.getSelection());
         } catch (Exception e) {
@@ -267,8 +299,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store)
-    {
+    protected void clearPreferences(DBPPreferenceStore store) {
+        store.setToDefault(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER);
         store.setToDefault(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
         store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         store.setToDefault(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);
@@ -289,6 +321,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
         store.setToDefault(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL);
 
+        store.setToDefault(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG);
         store.setToDefault(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES);
 

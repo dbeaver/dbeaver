@@ -370,7 +370,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 }
 
                 private boolean within(@NotNull IRegion region, int index) {
-                    return region.getLength() > 0 && region.getOffset() >= index && index < region.getOffset() + region.getLength();
+                    return region.getLength() > 0 && index >= region.getOffset() && index < region.getOffset() + region.getLength();
                 }
             });
         }
@@ -512,7 +512,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             ruler,
             overviewRuler,
             true,
-            styles);
+            styles,
+            this::getActivePreferenceStore
+        );
     }
 
     @Override

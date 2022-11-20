@@ -75,7 +75,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL, true);
 
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS, true);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_ROWS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_COLUMNS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_SEL_CELLS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_INLINE_ENTER, false);
@@ -88,6 +88,8 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES, false);
+
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER, true);
 
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_TEXT_TAB_SIZE, 4);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, 255);

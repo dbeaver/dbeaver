@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.data.dialogs;
 
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
@@ -31,7 +30,6 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -47,6 +45,7 @@ import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -54,9 +53,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author Serge Rider
  */
-public abstract class ValueViewDialog extends Dialog implements IValueEditorStandalone {
-
-    private static final Log log = Log.getLog(ValueViewDialog.class);
+public abstract class ValueViewDialog extends BaseDialog implements IValueEditorStandalone {
 
     private static int dialogCount = 0;
     public static final String SETTINGS_SECTION_DI = "ValueViewDialog";
@@ -69,7 +66,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
     private boolean opened;
 
     protected ValueViewDialog(IValueController valueController) {
-        super(valueController.getValueSite().getShell());
+        super(valueController.getValueSite().getShell(), "Value view", null);
         setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.MAX | SWT.RESIZE);
         this.valueController = valueController;
         dialogSettings = UIUtils.getDialogSettings(SETTINGS_SECTION_DI);
@@ -133,21 +130,8 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
-    {
-/*
-        SashForm sash = new SashForm(parent, SWT.VERTICAL);
-        sash.setLayoutData(new GridData(GridData.FILL_BOTH));
-        Composite dialogGroup = (Composite)super.createDialogArea(sash);
-        dialogGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        new ColumnInfoPanel(dialogGroup, SWT.BORDER, getValueController());
-        Composite editorGroup = (Composite) super.createDialogArea(sash);
-        editorGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-        //editorGroup.setLayout(new GridLayout(1, false));
-        return editorGroup;
-
-*/
-        Composite dialogGroup = (Composite)super.createDialogArea(parent);
+    protected Composite createDialogArea(Composite parent) {
+        Composite dialogGroup = super.createDialogArea(parent);
         if (valueController instanceof IAttributeController) {
             final Link columnHideLink = new Link(dialogGroup, SWT.NONE);
             columnHideLink.addSelectionListener(new SelectionAdapter() {

@@ -78,8 +78,16 @@ public class DataSourceHandler {
         @Nullable final DBRProgressListener onFinish) {
         if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) dataSourceContainer;
-            if (!ArrayUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
+            Job[] connectJobs = Job.getJobManager().find(dataSourceDescriptor);
+            if (!ArrayUtils.isEmpty(connectJobs)) {
                 // Already connecting/disconnecting - just return
+                if (monitor != null && connectJobs.length == 1) {
+                    try {
+                        connectJobs[0].join(0, monitor.getNestedMonitor());
+                    } catch (InterruptedException e) {
+                        log.debug(e);
+                    }
+                }
                 return;
             }
 
@@ -88,17 +96,6 @@ public class DataSourceHandler {
                 @Override
                 public void done(IJobChangeEvent event) {
                     IStatus result = connectJob.getConnectStatus();
-                    if (result.isOK()) {
-                        if (!dataSourceDescriptor.isSavePassword()) {
-                            // Rest password back to null
-                            // TODO: to be correct we need to reset password info.
-                            // but we need a password to open isolated contexts (e.g. for data export)
-                            // Currently it is not possible to ask for password from isolation context opening
-                            // procedure. We need to do something here...
-                            //dataSourceDescriptor.getConnectionConfiguration().setUserName(oldName);
-                            //dataSourceDescriptor.getConnectionConfiguration().setUserPassword(oldPassword);
-                        }
-                    }
                     if (onFinish != null) {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {

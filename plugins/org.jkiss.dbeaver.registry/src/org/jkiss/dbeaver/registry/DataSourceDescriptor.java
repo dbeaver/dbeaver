@@ -139,6 +139,8 @@ public class DataSourceDescriptor
     private final DataSourcePreferenceStore preferenceStore;
     @Nullable
     private DBPDataSource dataSource;
+    @Nullable
+    private String lastConnectionError;
 
     private boolean temporary;
     private boolean hidden;
@@ -158,7 +160,10 @@ public class DataSourceDescriptor
     private volatile boolean disposed = false;
     private volatile boolean connecting = false;
 
+    // secrets resolved from secret controller
     private volatile boolean secretsResolved = false;
+    // secrets resolved from secret controller and secret not null
+    private volatile boolean secretExist = false;
 
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWNetworkHandler proxyHandler;
@@ -205,8 +210,7 @@ public class DataSourceDescriptor
      *
      * @param setDefaultStorage sets storage to default (in order to allow connection copy-paste with following save in default configuration)
      */
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry,
-                                boolean setDefaultStorage) {
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultStorage) {
         this.registry = registry;
         this.storage = setDefaultStorage ? ((DataSourceRegistry) registry).getDefaultStorage() : source.storage;
         this.origin = source.origin;
@@ -216,6 +220,7 @@ public class DataSourceDescriptor
         this.name = source.name;
         this.description = source.description;
         this.savePassword = source.savePassword;
+        this.sharedCredentials = source.sharedCredentials;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
         this.connectionReadOnly = source.connectionReadOnly;
         this.forceUseSingleConnection = source.forceUseSingleConnection;
@@ -379,10 +384,23 @@ public class DataSourceDescriptor
         this.savePassword = savePassword;
     }
 
+    public boolean isCredentialsSaved() throws DBException {
+        if (sharedCredentials) {
+            return true;
+        }
+        if (!getProject().isUseSecretStorage()) {
+            return savePassword;
+        }
+        resolveSecretsIfNeeded();
+        return secretsResolved && secretExist;
+    }
+
+    @Override
     public boolean isSharedCredentials() {
         return sharedCredentials;
     }
 
+    @Override
     public void setSharedCredentials(boolean sharedCredentials) {
         this.sharedCredentials = sharedCredentials;
     }
@@ -444,6 +462,11 @@ public class DataSourceDescriptor
         } else {
             connectionInfo.getBootstrap().setDefaultAutoCommit(autoCommit);
         }
+    }
+
+    public void forgetSecrets() {
+        this.secretsResolved = false;
+        this.secretExist = false;
     }
 
     @Override
@@ -808,24 +831,29 @@ public class DataSourceDescriptor
 
     @Override
     public void persistSecrets(DBSSecretController secretController) throws DBException {
-        secretController.setSecretValue(
-            getSecretKeyId(),
-            saveToSecret()
-        );
-
+        if (!isSharedCredentials()) {
+            var secret = saveToSecret();
+            secretController.setSecretValue(
+                getSecretKeyId(),
+                secret
+            );
+            secretExist = secret != null;
+        }
         secretsResolved = true;
     }
 
     @Override
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
-        String secretValue = secretController.getSecretValue(
-            getSecretKeyId());
-        if (secretValue != null) {
-            loadFromSecret(secretValue);
-        } else {
-            if (!DBWorkbench.isDistributed()) {
-                // Backward compatibility
-                loadFromLegacySecret(secretController);
+        if (!isSharedCredentials()) {
+            String secretValue = secretController.getSecretValue(getSecretKeyId());
+            this.secretExist = secretValue != null;
+            if (secretExist) {
+                loadFromSecret(secretValue);
+            } else {
+                if (!DBWorkbench.isDistributed()) {
+                    // Backward compatibility
+                    loadFromLegacySecret(secretController);
+                }
             }
         }
         secretsResolved = true;
@@ -834,6 +862,12 @@ public class DataSourceDescriptor
     @Override
     public boolean isConnected() {
         return dataSource != null && !connecting;
+    }
+
+    @Nullable
+    @Override
+    public String getConnectionError() {
+        return lastConnectionError;
     }
 
     public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect)
@@ -852,14 +886,15 @@ public class DataSourceDescriptor
         if (getProject().isUseSecretStorage()) {
             // Resolve secrets
             secretController = DBSSecretController.getProjectSecretController(getProject());
-            resolveSecrets(secretController);
         }
+        resolveSecretsIfNeeded();
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
 
         // Update auth properties if possible
 
         connecting = true;
+        lastConnectionError = null;
         try {
             processEvents(monitor, DBPConnectionEventType.BEFORE_CONNECT);
 
@@ -881,7 +916,7 @@ public class DataSourceDescriptor
                 authProvided = authProvider.provideAuthParameters(monitor, this, resolvedConnectionInfo);
             } else {
                 // 3. USe legacy password provider
-                if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
+                if (!isCredentialsSaved() && !getDriver().isAnonymousAccess()) {
                     // Ask for password
                     authProvided = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
                 }
@@ -1009,6 +1044,7 @@ public class DataSourceDescriptor
             }
             return true;
         } catch (Throwable e) {
+            lastConnectionError = e.getMessage();
             log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
                 try {
@@ -1047,6 +1083,14 @@ public class DataSourceDescriptor
             monitor.done();
             connecting = false;
         }
+    }
+
+    private void resolveSecretsIfNeeded() throws DBException {
+        if (secretsResolved || !getProject().isUseSecretStorage()) {
+            return;
+        }
+        var secretController = DBSSecretController.getProjectSecretController(getProject());
+        resolveSecrets(secretController);
     }
 
     private boolean askForSSHJumpServerPassword(@NotNull DBWHandlerConfiguration tunnelConfiguration) {
@@ -1796,16 +1840,18 @@ public class DataSourceDescriptor
     private String saveToSecret() {
         Map<String, Object> props = new LinkedHashMap<>();
 
-        // Primary props
-        if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            props.put(RegistryConstants.ATTR_USER, connectionInfo.getUserName());
-        }
-        if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            props.put(RegistryConstants.ATTR_PASSWORD, connectionInfo.getUserPassword());
-        }
-        // Additional auth props
-        if (!CommonUtils.isEmpty(connectionInfo.getAuthProperties())) {
-            props.put(RegistryConstants.TAG_PROPERTIES, connectionInfo.getAuthProperties());
+        if (isSavePassword()) {
+            // Primary props
+            if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
+                props.put(RegistryConstants.ATTR_USER, connectionInfo.getUserName());
+            }
+            if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
+                props.put(RegistryConstants.ATTR_PASSWORD, connectionInfo.getUserPassword());
+            }
+            // Additional auth props
+            if (!CommonUtils.isEmpty(connectionInfo.getAuthProperties())) {
+                props.put(RegistryConstants.TAG_PROPERTIES, connectionInfo.getAuthProperties());
+            }
         }
         if (CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
             // Handlers. If config profile is set then props are saved there

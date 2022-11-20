@@ -1025,6 +1025,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         getSite().getShell(),
                         ERDEditorPart.this,
                         ERDPreferencePage.PAGE_ID);
+                    getDiagram().setAttributeStyles(ERDViewStyle.getDefaultStyles(ERDUIActivator.getDefault().getPreferences()));
                 }
             };
             configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
