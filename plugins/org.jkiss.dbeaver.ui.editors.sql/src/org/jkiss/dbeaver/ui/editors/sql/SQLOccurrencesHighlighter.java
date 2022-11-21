@@ -220,14 +220,13 @@ class SQLOccurrencesHighlighter {
     }
 
     void updateInput(IEditorInput input) {
-        if (SQLEditorBase.isBigScript(input)) {
+        if (!SQLEditorUtils.isSQLSyntaxParserApplied(input)) {
             uninstallOccurrencesFinder();
         } else {
             final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
-            boolean isSQLSyntaxParserEnabled = SQLEditorUtils.isSQLSyntaxParserEnabled(editor.getEditorInput());
             setMarkingOccurrences(
-                isSQLSyntaxParserEnabled && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
-                isSQLSyntaxParserEnabled && prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
+                prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
+                prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         }
     }
 
