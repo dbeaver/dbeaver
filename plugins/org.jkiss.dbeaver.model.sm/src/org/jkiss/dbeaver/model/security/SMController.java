@@ -17,12 +17,9 @@
 package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
-import org.jkiss.dbeaver.model.auth.SMAuthInfo;
-import org.jkiss.dbeaver.model.auth.SMSessionType;
 import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMObjectPermissions;
 import org.jkiss.dbeaver.model.security.user.SMTeam;
@@ -35,7 +32,8 @@ import java.util.Set;
 /**
  * Admin interface
  */
-public interface SMController extends DBPObjectController, SMAuthCredentialsManager {
+public interface SMController extends DBPObjectController,
+    SMAuthCredentialsManager, SMAuthController {
 
 
     ///////////////////////////////////////////
@@ -127,23 +125,6 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
 
     boolean isSessionPersisted(String id) throws DBException;
 
-    SMAuthInfo authenticateAnonymousUser(
-        @NotNull String appSessionId,
-        @NotNull Map<String, Object> sessionParameters,
-        @NotNull SMSessionType sessionType
-    ) throws DBException;
-
-    SMAuthInfo authenticate(
-        @NotNull String appSessionId,
-        @Nullable String previousSmSessionId,
-        @NotNull Map<String, Object> sessionParameters,
-        @NotNull SMSessionType sessionType,
-        @NotNull String authProviderId,
-        @Nullable String authProviderConfigurationId,
-        @NotNull Map<String, Object> userCredentials
-    ) throws DBException;
-
-    SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
 
     /**
      * Invalidate current sm session and tokens
