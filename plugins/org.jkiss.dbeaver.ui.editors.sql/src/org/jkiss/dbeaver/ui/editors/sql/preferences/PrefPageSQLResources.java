@@ -135,10 +135,8 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             bigScriptFileSizeBoundarySpinner.setIncrement(50);
             bigScriptFileSizeBoundarySpinner.setMinimum(0);
             bigScriptFileSizeBoundarySpinner.setMaximum(Integer.MAX_VALUE);
-            bigScriptFileSizeBoundarySpinner.setSelection(
-                (int)(DBWorkbench.getPlatform().getPreferenceStore().getLong(SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY)/1024)
-            );
-            bigScriptFileSizeBoundarySpinner.setToolTipText(SQLEditorMessages.pref_page_sql_completion_label_set_auto_activation_delay_tip);
+            long bigScriptSize = DBWorkbench.getPlatform().getPreferenceStore().getLong(SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY);
+            bigScriptFileSizeBoundarySpinner.setSelection((int) (bigScriptSize / 1024));
         }
 
         // New Script template
