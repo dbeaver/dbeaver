@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -76,6 +77,8 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                 IFile curFile = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
                 if (curFile != null) {
                     activeProject = DBPPlatformDesktop.getInstance().getWorkspace().getProject(curFile.getProject());
+                } else {
+                    activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
                 }
             }
         }
