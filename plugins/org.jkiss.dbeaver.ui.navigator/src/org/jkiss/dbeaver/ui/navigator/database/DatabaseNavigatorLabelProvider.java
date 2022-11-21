@@ -17,12 +17,12 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
+
+import java.util.StringJoiner;
 
 /**
  * DatabaseNavigatorLabelProvider
@@ -190,44 +192,44 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
         if (element instanceof DBNDataSource) {
             final DBPDataSourceContainer ds = ((DBNDataSource) element).getDataSourceContainer();
             if (ds != null) {
-                StringBuilder info = new StringBuilder();
-                addTipToText(info, UINavigatorMessages.navigator_provider_element_tooltip_datasource_name, ds.getName());
+                StringJoiner tooltip = new StringJoiner("\n");
+                tooltip.add(NLS.bind(UINavigatorMessages.navigator_provider_element_tooltip_datasource_name, ds.getName()));
                 final DBPConnectionConfiguration cfg = ds.getConnectionConfiguration();
                 if (!CommonUtils.isEmpty(cfg.getUrl())) {
-                    addTipToText(info, UINavigatorMessages.navigator_provider_element_tooltip_datasource_url, cfg.getUrl());
+                    tooltip.add(NLS.bind(UINavigatorMessages.navigator_provider_element_tooltip_datasource_url, cfg.getUrl()));
                 } else if (!CommonUtils.isEmpty(cfg.getDatabaseName())) {
-                    addTipToText(
-                        info,
+                    tooltip.add(NLS.bind(
                         UINavigatorMessages.navigator_provider_element_tooltip_datasource_database_name,
-                        cfg.getDatabaseName());
+                        cfg.getDatabaseName()));
                 }
                 DBPDataSource dataSource = ds.getDataSource();
                 if (dataSource != null) {
                     Version databaseVersion = dataSource.getInfo().getDatabaseVersion();
                     if (databaseVersion != null) {
-                        addTipToText(
-                            info,
+                        tooltip.add(NLS.bind(
                             UINavigatorMessages.navigator_provider_element_tooltip_datasource_database_version,
-                            databaseVersion.toString());
+                            databaseVersion.toString()));
                     }
                 }
                 if (!CommonUtils.isEmpty(cfg.getUserName())) {
-                    addTipToText(info, UINavigatorMessages.navigator_provider_element_tooltip_datasource_user, cfg.getUserName());
+                    tooltip.add(NLS.bind(UINavigatorMessages.navigator_provider_element_tooltip_datasource_user, cfg.getUserName()));
                 }
                 if (!CommonUtils.isEmpty(ds.getDescription())) {
-                    addTipToText(info, UINavigatorMessages.navigator_provider_element_tooltip_datasource_description, ds.getDescription());
+                    tooltip.add(NLS.bind(
+                        UINavigatorMessages.navigator_provider_element_tooltip_datasource_description,
+                        ds.getDescription()));
                 }
                 if (ds.isConnectionReadOnly()) {
-                    info.append(UINavigatorMessages.navigator_provider_element_tooltip_datasource_read_only).append("\n");
+                    tooltip.add(UINavigatorMessages.navigator_provider_element_tooltip_datasource_read_only);
                 }
                 if (ds.isProvided()) {
-                    info.append(UINavigatorMessages.navigator_provider_element_tooltip_datasource_provided).append("\n");
+                    tooltip.add(UINavigatorMessages.navigator_provider_element_tooltip_datasource_provided);
                 }
                 if (ds.getConnectionError() != null) {
-                    addTipToText(info, UINavigatorMessages.navigator_provider_element_tooltip_datasource_error, ds.getConnectionError());
+                    tooltip.add(NLS.bind(UINavigatorMessages.navigator_provider_element_tooltip_datasource_error, ds.getConnectionError()));
                 }
 
-                return info.toString().trim();
+                return tooltip.toString();
 
             }
         } else if (element instanceof DBNNode) {
@@ -243,13 +245,6 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             return ((DBNNode) element).getNodeName();
         }
         return null;
-    }
-
-    private void addTipToText(@NotNull StringBuilder info, @NotNull String label, @NotNull String parameter) {
-        info.append(label)
-            .append(": ")
-            .append(parameter)
-            .append("\n");
     }
 
     @Override
