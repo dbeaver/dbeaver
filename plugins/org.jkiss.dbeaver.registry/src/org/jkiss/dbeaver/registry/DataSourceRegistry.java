@@ -309,6 +309,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         persistDataFolderDelete(folder, dropContents);
     }
 
+    @Override
+    public void updateFolderParent(@NotNull DBPDataSourceFolder folder, DBPDataSourceFolder parent) {
+        folder.setParent(parent);
+        persistDataFolderUpdateParent(folder, parent);
+    }
+
+    protected void persistDataFolderUpdateParent(DBPDataSourceFolder folder, DBPDataSourceFolder parent) {
+
+    }
+
     private DataSourceFolder findRootFolder(String name) {
         for (DataSourceFolder root : getRootFolders()) {
             if (root.getName().equals(name)) {

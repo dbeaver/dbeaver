@@ -567,9 +567,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
                 final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
-                if (folderPath != null) {
-                    dataSource.setFolder(registry.findFolderByPath(folderPath, true));
-                }
+                dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true));
                 dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
 
                 // Connection settings

@@ -99,6 +99,12 @@ public interface RMController extends DBPObjectController {
         boolean dropContents
     ) throws DBException;
 
+    void updateProjectConnectionFolderParent(
+        @NotNull String projectId,
+        @NotNull String folderPath,
+        @Nullable String parentPath
+    ) throws DBException;
+
     ////////////////////////////////////////////
     // Resources
 
