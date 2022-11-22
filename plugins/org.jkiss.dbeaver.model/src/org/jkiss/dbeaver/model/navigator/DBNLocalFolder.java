@@ -217,7 +217,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
                 if (node instanceof DBNDataSource) {
                     ((DBNDataSource) node).moveToFolder(getOwnerProject(), folder);
                 } else if (node instanceof DBNLocalFolder) {
-                    getDataSourceRegistry().moveFolder(((DBNLocalFolder) node).getFolder(), this.getFolder());
+                    getDataSourceRegistry().moveFolder(((DBNLocalFolder) node).getFolder(), this.getFolder(), null);
                 }
             } else {
                 if (node instanceof DBNDataSource) {
@@ -239,7 +239,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
-        folder.setName(newName);
+        getDataSourceRegistry().moveFolder(folder, folder.getParent(), newName);
         DBNModel.updateConfigAndRefreshDatabases(this);
     }
 

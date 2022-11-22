@@ -102,14 +102,16 @@ public interface RMController extends DBPObjectController {
     /**
      * Moves project datasource folder
      *
-     * @param projectId id of the project
+     * @param projectId  id of the project
      * @param folderPath path of the moving folder
      * @param parentPath path of the parent folder
+     * @param newName
      */
     void moveProjectDataSourceFolder(
         @NotNull String projectId,
         @NotNull String folderPath,
-        @Nullable String parentPath
+        @Nullable String parentPath,
+        @Nullable String newName
     ) throws DBException;
 
     ////////////////////////////////////////////
