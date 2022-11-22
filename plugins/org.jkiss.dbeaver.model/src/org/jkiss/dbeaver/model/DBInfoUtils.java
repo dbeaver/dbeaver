@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -58,16 +59,7 @@ public final class DBInfoUtils {
         collector.collectProperties();
 
         for (DBPPropertyDescriptor descriptor : collector.getProperties()) {
-            Object propValue = collector.getPropertyValue(null, descriptor.getId());
-            if (propValue == null) {
-                continue;
-            }
-            String propString;
-            if (propValue instanceof DBPNamedObject) {
-                propString = ((DBPNamedObject) propValue).getName();
-            } else {
-                propString = DBValueFormatting.getDefaultValueDisplayString(propValue, DBDDisplayFormat.UI);
-            }
+            String propString = getPropertyString(collector, descriptor);
             if (CommonUtils.isEmpty(propString)) {
                 continue;
             }
@@ -80,6 +72,24 @@ public final class DBInfoUtils {
             }
         }
         return info.toString();
+    }
+
+    @Nullable
+    public static String getPropertyString(PropertyCollector collector, DBPPropertyDescriptor descriptor) {
+        Object propValue = collector.getPropertyValue(null, descriptor.getId());
+        if (propValue == null) {
+            return null;
+        }
+        String propString;
+        if (propValue instanceof DBPNamedObject) {
+            propString = ((DBPNamedObject) propValue).getName();
+        } else {
+            propString = DBValueFormatting.getDefaultValueDisplayString(propValue, DBDDisplayFormat.UI);
+        }
+        if (CommonUtils.isEmpty(propString)) {
+            return null;
+        }
+        return propString;
     }
 
 }

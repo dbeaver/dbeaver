@@ -35,7 +35,8 @@ public class SQLCompletionHelper {
 
     public static final int ADDITIONAL_INFO_WAIT_TIMEOUT = 3000;
 
-    public static String readAdditionalProposalInfo(@Nullable DBRProgressMonitor monitor, SQLCompletionContext context, DBPNamedObject object, final String[] keywords, final DBPKeywordType keywordType) {
+    public static Object readAdditionalProposalInfo(@Nullable DBRProgressMonitor monitor, SQLCompletionContext context,
+        DBPNamedObject object, final String[] keywords, final DBPKeywordType keywordType) {
         if (object != null) {
             if (monitor == null) {
                 String[] desc = new String[1];
