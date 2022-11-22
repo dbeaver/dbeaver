@@ -136,11 +136,16 @@
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
 
-                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <property name="rewriteBatchedStatements" value="true"/>
 
                     <parameter name="serverType" value="tidb"/>
-                    <property name="loginTimeout" value="20"/>
-                    <property name="connectTimeout" value="20"/>
+                    <property name="loginTimeout" value="20000"/>
+                    <property name="connectTimeout" value="20000"/>
+
+                    <property name="enabledTLSProtocols" value="TLSv1,TLSv1.1,TLSv1.2"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
+                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
                 </driver>
 
             </drivers>

@@ -17,109 +17,45 @@
 
 package org.jkiss.dbeaver.ext.tidb.model.plan;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAbstract;
+import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.tidb.mysql.model.TiDBMySQLDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.*;
-import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
-import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class TiDBPlanAnalyzer extends AbstractExecutionPlanSerializer implements DBCQueryPlanner {
-    private final TiDBMySQLDataSource dataSource;
-
+public class TiDBPlanAnalyzer extends MySQLPlanAnalyser {
+	private static final String[] FIRST_KEYWORD_BLOCK_LIST = new String[]{
+			"DESC", "SET", "EXPLAIN"
+	};
+	private TiDBMySQLDataSource dataSource;
+	
     public TiDBPlanAnalyzer(TiDBMySQLDataSource dataSource) {
+        super(dataSource);
+        
         this.dataSource = dataSource;
     }
-
-    private static TiDBPlanJSON explain(JDBCSession session, String query) throws DBCException {
-        final SQLDialect dialect = SQLUtils.getDialectFromObject(session.getDataSource());
+    
+    private static boolean block(String firstKeyword) {
+    	for (String blockWord : FIRST_KEYWORD_BLOCK_LIST) {
+    		 if (!blockWord.equalsIgnoreCase(firstKeyword)) {
+    			 return false;
+    		 }
+    	}
+    	
+    	return true;
+    }
+    
+    @Override
+    public MySQLPlanAbstract explain(JDBCSession session, String query) throws DBCException {
+    	final SQLDialect dialect = SQLUtils.getDialectFromObject(this.dataSource);
         final String plainQuery = SQLUtils.stripComments(dialect, query).toUpperCase();
         final String firstKeyword = SQLUtils.getFirstKeyword(dialect, plainQuery);
-        if (!"SELECT".equalsIgnoreCase(firstKeyword) && !"WITH".equalsIgnoreCase(firstKeyword)) {
-            throw new DBCException("Only SELECT statements could produce execution plan");
-        }
-        return new TiDBPlanJSON(session, query);
-    }
-
-    @Override
-    public void serialize(@NotNull Writer planData, @NotNull DBCPlan plan) throws IOException {
-        serializeJson(planData, plan, dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
-
-            @Override
-            public String version() {
-                return MySQLConstants.TYPE_JSON;
-            }
-
-            @Override
-            public void addNodeProperties(DBCPlanNode node, JsonObject nodeJson) {
-                JsonObject attributes = new JsonObject();
-                TiDBPlanNodeJSON jsNode = (TiDBPlanNodeJSON) node;
-                for (Map.Entry<String, String> e : jsNode.getNodeProps().entrySet()) {
-                    attributes.add(e.getKey(), new JsonPrimitive(CommonUtils.notEmpty(e.getValue())));
-                }
-                nodeJson.add(PROP_ATTRIBUTES, attributes);
-            }
-        });
-    }
-
-    @Override
-    public DBCPlan deserialize(@NotNull Reader planData) throws InvocationTargetException {
-        JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
-
-        String query = getQuery(jo);
-
-        ExecutionPlanDeserializer<TiDBPlanNodeJSON> loader = new ExecutionPlanDeserializer<>();
-        List<TiDBPlanNodeJSON> rootNodes = loader.loadRoot(dataSource, jo,
-                (datasource, node, parent) -> new TiDBPlanNodeJSON(parent, getNodeAttributes(node)));
-        return new TiDBPlanJSON(dataSource, query, rootNodes);
-    }
-
-    private static Map<String, String> getNodeAttributes(JsonObject nodeObject) {
-        Map<String, String> attributes = new HashMap<>();
-
-        JsonObject attrs = nodeObject.getAsJsonObject(PROP_ATTRIBUTES);
-        for (Map.Entry<String, JsonElement> attr : attrs.entrySet()) {
-            attributes.put(attr.getKey(), attr.getValue().getAsString());
+        if (TiDBPlanAnalyzer.block(firstKeyword)) {
+            throw new DBCException("This statements could not produce execution plan");
         }
 
-        return attributes;
+        return new TiDBPlainClassic(session, query);
     }
-
-    @Override
-    public DBPDataSource getDataSource() {
-        return this.dataSource;
-    }
-
-    @NotNull
-    @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration)
-            throws DBCException {
-        return explain((JDBCSession) session, query);
-    }
-
-    @NotNull
-    @Override
-    public DBCPlanStyle getPlanStyle() {
-        return DBCPlanStyle.PLAN;
-    }
-
 }

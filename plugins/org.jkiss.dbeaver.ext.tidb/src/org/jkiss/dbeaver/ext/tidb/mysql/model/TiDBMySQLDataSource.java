@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.tidb.mysql.model;
 
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +25,7 @@ import java.util.Collection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
@@ -31,8 +33,10 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLEngine;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.tidb.model.plan.TiDBPlanAnalyzer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -46,24 +50,42 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.osgi.framework.Version;
 
 public class TiDBMySQLDataSource extends MySQLDataSource {
+    private static final Log log = Log.getLog(MySQLDataSource.class);
+    
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
-    private final String tenantType;
     private final TiDBCatalogCache tidbCatalogCache = new TiDBCatalogCache();
 
+    private String tidbVersion = "";
+    
+    public String getServerVersion() {
+    	return this.tidbVersion;
+    }
+    
     public TiDBMySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         super(monitor, container);
         dataTypeCache = new JDBCBasicDataTypeCache<>(this);
-        tenantType = container.getConnectionConfiguration().getProviderProperty("tenantType");
     }
 
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
         dataTypeCache.getAllObjects(monitor, this);
-        // Read catalogs
         tidbCatalogCache.getAllObjects(monitor, this);
+        
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "TiDB version fetch")) {
+        	try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT VERSION() AS VERSION")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                    	this.tidbVersion = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_VERSION);
+                    }
+                }
+            } catch (SQLException ex) {
+                log.error(ex);
+            }
+        }
     }
 
     @Override
@@ -108,10 +130,6 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         return dataTypeCache.getCachedObject(typeID);
-    }
-
-    public boolean isMySQLMode() {
-        return tenantType.equals("MySQL");
     }
 
     @Override
@@ -173,5 +191,26 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
     public boolean supportsInformationSchema() {
         return true;
     }
+    
+    @Override
+    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    	super.createDataSourceInfo(monitor, metaData);
+        return new TiDBMySQLDataSourceInfo(this, metaData);
+    }
+    
+    @Override
+    public boolean supportsSequences() {
+    	return this.isServerVersionAtLeast(4, 0);
+    }
 
+    @Override
+    public boolean isServerVersionAtLeast(int major, int minor) {
+    	Version tidbVersion = this.getInfo().getDatabaseVersion();
+        if (tidbVersion.getMajor() < major) {
+            return false;
+        } else if (tidbVersion.getMajor() == major && tidbVersion.getMinor() < minor) {
+            return false;
+        }
+        return true;
+    }
 }
