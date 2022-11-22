@@ -39,8 +39,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.Workbench;
+import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -58,8 +60,11 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -78,7 +83,7 @@ import java.util.Map;
 /**
  * ResultSetHandlerMain
  */
-public class ResultSetHandlerMain extends AbstractHandler {
+public class ResultSetHandlerMain extends AbstractHandler implements IElementUpdater {
 
     public static final String CMD_TOGGLE_PANELS = "org.jkiss.dbeaver.core.resultset.grid.togglePreview";
     public static final String CMD_ACTIVATE_PANELS = "org.jkiss.dbeaver.core.resultset.grid.activatePreview";
@@ -615,6 +620,24 @@ public class ResultSetHandlerMain extends AbstractHandler {
             return FontDescriptor.createFrom(initialFontData);
         }
         return FontDescriptor.createFrom(initialFontData).setHeight(destFontSize);
+    }
+
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
+        if (parameters.get(PARAM_EXPORT_WITH_PARAM) != null) {
+            final String processorId = ResultSetHandlerOpenWith.getDefaultOpenWithProcessor();
+
+            if (CommonUtils.isEmpty(processorId)) {
+                element.setText(ActionUtils.findCommandName(CMD_EXPORT));
+                element.setIcon(ActionUtils.findCommandImage(CMD_EXPORT));
+                element.setTooltip(ActionUtils.findCommandDescription(CMD_EXPORT, element.getServiceLocator(), false));
+            } else {
+                final DataTransferProcessorDescriptor descriptor = DataTransferRegistry.getInstance().getProcessor(processorId);
+                element.setText(descriptor.getAppName());
+                element.setIcon(DBeaverIcons.getImageDescriptor(descriptor.getIcon()));
+                element.setTooltip(descriptor.getDescription());
+            }
+        }
     }
 
     static class GotoLineDialog extends InputDialog {
