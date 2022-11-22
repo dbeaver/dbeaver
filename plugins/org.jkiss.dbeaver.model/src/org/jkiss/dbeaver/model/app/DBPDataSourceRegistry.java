@@ -97,7 +97,10 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     void removeFolder(DBPDataSourceFolder folder, boolean dropContents);
 
-    void updateFolderParent(@NotNull DBPDataSourceFolder folder, DBPDataSourceFolder parent);
+    /**
+     * Moves connection folder
+     */
+    void moveFolder(@NotNull DBPDataSourceFolder folder, DBPDataSourceFolder parent);
 
     @Nullable
     DBSObjectFilter getSavedFilter(String name);

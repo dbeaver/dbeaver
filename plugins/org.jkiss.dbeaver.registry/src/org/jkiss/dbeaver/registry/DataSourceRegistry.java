@@ -310,12 +310,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     @Override
-    public void updateFolderParent(@NotNull DBPDataSourceFolder folder, DBPDataSourceFolder parent) {
+    public void moveFolder(@NotNull DBPDataSourceFolder folder, DBPDataSourceFolder parent) {
         folder.setParent(parent);
-        persistDataFolderUpdateParent(folder, parent);
+        persistFolderMove(folder, parent);
     }
 
-    protected void persistDataFolderUpdateParent(DBPDataSourceFolder folder, DBPDataSourceFolder parent) {
+    protected void persistFolderMove(DBPDataSourceFolder folder, DBPDataSourceFolder parent) {
 
     }
 

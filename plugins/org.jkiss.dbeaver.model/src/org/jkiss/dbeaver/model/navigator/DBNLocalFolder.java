@@ -217,7 +217,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
                 if (node instanceof DBNDataSource) {
                     ((DBNDataSource) node).moveToFolder(getOwnerProject(), folder);
                 } else if (node instanceof DBNLocalFolder) {
-                    getDataSourceRegistry().updateFolderParent(((DBNLocalFolder) node).getFolder(), this.getFolder());
+                    getDataSourceRegistry().moveFolder(((DBNLocalFolder) node).getFolder(), this.getFolder());
                 }
             } else {
                 if (node instanceof DBNDataSource) {
