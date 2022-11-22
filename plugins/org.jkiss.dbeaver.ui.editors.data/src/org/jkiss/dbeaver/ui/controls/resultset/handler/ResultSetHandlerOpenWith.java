@@ -334,7 +334,8 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                 menu.add(setDefaultAction);
             }
             return menu.getItems();
-        }}
+        }
+    }
 
     public static String getDefaultOpenWithProcessor() {
         return DBWorkbench.getPlatform().getPreferenceStore().getString(PREF_OPEN_WITH_DEFAULT_PROCESSOR);
