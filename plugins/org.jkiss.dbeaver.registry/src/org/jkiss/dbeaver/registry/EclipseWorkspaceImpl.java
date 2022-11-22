@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.utils.ArrayUtils;
@@ -65,12 +66,14 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         try {
             this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
         } catch (DBException e) {
-            log.debug(e);
-            DBWorkbench.getPlatformUI().showMessageBox(
-                "Authentication error",
-                "Error authenticating application user: " +
-                    "\n" + e.getMessage(),
-                true);
+            if (!(e instanceof DBInterruptedException)) {
+                log.debug(e);
+                DBWorkbench.getPlatformUI().showMessageBox(
+                    "Authentication error",
+                    "Error authenticating application user: " +
+                        "\n" + e.getMessage(),
+                    true);
+            }
             dispose();
             System.exit(101);
         }
