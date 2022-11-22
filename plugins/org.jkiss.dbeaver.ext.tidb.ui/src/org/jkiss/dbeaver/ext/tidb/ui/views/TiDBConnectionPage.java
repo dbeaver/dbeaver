@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.tidb.model.auth.TiDBAuthModelDatabaseNative;
 import org.jkiss.dbeaver.ext.tidb.ui.internal.Activator;
 import org.jkiss.dbeaver.ext.tidb.ui.internal.TiDBMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -53,7 +52,6 @@ public class TiDBConnectionPage extends ConnectionPageWithAuth implements IDialo
     private Text portText;
     private Text hostText;
     private Text databaseText;
-    private Text tenantText;
 
     @Override
     public void createControl(Composite composite) {
@@ -104,17 +102,6 @@ public class TiDBConnectionPage extends ConnectionPageWithAuth implements IDialo
             gd.horizontalSpan = 3;
             databaseText.setLayoutData(gd);
             databaseText.addModifyListener(textListener);
-
-            Label tenantLabel = UIUtils.createControlLabel(hostGroup,
-                    TiDBMessages.tidb_connection_page_label_tenant);
-            tenantLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-            tenantText = new Text(hostGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            gd.horizontalSpan = 3;
-            tenantText.setLayoutData(gd);
-            tenantText.addModifyListener(textListener);
         }
 
         createAuthPanel(addrGroup, 1);
@@ -124,7 +111,7 @@ public class TiDBConnectionPage extends ConnectionPageWithAuth implements IDialo
 
     @Override
     public boolean isComplete() {
-        return super.isComplete() && hostText != null && databaseText != null && portText != null && tenantText != null
+        return super.isComplete() && hostText != null && databaseText != null && portText != null
                 && !CommonUtils.isEmpty(hostText.getText());
     }
 
@@ -148,9 +135,6 @@ public class TiDBConnectionPage extends ConnectionPageWithAuth implements IDialo
 		if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
 			databaseText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
 		}
-		if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
-			tenantText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
-		}
         super.loadSettings();
     }
 
@@ -166,21 +150,12 @@ public class TiDBConnectionPage extends ConnectionPageWithAuth implements IDialo
         if (databaseText != null) {
             connectionInfo.setDatabaseName(databaseText.getText().trim());
         }
-        if (tenantText != null) {
-            connectionInfo.setServerName(tenantText.getText().trim());
-        }
         super.saveSettings(dataSource);
     }
 
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] { new DriverPropertiesDialogPage(this) };
-    }
-
-    @NotNull
-    @Override
-    protected String getDefaultAuthModelId(DBPDataSourceContainer dataSource) {
-        return TiDBAuthModelDatabaseNative.ID;
     }
 
     private void evaluateURL() {

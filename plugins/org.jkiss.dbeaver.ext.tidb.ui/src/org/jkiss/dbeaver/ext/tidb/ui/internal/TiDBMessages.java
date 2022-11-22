@@ -27,7 +27,6 @@ public class TiDBMessages extends NLS {
     public static String tidb_connection_page_label_database;
     public static String tidb_connection_page_label_url;
     public static String tidb_connection_page_label_connection;
-    public static String tidb_connection_page_label_tenant;
     
     static {
         // initialize resource bundle
