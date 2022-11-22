@@ -58,6 +58,7 @@
         <module>org.jkiss.dbeaver.ext.sqlite</module>
         <module>org.jkiss.dbeaver.ext.vertica</module>
         <module>org.jkiss.dbeaver.ext.teradata</module>
+        <module>org.jkiss.dbeaver.ext.tidb</module>
         <module>org.jkiss.dbeaver.ext.kognitio</module>
         <module>org.jkiss.dbeaver.ext.datavirtuality</module>
         <module>org.jkiss.dbeaver.ext.denodo</module>
@@ -107,6 +108,7 @@
                 <module>org.jkiss.dbeaver.ext.spanner.ui</module>
                 <module>org.jkiss.dbeaver.ext.snowflake.ui</module>
                 <module>org.jkiss.dbeaver.ext.vertica.ui</module>
+                <module>org.jkiss.dbeaver.ext.tidb.ui</module>
 
                 <module>org.jkiss.dbeaver.ext.wmi</module>
 
