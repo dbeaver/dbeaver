@@ -100,8 +100,13 @@ public interface RMController extends DBPObjectController {
         boolean dropContents
     ) throws DBException;
 
-
-    void renameProjectConnectionFolders(
+    /**
+     * Renames project datasource folders
+     *
+     * @param projectId id of the project
+     * @param folderData map of old the path of folder in key and new name of the folder in value
+     */
+    void renameProjectDataSourceFolders(
         @NotNull String projectId,
         @NotNull Map<String, String> folderData
     ) throws DBException;
