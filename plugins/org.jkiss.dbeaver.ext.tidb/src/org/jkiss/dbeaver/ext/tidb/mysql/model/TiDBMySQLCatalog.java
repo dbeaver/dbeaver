@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedureParameter;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
@@ -50,13 +49,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 public class TiDBMySQLCatalog extends MySQLCatalog {
     private final TiDBMySQLDataSource dataSource;
-    private final TiDBProceduresCache tidbProceduresCache = new TiDBProceduresCache();
     private final TiDBTableCache tidbTableCache = new TiDBTableCache();
 
     TiDBMySQLCatalog(TiDBMySQLDataSource dataSource, ResultSet dbResult) {
@@ -65,31 +61,23 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
         tidbTableCache.setCaseSensitive(false);
     }
 
-    public TiDBProceduresCache getTiDBProceduresCache() {
-        return this.tidbProceduresCache;
-    }
-
     public TiDBTableCache getTiDBTableCache() {
         return this.tidbTableCache;
     }
 
     @Override
     public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
-        if (!getDataSource().supportsInformationSchema()) {
-            return Collections.emptyList();
-        }
-        return new ArrayList<>(tidbProceduresCache.getAllObjects(monitor, this));
+        return null;
     }
 
     @Override
     public MySQLProcedure getProcedure(DBRProgressMonitor monitor, String procName) throws DBException {
-        return tidbProceduresCache.getObject(monitor, this, procName);
+        return null;
     }
 
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
-        tidbProceduresCache.clearCache();
         tidbTableCache.clearCache();
         return this;
     }
@@ -146,12 +134,9 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull TiDBMySQLCatalog owner,
                 @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
-            StringBuilder sql = new StringBuilder("SHOW ");
             MySQLDataSource dataSource = owner.getDataSource();
-            if (session.getMetaData().getDatabaseMajorVersion() > 4) {
-                sql.append("FULL ");
-            }
-            sql.append("TABLES FROM ").append(DBUtils.getQuotedIdentifier(owner));
+            StringBuilder sql = new StringBuilder("SHOW FULL TABLES FROM ")
+            		.append(DBUtils.getQuotedIdentifier(owner));
             if (!session.getDataSource().getContainer().getPreferenceStore()
                     .getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)) {
                 // Client side filter
@@ -253,106 +238,4 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
         }
 
     }
-
-    static class TiDBProceduresCache
-            extends JDBCStructLookupCache<TiDBMySQLCatalog, TiDBMySQLProcedure, MySQLProcedureParameter> {
-
-        TiDBProceduresCache() {
-            super(JDBCConstants.PROCEDURE_NAME);
-        }
-
-        @Override
-        public JDBCStatement prepareLookupStatement(JDBCSession session, TiDBMySQLCatalog owner,
-                                                    TiDBMySQLProcedure object, String objectName) throws SQLException {
-            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM "
-                    + MySQLConstants.META_TABLE_ROUTINES + "\nWHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?"
-                    + (object == null && objectName == null ? "" : " AND " + MySQLConstants.COL_ROUTINE_NAME + "=?")
-                    + " AND ROUTINE_TYPE" + (object == null ? " IN ('PROCEDURE','FUNCTION')" : "=?") + "\nORDER BY "
-                    + MySQLConstants.COL_ROUTINE_NAME);
-            dbStat.setString(1, owner.getName());
-            if (object != null || objectName != null) {
-                dbStat.setString(2, object != null ? object.getName() : objectName);
-                if (object != null) {
-                    dbStat.setString(3, String.valueOf(object.getProcedureType()));
-                }
-            }
-            return dbStat;
-        }
-
-        @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCSession session, TiDBMySQLCatalog owner,
-                TiDBMySQLProcedure procedure) throws SQLException {
-            if (procedure.getProcedureType().equals(DBSProcedureType.PROCEDURE)) {
-                return session.getMetaData().getProcedureColumns(owner.getName(), null,
-                        JDBCUtils.escapeWildCards(session, procedure.getName()), "%").getSourceStatement();
-            } else {
-                String queryFunctionString = "select * from mysql.proc where db=? and type='FUNCTION' and name=?";
-                JDBCPreparedStatement statement = session.prepareStatement(queryFunctionString);
-                statement.setString(1, owner.getName());
-                statement.setString(2, procedure.getName());
-                return statement;
-            }
-        }
-
-        @Override
-        protected MySQLProcedureParameter fetchChild(JDBCSession session, TiDBMySQLCatalog owner,
-                                                     TiDBMySQLProcedure parent, JDBCResultSet dbResult) {
-            if (parent.getProcedureType().equals(DBSProcedureType.PROCEDURE)) {
-                String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-                int columnTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_TYPE);
-                int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-                String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-                int position = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-                long columnSize = JDBCUtils.safeGetLong(dbResult, JDBCConstants.LENGTH);
-                boolean notNull = JDBCUtils.safeGetInt(dbResult,
-                        JDBCConstants.NULLABLE) == DatabaseMetaData.procedureNoNulls;
-                int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SCALE);
-                int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
-                DBSProcedureParameterKind parameterType;
-                switch (columnTypeNum) {
-                case DatabaseMetaData.procedureColumnIn:
-                    parameterType = DBSProcedureParameterKind.IN;
-                    break;
-                case DatabaseMetaData.procedureColumnInOut:
-                    parameterType = DBSProcedureParameterKind.INOUT;
-                    break;
-                case DatabaseMetaData.procedureColumnOut:
-                    parameterType = DBSProcedureParameterKind.OUT;
-                    break;
-                case DatabaseMetaData.procedureColumnReturn:
-                    parameterType = DBSProcedureParameterKind.RETURN;
-                    break;
-                case DatabaseMetaData.procedureColumnResult:
-                    parameterType = DBSProcedureParameterKind.RESULTSET;
-                    break;
-                default:
-                    parameterType = DBSProcedureParameterKind.UNKNOWN;
-                    break;
-                }
-                if (CommonUtils.isEmpty(columnName) && parameterType == DBSProcedureParameterKind.RETURN) {
-                    columnName = "RETURN";
-                }
-                return new MySQLProcedureParameter(parent, columnName, typeName, valueType, position, columnSize, scale,
-                        precision, notNull, parameterType);
-            } else {
-                String returnString = JDBCUtils.safeGetString(dbResult, "returns");
-                if (returnString == null) {
-                    return null;
-                }
-                String[] paramList = returnString.split("\\(");
-                int columnSize = Integer.parseInt(paramList[1].split("\\)")[0]);
-
-                return new MySQLProcedureParameter(parent, "RETURN", paramList[0], STRUCT_ATTRIBUTES, 0, columnSize,
-                        null, null, true, null);
-            }
-        }
-
-        @Override
-        protected TiDBMySQLProcedure fetchObject(JDBCSession session, TiDBMySQLCatalog owner,
-                                                 JDBCResultSet resultSet) {
-            return new TiDBMySQLProcedure(owner, resultSet);
-        }
-
-    }
-
 }
