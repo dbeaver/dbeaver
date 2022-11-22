@@ -28,6 +28,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -71,6 +73,14 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
         }
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
+        DBPProject activeProject = getActiveProject(dataSource, activeEditor);
+        openDataSourceSelector(workbenchWindow, activeProject, dataSource);
+
+        return null;
+    }
+    
+    @NotNull
+    private static DBPProject getActiveProject(@Nullable DBPDataSourceContainer dataSource, @Nullable IEditorPart activeEditor) {
         DBPProject activeProject = dataSource == null ? null : dataSource.getProject();
         if (activeProject == null) {
             if (activeEditor != null) {
@@ -82,9 +92,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                 }
             }
         }
-        openDataSourceSelector(workbenchWindow, activeProject, dataSource);
-
-        return null;
+        return activeProject;
     }
 
     public static void openDataSourceSelector(IWorkbenchWindow workbenchWindow, DBPProject activeProject, DBPDataSourceContainer dataSource) {
@@ -239,7 +247,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                 menuItems.add(new ActionContributionItem(new Action("Other ...") {
                     @Override
                     public void run() {
-                        openDataSourceSelector(workbenchWindow, curDataSource.getProject(), curDataSource);
+                        openDataSourceSelector(workbenchWindow, getActiveProject(curDataSource, activeEditor), curDataSource);
                     }
                 }));
             }
