@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -217,7 +218,11 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
                 if (node instanceof DBNDataSource) {
                     ((DBNDataSource) node).moveToFolder(getOwnerProject(), folder);
                 } else if (node instanceof DBNLocalFolder) {
-                    getDataSourceRegistry().moveFolder(((DBNLocalFolder) node).getFolder(), this.getFolder(), null);
+                    DBPDataSourceFolder nodeFolder = ((DBNLocalFolder) node).getFolder();
+                    getDataSourceRegistry().moveFolder(
+                        nodeFolder.getFolderPath(),
+                        generateNewFolderPath(this.getFolder(), nodeFolder.getName())
+                    );
                 }
             } else {
                 if (node instanceof DBNDataSource) {
@@ -239,7 +244,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
-        getDataSourceRegistry().moveFolder(folder, folder.getParent(), newName);
+        getDataSourceRegistry().moveFolder(folder.getFolderPath(), generateNewFolderPath(folder.getParent(), newName));
         DBNModel.updateConfigAndRefreshDatabases(this);
     }
 
@@ -270,6 +275,14 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
             }
         }
         dataSources.addAll(getDataSources());
+    }
+
+    public String generateNewFolderPath(DBPDataSourceFolder newParent, String newName) {
+        var folderPath = Path.of(getFolder().getFolderPath());
+        if (newParent != null) {
+            return Path.of(newParent.getFolderPath()).resolve(newName).toString();
+        }
+        return folderPath.getFileName().resolveSibling(newName).toString();
     }
 
     @Override

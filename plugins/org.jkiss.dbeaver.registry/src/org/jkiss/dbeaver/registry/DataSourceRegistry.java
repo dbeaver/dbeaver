@@ -49,6 +49,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -310,9 +311,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     @Override
-    public void moveFolder(@NotNull DBPDataSourceFolder folder, @Nullable DBPDataSourceFolder parent, @Nullable String newName) {
-        folder.setParent(parent);
-        if (newName != null) {
+    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) {
+        DBPDataSourceFolder folder = getFolder(oldPath);
+        var result = Path.of(newPath);
+        var newName = result.getFileName().toString();
+        var parentPath = result.getParent();
+        folder.setParent(parentPath == null ? null : getFolder(parentPath.toString()));
+        if (!CommonUtils.equalObjects(folder.getName(), newName)) {
             folder.setName(newName);
         }
     }
