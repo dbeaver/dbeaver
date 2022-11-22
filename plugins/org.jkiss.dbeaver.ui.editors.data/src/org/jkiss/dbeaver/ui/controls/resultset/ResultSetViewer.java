@@ -1580,7 +1580,8 @@ public class ResultSetViewer extends Viewer
      * It is a hack function. Generally all command associated widgets should be updated automatically by framework.
      * Freaking E4 do not do it. I've spent a couple of days fighting it. Guys, you owe me.
      */
-    private void updateToolbar()
+    @Override
+    public void updateToolbar()
     {
         if (statusBar != null) statusBar.setRedraw(false);
         try {

@@ -65,12 +65,14 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         try {
             this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
         } catch (DBException e) {
-            log.debug(e.getMessage());
-            DBWorkbench.getPlatformUI().showMessageBox(
-                "Authentication error",
-                "Error authenticating application user: " +
-                    "\n" + e.getMessage(),
-                true);
+            if (!(e instanceof DBInterruptedException)) {
+                log.debug(e);
+                DBWorkbench.getPlatformUI().showMessageBox(
+                    "Authentication error",
+                    "Error authenticating application user: " +
+                        "\n" + e.getMessage(),
+                    true);
+            }
             dispose();
             System.exit(101);
         }

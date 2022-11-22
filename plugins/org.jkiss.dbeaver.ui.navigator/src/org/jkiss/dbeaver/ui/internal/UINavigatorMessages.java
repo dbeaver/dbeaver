@@ -277,6 +277,16 @@ public class UINavigatorMessages extends NLS {
     public static String navigator_handler_connections_filter_show_connected_text;
     public static String navigator_handler_object_create_file_other_text;
 
+    public static String navigator_provider_element_tooltip_datasource_name;
+    public static String navigator_provider_element_tooltip_datasource_url;
+    public static String navigator_provider_element_tooltip_datasource_database_name;
+    public static String navigator_provider_element_tooltip_datasource_database_version;
+    public static String navigator_provider_element_tooltip_datasource_user;
+    public static String navigator_provider_element_tooltip_datasource_description;
+    public static String navigator_provider_element_tooltip_datasource_read_only;
+    public static String navigator_provider_element_tooltip_datasource_provided;
+    public static String navigator_provider_element_tooltip_datasource_error;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UINavigatorMessages.class);
