@@ -277,7 +277,7 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
 
     @Override
     public CharSequence getPrefixCompletionText(IDocument document, int completionOffset) {
-        return this.getReplacementString();
+        return getReplacementString();
     }
 
     @Override

@@ -74,8 +74,12 @@ public final class DBInfoUtils {
         return info.toString();
     }
 
+
+    /**
+     * Returns a string representation of the property's value or {@code null} if it has no value.
+     */
     @Nullable
-    public static String getPropertyString(PropertyCollector collector, DBPPropertyDescriptor descriptor) {
+    public static String getPropertyString(@NotNull PropertyCollector collector, @NotNull DBPPropertyDescriptor descriptor) {
         Object propValue = collector.getPropertyValue(null, descriptor.getId());
         if (propValue == null) {
             return null;
@@ -91,5 +95,4 @@ public final class DBInfoUtils {
         }
         return propString;
     }
-
 }

@@ -100,7 +100,7 @@ public class SQLCompletionProposalBase {
         this.cursorPosition = cursorPosition;
         this.image = image;
         this.proposalType = proposalType;
-        this.additionalProposalInfo = (DBSObject) object;
+        this.additionalProposalInfo = object;
 
         setPosition(wordPartDetector);
 
@@ -239,8 +239,7 @@ public class SQLCompletionProposalBase {
         if (additionalProposalInfo == null && object == null) {
             additionalProposalInfo = SQLCompletionHelper.readAdditionalProposalInfo(monitor, context, object, new String[]{displayString}, proposalType);
         }
-
-        return additionalProposalInfo == null ? object : additionalProposalInfo;
+        return object != null ? object : additionalProposalInfo;
     }
 
     public String getDisplayString() {

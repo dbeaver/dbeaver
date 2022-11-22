@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.dialogs;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension2;
@@ -39,7 +43,8 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
@@ -61,6 +66,7 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
     private Object input;
     private Font boldFont;
     private Composite tableComposite;
+    private Composite mainComposite;
 
     public SuggestionInformationControl(Shell parentShell, boolean isResizable) {
         super(parentShell, isResizable);
@@ -70,16 +76,15 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
     @Override
     protected void createContent(Composite parent) {
         GridData mainGridData = new GridData(GridData.FILL_BOTH);
-        Composite mainComposite = UIUtils.createPlaceholder(parent, 1);
+        mainComposite = UIUtils.createPlaceholder(parent, 1);
         mainComposite.setLayoutData(mainGridData);
 
         GridData infoGridData = new GridData(GridData.FILL_HORIZONTAL);
         this.infoComposite = UIUtils.createPlaceholder(mainComposite, 1);
         infoComposite.setLayoutData(infoGridData);
 
-        GridData tableGridData = new GridData(GridData.FILL_BOTH);
         this.tableComposite = UIUtils.createPlaceholder(mainComposite, 1);
-        tableComposite.setLayoutData(tableGridData);
+        tableComposite.setLayoutData(mainGridData);
 
         final FontDescriptor fontDescriptor = FontDescriptor.createFrom(parent.getFont());
 
@@ -104,18 +109,8 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
 
     }
 
-    private void createMetadataFields(DBPNamedObject input) {
-        DBPNamedObject targetObject = input;
-        if (input instanceof DBSObjectReference) {
-            try {
-                targetObject = ((DBSObjectReference) input).resolveObject(new VoidProgressMonitor());
-            } catch (DBException e) {
-                log.error(e);
-            }
-        }
-        PropertyCollector collector = new PropertyCollector(targetObject, false);
-        collector.collectProperties();
-        GridLayout layout = new GridLayout(2, true);
+    private void createMetadataFields(@NotNull DBPNamedObject input) {
+        GridLayout layout = new GridLayout(1, true);
         layout.marginTop = 0;
         layout.marginBottom = 5;
         layout.marginLeft = 5;
@@ -123,26 +118,53 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
         Composite metadataComposite = new Composite(infoComposite, SWT.NONE);
         metadataComposite.setLayout(layout);
         metadataComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        for (DBPPropertyDescriptor descriptor : collector.getProperties()) {
-            String propertyString = DBInfoUtils.getPropertyString(collector, descriptor);
-            if (CommonUtils.isEmpty(propertyString)) {
-                continue;
-            }
-            Composite placeholder = UIUtils.createPlaceholder(metadataComposite, 2);
-            placeholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Label label = new Label(placeholder, SWT.READ_ONLY);
-            label.setText(descriptor.getDisplayName() + ":");
-            label.setFont(boldFont);
-            Text valueText = new Text(
-                placeholder,
-                SWT.READ_ONLY
-            );
-            valueText.setText(propertyString);
 
-        }
+        final DBPNamedObject[] targetObject = {input};
+        AbstractJob resolveObject = new AbstractJob("Resolving object") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                if (input instanceof DBSObjectReference) {
+                    try {
+                        targetObject[0] = ((DBSObjectReference) input).resolveObject(monitor);
+                    } catch (DBException e) {
+                        log.error("Error resolving object", e);
+                        return Status.CANCEL_STATUS;
+                    }
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        resolveObject.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                if (!event.getResult().isOK()) {
+                    return;
+                }
+                UIUtils.syncExec(() -> {
+                    PropertyCollector collector = new PropertyCollector(targetObject[0], false);
+                    collector.collectProperties();
+                    for (DBPPropertyDescriptor descriptor : collector.getProperties()) {
+                        String propertyString = DBInfoUtils.getPropertyString(collector, descriptor);
+                        if (CommonUtils.isEmpty(propertyString)) {
+                            continue;
+                        }
+                        Composite placeholder = UIUtils.createPlaceholder(metadataComposite, 2);
+                        placeholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                        Label label = new Label(placeholder, SWT.READ_ONLY);
+                        label.setText(descriptor.getDisplayName() + ":");
+                        label.setFont(boldFont);
+                        Text valueText = new Text(placeholder, SWT.READ_ONLY);
+                        valueText.setText(propertyString);
+                    }
+                    infoComposite.layout(true, true);
+                    mainComposite.layout(true, true);
+                });
+            }
+        });
+        resolveObject.schedule();
     }
 
-    private void createTreeControl(JDBCTable<?, ?> input) {
+    private void createTreeControl(@NotNull JDBCTable<?, ?> input) {
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.horizontalSpan = 0;
         gridData.verticalSpan = 0;
@@ -151,35 +173,65 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
             .getActivePart()
             .getSite());
         DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(input);
-        Collection<DBNNode> columnNodes;
-        try {
-            columnNodes = getColumnNodes(node);
-            if (columnNodes.isEmpty()) {
-                return;
-            }
-        } catch (DBException e) {
-            log.error(e);
-            return;
-        }
-        ItemListControl itemListControl = new ItemListControl(tableComposite, SWT.NONE, subSite, node, null);
+        ItemListControl itemListControl = new ItemListControl(
+            tableComposite,
+            SWT.NONE,
+            subSite,
+            node,
+            null
+        );
         itemListControl.setLayoutData(gridData);
-        itemListControl.appendListData(columnNodes);
-
-        itemListControl.redraw();
-
+        final Object[] columnNodes = new Object[1];
+        AbstractJob abstractJob = new AbstractJob("Populating table tip columns") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask("load table columns", 1);
+                try {
+                    columnNodes[0] = getColumnNodes(monitor, node);
+                } catch (DBException e) {
+                    log.error("Error reading table columns", e);
+                    return Status.CANCEL_STATUS;
+                } finally {
+                    monitor.done();
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        abstractJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public void done(IJobChangeEvent event) {
+                if (!event.getResult().isOK()) {
+                    return;
+                }
+                UIUtils.syncExec(() -> {
+                    Collection<DBNNode> columnNodeList = (Collection<DBNNode>) columnNodes[0];
+                    if (CommonUtils.isEmpty(columnNodeList)) {
+                        itemListControl.dispose();
+                    } else {
+                        itemListControl.appendListData(columnNodeList);
+                    }
+                    tableComposite.layout(true, true);
+                });
+            }
+        });
+        abstractJob.schedule();
     }
 
     @NotNull
-    private Collection<DBNNode> getColumnNodes(@Nullable DBNNode node) throws DBException {
+    private Collection<DBNNode> getColumnNodes(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBNNode node
+    ) throws DBException {
         if (node == null) {
             return Collections.emptyList();
         }
         List<DBNNode> children = new ArrayList<>();
-        for (DBNNode child : node.getChildren(new VoidProgressMonitor())) {
+        for (DBNNode child : node.getChildren(monitor)) {
             if (child instanceof DBNDatabaseFolder) {
                 Class<? extends DBSObject> childrenClass = ((DBNDatabaseFolder) child).getChildrenClass();
                 if (childrenClass != null && DBSTableColumn.class.isAssignableFrom(childrenClass)) {
-                    DBNNode[] folderChildren = child.getChildren(new VoidProgressMonitor());
+                    DBNNode[] folderChildren = child.getChildren(monitor);
                     children.addAll(List.of(folderChildren));
                 }
             } else {
@@ -189,5 +241,9 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
         return children;
     }
 
-
+    @Override
+    public void dispose() {
+        boldFont.dispose();
+        super.dispose();
+    }
 }
