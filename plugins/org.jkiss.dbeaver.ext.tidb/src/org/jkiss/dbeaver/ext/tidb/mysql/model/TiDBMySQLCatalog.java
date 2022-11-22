@@ -57,20 +57,20 @@ import org.jkiss.utils.CommonUtils;
 public class TiDBMySQLCatalog extends MySQLCatalog {
     private final TiDBMySQLDataSource dataSource;
     private final TiDBProceduresCache tidbProceduresCache = new TiDBProceduresCache();
-    private final OceanbaseTableCache oceanbaseTableCache = new OceanbaseTableCache();
+    private final TiDBTableCache tidbTableCache = new TiDBTableCache();
 
     TiDBMySQLCatalog(TiDBMySQLDataSource dataSource, ResultSet dbResult) {
         super(dataSource, dbResult);
         this.dataSource = dataSource;
-        oceanbaseTableCache.setCaseSensitive(false);
+        tidbTableCache.setCaseSensitive(false);
     }
 
     public TiDBProceduresCache getTiDBProceduresCache() {
         return this.tidbProceduresCache;
     }
 
-    public OceanbaseTableCache getOceanbaseTableCache() {
-        return this.oceanbaseTableCache;
+    public TiDBTableCache getTiDBTableCache() {
+        return this.tidbTableCache;
     }
 
     @Override
@@ -90,7 +90,7 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
         tidbProceduresCache.clearCache();
-        oceanbaseTableCache.clearCache();
+        tidbTableCache.clearCache();
         return this;
     }
 
@@ -102,43 +102,43 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
 
     @Association
     public Collection<MySQLTable> getTables(DBRProgressMonitor monitor) throws DBException {
-        return oceanbaseTableCache.getTypedObjects(monitor, this, MySQLTable.class);
+        return tidbTableCache.getTypedObjects(monitor, this, MySQLTable.class);
     }
 
     public MySQLTable getTable(DBRProgressMonitor monitor, String name) throws DBException {
-        return oceanbaseTableCache.getObject(monitor, this, name, MySQLTable.class);
+        return tidbTableCache.getObject(monitor, this, name, MySQLTable.class);
     }
 
     @Association
     public Collection<MySQLView> getViews(DBRProgressMonitor monitor) throws DBException {
-        return new ArrayList<>(oceanbaseTableCache.getTypedObjects(monitor, this, TiDBMySQLView.class));
+        return new ArrayList<>(tidbTableCache.getTypedObjects(monitor, this, TiDBMySQLView.class));
     }
 
     @Override
     public Collection<MySQLTableBase> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return oceanbaseTableCache.getAllObjects(monitor, this);
+        return tidbTableCache.getAllObjects(monitor, this);
     }
 
     @Override
     public MySQLTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        return oceanbaseTableCache.getObject(monitor, this, childName);
+        return tidbTableCache.getObject(monitor, this, childName);
     }
 
     @Override
     public synchronized void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         monitor.subTask("Cache tables");
-        oceanbaseTableCache.getAllObjects(monitor, this);
+        tidbTableCache.getAllObjects(monitor, this);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
-            oceanbaseTableCache.loadChildren(monitor, this, null);
+            tidbTableCache.loadChildren(monitor, this, null);
         }
         super.cacheStructure(monitor, scope);
     }
 
-    static class OceanbaseTableCache
+    static class TiDBTableCache
             extends JDBCStructLookupCache<TiDBMySQLCatalog, MySQLTableBase, MySQLTableColumn> {
 
-        OceanbaseTableCache() {
+        TiDBTableCache() {
             super(JDBCConstants.TABLE_NAME);
         }
 

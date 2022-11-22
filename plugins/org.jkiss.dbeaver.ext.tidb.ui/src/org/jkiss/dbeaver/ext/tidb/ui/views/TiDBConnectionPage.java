@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.tidb.model.auth.TiDBAuthModelDatabaseNative;
 import org.jkiss.dbeaver.ext.tidb.ui.internal.Activator;
 import org.jkiss.dbeaver.ext.tidb.ui.internal.TiDBMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
