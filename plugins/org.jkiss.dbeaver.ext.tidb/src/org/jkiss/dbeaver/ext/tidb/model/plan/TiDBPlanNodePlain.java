@@ -116,7 +116,7 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
     }
 
     @Property(order=1, viewable=true)
-    public String getESTRows() {
+    public String getEstRows() {
         return estRows;
     }
 
