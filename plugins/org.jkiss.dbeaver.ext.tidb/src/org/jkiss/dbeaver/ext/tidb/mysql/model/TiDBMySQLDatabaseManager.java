@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.tidb.mysql.model;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -31,7 +28,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
-public class TiDBMySQLDatabaseManager extends SQLObjectEditor<TiDBMySQLCatalog, TiDBMySQLDataSource>{
+import java.util.List;
+import java.util.Map;
+
+public class TiDBMySQLDatabaseManager extends SQLObjectEditor<TiDBMySQLCatalog, TiDBMySQLDataSource> {
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {

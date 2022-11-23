@@ -89,6 +89,7 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
 
     /**
      * getNodeType
+     * The result of explain will be like this:
      * +-------------------------+---------+-----------+---------------+--------------------------------+
      * | id                      | estRows | task      | access object | operator info                  |
      * +-------------------------+---------+-----------+---------------+--------------------------------+
@@ -101,7 +102,6 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
      * You need to replace the other chars.
      *
      * @return node type
-     * The result of explain will be like this:
      */
     @Override
     public String getNodeType() {

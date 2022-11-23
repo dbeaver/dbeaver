@@ -25,9 +25,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 public class TiDBTable extends MySQLTable implements DBPObjectStatistics {
-    
-    public TiDBTable(MySQLCatalog catalog)
-    {
+
+    public TiDBTable(MySQLCatalog catalog) {
         super(catalog);
     }
 
