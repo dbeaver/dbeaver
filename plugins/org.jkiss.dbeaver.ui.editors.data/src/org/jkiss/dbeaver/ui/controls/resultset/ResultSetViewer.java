@@ -29,10 +29,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -2556,8 +2553,18 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void showDistinctFilter(DBDAttributeBinding curAttribute) {
-        showFiltersDistinctMenu(curAttribute, false);
+    public void showColumnMenu(DBDAttributeBinding curAttribute) {
+        MenuManager columnMenu = new MenuManager();
+        //getActivePresentation().setCurrentAttribute(curAttribute);
+        ResultSetRow currentRow = getCurrentRow();
+
+        fillOrderingsMenu(columnMenu, curAttribute, currentRow);
+        fillFiltersMenu(columnMenu, curAttribute, currentRow);
+
+        final Menu contextMenu = columnMenu.createContextMenu(getActivePresentation().getControl());
+        contextMenu.setLocation(Display.getCurrent().getCursorLocation());
+        contextMenu.addMenuListener(MenuListener.menuHiddenAdapter(menuEvent -> UIUtils.asyncExec(columnMenu::dispose)));
+        contextMenu.setVisible(true);
     }
 
     public void showFiltersDistinctMenu(DBDAttributeBinding curAttribute, boolean atKeyboardCursor) {
