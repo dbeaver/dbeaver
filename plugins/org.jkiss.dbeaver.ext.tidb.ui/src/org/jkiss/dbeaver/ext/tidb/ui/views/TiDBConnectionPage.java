@@ -121,19 +121,19 @@ public class TiDBConnectionPage extends ConnectionPageWithAuth implements IDialo
         DBPDataSourceContainer activeDataSource = site.getActiveDataSource();
         DBPConnectionConfiguration connectionInfo = activeDataSource.getConnectionConfiguration();
         if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-            hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
+            hostText.setText(connectionInfo.getHostName());
         } else {
             hostText.setText(MySQLConstants.DEFAULT_HOST);
         }
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-            portText.setText(CommonUtils.notEmpty(connectionInfo.getHostPort()));
+            portText.setText(connectionInfo.getHostPort());
         } else if (site.getDriver().getDefaultPort() != null) {
             portText.setText(site.getDriver().getDefaultPort());
         } else {
             portText.setText("");
         }
         if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-            databaseText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+            databaseText.setText(connectionInfo.getDatabaseName());
         }
         super.loadSettings();
     }
