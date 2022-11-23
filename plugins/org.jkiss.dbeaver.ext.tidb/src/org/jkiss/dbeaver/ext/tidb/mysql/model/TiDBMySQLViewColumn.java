@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.ext.tidb.mysql.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
@@ -32,6 +30,8 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.ResultSet;
 
 public class TiDBMySQLViewColumn extends MySQLTableColumn {
     TiDBMySQLViewColumn(MySQLTableBase table, ResultSet dbResult) throws DBException {

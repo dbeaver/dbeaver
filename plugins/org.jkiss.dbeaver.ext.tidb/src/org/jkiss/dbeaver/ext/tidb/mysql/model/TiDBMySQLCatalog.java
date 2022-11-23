@@ -88,15 +88,34 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
         return dataSource;
     }
 
+    /**
+     * getTables use tidbTableCache to get all tables
+     * @param monitor Database progress monitor.
+     * @return tables message
+     * @throws DBException raise all exception from getTypedObjects() function
+     */
     @Association
     public Collection<MySQLTable> getTables(DBRProgressMonitor monitor) throws DBException {
         return tidbTableCache.getTypedObjects(monitor, this, MySQLTable.class);
     }
 
+    /**
+     * getTable get particular table from tidbTableCache by name
+     * @param monitor Database progress monitor.
+     * @param name table name
+     * @return table message
+     * @throws DBException raise all exception from getObject() function
+     */
     public MySQLTable getTable(DBRProgressMonitor monitor, String name) throws DBException {
         return tidbTableCache.getObject(monitor, this, name, MySQLTable.class);
     }
 
+    /**
+     * getViews use tidbTableCache to get all views
+     * @param monitor Database progress monitor.
+     * @return views message
+     * @throws DBException raise all exception from getTypedObjects() function
+     */
     @Association
     public Collection<MySQLView> getViews(DBRProgressMonitor monitor) throws DBException {
         return new ArrayList<>(tidbTableCache.getTypedObjects(monitor, this, TiDBMySQLView.class));

@@ -73,7 +73,7 @@ public class TiDBMySQLDataSourceInfo extends JDBCDataSourceInfo {
             int patch = Integer.parseInt(realTiDBVersionArray[2]);
 
             return new Version(major, minor, patch);
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             log.error(e);
         }
         return new Version(0, 0, 0);
