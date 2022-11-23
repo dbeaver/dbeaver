@@ -12,8 +12,8 @@ import java.util.Collection;
 import java.util.List;
 
 public class TiDBPlanNodePlain extends MySQLPlanNode {
-	protected String id;
-	// Before 4.0 estRows named "count"
+    protected String id;
+    // Before 4.0 estRows named "count"
     protected String estRows;
     protected String task;
     protected String accessObject;
@@ -24,7 +24,7 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
 
     public TiDBPlanNodePlain(List<TiDBPlanNodePlain> nodes) {
         // Root node
-    	id = "<plan>";
+        id = "<plan>";
         if (!nodes.isEmpty()) {
             this.estRows = nodes.get(0).estRows;
         }
@@ -45,42 +45,42 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
         return parent;
     }
 
-	@Override
-	public Number getNodeCost() {
-		return null;
-	}
+    @Override
+    public Number getNodeCost() {
+        return null;
+    }
 
-	@Override
-	public Number getNodePercent() {
-		return null;
-	}
+    @Override
+    public Number getNodePercent() {
+        return null;
+    }
 
-	@Override
-	public Number getNodeDuration() {
-		return null;
-	}
+    @Override
+    public Number getNodeDuration() {
+        return null;
+    }
 
-	@Override
-	public Number getNodeRowCount() {
-		return Double.parseDouble(this.estRows);
-	}
+    @Override
+    public Number getNodeRowCount() {
+        return Double.parseDouble(this.estRows);
+    }
 
-	@Override
-	public String getNodeName() {
-		return this.accessObject;
-	}
+    @Override
+    public String getNodeName() {
+        return this.accessObject;
+    }
 
-	@Override
-	public String getNodeType() {
-		return this.id.trim().replaceAll("└", "").replaceAll("─", "");
-	}
+    @Override
+    public String getNodeType() {
+        return this.id.trim().replaceAll("└", "").replaceAll("─", "");
+    }
 
-	@Override
-	public Collection<? extends DBCPlanNode> getNested() {
-		return this.nested;
-	}
+    @Override
+    public Collection<? extends DBCPlanNode> getNested() {
+        return this.nested;
+    }
 
-	@Property(order = 0, viewable = true)
+    @Property(order = 0, viewable = true)
     public String getId() {
         return id;
     }
