@@ -90,6 +90,7 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
 
     /**
      * getTables use tidbTableCache to get all tables
+     *
      * @param monitor Database progress monitor.
      * @return tables message
      * @throws DBException raise all exception from getTypedObjects() function
@@ -101,6 +102,7 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
 
     /**
      * getTable get particular table from tidbTableCache by name
+     *
      * @param monitor Database progress monitor.
      * @param name table name
      * @return table message
@@ -112,6 +114,7 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
 
     /**
      * getViews use tidbTableCache to get all views
+     *
      * @param monitor Database progress monitor.
      * @return views message
      * @throws DBException raise all exception from getTypedObjects() function

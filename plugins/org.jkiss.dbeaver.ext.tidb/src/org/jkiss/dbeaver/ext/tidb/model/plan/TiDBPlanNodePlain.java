@@ -89,8 +89,6 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
 
     /**
      * getNodeType
-     * @return node type
-     * The result of explain will be like this:
      * +-------------------------+---------+-----------+---------------+--------------------------------+
      * | id                      | estRows | task      | access object | operator info                  |
      * +-------------------------+---------+-----------+---------------+--------------------------------+
@@ -101,6 +99,9 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
      * +-------------------------+---------+-----------+---------------+--------------------------------+
      * So, If you want get the operator name, like "Delete" or "TableReader".
      * You need to replace the other chars.
+     *
+     * @return node type
+     * The result of explain will be like this:
      */
     @Override
     public String getNodeType() {
