@@ -220,7 +220,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             pathText.addModifyListener(textListener);
 
             Composite buttonsPanel = new Composite(settingsGroup, SWT.NONE);
-            gl = new GridLayout(2, true);
+            gl = new GridLayout(1, true);
             gl.marginHeight = 0;
             gl.marginWidth = 0;
             buttonsPanel.setLayout(gl);
@@ -238,18 +238,26 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 }
             });
 
-            UIUtils.createDialogButton(buttonsPanel, GenericMessages.dialog_connection_create_button, null, GenericMessages.dialog_connection_create_button_tip, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    final String path = showDatabaseFileSelectorDialog(SWT.SAVE);
-                    if (path != null) {
-                        pathText.setText(path);
-                        if (canCreateEmbeddedDatabase()) {
-                            createEmbeddedDatabase();
+            if (CommonUtils.toBoolean(site.getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_EMBEDDED_DATABASE_CREATION))) {
+                gl.numColumns += 1;
+                UIUtils.createDialogButton(
+                    buttonsPanel,
+                    GenericMessages.dialog_connection_create_button,
+                    null,
+                    GenericMessages.dialog_connection_create_button_tip,
+                    new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            final String path = showDatabaseFileSelectorDialog(SWT.SAVE);
+                            if (path != null) {
+                                pathText.setText(path);
+                                if (canCreateEmbeddedDatabase()) {
+                                    createEmbeddedDatabase();
+                                }
+                            }
                         }
-                    }
-                }
-            });
+                    });
+            }
 
             addControlToGroup(GROUP_PATH, pathLabel);
             addControlToGroup(GROUP_PATH, pathText);
