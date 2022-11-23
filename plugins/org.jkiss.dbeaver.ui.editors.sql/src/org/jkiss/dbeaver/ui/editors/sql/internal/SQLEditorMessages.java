@@ -369,7 +369,6 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_separate_connection_no_editor_or_ds_selected;
     public static String sql_editor_prefs_disable_services_text;
     public static String sql_editor_prefs_disable_services_tip;
-    
     public static String sql_editor_prefs_script_advanced_settings;
     public static String sql_editor_prefs_script_disable_sql_syntax_parsing_for_scripts_bigger_than;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_title;
@@ -377,8 +376,6 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_confirm_no_fetch_result_for_big_script_yes;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_no;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_remember;
-    public static String sql_editor_prefs_disable_services_text;
-    public static String sql_editor_prefs_disable_services_tip;
 
     static {
         // initialize resource bundle
