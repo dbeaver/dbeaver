@@ -364,9 +364,10 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_no_obj_container_text;
     public static String sql_generator_no_ddl_text;
     public static String sql_generator_nonsql_text;
-    
-    public static String sql_editor_separate_connection_no_editor_or_ds_selected;
 
+    public static String sql_editor_separate_connection_no_editor_or_ds_selected;
+    public static String sql_editor_prefs_disable_services_text;
+    public static String sql_editor_prefs_disable_services_tip;
 
     static {
         // initialize resource bundle
