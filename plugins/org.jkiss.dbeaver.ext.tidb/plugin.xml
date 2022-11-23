@@ -122,7 +122,7 @@
                     defaultUser="root"
                     webURL="https://pingcap.com/"
                     propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
-                    description="TiDB Driver (MySQL Connector 8)"
+                    description="TiDB Driver (MySQL Connector/J 8.0)"
                     promoted="1"
                     categories="sql">
 
@@ -136,7 +136,7 @@
                     <property name="loginTimeout" value="20000"/>
                     <property name="connectTimeout" value="20000"/>
 
-                    <property name="enabledTLSProtocols" value="TLSv1,TLSv1.1,TLSv1.2"/>
+                    <property name="enabledTLSProtocols" value="TLSv1.2,TLSv1.3"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
