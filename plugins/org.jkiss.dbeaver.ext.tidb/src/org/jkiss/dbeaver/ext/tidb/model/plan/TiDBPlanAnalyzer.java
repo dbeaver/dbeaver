@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 public class TiDBPlanAnalyzer extends MySQLPlanAnalyser {
     private static final String[] FIRST_KEYWORD_BLOCK_LIST = new String[]{
-                "DESC", "SET", "EXPLAIN"
+        "DESC", "SET", "EXPLAIN"
     };
     private TiDBMySQLDataSource dataSource;
 

@@ -17,11 +17,6 @@
 
 package org.jkiss.dbeaver.ext.tidb.mysql.model;
 
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -52,18 +47,23 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.osgi.framework.Version;
 
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+
 public class TiDBMySQLDataSource extends MySQLDataSource {
     private static final Log log = Log.getLog(MySQLDataSource.class);
-    
+
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
     private final TiDBCatalogCache tidbCatalogCache = new TiDBCatalogCache();
 
     private String tidbVersion = "";
-    
+
     public String getServerVersion() {
-    	return this.tidbVersion;
+        return this.tidbVersion;
     }
-    
+
     public TiDBMySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         super(monitor, container);
         dataTypeCache = new JDBCBasicDataTypeCache<>(this);
@@ -74,12 +74,12 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
         super.initialize(monitor);
         dataTypeCache.getAllObjects(monitor, this);
         tidbCatalogCache.getAllObjects(monitor, this);
-        
+
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "TiDB version fetch")) {
-        	try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT VERSION() AS VERSION")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT VERSION() AS VERSION")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                    	this.tidbVersion = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_VERSION);
+                        this.tidbVersion = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_VERSION);
                     }
                 }
             } catch (SQLException ex) {
@@ -194,18 +194,18 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
     
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
-    	super.createDataSourceInfo(monitor, metaData);
+        super.createDataSourceInfo(monitor, metaData);
         return new TiDBMySQLDataSourceInfo(this, metaData);
     }
     
     @Override
     public boolean supportsSequences() {
-    	return this.isServerVersionAtLeast(4, 0);
+        return this.isServerVersionAtLeast(4, 0);
     }
 
     @Override
     public boolean isServerVersionAtLeast(int major, int minor) {
-    	Version tidbVersion = this.getInfo().getDatabaseVersion();
+        Version tidbVersion = this.getInfo().getDatabaseVersion();
         if (tidbVersion.getMajor() < major) {
             return false;
         } else if (tidbVersion.getMajor() == major && tidbVersion.getMinor() < minor) {

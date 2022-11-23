@@ -17,13 +17,6 @@
 
 package org.jkiss.dbeaver.ext.tidb.mysql.model;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -50,6 +43,13 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 public class TiDBMySQLCatalog extends MySQLCatalog {
     private final TiDBMySQLDataSource dataSource;
@@ -136,7 +136,7 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
                 @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
             MySQLDataSource dataSource = owner.getDataSource();
             StringBuilder sql = new StringBuilder("SHOW FULL TABLES FROM ")
-            		.append(DBUtils.getQuotedIdentifier(owner));
+                    .append(DBUtils.getQuotedIdentifier(owner));
             if (!session.getDataSource().getContainer().getPreferenceStore()
                     .getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)) {
                 // Client side filter
@@ -161,8 +161,10 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
                             sql.append("(");
                             boolean hasCond = false;
                             for (String incName : tableFilters.getInclude()) {
-                                if (hasCond)
+                                if (hasCond) {
                                     sql.append(" OR ");
+                                }
+
                                 hasCond = true;
                                 sql.append(tableNameCol).append(" LIKE ").append(
                                         SQLUtils.quoteString(session.getDataSource(), SQLUtils.makeSQLLike(incName)));
@@ -176,8 +178,9 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
                             sql.append("(");
                             boolean hasCond = false;
                             for (String incName : tableFilters.getExclude()) {
-                                if (hasCond)
+                                if (hasCond) {
                                     sql.append(" OR ");
+                                }
                                 hasCond = true;
                                 sql.append(tableNameCol).append(" NOT LIKE ")
                                         .append(SQLUtils.quoteString(session.getDataSource(), incName));
@@ -206,7 +209,7 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
 
         @Override
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session,
-                                                         @NotNull TiDBMySQLCatalog owner, @Nullable MySQLTableBase forTable) throws SQLException {
+                @NotNull TiDBMySQLCatalog owner, @Nullable MySQLTableBase forTable) throws SQLException {
             if (forTable instanceof TiDBMySQLView) {
                 JDBCPreparedStatement dbStat = session
                         .prepareStatement("desc " + owner.getName() + "." + forTable.getName());

@@ -110,27 +110,27 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
         return this.nested;
     }
 
-    @Property(order = 0, viewable = true)
+    @Property(order=0, viewable=true)
     public String getId() {
         return id;
     }
 
-    @Property(order = 1, viewable = true)
+    @Property(order=1, viewable=true)
     public String getESTRows() {
         return estRows;
     }
 
-    @Property(order = 2, viewable = true)
+    @Property(order=2, viewable=true)
     public String getTask() {
         return task;
     }
 
-    @Property(order = 3, viewable = true)
+    @Property(order=3, viewable=true)
     public String getAccessObject() {
         return accessObject;
     }
 
-    @Property(order = 4, viewable = true)
+    @Property(order=4, viewable=true)
     public String getOperatorInfo() {
         return operatorInfo;
     }
