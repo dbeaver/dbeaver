@@ -2075,12 +2075,10 @@ public class ResultSetViewer extends Viewer
         ((RowData)statusLabel.getLayoutData()).width = statusLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         rowCountLabel.updateActionState();
 
-/*
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && dataContainer.getDataSource() != null) {
             resultSetSize.setText(String.valueOf(getSegmentMaxRows()));
         }
-*/
     }
 
     private void setStatusTooltip(String message) {
