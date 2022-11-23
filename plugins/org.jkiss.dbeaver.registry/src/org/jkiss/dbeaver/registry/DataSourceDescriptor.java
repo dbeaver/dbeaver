@@ -831,14 +831,15 @@ public class DataSourceDescriptor
 
     @Override
     public void persistSecrets(DBSSecretController secretController) throws DBException {
-        var secret = saveToSecret();
-        secretController.setSecretValue(
-            getSecretKeyId(),
-            secret
-        );
-
+        if (!isSharedCredentials()) {
+            var secret = saveToSecret();
+            secretController.setSecretValue(
+                getSecretKeyId(),
+                secret
+            );
+            secretExist = secret != null;
+        }
         secretsResolved = true;
-        secretExist = secret != null;
     }
 
     @Override
@@ -1837,21 +1838,20 @@ public class DataSourceDescriptor
      */
     @Nullable
     private String saveToSecret() {
-        if (isSharedCredentials() || !savePassword) {
-            return null;
-        }
         Map<String, Object> props = new LinkedHashMap<>();
 
-        // Primary props
-        if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            props.put(RegistryConstants.ATTR_USER, connectionInfo.getUserName());
-        }
-        if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            props.put(RegistryConstants.ATTR_PASSWORD, connectionInfo.getUserPassword());
-        }
-        // Additional auth props
-        if (!CommonUtils.isEmpty(connectionInfo.getAuthProperties())) {
-            props.put(RegistryConstants.TAG_PROPERTIES, connectionInfo.getAuthProperties());
+        if (isSavePassword()) {
+            // Primary props
+            if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
+                props.put(RegistryConstants.ATTR_USER, connectionInfo.getUserName());
+            }
+            if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
+                props.put(RegistryConstants.ATTR_PASSWORD, connectionInfo.getUserPassword());
+            }
+            // Additional auth props
+            if (!CommonUtils.isEmpty(connectionInfo.getAuthProperties())) {
+                props.put(RegistryConstants.TAG_PROPERTIES, connectionInfo.getAuthProperties());
+            }
         }
         if (CommonUtils.isEmpty(connectionInfo.getConfigProfileName())) {
             // Handlers. If config profile is set then props are saved there

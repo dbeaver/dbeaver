@@ -885,8 +885,7 @@ public class UIUtils {
         return createPlaceholder(parent, columns, 0);
     }
 
-    public static Composite createComposite(Composite parent, int columns)
-    {
+    public static Composite createComposite(@NotNull Composite parent, int columns) {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
         gl.marginWidth = 0;
@@ -895,8 +894,7 @@ public class UIUtils {
         return ph;
     }
 
-    public static Composite createPlaceholder(Composite parent, int columns, int spacing)
-    {
+    public static Composite createPlaceholder(@NotNull Composite parent, int columns, int spacing) {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
         gl.verticalSpacing = spacing;
