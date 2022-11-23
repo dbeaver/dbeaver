@@ -89,6 +89,19 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
 
     @Override
     public String getNodeType() {
+        /**
+         * The result of explain will be like this:
+         * +-------------------------+---------+-----------+---------------+--------------------------------+
+         * | id                      | estRows | task      | access object | operator info                  |
+         * +-------------------------+---------+-----------+---------------+--------------------------------+
+         * | Delete                  | N/A     | root      |               | N/A                            |
+         * | └─TableReader           | 0.00    | root      |               | data:Selection                 |
+         * |   └─Selection           | 0.00    | cop[tikv] |               | eq(test.t1.c1, 3)              |
+         * |     └─TableFullScan     | 3.00    | cop[tikv] | table:t1      | keep order:false, stats:pseudo |
+         * +-------------------------+---------+-----------+---------------+--------------------------------+
+         * So, If you want get the operator name, like "Delete" or "TableReader".
+         * You need to replace the other chars.
+         */
         return this.id.trim().replaceAll("└", "").replaceAll("─", "");
     }
 
