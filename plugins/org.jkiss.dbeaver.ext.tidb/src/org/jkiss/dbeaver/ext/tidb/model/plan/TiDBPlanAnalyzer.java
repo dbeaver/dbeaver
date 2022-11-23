@@ -26,30 +26,30 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 public class TiDBPlanAnalyzer extends MySQLPlanAnalyser {
-	private static final String[] FIRST_KEYWORD_BLOCK_LIST = new String[]{
-			"DESC", "SET", "EXPLAIN"
-	};
-	private TiDBMySQLDataSource dataSource;
-	
+    private static final String[] FIRST_KEYWORD_BLOCK_LIST = new String[]{
+            "DESC", "SET", "EXPLAIN"
+    };
+    private TiDBMySQLDataSource dataSource;
+
     public TiDBPlanAnalyzer(TiDBMySQLDataSource dataSource) {
         super(dataSource);
-        
+
         this.dataSource = dataSource;
     }
-    
+
     private static boolean block(String firstKeyword) {
-    	for (String blockWord : FIRST_KEYWORD_BLOCK_LIST) {
-    		 if (!blockWord.equalsIgnoreCase(firstKeyword)) {
-    			 return false;
-    		 }
-    	}
-    	
-    	return true;
+        for (String blockWord : FIRST_KEYWORD_BLOCK_LIST) {
+             if (!blockWord.equalsIgnoreCase(firstKeyword)) {
+                 return false;
+             }
+        }
+
+        return true;
     }
-    
+
     @Override
     public MySQLPlanAbstract explain(JDBCSession session, String query) throws DBCException {
-    	final SQLDialect dialect = SQLUtils.getDialectFromObject(this.dataSource);
+        final SQLDialect dialect = SQLUtils.getDialectFromObject(this.dataSource);
         final String plainQuery = SQLUtils.stripComments(dialect, query).toUpperCase();
         final String firstKeyword = SQLUtils.getFirstKeyword(dialect, plainQuery);
         if (TiDBPlanAnalyzer.block(firstKeyword)) {

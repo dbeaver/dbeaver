@@ -1,10 +1,5 @@
 package org.jkiss.dbeaver.ext.tidb.model.plan;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAbstract;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -14,8 +9,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 public class TiDBPlainClassic extends MySQLPlanAbstract {
-	private List<TiDBPlanNodePlain> rootNodes;
+    private List<TiDBPlanNodePlain> rootNodes;
 
     public TiDBPlainClassic(JDBCSession session, String query) throws DBCException {
         super((MySQLDataSource) session.getDataSource(), query);

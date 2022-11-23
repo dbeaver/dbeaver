@@ -1,15 +1,15 @@
 package org.jkiss.dbeaver.ext.tidb.model.plan;
 
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanNode;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanNodePlain;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class TiDBPlanNodePlain extends MySQLPlanNode {
 	protected String id;
@@ -18,7 +18,7 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
     protected String task;
     protected String accessObject;
     protected String operatorInfo;
-    
+
     protected TiDBPlanNodePlain parent;
     protected List<TiDBPlanNodePlain> nested;
 
@@ -30,7 +30,7 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
         }
         this.nested = nodes;
     }
-    
+
     public TiDBPlanNodePlain(TiDBPlanNodePlain parent, ResultSet dbResult) {
         this.parent = parent;
         this.id = JDBCUtils.safeGetString(dbResult, "id");
@@ -39,7 +39,7 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
         this.accessObject = JDBCUtils.safeGetString(dbResult, "access object");
         this.operatorInfo = JDBCUtils.safeGetString(dbResult, "operator info");
     }
-    
+
     @Override
     public TiDBPlanNodePlain getParent() {
         return parent;
@@ -79,7 +79,7 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
 	public Collection<? extends DBCPlanNode> getNested() {
 		return this.nested;
 	}
-    
+
 	@Property(order = 0, viewable = true)
     public String getId() {
         return id;
@@ -104,7 +104,7 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
     public String getOperatorInfo() {
         return operatorInfo;
     }
-    
+
     void setParent(TiDBPlanNodePlain node) {
         if (this.parent != null && this.parent.nested != null) {
             this.parent.nested.remove(this);
