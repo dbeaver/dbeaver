@@ -86,7 +86,12 @@ public class DBeaverIcons
 
     @NotNull
     public static Image getImage(@NotNull DBPImage image) {
-        return getIconDescriptor(image).image;
+        return getIconDescriptor(image, true).image;
+    }
+
+    @NotNull
+    public static Image getImage(@NotNull DBPImage image, boolean useCache) {
+        return getIconDescriptor(image, useCache).image;
     }
 
     @Nullable
@@ -100,12 +105,12 @@ public class DBeaverIcons
 
     @NotNull
     public static ImageDescriptor getImageDescriptor(@NotNull DBPImage image) {
-        return getIconDescriptor(image).imageDescriptor; 
+        return getIconDescriptor(image, true).imageDescriptor; 
     }
     
-    private static IconDescriptor getIconDescriptor(DBPImage image) {
+    private static IconDescriptor getIconDescriptor(DBPImage image, boolean useCache) {
         if (image == null) {
-            return getIconDescriptor(DBIcon.TYPE_UNKNOWN);
+            return getIconDescriptor(DBIcon.TYPE_UNKNOWN, useCache);
         } else if (image instanceof DBIconBinary) {
             return new IconDescriptor(
                 "[" + image.getLocation() + "]",
@@ -113,23 +118,23 @@ public class DBeaverIcons
                 ((DBIconBinary) image).getImageDescriptor()
             );
         } else if (image instanceof DBIconComposite) {
-            IconDescriptor icon = getIconDescriptor(((DBIconComposite) image).getMain());
-            return getCompositeIcon(icon, (DBIconComposite) image);
+            IconDescriptor icon = getIconDescriptor(((DBIconComposite) image).getMain(), useCache);
+            return getCompositeIcon(icon, (DBIconComposite) image, useCache);
         } else if (image instanceof DBIcon) {
             IconDescriptor icon = getIconByLocation(image.getLocation());
             if (icon == null) {
                 log.error("Image '" + image.getLocation() + "' not found");
-                return getIconDescriptor(DBIcon.TYPE_UNKNOWN);
+                return getIconDescriptor(DBIcon.TYPE_UNKNOWN, useCache);
             } else {
                 return icon;
             }
         } else {
             log.error("Unexpected image of type " + image.getClass());
-            return getIconDescriptor(DBIcon.TYPE_UNKNOWN);
+            return getIconDescriptor(DBIcon.TYPE_UNKNOWN, useCache);
         }
     }
 
-    private static IconDescriptor getCompositeIcon(IconDescriptor mainIcon, DBIconComposite image) {
+    private static IconDescriptor getCompositeIcon(IconDescriptor mainIcon, DBIconComposite image, boolean useCache) {
         if (!image.hasOverlays()) {
             return mainIcon;
         }
@@ -138,7 +143,7 @@ public class DBeaverIcons
             (image.getTopRight() == null ? "" : image.getTopRight().getLocation()) + "^" +
             (image.getBottomLeft() == null ? "" : image.getBottomLeft().getLocation()) + "^" +
             (image.getBottomRight() == null ? "" : image.getBottomRight().getLocation());
-        IconDescriptor icon = compositeMap.get(compositeId);
+        IconDescriptor icon = useCache ? compositeMap.get(compositeId) : null;
         if (icon == null) {
             Image resultImage;
             if (useLegacyOverlay) {
@@ -165,7 +170,9 @@ public class DBeaverIcons
                 resultImage = ovrImage.createImage();
             }
             icon = new IconDescriptor(compositeId, resultImage);
-            compositeMap.put(compositeId, icon);
+            if (useCache) {
+                compositeMap.put(compositeId, icon);
+            }
         }
         return icon;
     }
