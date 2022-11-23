@@ -22,21 +22,12 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.IEnvironmentPathMapper;
 import org.jkiss.dbeaver.ui.ShellUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-
-import java.nio.file.Path;
-
 
 public class NavigatorHandlerShowInExplorer extends NavigatorHandlerObjectBase {
-    private static final Log log = Log.getLog(NavigatorHandlerShowInExplorer.class);
-
-    private static final String windowsAppLocalDataPackage = "DBeaverCorp.DBeaverCE_1b7tdvn0p0f9y";
-    private static final String appDataRoamingPathString = System.getenv("AppData"); 
-    private static final String localAppDataPathString = System.getenv("LOCALAPPDATA");
-    private static final String userHomePathString = System.getProperty("user.home");
     
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -48,26 +39,14 @@ public class NavigatorHandlerShowInExplorer extends NavigatorHandlerObjectBase {
                 IPath location = resource.getLocation();
                 if (location != null) {
                     String filePath = location.toString();
-                    if (RuntimeUtils.isWindowsStoreApplication() && filePath.startsWith(appDataRoamingPathString)) {
-                        filePath = makeVirtualizedPath(filePath);
+                    IEnvironmentPathMapper envPathMapper = DBWorkbench.getService(IEnvironmentPathMapper.class);
+                    if (envPathMapper != null && envPathMapper.isApplicable(filePath)) {
+                        filePath = envPathMapper.map(filePath);
                     }
                     ShellUtils.showInSystemExplorer(filePath);
                 }
             }
         }
         return null;
-    }
-
-    private String makeVirtualizedPath(String filePath) {
-        Path localAppDataPath = localAppDataPathString != null
-            ? Path.of(localAppDataPathString) 
-            : Path.of(userHomePathString, "AppData", "Local");
-        
-        Path virtualizedRoot = localAppDataPath.resolve("Packages").resolve(windowsAppLocalDataPackage).resolve("LocalCache").resolve("Roaming");
-        Path remappedPath = virtualizedRoot.resolve(Path.of(appDataRoamingPathString).relativize(Path.of(filePath)));
-        String resultPath = remappedPath.toString();
-        
-        log.warn("Remapping file path [" + filePath + "] to [" + resultPath + "]");
-        return resultPath;
     }
 }
