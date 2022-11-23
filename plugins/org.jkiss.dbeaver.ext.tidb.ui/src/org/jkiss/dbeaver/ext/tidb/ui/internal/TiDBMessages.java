@@ -21,13 +21,13 @@ import org.eclipse.osgi.util.NLS;
 
 public class TiDBMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.tidb.ui.internal.TiDBMessages"; //$NON-NLS-1$
-    
+
     public static String tidb_connection_page_label_port;
     public static String tidb_connection_page_label_host;
     public static String tidb_connection_page_label_database;
     public static String tidb_connection_page_label_url;
     public static String tidb_connection_page_label_connection;
-    
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, TiDBMessages.class);

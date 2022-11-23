@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 public class TiDBPlanAnalyzer extends MySQLPlanAnalyser {
     private static final String[] FIRST_KEYWORD_BLOCK_LIST = new String[]{
-            "DESC", "SET", "EXPLAIN"
+                "DESC", "SET", "EXPLAIN"
     };
     private TiDBMySQLDataSource dataSource;
 
@@ -39,9 +39,9 @@ public class TiDBPlanAnalyzer extends MySQLPlanAnalyser {
 
     private static boolean block(String firstKeyword) {
         for (String blockWord : FIRST_KEYWORD_BLOCK_LIST) {
-             if (!blockWord.equalsIgnoreCase(firstKeyword)) {
-                 return false;
-             }
+            if (!blockWord.equalsIgnoreCase(firstKeyword)) {
+                return false;
+            }
         }
 
         return true;
