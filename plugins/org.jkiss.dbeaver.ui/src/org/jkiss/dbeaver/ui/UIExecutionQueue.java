@@ -55,6 +55,7 @@ public class UIExecutionQueue {
         Runnable nextJob;
         synchronized (execQueue) {
             if (runCount > 0) {
+                UIUtils.asyncExec(UIExecutionQueue::executeInUI);
                 return;
             }
             if (execQueue.isEmpty()) {
