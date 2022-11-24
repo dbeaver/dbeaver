@@ -111,8 +111,8 @@ public class TiDBConnectionPage extends ConnectionPageWithAuth implements IDialo
 
     @Override
     public boolean isComplete() {
-        return super.isComplete() && hostText != null && databaseText != null && portText != null
-                && !CommonUtils.isEmpty(hostText.getText());
+        return super.isComplete() && hostText != null && databaseText != null && portText != null &&
+                !CommonUtils.isEmpty(portText.getText()) && !CommonUtils.isEmpty(hostText.getText());
     }
 
     @Override

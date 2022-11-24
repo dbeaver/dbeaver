@@ -145,18 +145,18 @@
             </drivers>
         </datasource>
     </extension>
-    
+
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
-            class="org.jkiss.dbeaver.ext.tidb.data.TiDBValueHandlerProvider"
+            class="org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider"
             description="TiDB data types provider"
-            id="org.jkiss.dbeaver.ext.tidb.data.TiDBValueHandlerProvider"
+            id="org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider"
             label="TiDB data types provider">
             <datasource id="tidb"/>
             <type standard="TIMESTAMP"/>
         </provider>
     </extension>
-    
+
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.tidb.mysql.model.TiDBMySQLDatabaseManager"
             objectType="org.jkiss.dbeaver.ext.tidb.mysql.model.TiDBMySQLCatalog"
