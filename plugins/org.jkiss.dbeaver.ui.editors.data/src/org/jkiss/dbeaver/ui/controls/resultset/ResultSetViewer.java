@@ -449,6 +449,10 @@ public class ResultSetViewer extends Viewer
             return;
         }
         lastPropertyUpdateTime = System.currentTimeMillis();
+        if (ResultSetPreferences.RESULT_SET_PRESENTATION.equals(property)) {
+            // No need to refresh data
+            return;
+        }
         UIUtils.asyncExec(() -> {
             if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
                 if (activePresentation instanceof AbstractPresentation) {
