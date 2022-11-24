@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ext.tidb.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -34,7 +36,8 @@ import java.util.List;
  * TiDBView
  */
 public class TiDBMySQLView extends MySQLView {
-
+	private static final Log log = Log.getLog(TiDBMySQLView.class);
+	
     TiDBMySQLView(MySQLCatalog catalog, ResultSet dbResult) {
         super(catalog, dbResult);
     }
@@ -44,6 +47,7 @@ public class TiDBMySQLView extends MySQLView {
         List<MySQLTableColumn> childColumns = getContainer().getTiDBTableCache().getChildren(monitor,
                 getContainer(), this);
         if (childColumns == null) {
+        	log.error("Can't find attributes for the view " + getName());
             return Collections.emptyList();
         }
         List<MySQLTableColumn> columns = new ArrayList<>(childColumns);

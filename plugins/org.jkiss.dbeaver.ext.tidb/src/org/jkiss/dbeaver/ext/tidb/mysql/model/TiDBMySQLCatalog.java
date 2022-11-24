@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -234,7 +235,7 @@ public class TiDBMySQLCatalog extends MySQLCatalog {
                 @NotNull TiDBMySQLCatalog owner, @Nullable MySQLTableBase forTable) throws SQLException {
             if (forTable instanceof TiDBMySQLView) {
                 JDBCPreparedStatement dbStat = session
-                        .prepareStatement("desc " + owner.getName() + "." + forTable.getName());
+                        .prepareStatement("desc " + forTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
                 return dbStat;
             }
             StringBuilder sql = new StringBuilder();
