@@ -99,19 +99,28 @@ public class BrowserImageViewer extends AbstractImageViewer {
     public boolean loadImage(@NotNull InputStream inputStream) {
         try {
             clearTempFile();
-            ImageInputStream stream = ImageIO.createImageInputStream(inputStream);
-            Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
-            if (!readers.hasNext()) {
-                return false;
+
+            try (ImageInputStream stream = ImageIO.createImageInputStream(inputStream)) {
+                Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+                if (!readers.hasNext()) {
+                    browser.setText("<h1> Unrecognizable image format! </h1>");
+                    return false;
+                }
+                ImageReader reader = readers.next();
+                reader.setInput(stream);
+                tempFile = Files.createTempFile(
+                    DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-images"),
+                    "image",
+                    "." + reader.getFormatName().toLowerCase(Locale.ROOT)
+                );
+                ImageIO.write(ImageIO.read(stream), reader.getFormatName().toLowerCase(Locale.ROOT), tempFile.toFile());
+            } catch (IOException exception) {
+                if (exception.getMessage().equals("closed")) {
+                    //ignore, we just tried to close already closed stream
+                } else {
+                    log.error("Error reading image data", exception);
+                }
             }
-            ImageReader reader = readers.next();
-            reader.setInput(stream);
-            tempFile = Files.createTempFile(
-                DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-images"),
-                "image",
-                "." + reader.getFormatName().toLowerCase(Locale.ROOT)
-            );
-            ImageIO.write(ImageIO.read(stream), reader.getFormatName().toLowerCase(Locale.ROOT), tempFile.toFile());
             URL url = tempFile.toUri().toURL();
             browser.setUrl(url.toString());
         } catch (IOException exception) {
@@ -143,11 +152,7 @@ public class BrowserImageViewer extends AbstractImageViewer {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     while (browserCreating) {
-                        try {
-                            Thread.sleep(50);
-                        } catch (InterruptedException ex) {
-                            break;
-                        }
+                        Thread.onSpinWait();
                     }
                     UIUtils.syncExec(BrowserImageViewer.super::dispose);
                     return Status.OK_STATUS;
