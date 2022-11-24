@@ -36,8 +36,8 @@ import java.util.List;
  * TiDBView
  */
 public class TiDBMySQLView extends MySQLView {
-	private static final Log log = Log.getLog(TiDBMySQLView.class);
-	
+    private static final Log log = Log.getLog(TiDBMySQLView.class);
+
     TiDBMySQLView(MySQLCatalog catalog, ResultSet dbResult) {
         super(catalog, dbResult);
     }
@@ -47,7 +47,7 @@ public class TiDBMySQLView extends MySQLView {
         List<MySQLTableColumn> childColumns = getContainer().getTiDBTableCache().getChildren(monitor,
                 getContainer(), this);
         if (childColumns == null) {
-        	log.error("Can't find attributes for the view " + getName());
+            log.error("Can't find attributes for the view " + getName());
             return Collections.emptyList();
         }
         List<MySQLTableColumn> columns = new ArrayList<>(childColumns);
