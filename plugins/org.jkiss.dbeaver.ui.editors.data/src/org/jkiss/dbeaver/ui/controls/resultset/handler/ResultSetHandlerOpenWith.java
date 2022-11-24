@@ -24,7 +24,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.CompoundContributionItem;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.CommandContributionItem;
@@ -309,6 +311,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                 @Override
                 public void run() {
                     DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_OPEN_WITH_DEFAULT_PROCESSOR, "");
+                    updateResultSetToolbar(rsv);
                 }
             });
             for (DataTransferProcessorDescriptor processor : getDataFileTransferProcessors(rsv)) {
@@ -325,6 +328,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     public void run() {
                         DBWorkbench.getPlatform().getPreferenceStore().setValue(
                             PREF_OPEN_WITH_DEFAULT_PROCESSOR, processor.getFullId());
+                        updateResultSetToolbar(rsv);
                     }
                 };
                 menu.add(setDefaultAction);
@@ -375,5 +379,12 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         return appProcessors;
     }
 
+    private static void updateResultSetToolbar(@NotNull IResultSetController controller) {
+        final ICommandService service = PlatformUI.getWorkbench().getService(ICommandService.class);
 
+        if (service != null) {
+            service.refreshElements(ResultSetHandlerMain.CMD_EXPORT, null);
+            controller.updateToolbar();
+        }
+    }
 }
