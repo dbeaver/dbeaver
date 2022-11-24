@@ -481,6 +481,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.cache"/>
+                    <file type="jar" path="repo:/drivers/cache/CacheDB.jar" bundle="!drivers.cache"/>
                     <file type="jar" path="drivers/cache" bundle="drivers.cache"/>
                     <file type="license" path="drivers/cache/LICENSE.txt" bundle="drivers.cache"/>
                 </driver>
