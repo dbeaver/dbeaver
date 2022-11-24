@@ -27,7 +27,7 @@ import java.util.List;
 public class UIExecutionQueue {
 
     private static final List<Runnable> execQueue = new ArrayList<>();
-    private static boolean isRunning = false;
+    private static int runCount = 0;
 
     public static void queueExec(Runnable runnable) {
         synchronized (execQueue) {
@@ -36,23 +36,38 @@ public class UIExecutionQueue {
         UIUtils.asyncExec(UIExecutionQueue::executeInUI);
     }
 
+    public static void blockQueue() {
+        synchronized (execQueue) {
+            runCount++;
+        }
+    }
+
+    public static void unblockQueue() {
+        synchronized (execQueue) {
+            if (runCount <= 0) {
+                throw new IllegalStateException("Queue is unblocked");
+            }
+            runCount--;
+        }
+    }
+
     private static void executeInUI() {
         Runnable nextJob;
         synchronized (execQueue) {
-            if (isRunning) {
+            if (runCount > 0) {
                 return;
             }
             if (execQueue.isEmpty()) {
                 return;
             }
-            isRunning = true;
+            runCount++;
             nextJob = execQueue.remove(0);
         }
         try {
             nextJob.run();
         } finally {
             synchronized (execQueue) {
-                isRunning = false;
+                runCount--;
             }
         }
         UIUtils.asyncExec(UIExecutionQueue::executeInUI);
