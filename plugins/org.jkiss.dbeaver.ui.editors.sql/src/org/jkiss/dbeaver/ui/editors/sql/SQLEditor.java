@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -639,6 +638,11 @@ public class SQLEditor extends SQLEditorBase implements
     public boolean isSmartAutoCommit() {
         return getActivePreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
     }
+    
+    @Override
+    public boolean isFoldingEnabled() {
+        return SQLEditorUtils.isSQLSyntaxParserEnabled(getEditorInput()) && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+    }
 
     @Override
     public void setSmartAutoCommit(boolean smartAutoCommit) {
@@ -655,9 +659,6 @@ public class SQLEditor extends SQLEditorBase implements
         topBarMan.getControl().redraw();
         bottomBarMan.getControl().redraw();
     }
-
-    
-    
     
     private class OpenContextJob extends AbstractJob {
         private final DBSInstance instance;
@@ -1001,7 +1002,7 @@ public class SQLEditor extends SQLEditorBase implements
         topBar.setData(VIEW_PART_PROP_NAME, this);
         topBarMan = new ToolBarManager(topBar);
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT));
-        //topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW));
+        topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW));
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT));
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXPLAIN_PLAN));
         
@@ -2726,7 +2727,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         refreshActions();
 
-        refreshEditorIconAndTitle(dsContainer);
+        refreshEditorIconAndTitle();
 
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
@@ -2770,25 +2771,42 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void refreshEditorIconAndTitle(DBPDataSourceContainer dsContainer) {
+    /**
+     * Build and update icon and title
+     */
+    public void refreshEditorIconAndTitle() {
+        DBPDataSourceContainer dsContainer = getDataSourceContainer();
         setPartName(getEditorName());
-
+        
         // Update icon
         if (editorImage != null) {
             editorImage.dispose();
         }
+        
+        DBPImage bottomLeft;
+        DBPImage bottomRight;
+        
         if (executionContext == null) {
             if (dsContainer instanceof DBPStatefulObject && ((DBPStatefulObject) dsContainer).getObjectState() == DBSObjectState.INVALID) {
-                OverlayImageDescriptorLegacy oid = new OverlayImageDescriptorLegacy(baseEditorImage.getImageData());
-                oid.setBottomRight(new ImageDescriptor[] { DBeaverIcons.getImageDescriptor(DBIcon.OVER_ERROR) });
-                editorImage = oid.createImage();
+                bottomRight = DBIcon.OVER_ERROR;
             } else {
-                editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+                bottomRight = null;
             }
         } else {
-            OverlayImageDescriptorLegacy oid = new OverlayImageDescriptorLegacy(baseEditorImage.getImageData());
-            oid.setBottomRight(new ImageDescriptor[] { DBeaverIcons.getImageDescriptor(DBIcon.OVER_SUCCESS) });
-            editorImage = oid.createImage();
+            bottomRight = DBIcon.OVER_SUCCESS;
+        }
+        
+        if (SQLEditorUtils.isSQLSyntaxParserEnabled(getEditorInput())) {
+            bottomLeft = null;
+        } else {
+            bottomLeft = DBIcon.OVER_RED_LAMP;
+        }
+        
+        if (bottomLeft != null || bottomRight != null) {
+            DBPImage image = new DBIconComposite(new DBIconBinary(null, baseEditorImage), false, null, null, bottomLeft, bottomRight);
+            editorImage = DBeaverIcons.getImage(image, false);
+        } else {
+            editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
         }
         setTitleImage(editorImage);
     }

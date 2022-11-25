@@ -20,6 +20,7 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -58,7 +59,7 @@ import java.lang.reflect.Method;
 public class EditorUtils {
 
     public static final String PROP_SQL_DATA_SOURCE_ID = "sql-editor-data-source-id"; //$NON-NLS-1$
-    private static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id"; //$NON-NLS-1$
+    public static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id"; //$NON-NLS-1$
 
     public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource"; //$NON-NLS-1$
     private static final String PROP_CONTEXT_DEFAULT_CATALOG = "default-catalog"; //$NON-NLS-1$
@@ -161,6 +162,16 @@ public class EditorUtils {
     //////////////////////////////////////////////////////////
     // Datasource <-> resource manipulations
 
+    @Nullable
+    public static Object getResourceProperty(@NotNull DBPProject project, @NotNull IResource resource, @NotNull String propName) {
+        return project.getResourceProperty(project.getResourcePath(resource), propName);
+    }
+
+    @Nullable
+    public static void setResourceProperty(@NotNull DBPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
+        project.setResourceProperty(project.getResourcePath(resource), propName, value);
+    }
+
     public static DatabaseEditorContext getEditorContext(IEditorInput editorInput) {
         if (editorInput instanceof INonPersistentEditorInput) {
             return (DatabaseEditorContext) ((INonPersistentEditorInput) editorInput).getProperty(PROP_EDITOR_CONTEXT);
@@ -228,9 +239,9 @@ public class EditorUtils {
             if (file != null) {
                 DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
                 if (projectMeta != null) {
-                    defaultDatasource = (String) projectMeta.getResourceProperty(file, PROP_CONTEXT_DEFAULT_DATASOURCE);
-                    defaultCatalogName = (String) projectMeta.getResourceProperty(file, PROP_CONTEXT_DEFAULT_CATALOG);
-                    defaultSchema = (String) projectMeta.getResourceProperty(file, PROP_CONTEXT_DEFAULT_SCHEMA);
+                    defaultDatasource = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
+                    defaultCatalogName = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_CATALOG);
+                    defaultSchema = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_SCHEMA);
                 }
             } else {
                 File localFile = getLocalFileFromInput(editorInput);
@@ -238,7 +249,7 @@ public class EditorUtils {
                     final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
                     defaultDatasource = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_DATASOURCE);
                     defaultCatalogName = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_CATALOG);
-                    defaultSchema= (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_SCHEMA);
+                    defaultSchema = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_SCHEMA);
                 }
             }
         }
@@ -256,7 +267,7 @@ public class EditorUtils {
         }
         DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
-            Object dataSourceId = projectMeta.getResourceProperty(file, PROP_CONTEXT_DEFAULT_DATASOURCE);
+            Object dataSourceId = EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
             if (dataSourceId != null) {
                 DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
                 if (dataSource == null) {
