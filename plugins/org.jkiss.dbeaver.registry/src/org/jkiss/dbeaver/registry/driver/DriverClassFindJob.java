@@ -90,9 +90,13 @@ public class DriverClassFindJob implements DBRRunnableWithProgress {
     }
 
     private void findDriverClasses(DBRProgressMonitor monitor, ClassLoader findCL, Path libFile) {
-        try {
-            JarFile currentFile = new JarFile(libFile.toFile(), false);
-            monitor.beginTask(libFile.getFileName().toString(), currentFile.size());
+        String jarName = libFile.getFileName().toString();
+        if (!jarName.endsWith(".jar") && !jarName.endsWith(".zip")) {
+            // Dummy file type validation
+            return;
+        }
+        try (JarFile currentFile = new JarFile(libFile.toFile(), false)) {
+            monitor.beginTask(jarName, currentFile.size());
 
             for (Enumeration<?> e = currentFile.entries(); e.hasMoreElements(); ) {
                 {
