@@ -188,6 +188,8 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     void updateEditControls();
 
+    void updateToolbar();
+
     ////////////////////////////////////////
     // Presentation & panels
 

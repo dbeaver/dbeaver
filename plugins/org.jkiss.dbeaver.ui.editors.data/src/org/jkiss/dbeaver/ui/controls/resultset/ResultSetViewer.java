@@ -29,10 +29,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -98,10 +95,12 @@ import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -174,7 +173,7 @@ public class ResultSetViewer extends Viewer
     private StatusLabel statusLabel;
     private ActiveStatusMessage rowCountLabel;
     private Text selectionStatLabel;
-    //private Text resultSetSize;
+    private Text resultSetSize;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
 
@@ -593,11 +592,9 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel == null || this.viewerPanel.isDisposed()) {
             return;
         }
-/*
         if (resultSetSize != null && !resultSetSize.isDisposed()) {
             resultSetSize.setEnabled(getDataContainer() != null);
         }
-*/
 
         this.viewerPanel.setRedraw(false);
         try {
@@ -1580,7 +1577,8 @@ public class ResultSetViewer extends Viewer
      * It is a hack function. Generally all command associated widgets should be updated automatically by framework.
      * Freaking E4 do not do it. I've spent a couple of days fighting it. Guys, you owe me.
      */
-    private void updateToolbar()
+    @Override
+    public void updateToolbar()
     {
         if (statusBar != null) statusBar.setRedraw(false);
         try {
@@ -1685,8 +1683,9 @@ public class ResultSetViewer extends Viewer
 /*
             navToolBarManager.add(new Separator());
             navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
-            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
 */
+            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
+
             navToolBarManager.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
             ToolBar navToolBar = navToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(navToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
@@ -1738,7 +1737,6 @@ public class ResultSetViewer extends Viewer
         }
         {
             final int fontHeight = UIUtils.getFontHeight(statusBar);
-/*
 
             resultSetSize = new Text(statusBar, SWT.BORDER);
             resultSetSize.setLayoutData(new RowData(5 * fontHeight, SWT.DEFAULT));
@@ -1769,7 +1767,6 @@ public class ResultSetViewer extends Viewer
                 }
             });
             UIUtils.addDefaultEditActionsSupport(site, resultSetSize);
-*/
 
             rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.COMPILE), ResultSetMessages.controls_resultset_viewer_calculate_row_count, this) {
                 @Override
@@ -2078,12 +2075,10 @@ public class ResultSetViewer extends Viewer
         ((RowData)statusLabel.getLayoutData()).width = statusLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         rowCountLabel.updateActionState();
 
-/*
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && dataContainer.getDataSource() != null) {
             resultSetSize.setText(String.valueOf(getSegmentMaxRows()));
         }
-*/
     }
 
     private void setStatusTooltip(String message) {
