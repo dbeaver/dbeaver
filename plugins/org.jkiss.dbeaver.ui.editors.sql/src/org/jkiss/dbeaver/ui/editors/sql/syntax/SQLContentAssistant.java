@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
 /**
@@ -40,7 +41,9 @@ public class SQLContentAssistant extends ContentAssistant {
     private class SQLAutoAssistListener extends AutoAssistListener {
         @Override
         protected void showAssist(int showStyle) {
-            if (showStyle == 1 && !editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)) {
+            if (showStyle == 1 && !(SQLEditorUtils.isSQLSyntaxParserEnabled(editor.getEditorInput())
+                && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION))
+            ) {
                 return;
             }
             SQLCompletionProcessor.setSimpleMode(true);
