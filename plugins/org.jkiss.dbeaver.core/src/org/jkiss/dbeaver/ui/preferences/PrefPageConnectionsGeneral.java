@@ -125,21 +125,23 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             );
             
 
-            if (System.getProperty(GeneralUtils.PROP_TRUST_STORE) != null || System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE) != null) {
+            if (System.getProperty(GeneralUtils.PROP_TRUST_STORE) != null
+                || System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE) != null
+            ) {
                 Composite winTrustStoreComposite = UIUtils.createComposite(settings, 1);
                 useWinTrustStoreCheck = UIUtils.createCheckbox(
-                        winTrustStoreComposite,
-                        CoreMessages.pref_page_connections_use_win_cert_label,
-                        ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
-                    );
+                    winTrustStoreComposite,
+                    CoreMessages.pref_page_connections_use_win_cert_label,
+                    ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+                );
                 winTrustStoreComposite.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_disabled_tip);
                 useWinTrustStoreCheck.setEnabled(false);
             } else {
                 useWinTrustStoreCheck = UIUtils.createCheckbox(
-                        settings,
-                        CoreMessages.pref_page_connections_use_win_cert_label,
-                        ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
-                    );
+                    settings,
+                    CoreMessages.pref_page_connections_use_win_cert_label,
+                    ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+                );
                 useWinTrustStoreCheck.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_tip);
             }
         }
