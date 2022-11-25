@@ -29,6 +29,6 @@ public class MySQLDialectTest {
 
         Assert.assertEquals("`a ' b`", dialect.getQuotedIdentifier("a ' b", false, true));
         Assert.assertEquals("`a `` b`", dialect.getQuotedIdentifier("a ` b", false, true));
-        Assert.assertEquals("a b", dialect.getQuotedIdentifier("a b", false, true));
+        Assert.assertEquals("`a b`", dialect.getQuotedIdentifier("a b", false, true));
     }
 }
