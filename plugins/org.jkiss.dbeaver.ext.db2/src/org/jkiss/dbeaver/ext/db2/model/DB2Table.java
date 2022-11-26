@@ -498,7 +498,7 @@ public class DB2Table extends DB2TableBase
     @Override
     public DBDPseudoAttribute[] getPseudoAttributes() throws DBException
     {
-        if (getDataSource().isAtLeastV9_5()) {
+        if (getDataSource().isAtLeastV9_5() && !getDataSource().isBigSQL()) {
             return new DBDPseudoAttribute[] { DB2Constants.PSEUDO_ATTR_RID_BIT };
         } else {
             return null;

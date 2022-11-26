@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Clob;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -606,6 +607,14 @@ public class DB2Utils {
         result = result.replaceAll("WHERE\\r\\n", "WHERE ");
 
         return result;
+    }
+    
+    public static DB2Sqlca getDb2Sqlca(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
+    	DB2Sqlca sqlca = null;
+    	try (Connection connection = session.getOriginal()) {
+            sqlca = DB2Sqlca.from(connection);
+    	}
+    	return sqlca;
     }
 
     private DB2Utils()

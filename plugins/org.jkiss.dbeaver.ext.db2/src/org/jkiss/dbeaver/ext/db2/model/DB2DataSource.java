@@ -116,6 +116,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     private String                                               schemaForExplainTables;
 
     private Double                                               version;                                                                                                                  // Database
+    private Character                                            serverVariant;
     private volatile transient boolean hasStatistics;
     // Version
 
@@ -156,17 +157,24 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         super.initialize(monitor);
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
-
+        	
             // First try to get active schema from special register 'CURRENT SCHEMA'
             DB2Schema defaultSchema = getDefaultSchema();
             if (defaultSchema != null) {
                 this.db2CurrentUserPrivileges = new DB2CurrentUserPrivileges(monitor, session, defaultSchema.getName(), this);
             }
+            
 
         } catch (SQLException e) {
             log.warn("Error reading active schema", e);
         }
 
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load server variant")) {
+            readDatabaseServerVariant(monitor, session);
+        } catch (SQLException e) {
+        	log.warn("Unable to determine server variant", e);
+        }
+        
         ((JDBCObjectSimpleCache) dataTypeCache).setCaseSensitive(false);
         try {
             this.dataTypeCache.getAllObjects(monitor, this);
@@ -247,7 +255,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         // queries run from the SQL editor)
 
         info.setSupportsResultSetScroll(false);
-
+        
         return info;
     }
 
@@ -666,6 +674,24 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     public Double getVersion()
     {
         return version;
+    }
+
+    // -------------------------
+    // Variant Testing
+    // -------------------------
+
+    private void readDatabaseServerVariant(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
+        DB2Sqlca sqlca = DB2Utils.getDb2Sqlca(monitor, session);
+        char[] sqlwarn = sqlca.getSqlWarn();
+        serverVariant = sqlwarn[7];
+    }
+
+    public boolean isBigSQL() {
+        return 'B' == serverVariant;
+    }
+
+    public boolean isWarehouse() {
+        return 'D' == serverVariant;
     }
 
     // -------------------------
