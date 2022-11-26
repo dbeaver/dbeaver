@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.security.user;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.meta.Property;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -35,10 +38,13 @@ public class SMTeam extends SMSubject {
         this.description = description;
     }
 
+    @Property(viewable = true, order = 1)
     public String getTeamId() {
         return subjectId;
     }
 
+    @NotNull
+    @Property(viewable = true, order = 2)
     public String getName() {
         return name;
     }
@@ -47,6 +53,7 @@ public class SMTeam extends SMSubject {
         this.name = name;
     }
 
+    @Property(viewable = true, order = 3)
     public String getDescription() {
         return description;
     }

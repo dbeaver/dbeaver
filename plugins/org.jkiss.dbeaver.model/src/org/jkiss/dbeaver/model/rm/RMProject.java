@@ -16,11 +16,15 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -62,7 +66,6 @@ public class RMProject extends RMObject {
         super(name);
     }
 
-    @Property
     public String getId() {
         return id;
     }
@@ -71,6 +74,7 @@ public class RMProject extends RMObject {
         this.id = id;
     }
 
+    @Property(viewable = true, order = 1)
     public String getDisplayName() {
         switch (type) {
             case GLOBAL:
@@ -87,16 +91,15 @@ public class RMProject extends RMObject {
         return true;
     }
 
-    @Property
     public boolean isShared() {
         return ArrayUtils.contains(SHARED_PROJECTS, getType());
     }
 
-    @Property
     public boolean isGlobal() {
         return getType() == RMProjectType.GLOBAL;
     }
 
+    @Property(viewable = true, order = 2)
     public String getDescription() {
         return description;
     }
@@ -105,7 +108,7 @@ public class RMProject extends RMObject {
         this.description = description;
     }
 
-    @Property
+    @Property(viewable = true, order = 3)
     public RMProjectType getType() {
         return type;
     }
@@ -114,6 +117,7 @@ public class RMProject extends RMObject {
         this.type = type;
     }
 
+    @Property(viewable = true, valueRenderer = TimeRenderer.class, order = 10)
     public Long getCreateTime() {
         return createTime;
     }
@@ -122,6 +126,7 @@ public class RMProject extends RMObject {
         this.createTime = createTime;
     }
 
+    @Property(viewable = true, order = 11)
     public String getCreator() {
         return creator;
     }
@@ -151,5 +156,12 @@ public class RMProject extends RMObject {
 
     public Set<String> getProjectPermissions() {
         return projectPermissions;
+    }
+
+    public static class TimeRenderer implements IPropertyValueTransformer<RMProject, Object> {
+        @Override
+        public Object transform(RMProject object, Object value) throws IllegalArgumentException {
+            return new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date((Long) value));
+        }
     }
 }
