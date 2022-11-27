@@ -26,7 +26,7 @@ public class SMUser extends SMSubject {
 
     private String[] userTeams;
     private boolean enabled;
-    private final String authRole;
+    private String authRole;
 
     public SMUser(
         @NotNull String userId,
@@ -82,5 +82,9 @@ public class SMUser extends SMSubject {
     @Property(viewable = true, order = 2)
     public String getAuthRole() {
         return authRole;
+    }
+
+    public void setAuthRole(String authRole) {
+        this.authRole = authRole;
     }
 }
