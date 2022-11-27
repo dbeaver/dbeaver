@@ -16,43 +16,44 @@
  */
 package org.jkiss.dbeaver.winstore;
 
-import java.nio.file.Path;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.IEnvironmentPathMapper;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.nio.file.Path;
+
 public class WinStoreEnvPathMapper implements IEnvironmentPathMapper {
     private static final Log log = Log.getLog(WinStoreEnvPathMapper.class);
 
-    private static final String windowsAppLocalDataPackage = "DBeaverCorp.DBeaverCE_1b7tdvn0p0f9y";
-    private static final String appDataRoamingPathString = System.getenv("AppData"); 
-    private static final String localAppDataPathString = System.getenv("LOCALAPPDATA");
-    private static final String userHomePathString = System.getProperty("user.home");
+    private static final String WINDOWS_APP_LOCAL_DATA_PACKAGE = "DBeaverCorp.DBeaverCE_1b7tdvn0p0f9y";
+    private static final String APP_DATA_ROAMING_PATH_STRING = System.getenv("AppData");
+    private static final String LOCAL_APP_DATA_PATH_STRING = System.getenv("LOCALAPPDATA");
+    private static final String USER_HOME_PATH_STRING = System.getProperty("user.home");
     
     private final Path realVirtualizedRoot;
     
     public WinStoreEnvPathMapper() {
-        Path localAppDataPath = localAppDataPathString != null
-            ? Path.of(localAppDataPathString) 
-            : Path.of(userHomePathString, "AppData", "Local");
+        Path localAppDataPath = LOCAL_APP_DATA_PATH_STRING != null
+            ? Path.of(LOCAL_APP_DATA_PATH_STRING)
+            : Path.of(USER_HOME_PATH_STRING, "AppData", "Local");
         
-        realVirtualizedRoot = localAppDataPath.resolve("Packages").resolve(windowsAppLocalDataPackage).resolve("LocalCache").resolve("Roaming");
+        realVirtualizedRoot = localAppDataPath.resolve("Packages")
+            .resolve(WINDOWS_APP_LOCAL_DATA_PACKAGE).resolve("LocalCache").resolve("Roaming");
     }
 
     @Override
     public boolean isApplicable(@NotNull String localEnvPath) {
-        return RuntimeUtils.isWindowsStoreApplication() && localEnvPath.startsWith(appDataRoamingPathString);
+        return RuntimeUtils.isWindowsStoreApplication() && localEnvPath.startsWith(APP_DATA_ROAMING_PATH_STRING);
     }
 
     @NotNull
     @Override
     public String map(@NotNull String localEnvPath) {
-        Path remappedPath = realVirtualizedRoot.resolve(Path.of(appDataRoamingPathString).relativize(Path.of(localEnvPath)));
+        Path remappedPath = realVirtualizedRoot.resolve(Path.of(APP_DATA_ROAMING_PATH_STRING).relativize(Path.of(localEnvPath)));
         String resultPath = remappedPath.toString();
         
-        log.warn("Remapping file path [" + localEnvPath + "] to [" + resultPath + "]");
+        log.debug("Remapping file path [" + localEnvPath + "] to [" + resultPath + "]");
         return resultPath;
     }
 
