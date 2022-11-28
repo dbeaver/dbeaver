@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Clob;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -610,11 +609,17 @@ public class DB2Utils {
     }
     
     public static char getServerVariant(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
-        char serverVariant;
-        DB2Sqlca sqlca = null;
-        sqlca = DB2Sqlca.from(session.getOriginal());
+        DB2Sqlca sqlca = DB2Sqlca.from(session.getOriginal());
+        if (sqlca == null) {
+            return 0;
+        }
+        
         char[] sqlwarn = sqlca.getSqlWarn();
-        serverVariant = sqlwarn[7];
+        if (sqlwarn == null || sqlwarn.length < 8) {
+            return 0;
+        }
+        
+        char serverVariant = sqlwarn[7];
         return serverVariant;
     }
 
