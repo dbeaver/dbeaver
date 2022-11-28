@@ -23,6 +23,8 @@ import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.internal.WorkbenchMessages;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -38,12 +40,14 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
  */
 public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> extends ObjectListControl<OBJECT_TYPE> {
 
+    @Nullable
     private IWorkbenchSite site;
+
     protected DatabaseObjectListControl(
-        Composite parent,
+        @NotNull Composite parent,
         int style,
-        IWorkbenchSite site,
-        IContentProvider contentProvider)
+        @Nullable IWorkbenchSite site,
+        @NotNull IContentProvider contentProvider)
     {
         super(parent, style, contentProvider);
         this.site = site;
@@ -58,8 +62,10 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
         return new ObjectListRenderer();
     }
 
-    private void createContextMenu()
-    {
+    private void createContextMenu() {
+        if (site == null) {
+            return;
+        }
         NavigatorUtils.createContextMenu(site, getItemsViewer(), manager -> {
             IAction copyAction = new Action(WorkbenchMessages.Workbench_copy) {
                 @Override

@@ -18,11 +18,12 @@ package org.jkiss.dbeaver.model.security.user;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SMSubject {
+public abstract class SMSubject implements DBPNamedObject {
 
     protected final String subjectId;
     private final Map<String, String> metaParameters = new LinkedHashMap<>();
@@ -48,6 +49,12 @@ public class SMSubject {
 
     public void setMetaParameter(String name, String value) {
         metaParameters.put(name, value);
+    }
+
+    @NotNull
+    public void setMetaParameters(Map<String, String>  parameters) {
+        metaParameters.clear();
+        metaParameters.putAll(parameters);
     }
 
 }

@@ -46,7 +46,7 @@ public interface SMController extends DBPObjectController,
      * @throws DBException the db exception
      */
     @NotNull
-    SMTeam[] getUserTeams() throws DBException;
+    SMTeam[] getCurrentUserTeams() throws DBException;
 
     /**
      * Gets current active user.
@@ -63,7 +63,7 @@ public interface SMController extends DBPObjectController,
      * @return the user parameters
      * @throws DBException the db exception
      */
-    Map<String, Object> getUserParameters() throws DBException;
+    Map<String, Object> getCurrentUserParameters() throws DBException;
 
     /**
      * Sets user parameter.
@@ -72,7 +72,7 @@ public interface SMController extends DBPObjectController,
      * @param value the value
      * @throws DBException the db exception
      */
-    void setUserParameter(String name, Object value) throws DBException;
+    void setCurrentUserParameter(String name, Object value) throws DBException;
 
     ///////////////////////////////////////////
     // Credentials
@@ -85,7 +85,7 @@ public interface SMController extends DBPObjectController,
      * @throws DBException the db exception
      */
     @NotNull
-    Map<String, Object> getUserCredentials(@NotNull String authProviderId) throws DBException;
+    Map<String, Object> getCurrentUserCredentials(@NotNull String authProviderId) throws DBException;
 
     /**
      * Sets user credentials for specified provider.
@@ -94,7 +94,7 @@ public interface SMController extends DBPObjectController,
      * @param credentials    the credentials
      * @throws DBException the db exception
      */
-    void setUserCredentials(
+    void setCurrentUserCredentials(
         @NotNull String authProviderId,
         @NotNull Map<String, Object> credentials
     ) throws DBException;
@@ -105,7 +105,7 @@ public interface SMController extends DBPObjectController,
      * @return the string [ ]
      * @throws DBException the db exception
      */
-    String[] getUserLinkedProviders() throws DBException;
+    String[] getCurrentUserLinkedProviders() throws DBException;
 
     ///////////////////////////////////////////
     // Permissions

@@ -126,7 +126,10 @@ public interface SMAdminController extends SMController {
     ///////////////////////////////////////////
     // General
 
-    void setSubjectMetas(String userId, Map<String, String> metaParameters) throws DBException;
+    @NotNull
+    SMPropertyDescriptor[] getMetaParametersBySubjectType(SMSubjectType subjectType) throws DBException;
+
+    void setSubjectMetas(@NotNull String subjectId, @NotNull Map<String, String> metaParameters) throws DBException;
 
     // Permissions
 

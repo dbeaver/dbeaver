@@ -45,34 +45,19 @@ public class SMObjectPermissionsGrant {
     }
 
     public static Builder builder(String subjectId, SMSubjectType subjectType, String objectId) {
-        return new Builder()
-            .setSubjectId(subjectId)
-            .setSubjectType(subjectType)
-            .setObjectId(objectId);
+        return new Builder(subjectId, subjectType, objectId);
     }
 
     public static final class Builder {
-        private String subjectId;
-        private SMSubjectType subjectType;
-        private String objectId;
+        private final String subjectId;
+        private final SMSubjectType subjectType;
+        private final String objectId;
         private final Set<String> objectPermissions = new HashSet<>();
 
-        private Builder() {
-        }
-
-        public Builder setSubjectId(String subjectId) {
+        public Builder(String subjectId, SMSubjectType subjectType, String objectId) {
             this.subjectId = subjectId;
-            return this;
-        }
-
-        public Builder setSubjectType(SMSubjectType subjectType) {
             this.subjectType = subjectType;
-            return this;
-        }
-
-        public Builder setObjectId(String objectId) {
             this.objectId = objectId;
-            return this;
         }
 
         public Builder addPermission(String permission) {
