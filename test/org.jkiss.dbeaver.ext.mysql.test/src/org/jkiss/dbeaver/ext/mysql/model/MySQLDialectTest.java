@@ -14,17 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.gis.panel;
+package org.jkiss.dbeaver.ext.mysql.model;
 
-public class GISBrowserViewerConstants {
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 
-    public static final String[] INC_FILES = new String[] {
-        "leaflet.css",
-        "leaflet.js",
-        "leaflet-lasso.min.js",
-        "wkx.min.js",
-        "layers.png"
-    };
-    public static final String WEB_INC_PATH = "web/inc/";
-    public static final String VIEW_TEMPLATE_PATH = "web/view_template.html";
+@RunWith(MockitoJUnitRunner.class)
+public class MySQLDialectTest {
+    @Test
+    public void quoteStringTest() {
+        final MySQLDialect dialect = new MySQLDialect();
+
+        Assert.assertEquals("`a ' b`", dialect.getQuotedIdentifier("a ' b", false, true));
+        Assert.assertEquals("`a `` b`", dialect.getQuotedIdentifier("a ` b", false, true));
+        Assert.assertEquals("`a b`", dialect.getQuotedIdentifier("a b", false, true));
+    }
 }

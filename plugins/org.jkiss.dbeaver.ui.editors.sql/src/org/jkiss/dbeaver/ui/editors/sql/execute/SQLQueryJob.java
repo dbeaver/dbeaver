@@ -130,7 +130,8 @@ public class SQLQueryJob extends DataSourceJob
         @NotNull List<SQLScriptElement> queries,
         @NotNull SQLScriptContext scriptContext,
         @Nullable SQLResultsConsumer resultsConsumer,
-        @Nullable SQLQueryListener listener)
+        @Nullable SQLQueryListener listener,
+        boolean isDisableFetchResultSet)
     {
         super(name, executionContext);
         this.dataContainer = dataContainer;
@@ -145,7 +146,9 @@ public class SQLQueryJob extends DataSourceJob
             DBPPreferenceStore preferenceStore = getDataSourceContainer().getPreferenceStore();
             this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE));
             this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING));
-            this.fetchResultSets = queries.size() == 1 || preferenceStore.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS);
+            this.fetchResultSets = queries.size() == 1 || (
+                preferenceStore.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS) && !isDisableFetchResultSet
+            );
             this.rsMaxRows = preferenceStore.getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
         }
     }

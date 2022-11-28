@@ -137,20 +137,20 @@ public class DBeaverStackRenderer extends StackRenderer {
                 addActionItem(workbenchPart, menu, IWorkbenchCommandConstants.FILE_SAVE_AS);
             }
             
-            if (ActionUtils.isCommandEnabled(SQLEditorCommands.CMD_DISABLE_SQL_SYNTAX_PARSER, workbenchPart.getSite())) {
+            if (workbenchPart instanceof SQLEditor) {
                 new MenuItem(menu, SWT.SEPARATOR);
                 MenuItem menuItemDisableSQLSyntaxParser = new MenuItem(menu, SWT.CHECK);
                 menuItemDisableSQLSyntaxParser.setText(SQLEditorMessages.sql_editor_prefs_disable_services_text);
                 menuItemDisableSQLSyntaxParser.setToolTipText(SQLEditorMessages.sql_editor_prefs_disable_services_tip);
                 
-                boolean isSqlSvcDisabled = !SQLEditorUtils.isSQLSyntaxParserEnabled(editorInput);
-                menuItemDisableSQLSyntaxParser.setSelection(isSqlSvcDisabled);
+                menuItemDisableSQLSyntaxParser.setSelection(!SQLEditorUtils.isSQLSyntaxParserApplied(editorInput));
+                menuItemDisableSQLSyntaxParser.setEnabled(ActionUtils.isCommandEnabled(SQLEditorCommands.CMD_DISABLE_SQL_SYNTAX_PARSER, workbenchPart.getSite()));
                 
                 menuItemDisableSQLSyntaxParser.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        SQLEditorUtils.setSQLSyntaxParserEnabled(editorInput, isSqlSvcDisabled);
-                        menuItemDisableSQLSyntaxParser.setSelection(!isSqlSvcDisabled);
+                        SQLEditorUtils.setSQLSyntaxParserEnabled(editorInput, !SQLEditorUtils.isSQLSyntaxParserEnabled(editorInput));
+                        menuItemDisableSQLSyntaxParser.setSelection(!SQLEditorUtils.isSQLSyntaxParserApplied(editorInput));
                     }
                 });
             }

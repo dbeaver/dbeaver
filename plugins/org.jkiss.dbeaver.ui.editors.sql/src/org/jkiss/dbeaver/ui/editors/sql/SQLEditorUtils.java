@@ -448,6 +448,13 @@ public class SQLEditorUtils {
     }
 
     /**
+     * Checks whether Disable SQL syntax parser should be applied for the given editor
+     */
+    public static boolean isSQLSyntaxParserApplied(@Nullable IEditorInput input) {
+        return isSQLSyntaxParserEnabled(input) && !SQLEditorBase.isBigScript(input);
+    }
+
+    /**
      * Checks whether Disable SQL syntax parser property is set
      */
     public static boolean isSQLSyntaxParserEnabled(@Nullable IEditorInput input) {

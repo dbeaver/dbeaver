@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
 
@@ -158,16 +159,14 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
             return;
         }
         diagramLoadingJob = LoadingJob.createService(
-            new AbstractLoadService<EntityDiagram>("Load diagram '" + getEditorInput().getName() + "'") {
+            new AbstractLoadService<>("Load diagram '" + getEditorInput().getName() + "'") {
                 @Override
-                public EntityDiagram evaluate(DBRProgressMonitor monitor) {
+                public EntityDiagram evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
                         return loadContentFromFile(monitor);
                     } catch (DBException e) {
-                        log.error(e);
+                        throw new InvocationTargetException(e);
                     }
-
-                    return null;
                 }
 
                 @Override
@@ -216,7 +215,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         try (final InputStreamReader isr = new InputStreamReader(localFile.getContents(), GeneralUtils.UTF8_CHARSET)) {
             DiagramLoader.load(progressMonitor, getDiagramProject(), diagramPart, isr);
         } catch (Exception e) {
-            log.error("Error loading ER diagram from '" + localFile.getName() + "'", e);
+            throw new DBException("Error loading ER diagram from '" + localFile.getName() + "'", e);
         }
 
         return entityDiagram;
