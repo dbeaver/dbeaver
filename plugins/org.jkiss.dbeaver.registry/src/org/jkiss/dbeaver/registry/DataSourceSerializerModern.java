@@ -567,9 +567,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
                 final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
-                if (folderPath != null) {
-                    dataSource.setFolder(registry.findFolderByPath(folderPath, true));
-                }
+                dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true));
                 dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
 
                 // Connection settings
@@ -875,9 +873,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_SERVER, connectionInfo.getServerName());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_DATABASE, connectionInfo.getDatabaseName());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_URL, connectionInfo.getUrl());
-            if (!connectionInfo.getConfigurationType().isDefault()) {
-                JSONUtils.fieldNE(json, RegistryConstants.ATTR_CONFIGURATION_TYPE, connectionInfo.getConfigurationType().toString());
-            }
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_CONFIGURATION_TYPE, connectionInfo.getConfigurationType().toString());
 
             if (dataSource.getProject().isUseSecretStorage()) {
                 // For secured projects save only shared credentials
