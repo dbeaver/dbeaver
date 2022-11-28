@@ -36,6 +36,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBInfoUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -67,6 +68,7 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
     private Font boldFont;
     private Composite tableComposite;
     private Composite mainComposite;
+    private ItemListControl itemListControl;
 
     public SuggestionInformationControl(Shell parentShell, boolean isResizable) {
         super(parentShell, isResizable);
@@ -145,11 +147,11 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
                     collector.collectProperties();
                     for (DBPPropertyDescriptor descriptor : collector.getProperties()) {
                         String propertyString = DBInfoUtils.getPropertyString(collector, descriptor);
-                        if (CommonUtils.isEmpty(propertyString)) {
+                        if (CommonUtils.isEmpty(propertyString) || !descriptor.hasFeature(DBConstants.PROP_FEATURE_VIEWABLE)) {
                             continue;
                         }
                         Composite placeholder = UIUtils.createPlaceholder(metadataComposite, 2);
-                        placeholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                        placeholder.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                         Label label = new Label(placeholder, SWT.READ_ONLY);
                         label.setText(descriptor.getDisplayName() + ":");
                         label.setFont(boldFont);
@@ -173,7 +175,7 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
             .getActivePart()
             .getSite());
         DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(input);
-        ItemListControl itemListControl = new ItemListControl(
+        itemListControl = new ItemListControl(
             tableComposite,
             SWT.NONE,
             subSite,
@@ -205,13 +207,26 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
                     return;
                 }
                 UIUtils.syncExec(() -> {
-                    Collection<DBNNode> columnNodeList = (Collection<DBNNode>) columnNodes[0];
-                    if (CommonUtils.isEmpty(columnNodeList)) {
-                        itemListControl.dispose();
-                    } else {
-                        itemListControl.appendListData(columnNodeList);
+                    if (itemListControl != null && !itemListControl.isDisposed()) {
+                        Collection<DBNNode> columnNodeList = (Collection<DBNNode>) columnNodes[0];
+                        if (CommonUtils.isEmpty(columnNodeList)) {
+                            itemListControl.dispose();
+                        } else {
+                            itemListControl.appendListData(columnNodeList);
+                            for (int i = 0; i < itemListControl.getColumnController().getColumnsCount(); i++) {
+                                itemListControl.getColumnController().setIsColumnVisible(i, false);
+                            }
+                            itemListControl.setIsColumnVisibleById("ordinalPosition", true); //NON-NLS-1
+                            itemListControl.setIsColumnVisibleById("name", true); //NON-NLS-1
+                            itemListControl.setIsColumnVisibleById("fullTypeName", true); //NON-NLS-1
+                            itemListControl.setIsColumnVisibleById("identity", true); //NON-NLS-1
+                            itemListControl.setIsColumnVisibleById("description", true); //NON-NLS-1
+                            itemListControl.getColumnController().createColumns(false);
+                            itemListControl.getItemsViewer().refresh();
+                            itemListControl.getColumnController().autoSizeColumns();
+                        }
+                        tableComposite.layout(true, true);
                     }
-                    tableComposite.layout(true, true);
                 });
             }
         });
@@ -231,6 +246,9 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
             if (child instanceof DBNDatabaseFolder) {
                 Class<? extends DBSObject> childrenClass = ((DBNDatabaseFolder) child).getChildrenClass();
                 if (childrenClass != null && DBSTableColumn.class.isAssignableFrom(childrenClass)) {
+                    if (itemListControl != null && !itemListControl.isDisposed()) {
+                        itemListControl.setRootNode(child);
+                    }
                     DBNNode[] folderChildren = child.getChildren(monitor);
                     children.addAll(List.of(folderChildren));
                 }
