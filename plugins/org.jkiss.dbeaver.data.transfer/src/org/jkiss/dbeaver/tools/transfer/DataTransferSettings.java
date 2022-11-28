@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -179,7 +180,17 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             // Both producers and consumers specified
             // Processor belongs to non-database nodes anyway
             if (initProducers.length != initConsumers.length) {
-                throw new IllegalArgumentException("Producers number must match consumers number");
+                // Something went wrong
+                if (initProducers.length < initConsumers.length && initProducers[0] instanceof DatabaseTransferProducer) {
+                    // In this case, we had data transfer from table(s) to a file or another container.
+                    // But, probably, table(s) were deleted, and we lost our producer(s).
+                    // Usually, consumers do not have any special info, so we can delete extra items.
+                    IDataTransferConsumer<?,?>[] initConsumersCopy = new IDataTransferConsumer<?,?>[initProducers.length];
+                    System.arraycopy(initConsumers, 0, initConsumersCopy, 0, initProducers.length);
+                    initConsumers = initConsumersCopy;
+                } else {
+                    throw new IllegalArgumentException("Producers number must match consumers number");
+                }
             }
             // Make pipes
             for (int i = 0; i < initProducers.length; i++) {
