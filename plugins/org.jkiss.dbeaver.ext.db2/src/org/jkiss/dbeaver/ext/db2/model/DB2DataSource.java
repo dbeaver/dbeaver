@@ -157,7 +157,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         super.initialize(monitor);
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
-        	
+
             // First try to get active schema from special register 'CURRENT SCHEMA'
             DB2Schema defaultSchema = getDefaultSchema();
             if (defaultSchema != null) {
@@ -254,7 +254,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         // queries run from the SQL editor)
 
         info.setSupportsResultSetScroll(false);
-        
+
         return info;
     }
 
@@ -678,10 +678,6 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     // -------------------------
     // Variant Testing
     // -------------------------
-
-    private void readDatabaseServerVariant(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
-        
-    }
 
     public boolean isBigSQL() {
         return 'B' == serverVariant;
