@@ -146,7 +146,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.mappingType = mappingType;
         switch (mappingType) {
             case create:
-                targetName = getSourceLabelOrName(getSource(), true);
+                targetName = getSourceLabelOrName(getSource());
                 break;
         }
     }
@@ -164,7 +164,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         mappingType = DatabaseMappingType.unspecified;
         if (parent.getTarget() instanceof DBSEntity) {
             if (forceRefresh || CommonUtils.isEmpty(targetName)) {
-                targetName = getSourceLabelOrName(source, true);
+                targetName = getSourceLabelOrName(source);
             }
             DBSEntity targetEntity = (DBSEntity) parent.getTarget();
             List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
@@ -230,9 +230,9 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             if (forceRefresh || CommonUtils.isEmpty(targetName)) {
                 if (!updateAttributesNames && CommonUtils.isNotEmpty(targetName)) {
                     // We want to keep targetName in this case. It can be the targetName from a task as example
-                    targetName = getSourceLabelOrName(targetName, true);
+                    targetName = getSourceLabelOrName(targetName);
                 } else {
-                    targetName = getSourceLabelOrName(source, true);
+                    targetName = getSourceLabelOrName(source);
                 }
             }
         }
@@ -257,22 +257,14 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     String getSourceLabelOrName(DBSAttributeBase source) {
-        return getSourceLabelOrName(source, false);
+        return getSourceLabelOrName(getSourceAttributeName(source));
     }
 
-    String getSourceLabelOrName(DBSAttributeBase source, boolean quoteIdentifier) {
-        return getSourceLabelOrName(getSourceAttributeName(source), quoteIdentifier);
-    }
-
-    private String getSourceLabelOrName(String name, boolean quoteIdentifier) {
+    private String getSourceLabelOrName(String name) {
         DBSObjectContainer container = parent.getSettings().getContainer();
 
         if (container != null && !DBUtils.isQuotedIdentifier(container.getDataSource(), name) && !isSkipNameTransformation()) {
             name = DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
-        }
-
-        if (container != null && !CommonUtils.isEmpty(name) && quoteIdentifier) {
-            name = DBUtils.getQuotedIdentifier(container.getDataSource(), name);
         }
 
         return name;

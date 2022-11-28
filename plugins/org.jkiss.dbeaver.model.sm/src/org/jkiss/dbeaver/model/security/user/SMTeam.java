@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.model.security.user;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.meta.Property;
+
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class SMTeam extends SMSubject {
 
-    private String name;
+    private String teamName;
     private String description;
     private Set<String> permissions = new LinkedHashSet<>();
 
@@ -31,22 +35,32 @@ public class SMTeam extends SMSubject {
 
     public SMTeam(String teamId, String name, String description) {
         super(teamId, null);
-        this.name = name;
+        this.teamName = name;
         this.description = description;
     }
 
+    @NotNull
+    @Override
+    public String getName() {
+        return Objects.requireNonNullElse(teamName, subjectId);
+    }
+
+    @Property(viewable = true, order = 1)
     public String getTeamId() {
         return subjectId;
     }
 
-    public String getName() {
-        return name;
+    @NotNull
+    @Property(viewable = true, order = 2)
+    public String getTeamName() {
+        return Objects.requireNonNullElse(teamName, subjectId);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
     }
 
+    @Property(viewable = true, order = 3)
     public String getDescription() {
         return description;
     }
