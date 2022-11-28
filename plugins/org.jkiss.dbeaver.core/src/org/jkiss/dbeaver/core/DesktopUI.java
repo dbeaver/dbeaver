@@ -519,11 +519,13 @@ public class DesktopUI implements DBPPlatformUI {
             protected IStatus run(DBRProgressMonitor monitor) {
                 monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
                 try {
+                    UIExecutionQueue.blockQueue();
                     runnable.run(monitor);
                     return Status.OK_STATUS;
                 } catch (Exception ex) {
                     return GeneralUtils.makeExceptionStatus(ex);
                 } finally {
+                    UIExecutionQueue.unblockQueue();
                     monitor.done();
                 }
             }
