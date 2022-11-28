@@ -188,7 +188,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                     try {
                         client.disconnect();
                     } catch (IOException e) {
-                        log.debug("Error closing session", e);
+                        log.debug("Error closing session: " + e.getMessage());
                     }
                 }
             }

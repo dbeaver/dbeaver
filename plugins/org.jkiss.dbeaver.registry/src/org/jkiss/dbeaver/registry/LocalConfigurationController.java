@@ -45,6 +45,10 @@ public class LocalConfigurationController implements DBConfigurationController {
     @Override
     public String loadConfigurationFile(@NotNull String filePath) throws DBException {
         Path localPath = configFolder.resolve(filePath);
+        if (!localPath.normalize().startsWith(configFolder)) {
+            throw new DBException("Invalid configuration path");
+        }
+
         if (!Files.exists(localPath)) {
             // Try to get it from legacy location
             if (legacyConfigFolder != null) {
@@ -64,9 +68,13 @@ public class LocalConfigurationController implements DBConfigurationController {
     @Override
     public void saveConfigurationFile(@NotNull String filePath, @NotNull String data) throws DBException {
         Path localPath = configFolder.resolve(filePath);
+        if (!localPath.normalize().startsWith(configFolder)) {
+            throw new DBException("Invalid configuration path");
+        }
         try {
-            if (!Files.exists(configFolder)) {
-                Files.createDirectories(configFolder);
+            Path localFolder = localPath.getParent();
+            if (!Files.exists(localFolder)) {
+                Files.createDirectories(localFolder);
             }
             if (Files.exists(localPath)) {
                 ContentUtils.makeFileBackup(localPath);

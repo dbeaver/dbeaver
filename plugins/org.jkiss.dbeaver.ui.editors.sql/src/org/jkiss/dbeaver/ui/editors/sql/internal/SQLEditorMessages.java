@@ -263,6 +263,7 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_enable_sql_parameters;
     public static String pref_page_sql_editor_title_pattern;
     public static String pref_page_sql_editor_file_name_pattern;
+    public static String pref_page_sql_editor_file_name_pattern_tip;
     public static String pref_page_sql_editor_checkbox_delete_empty_scripts;
     public static String pref_page_sql_editor_checkbox_put_new_scripts;
     public static String pref_page_sql_editor_checkbox_create_script_folders;
@@ -364,9 +365,17 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_no_obj_container_text;
     public static String sql_generator_no_ddl_text;
     public static String sql_generator_nonsql_text;
-    
-    public static String sql_editor_separate_connection_no_editor_or_ds_selected;
 
+    public static String sql_editor_separate_connection_no_editor_or_ds_selected;
+    public static String sql_editor_prefs_disable_services_text;
+    public static String sql_editor_prefs_disable_services_tip;
+    public static String sql_editor_prefs_script_advanced_settings;
+    public static String sql_editor_prefs_script_disable_sql_syntax_parsing_for_scripts_bigger_than;
+    public static String sql_editor_confirm_no_fetch_result_for_big_script_title;
+    public static String sql_editor_confirm_no_fetch_result_for_big_script_question;
+    public static String sql_editor_confirm_no_fetch_result_for_big_script_yes;
+    public static String sql_editor_confirm_no_fetch_result_for_big_script_no;
+    public static String sql_editor_confirm_no_fetch_result_for_big_script_remember;
 
     static {
         // initialize resource bundle

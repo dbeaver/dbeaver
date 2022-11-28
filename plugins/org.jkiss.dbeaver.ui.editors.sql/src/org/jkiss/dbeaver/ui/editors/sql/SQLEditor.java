@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -90,6 +89,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
@@ -151,6 +151,8 @@ public class SQLEditor extends SQLEditorBase implements
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_PARALLEL_QUERIES_NO_WARN = 1;
+
+    private static final int QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION = 100;
 
     private static final int SQL_EDITOR_CONTROL_INDEX = 1;
     private static final int EXTRA_CONTROL_INDEX = 0;
@@ -224,7 +226,8 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
     private ScriptAutoSaveJob scriptAutoSavejob;
     private boolean isResultSetAutoFocusEnabled = true;
-    
+    private Boolean isDisableFetchResultSet = null;
+
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
     private static class ServerOutputInfo {
@@ -639,6 +642,12 @@ public class SQLEditor extends SQLEditorBase implements
     public boolean isSmartAutoCommit() {
         return getActivePreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
     }
+    
+    @Override
+    public boolean isFoldingEnabled() {
+        return SQLEditorUtils.isSQLSyntaxParserEnabled(getEditorInput())
+            && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+    }
 
     @Override
     public void setSmartAutoCommit(boolean smartAutoCommit) {
@@ -655,9 +664,6 @@ public class SQLEditor extends SQLEditorBase implements
         topBarMan.getControl().redraw();
         bottomBarMan.getControl().redraw();
     }
-
-    
-    
     
     private class OpenContextJob extends AbstractJob {
         private final DBSInstance instance;
@@ -2726,7 +2732,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         refreshActions();
 
-        refreshEditorIconAndTitle(dsContainer);
+        refreshEditorIconAndTitle();
 
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
@@ -2770,25 +2776,42 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void refreshEditorIconAndTitle(DBPDataSourceContainer dsContainer) {
+    /**
+     * Build and update icon and title
+     */
+    public void refreshEditorIconAndTitle() {
+        DBPDataSourceContainer dsContainer = getDataSourceContainer();
         setPartName(getEditorName());
-
+        
         // Update icon
         if (editorImage != null) {
             editorImage.dispose();
         }
+        
+        DBPImage bottomLeft;
+        DBPImage bottomRight;
+        
         if (executionContext == null) {
             if (dsContainer instanceof DBPStatefulObject && ((DBPStatefulObject) dsContainer).getObjectState() == DBSObjectState.INVALID) {
-                OverlayImageDescriptorLegacy oid = new OverlayImageDescriptorLegacy(baseEditorImage.getImageData());
-                oid.setBottomRight(new ImageDescriptor[] { DBeaverIcons.getImageDescriptor(DBIcon.OVER_ERROR) });
-                editorImage = oid.createImage();
+                bottomRight = DBIcon.OVER_ERROR;
             } else {
-                editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+                bottomRight = null;
             }
         } else {
-            OverlayImageDescriptorLegacy oid = new OverlayImageDescriptorLegacy(baseEditorImage.getImageData());
-            oid.setBottomRight(new ImageDescriptor[] { DBeaverIcons.getImageDescriptor(DBIcon.OVER_SUCCESS) });
-            editorImage = oid.createImage();
+            bottomRight = DBIcon.OVER_SUCCESS;
+        }
+        
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput())) {
+            bottomLeft = null;
+        } else {
+            bottomLeft = DBIcon.OVER_RED_LAMP;
+        }
+        
+        if (bottomLeft != null || bottomRight != null) {
+            DBPImage image = new DBIconComposite(new DBIconBinary(null, baseEditorImage), false, null, null, bottomLeft, bottomRight);
+            editorImage = DBeaverIcons.getImage(image, false);
+        } else {
+            editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
         }
         setTitleImage(editorImage);
     }
@@ -3397,15 +3420,32 @@ public class SQLEditor extends SQLEditorBase implements
                         null,
                         new StructuredSelection(this));
                 } else {
-                    final SQLQueryJob job = new SQLQueryJob(
-                        getSite(),
-                        isSingleQuery ? SQLEditorMessages.editors_sql_job_execute_query : SQLEditorMessages.editors_sql_job_execute_script,
-                        executionContext,
-                        resultsContainer,
-                        queries,
-                        scriptContext,
-                        this,
-                        listener);
+                    boolean disableFetchCurrentResultSets;
+                    if (queries.size() > QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION) {
+                        if (isDisableFetchResultSet == null) {
+                            UserChoiceResponse rs = DBWorkbench.getPlatformUI().showUserChoice(
+                                SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_title,
+                                SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_question,
+                                List.of(
+                                    SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_yes,
+                                    SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_no
+                                ),
+                                List.of(SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_remember), 0, 0);
+                            disableFetchCurrentResultSets = rs.choiceIndex == 0;
+                            if (rs.forAllChoiceIndex != null) {
+                                isDisableFetchResultSet = disableFetchCurrentResultSets;
+                            }
+                        } else {
+                            disableFetchCurrentResultSets = isDisableFetchResultSet;
+                        }
+                    } else {
+                        disableFetchCurrentResultSets = false;
+                    }
+                    final SQLQueryJob job = new SQLQueryJob(getSite(),
+                        isSingleQuery ? SQLEditorMessages.editors_sql_job_execute_query
+                            : SQLEditorMessages.editors_sql_job_execute_script,
+                        executionContext, resultsContainer, queries, scriptContext, this, listener,
+                        disableFetchCurrentResultSets);
 
                     if (isSingleQuery) {
                         resultsContainer.query = queries.get(0);

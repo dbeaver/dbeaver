@@ -8,6 +8,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="stylesheet" href="inc/leaflet.css" />
     <script src="inc/leaflet.js"></script>
+    <script src="inc/leaflet-lasso.min.js"></script>
     <script src="inc/wkx.min.js"></script>
 
     <style>
@@ -15,7 +16,7 @@
             background-image: url(inc/layers.png);
             width: 30px;
             height: 30px;
-	    }
+        }
     </style>
 </head>
 
@@ -29,8 +30,8 @@
 
         var wkx = require('wkx');
         var geoMap = L.map('gisMap', {
-		    crs: L.CRS.${geomCRS}
-	    });
+            crs: L.CRS.${geomCRS}
+        });
 
         if (${showMap}) {
             let baseLayersObj = {
@@ -152,10 +153,10 @@
             document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility=elementsVisibility;
         }
 
-        if (typeof setPresentationSelection !== undefined) {
+        if (typeof setPresentationSelection !== 'undefined') {
             let selection = [];
 
-            function addSelection(target, layer) {
+            function addSelection(target, layer, keepSelection) {
                 let index = -1;
 
                 for (let i = 0; i < selection.length; i++) {
@@ -165,7 +166,7 @@
                     }
                 }
 
-                if (index < 0) {
+                if (index < 0 || keepSelection) {
                     layer.setStyle({color: '#ff4620', dashArray: '4'});
                     selection.push({target: target, layer: layer});
                 } else {
@@ -212,6 +213,18 @@
                     geoMap.closePopup();
                 }
             });
+
+            geoMap.on('lasso.finished', function (e) {
+                if (e.originalEvent.ctrlKey !== true) {
+                    clearSelection();
+                }
+                e.layers.forEach(function (layer) {
+                    addSelection(vectorLayer, layer, true);
+                });
+                fireSelectionChanged();
+            });
+
+            L.control.lasso({ intersect: true }).addTo(geoMap);
         }
 
         showTools(${showTools});
