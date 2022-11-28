@@ -27,7 +27,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.eclipse.ui.workbench.texteditor;visibility:=reexport,
  org.eclipse.ui.console,
- org.eclipse.e4.ui.model.workbench
+ org.eclipse.e4.ui.model.workbench,
+ org.eclipse.ui.forms
 Export-Package: org.jkiss.dbeaver.runtime.sql,
  org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.controls.querylog,
