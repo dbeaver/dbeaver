@@ -171,7 +171,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load server variant")) {
             this.serverVariant = DB2Utils.getServerVariant(monitor, session);
         } catch (SQLException e) {
-        	log.warn("Unable to determine server variant", e);
+            log.warn("Unable to determine server variant", e);
         }
         
         ((JDBCObjectSimpleCache) dataTypeCache).setCaseSensitive(false);
