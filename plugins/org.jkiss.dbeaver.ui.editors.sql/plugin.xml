@@ -1024,7 +1024,9 @@
                 </command>
                 <separator name="editor_file" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser" style="toggle" tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.disableSQLSyntaxParser.description">
-                    <visibleWhen checkEnabled="true"/>
+                    <visibleWhen>
+                        <reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/>
+                    </visibleWhen>
                 </command>
             </menu>
         </menuContribution>

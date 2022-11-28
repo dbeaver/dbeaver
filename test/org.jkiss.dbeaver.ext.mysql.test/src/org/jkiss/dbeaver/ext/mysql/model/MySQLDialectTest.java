@@ -14,20 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.auth;
+package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.DBException;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Map;
+@RunWith(MockitoJUnitRunner.class)
+public class MySQLDialectTest {
+    @Test
+    public void quoteStringTest() {
+        final MySQLDialect dialect = new MySQLDialect();
 
-/**
- * Credentials manager.
- * Keeps user credentials and provides low-level authentication mechanisms
- */
-public interface SMAuthCredentialsManager {
-    /**
-     * Get user credentials for specified provider
-     */
-    Map<String, Object> getUserCredentials(String userId, String authProviderId) throws DBException;
-
+        Assert.assertEquals("`a ' b`", dialect.getQuotedIdentifier("a ' b", false, true));
+        Assert.assertEquals("`a `` b`", dialect.getQuotedIdentifier("a ` b", false, true));
+        Assert.assertEquals("`a b`", dialect.getQuotedIdentifier("a b", false, true));
+    }
 }

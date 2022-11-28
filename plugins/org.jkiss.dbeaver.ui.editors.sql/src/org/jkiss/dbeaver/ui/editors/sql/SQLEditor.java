@@ -89,6 +89,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
@@ -150,6 +151,8 @@ public class SQLEditor extends SQLEditorBase implements
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_PARALLEL_QUERIES_NO_WARN = 1;
+
+    private static final int QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION = 100;
 
     private static final int SQL_EDITOR_CONTROL_INDEX = 1;
     private static final int EXTRA_CONTROL_INDEX = 0;
@@ -223,7 +226,8 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
     private ScriptAutoSaveJob scriptAutoSavejob;
     private boolean isResultSetAutoFocusEnabled = true;
-    
+    private Boolean isDisableFetchResultSet = null;
+
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
     private static class ServerOutputInfo {
@@ -641,7 +645,8 @@ public class SQLEditor extends SQLEditorBase implements
     
     @Override
     public boolean isFoldingEnabled() {
-        return SQLEditorUtils.isSQLSyntaxParserEnabled(getEditorInput()) && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+        return SQLEditorUtils.isSQLSyntaxParserEnabled(getEditorInput())
+            && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
     @Override
@@ -2796,7 +2801,7 @@ public class SQLEditor extends SQLEditorBase implements
             bottomRight = DBIcon.OVER_SUCCESS;
         }
         
-        if (SQLEditorUtils.isSQLSyntaxParserEnabled(getEditorInput())) {
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput())) {
             bottomLeft = null;
         } else {
             bottomLeft = DBIcon.OVER_RED_LAMP;
@@ -3415,15 +3420,32 @@ public class SQLEditor extends SQLEditorBase implements
                         null,
                         new StructuredSelection(this));
                 } else {
-                    final SQLQueryJob job = new SQLQueryJob(
-                        getSite(),
-                        isSingleQuery ? SQLEditorMessages.editors_sql_job_execute_query : SQLEditorMessages.editors_sql_job_execute_script,
-                        executionContext,
-                        resultsContainer,
-                        queries,
-                        scriptContext,
-                        this,
-                        listener);
+                    boolean disableFetchCurrentResultSets;
+                    if (queries.size() > QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION) {
+                        if (isDisableFetchResultSet == null) {
+                            UserChoiceResponse rs = DBWorkbench.getPlatformUI().showUserChoice(
+                                SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_title,
+                                SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_question,
+                                List.of(
+                                    SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_yes,
+                                    SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_no
+                                ),
+                                List.of(SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_remember), 0, 0);
+                            disableFetchCurrentResultSets = rs.choiceIndex == 0;
+                            if (rs.forAllChoiceIndex != null) {
+                                isDisableFetchResultSet = disableFetchCurrentResultSets;
+                            }
+                        } else {
+                            disableFetchCurrentResultSets = isDisableFetchResultSet;
+                        }
+                    } else {
+                        disableFetchCurrentResultSets = false;
+                    }
+                    final SQLQueryJob job = new SQLQueryJob(getSite(),
+                        isSingleQuery ? SQLEditorMessages.editors_sql_job_execute_query
+                            : SQLEditorMessages.editors_sql_job_execute_script,
+                        executionContext, resultsContainer, queries, scriptContext, this, listener,
+                        disableFetchCurrentResultSets);
 
                     if (isSingleQuery) {
                         resultsContainer.query = queries.get(0);
