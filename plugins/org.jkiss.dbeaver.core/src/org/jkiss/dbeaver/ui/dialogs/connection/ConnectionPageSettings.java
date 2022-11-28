@@ -228,10 +228,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         continue;
                     }
                     TabItem item = new TabItem(tabFolder, SWT.NONE);
-                    page.createControl(tabFolder);
+                    Composite dummyComposite = new Composite(tabFolder, SWT.NONE);
+                    //page.createControl(tabFolder);
                     item.setData(page);
-                    Control pageControl = page.getControl();
-                    item.setControl(pageControl);
+                    //Control pageControl = page.getControl();
+                    item.setControl(dummyComposite);
                     item.setText(CommonUtils.isEmpty(page.getTitle()) ? CoreMessages.dialog_setting_connection_general : page.getTitle());
                     item.setToolTipText(page.getDescription());
                 }
@@ -244,6 +245,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 });
             }
 
+            activateCurrentItem();
             Dialog.applyDialogFont(tabFolder);
             UIUtils.setHelp(getControl(), IHelpContextIds.CTX_CON_WIZARD_SETTINGS);
         } catch (Exception ex) {
@@ -258,6 +260,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             TabItem[] selection = tabFolder.getSelection();
             if (selection.length == 1) {
                 IDialogPage page = (IDialogPage) selection[0].getData();
+                if (page.getControl() == null) {
+                    // Create page
+                    selection[0].getControl().dispose();
+                    page.createControl(tabFolder);
+                    selection[0].setControl(page.getControl());
+                }
                 page.setVisible(true);
             }
         }
@@ -449,13 +457,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         TabItem[] selection = tabFolder.getSelection();
         for (TabItem pageTab : tabFolder.getItems()) {
             if (pageTab.getData() == subPage) {
+                tabFolder.setSelection(pageTab);
+                activateCurrentItem();
                 if (selection.length == 1 && selection[0].getData() != subPage && selection[0].getData() instanceof ActiveWizardPage) {
                     ((ActiveWizardPage) selection[0].getData()).deactivatePage();
                 }
                 if (subPage instanceof ActiveWizardPage) {
                     ((ActiveWizardPage) subPage).activatePage();
                 }
-                tabFolder.setSelection(pageTab);
                 break;
             }
         }
