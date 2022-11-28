@@ -609,12 +609,13 @@ public class DB2Utils {
         return result;
     }
     
-    public static DB2Sqlca getDb2Sqlca(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
-    	DB2Sqlca sqlca = null;
-    	try (Connection connection = session.getOriginal()) {
-            sqlca = DB2Sqlca.from(connection);
-    	}
-    	return sqlca;
+    public static char getServerVariant(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
+        char serverVariant;
+        DB2Sqlca sqlca = null;
+        sqlca = DB2Sqlca.from(session.getOriginal());
+        char[] sqlwarn = sqlca.getSqlWarn();
+        serverVariant = sqlwarn[7];
+        return serverVariant;
     }
 
     private DB2Utils()

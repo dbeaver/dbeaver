@@ -116,7 +116,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     private String                                               schemaForExplainTables;
 
     private Double                                               version;                                                                                                                  // Database
-    private Character                                            serverVariant;
+    private char                                                 serverVariant;
     private volatile transient boolean hasStatistics;
     // Version
 
@@ -163,14 +163,13 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
             if (defaultSchema != null) {
                 this.db2CurrentUserPrivileges = new DB2CurrentUserPrivileges(monitor, session, defaultSchema.getName(), this);
             }
-            
 
         } catch (SQLException e) {
             log.warn("Error reading active schema", e);
         }
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load server variant")) {
-            readDatabaseServerVariant(monitor, session);
+            this.serverVariant = DB2Utils.getServerVariant(monitor, session);
         } catch (SQLException e) {
         	log.warn("Unable to determine server variant", e);
         }
@@ -681,9 +680,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     // -------------------------
 
     private void readDatabaseServerVariant(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
-        DB2Sqlca sqlca = DB2Utils.getDb2Sqlca(monitor, session);
-        char[] sqlwarn = sqlca.getSqlWarn();
-        serverVariant = sqlwarn[7];
+        
     }
 
     public boolean isBigSQL() {

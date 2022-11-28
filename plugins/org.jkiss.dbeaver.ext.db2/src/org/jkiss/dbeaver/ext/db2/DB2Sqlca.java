@@ -8,11 +8,14 @@ import java.sql.SQLWarning;
 import org.jkiss.dbeaver.Log;
 
 /**
- * Retrieves the SQLCA.
+ * {@link DB2Sqlca} is a wrapper for a class of the same name which is part of the 
+ * DB2 JDBC Driver package.  Since the DB2 JDBC Driver is licensed code and cannot be
+ * included, the wrapper uses reflection to acquire a reference and call methods on it.  
  * 
  * <quote>The SQLCA (SQL communications area) is a collection of variables that
  * are updated at the end of the execution of every SQL statement.</quote>
- * 
+ *
+ * @see com.ibm.db2.jcc.DB2Sqlca
  * @see https://www.ibm.com/docs/en/db2/11.5?topic=tables-sqlca-sql-communications-area
  */
 public class DB2Sqlca {
