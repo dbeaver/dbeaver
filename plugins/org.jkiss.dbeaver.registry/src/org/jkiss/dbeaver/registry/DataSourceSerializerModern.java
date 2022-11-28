@@ -875,9 +875,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_SERVER, connectionInfo.getServerName());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_DATABASE, connectionInfo.getDatabaseName());
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_URL, connectionInfo.getUrl());
-            if (!connectionInfo.getConfigurationType().isDefault()) {
-                JSONUtils.fieldNE(json, RegistryConstants.ATTR_CONFIGURATION_TYPE, connectionInfo.getConfigurationType().toString());
-            }
+            JSONUtils.fieldNE(json, RegistryConstants.ATTR_CONFIGURATION_TYPE, connectionInfo.getConfigurationType().toString());
 
             if (dataSource.getProject().isUseSecretStorage()) {
                 // For secured projects save only shared credentials
