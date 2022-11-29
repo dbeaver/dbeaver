@@ -143,4 +143,5 @@ public class DBConstants {
     public static final String HOST_LOCALHOST = "localhost";
 
 
+    public static final String DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS = "disableNetworkParameters";
 }
