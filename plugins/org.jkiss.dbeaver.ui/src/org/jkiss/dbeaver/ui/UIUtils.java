@@ -1682,12 +1682,14 @@ public class UIUtils {
 
     @Nullable
     public static Shell getActiveWorkbenchShell() {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        if (window != null) {
-            Shell shell = window.getShell();
-            if (shell != null && shell.isVisible()) {
-                return shell;
+        if (PlatformUI.isWorkbenchRunning()) {
+            IWorkbench workbench = PlatformUI.getWorkbench();
+            IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+            if (window != null) {
+                Shell shell = window.getShell();
+                if (shell != null && shell.isVisible()) {
+                    return shell;
+                }
             }
         }
         Display display = Display.getCurrent();
