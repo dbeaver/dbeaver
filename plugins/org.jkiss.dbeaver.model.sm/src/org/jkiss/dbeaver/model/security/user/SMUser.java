@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.security.user;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.meta.Property;
 
 import java.util.Map;
 
@@ -25,7 +26,7 @@ public class SMUser extends SMSubject {
 
     private String[] userTeams;
     private boolean enabled;
-    private final String authRole;
+    private String authRole;
 
     public SMUser(
         @NotNull String userId,
@@ -49,6 +50,13 @@ public class SMUser extends SMSubject {
     }
 
     @NotNull
+    @Override
+    public String getName() {
+        return subjectId;
+    }
+
+    @Property(viewable = true, order = 1)
+    @NotNull
     public String getUserId() {
         return subjectId;
     }
@@ -62,6 +70,7 @@ public class SMUser extends SMSubject {
         this.userTeams = userTeams;
     }
 
+    @Property(viewable = true, order = 3)
     public boolean isEnabled() {
         return enabled;
     }
@@ -70,7 +79,12 @@ public class SMUser extends SMSubject {
         this.enabled = enabled;
     }
 
+    @Property(viewable = true, order = 2)
     public String getAuthRole() {
         return authRole;
+    }
+
+    public void setAuthRole(String authRole) {
+        this.authRole = authRole;
     }
 }
