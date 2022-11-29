@@ -185,9 +185,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
                     // In this case, we had data transfer from table(s) to a file or another container.
                     // But, probably, table(s) were deleted, and we lost our producer(s).
                     // Usually, consumers do not have any special info, so we can delete extra items.
-                    IDataTransferConsumer<?,?>[] initConsumersCopy = new IDataTransferConsumer<?,?>[initProducers.length];
-                    System.arraycopy(initConsumers, 0, initConsumersCopy, 0, initProducers.length);
-                    initConsumers = initConsumersCopy;
+                    initConsumers = Arrays.copyOf(initConsumers, initProducers.length);
                 } else {
                     throw new IllegalArgumentException("Producers number must match consumers number");
                 }
