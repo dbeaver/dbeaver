@@ -55,7 +55,9 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.awt.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 
@@ -175,14 +177,18 @@ public class ContentValueManager extends BaseValueManager {
         } else {
             fos.write(data);
             fos.close();
-            UIUtils.syncExec(() -> {
-                try {
-                    IFileStore store = EFS.getLocalFileSystem().getStore(tmpFile.toURI());
-                    IDE.openEditorOnFileStore(UIUtils.getActiveWorkbenchWindow().getActivePage(), store);
-                } catch (CoreException e) {
-                    log.error("Error while opening octet stream", e);
-                }
-            });
+            if (RuntimeUtils.isWindows()) {
+                UIUtils.syncExec(() -> {
+                    try {
+                        IFileStore store = EFS.getLocalFileSystem().getStore(tmpFile.toURI());
+                        IDE.openEditorOnFileStore(UIUtils.getActiveWorkbenchWindow().getActivePage(), store);
+                    } catch (CoreException e) {
+                        log.error("Error while opening octet stream", e);
+                    }
+                });
+            } else {
+                Desktop.getDesktop().open(tmpFile);
+            }
 
 
             // delete the file when the user closes the DBeaver application
