@@ -397,9 +397,10 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true) : parent.getChild(name);
                 if (folder == null) {
                     folder = new DataSourceFolder(registry, parent, name, description);
-                    registry.addDataSourceFolder(folder);
+                    parseResults.addedFolders.add(folder);
                 } else {
                     folder.setDescription(description);
+                    parseResults.updatedFolders.add(folder);
                 }
             }
 
