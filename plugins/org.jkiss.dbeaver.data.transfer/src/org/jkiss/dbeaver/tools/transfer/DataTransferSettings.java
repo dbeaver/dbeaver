@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -85,6 +86,8 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     // Hacky flag too. Skip nodes (producer and consumer) update
     // if it's not required -- e.g., when we're editing an exiting task
     private final boolean nodeUpdateRestricted;
+    // New hacky flag. Helps to understand - do the task running already? Or are we just checking task settings?
+    private boolean isTaskRunning;
 
     public DataTransferSettings(
         @Nullable Collection<? extends IDataTransferProducer> producers,
@@ -93,11 +96,13 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         @NotNull DataTransferState state,
         boolean selectDefaultNodes,
         boolean isExport,
-        boolean isExitingTask)
+        boolean isExitingTask,
+        boolean isTaskRunning)
     {
         this.state = state;
         this.nodeUpdateRestricted = isExitingTask;
         this.configurationMap = configuration;
+        this.isTaskRunning = isTaskRunning;
         initializePipes(producers, consumers, isExport);
         loadSettings(configuration);
 
@@ -114,7 +119,8 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         @NotNull DBTTask task,
         @NotNull Log taskLog,
         @NotNull Map<String, Object> configuration,
-        @NotNull DataTransferState state) {
+        @NotNull DataTransferState state,
+        boolean isTaskRunning) {
         this(
             getNodesFromLocation(monitor, task, state, taskLog, "producers", IDataTransferProducer.class),
             getNodesFromLocation(monitor, task, state, taskLog, "consumers", IDataTransferConsumer.class),
@@ -122,7 +128,8 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             state,
             !task.getProperties().isEmpty(),
             isExportTask(task),
-            DBTaskUtils.isTaskExists(task)
+            DBTaskUtils.isTaskExists(task),
+            isTaskRunning
         );
     }
 
@@ -179,7 +186,17 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             // Both producers and consumers specified
             // Processor belongs to non-database nodes anyway
             if (initProducers.length != initConsumers.length) {
-                throw new IllegalArgumentException("Producers number must match consumers number");
+                // Something went wrong
+                if (!isTaskRunning && initProducers.length < initConsumers.length && initProducers[0] instanceof DatabaseTransferProducer) {
+                    // In this case, we had data transfer from table(s) to a file or another container.
+                    // But, probably, table(s) were deleted, and we lost our producer(s).
+                    // Usually, consumers do not have any special info, so we can delete extra items.
+                    // To show task wizard to the user.
+                    initConsumers = Arrays.copyOf(initConsumers, initProducers.length);
+                } else {
+                    throw new IllegalArgumentException("Producers number must match consumers number"
+                        + (isExport ? ". Please check your source containers" : ""));
+                }
             }
             // Make pipes
             for (int i = 0; i < initProducers.length; i++) {
