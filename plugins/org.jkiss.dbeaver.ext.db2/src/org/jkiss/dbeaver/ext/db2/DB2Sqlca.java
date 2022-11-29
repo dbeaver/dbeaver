@@ -8,9 +8,8 @@ import java.sql.SQLWarning;
 import org.jkiss.dbeaver.Log;
 
 /**
- * {@link DB2Sqlca} is a wrapper for a class of the same name which is part of the 
- * DB2 JDBC Driver package.  Since the DB2 JDBC Driver is licensed code and cannot be
- * included, the wrapper uses reflection to acquire a reference and call methods on it.  
+ * {@link DB2Sqlca} is a proxy for {@link com.ibm.db2.jcc.DB2Sqlca} that
+ * prevents the need to link directly against the DB2 JDBC Drivers.
  * 
  * <quote>The SQLCA (SQL communications area) is a collection of variables that
  * are updated at the end of the execution of every SQL statement.</quote>
@@ -22,16 +21,25 @@ public class DB2Sqlca {
 
     private static final Log LOG = Log.getLog(DB2Sqlca.class);
 
-    private Class<?> clazz;
     private Object delegate;
 
-    public DB2Sqlca(Object delegate) {
+    /**
+     * Constructor.
+     * 
+     * Constructs a new instance of {@link DB2Sqlca} from an {@link Object}
+     * reference to an instance of {@link com.ibm.db2.jcc.DB2Sqlca}.
+     * 
+     * @param delegate
+     *            An instance of {@link com.ibm.db2.jcc.DB2Sqlca} acquired
+     *            through the DB2 JDBC Driver.
+     */
+    private DB2Sqlca(Object delegate) {
         this.delegate = delegate;
-        this.clazz = delegate.getClass();
     }
 
     public char[] getSqlWarn() {
         try {
+            Class<?> clazz = delegate.getClass();
             Method method = clazz.getMethod("getSqlWarn");
             Object result = method.invoke(delegate);
             return (char[]) result;
@@ -45,8 +53,11 @@ public class DB2Sqlca {
      * Retrieves the SQLCA from a {@link Connection}
      * 
      * @param connection
-     * @return
-     * @throws SQLException
+     *            {@link Connection} to load an instance of {@link DB2Sqlca}
+     *            from.
+     * @return An instance of {@link DB2Sqlca} if one can be produced from the
+     *         connection, otherwise {@code null}.
+     * @see #from(SQLWarning)
      */
     static DB2Sqlca from(Connection connection) throws SQLException {
         return DB2Sqlca.from(connection.getWarnings());
@@ -56,7 +67,9 @@ public class DB2Sqlca {
      * Retrieves the SQLCA from a {@link SQLWarning}
      * 
      * @param warning
-     * @return
+     *            {@link Warning} to load an instance of {@link DB2Sqlca} from.
+     * @return An instance of {@link DB2Sqlca} if one can be produced from the
+     *         connection, otherwise {@code null}.
      */
     static DB2Sqlca from(SQLWarning warning) throws SQLException {
         DB2Sqlca sqlca = null;
