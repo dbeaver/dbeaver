@@ -17,12 +17,9 @@
 package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
-import org.jkiss.dbeaver.model.auth.SMAuthInfo;
-import org.jkiss.dbeaver.model.auth.SMSessionType;
 import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMObjectPermissions;
 import org.jkiss.dbeaver.model.security.user.SMTeam;
@@ -35,7 +32,8 @@ import java.util.Set;
 /**
  * Admin interface
  */
-public interface SMController extends DBPObjectController, SMAuthCredentialsManager {
+public interface SMController extends DBPObjectController,
+    SMAuthCredentialsManager, SMAuthController {
 
 
     ///////////////////////////////////////////
@@ -48,7 +46,7 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
      * @throws DBException the db exception
      */
     @NotNull
-    SMTeam[] getUserTeams() throws DBException;
+    SMTeam[] getCurrentUserTeams() throws DBException;
 
     /**
      * Gets current active user.
@@ -65,7 +63,7 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
      * @return the user parameters
      * @throws DBException the db exception
      */
-    Map<String, Object> getUserParameters() throws DBException;
+    Map<String, Object> getCurrentUserParameters() throws DBException;
 
     /**
      * Sets user parameter.
@@ -74,7 +72,7 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
      * @param value the value
      * @throws DBException the db exception
      */
-    void setUserParameter(String name, Object value) throws DBException;
+    void setCurrentUserParameter(String name, Object value) throws DBException;
 
     ///////////////////////////////////////////
     // Credentials
@@ -87,7 +85,7 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
      * @throws DBException the db exception
      */
     @NotNull
-    Map<String, Object> getUserCredentials(@NotNull String authProviderId) throws DBException;
+    Map<String, Object> getCurrentUserCredentials(@NotNull String authProviderId) throws DBException;
 
     /**
      * Sets user credentials for specified provider.
@@ -96,7 +94,7 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
      * @param credentials    the credentials
      * @throws DBException the db exception
      */
-    void setUserCredentials(
+    void setCurrentUserCredentials(
         @NotNull String authProviderId,
         @NotNull Map<String, Object> credentials
     ) throws DBException;
@@ -107,7 +105,7 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
      * @return the string [ ]
      * @throws DBException the db exception
      */
-    String[] getUserLinkedProviders() throws DBException;
+    String[] getCurrentUserLinkedProviders() throws DBException;
 
     ///////////////////////////////////////////
     // Permissions
@@ -127,23 +125,6 @@ public interface SMController extends DBPObjectController, SMAuthCredentialsMana
 
     boolean isSessionPersisted(String id) throws DBException;
 
-    SMAuthInfo authenticateAnonymousUser(
-        @NotNull String appSessionId,
-        @NotNull Map<String, Object> sessionParameters,
-        @NotNull SMSessionType sessionType
-    ) throws DBException;
-
-    SMAuthInfo authenticate(
-        @NotNull String appSessionId,
-        @Nullable String previousSmSessionId,
-        @NotNull Map<String, Object> sessionParameters,
-        @NotNull SMSessionType sessionType,
-        @NotNull String authProviderId,
-        @Nullable String authProviderConfigurationId,
-        @NotNull Map<String, Object> userCredentials
-    ) throws DBException;
-
-    SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
 
     /**
      * Invalidate current sm session and tokens
