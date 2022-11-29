@@ -324,6 +324,9 @@ public final class IOUtils {
             }
         }
         Path localFile = targetFolder.resolve(zipEntry.getName());
+        if (!localFile.normalize().startsWith(targetFolder.normalize())) {
+            throw new IOException("Zip entry is outside of the target directory");
+        }
         if (Files.exists(localFile)) {
             // Already extracted?
             return;

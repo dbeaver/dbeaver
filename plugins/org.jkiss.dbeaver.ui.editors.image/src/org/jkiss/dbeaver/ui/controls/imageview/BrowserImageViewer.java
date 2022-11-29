@@ -33,12 +33,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.IOUtils;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -97,27 +100,50 @@ public class BrowserImageViewer extends AbstractImageViewer {
 
     @Override
     public boolean loadImage(@NotNull InputStream inputStream) {
+        boolean success = false;
         try {
             clearTempFile();
-            ImageInputStream stream = ImageIO.createImageInputStream(inputStream);
-            Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
-            if (!readers.hasNext()) {
-                return false;
+            try (ImageInputStream stream = ImageIO.createImageInputStream(inputStream)) {
+                Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+                if (!readers.hasNext()) {
+                    throw new IOException("No Image readers");
+                } else {
+                    ImageReader reader = readers.next();
+                    reader.setInput(stream);
+                    tempFile = Files.createTempFile(DBWorkbench.getPlatform()
+                            .getTempFolder(new VoidProgressMonitor(), "dbeaver-images"),
+                        "image",
+                        "." + reader.getFormatName().toLowerCase(Locale.ROOT)
+                    );
+                    ImageIO.write(ImageIO.read(stream),
+                        reader.getFormatName().toLowerCase(Locale.ROOT),
+                        tempFile.toFile()
+                    );
+                    success = true;
+                }
+            } catch (IOException exception) {
+                if (!exception.getMessage().equals("closed")) {
+                    log.error("Error reading image data", exception);
+                    showBinaryTXT(inputStream);
+                    success = false;
+                }
             }
-            ImageReader reader = readers.next();
-            reader.setInput(stream);
-            tempFile = Files.createTempFile(
-                DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-images"),
-                "image",
-                "." + reader.getFormatName().toLowerCase(Locale.ROOT)
-            );
-            ImageIO.write(ImageIO.read(stream), reader.getFormatName().toLowerCase(Locale.ROOT), tempFile.toFile());
             URL url = tempFile.toUri().toURL();
             browser.setUrl(url.toString());
         } catch (IOException exception) {
             log.error(exception);
         }
-        return true;
+        return success;
+    }
+
+    private void showBinaryTXT(@NotNull InputStream inputStream) throws IOException {
+        tempFile = Files.createTempFile(
+            DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-images"),
+            "image",
+            ".txt"
+        );
+        String s = IOUtils.readToString(new InputStreamReader(inputStream, GeneralUtils.DEFAULT_ENCODING));
+        Files.writeString(tempFile, s);
     }
 
     @Override
@@ -143,11 +169,7 @@ public class BrowserImageViewer extends AbstractImageViewer {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     while (browserCreating) {
-                        try {
-                            Thread.sleep(50);
-                        } catch (InterruptedException ex) {
-                            break;
-                        }
+                        Thread.onSpinWait();
                     }
                     UIUtils.syncExec(BrowserImageViewer.super::dispose);
                     return Status.OK_STATUS;

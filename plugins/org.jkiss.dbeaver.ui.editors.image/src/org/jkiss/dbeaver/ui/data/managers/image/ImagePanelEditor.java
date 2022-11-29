@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.data.managers.image;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -55,7 +56,11 @@ public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer>
     }
 
     @Override
-    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull AbstractImageViewer control, @NotNull DBDContent value) throws DBException {
+    public void primeEditorValue(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable AbstractImageViewer control,
+        @NotNull DBDContent value
+    ) throws DBException {
         monitor.subTask("Read image value");
         DBDContentStorage data = value.getContents(monitor);
         if (data != null) {
@@ -63,7 +68,7 @@ public class ImagePanelEditor implements IStreamValueEditor<AbstractImageViewer>
                 if (!(new UITask<Boolean>() {
                     @Override
                     protected Boolean runTask() {
-                        if (!control.isDisposed()) {
+                        if (control != null && !control.isDisposed()) {
                             return control.loadImage(contentStream);
                         } else {
                             return true; // already read

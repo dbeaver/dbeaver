@@ -522,6 +522,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
     }
 
     private void updateJumpServerSettingsVisibility() {
+/*
         final String name = tunnelImplCombo.getText();
         for (SSHImplementationDescriptor descriptor : SSHImplementationRegistry.getInstance().getDescriptors()) {
             if (descriptor.getLabel().equals(name)) {
@@ -531,6 +532,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<Obje
                 break;
             }
         }
+*/
     }
 
     private static class CredentialsPanel extends Composite {

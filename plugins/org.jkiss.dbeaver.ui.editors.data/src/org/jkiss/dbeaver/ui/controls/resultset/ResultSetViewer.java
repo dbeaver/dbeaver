@@ -448,6 +448,10 @@ public class ResultSetViewer extends Viewer
             return;
         }
         lastPropertyUpdateTime = System.currentTimeMillis();
+        if (ResultSetPreferences.RESULT_SET_PRESENTATION.equals(property)) {
+            // No need to refresh data
+            return;
+        }
         UIUtils.asyncExec(() -> {
             if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
                 if (activePresentation instanceof AbstractPresentation) {
@@ -2490,6 +2494,9 @@ public class ResultSetViewer extends Viewer
             return "Data edit restricted";
         }
         if (executionContext.getDataSource().getInfo().isReadOnlyData()) {
+            return "Read-only data container";
+        }
+        if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
             return "Connection is in read-only state";
         }
         return null;
@@ -2550,8 +2557,18 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void showDistinctFilter(DBDAttributeBinding curAttribute) {
-        showFiltersDistinctMenu(curAttribute, false);
+    public void showColumnMenu(DBDAttributeBinding curAttribute) {
+        MenuManager columnMenu = new MenuManager();
+        //getActivePresentation().setCurrentAttribute(curAttribute);
+        ResultSetRow currentRow = getCurrentRow();
+
+        fillOrderingsMenu(columnMenu, curAttribute, currentRow);
+        fillFiltersMenu(columnMenu, curAttribute, currentRow);
+
+        final Menu contextMenu = columnMenu.createContextMenu(getActivePresentation().getControl());
+        contextMenu.setLocation(Display.getCurrent().getCursorLocation());
+        contextMenu.addMenuListener(MenuListener.menuHiddenAdapter(menuEvent -> UIUtils.asyncExec(columnMenu::dispose)));
+        contextMenu.setVisible(true);
     }
 
     public void showFiltersDistinctMenu(DBDAttributeBinding curAttribute, boolean atKeyboardCursor) {

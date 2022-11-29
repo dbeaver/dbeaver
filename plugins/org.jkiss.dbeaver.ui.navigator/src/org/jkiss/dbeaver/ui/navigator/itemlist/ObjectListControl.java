@@ -272,6 +272,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return itemsViewer;
     }
 
+
     public Composite getControl() {
         // Both table and tree are composites so its ok
         return (Composite) itemsViewer.getControl();
@@ -364,6 +365,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 loadService.syncRun();
             }
         }
+    }
+
+    public ViewerColumnController<ObjectColumn, Object> getColumnController() {
+        return columnController;
     }
 
     protected int getDataLoadTimeout() {
@@ -828,6 +833,17 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             props.addAll(column.propMap.values());
         }
         return props;
+    }
+
+    public void setIsColumnVisibleById(String id, boolean visible) {
+        if (columnController != null) {
+            ObjectColumn[] columnsData = columnController.getColumnsData(ObjectColumn.class);
+            for (int i = 0; i < columnsData.length; i++) {
+                if (columnsData[i].id.equals(id)) {
+                    columnController.setIsColumnVisible(i, visible);
+                }
+            }
+        }
     }
 
     protected void createColumn(ObjectPropertyDescriptor prop) {
