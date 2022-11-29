@@ -70,7 +70,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
         Group outputGroup = UIUtils.createControlGroup(
                 composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
         inputFileText = UIUtils.createLabelText(
-                outputGroup, MySQLUIMessages.tools_script_execute_wizard_page_settings_label_input_file, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
+                outputGroup, MySQLUIMessages.tools_script_execute_wizard_page_settings_label_input_file, "", SWT.BORDER); //$NON-NLS-2$
         inputFileText.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseUp(MouseEvent e)

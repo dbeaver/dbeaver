@@ -60,7 +60,7 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreToolWizardPag
         Group inputGroup = UIUtils.createControlGroup(
             composite, PostgreMessages.tool_script_label_input, 3, GridData.FILL_HORIZONTAL, 0);
         inputFileText = UIUtils.createLabelText(
-            inputGroup, PostgreMessages.tool_script_label_input_file, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
+            inputGroup, PostgreMessages.tool_script_label_input_file, "", SWT.BORDER); //$NON-NLS-2$
         inputFileText.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseUp(MouseEvent e) {
