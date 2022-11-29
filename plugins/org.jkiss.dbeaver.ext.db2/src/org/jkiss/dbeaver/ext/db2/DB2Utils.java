@@ -608,6 +608,9 @@ public class DB2Utils {
         return result;
     }
     
+    /**
+     * Retrieves the server variant information from the DB2 SQLCA.
+     */
     public static char getServerVariant(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
         DB2Sqlca sqlca = DB2Sqlca.from(session.getOriginal());
         if (sqlca == null) {
