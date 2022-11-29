@@ -24,12 +24,14 @@ import java.sql.SQLWarning;
 import org.jkiss.dbeaver.Log;
 
 /**
- * {@link DB2Sqlca} is a proxy for {@link com.ibm.db2.jcc.DB2Sqlca} that prevents the need to link directly against the DB2 JDBC Drivers.
+ * {@link DB2Sqlca} is a proxy for {@link com.ibm.db2.jcc.DB2Sqlca} that
+ * prevents the need to link directly against the DB2 JDBC Drivers.
  * 
- * <quote>The SQLCA (SQL communications area) is a collection of variables that are updated at the end of the execution of every SQL statement.</quote>
+ * <quote>The SQLCA (SQL communications area) is a collection of variables that
+ * are updated at the end of the execution of every SQL statement.</quote>
  *
  * @see com.ibm.db2.jcc.DB2Sqlca
- * @see https://www.ibm.com/docs/en/db2/11.5?topic=tables-sqlca-sql-communications-area
+ * @see <a href="https://www.ibm.com/docs/en/db2/11.5?topic=tables-sqlca-sql-communications-area">SQLCA (SQL communications area)</a>
  */
 public class DB2Sqlca {
 
@@ -39,10 +41,13 @@ public class DB2Sqlca {
 
     /**
      * Constructor.
-     * 
-     * Constructs a new instance of {@link DB2Sqlca} from an {@link Object} reference to an instance of {@link com.ibm.db2.jcc.DB2Sqlca}.
-     * 
-     * @param delegate An instance of {@link com.ibm.db2.jcc.DB2Sqlca} acquired through the DB2 JDBC Driver.
+     *
+     * Constructs a new instance of {@link DB2Sqlca} from an {@link Object}
+     * reference to an instance of {@link com.ibm.db2.jcc.DB2Sqlca}.
+     *
+     * @param delegate
+     *            An instance of {@link com.ibm.db2.jcc.DB2Sqlca} acquired
+     *            through the DB2 JDBC Driver.
      */
     private DB2Sqlca(Object delegate) {
         this.delegate = delegate;
@@ -50,9 +55,9 @@ public class DB2Sqlca {
 
     /**
      * Retrieves the {@code sqlwarn} vector from the SQLCA.
-     * 
+     *
      * @return the {@code sqlwarn} vector from the SQLCA.
-     * @see https://www.ibm.com/docs/en/db2/11.5?topic=tables-sqlca-sql-communications-area
+     * @see <a href="https://www.ibm.com/docs/en/db2/11.5?topic=tables-sqlca-sql-communications-area">SQLCA (SQL communications area)</a>
      */
     public char[] getSqlWarn() {
         try {
@@ -68,9 +73,12 @@ public class DB2Sqlca {
 
     /**
      * Retrieves the SQLCA from a {@link Connection}
-     * 
-     * @param connection {@link Connection} to load an instance of {@link DB2Sqlca} from.
-     * @return An instance of {@link DB2Sqlca} if one can be produced from the connection, otherwise {@code null}.
+     *
+     * @param connection
+     *            {@link Connection} to load an instance of {@link DB2Sqlca}
+     *            from.
+     * @return An instance of {@link DB2Sqlca} if one can be produced from the
+     *         connection, otherwise {@code null}.
      * @see #from(SQLWarning)
      */
     static DB2Sqlca from(Connection connection) throws SQLException {
@@ -79,9 +87,11 @@ public class DB2Sqlca {
 
     /**
      * Retrieves the SQLCA from a {@link SQLWarning}
-     * 
-     * @param warning {@link Warning} to load an instance of {@link DB2Sqlca} from.
-     * @return An instance of {@link DB2Sqlca} if one can be produced from the connection, otherwise {@code null}.
+     *
+     * @param warning
+     *            {@link Warning} to load an instance of {@link DB2Sqlca} from.
+     * @return An instance of {@link DB2Sqlca} if one can be produced from the
+     *         connection, otherwise {@code null}.
      */
     static DB2Sqlca from(SQLWarning warning) throws SQLException {
         DB2Sqlca sqlca = null;
