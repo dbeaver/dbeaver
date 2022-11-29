@@ -316,8 +316,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         DBPDataSourceFolder folder = getFolder(oldPath);
         var result = Path.of(newPath);
         var newName = result.getFileName().toString();
-        var parentPath = result.getParent();
-        folder.setParent(parentPath == null ? null : getFolder(parentPath.toString()));
+        var parent = result.getParent();
+        var parentFolder = parent == null ? null : getFolder(parent.toString().replace("\\", "/"));
+        folder.setParent(parentFolder);
         if (!CommonUtils.equalObjects(folder.getName(), newName)) {
             folder.setName(newName);
         }
