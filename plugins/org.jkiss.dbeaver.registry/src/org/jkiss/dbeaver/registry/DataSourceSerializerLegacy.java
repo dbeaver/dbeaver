@@ -130,8 +130,8 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                     String name = atts.getValue(RegistryConstants.ATTR_NAME);
                     String description = atts.getValue(RegistryConstants.ATTR_DESCRIPTION);
                     String parentFolder = atts.getValue(RegistryConstants.ATTR_PARENT);
-                    DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true);
-                    DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true) : parent.getChild(name);
+                    DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true, parseResults);
+                    DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true, parseResults) : parent.getChild(name);
                     if (folder == null) {
                         folder = new DataSourceFolder(registry, parent, name, description);
                         parseResults.addedFolders.add(folder);
@@ -194,7 +194,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                     curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
                     final String folderPath = atts.getValue(RegistryConstants.ATTR_FOLDER);
                     if (folderPath != null) {
-                        curDataSource.setFolder(registry.findFolderByPath(folderPath, true));
+                        curDataSource.setFolder(registry.findFolderByPath(folderPath, true, parseResults));
                     }
                     curDataSource.setLockPasswordHash(atts.getValue(RegistryConstants.ATTR_LOCK_PASSWORD));
                     {

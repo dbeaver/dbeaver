@@ -335,10 +335,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public DBPDataSourceFolder getFolder(String path) {
-        return findFolderByPath(path, true);
+        return findFolderByPath(path, true, null);
     }
 
-    DataSourceFolder findFolderByPath(String path, boolean create) {
+    DataSourceFolder findFolderByPath(String path, boolean create, ParseResults results) {
         DataSourceFolder parent = null;
         for (String name : path.split("/")) {
             DataSourceFolder folder = parent == null ? findRootFolder(name) : parent.getChild(name);
@@ -351,11 +351,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 }
             }
             parent = folder;
+            if (results != null) {
+                results.updatedFolders.add(parent);
+            }
         }
         return parent;
     }
 
     void addDataSourceFolder(DataSourceFolder folder) {
+        if (dataSourceFolders.contains(folder)) {
+            return;
+        }
         dataSourceFolders.add(folder);
     }
 
