@@ -313,8 +313,10 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
 
         public void disconnect() {
             try {
-                forwarder.close();
-            } catch (IOException e) {
+                if (forwarder.isRunning()) {
+                    forwarder.close();
+                }
+            } catch (Exception e) {
                 log.error("Error while stopping port forwarding", e);
             }
         }
