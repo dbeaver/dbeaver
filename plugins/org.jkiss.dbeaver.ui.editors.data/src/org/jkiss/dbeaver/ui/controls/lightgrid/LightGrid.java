@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.jface.resource.JFaceColors;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.*;
@@ -4190,10 +4189,11 @@ public abstract class LightGrid extends Canvas {
                 }
             } else if (columnHeadersVisible && hoveringColumn != null && y <= headerHeight) {
                 // get column header specific tooltip
-                if (hoveringOnColumnSorter) {
+                /*if (hoveringOnColumnSorter) {
                     newTip = NLS.bind(DataEditorsMessages.grid_tooltip_sort_by_column, getLabelProvider().getText(hoveringColumn));
-                } else if (hoveringOnColumnFilter) {
-                    newTip = NLS.bind(DataEditorsMessages.grid_tooltip_filter_by_column, getLabelProvider().getText(hoveringColumn));
+                } else */
+                if (hoveringOnColumnFilter) {
+                    newTip = DataEditorsMessages.pref_page_database_resultsets_label_show_attr_filters;
                 } else {
                     newTip = hoveringColumn.getHeaderTooltip();
                 }
