@@ -2264,16 +2264,18 @@ public class ResultSetViewer extends Viewer
                     ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
                     ConfirmationDialog.WARNING,
-                    columnElement.getName()) != IDialogConstants.YES_ID)
-                {
+                    columnElement.getName()) != IDialogConstants.YES_ID) {
                     return;
                 }
             }
             constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
             constraint.setOrderDescending(forceOrder == ColumnOrder.DESC);
-        } else if (!constraint.isOrderDescending() && forceOrder != ColumnOrder.NONE) {
+        } else if (forceOrder == ColumnOrder.ASC) {
+            constraint.setOrderDescending(false);
+        } else if (forceOrder == ColumnOrder.DESC) {
             constraint.setOrderDescending(true);
         } else {
+            // Reset order
             for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
                 if (con2.getOrderPosition() > constraint.getOrderPosition()) {
                     con2.setOrderPosition(con2.getOrderPosition() - 1);
