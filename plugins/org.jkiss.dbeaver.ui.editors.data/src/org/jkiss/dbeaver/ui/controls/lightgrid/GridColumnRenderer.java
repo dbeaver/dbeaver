@@ -42,9 +42,7 @@ class GridColumnRenderer extends AbstractRenderer {
     public static final Image IMAGE_ASTERISK = DBeaverIcons.getImage(UIIcon.SORT_UNKNOWN);
     public static final Image IMAGE_DESC = DBeaverIcons.getImage(UIIcon.SORT_INCREASE);
     public static final Image IMAGE_ASC = DBeaverIcons.getImage(UIIcon.SORT_DECREASE);
-    // Use drop-down icon
     public static final Image IMAGE_FILTER = DBeaverIcons.getImage(UIIcon.DROP_DOWN);
-    public static final Image IMAGE_FILTER = DBeaverIcons.getImage(UIIcon.FILTER_SMALL);
 
     public static final int SORT_WIDTH = IMAGE_DESC.getBounds().width;
     public static final int FILTER_WIDTH = IMAGE_FILTER.getBounds().width;
@@ -224,7 +222,7 @@ class GridColumnRenderer extends AbstractRenderer {
     {
         switch (sort) {
             case SWT.DEFAULT:
-                //gc.drawImage(IMAGE_ASTERISK, bounds.x, bounds.y);
+                gc.drawImage(IMAGE_ASTERISK, bounds.x, bounds.y);
                 break;
             case SWT.UP:
                 gc.drawImage(IMAGE_ASC, bounds.x, bounds.y);
