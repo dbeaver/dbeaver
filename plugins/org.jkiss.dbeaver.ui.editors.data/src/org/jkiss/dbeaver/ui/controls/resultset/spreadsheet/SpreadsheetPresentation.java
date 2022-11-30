@@ -1438,13 +1438,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
     ///////////////////////////////////////////////
     // Filtering
 
-    void handleColumnIconClick(Object columnElement) {
+    void showFiltering(Object columnElement) {
         if (!(columnElement instanceof DBDAttributeBinding)) {
             log.debug("Unable to show distinct filter for columnElement" + columnElement);
             return;
         }
         DBDAttributeBinding attributeBinding = (DBDAttributeBinding) columnElement;
-        controller.showColumnMenu(attributeBinding);
+        if (!getSelection().getSelectedAttributes().contains(attributeBinding)) {
+            spreadsheet.deselectAll();
+        }
+        controller.showDistinctFilter(attributeBinding);
     }
 
     ///////////////////////////////////////////////
