@@ -42,6 +42,7 @@ class GridColumnRenderer extends AbstractRenderer {
     public static final Image IMAGE_ASTERISK = DBeaverIcons.getImage(UIIcon.SORT_UNKNOWN);
     public static final Image IMAGE_DESC = DBeaverIcons.getImage(UIIcon.SORT_INCREASE);
     public static final Image IMAGE_ASC = DBeaverIcons.getImage(UIIcon.SORT_DECREASE);
+    // Use drop-down icon
     public static final Image IMAGE_FILTER = DBeaverIcons.getImage(UIIcon.DROP_DOWN);
 
     public static final int SORT_WIDTH = IMAGE_DESC.getBounds().width;
