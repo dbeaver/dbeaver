@@ -137,7 +137,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 					"	s.SCHEMA_NAME as OBJECT_NAME," + 
 					"	s.SCHEMA_OWNER AS OWNER," + 
 					"CAST(NULL AS TIMESTAMP) AS created, " +
-					"	ADAPTER_SCRIPT," + 
+					"	" + (this.exasolCurrentUserPrivileges.getatLeastV8() ? "'\"' || ADAPTER_SCRIPT_SCHEMA || '\".\"' || ADAPTER_SCRIPT_NAME || '\"' AS ADAPTER_SCRIPT" : "ADAPTER_SCRIPT") + "," +
 					"	LAST_REFRESH," + 
 					"	LAST_REFRESH_BY," + 
 					"	ADAPTER_NOTES," + 

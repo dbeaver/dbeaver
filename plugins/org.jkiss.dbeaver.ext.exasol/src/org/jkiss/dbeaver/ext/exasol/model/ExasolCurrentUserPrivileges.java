@@ -62,6 +62,10 @@ public class ExasolCurrentUserPrivileges {
     public Boolean getatLeastV6() {
         return majorVersion >= 6;
     }
+
+    public Boolean getatLeastV8() {
+        return majorVersion >= 8;
+    }
     
     public Boolean getUserHasDictionaryAccess() {
     	return userHasDictionaryAccess;
