@@ -25,8 +25,18 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class LogOutputStream extends OutputStream {
+
+    public static final long DEFAULT_MAX_LOG_SIZE = 1024 * 1024 * 10; // 10Mb    
+    public static final int DEFAULT_MAX_LOG_FILES_COUNT = 3;
+    
+    public static final String LOGS_MAX_FILE_SIZE = "logs.files.output.maxSize";
+    public static final String LOGS_MAX_FILES_COUNT = "logs.files.output.maxCount";
+
 
     /**
      * The File object to store messages.  This value may be null.
@@ -34,6 +44,8 @@ public class LogOutputStream extends OutputStream {
     private final File currentLogFile;
     
     private final File logFileLocation;
+    
+    private final DBPPreferenceStore prefStore;
 
     /**
      * The Writer to log messages to.
@@ -41,14 +53,14 @@ public class LogOutputStream extends OutputStream {
     private volatile FileOutputStream currentLogFileOutput = null;
     private volatile long currentLogSize;
 
-    private final int maxLogSize;
-    private final int maxLogFiles;
+    private volatile long maxLogSize;
+    private volatile int maxLogFiles;
     
     private final String logFileName;
     private final String logFileNameExtension;
     private final Predicate<String> logFileNamePattern;
     
-    public LogOutputStream(@NotNull File debugLogFile, int maxLogSize, int maxLogFiles) throws IOException {
+    public LogOutputStream(@NotNull File debugLogFile) throws IOException {
         if (debugLogFile.exists() && !debugLogFile.isFile()) {
             throw new IOException(
                 "Failed to initialize debug log output due to the target is not a file: " + debugLogFile.getAbsolutePath()
@@ -57,8 +69,9 @@ public class LogOutputStream extends OutputStream {
         
         this.currentLogFile = debugLogFile;
         this.logFileLocation = debugLogFile.getParentFile();
-        this.maxLogSize = maxLogSize;
-        this.maxLogFiles = maxLogFiles;
+        this.prefStore = DBWorkbench.getPlatform().getPreferenceStore();
+        this.maxLogSize = prefStore.getLong(LOGS_MAX_FILE_SIZE);
+        this.maxLogFiles = prefStore.getInt(LOGS_MAX_FILES_COUNT);
 
         String fileName = debugLogFile.getName();
         int fnameExtStart = fileName.lastIndexOf('.');
@@ -82,6 +95,15 @@ public class LogOutputStream extends OutputStream {
                 throw new IOException("Failed to initialize debug log output location: " + debugLogFile.getAbsolutePath());
             }
         }
+        
+        prefStore.addPropertyChangeListener(ev -> {
+            if (LOGS_MAX_FILE_SIZE.equals(ev.getProperty())) {
+                this.maxLogSize = prefStore.getLong(LOGS_MAX_FILE_SIZE);   
+            }
+            if (LOGS_MAX_FILES_COUNT.equals(ev.getProperty())) {
+                this.maxLogFiles = prefStore.getInt(LOGS_MAX_FILES_COUNT);
+            }
+        });
     }
     
     @Override

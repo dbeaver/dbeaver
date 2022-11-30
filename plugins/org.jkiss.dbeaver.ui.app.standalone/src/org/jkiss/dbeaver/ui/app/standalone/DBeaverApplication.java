@@ -104,9 +104,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
     
-    public static final int MAX_DEBUG_LOG_FILE_SIZE = 1024 * 1024 * 10; // 10Mb    
-    public static final int MAX_DEBUG_LOG_FILES_COUNT = 3;
-
     private final String WORKSPACE_DIR_6; //$NON-NLS-1$
     private final Path FILE_WITH_WORKSPACES;
     public final String WORKSPACE_DIR_CURRENT;
@@ -698,7 +695,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 //            }
 //        }
         try {
-            debugWriter = new LogOutputStream(debugLogFile, MAX_DEBUG_LOG_FILE_SIZE, MAX_DEBUG_LOG_FILES_COUNT);
+            debugWriter = new LogOutputStream(debugLogFile);
             oldSystemOut = System.out;
             oldSystemErr = System.err;
             System.setOut(new PrintStream(new ProxyPrintStream(debugWriter, oldSystemOut)));
