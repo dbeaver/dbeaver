@@ -4866,6 +4866,10 @@ public class ResultSetViewer extends Viewer
                     "Order by " + attribute.getName() + " " + order.name(), AS_CHECK_BOX);
             this.attribute = attribute;
             this.order = order;
+            if (order != ColumnOrder.NONE) {
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(order != ColumnOrder.ASC ?
+                    UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE));
+            }
         }
 
         @Override
