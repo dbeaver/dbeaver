@@ -72,10 +72,22 @@ public interface RMController extends DBPObjectController {
     String getProjectsDataSources(@NotNull String projectId) throws DBException;
 
     /**
-     * Save datasources. Not: it only adds or updates existing datasources.
+     * Save datasources. Note: it only adds datasources.
+     *
      * @param configuration configuration in modern format.
      */
-    void saveProjectDataSources(
+    void createProjectDataSources(
+        @NotNull String projectId,
+        @NotNull String configuration,
+        @Nullable List<String> dataSourceIds) throws DBException;
+
+
+    /**
+     * Save datasources. Note: it only updates existing datasources.
+     *
+     * @param configuration configuration in modern format.
+     */
+    void updateProjectDataSources(
         @NotNull String projectId,
         @NotNull String configuration,
         @Nullable List<String> dataSourceIds) throws DBException;

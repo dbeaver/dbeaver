@@ -136,6 +136,12 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
                 return true;
             }
         }
+        for (int i = 0; i < str.length(); i++) {
+            int c = str.charAt(i);
+            if (Character.isLetter(c) && !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z')) {
+                return true;
+            }
+        }
         return super.mustBeQuoted(str, forceCaseSensitive);
     }
 

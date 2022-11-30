@@ -36,6 +36,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -384,7 +385,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             subPages = ((IDialogPageProvider) connectionEditor).getDialogPages(extrasOnly, true);
 
-            if (!getDriver().isEmbedded()) {
+            if (!getDriver().isEmbedded() && !CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS))) {
                 // Add network tabs (for non-embedded drivers)
                 for (NetworkHandlerDescriptor descriptor : NetworkHandlerRegistry.getInstance().getDescriptors(getActiveDataSource())) {
                     subPages = ArrayUtils.add(IDialogPage.class, subPages, new ConnectionPageNetworkHandler(this, descriptor));

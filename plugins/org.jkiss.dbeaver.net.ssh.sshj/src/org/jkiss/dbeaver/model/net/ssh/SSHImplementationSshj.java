@@ -46,8 +46,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * SSHJ tunnel
@@ -56,7 +54,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
 
     private static final Log log = Log.getLog(SSHImplementationSshj.class);
 
-    private final ExecutorService forwarders = Executors.newCachedThreadPool(target -> new Thread(null, target, "Port forwarder listener"));
+    private final List<LocalPortListener> listeners = new ArrayList<>();
     private SSHClient[] clients;
 
     @Override
@@ -169,12 +167,9 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
     }
 
     @Override
-    public void closeTunnel(DBRProgressMonitor monitor) {
-        try {
-            forwarders.shutdown();
-        } catch (Exception e) {
-            log.debug("Error terminating port forwarders", e);
-        }
+    public synchronized void closeTunnel(DBRProgressMonitor monitor) {
+        listeners.forEach(LocalPortListener::disconnect);
+        listeners.clear();
 
         RuntimeUtils.runTask(monitor1 -> {
             final SSHClient[] clients = this.clients;
@@ -187,7 +182,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                 if (client != null && client.isConnected()) {
                     try {
                         client.disconnect();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         log.debug("Error closing session: " + e.getMessage());
                     }
                 }
@@ -286,17 +281,44 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
         final ServerSocket ss = new ServerSocket(localPort, 0, InetAddress.getByName(localHost));
         final Parameters parameters = new Parameters(localHost, ss.getLocalPort(), remoteHost, remotePort);
         final LocalPortForwarder forwarder = client.newLocalPortForwarder(parameters, ss);
+        final LocalPortListener listener = new LocalPortListener(forwarder, parameters);
 
-        forwarders.submit(() -> {
-            try {
-                forwarder.listen();
-            } finally {
-                forwarder.close();
-            }
-
-            return null;
-        });
+        listener.start();
+        listeners.add(listener);
 
         return ss.getLocalPort();
+    }
+
+    private static class LocalPortListener extends Thread {
+        private final LocalPortForwarder forwarder;
+
+        public LocalPortListener(@NotNull LocalPortForwarder forwarder, @NotNull Parameters parameters) {
+            this.forwarder = forwarder;
+
+            setName(String.format(
+                "Port forwarder listener (%s:%d -> %s:%d)",
+                parameters.getLocalHost(), parameters.getLocalPort(),
+                parameters.getRemoteHost(), parameters.getRemotePort()
+            ));
+        }
+
+        @Override
+        public void run() {
+            try {
+                forwarder.listen();
+            } catch (IOException e) {
+                log.error("Error while listening on the port forwarder", e);
+            }
+        }
+
+        public void disconnect() {
+            try {
+                if (forwarder.isRunning()) {
+                    forwarder.close();
+                }
+            } catch (Exception e) {
+                log.error("Error while stopping port forwarding", e);
+            }
+        }
     }
 }

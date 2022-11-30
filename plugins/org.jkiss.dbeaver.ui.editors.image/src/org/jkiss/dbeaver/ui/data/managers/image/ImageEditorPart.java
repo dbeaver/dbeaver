@@ -96,9 +96,9 @@ public class ImageEditorPart extends EditorPart implements IRefreshablePart {
             .getContainer()
             .getPreferenceStore();
         if (preferenceStore.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER)) {
-            imageViewer = new BrowserImageEditor(controller.getEditPlaceholder(), SWT.NONE);
+            imageViewer = new BrowserImageEditor(parent, SWT.NONE);
         } else {
-            imageViewer = new SWTImageEditor(controller.getEditPlaceholder(), SWT.NONE);
+            imageViewer = new SWTImageEditor(parent, SWT.NONE);
         }
         loadImage();
     }
