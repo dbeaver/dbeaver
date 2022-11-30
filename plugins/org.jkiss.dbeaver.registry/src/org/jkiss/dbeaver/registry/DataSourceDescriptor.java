@@ -162,8 +162,8 @@ public class DataSourceDescriptor
 
     // secrets resolved from secret controller
     private volatile boolean secretsResolved = false;
-    // secrets resolved from secret controller and secret not null
-    private volatile boolean secretExist = false;
+    // secrets resolved from secret controller and contains db creds (we may not have db creds in the case when we store only ssh)
+    private volatile boolean secretsContainsDatabaseCreds = false;
 
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWNetworkHandler proxyHandler;
@@ -392,7 +392,7 @@ public class DataSourceDescriptor
             return savePassword;
         }
         resolveSecretsIfNeeded();
-        return secretsResolved && secretExist;
+        return secretsResolved && secretsContainsDatabaseCreds;
     }
 
     @Override
@@ -466,7 +466,7 @@ public class DataSourceDescriptor
 
     public void forgetSecrets() {
         this.secretsResolved = false;
-        this.secretExist = false;
+        this.secretsContainsDatabaseCreds = false;
     }
 
     @Override
@@ -833,11 +833,9 @@ public class DataSourceDescriptor
     public void persistSecrets(DBSSecretController secretController) throws DBException {
         if (!isSharedCredentials()) {
             var secret = saveToSecret();
-            secretController.setSecretValue(
-                getSecretKeyId(),
-                secret
-            );
-            secretExist = secret != null;
+            secretController.setSecretValue(getSecretKeyId(), secret);
+            this.secretsContainsDatabaseCreds =
+                isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(this.connectionInfo);
         }
         secretsResolved = true;
     }
@@ -846,10 +844,12 @@ public class DataSourceDescriptor
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
         if (!isSharedCredentials()) {
             String secretValue = secretController.getSecretValue(getSecretKeyId());
-            this.secretExist = secretValue != null;
-            if (secretExist) {
+            if (secretValue != null) {
                 loadFromSecret(secretValue);
+                this.secretsContainsDatabaseCreds =
+                    isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(this.connectionInfo);
             } else {
+                this.secretsContainsDatabaseCreds = false;
                 if (!DBWorkbench.isDistributed()) {
                     // Backward compatibility
                     loadFromLegacySecret(secretController);
@@ -1886,11 +1886,13 @@ public class DataSourceDescriptor
         Map<String, Object> props = JSONUtils.parseMap(DBInfoUtils.SECRET_GSON, new StringReader(secretValue));
 
         // Primary props
-        connectionInfo.setUserName(JSONUtils.getString(props, RegistryConstants.ATTR_USER));
-        connectionInfo.setUserPassword(JSONUtils.getString(props, RegistryConstants.ATTR_PASSWORD));
+        var dbUserName = JSONUtils.getString(props, RegistryConstants.ATTR_USER);
+        var dbPassword = JSONUtils.getString(props, RegistryConstants.ATTR_PASSWORD);
+        var dbAuthProperties = JSONUtils.deserializeStringMap(props, RegistryConstants.TAG_PROPERTIES);
+        connectionInfo.setUserName(dbUserName);
+        connectionInfo.setUserPassword(dbPassword);
         // Additional auth props
-        connectionInfo.setAuthProperties(
-            JSONUtils.deserializeStringMap(props, RegistryConstants.TAG_PROPERTIES));
+        connectionInfo.setAuthProperties(dbAuthProperties);
 
         // Handlers
         List<Map<String, Object>> handlerList = JSONUtils.getObjectList(props, RegistryConstants.TAG_HANDLERS);
