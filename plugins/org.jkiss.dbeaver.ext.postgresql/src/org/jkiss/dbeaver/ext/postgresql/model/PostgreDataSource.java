@@ -487,9 +487,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
                         conConfig.setDatabaseName(instance.getName());
                         conConfig.setUrl(getContainer().getDriver().getConnectionURL(conConfig));
-                    } //else {
-                        //String url = conConfig.getUrl();
-                    //}
+                    }
 
                     pgConnection = super.openConnection(monitor, context, purpose);
                 }
