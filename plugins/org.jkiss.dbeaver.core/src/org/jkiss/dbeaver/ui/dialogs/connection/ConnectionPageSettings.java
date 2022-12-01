@@ -344,12 +344,12 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         PropertyChangeEvent pcEvent = new PropertyChangeEvent(source, property, oldValue, newValue);
         for (TabItem item : tabFolder.getItems()) {
             IDialogPage page = (IDialogPage) item.getData();
-            if (page instanceof IPropertyChangeListener) {
+            if (page instanceof IPropertyChangeListener && page.getControl() != null) {
                 ((IPropertyChangeListener) page).propertyChange(pcEvent);
             }
         }
         for (IWizardPage page : getWizard().getPages()) {
-            if (page instanceof IPropertyChangeListener) {
+            if (page instanceof IPropertyChangeListener && page.getControl() != null) {
                 ((IPropertyChangeListener) page).propertyChange(pcEvent);
             }
         }
