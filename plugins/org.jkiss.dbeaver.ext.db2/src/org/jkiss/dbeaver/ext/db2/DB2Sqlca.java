@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
+import org.jkiss.dbeaver.Log;
+
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
-
-import org.jkiss.dbeaver.Log;
 
 /**
  * {@link DB2Sqlca} is a proxy for {@link com.ibm.db2.jcc.DB2Sqlca} that
