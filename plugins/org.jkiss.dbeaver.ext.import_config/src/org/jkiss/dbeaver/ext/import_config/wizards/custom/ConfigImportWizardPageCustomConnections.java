@@ -128,7 +128,7 @@ public class ConfigImportWizardPageCustomConnections extends ConfigImportWizardP
             conProps.get("password")
         );
         
-        log.debug("load connection: "+ ici.toString());
+        log.debug("load connection: " + ici.toString());
         importData.addConnection(ici);
     }
 
