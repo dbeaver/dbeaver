@@ -136,10 +136,14 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             // If not, update current stream manager
             if (streamManagers != null && !streamManagers.containsKey(curStreamManager)) {
                 if (curStreamManager != null) {
-                    streamEditor.disposeEditor();
-                    editorControl.dispose();
-                    editorControl = null;
-                    streamEditor = null;
+                    if (streamEditor != null) {
+                        streamEditor.disposeEditor();
+                        streamEditor = null;
+                    }
+                    if (editorControl != null) {
+                        editorControl.dispose();
+                        editorControl = null;
+                    }
                     curStreamManager = null;
                     control.dispose();
                 }
