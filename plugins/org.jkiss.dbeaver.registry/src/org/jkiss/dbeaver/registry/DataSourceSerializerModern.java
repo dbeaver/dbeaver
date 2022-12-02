@@ -393,13 +393,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 String name = folderMap.getKey();
                 String description = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
                 String parentFolder = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_PARENT);
-                DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true);
-                DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true) : parent.getChild(name);
+                DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true, parseResults);
+                DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true, parseResults) : parent.getChild(name);
                 if (folder == null) {
                     folder = new DataSourceFolder(registry, parent, name, description);
-                    registry.addDataSourceFolder(folder);
+                    parseResults.addedFolders.add(folder);
                 } else {
                     folder.setDescription(description);
+                    parseResults.updatedFolders.add(folder);
                 }
             }
 
@@ -567,7 +568,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
                 final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
-                dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true));
+                dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true, parseResults));
                 dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
 
                 // Connection settings
