@@ -837,8 +837,7 @@ public class UIUtils {
     @Nullable
     public static Shell getActiveShell()
     {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        return workbench == null ? null : getShell(workbench.getActiveWorkbenchWindow());
+        return getActiveWorkbenchShell();
     }
 
     @Nullable
