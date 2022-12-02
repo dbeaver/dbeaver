@@ -45,7 +45,7 @@ public class ImportConnectionInfo {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("alias:").append(alias);
-        if ( url != null ) {
+        if (url != null) {
             sb.append(" url:").append(url);
         } else {
             sb.append(" host:").append(host);
