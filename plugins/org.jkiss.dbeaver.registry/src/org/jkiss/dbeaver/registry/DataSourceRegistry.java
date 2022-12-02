@@ -563,7 +563,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 persistDataSourceUpdate(dataSource);
             }
             DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
-            descriptor.persistSecretIfNeeded(true);
+            descriptor.persistSecretIfNeeded(false);
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
     }
