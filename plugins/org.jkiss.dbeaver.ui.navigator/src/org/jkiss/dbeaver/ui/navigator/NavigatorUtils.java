@@ -532,13 +532,7 @@ public class NavigatorUtils {
                 }
 
                 private boolean isDropSupported(DropTargetEvent event) {
-                    Object curObject;
-                    if (event.item instanceof Item) {
-                        curObject = event.item.getData();
-                    } else {
-                        curObject = null;
-                    }
-
+                    final Object curObject = getDropTarget(event, viewer);
                     if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
                         @SuppressWarnings("unchecked")
                         Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
@@ -583,12 +577,7 @@ public class NavigatorUtils {
                 }
 
                 private void moveNodes(DropTargetEvent event) {
-                    Object curObject;
-                    if (event.item instanceof Item) {
-                        curObject = event.item.getData();
-                    } else {
-                        curObject = null;
-                    }
+                    final Object curObject = getDropTarget(event, viewer);
                     if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
                         if (curObject instanceof DBNNode) {
                             Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
@@ -653,6 +642,15 @@ public class NavigatorUtils {
                     }
                 }
             });
+        }
+    }
+
+    @Nullable
+    private static Object getDropTarget(@NotNull DropTargetEvent event, @NotNull Viewer viewer) {
+        if (event.item instanceof Item) {
+            return event.item.getData();
+        } else {
+            return ((DatabaseNavigatorContent) viewer.getInput()).getRootNode();
         }
     }
 

@@ -171,7 +171,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     @Override
     public boolean supportsDrop(DBNNode otherNode) {
-        return otherNode == null || otherNode instanceof DBNDataSource;
+        return otherNode == null || otherNode instanceof DBNDataSource || otherNode instanceof DBNLocalFolder;
     }
 
     @Override
@@ -184,8 +184,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
                 DBNDataSource dataSource = (DBNDataSource) node;
-                //dataSource.moveToFolder(getOwnerProject(), null);
+                dataSource.moveToFolder(dataSource.getOwnerProject(), toFolder);
                 DBPDataSourceContainer oldContainer = dataSource.getDataSourceContainer();
+                registryToRefresh.add(oldContainer.getRegistry());
                 if (oldContainer.getRegistry() == dataSourceRegistry) {
                     // the same registry
                     continue;
@@ -200,15 +201,19 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 oldContainer.getRegistry().removeDataSource(oldContainer);
 
                 dataSourceRegistry.addDataSource(newContainer);
-
-                registryToRefresh.add(oldContainer.getRegistry());
                 registryToRefresh.add(dataSourceRegistry);
+            } else if (node instanceof DBNLocalFolder) {
+                final DBNLocalFolder folder = (DBNLocalFolder) node;
+                folder.getFolder().setParent(null);
+                registryToRefresh.add(folder.getDataSourceRegistry());
             }
         }
 
         for (DBPDataSourceRegistry registy : registryToRefresh) {
             registy.flushConfig();
         }
+
+        refreshChildren();
     }
 
     public void refreshChildren()
