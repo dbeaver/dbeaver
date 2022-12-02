@@ -75,14 +75,15 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
                     GeneralUtils.variablePattern(SystemVariablesResolver.VAR_WORKSPACE),
                     GeneralUtils.variablePattern(SystemVariablesResolver.VAR_HOME)));
             logsDebugLocation.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            
+
+            final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             UIUtils.createControlLabel(groupLogs, CoreMessages.pref_page_logs_files_max_size_label);
             logFilesMaxSizeSpinner = new Spinner(groupLogs, SWT.BORDER);
             logFilesMaxSizeSpinner.setDigits(0);
             logFilesMaxSizeSpinner.setIncrement(10);
             logFilesMaxSizeSpinner.setMinimum(0);
             logFilesMaxSizeSpinner.setMaximum(Integer.MAX_VALUE);
-            long bigScriptSize = DBWorkbench.getPlatform().getPreferenceStore().getLong(LogOutputStream.LOGS_MAX_FILE_SIZE);
+            long bigScriptSize = preferenceStore.getLong(LogOutputStream.LOGS_MAX_FILE_SIZE);
             logFilesMaxSizeSpinner.setSelection((int) (bigScriptSize / 1024));
 
             UIUtils.createControlLabel(groupLogs, CoreMessages.pref_page_logs_files_max_count_label);
@@ -91,7 +92,7 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
             logFilesMaxCountSpinner.setIncrement(1);
             logFilesMaxCountSpinner.setMinimum(0);
             logFilesMaxCountSpinner.setMaximum(Integer.MAX_VALUE);
-            int debugLogFilesMaxCount = DBWorkbench.getPlatform().getPreferenceStore().getInt(LogOutputStream.LOGS_MAX_FILES_COUNT);
+            int debugLogFilesMaxCount = preferenceStore.getInt(LogOutputStream.LOGS_MAX_FILES_COUNT);
             logFilesMaxCountSpinner.setSelection(debugLogFilesMaxCount);
 
             Label tipLabel = UIUtils.createLabel(groupLogs, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart);
@@ -104,8 +105,7 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
     }
 
     @Override
-    protected void performDefaults()
-    {
+    protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         logsDebugEnabled.setSelection(store.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED));
@@ -121,14 +121,13 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
     }
 
     @Override
-    public boolean performOk()
-    {
+    public boolean performOk() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         store.setValue(DBeaverPreferences.LOGS_DEBUG_ENABLED, logsDebugEnabled.getSelection());
         store.setValue(DBeaverPreferences.LOGS_DEBUG_LOCATION, logsDebugLocation.getText());
 
-        store.setValue(LogOutputStream.LOGS_MAX_FILE_SIZE, logFilesMaxSizeSpinner.getSelection() * 1024l);
+        store.setValue(LogOutputStream.LOGS_MAX_FILE_SIZE, logFilesMaxSizeSpinner.getSelection() * 1024L);
         store.setValue(LogOutputStream.LOGS_MAX_FILES_COUNT, logFilesMaxCountSpinner.getSelection());
 
         PrefUtils.savePreferenceStore(store);

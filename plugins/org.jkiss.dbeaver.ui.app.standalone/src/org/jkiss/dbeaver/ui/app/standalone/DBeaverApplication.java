@@ -688,12 +688,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
         logLocation = GeneralUtils.replaceVariables(logLocation, new SystemVariablesResolver());
         File debugLogFile = new File(logLocation);
-//        if (debugLogFile.exists()) {
-//            if (!debugLogFile.delete()) {
-//                System.err.println("Can't delete debug log file"); //$NON-NLS-1$
-//                return;
-//            }
-//        }
         try {
             debugWriter = new LogOutputStream(debugLogFile);
             oldSystemOut = System.out;
