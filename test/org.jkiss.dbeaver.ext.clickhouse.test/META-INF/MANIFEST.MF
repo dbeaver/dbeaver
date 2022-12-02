@@ -15,5 +15,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.mockito.mockito-core,
  org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.registry,
- org.jkiss.dbeaver.ext.clickhouse
+ org.jkiss.dbeaver.registry
