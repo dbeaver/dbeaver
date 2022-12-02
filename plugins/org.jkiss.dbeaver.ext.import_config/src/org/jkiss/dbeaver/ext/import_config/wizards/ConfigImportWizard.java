@@ -214,63 +214,64 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         }
         //connectionInfo.getDriver()
         String url = connectionInfo.getUrl();
-        if (url != null) {
-            // Parse url
-            final JDBCURL.MetaURL metaURL = JDBCURL.parseSampleURL(sampleURL);
-            int sourceOffset = 0;
-            List<String> urlComponents = metaURL.getUrlComponents();
-            for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
-                String component = urlComponents.get(i);
-                if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' &&
-                    metaURL.getAvailableProperties().contains(component.substring(1, component.length() - 1))) {
-                    // Property
-                    int partEnd;
-                    if (i < urlComponentsSize - 1) {
-                        // Find next component
-                        final String nextComponent = urlComponents.get(i + 1);
-                        partEnd = url.indexOf(nextComponent, sourceOffset);
-                        if (partEnd == -1) {
-                            if (nextComponent.equals(":")) {
-                                // Try to find another divider - dbvis sometimes contains bad sample URLs (e.g. for Oracle)
-                                partEnd = url.indexOf("/", sourceOffset);
-                            }
-                            if (partEnd == -1) {
-                                if (connectionInfo.getHost() == null) {
-                                    throw new DBException("Can't parse URL '" + url + "' with pattern '" + sampleURL + "'. String '" + nextComponent + "' not found after '" + component);
-                                } else {
-                                    // We have connection properties anyway
-                                    url = null;
-                                    break;
-                                }
-                            }
-                        }
-                    } else {
-                        partEnd = url.length();
-                    }
-
-                    String propertyValue = url.substring(sourceOffset, partEnd);
-                    switch (component) {
-                        case "{host}":
-                            connectionInfo.setHost(propertyValue);
-                            break;
-                        case "{port}":
-                            connectionInfo.setPort(propertyValue);
-                            break;
-                        case "{database}":
-                            connectionInfo.setDatabase(propertyValue);
-                            break;
-                        default:
-                            if (connectionInfo.getHost() == null) {
-                                throw new DBException("Unsupported property " + component);
-                            }
-                    }
-                    sourceOffset = partEnd;
-                } else {
-                    // Static string
-                    sourceOffset += component.length();
-                }
-            }
-        }
+        //if url is not null, is the only thing we really need to setup the connection.
+//        if (url != null) {
+//            // Parse url
+//            final JDBCURL.MetaURL metaURL = JDBCURL.parseSampleURL(sampleURL);
+//            int sourceOffset = 0;
+//            List<String> urlComponents = metaURL.getUrlComponents();
+//            for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
+//                String component = urlComponents.get(i);
+//                if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' &&
+//                    metaURL.getAvailableProperties().contains(component.substring(1, component.length() - 1))) {
+//                    // Property
+//                    int partEnd;
+//                    if (i < urlComponentsSize - 1) {
+//                        // Find next component
+//                        final String nextComponent = urlComponents.get(i + 1);
+//                        partEnd = url.indexOf(nextComponent, sourceOffset);
+//                        if (partEnd == -1) {
+//                            if (nextComponent.equals(":")) {
+//                                // Try to find another divider - dbvis sometimes contains bad sample URLs (e.g. for Oracle)
+//                                partEnd = url.indexOf("/", sourceOffset);
+//                            }
+//                            if (partEnd == -1) {
+//                                if (connectionInfo.getHost() == null) {
+//                                    throw new DBException("Can't parse URL '" + url + "' with pattern '" + sampleURL + "'. String '" + nextComponent + "' not found after '" + component);
+//                                } else {
+//                                    // We have connection properties anyway
+//                                    url = null;
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                    } else {
+//                        partEnd = url.length();
+//                    }
+//
+//                    String propertyValue = url.substring(sourceOffset, partEnd);
+//                    switch (component) {
+//                        case "{host}":
+//                            connectionInfo.setHost(propertyValue);
+//                            break;
+//                        case "{port}":
+//                            connectionInfo.setPort(propertyValue);
+//                            break;
+//                        case "{database}":
+//                            connectionInfo.setDatabase(propertyValue);
+//                            break;
+//                        default:
+//                            if (connectionInfo.getHost() == null) {
+//                            	throw new DBException("Unsupported property " + component);
+//                            }
+//                    }
+//                    sourceOffset = partEnd;
+//                } else {
+//                    // Static string
+//                    sourceOffset += component.length();
+//                }
+//            }
+//        }
         if (url == null) {
             if (connectionInfo.getDriver() == null) {
                 throw new DBCException("Can't detect target driver for '" + connectionInfo.getAlias() + "'");
