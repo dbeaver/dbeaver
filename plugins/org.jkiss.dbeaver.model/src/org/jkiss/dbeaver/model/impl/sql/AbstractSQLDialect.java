@@ -424,14 +424,6 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         }
     }
 
-    /**
-     * Returns quoted identifier for User.
-     */
-    @NotNull
-    public String getQuotedUserIdentifier(@NotNull String str) {
-        return getQuotedIdentifier(str, true, false);
-    }
-
     public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
         // Check for keyword conflict
         final DBPKeywordType keywordType = this.getKeywordType(str);

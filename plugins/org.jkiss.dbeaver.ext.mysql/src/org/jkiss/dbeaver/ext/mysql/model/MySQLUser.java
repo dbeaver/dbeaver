@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -45,7 +47,7 @@ import java.util.regex.Matcher;
 /**
  * MySQLUser
  */
-public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSaveableObject
+public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSaveableObject, DBPQualifiedObject
 {
     private static final Log log = Log.getLog(MySQLUser.class);
 
@@ -308,5 +310,10 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
     {
         grants = null;
         return this;
+    }
+
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return "`" + userName + "`@`" + host + "`";
     }
 }
