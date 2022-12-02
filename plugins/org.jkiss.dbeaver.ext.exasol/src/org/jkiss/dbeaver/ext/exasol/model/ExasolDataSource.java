@@ -125,7 +125,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 		}
 		String schemaSQL = "/*snapshot execution*/ select schema_name as object_name,schema_owner as OWNER,CAST(NULL AS TIMESTAMP) AS created, schema_comment as OBJECT_COMMENT, SCHEMA_OBJECT_ID from SYS.EXA_SCHEMAS s  ";
 		
-		if (exasolCurrentUserPrivileges.getatLeastV6()) {
+		if (exasolCurrentUserPrivileges.getAtLeastV6()) {
 			
 			//additional where clause to filter virtual schemas
 			schemaSQL += " where not  schema_is_virtual ";
@@ -137,7 +137,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 					"	s.SCHEMA_NAME as OBJECT_NAME," + 
 					"	s.SCHEMA_OWNER AS OWNER," + 
 					"CAST(NULL AS TIMESTAMP) AS created, " +
-					"	" + (this.exasolCurrentUserPrivileges.getatLeastV8() ? "'\"' || ADAPTER_SCRIPT_SCHEMA || '\".\"' || ADAPTER_SCRIPT_NAME || '\"' AS ADAPTER_SCRIPT" : "ADAPTER_SCRIPT") + "," +
+					"	" + (this.exasolCurrentUserPrivileges.getAtLeastV8() ? "'\"' || ADAPTER_SCRIPT_SCHEMA || '\".\"' || ADAPTER_SCRIPT_NAME || '\"' AS ADAPTER_SCRIPT" : "ADAPTER_SCRIPT") + "," +
 					"	LAST_REFRESH," + 
 					"	LAST_REFRESH_BY," + 
 					"	ADAPTER_NOTES," + 
@@ -502,7 +502,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	public ExasolSchema getChild(@NotNull DBRProgressMonitor monitor,
 			@NotNull String childName) throws DBException
 	{
-		if (exasolCurrentUserPrivileges.getatLeastV6())
+		if (exasolCurrentUserPrivileges.getAtLeastV6())
 			return getSchema(monitor, childName) != null ? getSchema(monitor,childName) : getVirtualSchema(monitor, childName);
 		return getSchema(monitor, childName);
 	}
@@ -766,12 +766,12 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	
 	public boolean isatLeastV6()
 	{
-		return this.exasolCurrentUserPrivileges.getatLeastV6();
+		return this.exasolCurrentUserPrivileges.getAtLeastV6();
 	}
 
 	public boolean isatLeastV5()
 	{
-		return this.exasolCurrentUserPrivileges.getatLeastV5();
+		return this.exasolCurrentUserPrivileges.getAtLeastV5();
 	}
 	
 	public boolean ishasPartitionColumns()
