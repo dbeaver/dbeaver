@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
-public class SQLGeneratorColumnNameType extends SQLGenerator<DBSEntityAttribute> {
+public class SQLGeneratorColumnName extends SQLGenerator<DBSEntityAttribute> {
 
     @Override
     public boolean isDDLOption() {
@@ -50,20 +50,7 @@ public class SQLGeneratorColumnNameType extends SQLGenerator<DBSEntityAttribute>
             }
         }        
         String columnName = DBUtils.getQuotedIdentifier(object.getDataSource(), object.getName());
-        sql.append(columnName);
-        final String typeName = object.getTypeName();
-        sql.append(' ').append(typeName);
-        DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, object);
-        if (dataTypeProvider != null) {
-            DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
-            if (dataType != null) {
-                DBPDataKind dataKind = dataType.getDataKind();
-                String modifiers = SQLUtils.getColumnTypeModifiers(object.getDataSource(), object, typeName, dataKind);
-                if (modifiers != null) {
-                    sql.append(modifiers);
-                }
-            } 
-        }        
+        sql.append(columnName);                
     }
 
     @Override
