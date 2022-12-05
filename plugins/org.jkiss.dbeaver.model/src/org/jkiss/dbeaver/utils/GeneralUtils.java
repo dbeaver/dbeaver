@@ -533,11 +533,10 @@ public class GeneralUtils {
     @NotNull
     private static String substituteVariable(@NotNull String string, @NotNull Matcher matcher, @NotNull String varValue) {
         if (matcher.start() == 0 && matcher.end() >= string.length() - 1) {
-            string = varValue;
+            return varValue;
         } else {
-            string = string.substring(0, matcher.start()) + varValue + string.substring(matcher.end());
+            return string.substring(0, matcher.start()) + varValue + string.substring(matcher.end());
         }
-        return string;
     }
 
     public static IStatus makeExceptionStatus(Throwable ex) {
