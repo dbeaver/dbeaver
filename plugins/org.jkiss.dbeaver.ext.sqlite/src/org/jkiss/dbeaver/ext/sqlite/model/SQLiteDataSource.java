@@ -22,17 +22,23 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.sqlite.SQLiteConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Locale;
@@ -44,6 +50,31 @@ public class SQLiteDataSource extends GenericDataSource {
         throws DBException
     {
         super(monitor, container, metaModel, new SQLiteSQLDialect());
+    }
+
+    @Override
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.initialize(monitor);
+
+        final DBPConnectionConfiguration configuration = getContainer().getConnectionConfiguration();
+        final String extensions = configuration.getProviderProperty(SQLiteConstants.PROP_EXTENSIONS);
+
+        if (CommonUtils.isNotEmpty(extensions)) {
+            try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Load extensions")) {
+                try (JDBCPreparedStatement stmt = session.prepareStatement("SELECT load_extension(?)")) {
+                    for (String extension : extensions.split(File.pathSeparator)) {
+                        try {
+                            stmt.setString(1, extension);
+                            stmt.executeQuery();
+                        } catch (SQLException e1) {
+                            throw new DBCException("Error while loading extension '" + extension + "'", e1, session.getExecutionContext());
+                        }
+                    }
+                } catch (SQLException e) {
+                    throw new DBCException("Error loading extensions", e, session.getExecutionContext());
+                }
+            }
+        }
     }
 
     @Override
