@@ -207,7 +207,18 @@ public class DBWHandlerConfiguration {
     }
 
     public Map<String, Object> saveToMap() {
+        return saveToMap(false);
+    }
+
+    public Map<String, Object> saveToSecret() {
+        return saveToMap(true);
+    }
+
+    private Map<String, Object> saveToMap(boolean ignoreSecureProperties) {
         Map<String, Object> handlerProps = new LinkedHashMap<>();
+        if (!isSavePassword() && ignoreSecureProperties) {
+            return handlerProps;
+        }
         if (!CommonUtils.isEmpty(userName)) {
             handlerProps.put("user", userName);
         }
