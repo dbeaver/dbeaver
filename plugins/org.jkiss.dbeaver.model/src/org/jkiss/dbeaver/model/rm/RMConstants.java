@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.model.rm;
 /**
  * RM constants
  */
-public interface RMConstants  {
+public interface RMConstants {
+    String SCRIPTS_FOLDER = "Scripts";
+
     String PERMISSION_PROJECT_DATASOURCES_EDIT = "project-datasource-edit";
     String PERMISSION_PROJECT_DATASOURCES_VIEW = "project-datasource-view";
 
