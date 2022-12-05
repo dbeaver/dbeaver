@@ -9,19 +9,4 @@
         </manager>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                class="org.jkiss.dbeaver.ext.sqlite.ui.views.SQLiteConnectionPage"
-                id="com.dbeaver.db.sqlite.dataSourceWizardView"
-                dataSource="sqlite"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard">
-        </view>
-        <view
-                class="org.jkiss.dbeaver.ext.sqlite.ui.views.SQLiteConnectionPage"
-                id="com.dbeaver.db.sqlite.dataSourceEditorView"
-                dataSource="sqlite"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-        </view>
-    </extension>
-
 </plugin>

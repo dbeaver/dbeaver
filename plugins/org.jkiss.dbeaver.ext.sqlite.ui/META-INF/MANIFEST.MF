@@ -8,11 +8,9 @@ Bundle-Activator: org.jkiss.dbeaver.ext.sqlite.ui.SQLiteUIActivator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.jface.text,
  org.jkiss.dbeaver.ext.sqlite,
- org.jkiss.dbeaver.ext.generic.ui,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui.editors.data,
- org.jkiss.dbeaver.ui.editors.connection,
  org.jkiss.dbeaver.data.gis.view
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
