@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.sqlite.SQLiteConstants;
+import org.jkiss.dbeaver.ext.sqlite.ui.internal.SQLiteUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -36,8 +37,8 @@ public class SQLiteExtensionsPage extends ConnectionPageAbstract {
     private List extensionsList;
 
     public SQLiteExtensionsPage() {
-        setTitle("SQLite Extensions");
-        setDescription("SQLite extension management");
+        setTitle(SQLiteUIMessages.page_extensions_title);
+        setDescription(SQLiteUIMessages.page_extensions_description);
     }
 
     @Override
@@ -51,13 +52,13 @@ public class SQLiteExtensionsPage extends ConnectionPageAbstract {
 
         final ToolBar toolbar = new ToolBar(composite, SWT.VERTICAL);
         toolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        UIUtils.createToolItem(toolbar, "Add", UIIcon.ADD, new SelectionAdapter() {
+        UIUtils.createToolItem(toolbar, SQLiteUIMessages.page_extensions_toolbar_add, UIIcon.ADD, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 final FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
-                dialog.setText("Choose SQLite extensions");
+                dialog.setText(SQLiteUIMessages.page_extensions_chooser_title);
                 dialog.setFilterExtensions(new String[]{"*.dll;*.dylib;*.so"});
-                dialog.setFilterNames(new String[]{"SQLite Extension"});
+                dialog.setFilterNames(new String[]{SQLiteUIMessages.page_extensions_chooser_name});
 
                 if (dialog.open() != null) {
                     for (String name : dialog.getFileNames()) {
@@ -70,15 +71,16 @@ public class SQLiteExtensionsPage extends ConnectionPageAbstract {
                 }
             }
         });
-        final ToolItem removeItem = UIUtils.createToolItem(toolbar, "Remove", UIIcon.DELETE, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                final int index = extensionsList.getSelectionIndex();
-                extensionsList.remove(index);
-                extensionsList.select(CommonUtils.clamp(index, 0, extensionsList.getItemCount() - 1));
-                extensionsList.notifyListeners(SWT.Selection, new Event());
-            }
-        });
+        final ToolItem removeItem = UIUtils.createToolItem(
+            toolbar, SQLiteUIMessages.page_extensions_toolbar_remove, UIIcon.DELETE, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    final int index = extensionsList.getSelectionIndex();
+                    extensionsList.remove(index);
+                    extensionsList.select(CommonUtils.clamp(index, 0, extensionsList.getItemCount() - 1));
+                    extensionsList.notifyListeners(SWT.Selection, new Event());
+                }
+            });
 
         removeItem.setEnabled(false);
         extensionsList.addSelectionListener(new SelectionAdapter() {
@@ -88,7 +90,7 @@ public class SQLiteExtensionsPage extends ConnectionPageAbstract {
             }
         });
 
-        UIUtils.createInfoLabel(composite, "Extensions must match your OS and architecture.", GridData.FILL_HORIZONTAL, 2);
+        UIUtils.createInfoLabel(composite, SQLiteUIMessages.page_extensions_tip, GridData.FILL_HORIZONTAL, 2);
 
         loadSettings();
 
