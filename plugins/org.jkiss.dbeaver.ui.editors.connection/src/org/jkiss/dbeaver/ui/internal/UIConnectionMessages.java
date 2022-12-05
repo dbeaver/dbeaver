@@ -231,6 +231,9 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_drivers_label_enter_drivers_location_url;
     public static String pref_page_drivers_button_remove;
 
+    public static String driver_download_certificate_issue_hint_title;
+    public static String driver_download_certificate_issue_hint_message;
+
     // Drivers Classpath
     public static String pref_page_drivers_classpath_system_classpath_group;
     public static String pref_page_drivers_classpath_global_libraries_group;

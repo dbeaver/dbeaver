@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -192,8 +193,11 @@ class DriverDependenciesTree {
             WebUtils.openConnection(NETWORK_TEST_URL, GeneralUtils.getProductTitle());
         } catch (IOException e) {
             if (RuntimeUtils.isWindows() && e instanceof SSLHandshakeException) {
-                DBWorkbench.getPlatformUI().showWarningMessageBox("SSL Handshake Exception", "Can't access driver files location due to certificate issue. \n" +
-                    "Try unchecking setting `Use Windows trust store` in Preferences->Connections and restart DBeaver. It might help.");
+                DBWorkbench.getPlatformUI().showMessageBox(
+                    UIConnectionMessages.driver_download_certificate_issue_hint_title,
+                    UIConnectionMessages.driver_download_certificate_issue_hint_message,
+                    false
+                );
             }
             throw new DBException("Network unavailable:\n" + e.getClass().getName() + ":" + e.getMessage());
         }
@@ -297,7 +301,7 @@ class DriverDependenciesTree {
         editor.setListVisible(true);
     }
 
-    // This may be overrided
+    // This may be overridden
     protected void setLibraryVersion(DBPDriverLibrary library, String version) {
 
     }
