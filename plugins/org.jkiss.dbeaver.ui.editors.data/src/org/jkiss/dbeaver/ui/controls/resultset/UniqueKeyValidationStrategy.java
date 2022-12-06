@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
 
 public enum UniqueKeyValidationStrategy implements DBPNamedObject {
+    PROMPT(ResultSetMessages.key_validation_strategy_prompt),
     USE_ALL_COLUMNS(ResultSetMessages.key_validation_strategy_use_all_columns),
-    DISABLE_EDITING(ResultSetMessages.key_validation_strategy_disable_editing),
-    PROMPT(ResultSetMessages.key_validation_strategy_prompt);
+    DISABLE_EDITING(ResultSetMessages.key_validation_strategy_disable_editing);
 
     private final String name;
 
