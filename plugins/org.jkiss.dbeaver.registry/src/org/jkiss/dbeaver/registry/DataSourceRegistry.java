@@ -702,24 +702,27 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     @Override
-    public void loadDataSources(
+    public boolean loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
         boolean refresh,
         boolean purgeUntouched
     ) {
+        // need this to show is the data source was updated
+        boolean configChanged = false;
         if (!project.isOpen() || project.isInMemory()) {
-            return;
+            return false;
         }
         // Clear filters before reload
         savedFilters.clear();
 
         // Parse datasources
         ParseResults parseResults = new ParseResults();
-
         // Modern way - search json configs in metadata folder
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
-            loadDataSources(cfgStorage, manager, false, parseResults);
+            if (loadDataSources(cfgStorage, manager, false, parseResults)) {
+                configChanged = true;
+            }
         }
 
         // Reflect changes
@@ -764,9 +767,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 }
             }
         }
+        return configChanged;
     }
 
-    private void loadDataSources(
+    private boolean loadDataSources(
         @NotNull DBPDataSourceConfigurationStorage storage,
         @NotNull DataSourceConfigurationManager manager,
         boolean refresh,
@@ -779,13 +783,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             } else {
                 serializer = new DataSourceSerializerModern(this);
             }
-            serializer.parseDataSources(storage, manager, parseResults, refresh);
+            var configChanged = serializer.parseDataSources(storage, manager, parseResults, refresh);
             updateProjectNature();
             lastError = null;
+            return configChanged;
         } catch (Exception ex) {
             lastError = ex;
             log.error("Error loading datasource config from " + storage.getStorageId(), ex);
         }
+        return false;
     }
 
     @Override
