@@ -48,7 +48,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import javax.net.ssl.SSLHandshakeException;
 
 class DriverDependenciesTree {
@@ -192,14 +191,18 @@ class DriverDependenciesTree {
         try {
             WebUtils.openConnection(NETWORK_TEST_URL, GeneralUtils.getProductTitle());
         } catch (IOException e) {
-            if (RuntimeUtils.isWindows() && e instanceof SSLHandshakeException) {
-                DBWorkbench.getPlatformUI().showMessageBox(
-                    UIConnectionMessages.driver_download_certificate_issue_hint_title,
-                    UIConnectionMessages.driver_download_certificate_issue_hint_message,
-                    false
-                );
-            }
+            showHintOnCertificateIssueForWindows(e);
             throw new DBException("Network unavailable:\n" + e.getClass().getName() + ":" + e.getMessage());
+        }
+    }
+
+    public static void showHintOnCertificateIssueForWindows(IOException e) {
+        if (RuntimeUtils.isWindows() && e instanceof SSLHandshakeException) {
+            DBWorkbench.getPlatformUI().showMessageBox(
+                UIConnectionMessages.driver_download_certificate_issue_hint_title,
+                UIConnectionMessages.driver_download_certificate_issue_hint_message,
+                false
+            );
         }
     }
 

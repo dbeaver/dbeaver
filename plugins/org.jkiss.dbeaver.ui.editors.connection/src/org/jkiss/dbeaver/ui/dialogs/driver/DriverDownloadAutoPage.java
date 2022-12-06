@@ -41,10 +41,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -191,13 +189,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             try {
                 lib.downloadLibraryFile(monitor, getWizard().isForceDownload(), NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_download_rate, (i + 1), filesSize));
             } catch (final IOException e) {
-                if (RuntimeUtils.isWindows() && e instanceof SSLHandshakeException) {
-                    DBWorkbench.getPlatformUI().showMessageBox(
-                        UIConnectionMessages.driver_download_certificate_issue_hint_title,
-                        UIConnectionMessages.driver_download_certificate_issue_hint_message,
-                        false
-                    );
-                }
+                DriverDependenciesTree.showHintOnCertificateIssueForWindows(e);
                 if (lib.getType() == DBPDriverLibrary.FileType.license) {
                     result = IDialogConstants.OK_ID;
                 } else {
