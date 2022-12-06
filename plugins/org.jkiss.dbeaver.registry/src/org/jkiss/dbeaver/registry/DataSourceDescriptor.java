@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
@@ -1129,11 +1130,13 @@ public class DataSourceDescriptor
     }
 
     public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
-        final DBPDataSourceProvider provider = getDriver().getDataSourceProvider();
-        if (provider instanceof DBPDataSourceProviderSynchronizable) {
+        final var provider = driver.getDataSourceProvider();
+        final var providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
+
+        if (providerSynchronizable != null && providerSynchronizable.isSynchronizationEnabled(this)) {
             try {
                 monitor.beginTask("Synchronize local data source", 1);
-                ((DBPDataSourceProviderSynchronizable) provider).syncLocalDataSource(monitor, this);
+                providerSynchronizable.syncLocalDataSource(monitor, this);
                 monitor.worked(1);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
@@ -1236,13 +1239,14 @@ public class DataSourceDescriptor
 
             monitor.worked(1);
 
-            final DBPDataSourceProvider provider = driver.getDataSourceProvider();
-            if (provider instanceof DBPDataSourceProviderSynchronizable) {
-                final DBPDataSourceProviderSynchronizable remoteProvider = (DBPDataSourceProviderSynchronizable) provider;
-                if (!remoteProvider.isLocalDataSourceSynchronized(monitor, this)) {
+            final var provider = driver.getDataSourceProvider();
+            final var providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
+
+            if (providerSynchronizable != null && providerSynchronizable.isSynchronizationEnabled(this)) {
+                if (!providerSynchronizable.isLocalDataSourceSynchronized(monitor, this)) {
                     try {
                         monitor.beginTask("Synchronize remote data source", 1);
-                        remoteProvider.syncRemoteDataSource(monitor, this);
+                        providerSynchronizable.syncRemoteDataSource(monitor, this);
                         monitor.worked(1);
                     } catch (DBException e) {
                         DBWorkbench.getPlatformUI().showError(
