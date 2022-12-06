@@ -314,6 +314,7 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
 
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
-        return "`" + userName + "`@`" + host + "`";
+        return DBUtils.getQuotedIdentifier(dataSource, userName, false, true) + "@"
+            + DBUtils.getQuotedIdentifier(dataSource, host, false, true);
     }
 }
