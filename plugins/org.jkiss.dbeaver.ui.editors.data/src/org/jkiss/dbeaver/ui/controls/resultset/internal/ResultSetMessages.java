@@ -244,7 +244,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_content_editor_checkbox_string_editor_for_datetime;
     public static String pref_page_content_editor_checkbox_string_editor_for_datetime_tip;
     public static String pref_page_content_editor_group_keys;
-    public static String pref_page_content_editor_checkbox_keys_always_use_all_columns;
+    public static String pref_page_content_editor_key_validation_strategy;
+    public static String pref_page_content_editor_key_validation_strategy_tip;
     public static String pref_page_content_editor_checkbox_new_rows_after;
     public static String pref_page_content_editor_checkbox_refresh_after_update;
     public static String pref_page_content_editor_checkbox_use_navigator_filters;
@@ -391,6 +392,10 @@ public class ResultSetMessages extends NLS {
     public static String validate_unique_key_usage_dialog_custom_unique_key;
     public static String validate_unique_key_usage_dialog_use_all_columns_no_valid_columns_found;
     public static String validate_unique_key_usage_dialog_use_all_columns_cannot_reload_unique_columns;
+
+    public static String key_validation_strategy_use_all_columns;
+    public static String key_validation_strategy_disable_editing;
+    public static String key_validation_strategy_prompt;
 
     public static String panel_editor_text_loading_placeholder_label;
     public static String panel_editor_text_word_wrap_name;

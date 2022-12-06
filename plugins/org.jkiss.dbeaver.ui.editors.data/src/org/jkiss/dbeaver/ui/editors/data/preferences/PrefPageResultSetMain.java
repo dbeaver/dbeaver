@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.UniqueKeyValidationStrategy;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
@@ -64,7 +65,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button filterForceSubselect;
 
     private Button keepStatementOpenCheck;
-    private Button alwaysUseAllColumns;
+    private Combo uniqueKeyValidationStrategyCombo;
     private Button newRowsAfter;
     private Button refreshAfterUpdate;
     private Button useNavigatorFilters;
@@ -97,6 +98,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT) ||
             store.contains(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT) ||
             store.contains(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
+            store.contains(ResultSetPreferences.RS_EDIT_KEY_VALIDATION_STRATEGY) ||
             store.contains(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
             store.contains(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(ResultSetPreferences.KEEP_STATEMENT_OPEN) ||
@@ -181,8 +183,15 @@ public class PrefPageResultSetMain extends TargetPrefPage
             Group miscGroup = UIUtils.createControlGroup(rightPane, ResultSetMessages.pref_page_sql_editor_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             miscGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
+            uniqueKeyValidationStrategyCombo = UIUtils.createLabelCombo(
+                UIUtils.createPlaceholder(miscGroup, 2),
+                ResultSetMessages.pref_page_content_editor_key_validation_strategy,
+                ResultSetMessages.pref_page_content_editor_key_validation_strategy_tip,
+                SWT.READ_ONLY | SWT.DROP_DOWN);
+            for (UniqueKeyValidationStrategy strategy : UniqueKeyValidationStrategy.values()) {
+                uniqueKeyValidationStrategyCombo.add(strategy.getName());
+            }
             keepStatementOpenCheck = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_database_general_checkbox_keep_cursor, false);
-            alwaysUseAllColumns = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
             newRowsAfter = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_new_rows_after, false);
             refreshAfterUpdate = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
             useNavigatorFilters = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters_tip, false, 1);
@@ -242,7 +251,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             useBrowserCheckbox.setSelection(store.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN));
-            alwaysUseAllColumns.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS));
+            uniqueKeyValidationStrategyCombo.select(UniqueKeyValidationStrategy.of(store).ordinal());
             newRowsAfter.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER));
             refreshAfterUpdate.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE));
             useNavigatorFilters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS));
@@ -279,7 +288,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER, useBrowserCheckbox.getSelection());
 
             store.setValue(ResultSetPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
-            store.setValue(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
+            store.setValue(ResultSetPreferences.RS_EDIT_KEY_VALIDATION_STRATEGY,
+                UniqueKeyValidationStrategy.values()[uniqueKeyValidationStrategyCombo.getSelectionIndex()].name());
             store.setValue(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER, newRowsAfter.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE, refreshAfterUpdate.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS, useNavigatorFilters.getSelection());
@@ -314,6 +324,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
         store.setToDefault(ResultSetPreferences.KEEP_STATEMENT_OPEN);
         store.setToDefault(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS);
+        store.setToDefault(ResultSetPreferences.RS_EDIT_KEY_VALIDATION_STRATEGY);
         store.setToDefault(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER);
         store.setToDefault(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS);

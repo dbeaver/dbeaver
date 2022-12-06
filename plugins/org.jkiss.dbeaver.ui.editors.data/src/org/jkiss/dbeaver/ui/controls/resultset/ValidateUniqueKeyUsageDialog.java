@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
@@ -125,7 +126,11 @@ final class ValidateUniqueKeyUsageDialog extends MessageDialog {
         return true;
     }
 
-    static boolean validateUniqueKey(@NotNull ResultSetViewer viewer, @NotNull DBCExecutionContext executionContext) {
+    static boolean validateUniqueKey(
+        @NotNull ResultSetViewer viewer,
+        @NotNull DBCExecutionContext executionContext,
+        boolean defineIfAbsent
+    ) {
         DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
         if (identifier == null) {
             // No key
@@ -135,13 +140,15 @@ final class ValidateUniqueKeyUsageDialog extends MessageDialog {
             // Key already defined
             return true;
         }
-        if (executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS)) {
-            if (useAllColumns(viewer)) {
-                return true;
-            }
+        final DBPPreferenceStore store = executionContext.getDataSource().getContainer().getPreferenceStore();
+        final UniqueKeyValidationStrategy strategy = UniqueKeyValidationStrategy.of(store);
+        if (strategy == UniqueKeyValidationStrategy.USE_ALL_COLUMNS && useAllColumns(viewer)) {
+            return true;
         }
-        ValidateUniqueKeyUsageDialog dialog = new ValidateUniqueKeyUsageDialog(viewer);
-        int result = dialog.open();
-        return result == IDialogConstants.OK_ID;
+        if (defineIfAbsent) {
+            final ValidateUniqueKeyUsageDialog dialog = new ValidateUniqueKeyUsageDialog(viewer);
+            return dialog.open() == IDialogConstants.OK_ID;
+        }
+        return false;
     }
 }
