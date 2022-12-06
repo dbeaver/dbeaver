@@ -278,8 +278,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         TimezoneRegistry.overrideTimezone();
 
         if (RuntimeUtils.isWindows()
-            && System.getProperty(GeneralUtils.PROP_TRUST_STORE) == null
-            && System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE) == null
+            && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
+            && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
             && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
         ) {
             System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, VALUE_TRUST_STRORE_TYPE_WINDOWS);
