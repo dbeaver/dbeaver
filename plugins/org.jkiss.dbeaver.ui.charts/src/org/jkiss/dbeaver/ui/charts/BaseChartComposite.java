@@ -86,13 +86,13 @@ public class BaseChartComposite extends ChartComposite {
             manager.add(new Action(UIChartsMessages.base_chart_composite_action_zoom_in, DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_IN)) {
                 @Override
                 public void runWithEvent(Event e) {
-                    zoom(zoomable, getChartCanvas().toControl(getDisplay().getCursorLocation()), getZoomInFactor());
+                    doZoom(zoomable, getChartCanvas().toControl(getDisplay().getCursorLocation()), getZoomInFactor());
                 }
             });
             manager.add(new Action(UIChartsMessages.base_chart_composite_action_zoom_out, DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_OUT)) {
                 @Override
                 public void runWithEvent(Event e) {
-                    zoom(zoomable, getChartCanvas().toControl(getDisplay().getCursorLocation()), getZoomOutFactor());
+                    doZoom(zoomable, getChartCanvas().toControl(getDisplay().getCursorLocation()), getZoomOutFactor());
                 }
             });
             manager.add(new Action(UIChartsMessages.base_chart_composite_action_zoom_reset, DBeaverIcons.getImageDescriptor(UIIcon.ZOOM)) {
@@ -151,7 +151,7 @@ public class BaseChartComposite extends ChartComposite {
         }
     }
 
-    private void zoom(@NotNull Zoomable zoomable, @NotNull Point origin, double factor) {
+    private void doZoom(@NotNull Zoomable zoomable, @NotNull Point origin, double factor) {
         final PlotRenderingInfo info = getChartRenderingInfo().getPlotInfo();
         final Point2D anchor = translateScreenToJava2D(new java.awt.Point(origin.x, origin.y));
 
