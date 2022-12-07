@@ -191,18 +191,13 @@ class DriverDependenciesTree {
         try {
             WebUtils.openConnection(NETWORK_TEST_URL, GeneralUtils.getProductTitle());
         } catch (IOException e) {
-            showHintOnCertificateIssueForWindows(e);
-            throw new DBException("Network unavailable:\n" + e.getClass().getName() + ":" + e.getMessage());
-        }
-    }
-
-    public static void showHintOnCertificateIssueForWindows(IOException e) {
-        if (RuntimeUtils.isWindows() && e instanceof SSLHandshakeException) {
-            DBWorkbench.getPlatformUI().showMessageBox(
-                UIConnectionMessages.driver_download_certificate_issue_hint_title,
-                UIConnectionMessages.driver_download_certificate_issue_hint_message,
-                false
-            );
+            String message;
+            if (RuntimeUtils.isWindows() && e instanceof SSLHandshakeException) {
+                message = UIConnectionMessages.dialog_driver_download_network_unavailable_cert_msg;
+            } else {
+                message = UIConnectionMessages.dialog_driver_download_network_unavailable_msg;
+            }
+            throw new DBException(message + "\n" + e.getClass().getName() + ":" + e.getMessage());
         }
     }
 
