@@ -264,10 +264,10 @@ public class CoreMessages extends NLS {
 	public static String pref_page_confirmations_combo_prompt;
 	public static String pref_page_confirmations_group_general_actions;
 	public static String pref_page_confirmations_group_object_editor;
-    public static String pref_page_confirmations_table_column_confirmation;
+	public static String pref_page_confirmations_table_column_confirmation;
 	public static String pref_page_confirmations_table_column_confirmation_tip;
-    public static String pref_page_confirmations_table_column_group;
-    public static String pref_page_confirmations_table_column_value;
+	public static String pref_page_confirmations_table_column_group;
+	public static String pref_page_confirmations_table_column_value;
 	public static String pref_page_confirmations_table_column_value_tip;
 
 	public static String pref_page_database_general_separate_meta_connection;
