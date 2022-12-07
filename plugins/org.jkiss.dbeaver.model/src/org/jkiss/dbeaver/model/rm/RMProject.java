@@ -161,6 +161,9 @@ public class RMProject extends RMObject {
     public static class TimeRenderer implements IPropertyValueTransformer<RMProject, Object> {
         @Override
         public Object transform(RMProject object, Object value) throws IllegalArgumentException {
+            if (!(value instanceof Long)) {
+                return value;
+            }
             return new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date((Long) value));
         }
     }
