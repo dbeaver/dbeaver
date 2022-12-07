@@ -776,6 +776,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         boolean refresh,
         @NotNull ParseResults parseResults
     ) {
+        boolean configChanged = false;
         try {
             DataSourceSerializer serializer;
             if (storage instanceof DataSourceFileStorage && ((DataSourceFileStorage) storage).isLegacy()) {
@@ -783,15 +784,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             } else {
                 serializer = new DataSourceSerializerModern(this);
             }
-            var configChanged = serializer.parseDataSources(storage, manager, parseResults, refresh);
+            configChanged = serializer.parseDataSources(storage, manager, parseResults, refresh);
             updateProjectNature();
             lastError = null;
-            return configChanged;
         } catch (Exception ex) {
             lastError = ex;
             log.error("Error loading datasource config from " + storage.getStorageId(), ex);
         }
-        return false;
+        return configChanged;
     }
 
     @Override
