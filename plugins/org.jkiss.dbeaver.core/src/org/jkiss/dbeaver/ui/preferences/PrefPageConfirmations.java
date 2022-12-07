@@ -169,15 +169,13 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         new DefaultViewerToolTipSupport(tableViewer);
 
         Collection<ConfirmationDescriptor> descriptors = ConfirmationRegistry.getInstance().getConfirmations().stream()
+            // We do not want to see confirmation without a toggle message in the preferences
+            // because we do not want to add the user's ability to ignore these confirmations
+            .filter(item -> CommonUtils.isNotEmpty(item.getToggleMessage()))
             .sorted(Comparator.comparing(ConfirmationDescriptor::getGroup))
             .collect(Collectors.toList());
         for (ConfirmationDescriptor confirmation : descriptors) {
-            String toggleMessage = confirmation.getToggleMessage();
-            if (CommonUtils.isNotEmpty(toggleMessage)) {
-                // We do not want to see confirmation without a toggle message in the preferences
-                // because we do not want to add the user's ability to ignore these confirmations
-                this.confirmations.add(new ConfirmationWithStatus(confirmation, getCurrentConfirmValue(confirmation.getId())));
-            }
+            this.confirmations.add(new ConfirmationWithStatus(confirmation, getCurrentConfirmValue(confirmation.getId())));
         }
 
         tableViewer.setInput(this.confirmations);
@@ -224,7 +222,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         for (ConfirmationWithStatus confirmation : confirmations) {
             if (!confirmation.enabled) {
                 confirmation.enabled = true;
-                changedConfirmations.put((confirmation).confirmation, Boolean.TRUE);
+                changedConfirmations.put(confirmation.confirmation, Boolean.TRUE);
             }
         }
         super.performDefaults();
