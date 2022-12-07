@@ -22,26 +22,6 @@ import org.eclipse.osgi.util.NLS;
 public class SQLEditorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages"; //$NON-NLS-1$
 
-    public static String confirm_close_running_query_title;
-    public static String confirm_close_running_query_message;
-    public static String confirm_close_running_query_toggleMessage;
-
-    public static String confirm_close_result_tabs_title;
-    public static String confirm_close_result_tabs_message;
-    public static String confirm_close_result_tabs_toggleMessage;
-
-    public static String confirm_dangerous_sql_title;
-    public static String confirm_dangerous_sql_message;
-    public static String confirm_dangerous_sql_toggleMessage;
-
-    public static String confirm_drop_sql_title;
-    public static String confirm_drop_sql_message;
-    public static String confirm_drop_sql_toggleMessage;
-
-    public static String confirm_mass_parallel_sql_title;
-    public static String confirm_mass_parallel_sql_message;
-    public static String confirm_mass_parallel_sql_toggleMessage;
-
     public static String dialog_view_sql_button_copy;
     public static String dialog_view_sql_button_persist;
 
@@ -155,6 +135,7 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_save_active_schema_tip;
     public static String pref_page_sql_editor_group_result_view;
     public static String pref_page_sql_editor_label_close_results_tab_on_error;
+    public static String pref_page_sql_editor_label_close_results_tab_on_error_tip;
     public static String pref_page_sql_editor_label_auto_open_output_view;
     public static String pref_page_sql_editor_label_auto_open_output_view_tip;
     public static String pref_page_sql_editor_label_size_warning_threshold;

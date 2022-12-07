@@ -1272,4 +1272,35 @@
         </perspectiveExtension>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+                id="exit"
+                title="%confirm_exit_title"
+                description="%confirm_exit_tip"
+                message="%confirm_exit_message"
+                toggleMessage="%confirm.general.toggleMessage"
+                group="%confirmation.group.general.actions"/>
+        <confirmation
+                id="disconnect_txn"
+                title="%confirm_disconnect_txn_title"
+                description="%confirm_disconnect_txn_tip"
+                message="%confirm_disconnect_txn_message"
+                toggleMessage="%confirm.general.toggleMessage"
+                group="%confirmation.group.general.actions"/>
+        <confirmation
+                id="reconnect_txn"
+                title="%confirm_reconnect_txn_title"
+                description="%confirm_reconnect_txn_tip"
+                message="%confirm_reconnect_txn_message"
+                toggleMessage="%confirm.general.toggleMessage"
+                group="%confirmation.group.general.actions"/>
+        <confirmation
+                id="driver_download"
+                title="%confirm_driver_download_title"
+                description="%confirm_driver_download_tip"
+                message="%confirm_driver_download_message"
+                toggleMessage="%confirm.general.toggleMessage"
+                group="%confirmation.group.general.actions"/>
+    </extension>
+
 </plugin>

@@ -47,7 +47,6 @@ public class NavigatorPreferences {
     public static final String ENTITY_EDITOR_INFO_SASH_STATE = "entity.editor.info.sash.state"; //$NON-NLS-1$
 
     public static final String CONFIRM_LOCAL_FOLDER_DELETE = "local_folder_delete"; //$NON-NLS-1$
-    public static final String CONFIRM_ENTITY_DELETE = "entity_delete"; //$NON-NLS-1$
     public static final String CONFIRM_ENTITY_REJECT = "entity_reject"; //$NON-NLS-1$
     public static final String CONFIRM_ENTITY_REVERT = "entity_revert"; //$NON-NLS-1$
     //public static final String CONFIRM_ENTITY_RENAME = "entity_rename"; //$NON-NLS-1$

@@ -2258,12 +2258,10 @@ public class ResultSetViewer extends Viewer
         }
         if (constraint.getOrderPosition() == 0 && forceOrder != ColumnOrder.NONE) {
             if (orderingMode == ResultSetUtils.OrderingMode.SERVER_SIDE && supportsDataFilter()) {
-                if (ConfirmationDialog.showConfirmDialogNoToggle(
-                    ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+                if (ConfirmationDialog.confirmAction(
                     viewerPanel.getShell(),
-                    ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
+                    ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
-                    ConfirmationDialog.WARNING,
                     columnElement.getName()) != IDialogConstants.YES_ID)
                 {
                     return;
@@ -2402,8 +2400,7 @@ public class ResultSetViewer extends Viewer
         if (!isDirty()) {
             return ISaveablePart2.YES;
         }
-        int result = ConfirmationDialog.showConfirmDialog(
-            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+        int result = ConfirmationDialog.confirmAction(
             viewerPanel.getShell(),
             ResultSetPreferences.CONFIRM_RS_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL);
@@ -2573,12 +2570,10 @@ public class ResultSetViewer extends Viewer
                 // Column enumeration is expensive
             }
         }
-        if (isExpensiveFilter && ConfirmationDialog.showConfirmDialogNoToggle(
-            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+        if (isExpensiveFilter && ConfirmationDialog.confirmAction(
             viewerPanel.getShell(),
-            ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
+            ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
             ConfirmationDialog.QUESTION,
-            ConfirmationDialog.WARNING,
             curAttribute.getName()) != IDialogConstants.YES_ID)
         {
             return;
@@ -3556,8 +3551,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
                 if (panelsDirty) {
-                    int result = ConfirmationDialog.showConfirmDialog(
-                        ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+                    int result = ConfirmationDialog.confirmAction(
                         viewerPanel.getShell(),
                         ResultSetPreferences.CONFIRM_RS_PANEL_RESET,
                         ConfirmationDialog.CONFIRM);
@@ -3922,12 +3916,11 @@ public class ResultSetViewer extends Viewer
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (ConfirmationDialog.showConfirmDialogEx(
-            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+        if (ConfirmationDialog.confirmAction(
             viewerPanel.getShell(),
-            ResultSetPreferences.CONFIRM_RS_FETCH_ALL,
-            ConfirmationDialog.QUESTION,
-            ConfirmationDialog.WARNING) != IDialogConstants.YES_ID)
+            ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_RS_FETCH_ALL,
+            ConfirmationDialog.QUESTION
+        ) != IDialogConstants.YES_ID)
         {
             return;
         }

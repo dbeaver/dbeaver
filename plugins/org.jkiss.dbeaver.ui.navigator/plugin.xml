@@ -964,5 +964,32 @@
         </nodeAction>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+                id="entity_revert"
+                title="%confirm_entity_revert_title"
+                description="%confirm_entity_revert_tip"
+                message="%confirm_entity_revert_message"
+                toggleMessage="%confirm.entity.toggleMessage"
+                group="%confirm.object.editor.group.name"/>
+        <confirmation
+                id="close_editor_edit"
+                title="%confirm_close_editor_edit_title"
+                message="%confirm_close_editor_edit_message"
+                group="%confirm.object.editor.group.name"/>
+        <confirmation
+                id="close_entity_edit"
+                title="%confirm_close_entity_edit_title"
+                message="%confirm_close_entity_edit_message"
+                group="%confirm.object.editor.group.name"/>
+        <confirmation
+                id="entity_reject"
+                title="%confirm_entity_reject_title"
+                description="%confirm_entity_reject_tip"
+                message="%confirm_entity_reject_message"
+                toggleMessage="%confirm.entity.toggleMessage"
+                group="%confirm.object.editor.group.name"/>
+    </extension>
+
 
 </plugin>

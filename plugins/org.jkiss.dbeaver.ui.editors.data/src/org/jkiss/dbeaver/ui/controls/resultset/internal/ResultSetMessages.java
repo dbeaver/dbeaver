@@ -21,29 +21,6 @@ import org.eclipse.osgi.util.NLS;
 public class ResultSetMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages"; //$NON-NLS-1$
 
-    public static String confirm_order_resultset_title;
-    public static String confirm_order_resultset_message;
-    public static String confirm_order_resultset_toggleMessage;
-
-    public static String confirm_filter_resultset_title;
-    public static String confirm_filter_resultset_message;
-    public static String confirm_filter_resultset_toggleMessage;
-
-    public static String confirm_fetch_all_rows_title;
-    public static String confirm_fetch_all_rows_message;
-    public static String confirm_fetch_all_rows_toggleMessage;
-
-    public static String confirm_close_resultset_edit_title;
-    public static String confirm_close_resultset_edit_message;
-
-    public static String confirm_reset_panels_content_title;
-    public static String confirm_reset_panels_content_message;
-    public static String confirm_reset_panels_content_toggleMessage;
-
-    public static String confirm_keep_statement_open_title;
-    public static String confirm_keep_statement_open_message;
-    public static String confirm_keep_statement_open_toggleMessage;
-
     public static String confirm_modifying_query_message;
     public static String confirm_modifying_query_title;
 

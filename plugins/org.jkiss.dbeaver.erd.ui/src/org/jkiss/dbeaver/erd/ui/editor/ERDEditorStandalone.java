@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -51,7 +50,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
-import java.util.ResourceBundle;
 
 /**
  * Standalone ERD editor
@@ -99,8 +97,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     @Override
     public void refreshDiagram(boolean force, boolean refreshMetadata) {
         if (isDirty()) {
-            if (ConfirmationDialog.showConfirmDialog(
-                ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+            if (ConfirmationDialog.confirmAction(
                 null,
                 NavigatorPreferences.CONFIRM_ENTITY_REVERT,
                 ConfirmationDialog.QUESTION,
