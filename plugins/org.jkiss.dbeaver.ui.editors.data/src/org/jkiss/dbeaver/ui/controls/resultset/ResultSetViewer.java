@@ -2509,10 +2509,13 @@ public class ResultSetViewer extends Viewer
 
     private boolean isUniqueKeyUndefinedButRequired(@NotNull DBCExecutionContext context) {
         final DBPPreferenceStore store = context.getDataSource().getContainer().getPreferenceStore();
-        final UniqueKeyValidationStrategy strategy = UniqueKeyValidationStrategy.of(store);
 
-        return strategy == UniqueKeyValidationStrategy.DISABLE_EDITING
-            && !ValidateUniqueKeyUsageDialog.validateUniqueKey(this, context, false);
+        if (store.getBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING)) {
+            final DBDRowIdentifier identifier = model.getDefaultRowIdentifier();
+            return identifier == null || !identifier.isValidIdentifier();
+        }
+
+        return false;
     }
 
     /**
