@@ -45,7 +45,19 @@
         <sourceDirectory>${project.basedir}/src</sourceDirectory>
         <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
         <plugins>
-
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-repository-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <!-- Fixes build with recent Eclipse repo -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>org.eclipse.equinox.p2.core</artifactId>
+                        <version>2.9.200</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
