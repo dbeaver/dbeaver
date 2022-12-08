@@ -216,17 +216,25 @@ public class PrefPageResultSetMain extends TargetPrefPage
         }
 
         {
-            final Group group = UIUtils.createControlGroup(leftPane, "Editing", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            final Group group = UIUtils.createControlGroup(
+                leftPane,
+                ResultSetMessages.pref_page_content_editor_group_editing,
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
 
             alwaysUseAllColumns = UIUtils.createCheckbox(
                 group,
                 ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns,
-                false);
+                false
+            );
 
             disableEditingOnMissingKey = UIUtils.createCheckbox(
                 group,
                 ResultSetMessages.pref_page_content_editor_checkbox_disable_editing_if_key_missing,
-                false);
+                false
+            );
 
             alwaysUseAllColumns.addSelectionListener(new SelectionAdapter() {
                 @Override
