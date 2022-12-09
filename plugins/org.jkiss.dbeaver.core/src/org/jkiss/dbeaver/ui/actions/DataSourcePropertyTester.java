@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * DatabaseEditorPropertyTester
@@ -104,8 +105,10 @@ public class DataSourcePropertyTester extends PropertyTester {
                     if (context == null || !context.isConnected()) {
                         return false;
                     } else {
-                        return context.getDataSource().getContainer().getDriver()
-                            .getDataSourceProvider() instanceof DBPDataSourceProviderSynchronizable;
+                        final var container = context.getDataSource().getContainer();
+                        final var provider = container.getDriver().getDataSourceProvider();
+                        final var providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
+                        return providerSynchronizable != null && providerSynchronizable.isSynchronizationEnabled(container);
                     }
                 case PROP_SUPPORTS_TRANSACTIONS: {
                     if (context == null || !context.isConnected()) {
