@@ -9,9 +9,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>22.2.5</dbeaver-version>
+        <dbeaver-version>22.3.0</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>3.0.0</tycho-version>
+        <tycho-version>3.0.1</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
@@ -45,8 +45,6 @@
         <sourceDirectory>${project.basedir}/src</sourceDirectory>
         <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
         <plugins>
-
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>

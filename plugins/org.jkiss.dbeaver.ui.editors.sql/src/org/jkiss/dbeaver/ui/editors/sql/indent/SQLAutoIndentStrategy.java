@@ -22,19 +22,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPMessageType;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLBlockCompletionInfo;
-import org.jkiss.dbeaver.model.sql.SQLBlockCompletions;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-
-import java.util.*;
 
 public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
@@ -289,7 +282,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         endPos = pos + 1;
         while (pos >= 0) {
             char ch = document.getChar(pos);
-            if (!Character.isJavaIdentifierPart(ch) && commandPrefix.indexOf(ch) == -1) {
+            if (!Character.isJavaIdentifierPart(ch) && (commandPrefix == null || commandPrefix.indexOf(ch) == -1)) {
                 break;
             }
             pos--;

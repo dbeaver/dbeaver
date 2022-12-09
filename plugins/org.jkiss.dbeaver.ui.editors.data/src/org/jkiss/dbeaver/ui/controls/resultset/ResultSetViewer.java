@@ -448,6 +448,10 @@ public class ResultSetViewer extends Viewer
             return;
         }
         lastPropertyUpdateTime = System.currentTimeMillis();
+        if (ResultSetPreferences.RESULT_SET_PRESENTATION.equals(property)) {
+            // No need to refresh data
+            return;
+        }
         UIUtils.asyncExec(() -> {
             if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
                 if (activePresentation instanceof AbstractPresentation) {
@@ -2490,6 +2494,9 @@ public class ResultSetViewer extends Viewer
             return "Data edit restricted";
         }
         if (executionContext.getDataSource().getInfo().isReadOnlyData()) {
+            return "Read-only data container";
+        }
+        if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
             return "Connection is in read-only state";
         }
         return null;

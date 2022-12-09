@@ -15,6 +15,7 @@
 
     <modules>
         <module>org.jkiss.dbeaver.test.platform</module>
+        <module>org.jkiss.dbeaver.ext.clickhouse.test</module>
         <module>org.jkiss.dbeaver.ext.greenplum.test</module>
         <module>org.jkiss.dbeaver.ext.mysql.test</module>
         <module>org.jkiss.dbeaver.ext.oracle.test</module>

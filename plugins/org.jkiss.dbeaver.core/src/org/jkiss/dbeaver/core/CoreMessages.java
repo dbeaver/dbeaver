@@ -624,6 +624,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_connections_group_security;
     public static String pref_page_connections_use_win_cert_label;
     public static String pref_page_connections_use_win_cert_tip;
+    public static String pref_page_connections_use_win_cert_disabled_tip;
 
     public static String pref_page_transactions_notify_name_group_label;
     public static String pref_page_transactions_notifications_show_check_label;
