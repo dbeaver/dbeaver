@@ -351,12 +351,13 @@ class DataSourceSerializerModern implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(
+    public boolean parseDataSources(
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
         boolean refresh
     ) throws DBException, IOException {
+        var connectionConfigurationChanged = false;
         if (!configurationManager.isSecure()) {
             // Read secured creds file
             InputStream secureCredsData = configurationManager.readConfiguration(
@@ -393,13 +394,14 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 String name = folderMap.getKey();
                 String description = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_DESCRIPTION);
                 String parentFolder = JSONUtils.getObjectProperty(folderMap.getValue(), RegistryConstants.ATTR_PARENT);
-                DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true);
-                DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true) : parent.getChild(name);
+                DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true, parseResults);
+                DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true, parseResults) : parent.getChild(name);
                 if (folder == null) {
                     folder = new DataSourceFolder(registry, parent, name, description);
-                    registry.addDataSourceFolder(folder);
+                    parseResults.addedFolders.add(folder);
                 } else {
                     folder.setDescription(description);
+                    parseResults.updatedFolders.add(folder);
                 }
             }
 
@@ -519,6 +521,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 DataSourceDescriptor dataSource = registry.getDataSource(id);
                 boolean newDataSource = (dataSource == null);
+                DBPConnectionConfiguration oldConnectionConfiguration = null;
                 if (newDataSource) {
                     DBPDataSourceOrigin origin;
                     Map<String, Object> originProperties = JSONUtils.deserializeProperties(conObject, TAG_ORIGIN);
@@ -541,6 +544,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         driver,
                         new DBPConnectionConfiguration());
                 } else {
+                    oldConnectionConfiguration = new DBPConnectionConfiguration(dataSource.getConnectionConfiguration());
                     // Clean settings - they have to be loaded later by parser
                     dataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
                     dataSource.getConnectionConfiguration().setHandlers(Collections.emptyList());
@@ -567,7 +571,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
                 final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
-                dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true));
+                dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true, parseResults));
                 dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
 
                 // Connection settings
@@ -703,8 +707,12 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 // Add to the list
                 if (newDataSource) {
                     parseResults.addedDataSources.add(dataSource);
+                    connectionConfigurationChanged = true;
                 } else {
                     parseResults.updatedDataSources.add(dataSource);
+                    if (!dataSource.getConnectionConfiguration().equals(oldConnectionConfiguration)) {
+                        connectionConfigurationChanged = true;
+                    }
                 }
             }
 
@@ -714,6 +722,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                 registry.addSavedFilter(filter);
             }
         }
+        return connectionConfigurationChanged;
 
     }
 

@@ -162,8 +162,8 @@ public class DataSourceDescriptor
 
     // secrets resolved from secret controller
     private volatile boolean secretsResolved = false;
-    // secrets resolved from secret controller and secret not null
-    private volatile boolean secretExist = false;
+    // secrets resolved from secret controller and contains db creds (we may not have db creds in the case when we store only ssh)
+    private volatile boolean secretsContainsDatabaseCreds = false;
 
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWNetworkHandler proxyHandler;
@@ -392,7 +392,7 @@ public class DataSourceDescriptor
             return savePassword;
         }
         resolveSecretsIfNeeded();
-        return secretsResolved && secretExist;
+        return secretsResolved && secretsContainsDatabaseCreds;
     }
 
     @Override
@@ -466,7 +466,7 @@ public class DataSourceDescriptor
 
     public void forgetSecrets() {
         this.secretsResolved = false;
-        this.secretExist = false;
+        this.secretsContainsDatabaseCreds = false;
     }
 
     @Override
@@ -833,11 +833,9 @@ public class DataSourceDescriptor
     public void persistSecrets(DBSSecretController secretController) throws DBException {
         if (!isSharedCredentials()) {
             var secret = saveToSecret();
-            secretController.setSecretValue(
-                getSecretKeyId(),
-                secret
-            );
-            secretExist = secret != null;
+            secretController.setSecretValue(getSecretKeyId(), secret);
+            this.secretsContainsDatabaseCreds =
+                isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(this.connectionInfo);
         }
         secretsResolved = true;
     }
@@ -846,14 +844,12 @@ public class DataSourceDescriptor
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
         if (!isSharedCredentials()) {
             String secretValue = secretController.getSecretValue(getSecretKeyId());
-            this.secretExist = secretValue != null;
-            if (secretExist) {
-                loadFromSecret(secretValue);
-            } else {
-                if (!DBWorkbench.isDistributed()) {
-                    // Backward compatibility
-                    loadFromLegacySecret(secretController);
-                }
+            loadFromSecret(secretValue);
+            this.secretsContainsDatabaseCreds =
+                isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(this.connectionInfo);
+            if (secretValue == null && !DBWorkbench.isDistributed()) {
+                // Backward compatibility
+                loadFromLegacySecret(secretController);
             }
         }
         secretsResolved = true;
@@ -1857,7 +1853,7 @@ public class DataSourceDescriptor
             // Handlers. If config profile is set then props are saved there
             List<Map<String, Object>> handlersConfigs = new ArrayList<>();
             for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
-                Map<String, Object> handlerProps = hc.saveToMap();
+                Map<String, Object> handlerProps = hc.saveToSecret();
                 if (!handlerProps.isEmpty()) {
                     handlerProps.put(RegistryConstants.ATTR_ID, hc.getHandlerDescriptor().getId());
                     handlersConfigs.add(handlerProps);
@@ -1882,15 +1878,30 @@ public class DataSourceDescriptor
         return DBInfoUtils.SECRET_GSON.toJson(propsFull);
     }
 
-    private void loadFromSecret(String secretValue) {
-        Map<String, Object> props = JSONUtils.parseMap(DBInfoUtils.SECRET_GSON, new StringReader(secretValue));
+    private void loadFromSecret(@Nullable String secretValue) {
+        if (secretValue == null) {
+            connectionInfo.getHandlers().forEach(handler ->
+                handler.setSavePassword(false)
+            );
+            return;
+        }
+
+        Map<String, Object> props;
+        try {
+            props = JSONUtils.parseMap(DBInfoUtils.SECRET_GSON, new StringReader(secretValue));
+        } catch (Exception e) {
+            log.error("Error parsing secret value", e);
+            return;
+        }
 
         // Primary props
-        connectionInfo.setUserName(JSONUtils.getString(props, RegistryConstants.ATTR_USER));
-        connectionInfo.setUserPassword(JSONUtils.getString(props, RegistryConstants.ATTR_PASSWORD));
+        var dbUserName = JSONUtils.getString(props, RegistryConstants.ATTR_USER);
+        var dbPassword = JSONUtils.getString(props, RegistryConstants.ATTR_PASSWORD);
+        var dbAuthProperties = JSONUtils.deserializeStringMap(props, RegistryConstants.TAG_PROPERTIES);
+        connectionInfo.setUserName(dbUserName);
+        connectionInfo.setUserPassword(dbPassword);
         // Additional auth props
-        connectionInfo.setAuthProperties(
-            JSONUtils.deserializeStringMap(props, RegistryConstants.TAG_PROPERTIES));
+        connectionInfo.setAuthProperties(dbAuthProperties);
 
         // Handlers
         List<Map<String, Object>> handlerList = JSONUtils.getObjectList(props, RegistryConstants.TAG_HANDLERS);
@@ -1902,9 +1913,15 @@ public class DataSourceDescriptor
                     log.warn("Handler '" + handlerId + "' not found in datasource '" + getId() + "'. Secret configuration will be lost.");
                     continue;
                 }
-                hc.setUserName(JSONUtils.getString(handlerMap, RegistryConstants.ATTR_USER));
-                hc.setPassword(JSONUtils.getString(handlerMap, RegistryConstants.ATTR_PASSWORD));
-                hc.setSecureProperties(JSONUtils.deserializeStringMap(handlerMap, RegistryConstants.TAG_PROPERTIES));
+                var hcUsername = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_USER);
+                var hcPassword = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_PASSWORD);
+                var hcProperties = JSONUtils.deserializeStringMap(handlerMap, RegistryConstants.TAG_PROPERTIES);
+                hc.setUserName(hcUsername);
+                hc.setPassword(hcPassword);
+                hc.setSecureProperties(hcProperties);
+                hc.setSavePassword(
+                    CommonUtils.isNotEmpty(hcUsername) || CommonUtils.isNotEmpty(hcPassword) || !CommonUtils.isEmpty(hcProperties)
+                );
             }
         }
     }

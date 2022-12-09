@@ -182,7 +182,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                 if (client != null && client.isConnected()) {
                     try {
                         client.disconnect();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         log.debug("Error closing session: " + e.getMessage());
                     }
                 }
@@ -313,8 +313,10 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
 
         public void disconnect() {
             try {
-                forwarder.close();
-            } catch (IOException e) {
+                if (forwarder.isRunning()) {
+                    forwarder.close();
+                }
+            } catch (Exception e) {
                 log.error("Error while stopping port forwarding", e);
             }
         }

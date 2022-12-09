@@ -4230,7 +4230,11 @@ public class SQLEditor extends SQLEditorBase implements
                             // in that case we need to update tab selection and
                             // select new statistics tab
                             // see #16605
-                            setResultTabSelection(results.resultsTab);
+                            // But we need to avoid the result tab with the select statement
+                            // because the statistics window can not be in focus in this case
+                            if (query.getType() != SQLQueryType.SELECT) {
+                                setResultTabSelection(results.resultsTab);
+                            }
                             continue;
                         }
                         if (resultsIndex < result.getExecuteResults().size()) {

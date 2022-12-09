@@ -341,12 +341,8 @@ public class Spreadsheet extends LightGrid implements Listener {
                 presentation.changeSorting(event.data, event.stateMask);
                 break;
             case LightGrid.Event_FilterColumn:
-                IGridColumn columnByElement = getColumnByElement(event.data);
-                if (columnByElement != null) {
-                    setFocusColumn(columnByElement.getIndex());
-                    redraw();
-                }
-                presentation.handleColumnIconClick(event.data);
+                //showFiltersMenu
+                presentation.showFiltering(event.data);
                 break;
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and
@@ -376,8 +372,10 @@ public class Spreadsheet extends LightGrid implements Listener {
             GridPos focusPos = getFocusPos();
             presentation.fillContextMenu(
                 manager,
-                (focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null),
-                (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
+                isHoveringOnRowHeader() ? null :
+                    focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null,
+                isHoveringOnHeader() ? null :
+                    (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
             );
         });
         menuMgr.setRemoveAllWhenShown(true);
