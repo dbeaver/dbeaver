@@ -142,7 +142,9 @@ public class LogOutputStream extends OutputStream {
      * @return false if the file doesn't exist or the log files doesn't need to be rotated
      */
     private boolean rotateCurrentLogFile(boolean force) throws IOException {
-        if (this.currentLogFile.exists() && (this.currentLogSize > this.maxLogSize || force)) {
+        if ((this.currentLogFileOutput != null || this.currentLogFile.exists()) // if we are initializing log file for new launch
+            && (this.currentLogSize > this.maxLogSize || force)
+        ) {
             this.close();
             
             File newFile = new File(this.logFileLocation, this.logFileName + "-" + System.currentTimeMillis() + this.logFileNameExtension);
