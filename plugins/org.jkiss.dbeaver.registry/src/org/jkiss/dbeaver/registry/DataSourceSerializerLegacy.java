@@ -71,7 +71,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(
+    public boolean parseDataSources(
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
@@ -86,6 +86,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         } catch (Exception ex) {
             throw new DBException("Datasource config parse error", ex);
         }
+        return false;
     }
 
     @Nullable
