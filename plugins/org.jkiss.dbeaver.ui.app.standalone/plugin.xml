@@ -93,6 +93,16 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
+        <command
+            id="org.jkiss.dbeaver.core.util.resetSettings"
+            categoryId="org.jkiss.dbeaver.core.util"
+            name="Reset UI Settings..."
+            description="Reset UI settings and restart"/>
+        <command
+            id="org.jkiss.dbeaver.core.util.clearHistory"
+            categoryId="org.jkiss.dbeaver.core.util"
+            name="Clear History..."
+            description="Clear logs, query history and restart"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -175,6 +185,8 @@
             </activeWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.text.openLocalFile" class="org.jkiss.dbeaver.ui.app.standalone.actions.OpenLocalFileActionExt"/>
+        <handler commandId="org.jkiss.dbeaver.core.util.resetSettings" class="org.jkiss.dbeaver.ui.app.standalone.actions.ResetUISettingsHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.util.clearHistory" class="org.jkiss.dbeaver.ui.app.standalone.actions.ClearHistoryHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -288,6 +300,15 @@
             </menu>
             <separator name="settings" visible="true"/>
             <command commandId="org.eclipse.ui.window.preferences" label="%command.org.jkiss.dbeaver.core.window.preferences.name"/>
+        </menuContribution>
+
+        <!-- Help menu -->
+
+        <menuContribution allPopups="false" locationURI="menu:help">
+            <separator name="misc" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.util.resetSettings" style="push"/>
+            <command commandId="org.jkiss.dbeaver.core.util.clearHistory" style="push"/>
+            <separator name="misc_end" visible="true"/>
         </menuContribution>
 
         <!-- Main toolbar -->
