@@ -22,6 +22,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 import java.lang.reflect.InvocationTargetException;
@@ -77,8 +79,8 @@ public class ClearHistoryHandler extends AbstractHandler {
                     UIUtils.runInProgressDialog(descriptor.getHandler());
                 } catch (Exception e) {
                     DBWorkbench.getPlatformUI().showError(
-                        "Error while clearing history",
-                        "An error occurred while performing action '" + descriptor.name + "'",
+                        CoreApplicationMessages.clear_history_error_title,
+                        NLS.bind(CoreApplicationMessages.clear_history_error_message, descriptor.name),
                         e instanceof InvocationTargetException ? ((InvocationTargetException) e).getTargetException() : e
                     );
                 }
@@ -92,7 +94,7 @@ public class ClearHistoryHandler extends AbstractHandler {
         private final Set<String> options = new HashSet<>();
 
         public ClearHistoryDialog(@NotNull Shell shell) {
-            super(shell, "Clear history", null);
+            super(shell, CoreApplicationMessages.clear_history_dialog_title, null);
             setShellStyle(SWT.DIALOG_TRIM);
         }
 
@@ -100,9 +102,10 @@ public class ClearHistoryHandler extends AbstractHandler {
         protected Composite createDialogArea(Composite parent) {
             final Composite composite = super.createDialogArea(parent);
 
-            UIUtils.createInfoLabel(composite, "To continue, choose one or more options below:");
+            UIUtils.createLabel(composite, CoreApplicationMessages.clear_history_dialog_message);
 
-            final Group group = UIUtils.createControlGroup(composite, "Options", 1, GridData.FILL_BOTH, 0);
+            final Group group = UIUtils.createControlGroup(
+                composite, CoreApplicationMessages.clear_history_dialog_options, 1, GridData.FILL_BOTH, 0);
 
             final SelectionListener listener = new SelectionAdapter() {
                 @Override
@@ -135,7 +138,8 @@ public class ClearHistoryHandler extends AbstractHandler {
 
         @Override
         protected void createButtonsForButtonBar(Composite parent) {
-            createButton(parent, IDialogConstants.OK_ID, "Apply and Restart", true).setEnabled(false);
+            createButton(parent, IDialogConstants.OK_ID, CoreApplicationMessages.clear_history_dialog_apply_and_restart, true)
+                .setEnabled(false);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
         }
     }

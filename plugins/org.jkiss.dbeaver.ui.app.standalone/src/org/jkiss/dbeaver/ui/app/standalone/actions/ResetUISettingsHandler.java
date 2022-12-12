@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -43,13 +44,8 @@ public class ResetUISettingsHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final boolean result = UIUtils.confirmAction(
             HandlerUtil.getActiveShell(event),
-            "Confirm UI settings reset",
-            "You are about to reset UI settings. All UI settings and user preferences will be lost.\n\nThese include:\n\n" +
-                " - menus, toolbars, windows, editors\n" +
-                " - theme, colors and fonts\n" +
-                " - other settings from installed third-party plugins\n\n" +
-                "In order to apply changes, DBeaver will be restarted.\n\n" +
-                "Are you sure you want to continue?",
+            CoreApplicationMessages.reset_ui_settings_confirmation_title,
+            CoreApplicationMessages.reset_ui_settings_confirmation_message,
             DBIcon.STATUS_WARNING
         );
 

@@ -9,8 +9,8 @@
     <extension point="org.jkiss.dbeaver.clearHistoryHandler">
         <handler
                 id="taskRunHistory"
-                name="Task run history"
-                description="Contains information about previously run tasks along with logs collected during their execution."
+                name="%handler.taskRunHistory.name"
+                description="%handler.taskRunHistory.description"
                 handler="org.jkiss.dbeaver.tasks.ui.handlers.TaskClearHistoryHandler"/>
     </extension>
 
