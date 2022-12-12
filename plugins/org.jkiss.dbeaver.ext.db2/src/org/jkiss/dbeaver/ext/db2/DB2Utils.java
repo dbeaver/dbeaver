@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
@@ -611,7 +612,7 @@ public class DB2Utils {
     /**
      * Retrieves the server variant information from the DB2 SQLCA.
      */
-    public static char getServerVariant(DBRProgressMonitor monitor, JDBCSession session) throws SQLException {
+    public static @NotNull char getServerVariant(@NotNull DBRProgressMonitor monitor, @NotNull JDBCSession session) throws SQLException {
         DB2Sqlca sqlca = DB2Sqlca.from(session.getOriginal());
         if (sqlca == null) {
             return 0;
@@ -622,8 +623,7 @@ public class DB2Utils {
             return 0;
         }
         
-        char serverVariant = sqlwarn[7];
-        return serverVariant;
+        return sqlwarn[7];
     }
 
     private DB2Utils()

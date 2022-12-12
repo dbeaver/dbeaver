@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.BeanUtils;
 
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -37,7 +39,7 @@ public class DB2Sqlca {
 
     private static final Log LOG = Log.getLog(DB2Sqlca.class);
 
-    private Object delegate;
+    private final Object delegate;
 
     /**
      * Constructor.
@@ -59,12 +61,9 @@ public class DB2Sqlca {
      * @return the {@code sqlwarn} vector from the SQLCA.
      * @see <a href="https://www.ibm.com/docs/en/db2/11.5?topic=tables-sqlca-sql-communications-area">SQLCA (SQL communications area)</a>
      */
-    public char[] getSqlWarn() {
+    public @Nullable char[] getSqlWarn() {
         try {
-            Class<?> clazz = delegate.getClass();
-            Method method = clazz.getMethod("getSqlWarn");
-            Object result = method.invoke(delegate);
-            return (char[]) result;
+            return (char[]) BeanUtils.invokeObjectMethod(delegate, "getSqlWarn");
         } catch (Throwable t) {
             LOG.error("Unable to invoke getSqlWarn()", t);
             return null;
@@ -81,7 +80,7 @@ public class DB2Sqlca {
      *         connection, otherwise {@code null}.
      * @see #from(SQLWarning)
      */
-    static DB2Sqlca from(Connection connection) throws SQLException {
+    static @Nullable DB2Sqlca from(@NotNull Connection connection) throws SQLException {
         return DB2Sqlca.from(connection.getWarnings());
     }
 
@@ -93,14 +92,11 @@ public class DB2Sqlca {
      * @return An instance of {@link DB2Sqlca} if one can be produced from the
      *         connection, otherwise {@code null}.
      */
-    static DB2Sqlca from(SQLWarning warning) throws SQLException {
-        DB2Sqlca sqlca = null;
+    static @Nullable DB2Sqlca from(@NotNull SQLWarning warning) throws SQLException {
         try {
-            Class<?> clazz = warning.getClass();
-            Method getSqlca = clazz.getMethod("getSqlca");
-            Object returnValue = getSqlca.invoke(warning);
-            if (returnValue != null) {
-                sqlca = new DB2Sqlca(returnValue);
+            Object value = BeanUtils.invokeObjectMethod(warning, "getSqlca");
+            if (value != null) {
+                return new DB2Sqlca(value);
             }
         } catch (Throwable t) {
             if (t instanceof SQLException) {
@@ -109,7 +105,7 @@ public class DB2Sqlca {
                 LOG.error("Unable to reflectively access DB2 SQLCA", t);
             }
         }
-        return sqlca;
+        return null;
     }
 
 }
