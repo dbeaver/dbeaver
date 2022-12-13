@@ -295,6 +295,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                                 }
                             }
                             Path importLibFile = contribFolder.resolve(libName);
+                            if (!importLibFile.normalize().startsWith(contribFolder.normalize())) {
+                                throw new IOException("Zip entry is outside of the target directory");
+                            }
                             if (!Files.exists(importLibFile)) {
                                 try (OutputStream os = Files.newOutputStream(importLibFile)) {
                                     try (InputStream is = zipFile.getInputStream(libEntry)) {

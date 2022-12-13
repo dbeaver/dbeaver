@@ -126,6 +126,31 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             // Editor not yet initialized
             return;
         }
+        if (content instanceof DBDContent) {
+            streamManagers = ValueManagerRegistry.getInstance().getApplicableStreamManagers(
+                new VoidProgressMonitor(),
+                valueController.getValueType(),
+                ((DBDContent) content)
+            );
+            // Check if existing manager is valid for the current value
+            // If not, update current stream manager
+            if (streamManagers != null && !streamManagers.containsKey(curStreamManager)) {
+                if (curStreamManager != null) {
+                    if (streamEditor != null) {
+                        streamEditor.disposeEditor();
+                        streamEditor = null;
+                    }
+                    if (editorControl != null) {
+                        editorControl.dispose();
+                        editorControl = null;
+                    }
+                    curStreamManager = null;
+                    control.dispose();
+                }
+                control = createControl(valueController.getEditPlaceholder());
+                valueController.getEditPlaceholder().layout(true, true);
+            }
+        }
         if (isStringValue()) {
             // It is a string
             streamEditor.primeEditorValue(

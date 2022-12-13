@@ -144,6 +144,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         }
     }
 
+    public void setIsColumnVisible(int index, boolean visible) {
+        columns.get(index).visible = visible;
+        ViewerColumnRegistry.getInstance().updateConfig(configId, columns);
+    }
+
+
     public boolean isClickOnHeader()
     {
         return clickOnHeader;

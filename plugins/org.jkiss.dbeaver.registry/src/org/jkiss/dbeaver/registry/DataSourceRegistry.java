@@ -288,10 +288,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     @Override
     public void removeFolder(DBPDataSourceFolder folder, boolean dropContents) {
         final DataSourceFolder folderImpl = (DataSourceFolder) folder;
+        final String folderPath = folder.getFolderPath();
 
         for (DataSourceFolder child : folderImpl.getChildren()) {
             removeFolder(child, dropContents);
         }
+        dataSourceFolders.remove(folderImpl);
 
         final DBPDataSourceFolder parent = folder.getParent();
         if (parent != null) {
@@ -306,8 +308,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 }
             }
         }
-        dataSourceFolders.remove(folderImpl);
-        persistDataFolderDelete(folder, dropContents);
+        persistDataFolderDelete(folderPath, dropContents);
     }
 
     @Override
@@ -315,8 +316,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         DBPDataSourceFolder folder = getFolder(oldPath);
         var result = Path.of(newPath);
         var newName = result.getFileName().toString();
-        var parentPath = result.getParent();
-        folder.setParent(parentPath == null ? null : getFolder(parentPath.toString()));
+        var parent = result.getParent();
+        var parentFolder = parent == null ? null : getFolder(parent.toString().replace("\\", "/"));
+        folder.setParent(parentFolder);
         if (!CommonUtils.equalObjects(folder.getName(), newName)) {
             folder.setName(newName);
         }
@@ -333,10 +335,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public DBPDataSourceFolder getFolder(String path) {
-        return findFolderByPath(path, true);
+        return findFolderByPath(path, true, null);
     }
 
-    DataSourceFolder findFolderByPath(String path, boolean create) {
+    DataSourceFolder findFolderByPath(String path, boolean create, ParseResults results) {
         DataSourceFolder parent = null;
         for (String name : path.split("/")) {
             DataSourceFolder folder = parent == null ? findRootFolder(name) : parent.getChild(name);
@@ -349,11 +351,17 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 }
             }
             parent = folder;
+            if (results != null) {
+                results.updatedFolders.add(parent);
+            }
         }
         return parent;
     }
 
     void addDataSourceFolder(DataSourceFolder folder) {
+        if (dataSourceFolders.contains(folder)) {
+            return;
+        }
         dataSourceFolders.add(folder);
     }
 
@@ -509,7 +517,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         addDataSourceToList(descriptor);
         descriptor.persistSecretIfNeeded(true);
         if (!descriptor.isDetached()) {
-            persistDataSourceUpdate(dataSource);
+            persistDataSourceCreate(dataSource);
         }
         notifyDataSourceListeners(new DBPEvent(DBPEvent.Action.OBJECT_ADD, descriptor, true));
     }
@@ -555,16 +563,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                 persistDataSourceUpdate(dataSource);
             }
             DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
-            descriptor.persistSecretIfNeeded(true);
+            descriptor.persistSecretIfNeeded(false);
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
+    }
+
+    protected void persistDataSourceCreate(@NotNull DBPDataSourceContainer container) {
+        persistDataSourceUpdate(container);
     }
 
     protected void persistDataSourceUpdate(@NotNull DBPDataSourceContainer container) {
         saveDataSources();
     }
 
-    protected void persistDataFolderDelete(@NotNull DBPDataSourceFolder folder, boolean dropContents) {
+    protected void persistDataFolderDelete(@NotNull String folderPath, boolean dropContents) {
         saveDataSources();
     }
 
@@ -690,24 +702,27 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     @Override
-    public void loadDataSources(
+    public boolean loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
         boolean refresh,
         boolean purgeUntouched
     ) {
+        // need this to show is the data source was updated
+        boolean configChanged = false;
         if (!project.isOpen() || project.isInMemory()) {
-            return;
+            return false;
         }
         // Clear filters before reload
         savedFilters.clear();
 
         // Parse datasources
         ParseResults parseResults = new ParseResults();
-
         // Modern way - search json configs in metadata folder
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
-            loadDataSources(cfgStorage, manager, false, parseResults);
+            if (loadDataSources(cfgStorage, manager, false, parseResults)) {
+                configChanged = true;
+            }
         }
 
         // Reflect changes
@@ -718,6 +733,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             for (DBPDataSourceContainer ds : parseResults.addedDataSources) {
                 addDataSourceToList((DataSourceDescriptor) ds);
                 fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, ds);
+            }
+            for (DataSourceFolder folder : parseResults.addedFolders) {
+                addDataSourceFolder(folder);
             }
 
             if (purgeUntouched) {
@@ -734,16 +752,31 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                     this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, ds);
                     ds.dispose();
                 }
+
+                List<DataSourceFolder> removedFolder = new ArrayList<>();
+                for (DataSourceFolder folder : dataSourceFolders) {
+                    if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)) {
+                        removedFolder.add(folder);
+                    }
+                }
+                for (DataSourceFolder folder : removedFolder) {
+                    if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)) {
+                        dataSourceFolders.remove(folder);
+                        folder.setParent(null);
+                    }
+                }
             }
         }
+        return configChanged;
     }
 
-    private void loadDataSources(
+    private boolean loadDataSources(
         @NotNull DBPDataSourceConfigurationStorage storage,
         @NotNull DataSourceConfigurationManager manager,
         boolean refresh,
         @NotNull ParseResults parseResults
     ) {
+        boolean configChanged = false;
         try {
             DataSourceSerializer serializer;
             if (storage instanceof DataSourceFileStorage && ((DataSourceFileStorage) storage).isLegacy()) {
@@ -751,13 +784,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             } else {
                 serializer = new DataSourceSerializerModern(this);
             }
-            serializer.parseDataSources(storage, manager, parseResults, refresh);
+            configChanged = serializer.parseDataSources(storage, manager, parseResults, refresh);
             updateProjectNature();
             lastError = null;
         } catch (Exception ex) {
             lastError = ex;
             log.error("Error loading datasource config from " + storage.getStorageId(), ex);
         }
+        return configChanged;
     }
 
     @Override
@@ -939,6 +973,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     static class ParseResults {
         Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
         Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
+        Set<DataSourceFolder> addedFolders = new LinkedHashSet<>();
+        Set<DataSourceFolder> updatedFolders = new LinkedHashSet<>();
     }
 
     private class DisconnectTask implements DBRRunnableWithProgress {
