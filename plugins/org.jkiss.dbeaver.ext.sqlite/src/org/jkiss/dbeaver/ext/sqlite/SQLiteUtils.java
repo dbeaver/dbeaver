@@ -49,9 +49,12 @@ public class SQLiteUtils {
     public static String readMasterDefinition(DBRProgressMonitor monitor, DBSObject sourceObject, SQLiteObjectType objectType, String sourceObjectName, GenericTableBase table) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Load SQLite description")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT sql FROM sqlite_master WHERE type=? AND tbl_name=?" + (sourceObjectName != null ? " AND name=?" : "") + "\n" +
-                    "UNION ALL\n" +
-                    "SELECT sql FROM sqlite_temp_master WHERE type=? AND tbl_name=?" + (sourceObjectName != null ? " AND name=?" : "") + "\n"))
+                "SELECT sql FROM " + (sourceObject.getParentObject() != null ?
+                                      DBUtils.getQuotedIdentifier(sourceObject.getParentObject()) + "." : "")
+                    + "sqlite_master WHERE type=? AND tbl_name=?" + (sourceObjectName != null ? " AND name=?" : "")
+                    + "\n" + "UNION ALL\n" + "SELECT sql FROM "
+                    + "sqlite_temp_master WHERE type=? AND tbl_name=?" + (sourceObjectName != null ? " AND name=?" : "")
+                    + "\n"))
             {
                 int paramIndex = 1;
                 dbStat.setString(paramIndex++, objectType.name());
