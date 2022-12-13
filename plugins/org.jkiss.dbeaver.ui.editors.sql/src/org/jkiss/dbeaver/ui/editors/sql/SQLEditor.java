@@ -141,7 +141,7 @@ import java.util.stream.Collectors;
  * SQL Executor
  */
 public class SQLEditor extends SQLEditorBase implements
-    IDataSourceContainerProviderEx,
+    IDataSourceContainerUpdate,
     DBPEventListener,
     ISaveablePart2,
     DBPDataSourceTask,
@@ -462,8 +462,8 @@ public class SQLEditor extends SQLEditorBase implements
         if (inputDataSource == null) {
             // No datasource. Try to get one from active part
             IWorkbenchPart activePart = getSite().getWorkbenchWindow().getActivePage().getActivePart();
-            if (activePart != this && activePart instanceof IDataSourceContainerProvider) {
-                inputDataSource = ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+            if (activePart != this && activePart instanceof DBPDataSourceContainerProvider) {
+                inputDataSource = ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
             }
         }
         setDataSourceContainer(inputDataSource);

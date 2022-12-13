@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.sql;
+package org.jkiss.dbeaver.ui;
 
-import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 
-import java.util.Map;
-
 /**
- * SQLQuery container.
+ * DataSource provider editor.
+ * May be editor, view or selection element
  */
-public interface SQLQueryContainer extends DBPDataSourceContainerProvider, DBPContextProvider {
+public interface IDataSourceContainerUpdate extends DBPDataSourceContainerProvider {
 
-    SQLScriptContext getScriptContext();
-
-    SQLScriptElement getQuery();
-
-    Map<String, Object> getQueryParameters();
+    /**
+     * Change underlying datasource container
+     * @return data source object.
+     */
+    boolean setDataSourceContainer(@Nullable DBPDataSourceContainer dataSourceContainer);
 
 }

@@ -859,7 +859,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.tools.select.connection" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveDataSourceHandler">
             <activeWhen>
                 <with variable="activeEditor">
-                    <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProvider"/>
+                    <instanceof value="org.jkiss.dbeaver.model.DBPDataSourceContainerProvider"/>
                 </with>
             </activeWhen>
         </handler>
@@ -867,7 +867,7 @@
             <activeWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProvider"/>
+                        <instanceof value="org.jkiss.dbeaver.model.DBPDataSourceContainerProvider"/>
                     </adapt>
                 </with>
             </activeWhen>

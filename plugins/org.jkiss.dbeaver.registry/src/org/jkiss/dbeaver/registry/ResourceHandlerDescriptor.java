@@ -46,15 +46,15 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler"; //$NON-NLS-1$
 
-    private String id;
-    private String name;
-    private boolean managable;
-    private DBPImage icon;
+    private final String id;
+    private final String name;
+    private final boolean managable;
+    private final DBPImage icon;
     private ObjectType handlerType;
     private DBPResourceHandler handler;
-    private List<IContentType> contentTypes = new ArrayList<>();
-    private List<ObjectType> resourceTypes = new ArrayList<>();
-    private List<String> roots = new ArrayList<>();
+    private final List<IContentType> contentTypes = new ArrayList<>();
+    private final List<ObjectType> resourceTypes = new ArrayList<>();
+    private final List<String> roots = new ArrayList<>();
     private String defaultRoot;
     private final Map<String, String> projectRoots = new HashMap<>();
 

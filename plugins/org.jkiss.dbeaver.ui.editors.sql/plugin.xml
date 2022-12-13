@@ -570,7 +570,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSyncConnection">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProviderEx"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.IDataSourceContainerUpdate"/>
                 </with>
             </enabledWhen>
         </handler>

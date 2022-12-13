@@ -32,8 +32,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -254,8 +254,8 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
     }
 
     private static DBPDataSourceContainer getDataSourceContainers(IWorkbenchPart activePart) {
-        if (activePart instanceof IDataSourceContainerProvider) {
-            return ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+        if (activePart instanceof DBPDataSourceContainerProvider) {
+            return ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
         }
         if (activePart instanceof DBPContextProvider) {
             DBCExecutionContext context = ((DBPContextProvider) activePart).getExecutionContext();

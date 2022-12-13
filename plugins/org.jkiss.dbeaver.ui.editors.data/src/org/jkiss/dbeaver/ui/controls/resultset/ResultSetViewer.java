@@ -239,8 +239,8 @@ public class ResultSetViewer extends Viewer
         this.dataReceiver = new ResultSetDataReceiver(this);
         this.dataPropertyListener = event -> {
             DBPDataSourceContainer dataSourceContainer = null;
-            if (event.getSource() instanceof IDataSourceContainerProvider) {
-                dataSourceContainer = ((IDataSourceContainerProvider) event.getSource()).getDataSourceContainer();
+            if (event.getSource() instanceof DBPDataSourceContainerProvider) {
+                dataSourceContainer = ((DBPDataSourceContainerProvider) event.getSource()).getDataSourceContainer();
             }
             handleDataPropertyChange(dataSourceContainer, event.getProperty(), event.getOldValue(), event.getNewValue());
         };
