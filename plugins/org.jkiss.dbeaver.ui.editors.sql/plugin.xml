@@ -55,16 +55,6 @@
                 class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter"/>
     </extension>
 
-    <extension point="org.eclipse.core.contenttype.contentTypes">
-        <content-type
-                base-type="org.eclipse.core.runtime.text"
-                file-extensions="sql"
-                id="org.jkiss.dbeaver.sql"
-                name="%content-type.org.jkiss.dbeaver.sql.name"
-                priority="high"
-                describer="org.jkiss.dbeaver.ui.editors.sql.SQLContentTypeDescriber"/>
-    </extension>
-
     <extension point="org.eclipse.ui.editors">
         <editor name="%editor.sql.name"
                 extensions="sql"

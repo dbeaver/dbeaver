@@ -22,23 +22,6 @@
     <!-- UI extensions -->
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
 
-    <extension point="org.eclipse.core.contenttype.contentTypes">
-        <content-type
-            file-extensions="bm"
-            id="org.jkiss.dbeaver.bookmark"
-            name="%content-type.org.jkiss.dbeaver.bookmark.name"
-            priority="normal"
-            describer="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarkContentTypeDescriber"/>
-
-        <content-type file-extensions="lnk" id="org.jkiss.dbeaver.shortcut" name="%content-type.org.jkiss.dbeaver.shortcut.name" priority="normal">
-            <describer class="org.eclipse.core.runtime.content.BinarySignatureDescriber">
-                <!-- http://msdn.microsoft.com/en-us/library/dd871305%28PROT.10%29.aspx -->
-                <parameter name="signature" value="4C,00,00,00,01,14,02,00,00,00,00,00,C0,00,00,00,00,00,00,46"/>
-                <parameter name="offset" value="0"/>
-            </describer>
-        </content-type>
-    </extension>
-
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"

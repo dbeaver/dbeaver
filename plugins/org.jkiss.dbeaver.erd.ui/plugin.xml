@@ -21,14 +21,6 @@
 
     <extension-point id="org.jkiss.dbeaver.erd.ui.export.format" name="%extension-point.org.jkiss.dbeaver.erd.ui.export.format.name" schema="schema/org.jkiss.dbeaver.ext.erd.export.format.exsd"/>
 
-    <extension point="org.eclipse.core.contenttype.contentTypes">
-        <content-type
-                file-extensions="erd"
-                id="org.jkiss.dbeaver.erd"
-                name="%content-type.org.jkiss.dbeaver.erd.name"
-                priority="normal"/>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
             id="org.jkiss.dbeaver.erd.ui.editor.ERDEditorEmbedded"
@@ -407,16 +399,6 @@
         </page>
     </extension>
 
-    <extension point="org.eclipse.core.contenttype.contentTypes">
-        <content-type
-            base-type="org.eclipse.core.runtime.text"
-            default-charset="utf-8"
-            file-extensions="erd"
-            id="org.jkiss.dbeaver.erd.content-type-erd"
-            name="%content-type.org.jkiss.dbeaver.erd.content-type-erd.name"
-            priority="normal"/>
-    </extension>
-
     <extension point="org.eclipse.ui.editors">
         <editor name="%editor.org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone.name"
                 extensions="erd"
@@ -424,7 +406,7 @@
                 contributorClass="org.jkiss.dbeaver.erd.ui.editor.ERDEditorContributor"
                 class="org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone"
                 id="org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone">
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd.content-type-erd"/>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd"/>
         </editor>
     </extension>
 
