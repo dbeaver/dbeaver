@@ -171,7 +171,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     @Override
     public boolean supportsDrop(DBNNode otherNode) {
-        return otherNode == null || otherNode instanceof DBNDataSource || otherNode instanceof DBNLocalFolder;
+        return otherNode == null
+            || otherNode instanceof DBNDataSource
+            || otherNode instanceof DBNLocalFolder && ((DBNLocalFolder) otherNode).getDataSourceRegistry() == dataSourceRegistry;
     }
 
     @Override
@@ -204,7 +206,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 registryToRefresh.add(dataSourceRegistry);
             } else if (node instanceof DBNLocalFolder) {
                 final DBNLocalFolder folder = (DBNLocalFolder) node;
-                folder.getFolder().setParent(null);
+                folder.getFolder().setParent(toFolder);
                 registryToRefresh.add(folder.getDataSourceRegistry());
             }
         }
