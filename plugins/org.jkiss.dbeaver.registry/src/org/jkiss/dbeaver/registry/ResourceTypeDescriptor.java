@@ -17,15 +17,18 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.app.DBPResourceTypeDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.ArrayUtils;
@@ -45,6 +48,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     private final String id;
     private final String name;
     private final DBPImage icon;
+    private final boolean managable;
     private final List<IContentType> contentTypes = new ArrayList<>();
     private final List<ObjectType> resourceTypes = new ArrayList<>();
     private final List<String> roots = new ArrayList<>();
@@ -57,6 +61,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.managable = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_MANAGABLE));
         for (IConfigurationElement contentTypeBinding : ArrayUtils.safeArray(config.getChildren("contentTypeBinding"))) {
             String contentTypeId = contentTypeBinding.getAttribute("contentTypeId");
             if (!CommonUtils.isEmpty(contentTypeId)) {
@@ -143,7 +148,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
 
     @Override
     public void setDefaultRoot(DBPProject project, String rootPath) {
-        IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(project, DBPResourceHandlerDescriptor.RESOURCE_ROOT_FOLDER_NODE);
+        IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(project, DBPResourceTypeDescriptor.RESOURCE_ROOT_FOLDER_NODE);
         resourceHandlers.put(getId(), rootPath);
         synchronized (projectRoots) {
             projectRoots.put(project.getName(), rootPath);
@@ -153,6 +158,50 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
         } catch (BackingStoreException e) {
             log.error(e);
         }
+    }
+
+    @Override
+    public boolean isManagable() {
+        return managable;
+    }
+
+    @Override
+    public boolean isApplicableTo(IResource resource, boolean testContent) {
+        if (!contentTypes.isEmpty() && resource instanceof IFile) {
+            if (testContent) {
+                try {
+                    IContentDescription contentDescription = ((IFile) resource).getContentDescription();
+                    if (contentDescription != null) {
+                        IContentType fileContentType = contentDescription.getContentType();
+                        if (fileContentType != null && contentTypes.contains(fileContentType)) {
+                            return true;
+                        }
+                    }
+                } catch (CoreException e) {
+                    log.debug("Can't obtain content description for '" + resource.getName() + "'", e);
+                }
+            }
+            // Check for file extension
+            String fileExtension = resource.getFileExtension();
+            for (IContentType contentType : contentTypes) {
+                String[] ctExtensions = contentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
+                if (!ArrayUtils.isEmpty(ctExtensions)) {
+                    for (String ext : ctExtensions) {
+                        if (ext.equalsIgnoreCase(fileExtension)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        if (!resourceTypes.isEmpty()) {
+            for (ObjectType objectType : resourceTypes) {
+                if (objectType.appliesTo(resource, null)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public List<String> getRoots() {

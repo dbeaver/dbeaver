@@ -36,11 +36,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler id="er-diagrams" class="org.jkiss.dbeaver.erd.ui.navigator.ERDResourceHandler" name="%resourceHandler.erd.ui.navigator.name"
-                 managable="true" icon="icons/erd_folder.png">
-            <root folder="Diagrams"/>
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd"/>
-        </handler>
+        <handler type="er-diagram" class="org.jkiss.dbeaver.erd.ui.navigator.ERDResourceHandler"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">

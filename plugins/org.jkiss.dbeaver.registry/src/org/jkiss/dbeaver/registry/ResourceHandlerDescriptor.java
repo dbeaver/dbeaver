@@ -17,26 +17,13 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ProjectScope;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.content.IContentDescription;
-import org.eclipse.core.runtime.content.IContentType;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
+import org.jkiss.dbeaver.model.app.DBPResourceTypeDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
-import org.osgi.service.prefs.BackingStoreException;
-
-import java.util.*;
 
 /**
  * ResourceHandlerDescriptor
@@ -46,55 +33,15 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler"; //$NON-NLS-1$
 
-    private final String id;
-    private final String name;
-    private final boolean managable;
-    private final DBPImage icon;
+    private final String typeId;
     private ObjectType handlerType;
     private DBPResourceHandler handler;
-    private final List<IContentType> contentTypes = new ArrayList<>();
-    private final List<ObjectType> resourceTypes = new ArrayList<>();
-    private final List<String> roots = new ArrayList<>();
-    private String defaultRoot;
-    private final Map<String, String> projectRoots = new HashMap<>();
 
     public ResourceHandlerDescriptor(IConfigurationElement config) {
         super(config);
 
-        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
-        this.managable = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_MANAGABLE));
-        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.typeId = config.getAttribute(RegistryConstants.ATTR_TYPE);
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-        for (IConfigurationElement contentTypeBinding : ArrayUtils.safeArray(config.getChildren("contentTypeBinding"))) {
-            String contentTypeId = contentTypeBinding.getAttribute("contentTypeId");
-            if (!CommonUtils.isEmpty(contentTypeId)) {
-                IContentType contentType = Platform.getContentTypeManager().getContentType(contentTypeId);
-                if (contentType != null) {
-                    contentTypes.add(contentType);
-                } else {
-                    log.warn("Content type '" + contentTypeId + "' not recognized");
-                }
-            }
-        }
-        for (IConfigurationElement resourceTypeBinding : ArrayUtils.safeArray(config.getChildren("resourceTypeBinding"))) {
-            String resourceType = resourceTypeBinding.getAttribute("resourceType");
-            if (!CommonUtils.isEmpty(resourceType)) {
-                resourceTypes.add(new ObjectType(resourceType));
-            }
-        }
-        for (IConfigurationElement rootConfig : ArrayUtils.safeArray(config.getChildren("root"))) {
-            String folder = rootConfig.getAttribute("folder");
-            if (!CommonUtils.isEmpty(folder)) {
-                roots.add(folder);
-            }
-            if ("true".equals(rootConfig.getAttribute("default"))) {
-                defaultRoot = folder;
-            }
-        }
-        if (CommonUtils.isEmpty(defaultRoot) && !CommonUtils.isEmpty(roots)) {
-            defaultRoot = roots.get(0);
-        }
     }
 
     void dispose() {
@@ -102,24 +49,13 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         this.handlerType = null;
     }
 
-    @Override
-    public String getId() {
-        return id;
+    public String getTypeId() {
+        return typeId;
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public boolean isManagable() {
-        return managable;
-    }
-
-    @Override
-    public DBPImage getIcon() {
-        return icon;
+    public DBPResourceTypeDescriptor getResourceType() {
+        return ResourceTypeRegistry.getInstance().getResourceType(typeId);
     }
 
     public synchronized DBPResourceHandler getHandler() {
@@ -138,7 +74,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
     }
 
     public boolean isDefault() {
-        return "default".equals(id);
+        return "default".equals(typeId);
     }
 
     public boolean canHandle(IResource resource) {
@@ -149,111 +85,17 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         if (isDefault()) {
             return false;
         }
-        if (!contentTypes.isEmpty() && resource instanceof IFile) {
-            if (testContent) {
-                try {
-                    IContentDescription contentDescription = ((IFile) resource).getContentDescription();
-                    if (contentDescription != null) {
-                        IContentType fileContentType = contentDescription.getContentType();
-                        if (fileContentType != null && contentTypes.contains(fileContentType)) {
-                            return true;
-                        }
-                    }
-                } catch (CoreException e) {
-                    log.debug("Can't obtain content description for '" + resource.getName() + "'", e);
-                }
-            }
-            // Check for file extension
-            String fileExtension = resource.getFileExtension();
-            for (IContentType contentType : contentTypes) {
-                String[] ctExtensions = contentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
-                if (!ArrayUtils.isEmpty(ctExtensions)) {
-                    for (String ext : ctExtensions) {
-                        if (ext.equalsIgnoreCase(fileExtension)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        if (!resourceTypes.isEmpty()) {
-            for (ObjectType objectType : resourceTypes) {
-                if (objectType.appliesTo(resource, null)) {
-                    return true;
-                }
-            }
+        DBPResourceTypeDescriptor resourceType = getResourceType();
+
+        if (resourceType != null && resourceType.isApplicableTo(resource, testContent)) {
+            return true;
         }
         return false;
     }
 
-    public Collection<IContentType> getContentTypes() {
-        return contentTypes;
-    }
-
-    public Collection<ObjectType> getResourceTypes() {
-        return resourceTypes;
-    }
-
-    public String getDefaultRoot(DBPProject project) {
-        synchronized (projectRoots) {
-            String root = projectRoots.get(project.getName());
-            if (root != null) {
-                return root;
-            }
-        }
-        try {
-            IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(project, DBPResourceHandlerDescriptor.RESOURCE_ROOT_FOLDER_NODE);
-            String root = resourceHandlers.get(id, defaultRoot);
-            boolean isInvalidRoot = root != null && CommonUtils.isEmptyTrimmed(root);
-            synchronized (projectRoots) {
-                projectRoots.put(project.getName(), isInvalidRoot ? defaultRoot : root);
-            }
-            if (isInvalidRoot) {
-                root = defaultRoot;
-                resourceHandlers.put(id, root);
-                try {
-                    resourceHandlers.flush();
-                } catch (BackingStoreException e) {
-                    log.error(e);
-                }
-            }
-            return root;
-        } catch (Exception e) {
-            log.error("Can't obtain resource handler preferences", e);
-            return null;
-        }
-    }
-
-    @Override
-    public void setDefaultRoot(DBPProject project, String rootPath) {
-        IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(project, DBPResourceHandlerDescriptor.RESOURCE_ROOT_FOLDER_NODE);
-        resourceHandlers.put(getId(), rootPath);
-        synchronized (projectRoots) {
-            projectRoots.put(project.getName(), rootPath);
-        }
-        try {
-            resourceHandlers.flush();
-        } catch (BackingStoreException e) {
-            log.error(e);
-        }
-    }
-
-    public List<String> getRoots() {
-        return roots;
-    }
-
     @Override
     public String toString() {
-        return id;
-    }
-
-    private static IEclipsePreferences getResourceHandlerPreferences(DBPProject project, String node) {
-        IEclipsePreferences projectSettings = getProjectPreferences(project);
-        return (IEclipsePreferences) projectSettings.node(node);
-    }
-
-    private static synchronized IEclipsePreferences getProjectPreferences(DBPProject project) {
-        return new ProjectScope(project.getEclipseProject()).getNode("org.jkiss.dbeaver.project.resources");
+        return typeId;
     }
 
 }

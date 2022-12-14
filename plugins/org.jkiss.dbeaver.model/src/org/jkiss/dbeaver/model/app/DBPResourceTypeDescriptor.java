@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IResource;
 import org.jkiss.dbeaver.model.DBPImage;
 
 /**
@@ -35,4 +36,8 @@ public interface DBPResourceTypeDescriptor {
     String getDefaultRoot(DBPProject project);
 
     void setDefaultRoot(DBPProject project, String rootPath);
+
+    boolean isManagable();
+
+    boolean isApplicableTo(IResource resource, boolean testContent);
 }

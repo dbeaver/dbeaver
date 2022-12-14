@@ -1194,17 +1194,10 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler id="default" class="org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl"/>
-        <handler id="projects" class="org.jkiss.dbeaver.ui.resources.projects.ProjectHandlerImpl">
-            <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
-        </handler>
-        <handler id="bookmarks" class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl" name="%resourceHandler.bookmarks.name" managable="true" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png">
-            <root folder="Bookmarks"/>
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
-        </handler>
-        <handler id="shortcuts" class="org.jkiss.dbeaver.ui.resources.shortcuts.ShortcutsHandlerImpl">
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.shortcut"/>
-        </handler>
+        <handler type="default" class="org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl"/>
+        <handler type="project" class="org.jkiss.dbeaver.ui.resources.projects.ProjectHandlerImpl"/>
+        <handler type="bookmark" class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl"/>
+        <handler type="shortcut" class="org.jkiss.dbeaver.ui.resources.shortcuts.ShortcutsHandlerImpl"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
