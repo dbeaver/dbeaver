@@ -29,7 +29,7 @@
             label="%editor.erd.name"
             description="%editor.erd.description"
             position="additions_end"
-            icon="icons/erd.png">
+            icon="platform:/plugin/org.jkiss.dbeaver.erd.model/icons/erd.png">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSObjectContainer" forceCheck="true" if="context.isEntityContainer(object)"/>
             <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" forceCheck="true"/>
         </editor>
@@ -398,7 +398,7 @@
     <extension point="org.eclipse.ui.editors">
         <editor name="%editor.org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone.name"
                 extensions="erd"
-                icon="icons/erd.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.erd.model/icons/erd.png"
                 contributorClass="org.jkiss.dbeaver.erd.ui.editor.ERDEditorContributor"
                 class="org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone"
                 id="org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone">
@@ -414,8 +414,8 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="icons/erd.png"/>
-        <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="icons/erd.png"/>
+        <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="platform:/plugin/org.jkiss.dbeaver.erd.model/icons/erd.png"/>
+        <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="platform:/plugin/org.jkiss.dbeaver.erd.model/icons/erd.png"/>
         <image commandId="org.jkiss.dbeaver.erd.diagram.saveAs" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/picture_save.png"/>
         <image commandId="org.jkiss.dbeaver.erd.toggleHand" icon="platform:/plugin/org.jkiss.dbeaver.erd.ui/icons/move.png"/>
     </extension>
@@ -509,7 +509,7 @@
         <wizard
              category="org.jkiss.dbeaver.core.new.general"
              class="org.jkiss.dbeaver.erd.ui.navigator.DiagramCreateWizard"
-             icon="icons/erd.png"
+             icon="platform:/plugin/org.jkiss.dbeaver.erd.model/icons/erd.png"
              id="org.jkiss.dbeaver.erd.ui.navigator.DiagramCreateWizard"
              name="%wizard.erd.name">
            <description>

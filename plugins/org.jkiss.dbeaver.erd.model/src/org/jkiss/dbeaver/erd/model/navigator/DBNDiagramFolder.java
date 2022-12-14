@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.erd.ui.navigator;
+package org.jkiss.dbeaver.erd.model.navigator;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
@@ -31,7 +30,7 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
  * DBNDiagramFolder
  */
 public class DBNDiagramFolder extends DBNResource {
-    private static final DBIcon FOLDER_ICON = new DBIcon(ERDUIConstants.ICON_LOCATION_PREFIX + "erd_folder.png");
+    private static final DBIcon FOLDER_ICON = new DBIcon("platform:/plugin/org.jkiss.dbeaver.erd.model/icons/erd_folder.png");
 
     private DBPImage image;
 

@@ -78,7 +78,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceType">
-        <type id="sql-script" name="%resourceHandler.ui.editors.sql.scripts.name" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/scripts.png" managable="true">
+        <type id="sql-script" name="SQL script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/scripts.png" managable="true">
             <root folder="Scripts"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </type>
