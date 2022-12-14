@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
@@ -844,16 +845,12 @@ public class DataSourceDescriptor
     public void resolveSecrets(DBSSecretController secretController) throws DBException {
         if (!isSharedCredentials()) {
             String secretValue = secretController.getSecretValue(getSecretKeyId());
-            if (secretValue != null) {
-                loadFromSecret(secretValue);
-                this.secretsContainsDatabaseCreds =
-                    isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(this.connectionInfo);
-            } else {
-                this.secretsContainsDatabaseCreds = false;
-                if (!DBWorkbench.isDistributed()) {
-                    // Backward compatibility
-                    loadFromLegacySecret(secretController);
-                }
+            loadFromSecret(secretValue);
+            this.secretsContainsDatabaseCreds =
+                isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(this.connectionInfo);
+            if (secretValue == null && !DBWorkbench.isDistributed()) {
+                // Backward compatibility
+                loadFromLegacySecret(secretController);
             }
         }
         secretsResolved = true;
@@ -1133,11 +1130,13 @@ public class DataSourceDescriptor
     }
 
     public void openDataSource(DBRProgressMonitor monitor, boolean initialize) throws DBException {
-        final DBPDataSourceProvider provider = getDriver().getDataSourceProvider();
-        if (provider instanceof DBPDataSourceProviderSynchronizable) {
+        final var provider = driver.getDataSourceProvider();
+        final var providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
+
+        if (providerSynchronizable != null && providerSynchronizable.isSynchronizationEnabled(this)) {
             try {
                 monitor.beginTask("Synchronize local data source", 1);
-                ((DBPDataSourceProviderSynchronizable) provider).syncLocalDataSource(monitor, this);
+                providerSynchronizable.syncLocalDataSource(monitor, this);
                 monitor.worked(1);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
@@ -1240,13 +1239,14 @@ public class DataSourceDescriptor
 
             monitor.worked(1);
 
-            final DBPDataSourceProvider provider = driver.getDataSourceProvider();
-            if (provider instanceof DBPDataSourceProviderSynchronizable) {
-                final DBPDataSourceProviderSynchronizable remoteProvider = (DBPDataSourceProviderSynchronizable) provider;
-                if (!remoteProvider.isLocalDataSourceSynchronized(monitor, this)) {
+            final var provider = driver.getDataSourceProvider();
+            final var providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
+
+            if (providerSynchronizable != null && providerSynchronizable.isSynchronizationEnabled(this)) {
+                if (!providerSynchronizable.isLocalDataSourceSynchronized(monitor, this)) {
                     try {
                         monitor.beginTask("Synchronize remote data source", 1);
-                        remoteProvider.syncRemoteDataSource(monitor, this);
+                        providerSynchronizable.syncRemoteDataSource(monitor, this);
                         monitor.worked(1);
                     } catch (DBException e) {
                         DBWorkbench.getPlatformUI().showError(
@@ -1857,7 +1857,7 @@ public class DataSourceDescriptor
             // Handlers. If config profile is set then props are saved there
             List<Map<String, Object>> handlersConfigs = new ArrayList<>();
             for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
-                Map<String, Object> handlerProps = hc.saveToMap();
+                Map<String, Object> handlerProps = hc.saveToSecret();
                 if (!handlerProps.isEmpty()) {
                     handlerProps.put(RegistryConstants.ATTR_ID, hc.getHandlerDescriptor().getId());
                     handlersConfigs.add(handlerProps);
@@ -1882,8 +1882,21 @@ public class DataSourceDescriptor
         return DBInfoUtils.SECRET_GSON.toJson(propsFull);
     }
 
-    private void loadFromSecret(String secretValue) {
-        Map<String, Object> props = JSONUtils.parseMap(DBInfoUtils.SECRET_GSON, new StringReader(secretValue));
+    private void loadFromSecret(@Nullable String secretValue) {
+        if (secretValue == null) {
+            connectionInfo.getHandlers().forEach(handler ->
+                handler.setSavePassword(false)
+            );
+            return;
+        }
+
+        Map<String, Object> props;
+        try {
+            props = JSONUtils.parseMap(DBInfoUtils.SECRET_GSON, new StringReader(secretValue));
+        } catch (Exception e) {
+            log.error("Error parsing secret value", e);
+            return;
+        }
 
         // Primary props
         var dbUserName = JSONUtils.getString(props, RegistryConstants.ATTR_USER);
@@ -1904,9 +1917,15 @@ public class DataSourceDescriptor
                     log.warn("Handler '" + handlerId + "' not found in datasource '" + getId() + "'. Secret configuration will be lost.");
                     continue;
                 }
-                hc.setUserName(JSONUtils.getString(handlerMap, RegistryConstants.ATTR_USER));
-                hc.setPassword(JSONUtils.getString(handlerMap, RegistryConstants.ATTR_PASSWORD));
-                hc.setSecureProperties(JSONUtils.deserializeStringMap(handlerMap, RegistryConstants.TAG_PROPERTIES));
+                var hcUsername = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_USER);
+                var hcPassword = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_PASSWORD);
+                var hcProperties = JSONUtils.deserializeStringMap(handlerMap, RegistryConstants.TAG_PROPERTIES);
+                hc.setUserName(hcUsername);
+                hc.setPassword(hcPassword);
+                hc.setSecureProperties(hcProperties);
+                hc.setSavePassword(
+                    CommonUtils.isNotEmpty(hcUsername) || CommonUtils.isNotEmpty(hcPassword) || !CommonUtils.isEmpty(hcProperties)
+                );
             }
         }
     }

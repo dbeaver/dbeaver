@@ -27,6 +27,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -230,9 +231,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     }
                     TabItem item = new TabItem(tabFolder, SWT.NONE);
                     Composite dummyComposite = new Composite(tabFolder, SWT.NONE);
-                    //page.createControl(tabFolder);
+                    dummyComposite.setLayout(new FillLayout());
                     item.setData(page);
-                    //Control pageControl = page.getControl();
                     item.setControl(dummyComposite);
                     item.setText(CommonUtils.isEmpty(page.getTitle()) ? CoreMessages.dialog_setting_connection_general : page.getTitle());
                     item.setToolTipText(page.getDescription());
@@ -263,9 +263,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 IDialogPage page = (IDialogPage) selection[0].getData();
                 if (page.getControl() == null) {
                     // Create page
-                    selection[0].getControl().dispose();
-                    page.createControl(tabFolder);
-                    selection[0].setControl(page.getControl());
+                    Composite panel = (Composite) selection[0].getControl();
+                    page.createControl(panel);
+                    panel.layout(true, true);
                 }
                 page.setVisible(true);
             }

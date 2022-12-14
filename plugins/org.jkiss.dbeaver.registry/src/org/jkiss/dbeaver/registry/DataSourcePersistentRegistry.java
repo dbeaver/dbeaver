@@ -33,7 +33,7 @@ public interface DataSourcePersistentRegistry {
     /**
      * Loads data sources from storages.
      */
-    void loadDataSources(
+    boolean loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
         boolean refresh,
