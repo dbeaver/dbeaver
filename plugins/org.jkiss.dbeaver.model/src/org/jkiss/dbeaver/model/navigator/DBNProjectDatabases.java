@@ -314,6 +314,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         if (removedNode != null) {
             children = null;
             removedNode.dispose(true);
+            refreshChildren();
         }
     }
 
