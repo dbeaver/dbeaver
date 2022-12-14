@@ -1865,7 +1865,8 @@ public class ResultSetViewer extends Viewer
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null &&
             (executionContext.getDataSource().getContainer().isConnectionReadOnly() ||
-            executionContext.getDataSource().getInfo().isReadOnlyData()))
+            executionContext.getDataSource().getInfo().isReadOnlyData() ||
+            isUniqueKeyUndefinedButRequired(executionContext)))
         {
             return true;
         }
@@ -2471,7 +2472,8 @@ public class ResultSetViewer extends Viewer
             executionContext == null ||
             !executionContext.isConnected() ||
             !executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA) ||
-            executionContext.getDataSource().getInfo().isReadOnlyData();
+            executionContext.getDataSource().getInfo().isReadOnlyData() ||
+            isUniqueKeyUndefinedButRequired(executionContext);
     }
 
     @Override
@@ -2496,7 +2498,21 @@ public class ResultSetViewer extends Viewer
         if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
             return "Connection is in read-only state";
         }
+        if (isUniqueKeyUndefinedButRequired(executionContext)) {
+            return "No unique key defined";
+        }
         return null;
+    }
+
+    private boolean isUniqueKeyUndefinedButRequired(@NotNull DBCExecutionContext context) {
+        final DBPPreferenceStore store = context.getDataSource().getContainer().getPreferenceStore();
+
+        if (store.getBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING)) {
+            final DBDRowIdentifier identifier = model.getDefaultRowIdentifier();
+            return identifier == null || !identifier.isValidIdentifier();
+        }
+
+        return false;
     }
 
     /**
