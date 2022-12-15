@@ -412,7 +412,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="mysql" name="MySQL" description="%category.mysql.description" icon="icons/mysql_icon.png"/>
+        <category id="mysql" name="MySQL" description="%org.jkiss.dbeaver.task.category.mysql.description" icon="icons/mysql_icon.png"/>
         <category id="mysqlTool" parent="mysql" name="%org.jkiss.dbeaver.task.category.mysqlTool.name" description="%org.jkiss.dbeaver.task.category.mysqlTool.description" icon="icons/mysql_icon.png"/>
 
         <task id="mysqlDatabaseBackup" name="%task.mysqlDatabaseBackup.name" description="%task.mysqlDatabaseBackup.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler">
