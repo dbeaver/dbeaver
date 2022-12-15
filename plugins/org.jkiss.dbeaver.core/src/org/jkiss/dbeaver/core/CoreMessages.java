@@ -67,30 +67,6 @@ public class CoreMessages extends NLS {
 
     public static String common_error_sql;
 
-    public static String confirm_exit_title;
-	public static String confirm_exit_message;
-	public static String confirm_exit_toggleMessage;
-
-	public static String confirm_disconnect_txn_title;
-	public static String confirm_disconnect_txn_message;
-	public static String confirm_disconnect_txn_toggleMessage;
-
-	public static String confirm_reconnect_txn_title;
-	public static String confirm_reconnect_txn_message;
-	public static String confirm_reconnect_txn_toggleMessage;
-
-	public static String confirm_driver_download_title;
-	public static String confirm_driver_download_message;
-	public static String confirm_driver_download_toggleMessage;
-
-	public static String confirm_driver_download_manual_title;
-	public static String confirm_driver_download_manual_message;
-	public static String confirm_driver_download_manual_toggleMessage;
-
-    public static String confirm_version_check_title;
-    public static String confirm_version_check_message;
-    public static String confirm_version_check_toggleMessage;
-
 	public static String controls_itemlist_action_copy;
 
 	public static String model_navigator__connections;
@@ -288,9 +264,11 @@ public class CoreMessages extends NLS {
 	public static String pref_page_confirmations_combo_prompt;
 	public static String pref_page_confirmations_group_general_actions;
 	public static String pref_page_confirmations_group_object_editor;
-    public static String pref_page_confirmations_table_column_confirmation;
-    public static String pref_page_confirmations_table_column_group;
-    public static String pref_page_confirmations_table_column_value;
+	public static String pref_page_confirmations_table_column_confirmation;
+	public static String pref_page_confirmations_table_column_confirmation_tip;
+	public static String pref_page_confirmations_table_column_group;
+	public static String pref_page_confirmations_table_column_value;
+	public static String pref_page_confirmations_table_column_value_tip;
 
 	public static String pref_page_database_general_separate_meta_connection;
 	public static String pref_page_database_general_checkbox_case_sensitive_names;

@@ -1263,4 +1263,42 @@
         </generator>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+                id="close_running_query"
+                title="%confirm.close_running_query.title"
+                description="%confirm.close_running_query.tip"
+                message="%confirm.close_running_query.message"
+                toggleMessage="%confirm.sql.toggleMessage"
+                group="%confirm.sql.group.name"/>
+        <confirmation
+                id="dangerous_sql"
+                title="%confirm.dangerous_sql.title"
+                description="%confirm.dangerous_sql.tip"
+                message="%confirm.dangerous_sql.message"
+                toggleMessage="%confirm.sql.toggleMessage"
+                group="%confirm.sql.group.name"/>
+        <confirmation
+                id="drop_sql"
+                title="%confirm.drop_sql.title"
+                description="%confirm.drop_sql.tip"
+                message="%confirm.drop_sql.message"
+                toggleMessage="%confirm.sql.toggleMessage"
+                group="%confirm.sql.group.name"/>
+        <confirmation
+                id="mass_parallel_sql"
+                title="%confirm.mass_parallel_sql.title"
+                description="%confirm.mass_parallel_sql.tip"
+                message="%confirm.mass_parallel_sql.message"
+                toggleMessage="%confirm.sql.toggleMessage"
+                group="%confirm.sql.group.name"/>
+        <confirmation
+                id="close_result_tabs"
+                title="%confirm.close_result_tabs.title"
+                description="%confirm.close_result_tabs.tip"
+                message="%confirm.close_result_tabs.message"
+                toggleMessage="%confirm.sql.toggleMessage"
+                group="%confirm.sql.group.name"/>
+    </extension>
+
 </plugin>

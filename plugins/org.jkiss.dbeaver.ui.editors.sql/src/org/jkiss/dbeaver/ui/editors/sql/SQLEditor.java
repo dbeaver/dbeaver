@@ -2487,12 +2487,10 @@ public class SQLEditor extends SQLEditorBase implements
                 if (query.getEntityMetadata(false) != null) {
                     targetName = query.getEntityMetadata(false).getEntityName();
                 }
-                if (ConfirmationDialog.showConfirmDialogEx(
-                    ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME),
+                if (ConfirmationDialog.confirmAction(
                     getSite().getShell(),
-                    isDropTable ? SQLPreferenceConstants.CONFIRM_DROP_SQL : SQLPreferenceConstants.CONFIRM_DANGER_SQL,
+                    ConfirmationDialog.WARNING, isDropTable ? SQLPreferenceConstants.CONFIRM_DROP_SQL : SQLPreferenceConstants.CONFIRM_DANGER_SQL,
                     ConfirmationDialog.CONFIRM,
-                    ConfirmationDialog.WARNING,
                     query.getType().name(),
                     targetName) != IDialogConstants.OK_ID)
                 {
@@ -2500,12 +2498,10 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         } else if (newTab && queries.size() > MAX_PARALLEL_QUERIES_NO_WARN) {
-            if (ConfirmationDialog.showConfirmDialogEx(
-                ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME),
+            if (ConfirmationDialog.confirmAction(
                 getSite().getShell(),
-                SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL,
+                ConfirmationDialog.WARNING, SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL,
                 ConfirmationDialog.CONFIRM,
-                ConfirmationDialog.WARNING,
                 queries.size()) != IDialogConstants.OK_ID)
             {
                 return false;
@@ -2645,12 +2641,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (tabsToClose.size() > 1 || (tabsToClose.size() == 1 && keepFirstTab)) {
             int confirmResult = IDialogConstants.YES_ID;
             if (confirmClose) {
-                confirmResult = ConfirmationDialog.showConfirmDialog(
-                    ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME),
+                confirmResult = ConfirmationDialog.confirmAction(
                     getSite().getShell(),
-                    SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE,
-                    ConfirmationDialog.QUESTION_WITH_CANCEL,
-                    tabsToClose.size());
+                    tabsToClose.size(), SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE,
+                    ConfirmationDialog.QUESTION_WITH_CANCEL
+                );
                 if (confirmResult == IDialogConstants.CANCEL_ID || confirmResult < 0) {
                     return IDialogConstants.CANCEL_ID;
                 }
@@ -3014,12 +3009,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (jobsRunning > 0) {
             log.warn("There are " + jobsRunning + " SQL job(s) still running in the editor");
 
-            if (ConfirmationDialog.showConfirmDialog(
-                ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME),
+            if (ConfirmationDialog.confirmAction(
                 null,
-                SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE,
-                ConfirmationDialog.QUESTION,
-                jobsRunning) != IDialogConstants.YES_ID)
+                jobsRunning, SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE,
+                ConfirmationDialog.QUESTION
+            ) != IDialogConstants.YES_ID)
             {
                 return ISaveablePart2.CANCEL;
             }
