@@ -75,11 +75,6 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     @Override
-    public boolean useCatalogInObjectNames() {
-        return super.useCatalogInObjectNames();
-    }
-
-    @Override
     public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
         return false;
     }
@@ -180,13 +175,6 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     @Override
     public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return true;
-    }
-
-    @Override
-    public JDBCStatement prepareForeignKeysLoadStatement(
-        @NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent
-    ) throws SQLException {
-        return super.prepareForeignKeysLoadStatement(session, owner, forParent);
     }
 
     @Override
