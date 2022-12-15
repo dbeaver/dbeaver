@@ -2265,16 +2265,18 @@ public class ResultSetViewer extends Viewer
                     ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
                     ConfirmationDialog.WARNING,
-                    columnElement.getName()) != IDialogConstants.YES_ID)
-                {
+                    columnElement.getName()) != IDialogConstants.YES_ID) {
                     return;
                 }
             }
             constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
             constraint.setOrderDescending(forceOrder == ColumnOrder.DESC);
-        } else if (!constraint.isOrderDescending() && forceOrder != ColumnOrder.NONE) {
+        } else if (forceOrder == ColumnOrder.ASC) {
+            constraint.setOrderDescending(false);
+        } else if (forceOrder == ColumnOrder.DESC) {
             constraint.setOrderDescending(true);
         } else {
+            // Reset order
             for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
                 if (con2.getOrderPosition() > constraint.getOrderPosition()) {
                     con2.setOrderPosition(con2.getOrderPosition() - 1);
@@ -2573,8 +2575,18 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void showDistinctFilter(DBDAttributeBinding curAttribute) {
-        showFiltersDistinctMenu(curAttribute, false);
+    public void showColumnMenu(DBDAttributeBinding curAttribute) {
+        MenuManager columnMenu = new MenuManager();
+        //getActivePresentation().setCurrentAttribute(curAttribute);
+        ResultSetRow currentRow = getCurrentRow();
+
+        fillOrderingsMenu(columnMenu, curAttribute, currentRow);
+        fillFiltersMenu(columnMenu, curAttribute, currentRow);
+
+        final Menu contextMenu = columnMenu.createContextMenu(getActivePresentation().getControl());
+        contextMenu.setLocation(Display.getCurrent().getCursorLocation());
+        contextMenu.addMenuListener(MenuListener.menuHiddenAdapter(menuEvent -> UIUtils.asyncExec(columnMenu::dispose)));
+        contextMenu.setVisible(true);
     }
 
     public void showFiltersDistinctMenu(DBDAttributeBinding curAttribute, boolean atKeyboardCursor) {
@@ -4870,6 +4882,10 @@ public class ResultSetViewer extends Viewer
                     "Order by " + attribute.getName() + " " + order.name(), AS_CHECK_BOX);
             this.attribute = attribute;
             this.order = order;
+            if (order != ColumnOrder.NONE) {
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(order != ColumnOrder.ASC ?
+                    UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE));
+            }
         }
 
         @Override
