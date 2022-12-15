@@ -417,8 +417,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public void revertChanges()
     {
         if (isDirty()) {
-            if (ConfirmationDialog.showConfirmDialog(
-                ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+            if (ConfirmationDialog.confirmAction(
                 null,
                 NavigatorPreferences.CONFIRM_ENTITY_REVERT,
                 ConfirmationDialog.QUESTION,
@@ -448,8 +447,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     //return;
                     // Undo of last command in command context will close editor
                     // Let's ask user about it
-                    if (ConfirmationDialog.showConfirmDialog(
-                        ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+                    if (ConfirmationDialog.confirmAction(
                             null,
                             NavigatorPreferences.CONFIRM_ENTITY_REJECT,
                             ConfirmationDialog.QUESTION,
@@ -742,8 +740,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
 
         String subEditorsString = changedSubEditors.isEmpty() ? "" : "(" + String.join(", ", changedSubEditors) + ")";
-        final int result = ConfirmationDialog.showConfirmDialog(
-            ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+        final int result = ConfirmationDialog.confirmAction(
             getSite().getShell(),
             NavigatorPreferences.CONFIRM_ENTITY_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL,
@@ -886,8 +883,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         boolean isPersistedObject = databaseObject != null && databaseObject.isPersisted();
 
         if (force && isPersistedObject && isDirty() && showConfirmation) {
-            if (ConfirmationDialog.showConfirmDialog(
-                ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+            if (ConfirmationDialog.confirmAction(
                 null,
                 NavigatorPreferences.CONFIRM_ENTITY_REVERT,
                 ConfirmationDialog.QUESTION,
