@@ -46,6 +46,7 @@ public class DBDDataSetQuery {
     // Custom colors
     private List<DBVColorOverride> colorOverrides;
     private final Map<String, String> queryParameters = new LinkedHashMap<>();
+    private final Map<String, String> properties = new LinkedHashMap<>();
     private final DBDDataViewSettings viewSettings = new DBDDataViewSettings();
 
     public DBDDataSetQuery() {
@@ -117,6 +118,23 @@ public class DBDDataSetQuery {
     public void setQueryParameters(Map<String, String> parameters) {
         queryParameters.clear();
         queryParameters.putAll(parameters);
+    }
+
+    public String getProperty(String name) {
+        return properties.get(name);
+    }
+
+    public void setProperty(String name, String value) {
+        properties.put(name, value);
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, String> parameters) {
+        properties.clear();
+        properties.putAll(parameters);
     }
 
     public DBDDataViewSettings getViewSettings() {
