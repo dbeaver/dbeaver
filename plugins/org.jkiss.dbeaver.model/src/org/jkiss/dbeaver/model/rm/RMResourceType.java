@@ -24,6 +24,7 @@ public class RMResourceType {
     private String displayName;
     private String rootFolder;
     private String icon;
+    private String[] fileExtensions;
 
     public RMResourceType() {
     }
@@ -33,6 +34,7 @@ public class RMResourceType {
         this.displayName = rtd.getName();
         this.icon = rtd.getIcon().getLocation();
         this.rootFolder = rtd.getDefaultRoot(null);
+        this.fileExtensions = rtd.getFileExtensions();
     }
 
     public String getId() {
@@ -65,6 +67,14 @@ public class RMResourceType {
 
     public void setIcon(String icon) {
         this.icon = icon;
+    }
+
+    public String[] getFileExtensions() {
+        return fileExtensions;
+    }
+
+    public void setFileExtensions(String[] fileExtensions) {
+        this.fileExtensions = fileExtensions;
     }
 
     @Override

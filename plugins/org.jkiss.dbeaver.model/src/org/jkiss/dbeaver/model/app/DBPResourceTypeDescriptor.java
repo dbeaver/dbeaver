@@ -33,6 +33,8 @@ public interface DBPResourceTypeDescriptor {
 
     DBPImage getIcon();
 
+    String[] getFileExtensions();
+
     String getDefaultRoot(DBPProject project);
 
     void setDefaultRoot(DBPProject project, String rootPath);

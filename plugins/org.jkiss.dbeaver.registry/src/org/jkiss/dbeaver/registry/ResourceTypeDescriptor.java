@@ -108,6 +108,18 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
         return icon;
     }
 
+    @Override
+    public String[] getFileExtensions() {
+        Set<String> extensions = new LinkedHashSet<>();
+        for (IContentType contentType : contentTypes) {
+            String[] ctExtensions = contentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
+            if (!ArrayUtils.isEmpty(ctExtensions)) {
+                Collections.addAll(extensions, ctExtensions);
+            }
+        }
+        return extensions.toArray(new String[0]);
+    }
+
     public Collection<IContentType> getContentTypes() {
         return contentTypes;
     }
