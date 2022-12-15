@@ -117,6 +117,9 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     }
 
     public String getDefaultRoot(DBPProject project) {
+        if (project == null) {
+            return defaultRoot;
+        }
         synchronized (projectRoots) {
             String root = projectRoots.get(project.getName());
             if (root != null) {
