@@ -22,16 +22,19 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Dataset
+ * Dataset query
  */
 public class DBDDataSetQuery {
 
     // Query ID
     @NotNull
     private String id;
+    private String description;
     // Query datasource
     @NotNull
     private DBPDataSourceContainer dataSourceContainer;
@@ -42,6 +45,8 @@ public class DBDDataSetQuery {
     private DBDDataFilter dataFilters;
     // Custom colors
     private List<DBVColorOverride> colorOverrides;
+    private final Map<String, String> queryParameters = new LinkedHashMap<>();
+    private final DBDDataViewSettings viewSettings = new DBDDataViewSettings();
 
     public DBDDataSetQuery() {
     }
@@ -53,6 +58,14 @@ public class DBDDataSetQuery {
 
     public void setId(@NotNull String id) {
         this.id = id;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @NotNull
@@ -87,5 +100,26 @@ public class DBDDataSetQuery {
 
     public void setColorOverrides(List<DBVColorOverride> colorOverrides) {
         this.colorOverrides = colorOverrides;
+    }
+
+    public Map<String, String> getQueryParameters() {
+        return queryParameters;
+    }
+
+    public String getQueryParameter(String name) {
+        return queryParameters.get(name);
+    }
+
+    public void setQueryParameter(String name, String value) {
+        queryParameters.put(name, value);
+    }
+
+    public void setQueryParameters(Map<String, String> parameters) {
+        queryParameters.clear();
+        queryParameters.putAll(parameters);
+    }
+
+    public DBDDataViewSettings getViewSettings() {
+        return viewSettings;
     }
 }

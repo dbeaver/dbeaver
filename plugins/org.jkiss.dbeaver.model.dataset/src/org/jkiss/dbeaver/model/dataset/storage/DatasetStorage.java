@@ -52,13 +52,14 @@ public class DatasetStorage {
     }
 
     public DatasetStorage(Path file) throws DBException, CoreException {
-        dataSet = new DBDDataSet();
-        dataSet.setId(IOUtils.getFileNameWithoutExtension(file));
-
         try (InputStream contents = Files.newInputStream(file)) {
             final Document document = XMLUtils.parseDocument(contents);
             final Element root = document.getDocumentElement();
-            dataSet.setDisplayName(root.getAttribute(ATTR_NAME));
+
+            dataSet = new DBDDataSet(
+                IOUtils.getFileNameWithoutExtension(file),
+                root.getAttribute(ATTR_NAME)
+            );
             dataSet.setDescription(root.getAttribute(ATTR_DESCRIPTION));
             dataSet.setDraft(CommonUtils.toBoolean(root.getAttribute(ATTR_DRAFT)));
         } catch (Exception e) {
