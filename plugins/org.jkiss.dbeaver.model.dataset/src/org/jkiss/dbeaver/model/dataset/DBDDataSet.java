@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.dataset;
 
+import org.jkiss.code.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +27,50 @@ import java.util.List;
  */
 public class DBDDataSet {
 
-    private List<DBDDataSetQuery> queries = new ArrayList<>();
+    @NotNull
+    private String id;
+    @NotNull
+    private String displayName;
+    private String description;
+    private boolean draft;
+    private final List<DBDDataSetQuery> queries = new ArrayList<>();
+
+    public DBDDataSet() {
+    }
+
+    @NotNull
+    public String getId() {
+        return id;
+    }
+
+    public void setId(@NotNull String id) {
+        this.id = id;
+    }
+
+    @NotNull
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(@NotNull String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public boolean isDraft() {
+        return draft;
+    }
+
+    public void setDraft(boolean draft) {
+        this.draft = draft;
+    }
 
     public List<DBDDataSetQuery> getQueries() {
         return queries;

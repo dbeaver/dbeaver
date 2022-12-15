@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.dataset;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
@@ -29,14 +30,62 @@ import java.util.List;
 public class DBDDataSetQuery {
 
     // Query ID
+    @NotNull
     private String id;
     // Query datasource
+    @NotNull
     private DBPDataSourceContainer dataSourceContainer;
     // Query text
+    @NotNull
     private String queryText;
     // Data filters
     private DBDDataFilter dataFilters;
     // Custom colors
     private List<DBVColorOverride> colorOverrides;
 
+    public DBDDataSetQuery() {
+    }
+
+    @NotNull
+    public String getId() {
+        return id;
+    }
+
+    public void setId(@NotNull String id) {
+        this.id = id;
+    }
+
+    @NotNull
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
+    }
+
+    public void setDataSourceContainer(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        this.dataSourceContainer = dataSourceContainer;
+    }
+
+    @NotNull
+    public String getQueryText() {
+        return queryText;
+    }
+
+    public void setQueryText(@NotNull String queryText) {
+        this.queryText = queryText;
+    }
+
+    public DBDDataFilter getDataFilters() {
+        return dataFilters;
+    }
+
+    public void setDataFilters(DBDDataFilter dataFilters) {
+        this.dataFilters = dataFilters;
+    }
+
+    public List<DBVColorOverride> getColorOverrides() {
+        return colorOverrides;
+    }
+
+    public void setColorOverrides(List<DBVColorOverride> colorOverrides) {
+        this.colorOverrides = colorOverrides;
+    }
 }

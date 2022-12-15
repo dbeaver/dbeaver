@@ -364,4 +364,24 @@ public final class IOUtils {
         }
         return null;
     }
+
+    @NotNull
+    public static String getFileNameWithoutExtension(Path file) {
+        String fileName = file.getFileName().toString();
+        int divPos = fileName.lastIndexOf('.');
+        if (divPos != -1) {
+            return fileName.substring(0, divPos);
+        }
+        return fileName;
+    }
+
+    @Nullable
+    public static String getFileExtension(Path file) {
+        String fileName = file.getFileName().toString();
+        int divPos = fileName.lastIndexOf('.');
+        if (divPos != -1) {
+            return fileName.substring(divPos + 1);
+        }
+        return null;
+    }
 }
