@@ -78,6 +78,7 @@ import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -371,6 +372,12 @@ public class NavigatorUtils {
                 DatabaseObjectTransfer.getInstance(),
                 FileTransfer.getInstance()
             };
+            
+            if (RuntimeUtils.isGtk()) { 
+                // TextTransfer should be the last on GTK due to platform' DND implementation inconsistency
+                ArrayUtils.reverse(dragTransferTypes);
+            }
+            
             int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
             final DragSource source = new DragSource(viewer.getControl(), operations);
