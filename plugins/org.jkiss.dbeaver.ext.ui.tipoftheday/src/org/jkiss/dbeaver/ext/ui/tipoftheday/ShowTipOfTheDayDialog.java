@@ -62,7 +62,6 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
 
     public ShowTipOfTheDayDialog(Shell parentShell) {
         super(parentShell, "Tip of the day", DBIcon.TREE_INFO);
-        super.buttonBarPlaceholderColumns = 1;
     }
 
     @Override
