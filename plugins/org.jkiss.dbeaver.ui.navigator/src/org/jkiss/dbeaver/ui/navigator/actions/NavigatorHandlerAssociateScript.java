@@ -31,11 +31,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.SimpleDatabaseEditorContext;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
@@ -84,8 +84,8 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
         for (IWorkbenchWindow window: PlatformUI.getWorkbench().getWorkbenchWindows()) {
             for (IWorkbenchPage page: window.getPages()) {
                 IEditorPart editor = ResourceUtil.findEditor(page, script);
-                if (editor instanceof IDataSourceContainerProviderEx) {
-                    ((IDataSourceContainerProviderEx)editor).setDataSourceContainer(dataSource);
+                if (editor instanceof IDataSourceContainerUpdate) {
+                    ((IDataSourceContainerUpdate)editor).setDataSourceContainer(dataSource);
                 }
             }
         }

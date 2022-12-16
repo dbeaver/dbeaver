@@ -25,7 +25,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Set;
 
 /**
  * Resource manager API
@@ -39,7 +38,8 @@ public class RMProject extends RMObject {
     private RMProjectType type;
     private Long createTime;
     private String creator;
-    private Set<String> projectPermissions;
+    private String[] projectPermissions;
+    private RMResourceType[] resourceTypes;
 
     public RMProject() {
     }
@@ -51,7 +51,7 @@ public class RMProject extends RMObject {
         RMProjectType type,
         Long createTime,
         String creator,
-        Set<String> projectPermissions
+        String[] projectPermissions
     ) {
         super(name);
         this.id = id;
@@ -150,12 +150,24 @@ public class RMProject extends RMObject {
         return obj instanceof RMProject && CommonUtils.equalObjects(id, ((RMProject) obj).id);
     }
 
-    public void setProjectPermissions(Set<String> projectPermissions) {
+    public String[] getProjectPermissions() {
+        return projectPermissions;
+    }
+
+    public boolean hasProjectPermission(String permission) {
+        return ArrayUtils.contains(projectPermissions, permission);
+    }
+
+    public void setProjectPermissions(String[] projectPermissions) {
         this.projectPermissions = projectPermissions;
     }
 
-    public Set<String> getProjectPermissions() {
-        return projectPermissions;
+    public RMResourceType[] getResourceTypes() {
+        return resourceTypes;
+    }
+
+    public void setResourceTypes(RMResourceType[] resourceTypes) {
+        this.resourceTypes = resourceTypes;
     }
 
     public static class TimeRenderer implements IPropertyValueTransformer<RMProject, Object> {

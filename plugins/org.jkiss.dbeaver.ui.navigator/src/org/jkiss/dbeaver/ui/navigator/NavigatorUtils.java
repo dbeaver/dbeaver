@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
@@ -738,10 +739,10 @@ public class NavigatorUtils {
     }
 
     public static boolean syncEditorWithNavigator(INavigatorModelView navigatorView, IEditorPart activeEditor) {
-        if (!(activeEditor instanceof IDataSourceContainerProviderEx)) {
+        if (!(activeEditor instanceof IDataSourceContainerUpdate)) {
             return false;
         }
-        IDataSourceContainerProviderEx dsProvider = (IDataSourceContainerProviderEx) activeEditor;
+        IDataSourceContainerUpdate dsProvider = (IDataSourceContainerUpdate) activeEditor;
         Viewer navigatorViewer = navigatorView.getNavigatorViewer();
         if (navigatorViewer == null) {
             return false;
@@ -863,8 +864,8 @@ public class NavigatorUtils {
                 DBCExecutionContext executionContext = ((DBPContextProvider) activePart).getExecutionContext();
                 if (executionContext != null) {
                     activeProject = executionContext.getDataSource().getContainer().getRegistry().getProject();
-                } else if (activePart instanceof IDataSourceContainerProvider) {
-                    DBPDataSourceContainer container = ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+                } else if (activePart instanceof DBPDataSourceContainerProvider) {
+                    DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
                     if (container != null) {
                         activeProject = container.getProject();
                     }
