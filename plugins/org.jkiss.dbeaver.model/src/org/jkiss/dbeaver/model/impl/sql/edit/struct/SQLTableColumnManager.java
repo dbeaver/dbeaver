@@ -50,6 +50,25 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     public static final long FEATURE_ALTER_TABLE_ADD_COLUMN = 4;
 
     public static final String QUOTE = "'";
+    
+    protected int maxNameLength = 0;
+    protected int maxTypeLength = 0;
+    
+    public void setMaxNameLength(int value) {
+    	maxNameLength = value;
+    }
+    
+    public int getMaxNameLength() {
+    	return maxNameLength;
+    }
+    
+    public void setMaxTypeLength(int value) {
+    	maxTypeLength = value;
+    }
+    
+    public int getMaxTypeLength() {
+    	return maxTypeLength;
+    }
 
     protected interface ColumnModifier<OBJECT_TYPE extends DBPObject> {
         void appendModifier(DBRProgressMonitor monitor, OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command);
@@ -73,12 +92,12 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
 
     protected final ColumnModifier<OBJECT_TYPE> NotNullModifier = (monitor, column, sql, command) -> {
         if (column.isRequired()) {
-            sql.append(" NOT NULL"); //$NON-NLS-1$
+            sql.append(" not null"); //$NON-NLS-1$
         }
     };
 
     protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifier = (monitor, column, sql, command) ->
-        sql.append(column.isRequired() ? " NOT NULL" : " NULL");
+        sql.append(column.isRequired() ? " not null" : ""/*"null"*/);
 
     protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifierConditional = (monitor, column, sql, command) -> {
         if (command instanceof DBECommandComposite) {
@@ -178,15 +197,35 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
 
         // Create column
         String columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName());
-
+        
         if (command instanceof SQLObjectEditor.ObjectRenameCommand) {
             columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), ((ObjectRenameCommand) command).getNewName());
+        }
+        
+        Integer maxColumnNameLength = 0;
+        if (options.containsKey("maxColumnNameLength") && ((Integer)options.get("maxColumnNameLength")) > 0) {
+        	maxColumnNameLength = (Integer) options.get("maxColumnNameLength");
+        }
+        Integer maxColumnModifierLength = 0;
+        if (options.containsKey("maxColumnModifierLength") && ((Integer)options.get("maxColumnModifierLength")) > 0) {
+        	maxColumnModifierLength = (Integer) options.get("maxColumnModifierLength");
+        }
+        
+        if (maxColumnNameLength > 0) {
+        	columnName = String.format("%1$-" + maxColumnNameLength.toString() + "s", columnName);
         }
 
         StringBuilder decl = new StringBuilder(40);
         decl.append(columnName);
         for (ColumnModifier<OBJECT_TYPE> modifier : getSupportedModifiers(column, options)) {
-            modifier.appendModifier(monitor, column, decl, command);
+        	StringBuilder localDecl = new StringBuilder(); 
+            modifier.appendModifier(monitor, column, localDecl, command);
+            if (localDecl.toString().trim().startsWith("--")) {
+            	while (decl.length() < maxColumnNameLength + maxColumnModifierLength + 1) {
+            		decl.append(" ");
+            	}
+            }
+            decl.append(localDecl);
         }
 
         return decl;
@@ -282,8 +321,8 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     public static void addColumnCommentAction(List<DBEPersistAction> actionList, DBSEntityAttribute column, DBSEntity table) {
         actionList.add(new SQLDatabasePersistAction(
             "Comment column",
-            "COMMENT ON COLUMN " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                " IS " + SQLUtils.quoteString(column.getDataSource(), CommonUtils.notEmpty(column.getDescription()))));
+            "comment on column " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
+                " is " + SQLUtils.quoteString(column.getDataSource(), CommonUtils.notEmpty(column.getDescription()))));
     }
 
     protected class BaseDefaultModifier implements ColumnModifier<OBJECT_TYPE> {
@@ -298,7 +337,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
             if (!CommonUtils.isEmpty(defaultValue)) {
                 DBPDataKind dataKind = column.getDataKind();
                 boolean useQuotes = isUsesQuotes(defaultValue, dataKind);
-                sql.append(" DEFAULT "); //$NON-NLS-1$
+                sql.append(" default "); //$NON-NLS-1$
                 appendDefaultValue(sql, defaultValue, useQuotes);
             }
         }

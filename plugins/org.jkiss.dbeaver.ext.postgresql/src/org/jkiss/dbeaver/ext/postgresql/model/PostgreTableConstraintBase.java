@@ -161,16 +161,31 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         if (constrDDL == null && isPersisted()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read constraint definition")) {
                 constrDDL =
-                    "CONSTRAINT " + DBUtils.getQuotedIdentifier(this) + " " +
+                    "constraint " + DBUtils.getQuotedIdentifier(this) + " " +
                     JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_constraintdef(?)", getObjectId());
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
             }
         }
+        constrDDL = constrDDL
+        		      .replace(" CHECK ", " check ")
+        		      .replace(" FOREIGN KEY ", " foreign key ")
+        		      .replace(" PRIMARY KEY ", " primary key ")
+        		      .replace(" REFERENCES ", " references ")
+        		      .replace(" WITH ", " with ")
+        		      .replace(" EXCLUDE ", " exclude ")
+        		      .replace(" USING ", " using ")
+        		      .replace(" ANY ", " any ")
+        		      .replace(" AND ", " and ")
+        		      .replace(" OR ", " or ")
+        		      .replace(" NOT ", " not ")
+        		      .replace(" NULL ", " null ")
+        		      .replace(" NULL::", " null::")
+        		      .replace(" UNIQUE ", " unique ");
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_EMBEDDED_SOURCE)) {
             return constrDDL;
         } else {
-            return "ALTER TABLE " + getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + constrDDL;
+            return "alter table " + getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " add " + constrDDL;
         }
     }
 

@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
@@ -77,6 +78,7 @@ import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -370,6 +372,12 @@ public class NavigatorUtils {
                 DatabaseObjectTransfer.getInstance(),
                 FileTransfer.getInstance()
             };
+            
+            if (RuntimeUtils.isGtk()) { 
+                // TextTransfer should be the last on GTK due to platform' DND implementation inconsistency
+                ArrayUtils.reverse(dragTransferTypes);
+            }
+            
             int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
             final DragSource source = new DragSource(viewer.getControl(), operations);
@@ -532,13 +540,7 @@ public class NavigatorUtils {
                 }
 
                 private boolean isDropSupported(DropTargetEvent event) {
-                    Object curObject;
-                    if (event.item instanceof Item) {
-                        curObject = event.item.getData();
-                    } else {
-                        curObject = null;
-                    }
-
+                    final Object curObject = getDropTarget(event, viewer);
                     if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
                         @SuppressWarnings("unchecked")
                         Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
@@ -583,12 +585,7 @@ public class NavigatorUtils {
                 }
 
                 private void moveNodes(DropTargetEvent event) {
-                    Object curObject;
-                    if (event.item instanceof Item) {
-                        curObject = event.item.getData();
-                    } else {
-                        curObject = null;
-                    }
+                    final Object curObject = getDropTarget(event, viewer);
                     if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
                         if (curObject instanceof DBNNode) {
                             Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
@@ -653,6 +650,15 @@ public class NavigatorUtils {
                     }
                 }
             });
+        }
+    }
+
+    @Nullable
+    private static Object getDropTarget(@NotNull DropTargetEvent event, @NotNull Viewer viewer) {
+        if (event.item instanceof Item) {
+            return event.item.getData();
+        } else {
+            return ((DatabaseNavigatorContent) viewer.getInput()).getRootNode();
         }
     }
 
@@ -733,10 +739,10 @@ public class NavigatorUtils {
     }
 
     public static boolean syncEditorWithNavigator(INavigatorModelView navigatorView, IEditorPart activeEditor) {
-        if (!(activeEditor instanceof IDataSourceContainerProviderEx)) {
+        if (!(activeEditor instanceof IDataSourceContainerUpdate)) {
             return false;
         }
-        IDataSourceContainerProviderEx dsProvider = (IDataSourceContainerProviderEx) activeEditor;
+        IDataSourceContainerUpdate dsProvider = (IDataSourceContainerUpdate) activeEditor;
         Viewer navigatorViewer = navigatorView.getNavigatorViewer();
         if (navigatorViewer == null) {
             return false;
@@ -858,8 +864,8 @@ public class NavigatorUtils {
                 DBCExecutionContext executionContext = ((DBPContextProvider) activePart).getExecutionContext();
                 if (executionContext != null) {
                     activeProject = executionContext.getDataSource().getContainer().getRegistry().getProject();
-                } else if (activePart instanceof IDataSourceContainerProvider) {
-                    DBPDataSourceContainer container = ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+                } else if (activePart instanceof DBPDataSourceContainerProvider) {
+                    DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
                     if (container != null) {
                         activeProject = container.getProject();
                     }

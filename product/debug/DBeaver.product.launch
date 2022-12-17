@@ -280,6 +280,8 @@
         <setEntry value="org.jkiss.dbeaver.ext.mysql.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.mysql@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.netezza@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.oceanbase.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.oceanbase@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ocient@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.opendistro@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.oracle.ui@default:default"/>
@@ -297,6 +299,7 @@
         <setEntry value="org.jkiss.dbeaver.ext.sqlite.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.sqlite@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.teradata@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ext.test@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.colortheme@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.locks@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.ui.svg@default:default"/>
@@ -304,6 +307,7 @@
         <setEntry value="org.jkiss.dbeaver.ext.vertica.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.vertica@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ext.wmi@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.headless@default:default"/>
         <setEntry value="org.jkiss.dbeaver.model.sql@default:default"/>
         <setEntry value="org.jkiss.dbeaver.model@default:default"/>
         <setEntry value="org.jkiss.dbeaver.net.ssh.jsch@default:default"/>
@@ -318,6 +322,10 @@
         <setEntry value="org.jkiss.dbeaver.tasks.sql.ui@default:default"/>
         <setEntry value="org.jkiss.dbeaver.tasks.ui.view@default:default"/>
         <setEntry value="org.jkiss.dbeaver.tasks.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.team.git.ui@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.team.git@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.test.platform@default:default"/>
+        <setEntry value="org.jkiss.dbeaver.ui.app.eclipse@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.app.standalone@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.charts@default:default"/>
         <setEntry value="org.jkiss.dbeaver.ui.dashboard@default:default"/>

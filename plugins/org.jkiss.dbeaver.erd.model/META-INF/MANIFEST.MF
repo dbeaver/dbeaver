@@ -13,5 +13,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql
 Bundle-ClassPath: .
-Export-Package: org.jkiss.dbeaver.erd.model
+Export-Package: org.jkiss.dbeaver.erd.model,
+ org.jkiss.dbeaver.erd.model.navigator
 Automatic-Module-Name: org.jkiss.dbeaver.erd.model

@@ -216,12 +216,16 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
      * Checks all privileges
      */
     public boolean hasAllPrivileges(Object object) {
+	int supportedCount = 0;
         for (PostgrePrivilegeType pt : getDataSource().getSupportedPrivilegeTypes()) {
-            if (pt.isValid() && pt.supportsType(object.getClass()) && getPermission(pt) == 0) {
-                return false;
+            if (pt.isValid() && pt.supportsType(object.getClass())) { 
+        	if (getPermission(pt) == 0) {
+        	    return false;
+        	}
+        	supportedCount++;
             }
         }
-        return true;
+        return supportedCount > 1;
     }
 
 }

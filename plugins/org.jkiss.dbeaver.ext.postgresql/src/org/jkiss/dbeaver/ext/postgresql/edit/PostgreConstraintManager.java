@@ -107,14 +107,14 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     static void addConstraintCommentAction(List<DBEPersistAction> actionList, PostgreTableConstraintBase constr) {
         actionList.add(new SQLDatabasePersistAction(
             "Comment sequence",
-            "COMMENT ON CONSTRAINT " + DBUtils.getQuotedIdentifier(constr) + " ON " + constr.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                " IS " + SQLUtils.quoteString(constr, constr.getDescription())));
+            "comment on constraint " + DBUtils.getQuotedIdentifier(constr) + " on " + constr.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                " is " + SQLUtils.quoteString(constr, constr.getDescription())));
     }
 
     @Override
     protected String getDropConstraintPattern(PostgreTableConstraintBase constraint)
     {
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return "alter table " + PATTERN_ITEM_TABLE + " drop constraint " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     @Override

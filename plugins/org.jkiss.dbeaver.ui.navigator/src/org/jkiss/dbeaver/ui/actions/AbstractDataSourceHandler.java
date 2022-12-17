@@ -113,8 +113,8 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
     }
 
     public static DBPDataSourceContainer getDataSourceContainerFromPart(IWorkbenchPart activePart) {
-        if (activePart instanceof IDataSourceContainerProvider) {
-            return ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+        if (activePart instanceof DBPDataSourceContainerProvider) {
+            return ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
         }
         if (activePart instanceof DBPContextProvider) {
             DBCExecutionContext context = ((DBPContextProvider) activePart).getExecutionContext();

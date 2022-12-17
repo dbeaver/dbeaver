@@ -67,7 +67,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_foreign_key,
-                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(monitor, table, command, options)) //$NON-NLS-1$ //$NON-NLS-2$
+                "alter table " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " add " + getNestedDeclaration(monitor, table, command, options)) //$NON-NLS-1$ //$NON-NLS-2$
         );
     }
 
@@ -99,12 +99,12 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
 
         StringBuilder decl = new StringBuilder(40);
         if (!legacySyntax || !foreignKey.isPersisted() || constraintDuplicated) {
-            decl.append("CONSTRAINT ");
+            decl.append("constraint ");
         }
         if (!legacySyntax) {
             decl.append(constraintName).append(" "); //$NON-NLS-1$
         }
-        decl.append(foreignKey.getConstraintType().getName().toUpperCase(Locale.ENGLISH)) //$NON-NLS-1$
+        decl.append(foreignKey.getConstraintType().getName().toLowerCase(Locale.ENGLISH)) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
         try {
             // Get columns using void monitor
@@ -126,7 +126,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         final String refTableName =
             refConstraint == null ? "<?>" : DBUtils.getEntityScriptName(refConstraint.getParentObject(), options);
 
-        decl.append(") REFERENCES ").append(refTableName).append("("); //$NON-NLS-1$ //$NON-NLS-2$
+        decl.append(") references ").append(refTableName).append("("); //$NON-NLS-1$ //$NON-NLS-2$
         if (refConstraint instanceof DBSEntityReferrer) {
             try {
                 boolean firstColumn = true;
@@ -147,7 +147,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         appendUpdateDeleteRule(foreignKey, decl);
 
         if (legacySyntax) {
-            decl.append(" CONSTRAINT ").append(constraintName); //$NON-NLS-1$
+            decl.append(" constraint ").append(constraintName); //$NON-NLS-1$
         }
         return decl;
     }
@@ -155,11 +155,11 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
     protected void appendUpdateDeleteRule(OBJECT_TYPE foreignKey, StringBuilder decl) {
         DBSForeignKeyModifyRule deleteRule = foreignKey.getDeleteRule();
         if (deleteRule != null && !CommonUtils.isEmpty(deleteRule.getClause())) {
-            decl.append(" ON DELETE ").append(deleteRule.getClause()); //$NON-NLS-1$
+            decl.append(" on delete ").append(deleteRule.getClause()); //$NON-NLS-1$
         }
         DBSForeignKeyModifyRule updateRule = foreignKey.getUpdateRule();
         if (updateRule != null && !CommonUtils.isEmpty(updateRule.getClause())) {
-            decl.append(" ON UPDATE ").append(updateRule.getClause()); //$NON-NLS-1$
+            decl.append(" on update ").append(updateRule.getClause()); //$NON-NLS-1$
         }
     }
 

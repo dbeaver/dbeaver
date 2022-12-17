@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -219,8 +218,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
             protected Boolean runTask() {
                 IEditorPart nodeEditor = NavigatorHandlerObjectOpen.findEntityEditor(UIUtils.getActiveWorkbenchWindow(), node);
                 if (nodeEditor != null && nodeEditor.isDirty()) {
-                    return ConfirmationDialog.showConfirmDialog(
-                        ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+                    return ConfirmationDialog.confirmAction(
                         null,
                         NavigatorPreferences.CONFIRM_ENTITY_REVERT,
                         ConfirmationDialog.QUESTION,

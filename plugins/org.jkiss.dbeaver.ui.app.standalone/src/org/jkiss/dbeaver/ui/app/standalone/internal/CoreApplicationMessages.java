@@ -24,11 +24,17 @@ public class CoreApplicationMessages extends NLS {
 	
 	public static String actions_menu_exit_emergency;
     public static String actions_menu_exit_emergency_message;
-	public static String actions_menu_reset_ui_settings_title;
-	public static String actions_menu_reset_ui_settings_message;
-	public static String actions_menu_reset_workspace_state_title;
-	public static String actions_menu_reset_workspace_state_message;
 	public static String actions_menu_recent_editors;
+
+    public static String reset_ui_settings_confirmation_title;
+    public static String reset_ui_settings_confirmation_message;
+
+    public static String clear_history_dialog_title;
+    public static String clear_history_dialog_message;
+    public static String clear_history_dialog_options;
+    public static String clear_history_dialog_apply_and_restart;
+    public static String clear_history_error_title;
+    public static String clear_history_error_message;
 
 	public static String confirmation_cancel_database_tasks_title;
 	public static String confirmation_cancel_database_tasks_message;

@@ -18,17 +18,22 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -42,6 +47,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,6 +59,8 @@ import java.util.Locale;
  */
 public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDataTypeConverter,
     SQLDialectDDLExtension {
+    private static final Log log = Log.getLog(PostgreDialect.class);
+
     public static final String[] POSTGRE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
         new String[]{
@@ -71,7 +79,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     };
 
     private static final String[] EXEC_KEYWORDS = {
-        "CALL"
+        "CALL", "PERFORM"
     };
 
     //Function without arguments/parameters #8710
@@ -90,9 +98,9 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "ABSENT",
         "ACCORDING",
         "ADA",
-        "ADMIN",
-//            "ARRAY_AGG",
-//            "ARRAY_MAX_CARDINALITY",
+//        "ADMIN",
+//        "ARRAY_AGG",
+//        "ARRAY_MAX_CARDINALITY",
         "BASE64",
         "BEGIN_FRAME",
         "BEGIN_PARTITION",
@@ -101,7 +109,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "BLOCKED",
         "BOM",
         //"BREADTH",
-//            "CATALOG_NAME",
+        "CATALOG_NAME",
 //            "CHARACTER_SET_CATALOG",
 //            "CHARACTER_SET_NAME",
 //            "CHARACTER_SET_SCHEMA",
@@ -426,7 +434,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "NETMASK",
         "NETWORK",
         "SET_MASKLEN",
-        "TEXT",
+        //"TEXT",
         "INET_SAME_FAMILY",
         "INET_MERGE",
         "MACADDR8_SET7BIT"
@@ -703,7 +711,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             //"PUBLIC",
             "RETURNING",
             "VARIADIC",
-            "PERFORM",
+            //"PERFORM",
             "FOREACH",
             "LOOP",
             "PERFORM",
@@ -758,7 +766,22 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             serverExtension = ((PostgreDataSource) dataSource).getServerType();
             serverExtension.configureDialect(this);
         }
-
+        
+        removeSQLKeyword("TEXT");
+        removeSQLKeyword("NUMERIC");
+        removeSQLKeyword("INT2");
+        removeSQLKeyword("INT4");
+        removeSQLKeyword("INT8");
+        removeSQLKeyword("BOOL");
+        removeSQLKeyword("BOOLEAN");
+        removeSQLKeyword("VARCHAR");
+        removeSQLKeyword("DATE");
+        removeSQLKeyword("TIMESTAMP");
+        removeSQLKeyword("SMALLINT");
+        removeSQLKeyword("BIGINT");
+        removeSQLKeyword("INTEGER");
+        removeSQLKeyword("INTERVAL");
+        
         // #12723 Redshift driver returns wrong infor about unquoted case
         setUnquotedIdentCase(DBPIdentifierCase.LOWER);
     }
@@ -933,7 +956,21 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     protected boolean isStoredProcedureCallIncludesOutParameters() {
         return false;
     }
-
+    
+    @Override
+    protected String quoteIdentifier(@NotNull String str, @NotNull String[][] quoteStrings) {
+        // Escape quote chars
+        for (String[] pair : quoteStrings) {
+            final String q1 = pair[0];
+            final String q2 = pair[1];
+            if (q1.equals(q2) && (q1.equals("\"") || q1.equals("'")) && str.contains(q1)) {
+                str = str.replace(q1, q1 + q1);
+            }
+        }
+        // Escape with first (default) quote string
+        return quoteStrings[0][0] + str + quoteStrings[0][1];
+    }
+    
     @Override
     public void extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull List<TPRule> rules, @NotNull RulePosition position) {
         if (position == RulePosition.INITIAL || position == RulePosition.PARTITION) {

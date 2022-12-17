@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -317,11 +318,51 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     public static String[] getOidTypes() {
       return OID_TYPES;
     }
-
+    
+    private String correctTypeNameInner(String typeName) {
+	switch (typeName) {
+	    case ("int8"):
+	        return "bigint";
+	    case ("int2"):
+	        return "smallint";
+	    case ("bool"):
+	        return "boolean";
+	    default:
+	        return typeName;                		  
+	}
+    }
+    
+    public boolean isArray() {
+	return this.dataKind == DBPDataKind.ARRAY;
+    }
+    
+    public String getAliasForTypeName() {
+	String typeName = getName();
+	if (isArray() && typeName.startsWith("_"))
+	    typeName = typeName.substring(1); 
+	typeName = correctTypeNameInner(typeName);
+	return typeName;  
+    }
+    
+    public String getAliasForFullTypeName() {
+	String typeName = getFullTypeName();
+	if (this.dataKind == DBPDataKind.ARRAY && typeName.startsWith("_"))
+	    typeName = typeName.substring(1); 
+	typeName = correctTypeNameInner(typeName);
+	if (this.dataKind == DBPDataKind.ARRAY)
+	    typeName += "[]";
+	return typeName;
+    }
+    
+    /*public String getAliasForFullyQualifiedName() {
+	DBSObject schema = getParentObject();
+	String typeName = getAliasForFullTypeName();
+    }*/
+    
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
-        return super.getName();
+	return super.getName();
     }
 
     @Override
@@ -389,10 +430,6 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     @Property(viewable = true, optional = true, order = 12)
     public PostgreDataType getBaseType(DBRProgressMonitor monitor) {
         return getDatabase().getDataType(monitor, baseTypeId);
-    }
-
-    public boolean isArray() {
-        return elementTypeId != 0;
     }
 
     @Property(viewable = true, optional = true, order = 13)
@@ -630,16 +667,20 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     public Object[] getEnumValues() {
         return enumValues;
     }
-
+    
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         final PostgreSchema owner = getParentObject();
-        if (owner == null || owner.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
-            return getName();
+        String result;
+        if (owner == null || owner.getName().equals(PostgreConstants.PUBLIC_SCHEMA_NAME) || owner.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
+            result = DBUtils.getQuotedIdentifier(getDataSource(), getAliasForTypeName());
         } else {
-            return DBUtils.getQuotedIdentifier(owner) + "." + DBUtils.getQuotedIdentifier(this);
+            result = DBUtils.getQuotedIdentifier(owner) + "." + DBUtils.getQuotedIdentifier(getDataSource(), getAliasForTypeName());
         }
+        if (isArray())
+            result += "[]";
+        return result;
     }
 
     @Nullable
@@ -663,11 +704,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
         switch (typeType) {
             case p: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";"); //$NON-NLS-1$ //$NON-NLS-2$
+                sql.append("create type ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";"); //$NON-NLS-1$ //$NON-NLS-2$
                 break;
             }
             case d: {
-                sql.append("CREATE DOMAIN ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS "); //$NON-NLS-1$ //$NON-NLS-2$
+                sql.append("create domain ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" as "); //$NON-NLS-1$ //$NON-NLS-2$
                 if (baseTypeName != null) {
                     sql.append(baseTypeName);
                 } else {
@@ -675,15 +716,15 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
                 }
                 PostgreCollation collation = getCollationId(monitor);
                 if (collation != null) {
-                    sql.append("\n\tCOLLATE ").append(DBUtils.getQuotedIdentifier(collation)); //$NON-NLS-1$
+                    sql.append("\n  collate ").append(DBUtils.getQuotedIdentifier(collation)); //$NON-NLS-1$
                 }
                 if (!CommonUtils.isEmpty(defaultValue)) {
-                    sql.append("\n\tDEFAULT ").append(defaultValue); //$NON-NLS-1$
+                    sql.append("\n  default ").append(defaultValue); //$NON-NLS-1$
                 }
                 List<String> constraints = getConstraintsDefinition(monitor);
                 for (String constraint : constraints) {
                     if (!CommonUtils.isEmpty(constraint)) {
-                        sql.append("\n\tCONSTRAINT ").append(constraint); //$NON-NLS-1$
+                    sql.append("\n  constraint ").append(constraint); //$NON-NLS-1$
                     }
                 }
 
@@ -691,12 +732,15 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
                 break;
             }
             case e: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ENUM (\n"); //$NON-NLS-1$ //$NON-NLS-2$
+                sql.append("create type ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" as enum (\n"); //$NON-NLS-1$ //$NON-NLS-2$
                 if (enumValues != null) {
                     for (int i = 0; i < enumValues.length; i++) {
                         Object item = enumValues[i];
-                        sql.append("\t").append(SQLUtils.quoteString(this, CommonUtils.toString(item)));
-                        if (i < enumValues.length - 1) sql.append(",\n"); //$NON-NLS-1$
+                        sql.append("  ").append(SQLUtils.quoteString(this, CommonUtils.toString(item)));
+                        if (i < enumValues.length - 1)
+                            sql.append(",\n"); //$NON-NLS-1$
+                        else
+                            sql.append("\n"); //$NON-NLS-1$
                     }
                 }
                 sql.append(");\n"); //$NON-NLS-1$
@@ -705,9 +749,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
             case r: {
                 PostgreCollation collation = getCollationId(monitor);
                 if (collation != null) {
-                    sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS RANGE (\n"); //$NON-NLS-1$ //$NON-NLS-2$
-                    appendCreateTypeParameter(sql, "COLLATION ", collation.getName());
-                    appendCreateTypeParameter(sql, "CANONICAL", canonicalName);
+                    sql.append("create type ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" as range (\n"); //$NON-NLS-1$ //$NON-NLS-2$
+                    appendCreateTypeParameter(sql, "collation ", collation.getName());
+                    appendCreateTypeParameter(sql, "canonical", canonicalName);
                     // TODO: read data from pg_range
 //                if (!CommonUtils.isEmpty(su)) {
 //                    sql.append("\n\tCOLLATION ").append(canonicalName);
@@ -717,35 +761,35 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
                 break;
             }
             case b: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
+                sql.append("create type ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 
-                if (isValidFuncRef(inputFunc)) appendCreateTypeParameter(sql, "INPUT", inputFunc);
-                if (isValidFuncRef(outputFunc)) appendCreateTypeParameter(sql, "OUTPUT", outputFunc);
-                if (isValidFuncRef(receiveFunc)) appendCreateTypeParameter(sql, "RECEIVE", receiveFunc);
-                if (isValidFuncRef(sendFunc)) appendCreateTypeParameter(sql, "SEND", sendFunc);
-                if (isValidFuncRef(modInFunc)) appendCreateTypeParameter(sql, "TYPMOD_IN", modInFunc);
-                if (isValidFuncRef(modOutFunc)) appendCreateTypeParameter(sql, "TYPMOD_OUT", modOutFunc);
-                if (isValidFuncRef(analyzeFunc)) appendCreateTypeParameter(sql, "ANALYZE", analyzeFunc);
-                if (getMaxLength() > 0) appendCreateTypeParameter(sql, "INTERNALLENGTH", getMaxLength());
-                if (isByValue) appendCreateTypeParameter(sql, "PASSEDBYVALUE");
-                if (align != null && align.getBytes() > 1) appendCreateTypeParameter(sql, "ALIGNMENT", align.getBytes());
-                if (storage != null) appendCreateTypeParameter(sql, "STORAGE", storage.getName());
-                if (typeCategory != null) appendCreateTypeParameter(sql, "CATEGORY", typeCategory.name());
-                if (isPreferred) appendCreateTypeParameter(sql, "PREFERRED", isPreferred);
-                appendCreateTypeParameter(sql, "DEFAULT", defaultValue);
+                if (isValidFuncRef(inputFunc)) appendCreateTypeParameter(sql, "input", inputFunc);
+                if (isValidFuncRef(outputFunc)) appendCreateTypeParameter(sql, "output", outputFunc);
+                if (isValidFuncRef(receiveFunc)) appendCreateTypeParameter(sql, "receive", receiveFunc);
+                if (isValidFuncRef(sendFunc)) appendCreateTypeParameter(sql, "send", sendFunc);
+                if (isValidFuncRef(modInFunc)) appendCreateTypeParameter(sql, "typmod_in", modInFunc);
+                if (isValidFuncRef(modOutFunc)) appendCreateTypeParameter(sql, "typmod_out", modOutFunc);
+                if (isValidFuncRef(analyzeFunc)) appendCreateTypeParameter(sql, "analyze", analyzeFunc);
+                if (getMaxLength() > 0) appendCreateTypeParameter(sql, "internallength", getMaxLength());
+                if (isByValue) appendCreateTypeParameter(sql, "passedbyvalue");
+                if (align != null && align.getBytes() > 1) appendCreateTypeParameter(sql, "alignment", align.getBytes());
+                if (storage != null) appendCreateTypeParameter(sql, "storage", storage.getName());
+                if (typeCategory != null) appendCreateTypeParameter(sql, "category", typeCategory.name());
+                if (isPreferred) appendCreateTypeParameter(sql, "preferred", isPreferred);
+                appendCreateTypeParameter(sql, "default", defaultValue);
 
                 PostgreDataType elementType = getElementType(monitor);
                 if (elementType != null) {
-                    appendCreateTypeParameter(sql, "ELEMENT", elementType.getFullyQualifiedName(DBPEvaluationContext.DDL));
+                    appendCreateTypeParameter(sql, "element", elementType.getFullyQualifiedName(DBPEvaluationContext.DDL));
                 }
-                if (!CommonUtils.isEmpty(arrayDelimiter)) appendCreateTypeParameter(sql, "DELIMITER", SQLUtils.quoteString(getDataSource(), arrayDelimiter));
-                if (collationId != 0) appendCreateTypeParameter(sql, "COLLATABLE", true);
+                if (!CommonUtils.isEmpty(arrayDelimiter)) appendCreateTypeParameter(sql, "delimiter", SQLUtils.quoteString(getDataSource(), arrayDelimiter));
+                if (collationId != 0) appendCreateTypeParameter(sql, "collatable", true);
 
                 sql.append(");\n"); //$NON-NLS-1$
                 break;
             }
             case c: {
-                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ("); //$NON-NLS-1$ //$NON-NLS-2$
+                sql.append("create type ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" as ("); //$NON-NLS-1$ //$NON-NLS-2$
                 Collection<PostgreDataTypeAttribute> attributes = getAttributes(monitor);
                 if (!CommonUtils.isEmpty(attributes)) {
                     boolean first = true;
@@ -753,7 +797,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
                         if (!first) sql.append(","); //$NON-NLS-1$
                         first = false;
 
-                        sql.append("\n\t") //$NON-NLS-1$
+                        sql.append("\n  ") //$NON-NLS-1$
                             .append(DBUtils.getQuotedIdentifier(attr)).append(" ").append(attr.getTypeName()); //$NON-NLS-1$
                         String modifiers = SQLUtils.getColumnTypeModifiers(getDataSource(), attr, attr.getTypeName(), attr.getDataKind());
                         if (modifiers != null) sql.append(modifiers);
@@ -770,9 +814,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
         String description = getDescription();
         if (!CommonUtils.isEmpty(description)) {
-            sql.append("\nCOMMENT ON TYPE ") //$NON-NLS-1$
+            sql.append("\ncomment on type ") //$NON-NLS-1$
                     .append(getFullyQualifiedName(DBPEvaluationContext.DDL))
-                    .append(" IS ") //$NON-NLS-1$
+                    .append(" is ") //$NON-NLS-1$
                     .append(SQLUtils.quoteString(this, description))
                     .append(";"); //$NON-NLS-1$
         }
@@ -791,14 +835,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         if (sql.charAt(sql.length() - 1)!= '(') {
             sql.append(","); //$NON-NLS-1$
         }
-        sql.append("\n\t").append(name).append(" = ").append(value); //$NON-NLS-1$ //$NON-NLS-2$
+        sql.append("\n  ").append(name).append(" = ").append(value); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     private void appendCreateTypeParameter(@NotNull StringBuilder sql, @NotNull String name) {
         if (Character.isLetterOrDigit(sql.charAt(sql.length() - 1))) {
             sql.append(",");//$NON-NLS-1$
         }
-        sql.append("\n\t").append(name); //$NON-NLS-1$
+        sql.append("\n  ").append(name); //$NON-NLS-1$
     }
 
     @Override

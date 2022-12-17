@@ -818,9 +818,9 @@ public final class SQLUtils {
         if (persistActions != null) {
             for (DBEPersistAction action : persistActions) {
                 String scriptLine = action.getScript();
-                if (CommonUtils.isEmpty(scriptLine)) {
+                /*if (CommonUtils.isEmpty(scriptLine)) {
                     continue;
-                }
+                }*/
 
                 String redefiner = sqlDialect.getScriptDelimiterRedefiner();
                 String delimiter = getScriptLineDelimiter(sqlDialect);

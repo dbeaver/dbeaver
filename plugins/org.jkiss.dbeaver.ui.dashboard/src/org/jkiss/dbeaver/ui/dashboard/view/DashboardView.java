@@ -33,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
-public class DashboardView extends ViewPart implements IDataSourceContainerProvider, DBPEventListener {
+public class DashboardView extends ViewPart implements DBPDataSourceContainerProvider, DBPEventListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.ui.dashboardView";
 
     static protected final Log log = Log.getLog(DashboardView.class);
