@@ -29,8 +29,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse {
 
+    @NotNull
     DBPResourceHandler getDefaultResourceHandler();
-    DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors();
+    @NotNull
     DBPResourceHandlerDescriptor[] getAllResourceHandlers();
     @Nullable
     DBPResourceHandler getResourceHandler(IResource resource);

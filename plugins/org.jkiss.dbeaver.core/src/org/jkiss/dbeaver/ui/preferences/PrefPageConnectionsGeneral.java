@@ -50,12 +50,15 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral;
 import org.jkiss.dbeaver.ui.dialogs.connection.NavigatorSettingsStorage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
 public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage, NavigatorSettingsStorage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
+    private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
+    
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
     private Combo navigatorSettingsCombo;
     private Text connectionDefaultNamePatternText;
@@ -125,8 +128,9 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
             );
             
 
-            if (System.getProperty(GeneralUtils.PROP_TRUST_STORE) != null
-                || System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE) != null
+            if (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
+                || (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
+                && !System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE).equalsIgnoreCase(VALUE_TRUST_STRORE_TYPE_WINDOWS))
             ) {
                 Composite winTrustStoreComposite = UIUtils.createComposite(settings, 1);
                 useWinTrustStoreCheck = UIUtils.createCheckbox(

@@ -113,7 +113,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
             input = new FileEditorInput((IFile) resource);
         }
         if (input != null) {
-            int matchFlags = IWorkbenchPage.MATCH_INPUT | IWorkbenchPage.MATCH_IGNORE_SIZE;
+            int matchFlags = IWorkbenchPage.MATCH_INPUT /*| IWorkbenchPage.MATCH_IGNORE_SIZE*/;
             UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(input, SQLEditor.class.getName(), true, matchFlags);
         } else {
             super.openResource(resource);

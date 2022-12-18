@@ -270,33 +270,32 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         AdditionalInfo info = getAdditionalInfo(monitor);
         StringBuilder sql = new StringBuilder()
-            .append("-- DROP SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n")
-            .append("CREATE SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL));
+            .append("create sequence ").append(getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         if (info.getIncrementBy() > 0) {
-            sql.append("\n\tINCREMENT BY ").append(info.getIncrementBy());
+            sql.append("\n  increment by ").append(info.getIncrementBy());
         }
         if (info.getMinValue() > 0) {
-            sql.append("\n\tMINVALUE ").append(info.getMinValue());
+            sql.append("\n  minvalue ").append(info.getMinValue());
         } else {
-            sql.append("\n\tNO MINVALUE");
+            sql.append("\n  no minvalue");
         }
-        if (info.getMaxValue() > 0) {
-            sql.append("\n\tMAXVALUE ").append(info.getMaxValue());
+        if (info.getMaxValue() > 0 && info.getMaxValue() < 9223372036854775807L) {
+            sql.append("\n  maxvalue ").append(info.getMaxValue());
         } else {
-            sql.append("\n\tNO MAXVALUE");
+            sql.append("\n  no maxvalue");
         }
         if (info.getStartValue() > 0) {
-            sql.append("\n\tSTART ").append(info.getStartValue());
+            sql.append("\n  start ").append(info.getStartValue());
         }
         if (info.getCacheValue() > 0) {
-            sql.append("\n\tCACHE ").append(info.getCacheValue());
-            sql.append("\n\t").append(info.isCycled ? "" : "NO ").append("CYCLE");
+            sql.append("\n  cache ").append(info.getCacheValue());
+            sql.append("\n  ").append(info.isCycled ? "" : "no ").append("cycle");
         }
         sql.append(';');
 
 		if (!CommonUtils.isEmpty(getDescription())) {
-			sql.append("\nCOMMENT ON SEQUENCE ").append(DBUtils.getQuotedIdentifier(this)).append(" IS ")
+			sql.append("\ncomment on sequence ").append(DBUtils.getQuotedIdentifier(this)).append(" is ")
 					.append(SQLUtils.quoteString(this, getDescription())).append(";");
 		}
         
@@ -311,7 +310,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     }
 
     public String generateChangeOwnerQuery(String owner) {
-        return "ALTER SEQUENCE " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " OWNER TO " + owner;
+        return "alter sequence " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " owner to " + owner;
     }
 
     @Override

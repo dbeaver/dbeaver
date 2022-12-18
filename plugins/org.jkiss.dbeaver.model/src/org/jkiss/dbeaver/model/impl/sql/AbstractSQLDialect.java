@@ -427,7 +427,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
         // Check for keyword conflict
         final DBPKeywordType keywordType = this.getKeywordType(str);
-        boolean hasBadChars = (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER) &&
+        boolean hasBadChars = (keywordType == DBPKeywordType.KEYWORD /*|| keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER*/) &&
                 this.isQuoteReservedWords();
 
         if (!hasBadChars && !str.isEmpty()) {

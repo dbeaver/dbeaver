@@ -68,7 +68,7 @@ public class PostgreTableForeign extends PostgreTable implements DBPForeignObjec
 
     @Override
     public String getTableTypeName() {
-        return "FOREIGN TABLE";
+        return "foreign table";
     }
 
     @Property(viewable = false, order = 201)

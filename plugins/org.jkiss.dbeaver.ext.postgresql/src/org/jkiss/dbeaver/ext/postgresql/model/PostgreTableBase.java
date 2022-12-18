@@ -161,7 +161,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     public String getTableTypeName() {
-        return "TABLE";
+        return "table";
     }
 
     @Property(viewable = true, order = 10)
@@ -291,7 +291,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Override
     public String generateChangeOwnerQuery(String owner) {
-        return "ALTER TABLE " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " OWNER TO " + owner;
+        return "alter table " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " owner to " + owner;
     }
 
     @Override

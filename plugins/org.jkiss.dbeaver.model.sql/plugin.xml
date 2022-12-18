@@ -45,6 +45,15 @@
         <generator id="tableDDL" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorDDL" label="DDL" description="Get table DDL" order="1001">
             <objectType name="org.jkiss.dbeaver.model.DBPScriptObject"/>
         </generator>
+		<generator id="ColumnName" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorColumnName" label="%sql.generator.name" description="%sql.generator.name_long" order="1051">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityAttribute"/>
+        </generator>
+        <generator id="ColumnNameType" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorColumnNameType" label="%sql.generator.name_type" description="%sql.generator.name_type_long" order="1052">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityAttribute"/>
+        </generator>
+        <generator id="ColumnNameTypeNN" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorColumnNameTypeNotNull" label="%sql.generator.name_type_nn" description="%sql.generator.name_type_nn_long" order="1053">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityAttribute"/>
+        </generator>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
@@ -65,6 +74,23 @@
 
             <property name="" value=""/>
         </dialect>
+    </extension>
+
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                file-extensions="sql"
+                id="org.jkiss.dbeaver.sql"
+                name="SQL Script"
+                priority="high"
+                describer="org.jkiss.dbeaver.model.sql.SQLContentTypeDescriber"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resourceType">
+        <type id="sql-script" name="SQL script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/scripts.png" managable="true">
+            <root folder="Scripts"/>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
+        </type>
     </extension>
 
 </plugin>

@@ -72,10 +72,10 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         final StringJoiner privName = new StringJoiner(", ");
 
         if (hasAllPrivilegeTypes()) {
-            privName.add(PostgrePrivilegeType.ALL.name());
+            privName.add(PostgrePrivilegeType.ALL.name().toLowerCase());
         } else {
             for (PostgrePrivilegeType pn : privilegeTypes) {
-                privName.add(pn.name());
+                privName.add(pn.name().toLowerCase());
                 withGrantOption |= CommonUtils.isBitSet(privilege.getPermission(pn), PostgrePrivilege.WITH_GRANT_OPTION);
             }
         }
@@ -114,6 +114,9 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         } else {
             objectType = PostgreUtils.getObjectTypeName(object);
         }
+        if (objectType != null) {
+            objectType = objectType.toLowerCase();
+        }
 
         String grantedCols = "", grantedTypedObject = "";
         if (object instanceof PostgreTableColumn) {
@@ -123,11 +126,11 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             grantedTypedObject = objectType + " " + objectName;
         }
 
-        String grantScript = (grant ? "GRANT " : "REVOKE ") + privName + grantedCols +
-            " ON " + grantedTypedObject +
-            (grant ? " TO " : " FROM ") + roleName;
+        String grantScript = (grant ? "grant " : "revoke ") + privName + grantedCols +
+            " on " + grantedTypedObject +
+            (grant ? " to " : " from ") + roleName;
         if (grant && withGrantOption) {
-            grantScript += " WITH GRANT OPTION";
+            grantScript += " with grant option";
         }
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(
@@ -180,12 +183,16 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
     }
 
     private boolean hasAllPrivilegeTypes() {
+	int supportedCount = 0;
         for (PostgrePrivilegeType type : getObject().getDataSource().getSupportedPrivilegeTypes()) {
-            if (type.supportsType(privilegeOwner.getClass()) && !privilegeTypes.contains(type)) {
-                return false;
+            if (type.supportsType(privilegeOwner.getClass())) {
+        	if (!privilegeTypes.contains(type)) {
+                  return false;
+        	}
+        	supportedCount++;
             }
         }
-        return true;
+        return supportedCount > 1;
     }
 
     @NotNull

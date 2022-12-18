@@ -32,6 +32,8 @@ import java.util.*;
 
 class IndentFormatter {
     private static final Log log = Log.getLog(SQLFormatterTokenized.class);
+    private static final int indentCount = 2;
+    private static final char indentChar = ' ';
 
     private final SQLFormatterConfiguration formatterCfg;
     private final boolean isCompact;
@@ -45,7 +47,8 @@ class IndentFormatter {
     private List<Boolean> conditionBracket = new ArrayList<>();
     private final String[] blockHeaderStrings;
     private boolean isFirstConditionInBrackets;
-
+    private enum StackKey {INSERT, SELECT, FROM, JOIN, VALUES, UPDATE, CONFLICT, DELETE, TRUNCATE, RETURNS, SET};
+    
     private static final String[] JOIN_BEGIN = {"LEFT", "RIGHT", "INNER", "OUTER", "FULL", "CROSS", "NATURAL", "JOIN"};
     private static final String[] NO_SPACE_IN_COMPACT_KEYWORDS = { "SELECT", "UPDATE", "INSERT", "DELETE", "FROM", "WHERE" };
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
@@ -70,7 +73,7 @@ class IndentFormatter {
         blockHeaderStrings = dialect.getBlockHeaderStrings();
     }
 
-    private int formatSymbol(String tokenString, List<Integer> bracketIndent, List<FormatterToken> argList, Integer index, FormatterToken prev) {
+    private int formatSymbol(String tokenString, List<Integer> bracketIndent, List<FormatterToken> argList, Integer index, FormatterToken prev, final Stack<StackKey> parseStack) {
         int result = index;
 
         switch (tokenString) {
@@ -82,7 +85,7 @@ class IndentFormatter {
                 bracketsDepth++;
                 // Adding indent after ( makes result too verbose and too multiline
                 if (!isCompact && formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET)) {
-                    indent++;
+                    indent += indentCount;
                     index += insertReturnAndIndent(argList, index + 1, indent);
                 }
                 break;
@@ -121,7 +124,7 @@ class IndentFormatter {
         return result;
     }
 
-    private int formatKeyword(List<FormatterToken> argList, String tokenString, int index) {
+    private int formatKeyword(List<FormatterToken> argList, String tokenString, int index, final Stack<StackKey> parseStack) {
         int result = index;
         if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
             indent = 0;
@@ -133,12 +136,12 @@ class IndentFormatter {
             if (blockHeaderStrings != null && ArrayUtils.contains(blockHeaderStrings, tokenString) || (SQLUtils.isBlockStartKeyword(dialect, tokenString) &&
                             !SQLConstants.KEYWORD_SELECT.equalsIgnoreCase(getPrevSpecialKeyword(argList, index, false)))) { // If SELECT is previous keyword, then we are already inside the block
                 if (index > 0) {
-                    result += insertReturnAndIndent(argList, index, indent - 1);
+                    result += insertReturnAndIndent(argList, index, indent - indentCount);
                 }
-                indent++;
+                indent += indentCount;
                 result += insertReturnAndIndent(argList, index + 1, indent);
             } else if (SQLUtils.isBlockEndKeyword(dialect, tokenString)) {
-                indent--;
+                indent -= indentCount;
                 result += insertReturnAndIndent(argList, index, indent);
             } else switch (tokenString) {
                 case "CREATE":
@@ -157,10 +160,34 @@ class IndentFormatter {
                 case "TABLE": //$NON-NLS-1$
                     break;
                 case "DELETE": //$NON-NLS-1$
+                	parseStack.push(StackKey.DELETE);
+                	break;
                 case "SELECT": //$NON-NLS-1$
+                	parseStack.push(StackKey.SELECT);
+                	break;
                 case "UPDATE": //$NON-NLS-1$
+                	parseStack.push(StackKey.UPDATE);
+                	break;
                 case "INSERT": //$NON-NLS-1$
+                	parseStack.push(StackKey.INSERT);
+                	if (argList.get(index + 1).getType() == TokenType.SPACE) {
+                		argList.remove(index + 1);
+                	}
+                	break;
                 case "INTO": //$NON-NLS-1$
+                	if (!parseStack.isEmpty()) {
+                		switch (parseStack.peek()) {
+                			case INSERT: 
+                				break;
+                			case SELECT:
+                				break;
+                			case RETURNS:
+                				break;
+                			default:
+                				break;
+                		}                		
+                	}
+                	break;
                 case "TRUNCATE": //$NON-NLS-1$
                     if (!isCompact) {
                         if (bracketsDepth > 0) {
@@ -170,53 +197,65 @@ class IndentFormatter {
                             indent = 0;
                             result += insertReturnAndIndent(argList, index - 1, indent);
                         }
-                        indent++;
+                        indent += indentCount;
                         result += insertReturnAndIndent(argList, result + 1, indent);
                     }
                     break;
                 case "CASE":  //$NON-NLS-1$
                     if (!isCompact) {
-                        indent++;
+                        indent += indentCount;
                         result += insertReturnAndIndent(argList, index + 1, indent);
                     }
                     break;
                 case "END": // CASE ... END
                     if (!isCompact) {
-                        indent--;
+                        indent -= indentCount;
                         result += insertReturnAndIndent(argList, index, indent);
                     }
                     break;
                 case "FROM":
+                	result += insertReturnAndIndent(argList, index + 1, indent + 2);
+                	indent += 6;
+                	break;
                 case "WHERE":
                 case "START WITH":
                 case "CONNECT BY":
                 case "ORDER BY":
                 case "GROUP BY":
                 case "HAVING":  //$NON-NLS-1$
-                    result += insertReturnAndIndent(argList, index, indent - 1);
+                    result += insertReturnAndIndent(argList, index, indent - indentCount);
                     if (!isCompact) {
                         result += insertReturnAndIndent(argList, index + 1, indent);
                     }
                     isFirstConditionInBrackets = false;
                     break;
                 case "LEFT":
+                	break;
                 case "RIGHT":
+                	break;
                 case "INNER":
+                	break;
                 case "OUTER":
+                	break;
                 case "FULL":
+                	break;
                 case "CROSS":
+                	break;
                 case "NATURAL":
+                	break;
                 case "JOIN":
+                	parseStack.push(StackKey.JOIN);
                     if (isJoinStart(argList, index)) {
-                        result += insertReturnAndIndent(argList, index, indent - 1);
+                        result += insertReturnAndIndent(argList, index, indent - indentCount);
                     }
                     if (tokenString.equals("JOIN")) {
                         //index += insertReturnAndIndent(argList, index + 1, indent);
                     }
                     break;
                 case "VALUES":  //$NON-NLS-1$
+                	parseStack.push(StackKey.VALUES);
                 case "LIMIT":  //$NON-NLS-1$
-                    indent--;
+                    indent -= indentCount;
                     result += insertReturnAndIndent(argList, index, indent);
                     break;
                 case "OR":
@@ -234,10 +273,11 @@ class IndentFormatter {
                     result += insertReturnAndIndent(argList, index, indent);
                     break;
                 case "SET": {
+                	parseStack.push(StackKey.SET);
                     if (index > 1) {
                         if ("UPDATE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
                             // Extra line feed
-                            result += insertReturnAndIndent(argList, index, indent - 1);
+                            result += insertReturnAndIndent(argList, index, indent - indentCount);
                         }
                     }
                     result += insertReturnAndIndent(argList, index + 1, indent);
@@ -263,10 +303,10 @@ class IndentFormatter {
                 case "UNION":
                 case "INTERSECT":
                 case "EXCEPT": //$NON-NLS-1$
-                    indent -= 2;
+                    indent -= 2 * indentCount;
                     result += insertReturnAndIndent(argList, index, indent);
                     //index += insertReturnAndIndent(argList, index + 1, indent);
-                    indent++;
+                    indent += indentCount;
                     break;
                 case "BETWEEN":  //$NON-NLS-1$
                     encounterBetween = true;
@@ -289,15 +329,16 @@ class IndentFormatter {
     public void format(List<FormatterToken> argList) {
         final List<Integer> bracketIndent = new ArrayList<>();
         FormatterToken prev = new FormatterToken(TokenType.SPACE, " "); //$NON-NLS-1$
+        final Stack<StackKey> parseStack = new Stack<>();
         for (int index = 0; index < argList.size(); index++) {
             FormatterToken token = argList.get(index);
             String tokenString = token.getString().toUpperCase(Locale.ENGLISH);
             switch (token.getType()) {
                 case SYMBOL:
-                    index = formatSymbol(tokenString, bracketIndent, argList, index, prev);
+                    index = formatSymbol(tokenString, bracketIndent, argList, index, prev, parseStack);
                     break;
                 case KEYWORD:
-                    index = formatKeyword(argList, tokenString, index);
+                    index = formatKeyword(argList, tokenString, index, parseStack);
                     break;
                 case COMMENT:
                     index = formatComment(argList, index, token);
@@ -395,7 +436,7 @@ class IndentFormatter {
         return index;
     }
 
-    private int insertReturnAndIndent(final List<FormatterToken> argList, final int argIndex, final int argIndent) {
+    private int insertReturnAndIndent(final List<FormatterToken> argList, final int argIndex, final int currentIndent) {
         if (argIndex >= argList.size()) {
             return 0;
         }
@@ -413,8 +454,8 @@ class IndentFormatter {
                 // Do not add line separator before comment
                 s = "";
             }
-            for (int index = 0; index < argIndent; index++) {
-                s += formatterCfg.getIndentString();
+            for (int index = 0; index < currentIndent; index++) {
+                s += indentChar; //formatterCfg.getIndentString();
             }
 
             FormatterToken token = argList.get(argIndex);

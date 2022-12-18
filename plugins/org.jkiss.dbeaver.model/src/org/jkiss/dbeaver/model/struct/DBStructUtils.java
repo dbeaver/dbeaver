@@ -133,7 +133,7 @@ public final class DBStructUtils {
 
         // Good tables: generate full DDL
         for (T table : goodTableList) {
-            sql.append(getObjectNameComment(table, "definition"));
+            //sql.append(getObjectNameComment(table, "definition"));
             addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
         }
         {
@@ -153,34 +153,34 @@ public final class DBStructUtils {
 
             if (!CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true)) {
                 for (T table : goodCycleTableList) {
-                    sql.append(getObjectNameComment(table, "definition"));
+                    //sql.append(getObjectNameComment(table, "definition"));
                     addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
                 }
             } else {
                 Map<String, Object> optionsNoFK = new HashMap<>(options);
                 optionsNoFK.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
                 for (T table : goodCycleTableList) {
-                    sql.append(getObjectNameComment(table, "definition"));
+                    //sql.append(getObjectNameComment(table, "definition"));
                     addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsNoFK, addComments));
                 }
                 Map<String, Object> optionsOnlyFK = new HashMap<>(options);
                 optionsOnlyFK.put(DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS, true);
                 for (T table : goodCycleTableList) {
-                    sql.append(getObjectNameComment(table, "foreign keys"));
+                    //sql.append(getObjectNameComment(table, "foreign keys"));
                     addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsOnlyFK, addComments));
                 }
             }
 
             // the rest - tables which can't split their DDL
             for (T table : cycleTableList) {
-                sql.append(getObjectNameComment(table, "definition"));
+                //sql.append(getObjectNameComment(table, "definition"));
                 addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
             }
         }
         // Views: generate them after all tables.
         // TODO: find view dependencies and generate them in right order
         for (T table : viewList) {
-            sql.append(getObjectNameComment(table, "source"));
+            //sql.append(getObjectNameComment(table, "source"));
             addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
         }
         monitor.done();

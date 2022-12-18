@@ -93,6 +93,9 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         this.hasSubClasses = JDBCUtils.safeGetBoolean(dbResult, "relhassubclass");
 
         this.partitionKey = getDataSource().isServerVersionAtLeast(10, 0) ? JDBCUtils.safeGetString(dbResult, "partition_key")  : null;
+        if (this.partitionKey != null) {
+            this.partitionKey = this.partitionKey.replace("LIST (", "list (").replace("RANGE (", "range (");
+        }
         this.hasPartitions = this.partitionKey != null;
         this.hasRowLevelSecurity = getDataSource().getServerType().supportsRowLevelSecurity()
             && JDBCUtils.safeGetBoolean(dbResult, "relrowsecurity");
@@ -388,7 +391,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         if (partitionRange == null && getDataSource().getServerType().supportsInheritance()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table partition range")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                        "select pg_get_expr(c.relpartbound, c.oid, true) as partition_range from \"pg_catalog\".pg_class c where relname = ? and relnamespace = ?;")) { //$NON-NLS-1$
+                        "select pg_get_expr(c.relpartbound, c.oid, true) as partition_range from pg_catalog.pg_class c where relname = ? and relnamespace = ?;")) { //$NON-NLS-1$
                     dbStat.setString(1, getName());
                     dbStat.setLong(2, getSchema().oid);
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -412,7 +415,7 @@ public abstract class PostgreTable extends PostgreTableReal implements PostgreTa
         if (isPersisted() && subTables == null && hasSubClasses && getDataSource().getServerType().supportsInheritance()) {
             List<PostgreTableInheritance> tables = new ArrayList<>();
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
-                String sql = "SELECT i.*,c.relnamespace " +
+                String sql = "SELECT i.*, c.relnamespace " +
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
                     "WHERE i.inhparent=? AND c.oid=i.inhrelid";
 //                if (getDataSource().isServerVersionAtLeast(10, 0)) {

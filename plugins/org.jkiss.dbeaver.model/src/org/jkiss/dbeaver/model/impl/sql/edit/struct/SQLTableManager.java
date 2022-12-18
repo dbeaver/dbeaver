@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -26,8 +27,10 @@ import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager.ColumnModifier;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -49,7 +52,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     public static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
     public static final String BASE_VIEW_NAME = "NewView"; //$NON-NLS-1$
     public static final String BASE_MATERIALIZED_VIEW_NAME = "NewMView"; //$NON-NLS-1$
-
+    
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
         long options = FEATURE_EDITOR_ON_CREATE;
@@ -62,7 +65,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
     
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName, Map<String, Object> options) throws DBException {
-        return "CREATE " + getCreateTableType(table) + " " + tableName + " (" + GeneralUtils.getDefaultLineSeparator(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return "create " + getCreateTableType(table) + " " + tableName + " (" + GeneralUtils.getDefaultLineSeparator(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
     
     protected boolean hasAttrDeclarations(OBJECT_TYPE table) {
@@ -85,16 +88,57 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         StringBuilder createQuery = new StringBuilder(100);
         createQuery.append(beginCreateTableStatement(monitor, table, tableName, options));
         boolean hasNestedDeclarations = false;
+        boolean hasForeignKeys = false;
+        
         final Collection<NestedObjectCommand> orderedCommands = getNestedOrderedCommands(command);
+        int maxNameLength = 0;
+        int maxmodifierLength = 0;
+        
+        for (NestedObjectCommand nestedCommand : orderedCommands) {
+        	DBPObject column = nestedCommand.getObject();
+            if (column != null && column instanceof JDBCTableColumn) {
+        	    String columnName = ((JDBCTableColumn)column).getName();
+        	    if (columnName != null && columnName.length() > maxNameLength) {
+        	    	maxNameLength = columnName.length();
+        	    }
+            }
+        }
+        
+        if (maxNameLength > 0) {
+        	options.put("maxColumnNameLength", Integer.valueOf(maxNameLength));
+        	
+        	Map<String, Object> attrOptions = new HashMap(options);
+            attrOptions.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, false);
+            for (NestedObjectCommand nestedCommand : orderedCommands) {
+            	DBPObject column = nestedCommand.getObject();
+                if (column != null && column instanceof JDBCTableColumn) {            	
+                	String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, attrOptions);
+                	int attrLength = nestedDeclaration.length() - maxNameLength - 1;
+                	if (attrLength > 0 && maxmodifierLength < attrLength && attrLength + maxNameLength < 71) {
+                		maxmodifierLength = attrLength;
+                	}
+                }
+            }
+            if (maxmodifierLength > 0) {
+            	options.put("maxColumnModifierLength", Integer.valueOf(maxmodifierLength));
+            }
+        }
+        
         for (NestedObjectCommand nestedCommand : orderedCommands) {
             if (nestedCommand.getObject() == table) {
                 continue;
             }
+            if (nestedCommand.getObject() instanceof DBSTableForeignKey) {
+        	hasForeignKeys = true;
+        	continue;
+            }
             if (excludeFromDDL(nestedCommand, orderedCommands)) {
                 continue;
             }
-            final String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
+            String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
+        	nestedDeclaration = nestedDeclaration
+    			.replace("'::text", "'");
                 // Insert nested declaration
                 if (hasNestedDeclarations) {
                     // Check for embedded comment
@@ -113,9 +157,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                     createQuery.append(lineSeparator);
                 }
                 if (!hasNestedDeclarations && !hasAttrDeclarations(table)) {
-                    createQuery.append("(\n\t").append(nestedDeclaration); //$NON-NLS-1$  
+                    createQuery.append("(\n  ").append(nestedDeclaration); //$NON-NLS-1$  
                 } else {
-                 createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
+                 createQuery.append("  ").append(nestedDeclaration); //$NON-NLS-1$
                 }
                 hasNestedDeclarations = true;
             } else {
@@ -127,12 +171,44 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             }
         }
         if (hasAttrDeclarations(table) || hasNestedDeclarations) {
-            createQuery.append(lineSeparator);
-            createQuery.append(")"); //$NON-NLS-1$
+            createQuery
+            	.append(lineSeparator)
+            	.append(")"); //$NON-NLS-1$
         }
-
+        
         appendTableModifiers(monitor, table, tableProps, createQuery, false);
-        actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
+        
+        int delta = actions.size();
+        if (actions.size() > 0) {
+            actions.add(new SQLDatabasePersistAction("Empty line", ""));
+            delta++;
+        }
+        
+        actions.add(actions.size() - delta, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
+        actions.add(actions.size() - delta, new SQLDatabasePersistAction("Empty line", ""));
+        
+        if (hasNestedDeclarations && hasForeignKeys) {
+            for (NestedObjectCommand nestedCommand : orderedCommands) {
+        	StringBuilder createFK = new StringBuilder(100);
+                if (nestedCommand.getObject() instanceof DBSTableForeignKey) {
+                    String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
+                    if (!CommonUtils.isEmpty(nestedDeclaration)) {
+                        // Insert nested declaration
+                	createFK
+                		.append("alter table ")
+                		.append(tableName)
+                		.append(" add ")
+                		.append(nestedDeclaration)
+                		.append(";");
+                	actions.add(
+                		actions.size() - delta,
+                		new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_foreign_key, createFK.toString())
+                	);
+                    }
+                }
+            }
+            actions.add(actions.size() - delta, new SQLDatabasePersistAction("Empty line", ""));
+        }
     }
 
     @Override

@@ -256,7 +256,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                 try {
                     final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);
                     if (!CommonUtils.isEmpty(superTables) && ! tableBase.isPartition()) {
-                        ddl.append("\nINHERITS (");
+                        ddl.append("\ninherits (");
                         for (int i = 0; i < superTables.size(); i++) {
                             if (i > 0) ddl.append(",");
                             ddl.append(superTables.get(i).getAssociatedEntity().getFullyQualifiedName(DBPEvaluationContext.DDL));
@@ -267,7 +267,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                     log.error(e);
                 }
                 if (!CommonUtils.isEmpty(table.getPartitionKey())) {
-                    ddl.append("\nPARTITION BY ").append(table.getPartitionKey());
+                    ddl.append("\npartition by ").append(table.getPartitionKey());
                 }
             }
             if (tableBase instanceof PostgreTablePartition && !alter) {
@@ -286,7 +286,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                     PostgreTablespace tablespace = table.getTablespace(monitor);
                     if (tablespace != null) {
                         if (!alter) {
-                            ddl.append("\nTABLESPACE ").append(tablespace.getName());
+                            ddl.append("\ntablespace ").append(tablespace.getName());
                         }
                         hasOtherSpecs = true;
                     }
@@ -308,11 +308,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                     }
                 }
                 if (foreignServerName != null ) {
-                    ddl.append("\nSERVER ").append(foreignServerName);
+                    ddl.append("\nserver ").append(foreignServerName);
                 }
                 String[] foreignOptions = table.getForeignOptions(monitor);
                 if (!ArrayUtils.isEmpty(foreignOptions)) {
-                    ddl.append("\nOPTIONS ").append(PostgreUtils.getOptionsString(foreignOptions));
+                    ddl.append("\noptions ").append(PostgreUtils.getOptionsString(foreignOptions));
                 }
             } catch (DBException e) {
                 log.error(e);

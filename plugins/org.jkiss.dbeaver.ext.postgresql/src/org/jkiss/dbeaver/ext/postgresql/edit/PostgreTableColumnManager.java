@@ -57,7 +57,15 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
         final PostgreDataType dataType = column.getDataType();
         if (dataType != null) {
-            sql.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
+            final PostgreSchema typeContainer = dataType.getParentObject();
+            if (typeContainer == null ||
+                typeContainer.isPublicSchema() ||
+                typeContainer.isCatalogSchema())
+            {
+                sql.append(dataType.getFullTypeName());
+            } else {
+        	    sql.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
+            }
 
             final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
             if (handler != null) {
@@ -70,13 +78,21 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (column.getTable() instanceof PostgreTableForeign) {
             String[] foreignTableColumnOptions = column.getForeignTableColumnOptions();
             if (foreignTableColumnOptions != null && foreignTableColumnOptions.length != 0) {
-                sql.append(" OPTIONS").append(PostgreUtils.getOptionsString(foreignTableColumnOptions));
+        	sql.append(" options").append(PostgreUtils.getOptionsString(foreignTableColumnOptions));
             }
         }
     };
 
     protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = (monitor, column, sql, command) -> {
         String defaultValue = column.getDefaultValue();
+        if (defaultValue != null) {
+            defaultValue = defaultValue
+    		.replace("'::text", "'")
+    		.replace("CURRENT_TIMESTAMP", "current_timestamp")
+    		.replace("CURRENT_DATE", "current_date")
+    		.replace("CLOCK_TIMESTAMP", "clock_timestamp")
+    		.replace("TRANSACTION_TIMESTAMP", "transaction_timestamp");
+        }
         if (!CommonUtils.isEmpty(defaultValue) && defaultValue.startsWith("nextval")) {
             // Remove serial type default value from DDL
             if (PostgreConstants.SERIAL_TYPES.containsKey(column.getDataType().getName())) {
@@ -97,7 +113,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         try {
             PostgreCollation collation = column.getCollation(monitor);
             if (collation != null && !PostgreConstants.COLLATION_DEFAULT.equals(collation.getName())) {
-                sql.append(" COLLATE \"").append(collation.getName()).append("\"");
+                sql.append(" collate \"").append(collation.getName()).append("\"");
             }
         } catch (DBException e) {
             log.debug(e);
@@ -115,7 +131,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     protected final ColumnModifier<PostgreTableColumn> PostgreGeneratedModifier = (monitor, column, sql, command) -> {
         String generatedValue = column.getGeneratedValue();
         if (!CommonUtils.isEmpty(generatedValue)) {
-            sql.append(" GENERATED ALWAYS AS (").append(generatedValue).append(") STORED");
+            sql.append(" generated always as (").append(generatedValue).append(") stored");
         }
     };
 
@@ -170,7 +186,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         options.put(OPTION_NON_STRUCT_CREATE_ACTION, true);
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         if (!CommonUtils.isEmpty(command.getObject().getDescription())) {
-            addColumnCommentAction(actions, command.getObject());
+            addColumnCommentAction(actions, command.getObject(), 0);
         }
     }
 
@@ -208,14 +224,18 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             }
         }
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
-            addColumnCommentAction(actionList, column);
+            addColumnCommentAction(actionList, column, 0);
         }
     }
 
-    public static void addColumnCommentAction(List<DBEPersistAction> actionList, PostgreAttribute column) {
-        actionList.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
-            DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-            " IS " + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()))));
+    public static void addColumnCommentAction(List<DBEPersistAction> actionList, PostgreAttribute column, Integer maxColumnNameLength) {
+	StringBuilder columnName = new StringBuilder(DBUtils.getQuotedIdentifier(column));
+	while (columnName.length() < maxColumnNameLength) {
+	    columnName.append(" ");
+	}
+        actionList.add(new SQLDatabasePersistAction("Set column comment", "comment on column " +
+            DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + "." + columnName.toString() +
+            " is " + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()))));
     }
 
     @Override

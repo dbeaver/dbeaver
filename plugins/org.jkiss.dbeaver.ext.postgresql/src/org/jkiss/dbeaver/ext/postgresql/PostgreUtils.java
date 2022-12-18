@@ -588,7 +588,7 @@ public class PostgreUtils {
         if (definition.toLowerCase(Locale.ENGLISH).startsWith("create ")) {
             return definition;
         }
-        StringBuilder sql = new StringBuilder(view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
+        StringBuilder sql = new StringBuilder(view instanceof PostgreView ? "create or replace " : "create ");
         sql.append(view.getTableTypeName()).append(" ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL));
 
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
@@ -600,7 +600,7 @@ public class PostgreUtils {
         while (definition.endsWith(";")) {
             definition = definition.substring(0, definition.length() - 1);
         }
-        sql.append("\nAS ").append(definition);
+        sql.append("\nas\n").append(definition);
         if (entityEditor != null) {
             entityEditor.appendViewDeclarationPostfix(monitor, sql, view);
         }
@@ -774,7 +774,6 @@ public class PostgreUtils {
     public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePrivilegeOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
         if (object.isPersisted() && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
             DBCExecutionContext executionContext = DBUtils.getDefaultContext(object, true);
-            actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
 
             // Owner
             PostgreRole owner = object.getOwner(monitor);
@@ -782,23 +781,26 @@ public class PostgreUtils {
                 String alterScript = object.generateChangeOwnerQuery(DBUtils.getQuotedIdentifier(owner));
                 if (!CommonUtils.isEmpty(alterScript)) {
                     actions.add(new SQLDatabasePersistAction("Owner change", alterScript));
+                    actions.add(new SQLDatabasePersistAction("Empty", ""));
                 }
             }
 
             // Permissions
             Collection<PostgrePrivilege> permissions = object.getPrivileges(monitor, true);
             if (!CommonUtils.isEmpty(permissions)) {
-
                 for (PostgrePrivilege permission : permissions) {
-                    if (permission.hasAllPrivileges(object)) {
-                        Collections.addAll(actions,
-                                new PostgreCommandGrantPrivilege(permission.getOwner(), true, object, permission, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
-                                        .getPersistActions(monitor, executionContext, options));
-                    } else {
-                        PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, object, permission, permission.getPrivileges());
-                        Collections.addAll(actions, grant.getPersistActions(monitor, executionContext, options));
+                    if (!permission.getName().equals(owner.getName())) {
+                        if (permission.hasAllPrivileges(object)) {
+                            Collections.addAll(actions,
+                                    new PostgreCommandGrantPrivilege(permission.getOwner(), true, object, permission, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
+                                            .getPersistActions(monitor, executionContext, options));
+                        } else {
+                            PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, object, permission, permission.getPrivileges());
+                            Collections.addAll(actions, grant.getPersistActions(monitor, executionContext, options));
+                        }
                     }
                 }
+                actions.add(new SQLDatabasePersistAction("Empty", ""));
             }
         }
     }

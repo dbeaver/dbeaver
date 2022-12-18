@@ -58,27 +58,41 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
         boolean showComments =
             CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS) ||
             CommonUtils.getOption(options, DBPScriptObject.OPTION_OBJECT_SAVE);
+        Integer maxColumnNameLength = 0;
+        if (showComments && options.containsKey("maxColumnNameLength") && ((Integer)options.get("maxColumnNameLength")) > 0) {
+            maxColumnNameLength = (Integer) options.get("maxColumnNameLength");
+        }
         if ((showComments && !CommonUtils.isEmpty(comment)) || command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+        	//actions.add(new SQLDatabasePersistAction("Empty line", ""));
+        	StringBuilder tableName = new StringBuilder(table.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        	Integer tablenameLength = tableName.length();
+        	while (tableName.length() <= maxColumnNameLength + tablenameLength) {
+        		tableName.append(" ");
+        	}
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
-                "COMMENT ON " + table.getTableTypeName() + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(table, CommonUtils.notEmpty(comment))));
+                "comment on " + table.getTableTypeName() + "  " + tableName.toString() +
+                    " is " + SQLUtils.quoteString(table, CommonUtils.notEmpty(comment))));            
         }
         if (isDDL || !table.isPersisted()) {
             // show comment commands for DDL and new objects
             PostgreDataSource dataSource = table.getDataSource();
             try {
                 if (showComments) {
+                	int actionCount = actions.size() - 1;
                     // Column comments
                     boolean hasComments = false;
                     for (PostgreTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
                         if (!CommonUtils.isEmpty(column.getDescription())) {
-                            if (!hasComments) {
+                            /*if (!hasComments) {
                                 actions.add(new SQLDatabasePersistActionComment(dataSource, "Column comments"));
-                            }
-                            PostgreTableColumnManager.addColumnCommentAction(actions, column);
+                            }*/
+                            PostgreTableColumnManager.addColumnCommentAction(actions, column, maxColumnNameLength);
                             hasComments = true;
                         }
+                    }
+                    if (hasComments) {
+                    	actions.add(actionCount, new SQLDatabasePersistAction("Empty line", ""));
                     }
                 }
 
@@ -143,7 +157,11 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 }
 
                 if (isDDL && !table.isPartition()) {
+                    int actionsCount = actions.size();
                     PostgreUtils.getObjectGrantPermissionActions(monitor, table, actions, options);
+                    if (actions.size() > actionsCount) {
+                		actions.add(actionsCount, new SQLDatabasePersistAction("Empty line", ""));
+                    }
                 }
             } catch (DBException e) {
                 log.error(e);

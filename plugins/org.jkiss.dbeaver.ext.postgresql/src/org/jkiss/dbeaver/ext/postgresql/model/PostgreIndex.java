@@ -279,6 +279,12 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
                 throw new DBException(e, getDataSource());
             }
         }
+        indexDDL = indexDDL
+        		     .replace("CREATE ", "create ")
+        		     .replace(" UNIQUE ", " unique ")
+        		     .replace(" INDEX ", " index ")
+        		     .replace(" ON ", " on ")
+        		     .replace(" USING ", " using ");
         return indexDDL;
     }
 

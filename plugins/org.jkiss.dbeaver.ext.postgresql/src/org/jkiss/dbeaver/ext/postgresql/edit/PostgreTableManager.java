@@ -82,7 +82,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
 
     @Override
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName, Map<String, Object> options) throws DBException{
-        String statement = "CREATE " + getCreateTableType(table) + " "; //$NON-NLS-1$ //$NON-NLS-2$
+        String statement = "create " + getCreateTableType(table) + " "; //$NON-NLS-1$ //$NON-NLS-2$
         if (table.isPartition() && table instanceof PostgreTable) {
             PostgreTable postgreTable = (PostgreTable) table;
             List<PostgreTableBase> superTables = postgreTable.getSuperTables(monitor);
@@ -91,7 +91,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
             } else {
                 String parent = superTables.get(0).getFullyQualifiedName(DBPEvaluationContext.DDL);
                 String range = postgreTable.getPartitionRange(monitor);
-                return statement + tableName + " PARTITION OF " + parent + " " + range;//$NON-NLS-1$ //$NON-NLS-2$
+                return statement + tableName + " partition of " + parent + " " + range;//$NON-NLS-1$ //$NON-NLS-2$
             }
         }
         return statement + tableName + " (" + GeneralUtils.getDefaultLineSeparator();//$NON-NLS-1$
@@ -105,9 +105,9 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     @Override
     protected String getCreateTableType(PostgreTableBase table) {
         if (table instanceof PostgreTableForeign) {
-            return "FOREIGN TABLE";//$NON-NLS-1$
+            return "foreign table";//$NON-NLS-1$
         } else {
-            return table.getPersistence().getTableTypeClause();
+            return table.getPersistence().getTableTypeClause().toLowerCase();
         }
     }
 
@@ -154,13 +154,13 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
 
     private void generateAlterActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
         final PostgreTable table = (PostgreTable) command.getObject();
-        final String alterPrefix = "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";//$NON-NLS-1$ //$NON-NLS-2$
+        final String alterPrefix = "alter table " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";//$NON-NLS-1$ //$NON-NLS-2$
 
         if (command.hasProperty("partitionKey")) {//$NON-NLS-1$
-            actionList.add(new SQLDatabasePersistAction(alterPrefix + "PARTITION BY " + table.getPartitionKey()));//$NON-NLS-1$
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + "partition by " + table.getPartitionKey()));//$NON-NLS-1$
         }
         if (command.hasProperty("hasOids") && table.getDataSource().getServerType().supportsHasOidsColumn()) {//$NON-NLS-1$
-            actionList.add(new SQLDatabasePersistAction(alterPrefix + (table.isHasOids() ? "SET WITH OIDS" : "SET WITHOUT OIDS")));//$NON-NLS-1$ //$NON-NLS-2$
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + (table.isHasOids() ? "set with oids" : "set without oids")));//$NON-NLS-1$ //$NON-NLS-2$
         }
         if (command.hasProperty("hasRowLevelSecurity") && table.getDataSource().getServerType().supportsRowLevelSecurity()) {
             actionList.add(new SQLDatabasePersistAction(
@@ -168,13 +168,17 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
             ));
         }
         if (command.hasProperty("tablespace")) {//$NON-NLS-1$
-            actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET TABLESPACE " + table.getTablespace(monitor).getName()));//$NON-NLS-1$
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + "set tablespace " + table.getTablespace(monitor).getName()));//$NON-NLS-1$
         }
     }
 
     @Override
     protected void appendTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
         ddl.append(tableBase.getDataSource().getServerType().getTableModifiers(monitor, tableBase, alter));
+    }
+    
+    protected boolean isIncludeDropInDDL() {
+        return false;
     }
 
     @Override
@@ -183,8 +187,8 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
-                "ALTER TABLE " + DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) + //$NON-NLS-1$
-                    " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
+                "alter table " + DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) + //$NON-NLS-1$
+                    " rename to " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
         );
     }
 

@@ -110,7 +110,7 @@ public final class DBUtils {
             return getQuotedIdentifier(object.getDataSource(), object.getName());
         }
     }
-
+    
     public static boolean isQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str) {
         return dataSource.getSQLDialect().isQuotedIdentifier(str);
     }

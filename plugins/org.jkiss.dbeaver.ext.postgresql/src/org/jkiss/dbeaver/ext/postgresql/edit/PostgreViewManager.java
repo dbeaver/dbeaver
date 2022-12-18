@@ -132,7 +132,7 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     public void appendViewDeclarationPrefix(DBRProgressMonitor monitor, StringBuilder sqlBuf, PostgreViewBase view) throws DBException {
         String[] relOptions = view.getRelOptions();
         if (!ArrayUtils.isEmpty(relOptions)) {
-            sqlBuf.append("\nWITH(").append(String.join(",", relOptions)).append(")");
+            sqlBuf.append("\nwith(").append(String.join("," , relOptions)).append(")");
         }
     }
 

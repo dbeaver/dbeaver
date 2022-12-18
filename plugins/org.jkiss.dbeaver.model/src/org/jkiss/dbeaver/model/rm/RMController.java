@@ -87,7 +87,7 @@ public interface RMController extends DBPObjectController {
      *
      * @param configuration configuration in modern format.
      */
-    void updateProjectDataSources(
+    boolean updateProjectDataSources(
         @NotNull String projectId,
         @NotNull String configuration,
         @Nullable List<String> dataSourceIds) throws DBException;

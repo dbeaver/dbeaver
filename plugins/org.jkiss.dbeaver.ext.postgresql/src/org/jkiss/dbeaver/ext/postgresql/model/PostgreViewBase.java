@@ -116,12 +116,12 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
             if (getDescription() != null) {
                 actions.add(
                     new SQLDatabasePersistAction("Comment",
-                        "COMMENT ON " + getTableTypeName() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(this, getDescription())));
+                        "comment on " + getTableTypeName() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " is " + SQLUtils.quoteString(this, getDescription())));
             }
 
             for (PostgreTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
                 if (!CommonUtils.isEmpty(column.getDescription())) {
-                    PostgreTableColumnManager.addColumnCommentAction(actions, column);
+                    PostgreTableColumnManager.addColumnCommentAction(actions, column, 0);
                 }
             }
 

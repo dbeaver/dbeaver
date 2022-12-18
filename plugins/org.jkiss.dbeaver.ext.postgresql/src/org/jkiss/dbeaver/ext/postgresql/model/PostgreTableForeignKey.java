@@ -45,10 +45,10 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     private static final Log log = Log.getLog(PostgreTableForeignKey.class);
 
     public enum MatchType implements DBPNamedObject {
-        f("FULL"),
-        p("PARTIAL"),
-        s("SIMPLE"),
-        u("UNKNOWN");
+        f("full"),
+        p("partial"),
+        s("simple"),
+        u("unknown");
 
         private final String title;
 

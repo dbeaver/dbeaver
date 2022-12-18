@@ -93,14 +93,14 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
 
         if (fk.getMatchType().equals(PostgreTableForeignKey.MatchType.f)) {
             //Foreign key match types: f = full, p = partial (not implemented yet), s = simple (u == s in old PG versions - default value)
-            sql.append(" MATCH FULL");
+            sql.append(" match full");
         }
 
         if (fk.isDeferrable()) {
-            sql.append(" DEFERRABLE");
+            sql.append(" deferrable");
         }
         if (fk.isDeferred()) {
-            sql.append(" INITIALLY DEFERRED");
+            sql.append(" initially deferred");
         }
 
         return sql;
