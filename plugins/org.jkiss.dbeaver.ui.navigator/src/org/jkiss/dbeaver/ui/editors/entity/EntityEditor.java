@@ -86,7 +86,7 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IRevertableEditor, ITabbedFolderContainer, IDataSourceContainerProvider, IEntityEditorContext
+    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IRevertableEditor, ITabbedFolderContainer, DBPDataSourceContainerProvider, IEntityEditorContext
 {
     public static final String ID = "org.jkiss.dbeaver.ui.editors.entity.EntityEditor"; //$NON-NLS-1$
 
