@@ -55,7 +55,7 @@ public class GroupingDataContainer implements DBSDataContainer {
         if (ArrayUtils.isEmpty(attributes)) {
             return "Grouping";
         } else {
-            return "Grouping[" + String.join(",", attributes) + "]";
+            return "GROUP BY " + String.join(",", attributes);
         }
     }
 
