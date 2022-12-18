@@ -71,7 +71,7 @@ public class GroupingDataContainer implements DBSDataContainer {
 
     @Override
     public String[] getSupportedFeatures() {
-        return new String[] {FEATURE_DATA_SELECT};
+        return new String[] {FEATURE_DATA_SELECT, FEATURE_DATA_FILTER};
     }
 
     @NotNull
