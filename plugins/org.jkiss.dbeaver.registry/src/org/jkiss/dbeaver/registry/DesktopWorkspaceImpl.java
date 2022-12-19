@@ -84,20 +84,10 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         this.handlerDescriptors.clear();
     }
 
-    private ResourceHandlerDescriptor getHandlerDescriptor(String id) {
+    private DBPResourceHandler getResourceHandler(DBPResourceTypeDescriptor resourceType) {
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
-            if (rhd.getId().equals(id)) {
-                return rhd;
-            }
-        }
-        return null;
-    }
-
-    private ResourceHandlerDescriptor getHandlerDescriptorByRootPath(DBPProject project, String path) {
-        for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
-            String defaultRoot = rhd.getDefaultRoot(project);
-            if (defaultRoot != null && defaultRoot.equals(path)) {
-                return rhd;
+            if (rhd.getTypeId().equals(resourceType.getId())) {
+                return rhd.getHandler();
             }
         }
         return null;
@@ -137,9 +127,9 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             IPath relativePath = resource.getFullPath().makeRelativeTo(project.getRootResource().getFullPath());
             while (relativePath.segmentCount() > 0) {
                 String folderPath = relativePath.toString();
-                ResourceHandlerDescriptor handlerDescriptor = getHandlerDescriptorByRootPath(project, folderPath);
-                if (handlerDescriptor != null) {
-                    handler = handlerDescriptor.getHandler();
+                ResourceTypeDescriptor resType = ResourceTypeRegistry.getInstance().getResourceTypeByRootPath(project, folderPath);
+                if (resType != null) {
+                    handler = getResourceHandler(resType);
                 }
                 relativePath = relativePath.removeLastSegments(1);
             }
@@ -169,7 +159,11 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
             DBPResourceHandler handler = rhd.getHandler();
             if (handler != null && handler.getClass() == handlerType) {
-                String defaultRoot = rhd.getDefaultRoot(project);
+                DBPResourceTypeDescriptor resourceType = rhd.getResourceType();
+                if (resourceType == null) {
+                    return null;
+                }
+                String defaultRoot = resourceType.getDefaultRoot(project);
                 if (defaultRoot == null) {
                     // No root
                     return null;
@@ -188,7 +182,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
                     try {
                         realFolder.create(true, true, new NullProgressMonitor());
                     } catch (CoreException e) {
-                        log.error("Can not create '" + rhd.getName() + "' root folder '" + realFolder.getName() + "'", e);
+                        log.error("Can not create '" + resourceType.getName() + "' root folder '" + realFolder.getName() + "'", e);
                         return realFolder;
                     }
                 }
@@ -199,20 +193,15 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     }
 
     @Override
-    public DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors() {
-        DBPResourceHandlerDescriptor[] result = new DBPResourceHandlerDescriptor[handlerDescriptors.size()];
-        for (int i = 0; i < handlerDescriptors.size(); i++) {
-            result[i] = handlerDescriptors.get(i);
-        }
-        return result;
-    }
-
-    @Override
     public IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor rhd, boolean forceCreate) {
         if (project == null || project.getRootResource() == null) {
             return null;
         }
-        String defaultRoot = rhd.getDefaultRoot(project);
+        DBPResourceTypeDescriptor resourceType = rhd.getResourceType();
+        if (resourceType == null) {
+            return null;
+        }
+        String defaultRoot = resourceType.getDefaultRoot(project);
         if (defaultRoot == null) {
             // No root
             return null;
@@ -223,7 +212,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             try {
                 realFolder.create(true, true, new NullProgressMonitor());
             } catch (CoreException e) {
-                log.error("Can't create '" + rhd.getName() + "' root folder '" + realFolder.getName() + "'", e);
+                log.error("Can't create '" + resourceType.getName() + "' root folder '" + realFolder.getName() + "'", e);
                 return realFolder;
             }
         }

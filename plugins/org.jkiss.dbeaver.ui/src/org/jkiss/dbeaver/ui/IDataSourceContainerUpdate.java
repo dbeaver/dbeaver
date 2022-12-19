@@ -14,13 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.core.internal.content.TextContentDescriber;
+package org.jkiss.dbeaver.ui;
+
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 
 /**
- * SQL content type describer
+ * DataSource provider editor.
+ * May be editor, view or selection element
  */
-public class SQLContentTypeDescriber extends TextContentDescriber {
+public interface IDataSourceContainerUpdate extends DBPDataSourceContainerProvider {
+
+    /**
+     * Change underlying datasource container
+     * @return data source object.
+     */
+    boolean setDataSourceContainer(@Nullable DBPDataSourceContainer dataSourceContainer);
 
 }

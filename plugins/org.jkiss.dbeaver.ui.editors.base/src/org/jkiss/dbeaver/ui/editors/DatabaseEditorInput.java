@@ -25,8 +25,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -45,7 +45,7 @@ import java.util.Map;
 /**
  * DatabaseEditorInput
  */
-public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IPersistableElement, IDatabaseEditorInput, IDataSourceContainerProvider, DBPContextProvider
+public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IPersistableElement, IDatabaseEditorInput, DBPDataSourceContainerProvider, DBPContextProvider
 {
     private static final Log log = Log.getLog(DatabaseEditorInput.class);
 

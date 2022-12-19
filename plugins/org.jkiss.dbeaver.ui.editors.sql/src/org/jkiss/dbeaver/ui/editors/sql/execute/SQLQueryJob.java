@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;

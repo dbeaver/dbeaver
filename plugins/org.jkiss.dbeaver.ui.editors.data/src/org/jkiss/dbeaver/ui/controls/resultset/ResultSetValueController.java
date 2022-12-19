@@ -185,8 +185,8 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     private DBPDataSourceContainer getDataSourceContainer() {
         final IResultSetContainer rsContainer = controller.getContainer();
-        if (rsContainer instanceof IDataSourceContainerProvider) {
-            return ((IDataSourceContainerProvider) rsContainer).getDataSourceContainer();
+        if (rsContainer instanceof DBPDataSourceContainerProvider) {
+            return ((DBPDataSourceContainerProvider) rsContainer).getDataSourceContainer();
         } else {
             final DBCExecutionContext executionContext = getExecutionContext();
             return executionContext == null ? null : executionContext.getDataSource().getContainer();

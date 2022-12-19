@@ -77,8 +77,8 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
             IEditorInput editorInput = ((IEditorPart) activePart).getEditorInput();
             if (editorInput instanceof IDatabaseEditorInput) {
                 selectedObject = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
-            } else if (activePart instanceof IDataSourceContainerProvider) {
-                selectedObject = ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+            } else if (activePart instanceof DBPDataSourceContainerProvider) {
+                selectedObject = ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
             }
         }
 
@@ -231,7 +231,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
         }
     }
 
-    public static class DataSourceEditorInput implements IEditorInput, IDataSourceContainerProvider, DBPContextProvider {
+    public static class DataSourceEditorInput implements IEditorInput, DBPDataSourceContainerProvider, DBPContextProvider {
 
         private final DBPDataSource dataSource;
         private final DBPEditorContribution editor;

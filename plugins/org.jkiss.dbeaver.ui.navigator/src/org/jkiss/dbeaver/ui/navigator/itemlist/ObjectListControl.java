@@ -421,8 +421,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
 
                 IPropertyFilter propertyFilter = new DataSourcePropertyFilter(
-                    ObjectListControl.this instanceof IDataSourceContainerProvider ?
-                        ((IDataSourceContainerProvider) ObjectListControl.this).getDataSourceContainer() :
+                    ObjectListControl.this instanceof DBPDataSourceContainerProvider ?
+                        ((DBPDataSourceContainerProvider) ObjectListControl.this).getDataSourceContainer() :
                         null);
 
                 // Collect all properties

@@ -195,20 +195,6 @@ public class UINavigatorMessages extends NLS {
     public static String confirm_local_folder_delete_title;
     public static String confirm_local_folder_delete_message;
 
-    public static String confirm_entity_reject_title;
-    public static String confirm_entity_reject_message;
-    public static String confirm_entity_reject_toggleMessage;
-
-    public static String confirm_entity_revert_title;
-    public static String confirm_entity_revert_message;
-    public static String confirm_entity_revert_toggleMessage;
-
-    public static String confirm_close_editor_edit_title;
-    public static String confirm_close_editor_edit_message;
-
-    public static String confirm_close_entity_edit_title;
-    public static String confirm_close_entity_edit_message;
-
     public static String label_configure_columns;
 
     public static String label_description;
