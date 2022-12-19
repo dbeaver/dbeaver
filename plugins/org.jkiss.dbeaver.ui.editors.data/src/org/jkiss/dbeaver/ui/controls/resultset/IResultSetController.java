@@ -109,7 +109,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings);
     
-    void showDistinctFilter(DBDAttributeBinding curAttribute);
+    void showColumnMenu(DBDAttributeBinding curAttribute);
 
     void toggleSortOrder(@NotNull DBDAttributeBinding columnElement, @Nullable ColumnOrder forceOrder);
 
