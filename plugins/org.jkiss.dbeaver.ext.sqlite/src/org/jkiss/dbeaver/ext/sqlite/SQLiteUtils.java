@@ -20,8 +20,10 @@ package org.jkiss.dbeaver.ext.sqlite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteObjectType;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -96,14 +98,16 @@ public class SQLiteUtils {
             table.getDataSource(),
             reason
         ));
+        GenericSchema schema = table.getSchema();
+        String schemaPart = schema != null ? DBUtils.getQuotedIdentifier(schema) + "." : "";
         actions.add(new SQLDatabasePersistAction(
             "Create temporary table from original table",
-            "CREATE TEMPORARY TABLE temp AS\nSELECT"
+            "CREATE TEMPORARY TABLE "  + schemaPart + "temp AS\nSELECT"
                 + (attributes.isEmpty() ? " *" : "\n  " + columns) + "\nFROM " + DBUtils.getQuotedIdentifier(table)
         ));
         actions.add(new SQLDatabasePersistAction(
             "Drop original table",
-            "\nDROP TABLE " + DBUtils.getQuotedIdentifier(table) + ";\n"
+            "\nDROP TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DML) + ";\n"
         ));
         actions.add(new SQLDatabasePersistAction(
             "Create new table",
@@ -111,13 +115,13 @@ public class SQLiteUtils {
         ));
         actions.add(new SQLDatabasePersistAction(
             "Insert values from temporary table to new table",
-            "INSERT INTO " + DBUtils.getQuotedIdentifier(table)
+            "INSERT INTO " + schemaPart + DBUtils.getQuotedIdentifier(table)
                 + (attributes.isEmpty() ? "" : "\n (" + columns + ")") + "\nSELECT"
                 + (attributes.isEmpty() ? " *" : "\n  " + columns) + "\nFROM temp"
         ));
         actions.add(new SQLDatabasePersistAction(
             "Drop temporary table",
-            "\nDROP TABLE temp"
+            "\nDROP TABLE "  + schemaPart + "temp"
         ));
     }
 }
