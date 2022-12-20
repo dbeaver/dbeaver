@@ -40,11 +40,11 @@
             <url>${eclipse-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
-        <repository>
+<!--        <repository>
             <id>orbit-repo</id>
             <url>${orbit-repo.url}</url>
             <layout>p2</layout>
-        </repository>
+        </repository>-->
     </repositories>
 
     <build>
