@@ -10,3 +10,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.model
 Automatic-Module-Name: org.jkiss.dbeaver.ui.app.winstore
+

@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<?eclipse version="3.2"?>
-
-
-<!--
+/*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2022 DBeaver Corp and others
  *
@@ -17,16 +13,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-  -->
+ */
+package org.jkiss.dbeaver.runtime;
 
-<plugin>
+import org.jkiss.code.NotNull;
 
-    <extension point="org.jkiss.dbeaver.pluginService">
-        <service class="org.jkiss.dbeaver.winstore.WinStoreService"/>
-    </extension>
+/**
+ * Responsible for environment-specific path transformation during file browse discovery
+ * See NavigatorHandlerShowInExplorer 
+ */
+public interface IEnvironmentPathMapper {
     
-    <extension point="org.jkiss.dbeaver.service">
-        <service class="org.jkiss.dbeaver.winstore.WinStoreEnvPathMapper" name="org.jkiss.dbeaver.runtime.IEnvironmentPathMapper"/>
-    </extension>
-
-</plugin>
+    /**
+     * Checks if path transformation should be applied
+     */
+    boolean isApplicable(@NotNull String localEnvPath);
+   
+    /**
+     * Applies environment-specific path transformation
+     */
+    @NotNull
+    String map(@NotNull String localEnvPath);
+}
