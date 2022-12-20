@@ -184,6 +184,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.password();
     }
 
+    public boolean isNonSecuredProperty() {
+        return propInfo.nonSecuredProperty();
+    }
+
     public IPropertyValueTransformer getValueTransformer()
     {
         return valueTransformer;
@@ -245,6 +249,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (this.isHref()) features.add(DBConstants.PROP_FEATURE_HREF);
         if (this.isViewable()) features.add(DBConstants.PROP_FEATURE_VIEWABLE);
         if (this.isPassword()) features.add(DBConstants.PROP_FEATURE_PASSWORD);
+        if (this.isNonSecuredProperty()) features.add(DBConstants.PROP_FEATURE_NON_SECURED);
 
         return features.toArray(new String[0]);
     }
