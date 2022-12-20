@@ -18,7 +18,6 @@ package org.jkiss.dbeaver;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -65,7 +64,7 @@ public class LogOutputStream extends OutputStream {
             );
         }
 
-        final DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
+        final DBPPreferenceStore prefStore = ModelPreferences.getPreferences();
         this.currentLogFile = debugLogFile;
         this.logFileLocation = debugLogFile.getParentFile();
         this.maxLogSize = prefStore.getLong(LOGS_MAX_FILE_SIZE);
