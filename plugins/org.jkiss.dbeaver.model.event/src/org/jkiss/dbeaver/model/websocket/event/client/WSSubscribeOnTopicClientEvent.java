@@ -14,26 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket;
+package org.jkiss.dbeaver.model.websocket.event.client;
+
+import org.jkiss.dbeaver.model.websocket.WSConstants;
+import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
 
 /**
- * WebSocket event constants
+ * Subscribe on event topic
  */
-public interface WSConstants {
-    int NORMAL_STATUS = 1000;
-
-    String WS_AUTH_HEADER = "SM-Auth-Token";
-
-    //TODO remove this enum
-    @Deprecated
-    enum EventAction {
-        CREATE,
-        DELETE,
-        UPDATE
-    }
-
-    interface ClientEvents {
-        String TOPIC_SUBSCRIBE = "cb_client_topic_subscribe";
-        String TOPIC_UNSUBSCRIBE = "cb_client_topic_unsubscribe";
+public class WSSubscribeOnTopicClientEvent extends WSClientEvent {
+    public WSSubscribeOnTopicClientEvent(String topicId) {
+        super(WSConstants.ClientEvents.TOPIC_SUBSCRIBE, topicId);
     }
 }
