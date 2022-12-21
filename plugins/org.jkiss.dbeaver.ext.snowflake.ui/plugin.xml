@@ -24,7 +24,6 @@
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelSnowflake" uiClass="org.jkiss.dbeaver.ext.snowflake.ui.config.SnowflakeAuthSnowflakeConfigurator"/>
-        <propertyConfigurator class="org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelExternalBrowser" uiClass="org.jkiss.dbeaver.ext.snowflake.ui.config.SnowflakeAuthExternalBrowserConfigurator"/>
     </extension>
 
 </plugin>
