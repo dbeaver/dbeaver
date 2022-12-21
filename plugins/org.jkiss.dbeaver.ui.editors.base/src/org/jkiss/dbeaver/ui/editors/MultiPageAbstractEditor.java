@@ -31,13 +31,18 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * MultiPageAbstractEditor
  */
 public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
 {
-    private Image editorImage;
+    private ImageDescriptor curTitleImage;
+    private final List<Image> oldImages = new ArrayList<>();
     private int activePageIndex = -1;
 
     @Override
@@ -55,22 +60,25 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
         setTitleImage(input.getImageDescriptor());
     }
 
-    protected void setTitleImage(ImageDescriptor titleImage)
-    {
+    protected void setTitleImage(ImageDescriptor titleImage) {
     	if (getContainer() != null && getContainer().isDisposed()) {
     		return;
     	}
-        Image oldImage = editorImage;
-        editorImage = titleImage.createImage();
+        if (CommonUtils.equalObjects(curTitleImage, titleImage)) {
+            return;
+        }
+        curTitleImage = titleImage;
+        Image editorImage = titleImage.createImage();
+        oldImages.add(editorImage);
         super.setTitleImage(editorImage);
-
-        UIUtils.dispose(oldImage);
     }
 
     @Override
-    public void dispose()
-    {
-        UIUtils.dispose(editorImage);
+    public void dispose() {
+        for (Image img : oldImages) {
+            UIUtils.dispose(img);
+        }
+        oldImages.clear();
         super.dispose();
     }
 

@@ -658,8 +658,15 @@ public class NavigatorUtils {
         if (event.item instanceof Item) {
             return event.item.getData();
         } else {
-            return ((DatabaseNavigatorContent) viewer.getInput()).getRootNode();
+            Object input = viewer.getInput();
+            if (input instanceof DatabaseNavigatorContent) {
+                return ((DatabaseNavigatorContent) input).getRootNode();
+            } else if (input instanceof List) {
+                if (!((List<?>) input).isEmpty())
+                    return ((List<?>) input).get(0);
+            }
         }
+        return null;
     }
 
     private static void dropFilesIntoFolder(DBRProgressMonitor monitor, IFolder toFolder, String[] data) throws Exception {
