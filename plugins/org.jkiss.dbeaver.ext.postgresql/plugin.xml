@@ -31,6 +31,7 @@
         <serverType id="yugabytedb" name="YugabyteDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerYugabyteDB" logo="icons/yugabyte_logo.png" customURL="true"/>
         <serverType id="cockroach" name="CockroachDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach.PostgreServerCockroachDB" logo="icons/cockroach_logo.png" customURL="true"/>
         <serverType id="gcloudpg" name="Google Cloud SQL - PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerGCloud" logo="icons/google_cloud_sql_logo.png" customURL="true" cloudServer="true" needsPort="false"/>
+        <serverType id="risingwave" name="RisingWave" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerRisingWave" logo="icons/risingwave_logo.png" customURL="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.postgresql.fdw.config">
@@ -547,6 +548,32 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                     <property name="socketFactory" value="com.google.cloud.sql.postgres.SocketFactory"/>
+                </driver>
+
+                <driver
+                        id="postgres-risingwave-jdbc"
+                        label="RisingWave"
+                        icon="icons/risingwave_icon.png"
+                        iconBig="icons/risingwave_icon_big.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        useURL="true"
+                        defaultPort="4566"
+                        defaultDatabase="dev"
+                        defaultUser="root"
+                        webURL="https://www.risingwave.com/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        description="%driver.risingwave.description"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql">
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
+                    <file type="license" path="https://raw.githubusercontent.com/pgjdbc/pgjdbc/master/LICENSE" bundle="!drivers.postgresql"/>
+
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="risingwave"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
                 </driver>
 
                 <provider-properties drivers="*">
