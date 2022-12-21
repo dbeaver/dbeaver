@@ -78,8 +78,8 @@ public class DataSourcePropertyTester extends PropertyTester {
                     boolean isConnected;
                     if (context != null) {
                         isConnected = context.getDataSource().getContainer().isConnected();
-                    } else if (receiver instanceof IDataSourceContainerProvider) {
-                        DBPDataSourceContainer container = ((IDataSourceContainerProvider) receiver).getDataSourceContainer();
+                    } else if (receiver instanceof DBPDataSourceContainerProvider) {
+                        DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) receiver).getDataSourceContainer();
                         isConnected = container != null && container.isConnected();
                     } else {
                         isConnected = false;

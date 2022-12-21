@@ -23,9 +23,12 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.IEnvironmentPathMapper;
 import org.jkiss.dbeaver.ui.ShellUtils;
 
 public class NavigatorHandlerShowInExplorer extends NavigatorHandlerObjectBase {
+    
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final IStructuredSelection structSelection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
@@ -35,7 +38,12 @@ public class NavigatorHandlerShowInExplorer extends NavigatorHandlerObjectBase {
             if (resource != null) {
                 IPath location = resource.getLocation();
                 if (location != null) {
-                    ShellUtils.showInSystemExplorer(location.toString());
+                    String filePath = location.toString();
+                    IEnvironmentPathMapper envPathMapper = DBWorkbench.getService(IEnvironmentPathMapper.class);
+                    if (envPathMapper != null && envPathMapper.isApplicable(filePath)) {
+                        filePath = envPathMapper.map(filePath);
+                    }
+                    ShellUtils.showInSystemExplorer(filePath);
                 }
             }
         }

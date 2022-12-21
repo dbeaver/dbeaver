@@ -31,7 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
@@ -55,7 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, IDataSourceContainerProvider, DBPPreferenceListener {
+public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, DBPDataSourceContainerProvider, DBPPreferenceListener {
 
     private DatabaseNavigatorTree tree;
     private transient Object lastSelection;

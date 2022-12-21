@@ -231,14 +231,14 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
             String condObjId = dependents ? "refobjid" : "objid";
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT DISTINCT dep.deptype, dep.classid, dep." + queryObjId + ", cl.relkind, attr.attname,pg_get_expr(ad.adbin, ad.adrelid) adefval,\n" +
-                    "    CASE WHEN cl.relkind IS NOT NULL THEN cl.relkind || COALESCE(dep.objsubid::text, '')\n" +
+                    "    CASE WHEN cl.relkind IS NOT NULL THEN cl.relkind::text || COALESCE(dep.objsubid::text, '')::text\n" +
                     "        WHEN tg.oid IS NOT NULL THEN 'T'::text\n" +
                     "        WHEN ty.oid IS NOT NULL THEN 'y'::text\n" +
                     "        WHEN ns.oid IS NOT NULL THEN 'n'::text\n" +
                     "        WHEN pr.oid IS NOT NULL THEN 'p'::text\n" +
                     "        WHEN la.oid IS NOT NULL THEN 'l'::text\n" +
                     "        WHEN rw.oid IS NOT NULL THEN 'R'::text\n" +
-                    "        WHEN co.oid IS NOT NULL THEN 'C'::text || contype\n" +
+                    "        WHEN co.oid IS NOT NULL THEN 'C'::text || contype::text\n" +
                     "        WHEN ad.oid IS NOT NULL THEN 'A'::text\n" +
                     "        ELSE ''\n" +
                     "    END AS type,\n" +
