@@ -144,7 +144,7 @@ class DataFilterRegistry {
             } else {
                 DBPDataKind dataKind = getAttributeValueKind(savedConstraint.getValue());
                 DBSAttributeBase attribute = new AbstractAttribute(
-                    unquottedAttrName, dataKind.name(), 0, savedConstraint.getOrderPosition(), 0, 0, 0, false, false
+                    unquottedAttrName, dataKind.name(), 0, savedConstraint.getVisualPosition(), 0, 0, 0, false, false
                 ) {
                     @Override
                     public DBPDataKind getDataKind() {
@@ -225,7 +225,7 @@ class DataFilterRegistry {
                     DBSEntityAttribute attribute = ((DBSEntity) dataContainer).getAttribute(monitor, attrName); 
                     if (attribute != null) {
                         attrC = new DBDAttributeConstraint(attribute, attribute.getOrdinalPosition());
-                    } else if (savedConstraint != null && savedConstraint.hasCondition()) {
+                    } else if (savedConstraint != null) {
                         attrC = restoredAttrsInfo.restoreOffschemaConstraint(attrName, savedConstraint);
                     }
                     if (attrC != null) {
@@ -234,7 +234,7 @@ class DataFilterRegistry {
                 }
                 if (attrC != null) {
                     attrC.copyFrom(savedConstraint);
-                } else if (savedConstraint != null && savedConstraint.hasCondition()) {
+                } else if (savedConstraint != null) {
                     if (offschemaConstraints == null) {
                         offschemaConstraints = new ArrayList<>();
                     }
