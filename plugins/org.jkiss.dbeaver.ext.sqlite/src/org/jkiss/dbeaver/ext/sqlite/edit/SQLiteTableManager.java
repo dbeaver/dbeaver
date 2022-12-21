@@ -63,7 +63,9 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
-                "ALTER TABLE " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + //$NON-NLS-1$
+                "ALTER TABLE " + (command.getObject().getSchema() != null ?
+                                  DBUtils.getQuotedIdentifier(dataSource, command.getObject().getSchema().getName())
+                                      + "." : "") + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) +//$NON-NLS-1$
                     " RENAME TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
         );
     }

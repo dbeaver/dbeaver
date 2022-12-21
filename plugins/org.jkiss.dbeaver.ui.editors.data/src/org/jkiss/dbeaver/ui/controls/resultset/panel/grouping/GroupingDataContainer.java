@@ -158,4 +158,9 @@ public class GroupingDataContainer implements DBSDataContainer {
     public void setGroupingAttributes(@Nullable String[] attributes) {
         this.attributes = attributes;
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
