@@ -855,7 +855,10 @@ public class DataSourceDescriptor
                 }
             }
         } finally {
-            secretsResolved = true;
+            // we always consider the secret to be resolved,
+            // because in case of an error during the resolve,
+            // we will not be able to save the new secret, look at #persistSecretIfNeeded
+            this.secretsResolved = true;
         }
     }
 
