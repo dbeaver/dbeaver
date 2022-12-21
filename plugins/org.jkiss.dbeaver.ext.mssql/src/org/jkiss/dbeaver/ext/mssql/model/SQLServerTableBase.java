@@ -279,6 +279,9 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 
     abstract boolean supportsTriggers();
 
+    /**
+     * Returns true only in case the table is a table and has clustered columnstore index
+     */
     boolean isClustered(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (isView()) {
             return false;
@@ -286,7 +289,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         Collection<SQLServerTableIndex> indexes = getIndexes(monitor);
         if (!CommonUtils.isEmpty(indexes)) {
             for (SQLServerTableIndex index : indexes) {
-                if (index.getIndexType() == DBSIndexType.CLUSTERED) {
+                if (index.getIndexType() == DBSIndexType.CLUSTERED && index.isColumnStore()) {
                     return true;
                 }
             }

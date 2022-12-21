@@ -1438,16 +1438,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
     ///////////////////////////////////////////////
     // Filtering
 
-    void showFiltering(Object columnElement) {
+    void handleColumnIconClick(Object columnElement) {
         if (!(columnElement instanceof DBDAttributeBinding)) {
             log.debug("Unable to show distinct filter for columnElement" + columnElement);
             return;
         }
         DBDAttributeBinding attributeBinding = (DBDAttributeBinding) columnElement;
-        if (!getSelection().getSelectedAttributes().contains(attributeBinding)) {
-            spreadsheet.deselectAll();
-        }
-        controller.showDistinctFilter(attributeBinding);
+        controller.showColumnMenu(attributeBinding);
     }
 
     ///////////////////////////////////////////////
@@ -1836,11 +1833,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     return model.getVisibleAttributes().toArray();
                 } else {
                     int[] selectedRecords = controller.getSelectedRecords();
-                    Object[] rows = new Object[selectedRecords.length];
+                    List<Object> rows = new ArrayList<>(selectedRecords.length);
                     for (int i = 0; i < selectedRecords.length; i++) {
-                        rows[i] = controller.getModel().getRow(selectedRecords[i]);
+                        if (selectedRecords[i] < controller.getModel().getRowCount()) {
+                            rows.add(controller.getModel().getRow(selectedRecords[i]));
+                        }
                     }
-                    return rows;
+                    return rows.toArray();
                 }
             } else {
                 // rows

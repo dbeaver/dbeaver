@@ -295,6 +295,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                                 }
                             }
                             Path importLibFile = contribFolder.resolve(libName);
+                            if (!importLibFile.normalize().startsWith(contribFolder.normalize())) {
+                                throw new IOException("Zip entry is outside of the target directory");
+                            }
                             if (!Files.exists(importLibFile)) {
                                 try (OutputStream os = Files.newOutputStream(importLibFile)) {
                                     try (InputStream is = zipFile.getInputStream(libEntry)) {
@@ -325,6 +328,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     private IProject importProject(DBRProgressMonitor monitor, Element projectElement, ZipFile zipFile, Map<String, String> driverMap)
         throws DBException, CoreException, IOException
     {
+        if (DBWorkbench.isDistributed()) {
+            throw new DBException("Project import is not supported in distributed workspaces");
+        }
         String projectName = projectElement.getAttribute(ExportConstants.ATTR_NAME);
         String projectDescription = projectElement.getAttribute(ExportConstants.ATTR_DESCRIPTION);
         String targetProjectName = data.getTargetProjectName(projectName);

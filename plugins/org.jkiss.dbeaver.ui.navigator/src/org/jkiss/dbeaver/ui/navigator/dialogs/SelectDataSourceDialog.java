@@ -76,12 +76,12 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
         showConnected = getDialogBoundsSettings().getBoolean(PARAM_SHOW_CONNECTED);
         showAllProjects = getDialogBoundsSettings().getBoolean(PARAM_SHOW_ALL_PROJECTS);
 
-        Composite group = (Composite) super.createDialogArea(parent);
+        Composite group = super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 

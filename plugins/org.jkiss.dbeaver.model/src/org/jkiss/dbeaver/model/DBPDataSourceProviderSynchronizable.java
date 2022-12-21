@@ -75,4 +75,10 @@ public interface DBPDataSourceProviderSynchronizable extends DBPDataSourceProvid
         @NotNull DBPDataSourceContainer container
     ) throws DBException;
 
+    /**
+     * Checks whether the synchronization is enabled for the local data source.
+     *
+     * @return {@code true} if the local data source is synchronizable, {@code false} otherwise
+     */
+    boolean isSynchronizationEnabled(@NotNull DBPDataSourceContainer container);
 }

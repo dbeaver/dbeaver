@@ -33,7 +33,7 @@ public class DatabaseTasksSelectorDialog extends BaseDialog {
 
     private DatabaseTasksTree tasksTree;
 
-    private List<DBTTask> selectedTasks = new ArrayList<>();
+    private final List<DBTTask> selectedTasks = new ArrayList<>();
 
     public DatabaseTasksSelectorDialog(Shell parentShell) {
         super(parentShell, TaskUIViewMessages.db_tasks_selector_dialog, null);

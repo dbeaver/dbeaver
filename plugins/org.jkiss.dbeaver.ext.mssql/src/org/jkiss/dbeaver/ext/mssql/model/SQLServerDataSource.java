@@ -518,6 +518,10 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         }
     }
 
+    /**
+     * Returns true only in case we find the table and this table has clustered COLUMNSTORE index.
+     * These types of tables restrict special reading rules: do not scroll results or use TOP in the SELECT.
+     */
     @Override
     public boolean isForceTransform(DBCSession session, SQLQuery sqlQuery) {
         try {

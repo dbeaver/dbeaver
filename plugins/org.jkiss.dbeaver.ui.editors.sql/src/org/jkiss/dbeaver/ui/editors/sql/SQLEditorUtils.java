@@ -18,20 +18,30 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.commands.DisableSQLSyntaxParserHandler;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
@@ -45,8 +55,11 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * SQLEditor utils
@@ -56,6 +69,8 @@ public class SQLEditorUtils {
     private static final Log log = Log.getLog(SQLEditorUtils.class);
 
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
+
+    private static final String DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY = "disable-sql-syntax-parser";
 
     /**
      * A {@link IResource}'s session property to distinguish between persisted and newly created resources.
@@ -349,5 +364,184 @@ public class SQLEditorUtils {
         public String toString() {
             return getName();
         }
+    }
+    
+    private abstract static class EditorFileInfo {
+
+        public abstract void setPropertyValue(@NotNull String propertyName, @NotNull Object value);
+
+        @Nullable
+        public abstract Object getPropertyValue(@NotNull String propertyName);
+        
+        @Nullable
+        public static EditorFileInfo getFromEditor(@Nullable IEditorInput input) {
+            if (input != null) {
+                IFile projectFile = EditorUtils.getFileFromInput(input);
+                if (projectFile != null) {
+                    return new EditorProjectFileInfo(projectFile);
+                } else {
+                    File platformFile = EditorUtils.getLocalFileFromInput(input);
+                    if (platformFile != null) {
+                        return new EditorPlatformFileInfo(platformFile);
+                    } else {
+                        return null;
+                    }
+                }
+            } else {
+                return null;
+            }
+        }   
+    }
+    
+    private static class EditorProjectFileInfo extends EditorFileInfo {
+        private final IFile projectFile;
+        
+        public EditorProjectFileInfo(@Nullable IFile projectFile) {
+            this.projectFile = projectFile;
+        }
+        
+        @Nullable
+        @Override
+        public Object getPropertyValue(@NotNull String propertyName) {
+            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            return EditorUtils.getResourceProperty(project, projectFile, propertyName);
+        }
+        
+        @Override
+        public void setPropertyValue(@NotNull String propertyName, @NotNull Object value) {
+            DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            EditorUtils.setResourceProperty(project, projectFile, propertyName, value);
+        }
+        
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            EditorProjectFileInfo other = obj instanceof EditorProjectFileInfo ? (EditorProjectFileInfo) obj : null;
+            return other != null && projectFile != null && projectFile.equals(other.projectFile);
+        }
+    }
+    
+    private static class EditorPlatformFileInfo extends EditorFileInfo {
+        private final File platformFile;
+        
+        public EditorPlatformFileInfo(@Nullable File platformFile) {
+            this.platformFile = platformFile;
+        }
+
+        @Nullable
+        @Override
+        public Object getPropertyValue(@NotNull String propertyName) {
+            final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
+            return efManager.getFileProperty(platformFile, propertyName);
+        }
+    
+        @Override
+        public void setPropertyValue(@NotNull String propertyName, @NotNull Object value) {
+            final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
+            efManager.setFileProperty(platformFile, propertyName, value);
+        }
+        
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            EditorPlatformFileInfo other = obj instanceof EditorPlatformFileInfo ? (EditorPlatformFileInfo) obj : null;
+            return other != null && platformFile != null && platformFile.equals(other.platformFile);
+        }
+    }
+
+    /**
+     * Checks whether Disable SQL syntax parser should be applied for the given editor
+     */
+    public static boolean isSQLSyntaxParserApplied(@Nullable IEditorInput input) {
+        return isSQLSyntaxParserEnabled(input) && !SQLEditorBase.isBigScript(input);
+    }
+
+    /**
+     * Checks whether Disable SQL syntax parser property is set
+     */
+    public static boolean isSQLSyntaxParserEnabled(@Nullable IEditorInput input) {
+        EditorFileInfo file = EditorFileInfo.getFromEditor(input);
+        if (file != null) {
+            try {
+                return !CommonUtils.getBoolean(file.getPropertyValue(DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY), false);
+            } catch (Throwable e) {
+                log.debug(e);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Sets value to Disable SQL syntax parser property
+     */
+    public static void setSQLSyntaxParserEnabled(@Nullable IEditorInput input, boolean value) {
+        EditorFileInfo file = EditorFileInfo.getFromEditor(input);
+        if (file != null) {
+            try {
+                file.setPropertyValue(DISABLE_SQL_SYNTAX_PARSER_RESOURCE_PROPERTY, Boolean.toString(!value));
+                notifyAssociatedServices(file, value);
+            } catch (Throwable e) {
+                log.debug(e);
+            }
+        }
+    }
+    
+    private static void notifyAssociatedServices(@NotNull EditorFileInfo file, boolean newServicesEnabled) {
+        Set<DBPPreferenceStore> affectedPrefs = new HashSet<>();
+        List<SQLEditor> affectedEditors = new LinkedList<>();
+        
+        for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+            for (IWorkbenchPage page : window.getPages()) {
+                for (IEditorReference editorRef : page.getEditorReferences()) {
+                    IEditorPart editor = editorRef.getEditor(false);
+                    if (editor instanceof SQLEditorBase) {
+                        SQLEditorBase sqlEditor = (SQLEditorBase) editor;
+                        EditorFileInfo editorFile = EditorFileInfo.getFromEditor(editor.getEditorInput());
+                        if (editorFile != null && editorFile.equals(file)) {
+                            affectedPrefs.add(sqlEditor.getActivePreferenceStore());
+                            if (editor instanceof SQLEditor) {
+                                affectedEditors.add((SQLEditor) editor);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        for (DBPPreferenceStore prefs : affectedPrefs) {
+            notifyPrefs(prefs, newServicesEnabled);
+        }
+        for (SQLEditor sqlEditor : affectedEditors) {
+            sqlEditor.refreshEditorIconAndTitle();
+        }
+
+        PlatformUI.getWorkbench().getService(ICommandService.class).refreshElements(DisableSQLSyntaxParserHandler.COMMAND_ID, null);
+    }
+    
+    private static void notifyPrefs(@NotNull DBPPreferenceStore prefStore, boolean newServicesEnabled) {
+        final boolean foldingEnabled = prefStore.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+        final boolean autoActivationEnabled = prefStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
+        final boolean markWordUnderCursorEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
+        final boolean markWordForSelectionEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
+        final boolean oldServicesEnabled = !newServicesEnabled;
+        
+        prefStore.firePropertyChangeEvent(
+            SQLPreferenceConstants.FOLDING_ENABLED,
+            oldServicesEnabled && foldingEnabled,
+            newServicesEnabled && foldingEnabled
+        );
+        prefStore.firePropertyChangeEvent(
+            SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION,
+            oldServicesEnabled && autoActivationEnabled,
+            newServicesEnabled && autoActivationEnabled
+        );
+        prefStore.firePropertyChangeEvent(
+            SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR,
+            oldServicesEnabled && markWordUnderCursorEnabled,
+            newServicesEnabled && markWordUnderCursorEnabled
+        );
+        prefStore.firePropertyChangeEvent(
+            SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION,
+            oldServicesEnabled && markWordForSelectionEnabled,
+            newServicesEnabled && markWordForSelectionEnabled
+        );
     }
 }

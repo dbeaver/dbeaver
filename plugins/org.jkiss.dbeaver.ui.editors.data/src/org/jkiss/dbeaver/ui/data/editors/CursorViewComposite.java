@@ -46,8 +46,6 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.AbstractDataEditor;
 
-import java.util.ResourceBundle;
-
 /**
  * CursorViewComposite
  */
@@ -75,8 +73,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
         if (value != null) {
             DBPPreferenceStore preferenceStore = valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore();
             if (!preferenceStore.getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN)) {
-                if (ConfirmationDialog.showConfirmDialog(
-                        ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+                if (ConfirmationDialog.confirmAction(
                         getShell(),
                         ResultSetPreferences.CONFIRM_KEEP_STATEMENT_OPEN,
                         ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID)

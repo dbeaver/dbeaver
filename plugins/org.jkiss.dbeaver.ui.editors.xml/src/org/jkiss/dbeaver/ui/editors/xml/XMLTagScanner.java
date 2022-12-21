@@ -16,18 +16,18 @@
  */
 package org.jkiss.dbeaver.ui.editors.xml;
 
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.*;
-import org.eclipse.jface.text.source.ISharedTextColors;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
 
 
 public class XMLTagScanner extends RuleBasedScanner {
 
-	public XMLTagScanner(ISharedTextColors manager) {
+	XMLTagScanner(ColorRegistry manager) {
 		IToken string =
 			new Token(
-				new TextAttribute(manager.getColor(XMLSourceViewerConfiguration.COLOR_STRING)));
+				new TextAttribute(manager.get(XMLSourceViewerConfiguration.COLOR_XML_STRING)));
 
 		IRule[] rules = new IRule[3];
 

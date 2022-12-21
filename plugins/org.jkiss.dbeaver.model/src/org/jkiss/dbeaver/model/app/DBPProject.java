@@ -95,6 +95,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
      */
     boolean isUseSecretStorage();
 
+    boolean isPrivateProject();
+
     /**
      * Secret key is used encrypt project data
      */
@@ -131,13 +133,14 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     @NotNull
     String[] findResources(@NotNull Map<String, ?> properties) throws DBException;
 
+    Map<String, Object> getResourceProperties(@NotNull String resourcePath);
+
     @Nullable
     Object getResourceProperty(@NotNull String resourcePath, @NotNull String propName);
 
-    @Nullable
-    Object getResourceProperty(@NotNull IResource resource, @NotNull String propName);
-
     void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue);
+
+    void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath);
 
     void refreshProject(DBRProgressMonitor monitor);
 

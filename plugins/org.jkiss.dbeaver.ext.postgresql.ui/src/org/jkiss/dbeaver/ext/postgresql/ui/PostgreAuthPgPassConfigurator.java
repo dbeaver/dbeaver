@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -42,31 +43,28 @@ public class PostgreAuthPgPassConfigurator implements IObjectPropertyConfigurato
     private Text overriddenHostnameText;
     private Button overrideHostname;
 
-
     @Override
     public void createControl(@NotNull Composite authPanel, Object object, @NotNull Runnable propertyChangeListener) {
-        int fontHeight = UIUtils.getFontHeight(authPanel);
-
         Label usernameLabel = UIUtils.createLabel(authPanel, UIConnectionMessages.dialog_connection_auth_label_username);
-        usernameLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         usernameText = new Text(authPanel, SWT.BORDER);
+        usernameText.addModifyListener(e -> propertyChangeListener.run());
+        usernameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         overrideHostname = UIUtils.createCheckbox(authPanel, false);
-        overrideHostname.setText(UIConnectionMessages.dialog_connection_pgpass_hostname_override);
-        overrideHostname.setToolTipText(UIConnectionMessages.dialog_connection_pgpass_hostname_override_tip);
-        overriddenHostnameText = new Text(authPanel, SWT.BORDER);
+        overrideHostname.setText(PostgreMessages.dialog_connection_pgpass_hostname_override);
+        overrideHostname.setToolTipText(PostgreMessages.dialog_connection_pgpass_hostname_override_tip);
         overrideHostname.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 overriddenHostnameText.setEnabled(overrideHostname.getSelection());
             }
         });
+        overrideHostname.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.widthHint = fontHeight * 20;
-        overriddenHostnameText.setLayoutData(gd);
-        usernameText.setLayoutData(gd);
-        usernameText.addModifyListener(e -> propertyChangeListener.run());
+        overriddenHostnameText = new Text(authPanel, SWT.BORDER);
+        overriddenHostnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     }
 
 

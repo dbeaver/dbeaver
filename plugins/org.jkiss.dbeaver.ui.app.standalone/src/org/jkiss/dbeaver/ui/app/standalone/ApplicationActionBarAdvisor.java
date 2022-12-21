@@ -43,8 +43,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.EmergentExitAction;
-import org.jkiss.dbeaver.ui.app.standalone.actions.ResetUISettingsAction;
-import org.jkiss.dbeaver.ui.app.standalone.actions.ResetWorkspaceStateAction;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
@@ -265,8 +263,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             fileMenu.add(openWorkspaceAction);
 
             fileMenu.add(new Separator());
-            fileMenu.add(new ResetUISettingsAction(workbenchWindow));
-            fileMenu.add(new ResetWorkspaceStateAction(workbenchWindow));
             fileMenu.add(new EmergentExitAction(workbenchWindow));
 
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
@@ -337,25 +333,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             helpMenu.add(new GroupMarker("installation_help"));
             helpMenu.add(new Separator());
             helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-/*
-            if (showAltHelp) {
-                //helpMenu.add(searchHelpAction);
-                //helpMenu.add(dynamicHelpAction);
-                helpMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST, CoreMessages.action_menu_showKeyAssist, null));
-                helpMenu.add(new Separator());
-                helpMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.equinox.p2.ui.sdk.install"));
-
-                helpMenu.add(new Separator());
-                helpMenu.add(checkUpdatesAction);
-
-                helpMenu.add(new ExternalPageAction(
-                    NLS.bind(CoreMessages.action_menu_marketplace_extensions, GeneralUtils.getProductName()),
-                    UIIcon.DBEAVER_MARKETPLACE, "https://marketplace.eclipse.org/search/site/dbeaver"));
-                helpMenu.add(new ExternalPageAction(CoreMessages.action_menu_enterpriseEdition, UIIcon.DBEAVER_LOGO_SMALL, "https://dbeaver.com"));
-            } else {
-                helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-            }
-*/
         }
     }
 

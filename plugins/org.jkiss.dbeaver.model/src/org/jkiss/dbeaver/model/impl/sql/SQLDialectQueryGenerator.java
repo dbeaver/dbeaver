@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 
@@ -88,7 +89,6 @@ public interface SQLDialectQueryGenerator {
         boolean inlineCriteria,
         boolean subQuery);
 
-
     /**
      * Appends filter conditions to query
      *
@@ -107,6 +107,33 @@ public interface SQLDialectQueryGenerator {
         @NotNull StringBuilder query,
         boolean inlineCriteria,
         boolean subQuery);
+
+    /**
+     * Applies filters to the existing user queries
+     * @param monitor database progress monitor
+     * @param dataSource datasource
+     * @param sqlQuery user query
+     * @param dataFilter filter conditions
+     * @return modified query
+     */
+    @NotNull
+    String getQueryWithAppliedFilters(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull String sqlQuery,
+        @NotNull DBDDataFilter dataFilter
+    );
+
+    /**
+     * returns user query with filter and order
+     *
+     * @param dataSource datasource
+     * @param sqlQuery user query
+     * @param dataFilter filter conditions
+     * @return modified query
+     */
+    @NotNull
+    String getWrappedFilterQuery(@NotNull DBPDataSource dataSource, @NotNull String sqlQuery, @NotNull DBDDataFilter dataFilter);
 
     /**
      * Appends order conditions to query

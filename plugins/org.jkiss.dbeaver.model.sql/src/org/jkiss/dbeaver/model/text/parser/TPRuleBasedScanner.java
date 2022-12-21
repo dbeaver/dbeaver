@@ -131,8 +131,14 @@ public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner, T
 		if (fOffset < fRangeEnd)
 			return fOffset - getTokenOffset();
 		return fRangeEnd - getTokenOffset();
-	}
+    }
 
+    /**
+     * Returns offset of the next token or the end offset of the range to be scanned
+     */
+    public int getTokenEndOffset() {
+        return Math.min(fOffset, fRangeEnd);
+    }
 
 	@Override
 	public int getColumn() {

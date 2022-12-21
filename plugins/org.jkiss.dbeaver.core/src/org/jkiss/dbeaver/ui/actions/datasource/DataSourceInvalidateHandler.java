@@ -30,11 +30,11 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
+import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -54,13 +54,13 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
             invalidateDataSource(context.getDataSource());
         } else {
             IEditorPart editor = HandlerUtil.getActiveEditor(event);
-            if (editor instanceof IDataSourceContainerProviderEx) {
+            if (editor instanceof IDataSourceContainerUpdate) {
                 // Try to set the same container.
                 // It should trigger connection instantiation if for some reason it was lost (SQLEditor specific?)
-                DBPDataSourceContainer dsContainer = ((IDataSourceContainerProviderEx) editor).getDataSourceContainer();
+                DBPDataSourceContainer dsContainer = ((IDataSourceContainerUpdate) editor).getDataSourceContainer();
                 if (dsContainer != null) {
-                    ((IDataSourceContainerProviderEx) editor).setDataSourceContainer(null);
-                    ((IDataSourceContainerProviderEx) editor).setDataSourceContainer(dsContainer);
+                    ((IDataSourceContainerUpdate) editor).setDataSourceContainer(null);
+                    ((IDataSourceContainerUpdate) editor).setDataSourceContainer(dsContainer);
                 }
             }
 

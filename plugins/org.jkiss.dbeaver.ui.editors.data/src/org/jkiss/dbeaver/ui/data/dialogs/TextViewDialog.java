@@ -73,9 +73,9 @@ public class TextViewDialog extends ValueViewDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
-        Composite dialogGroup = (Composite)super.createDialogArea(parent);
+        Composite dialogGroup = super.createDialogArea(parent);
 
         ReferenceValueEditor referenceValueEditor = new ReferenceValueEditor(getValueController(), this);
         boolean isForeignKey = referenceValueEditor.isReferenceValue();

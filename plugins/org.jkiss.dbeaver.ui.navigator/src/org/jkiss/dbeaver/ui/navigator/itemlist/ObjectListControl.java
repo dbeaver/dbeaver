@@ -272,6 +272,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return itemsViewer;
     }
 
+
     public Composite getControl() {
         // Both table and tree are composites so its ok
         return (Composite) itemsViewer.getControl();
@@ -366,6 +367,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
+    public ViewerColumnController<ObjectColumn, Object> getColumnController() {
+        return columnController;
+    }
+
     protected int getDataLoadTimeout() {
         return 4000;
     }
@@ -416,8 +421,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
 
                 IPropertyFilter propertyFilter = new DataSourcePropertyFilter(
-                    ObjectListControl.this instanceof IDataSourceContainerProvider ?
-                        ((IDataSourceContainerProvider) ObjectListControl.this).getDataSourceContainer() :
+                    ObjectListControl.this instanceof DBPDataSourceContainerProvider ?
+                        ((DBPDataSourceContainerProvider) ObjectListControl.this).getDataSourceContainer() :
                         null);
 
                 // Collect all properties
@@ -828,6 +833,17 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             props.addAll(column.propMap.values());
         }
         return props;
+    }
+
+    public void setIsColumnVisibleById(String id, boolean visible) {
+        if (columnController != null) {
+            ObjectColumn[] columnsData = columnController.getColumnsData(ObjectColumn.class);
+            for (int i = 0; i < columnsData.length; i++) {
+                if (columnsData[i].id.equals(id)) {
+                    columnController.setIsColumnVisible(i, visible);
+                }
+            }
+        }
     }
 
     protected void createColumn(ObjectPropertyDescriptor prop) {

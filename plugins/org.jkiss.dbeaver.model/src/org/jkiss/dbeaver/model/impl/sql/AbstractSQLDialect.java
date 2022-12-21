@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
-import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
@@ -535,7 +534,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public String addFiltersToQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, String query, DBDDataFilter filter) {
-        return SQLSemanticProcessor.addFiltersToQuery(monitor, dataSource, query, filter);
+        return getQueryGenerator().getQueryWithAppliedFilters(monitor, dataSource, query, filter);
     }
 
     @Override

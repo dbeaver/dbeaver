@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
 
@@ -32,52 +33,43 @@ public abstract class BaseProgressMonitor implements DBRProgressMonitor {
     }
 
     @Override
-    public IProgressMonitor getNestedMonitor()
-    {
+    public IProgressMonitor getNestedMonitor() {
         return NESTED_INSTANCE;
     }
 
     @Override
-    public void beginTask(String name, int totalWork)
-    {
+    public void beginTask(String name, int totalWork) {
     }
 
     @Override
-    public void done()
-    {
+    public void done() {
     }
 
     @Override
-    public void subTask(String name)
-    {
+    public void subTask(String name) {
     }
 
     @Override
-    public void worked(int work)
-    {
+    public void worked(int work) {
     }
 
     @Override
-    public boolean isCanceled()
-    {
-        return false;
+    public boolean isCanceled() {
+        return DBWorkbench.getPlatform().isShuttingDown();
     }
 
     @Override
-    public void startBlock(DBRBlockingObject object, String taskName)
-    {
+    public void startBlock(DBRBlockingObject object, String taskName) {
         // do nothing
     }
 
     @Override
-    public void endBlock()
-    {
+    public void endBlock() {
         // do nothing
     }
 
     @Override
-    public List<DBRBlockingObject> getActiveBlocks()
-    {
+    public List<DBRBlockingObject> getActiveBlocks() {
         return null;
     }
 

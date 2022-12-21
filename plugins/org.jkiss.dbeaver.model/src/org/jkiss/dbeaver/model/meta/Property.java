@@ -124,9 +124,21 @@ public @interface Property
      */
     boolean password() default false;
 
+    /**
+     * Does not show the field in the connection window of CB when this property is true.
+     */
+    boolean nonSecuredProperty() default false;
+
     int order() default Integer.MAX_VALUE;
 
     String helpContextId() default ""; //NON-NLS-1
+
+    /**
+     * Features list as a string with comma delimiter .
+     *
+     * @return the string
+     */
+    String[] features() default {};
 
     /**
      * Can be used to format numbers and date/time property values

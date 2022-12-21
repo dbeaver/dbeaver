@@ -137,7 +137,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
                     site.getProject().getEclipseProject(),
                     PrefPageProjectNetworkProfiles.PAGE_ID,
                     null,
-                    null);
+                    CommonUtils.isEmpty(profileCombo.getText()) ? null : profileCombo.getText());
                 if (preferenceDialog != null) {
                     if (preferenceDialog.open() == IDialogConstants.OK_ID) {
                         setConnectionConfigProfile(profileCombo.getText());

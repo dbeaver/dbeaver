@@ -14,6 +14,8 @@
 
     <modules>
         <module>org.jkiss.dbeaver.model</module>
+        <module>org.jkiss.dbeaver.model.dataset</module>
+        <module>org.jkiss.dbeaver.model.sm</module>
         <module>org.jkiss.dbeaver.model.sql</module>
         <module>org.jkiss.dbeaver.registry</module>
         <module>org.jkiss.dbeaver.parser</module>
@@ -106,8 +108,6 @@
                 <module>org.jkiss.dbeaver.ext.spanner.ui</module>
                 <module>org.jkiss.dbeaver.ext.snowflake.ui</module>
                 <module>org.jkiss.dbeaver.ext.vertica.ui</module>
-                <module>org.jkiss.dbeaver.ext.datavirtuality.ui</module>
-                <module>org.jkiss.dbeaver.ext.denodo.ui</module>
 
                 <module>org.jkiss.dbeaver.ext.wmi</module>
 
