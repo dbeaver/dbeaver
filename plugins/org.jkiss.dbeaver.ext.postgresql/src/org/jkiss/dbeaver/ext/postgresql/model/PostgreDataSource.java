@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.AsyncServerOutputReader;
+import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
@@ -56,6 +57,9 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -474,29 +478,58 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (instance != null) {
             log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + instance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
-        if (instance instanceof PostgreDatabase &&
-            instance.getName() != null &&
-            !CommonUtils.equalObjects(instance.getName(), conConfig.getDatabaseName()))
-        {
-            // If database was changed then use new name for connection
-            final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
-            try {
-                // Patch URL with new database name
-                if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
-                    conConfig.setDatabaseName(instance.getName());
-                    conConfig.setUrl(getContainer().getDriver().getConnectionURL(conConfig));
-                } //else {
-                    //String url = conConfig.getUrl();
-                //}
+        try {
+            if (instance instanceof PostgreDatabase && !CommonUtils.equalObjects(instance.getName(), conConfig.getDatabaseName())) {
+                // If database was changed then use new name for connection
+                final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
+                try {
+                    // Patch URL with new database name
+                    if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
+                        conConfig.setDatabaseName(instance.getName());
+                        conConfig.setUrl(getContainer().getDriver().getConnectionURL(conConfig));
+                    }
 
+                    pgConnection = super.openConnection(monitor, context, purpose);
+                }
+                finally {
+                    conConfig.setDatabaseName(originalConfig.getDatabaseName());
+                    conConfig.setUrl(originalConfig.getUrl());
+                }
+            } else {
                 pgConnection = super.openConnection(monitor, context, purpose);
             }
-            finally {
-                conConfig.setDatabaseName(originalConfig.getDatabaseName());
-                conConfig.setUrl(originalConfig.getUrl());
+        } catch (DBCException e) {
+            final Throwable cause = GeneralUtils.getRootCause(e);
+            final StackTraceElement element = cause.getStackTrace()[0];
+
+            if ("sun.security.util.DerValue".equals(element.getClassName())) { //$NON-NLS-1$
+                final DBWHandlerConfiguration handler = Objects.requireNonNull(conConfig.getHandler(PostgreConstants.HANDLER_SSL));
+                final String key = handler.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
+                final Path dst;
+
+                try {
+                    dst = DBWorkbench.getPlatform().getTempFolder(monitor, "ssl").resolve(container.getId() + ".pk8");
+                } catch (IOException ex) {
+                    log.error("Error creating temporary SSL key", ex);
+                    throw e;
+                }
+
+                try (Reader reader = Files.newBufferedReader(Path.of(key))) {
+                    Files.write(dst, DefaultCertificateStorage.loadDerFromPem(reader));
+                    handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, dst.toAbsolutePath().toString());
+                } catch (IOException ex) {
+                    log.error("Error converting SSL key", ex);
+                    throw e;
+                }
+
+                // Unfortunately, we can't delete the temp file here.
+                // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
+                // It will still be deleted during shutdown.
+
+                return openConnection(monitor, context, purpose);
             }
-        } else {
-            pgConnection = super.openConnection(monitor, context, purpose);
+
+            throw e;
         }
 
         if (getServerType().supportsClientInfo() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {

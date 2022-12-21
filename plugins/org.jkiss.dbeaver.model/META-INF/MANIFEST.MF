@@ -88,6 +88,14 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.runtime.ui.console,
  org.jkiss.dbeaver.runtime.serialize,
  org.jkiss.dbeaver.utils
+Import-Package: org.bouncycastle.asn1,
+ org.bouncycastle.asn1.x500,
+ org.bouncycastle.cert,
+ org.bouncycastle.cert.jcajce,
+ org.bouncycastle.jce.provider,
+ org.bouncycastle.operator,
+ org.bouncycastle.operator.jcajce,
+ org.bouncycastle.util.io.pem
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  org.eclipse.core.filesystem;visibility:=reexport,
@@ -100,9 +108,7 @@ Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  org.apache.commons.jexl;visibility:=reexport,
  com.github.jsqlparser;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport,
- com.google.gson,
- org.bouncycastle.bcpkix,
- org.bouncycastle.bcprov
+ com.google.gson
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model
 

@@ -131,6 +131,7 @@ public class DBConstants {
     public static final String PROP_FEATURE_SPECIFIC = "specific";
     public static final String PROP_FEATURE_REQUIRED = "required";
     public static final String PROP_FEATURE_PASSWORD = "password";
+    public static final String PROP_FEATURE_NON_SECURED = "nonSecuredProperty";
     public static final String PROP_FEATURE_NAME = "name";
     public static final String PROP_FEATURE_MULTILINE = "multiline";
     public static final String PROP_FEATURE_EDIT_POSSIBLE = "editPossible";

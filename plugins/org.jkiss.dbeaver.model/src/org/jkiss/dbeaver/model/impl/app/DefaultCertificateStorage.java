@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.app;
 
+import org.bouncycastle.util.io.pem.PemReader;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -232,6 +233,11 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     @Override
     public String getKeyStoreType(DBPDataSourceContainer dataSource) {
         return KeyStore.getDefaultType();
+    }
+
+    @NotNull
+    public static byte[] loadDerFromPem(@NotNull Reader reader) throws IOException {
+        return new PemReader(reader).readPemObject().getContent();
     }
 
     /**
