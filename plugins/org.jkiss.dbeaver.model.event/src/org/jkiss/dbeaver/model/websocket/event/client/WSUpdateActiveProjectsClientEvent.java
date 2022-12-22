@@ -14,32 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.model.websocket.event.client;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSClientEventType;
+import org.jkiss.dbeaver.model.websocket.event.WSEventTopic;
+
+import java.util.Set;
 
 /**
- * Base websocket client event
+ * Subscribe on event topic
  */
-public abstract class WSClientEvent {
+public class WSUpdateActiveProjectsClientEvent extends WSClientEvent {
     @NotNull
-    private final String id;
-    @Nullable
-    private final String topicId;
+    private final Set<String> projectIds;
 
-    protected WSClientEvent(@NotNull String id, @Nullable String topicId) {
-        this.id = id;
-        this.topicId = topicId;
+    public WSUpdateActiveProjectsClientEvent(@NotNull Set<String> projectIds) {
+        super(WSClientEventType.ACTIVE_PROJECTS.getEventId(), WSEventTopic.PROJECTS.getTopicId());
+        this.projectIds = projectIds;
     }
 
     @NotNull
-    public String getId() {
-        return id;
-    }
-
-    @Nullable
-    public String getTopicId() {
-        return topicId;
+    public Set<String> getProjectIds() {
+        return projectIds;
     }
 }
