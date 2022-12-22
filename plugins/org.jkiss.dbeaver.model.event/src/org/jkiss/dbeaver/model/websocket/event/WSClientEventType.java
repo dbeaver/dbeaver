@@ -19,13 +19,14 @@ package org.jkiss.dbeaver.model.websocket.event;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.websocket.event.client.WSSubscribeOnTopicClientEvent;
 import org.jkiss.dbeaver.model.websocket.event.client.WSUnsubscribeFromTopicClientEvent;
+import org.jkiss.dbeaver.model.websocket.event.client.WSUpdateActiveProjectsClientEvent;
 
 public enum WSClientEventType {
     TOPIC_SUBSCRIBE("cb_client_topic_subscribe", WSSubscribeOnTopicClientEvent.class),
     TOPIC_UNSUBSCRIBE("cb_client_topic_unsubscribe", WSUnsubscribeFromTopicClientEvent.class),
-    ACTIVE_PROJECTS("cb_client_projects_active", WSUnsubscribeFromTopicClientEvent.class),
+    ACTIVE_PROJECTS("cb_client_projects_active", WSUpdateActiveProjectsClientEvent.class),
     ;
-    
+
     private final String eventId;
     private final Class<? extends WSClientEvent> eventClass;
 
