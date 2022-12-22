@@ -2576,7 +2576,6 @@ public class ResultSetViewer extends Viewer
     @Override
     public void showColumnMenu(DBDAttributeBinding curAttribute) {
         MenuManager columnMenu = new MenuManager();
-        //getActivePresentation().setCurrentAttribute(curAttribute);
         ResultSetRow currentRow = getCurrentRow();
 
         fillOrderingsMenu(columnMenu, curAttribute, currentRow);
