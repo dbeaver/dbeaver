@@ -832,7 +832,7 @@
                 </driver>
                 <driver
                     id="kyuubi_hive"
-                    label="Apache Kyuubi (Incubating)"
+                    label="Apache Kyuubi"
                     icon="icons/kyuubi_hive_icon.png"
                     iconBig="icons/kyuubi_hive_icon_big.png"
                     class="org.apache.kyuubi.jdbc.KyuubiHiveDriver"
