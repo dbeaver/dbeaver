@@ -97,6 +97,12 @@ public interface RMController extends DBPObjectController {
      */
     void deleteProjectDataSources(@NotNull String projectId, @NotNull String[] dataSourceIds) throws DBException;
 
+    void createProjectDataSourceFolder(
+        @NotNull String projectId,
+        @Nullable String parentPath,
+        @NotNull String folderName
+    ) throws DBException;
+
     /**
      * Delete project datasource folders.
      *
