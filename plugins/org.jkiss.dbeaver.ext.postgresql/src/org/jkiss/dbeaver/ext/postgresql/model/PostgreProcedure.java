@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.model.*;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -103,6 +105,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     private long oid;
+    private long xmin;
+    private boolean procWasCreatedOrReplaced;
+    private boolean procWasNotChanged;
     private PostgreProcedureKind kind;
     private String procSrc;
     private String body;
@@ -144,6 +149,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         PostgreDataSource dataSource = getDataSource();
 
         this.oid = JDBCUtils.safeGetLong(dbResult, "poid");
+        this.xmin = JDBCUtils.safeGetLong(dbResult, "pxmin");
+        this.procWasCreatedOrReplaced = false;
+        this.procWasNotChanged = false;
         setName(JDBCUtils.safeGetString(dbResult, "proname"));
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "proowner");
         this.languageId = JDBCUtils.safeGetLong(dbResult, "prolang");
@@ -311,6 +319,22 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     public long getObjectId() {
         return oid;
     }
+    
+    public long getXmin() {
+        return xmin;
+    }
+    
+    public boolean getProcWasCreatedOrReplaced() {
+        return procWasCreatedOrReplaced;
+    }
+    
+    public void setProcWasCreatedOrReplaced(boolean value) {
+    this.procWasCreatedOrReplaced = value;
+    }
+    
+    public boolean getProcWasNotChanged() {
+        return procWasNotChanged;
+    }    
 
     @Override
     public DBSProcedureType getProcedureType()
@@ -679,7 +703,19 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getContainer().getProceduresCache().refreshObject(monitor, getContainer(), this);
+        boolean oldProcWasCreatedOrReplaced = this.procWasCreatedOrReplaced;
+        long oldOid = this.getObjectId();
+        long oldXmin = this.getXmin();
+        PostgreProcedure pgProc = getContainer().getProceduresCache().refreshObject(monitor, getContainer(), this);
+        if (oldProcWasCreatedOrReplaced) {
+            if ((oldOid != 0) && (oldXmin != 0) && (pgProc.oid == oldOid) && (pgProc.xmin == oldXmin)) {
+                pgProc.procWasNotChanged = true;
+                DBWorkbench.getPlatformUI().showWarningMessageBox(PostgreMessages.procedure_warning_name, PostgreMessages.procedure_warning_text);
+                this.setProcWasCreatedOrReplaced(false); // let throw warning once
+                pgProc.setProcWasCreatedOrReplaced(false);
+            }
+        }
+        return pgProc;
     }
 
     @Override
