@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -109,7 +110,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, PostgreProcedure procedure)
     {
         actions.add(
-            new SQLDatabasePersistAction("Create function", procedure.getBody(), true));
+            new PostgreDatabasePersistAction("Create function", true, procedure));
     }
 
     @Override
