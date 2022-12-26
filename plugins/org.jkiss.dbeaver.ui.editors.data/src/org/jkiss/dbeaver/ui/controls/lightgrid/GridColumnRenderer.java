@@ -144,17 +144,6 @@ class GridColumnRenderer extends AbstractRenderer {
             gc.setClipping((Rectangle) null);
         }
 
-        {
-            // Draw column description
-            String text = getColumnDescription(element);
-            if (!CommonUtils.isEmpty(text)) {
-                y += TOP_MARGIN + grid.fontMetrics.getHeight();
-                text = UITextUtils.getShortString(grid.fontMetrics, text, width);
-                gc.setFont(grid.normalFont);
-                gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, isTransparent);
-            }
-        }
-
         // Draw border
         if (PAINT_COLUMN_FOCUS_BORDER && element == grid.getFocusColumnElement()) {
             drawSelected = selected;
@@ -210,6 +199,18 @@ class GridColumnRenderer extends AbstractRenderer {
         if (hasFilters) {
             gc.drawImage(IMAGE_FILTER, bounds.x + bounds.width - filterBounds.width - IMAGE_SPACING, y);
             // (sortOrder != SWT.NONE ? IMAGE_SPACING + sortBounds.width + 1 : ARROW_MARGIN)
+        }
+
+
+        {
+            // Draw column description
+            String text = getColumnDescription(element);
+            if (!CommonUtils.isEmpty(text)) {
+                y += TOP_MARGIN + grid.fontMetrics.getHeight();
+                text = UITextUtils.getShortString(grid.fontMetrics, text, width);
+                gc.setFont(grid.normalFont);
+                gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, isTransparent);
+            }
         }
 
         gc.setFont(grid.normalFont);
