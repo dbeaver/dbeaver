@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Created-By: Maven Archiver 3.6.0
+Build-Jdk-Spec: 17
+Bundle-ManifestVersion: 2
+Bundle-Name: %pluginName
+Bundle-Vendor: %providerName
+Bundle-SymbolicName: org.eclipse.equinox.launcher.win32.win32.aarch64;si
+ ngleton:=true
+Bundle-Version: 1.2.700.v20221217-1825
+Fragment-Host: org.eclipse.equinox.launcher;bundle-version="[1.5.0,1.7.0
+ )"
+Eclipse-PlatformFilter: (& (osgi.ws=win32) (osgi.os=win32) (osgi.arch=aa
+ rch64))
+Bundle-Localization: launcher.win32.win32.aarch64
+Eclipse-BundleShape: dir
+Eclipse-SourceReferences: scm:git:https://github.com/eclipse-equinox/equ
+ inox.git;path="bundles/org.eclipse.equinox.launcher.win32.win32.aarch64
+ ";tag="I20221213-1800";commitId=df5636205c22595a402353026884634f5292636
+ 6
+
