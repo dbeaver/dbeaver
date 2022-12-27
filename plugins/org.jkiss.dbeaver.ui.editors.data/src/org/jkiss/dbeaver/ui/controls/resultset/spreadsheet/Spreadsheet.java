@@ -376,8 +376,10 @@ public class Spreadsheet extends LightGrid implements Listener {
             GridPos focusPos = getFocusPos();
             presentation.fillContextMenu(
                 manager,
-                (focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null),
-                (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
+                isHoveringOnRowHeader() ? null :
+                    focusPos.col >= 0 && focusPos.col < getColumnCount() ? getColumn(focusPos.col) : null,
+                isHoveringOnHeader() ? null :
+                    (focusPos.row >= 0 && focusPos.row < gridRows.length ? gridRows[focusPos.row] : null)
             );
         });
         menuMgr.setRemoveAllWhenShown(true);
