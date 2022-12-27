@@ -32,8 +32,11 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeDriver;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 
 import java.util.ArrayList;
@@ -266,7 +269,14 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                     if (curOffset != offset) {
                         String templateName = document.get(curOffset, offset - curOffset);
                         SQLTemplatesPage templatesPage = editor.getTemplatesPage();
-                        Template template = templatesPage.getTemplateStore().findTemplate(templateName);
+                        String contextId = null;
+                        if (editor instanceof SQLEditor) {
+                           DBPDataSourceContainer dsContainer = ((SQLEditor) editor).getDataSourceContainer();
+                           if (dsContainer != null) {
+                               contextId = SQLContextTypeDriver.getTypeId(dsContainer.getDriver());
+                           }
+                        }
+                        Template template = templatesPage.getTemplateStore().findTemplate(templateName, contextId);
                         if (template != null && template.isAutoInsertable()) {
                             sourceViewer.setSelectedRange(curOffset, offset - curOffset);
                             templatesPage.insertTemplate(template, document);
