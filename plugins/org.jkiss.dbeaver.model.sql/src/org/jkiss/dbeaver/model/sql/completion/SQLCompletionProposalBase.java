@@ -126,11 +126,14 @@ public class SQLCompletionProposalBase {
         final char structSeparator = context.getSyntaxManager().getStructSeparator();
         DBPDataSource dataSource = context.getDataSource();
 
-        boolean useFQName = dataSource != null && context.isUseFQNames() && replacementString.indexOf(structSeparator) != -1;
+        final boolean proposalContainsStructSeparator = replacementString.indexOf(structSeparator) >= 0;
+        boolean useFQName = dataSource != null && context.isUseFQNames() && proposalContainsStructSeparator;
         if (useFQName) {
             replacementOffset = wordDetector.getStartOffset();
             replacementLength = wordDetector.getLength();
-        } else if (!fullWord.equals(replacementString) && !replacementString.contains(String.valueOf(structSeparator))) {
+        } else if ((!proposalContainsStructSeparator && !fullWord.equals(replacementString))
+            || dataSource != null && DBUtils.isQuotedIdentifier(dataSource, replacementString)
+        ) {
             // Replace only last part
             int startOffset = fullWord.lastIndexOf(structSeparator, curOffset - 1);
             if (startOffset == -1) {
