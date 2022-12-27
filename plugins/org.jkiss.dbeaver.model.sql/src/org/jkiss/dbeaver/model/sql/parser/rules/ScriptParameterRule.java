@@ -58,7 +58,7 @@ public class ScriptParameterRule implements TPRule {
             do {
                 buffer.append((char) c);
                 c = scanner.read();
-            } while (c != TPCharacterScanner.EOF && Character.isJavaIdentifierPart(c));
+            } while (c != TPCharacterScanner.EOF && isValidChar(c));
             scanner.unread();
 
             // Check for parameters
@@ -71,7 +71,7 @@ public class ScriptParameterRule implements TPRule {
                 if (buffer.charAt(0) == namedPrefix && buffer.length() > 1) {
                     boolean validChars = true;
                     for (int i = 1; i < buffer.length(); i++) {
-                        if (!Character.isJavaIdentifierPart(buffer.charAt(i))) {
+                        if (!isValidChar(buffer.charAt(i))) {
                             validChars = false;
                             break;
                         }
@@ -89,5 +89,9 @@ public class ScriptParameterRule implements TPRule {
             scanner.unread();
         }
         return TPTokenAbstract.UNDEFINED;
+    }
+    
+    private boolean isValidChar(int character) {
+        return Character.isJavaIdentifierPart(character) || character == '"' || character == '\'';
     }
 }
