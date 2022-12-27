@@ -39,6 +39,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
 
 class SnowflakeExecutionContext extends GenericExecutionContext {
     private static final Log log = Log.getLog(SnowflakeExecutionContext.class);
@@ -203,5 +205,14 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
             log.error("Unable to set active schema due to unexpected SQLException. schemaName=" + schemaName);
             throw new DBCException(e, this);
         }
+    }
+
+    @NotNull
+    @Override
+    public List<String> getExtraInitQueries() {
+        // JDBC Driver throws java.lang.NoClassDefFoundError for class RootAllocator in Arrow Library, while trying to run a select query.
+        // So this is official workaround for systems with Java 17 and if Arrow library installation is not possible
+        // or if the Operating System is not supported by Arrow.
+        return Collections.singletonList("ALTER SESSION SET JDBC_QUERY_RESULT_FORMAT='JSON'");
     }
 }

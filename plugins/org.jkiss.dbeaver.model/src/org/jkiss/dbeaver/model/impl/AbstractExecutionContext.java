@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +102,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         // Execute bootstrap queries
         DBPConnectionBootstrap bootstrap = getBootstrapSettings();
         List<String> initQueries = bootstrap.getInitQueries();
+        initQueries.addAll(getExtraInitQueries());
         if (!CommonUtils.isEmpty(initQueries)) {
             monitor.subTask("Run bootstrap queries");
             try (DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run bootstrap queries")) {
@@ -119,11 +121,20 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
                             throw new DBCException(message, e, this);
                         }
                     }
+                    monitor.worked(1);
                 }
             }
             return true;
         }
         return false;
+    }
+
+    /**
+     * Returns a list of queries that should be performed before initializing the session.
+     */
+    @NotNull
+    public List<String> getExtraInitQueries() {
+        return new ArrayList<>();
     }
 
     protected void closeContext()

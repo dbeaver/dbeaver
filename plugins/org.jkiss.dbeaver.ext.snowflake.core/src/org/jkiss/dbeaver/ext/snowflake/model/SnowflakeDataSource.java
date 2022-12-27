@@ -25,17 +25,13 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -81,22 +77,6 @@ public class SnowflakeDataSource extends GenericDataSource {
     @Override
     protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
         return new SnowflakeExecutionContext(instance, type);
-    }
-
-    @Override
-    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Alter Snowflake Session")) {
-            // JDBC Driver throws java.lang.NoClassDefFoundError for class RootAllocator in Arrow Library, while trying to run a select query.
-            // So this is official workaround for systems with Java 17 and if Arrow library installation is not possible
-            // or if the Operating System is not supported by Arrow.
-            try (JDBCStatement dbStat = session.createStatement()) {
-                dbStat.execute("ALTER SESSION SET JDBC_QUERY_RESULT_FORMAT='JSON'");
-            } catch (SQLException e) {
-                // Only logging because
-                log.error("Can't change current session format parameter", e);
-            }
-        }
-        super.initialize(monitor);
     }
 
     @Override
