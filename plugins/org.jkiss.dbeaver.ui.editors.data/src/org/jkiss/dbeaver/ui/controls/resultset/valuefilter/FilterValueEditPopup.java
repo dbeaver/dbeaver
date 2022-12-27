@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -153,12 +154,26 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         Table table = filter.getTableViewer().getTable();
 
         ViewerColumnController<?, ?> columnController = new ViewerColumnController<>("sqlFilterValueEditPopup", filter.getTableViewer());
-        columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_value_label, ResultSetMessages.dialog_filter_value_edit_table_value_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                return filter.getAttribute().getValueHandler().getValueDisplayString(filter.getAttribute(), ((DBDLabelValuePair) element).getValue(), DBDDisplayFormat.UI);
-            }
-        });
+        columnController.addColumn(
+            ResultSetMessages.dialog_filter_value_edit_table_value_label,
+            ResultSetMessages.dialog_filter_value_edit_table_value_description,
+            SWT.LEFT,
+            true,
+            true,
+            filter.getAttribute().getDataKind() == DBPDataKind.NUMERIC,
+            null,
+            new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    return filter.getAttribute().getValueHandler().getValueDisplayString(
+                        filter.getAttribute(),
+                        ((DBDLabelValuePair) element).getValue(),
+                        DBDDisplayFormat.UI
+                    );
+                }
+            },
+            null
+        );
         if (descReferrer != null) {
             columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_description_label, ResultSetMessages.dialog_filter_value_edit_table_description_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
                 @Override
