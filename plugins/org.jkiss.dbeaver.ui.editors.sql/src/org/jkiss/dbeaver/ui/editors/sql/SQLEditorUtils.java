@@ -46,6 +46,8 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeBase;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeDriver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
@@ -543,5 +545,29 @@ public class SQLEditorUtils {
             oldServicesEnabled && markWordForSelectionEnabled,
             newServicesEnabled && markWordForSelectionEnabled
         );
+    }
+    
+    /**
+     * Returns type id of the driver of data source container, associated with SQLEditor
+     * Returns null if editor is not instance fo SQLEditor or data source container is null
+     */
+    @Nullable
+    public static String getEditorContextTypeId(@NotNull SQLEditorBase editor) {
+        String contextTypeId = null;
+        if (editor instanceof SQLEditor) {
+            DBPDataSourceContainer dsContainer = ((SQLEditor) editor).getDataSourceContainer();
+            if (dsContainer != null) {
+                contextTypeId = SQLContextTypeDriver.getTypeId(dsContainer.getDriver());
+            }
+        }
+        return contextTypeId;
+    }
+    
+    /**
+     * Checks whether template's context is suitable for the editor context
+     */
+    public static boolean isTemplateContextFitsEditorContext(@NotNull String templateContextTypeId, @Nullable String editorContextId) {
+        return editorContextId != null && templateContextTypeId.equalsIgnoreCase(editorContextId) 
+            || templateContextTypeId.equalsIgnoreCase(SQLContextTypeBase.ID_SQL);
     }
 }
