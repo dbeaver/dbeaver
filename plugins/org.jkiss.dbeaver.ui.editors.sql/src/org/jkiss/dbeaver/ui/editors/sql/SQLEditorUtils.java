@@ -548,8 +548,8 @@ public class SQLEditorUtils {
     }
     
     /**
-     * Returns type id of the driver of data source container, associated with SQLEditor
-     * Returns null if editor is not instance fo SQLEditor or data source container is null
+     * Returns type id of the driver of data source container, associated with SQLEditor, 
+     * or {@code null} if editor is not instance of SQLEditor or data source container is null
      */
     @Nullable
     public static String getEditorContextTypeId(@NotNull SQLEditorBase editor) {
