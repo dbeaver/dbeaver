@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 */
 public class ScriptParameterRule implements TPRule {
     
-    private final static char QUOTE_CHAR = '"';
+    private static final char QUOTE_CHAR = '"';
     
     private final SQLSyntaxManager syntaxManager;
     private final SQLParameterToken parameterToken;
@@ -86,7 +86,7 @@ public class ScriptParameterRule implements TPRule {
             }
             if (syntaxManager.isParametersEnabled()) {
                 if (buffer.charAt(0) == namedPrefix && buffer.length() > 1) {
-                    if (buffer.charAt(1) == QUOTE_CHAR) {
+                    if (buffer.charAt(1) == QUOTE_CHAR && buffer.charAt(buffer.length() - 1) == QUOTE_CHAR && buffer.length() > 3) {
                         return parameterToken;
                     }
                     boolean validChars = true;

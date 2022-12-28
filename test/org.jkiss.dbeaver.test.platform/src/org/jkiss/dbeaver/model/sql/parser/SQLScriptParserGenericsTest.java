@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
@@ -41,7 +42,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SQLScriptParserGenericsTest {
@@ -93,6 +96,23 @@ public class SQLScriptParserGenericsTest {
             element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
             Assert.assertEquals("begin transaction", element.getText());
         }
+    }
+    
+    @Test
+    public void parseNamedParameters() throws DBException {
+        var expectedParamNames = List.of(":1", ":\"SYS_B_1\"", ":\"MyVar8\"", ":ABC", ":\"#d2\"");
+        var invalidParamNames = List.of("&6^34", ":%#2", ":\"\"\"\"");
+        StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
+        expectedParamNames.stream().forEach(n -> joiner.add(n));
+        invalidParamNames.stream().forEach(n -> joiner.add(n));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assert.assertEquals(expectedParamNames, actualParamNames);
     }
     
     private void assertParse(String dialectName, String query, String[] expected) throws DBException {
