@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.completion;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -132,7 +133,7 @@ public class SQLCompletionProposalBase {
             replacementOffset = wordDetector.getStartOffset();
             replacementLength = wordDetector.getLength();
         } else if ((!proposalContainsStructSeparator && !fullWord.equals(replacementString))
-            || dataSource != null && DBUtils.isQuotedIdentifier(dataSource, replacementString)
+            || dataSource != null && containsQuotedIdentifier(dataSource, replacementString)
         ) {
             // Replace only last part
             int startOffset = fullWord.lastIndexOf(structSeparator, curOffset - 1);
@@ -300,4 +301,24 @@ public class SQLCompletionProposalBase {
         return displayString;
     }
 
+    // The proposal may contain identifier containing alias. Let's handle it using this ugly hack for now
+    private static boolean containsQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String string) {
+        final String[][] quotes = dataSource.getSQLDialect().getIdentifierQuoteStrings();
+        if (quotes == null) {
+            return false;
+        }
+        if (DBUtils.isQuotedIdentifier(dataSource, string)) {
+            return true;
+        }
+        for (String[] pair : quotes) {
+            if (!string.startsWith(pair[0])) {
+                continue;
+            }
+            final int last = string.lastIndexOf(pair[1]);
+            if (last > 0 && DBUtils.isQuotedIdentifier(dataSource, string.substring(0, last + 1))) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
