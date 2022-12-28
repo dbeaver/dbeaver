@@ -27,6 +27,9 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 * SQL parameter rule
 */
 public class ScriptParameterRule implements TPRule {
+    
+    private final static char QUOTE_CHAR = '"';
+    
     private final SQLSyntaxManager syntaxManager;
     private final SQLParameterToken parameterToken;
     private final StringBuilder buffer;
@@ -55,10 +58,24 @@ public class ScriptParameterRule implements TPRule {
         int c = scanner.read();
         if (c != TPCharacterScanner.EOF && (c == anonymousParameterMark || c == namedPrefix)) {
             buffer.setLength(0);
-            do {
-                buffer.append((char) c);
-                c = scanner.read();
-            } while (c != TPCharacterScanner.EOF && isValidChar(c));
+            buffer.append((char) c);
+            c = scanner.read();
+            if (c == QUOTE_CHAR) {
+                do {
+                    buffer.append((char) c);
+                    c = scanner.read();
+                    if (c == QUOTE_CHAR) {
+                        buffer.append((char) c);
+                        c = scanner.read();
+                        break;
+                    }
+                } while (c != TPCharacterScanner.EOF);
+            } else {
+                while (c != TPCharacterScanner.EOF && Character.isJavaIdentifierPart(c)) {
+                    buffer.append((char) c);
+                    c = scanner.read();
+                }
+            }
             scanner.unread();
 
             // Check for parameters
@@ -69,9 +86,12 @@ public class ScriptParameterRule implements TPRule {
             }
             if (syntaxManager.isParametersEnabled()) {
                 if (buffer.charAt(0) == namedPrefix && buffer.length() > 1) {
+                    if (buffer.charAt(1) == QUOTE_CHAR) {
+                        return parameterToken;
+                    }
                     boolean validChars = true;
                     for (int i = 1; i < buffer.length(); i++) {
-                        if (!isValidChar(buffer.charAt(i))) {
+                        if (!Character.isJavaIdentifierPart(buffer.charAt(i))) {
                             validChars = false;
                             break;
                         }
@@ -89,9 +109,5 @@ public class ScriptParameterRule implements TPRule {
             scanner.unread();
         }
         return TPTokenAbstract.UNDEFINED;
-    }
-    
-    private boolean isValidChar(int character) {
-        return Character.isJavaIdentifierPart(character) || character == '"' || character == '\'';
     }
 }
