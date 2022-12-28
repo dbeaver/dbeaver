@@ -100,11 +100,11 @@ public class SQLScriptParserGenericsTest {
     
     @Test
     public void parseNamedParameters() throws DBException {
-        var expectedParamNames = List.of(":1", ":\"SYS_B_1\"", ":\"MyVar8\"", ":ABC", ":\"#d2\"");
-        var invalidParamNames = List.of("&6^34", ":%#2", ":\"\"\"\"");
+        List<String> expectedParamNames = List.of(":1", ":\"SYS_B_1\"", ":\"MyVar8\"", ":ABC", ":\"#d2\"");
+        List<String> invalidParamNames = List.of("&6^34", ":%#2", ":\"\"\"\"");
         StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
-        expectedParamNames.stream().forEach(n -> joiner.add(n));
-        invalidParamNames.stream().forEach(n -> joiner.add(n));
+        expectedParamNames.stream().forEach(joiner::add);
+        invalidParamNames.stream().forEach(joiner::add);
         String query = joiner.toString();
         SQLParserContext context = createParserContext(setDialect("snowflake"), query);
         List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());

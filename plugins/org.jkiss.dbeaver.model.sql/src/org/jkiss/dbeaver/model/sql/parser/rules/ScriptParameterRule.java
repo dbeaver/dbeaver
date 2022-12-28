@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLParameterToken;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
@@ -27,14 +28,14 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 * SQL parameter rule
 */
 public class ScriptParameterRule implements TPRule {
-    
-    private static final char QUOTE_CHAR = '"';
-    
+
     private final SQLSyntaxManager syntaxManager;
     private final SQLParameterToken parameterToken;
     private final StringBuilder buffer;
     private final char anonymousParameterMark;
     private final String namedParameterPrefix;
+    private final String[][] quoteStrings;
+    
 
     public ScriptParameterRule(SQLSyntaxManager syntaxManager, SQLParameterToken parameterToken, String prefix) {
         this.syntaxManager = syntaxManager;
@@ -42,6 +43,7 @@ public class ScriptParameterRule implements TPRule {
         this.buffer = new StringBuilder();
         this.anonymousParameterMark = syntaxManager.getAnonymousParameterMark();
         this.namedParameterPrefix = prefix;
+        this.quoteStrings = syntaxManager.getIdentifierQuoteStrings();
     }
 
     @Override
@@ -60,11 +62,12 @@ public class ScriptParameterRule implements TPRule {
             buffer.setLength(0);
             buffer.append((char) c);
             c = scanner.read();
-            if (c == QUOTE_CHAR) {
+            
+            if (isIdentifierQuote((char) c, true, false)) {
                 do {
                     buffer.append((char) c);
                     c = scanner.read();
-                    if (c == QUOTE_CHAR) {
+                    if (isIdentifierQuote((char) c, false, true)) {
                         buffer.append((char) c);
                         c = scanner.read();
                         break;
@@ -86,7 +89,10 @@ public class ScriptParameterRule implements TPRule {
             }
             if (syntaxManager.isParametersEnabled()) {
                 if (buffer.charAt(0) == namedPrefix && buffer.length() > 1) {
-                    if (buffer.charAt(1) == QUOTE_CHAR && buffer.charAt(buffer.length() - 1) == QUOTE_CHAR && buffer.length() > 3) {
+                    if (isIdentifierQuote(buffer.charAt(1), true, false)
+                        && isIdentifierQuote(buffer.charAt(buffer.length() - 1), false, true)
+                        && buffer.length() > 3
+                    ) {
                         return parameterToken;
                     }
                     boolean validChars = true;
@@ -110,4 +116,20 @@ public class ScriptParameterRule implements TPRule {
         }
         return TPTokenAbstract.UNDEFINED;
     }
+    
+    private boolean isIdentifierQuote(char c, boolean testStart, boolean testEnd) {
+        String testStr = Character.toString(c);
+        if (testStr.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
+            return true;
+        }
+        if (quoteStrings != null) {
+            for (String[] quotePair : quoteStrings) {
+                if ((testStart && testStr.equals(quotePair[0])) || (testEnd && testStr.equals(quotePair[1]))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }
