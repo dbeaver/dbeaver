@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 
 class SnowflakeExecutionContext extends GenericExecutionContext {
@@ -213,6 +212,6 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
         // JDBC Driver throws java.lang.NoClassDefFoundError for class RootAllocator in Arrow Library, while trying to run a select query.
         // So this is official workaround for systems with Java 17 and if Arrow library installation is not possible
         // or if the Operating System is not supported by Arrow.
-        return Collections.singletonList("ALTER SESSION SET JDBC_QUERY_RESULT_FORMAT='JSON'");
+        return List.of("ALTER SESSION SET JDBC_QUERY_RESULT_FORMAT='JSON'");
     }
 }
