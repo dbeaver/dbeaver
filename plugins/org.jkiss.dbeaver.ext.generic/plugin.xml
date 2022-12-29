@@ -683,6 +683,8 @@
                     supportsDistributedMode="false"
                     categories="sql,embedded,file">
 
+                    <parameter name="identifier-quotes" value="[:]"/>
+
                     <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.ucanaccess"/>
 
