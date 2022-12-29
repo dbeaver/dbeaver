@@ -137,6 +137,9 @@ public class DriverUtils {
             }
         }
         Path localFile = localCacheDir.resolve(zipEntry.getName());
+        if (!localFile.normalize().startsWith(localCacheDir.normalize())) {
+            throw new IOException("Zip entry is outside of the target directory");
+        }
         jarFiles.add(localFile);
         if (Files.exists(localFile)) {
             // Already extracted

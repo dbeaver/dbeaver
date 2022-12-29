@@ -29,10 +29,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -98,10 +95,12 @@ import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -174,7 +173,7 @@ public class ResultSetViewer extends Viewer
     private StatusLabel statusLabel;
     private ActiveStatusMessage rowCountLabel;
     private Text selectionStatLabel;
-    //private Text resultSetSize;
+    private Text resultSetSize;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
 
@@ -240,8 +239,8 @@ public class ResultSetViewer extends Viewer
         this.dataReceiver = new ResultSetDataReceiver(this);
         this.dataPropertyListener = event -> {
             DBPDataSourceContainer dataSourceContainer = null;
-            if (event.getSource() instanceof IDataSourceContainerProvider) {
-                dataSourceContainer = ((IDataSourceContainerProvider) event.getSource()).getDataSourceContainer();
+            if (event.getSource() instanceof DBPDataSourceContainerProvider) {
+                dataSourceContainer = ((DBPDataSourceContainerProvider) event.getSource()).getDataSourceContainer();
             }
             handleDataPropertyChange(dataSourceContainer, event.getProperty(), event.getOldValue(), event.getNewValue());
         };
@@ -449,6 +448,10 @@ public class ResultSetViewer extends Viewer
             return;
         }
         lastPropertyUpdateTime = System.currentTimeMillis();
+        if (ResultSetPreferences.RESULT_SET_PRESENTATION.equals(property)) {
+            // No need to refresh data
+            return;
+        }
         UIUtils.asyncExec(() -> {
             if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
                 if (activePresentation instanceof AbstractPresentation) {
@@ -593,11 +596,9 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel == null || this.viewerPanel.isDisposed()) {
             return;
         }
-/*
         if (resultSetSize != null && !resultSetSize.isDisposed()) {
             resultSetSize.setEnabled(getDataContainer() != null);
         }
-*/
 
         this.viewerPanel.setRedraw(false);
         try {
@@ -1580,7 +1581,8 @@ public class ResultSetViewer extends Viewer
      * It is a hack function. Generally all command associated widgets should be updated automatically by framework.
      * Freaking E4 do not do it. I've spent a couple of days fighting it. Guys, you owe me.
      */
-    private void updateToolbar()
+    @Override
+    public void updateToolbar()
     {
         if (statusBar != null) statusBar.setRedraw(false);
         try {
@@ -1685,8 +1687,9 @@ public class ResultSetViewer extends Viewer
 /*
             navToolBarManager.add(new Separator());
             navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
-            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
 */
+            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
+
             navToolBarManager.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
             ToolBar navToolBar = navToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(navToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
@@ -1738,7 +1741,6 @@ public class ResultSetViewer extends Viewer
         }
         {
             final int fontHeight = UIUtils.getFontHeight(statusBar);
-/*
 
             resultSetSize = new Text(statusBar, SWT.BORDER);
             resultSetSize.setLayoutData(new RowData(5 * fontHeight, SWT.DEFAULT));
@@ -1769,7 +1771,6 @@ public class ResultSetViewer extends Viewer
                 }
             });
             UIUtils.addDefaultEditActionsSupport(site, resultSetSize);
-*/
 
             rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.COMPILE), ResultSetMessages.controls_resultset_viewer_calculate_row_count, this) {
                 @Override
@@ -1864,7 +1865,8 @@ public class ResultSetViewer extends Viewer
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null &&
             (executionContext.getDataSource().getContainer().isConnectionReadOnly() ||
-            executionContext.getDataSource().getInfo().isReadOnlyData()))
+            executionContext.getDataSource().getInfo().isReadOnlyData() ||
+            isUniqueKeyUndefinedButRequired(executionContext)))
         {
             return true;
         }
@@ -2078,12 +2080,10 @@ public class ResultSetViewer extends Viewer
         ((RowData)statusLabel.getLayoutData()).width = statusLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         rowCountLabel.updateActionState();
 
-/*
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && dataContainer.getDataSource() != null) {
             resultSetSize.setText(String.valueOf(getSegmentMaxRows()));
         }
-*/
     }
 
     private void setStatusTooltip(String message) {
@@ -2259,22 +2259,24 @@ public class ResultSetViewer extends Viewer
         }
         if (constraint.getOrderPosition() == 0 && forceOrder != ColumnOrder.NONE) {
             if (orderingMode == ResultSetUtils.OrderingMode.SERVER_SIDE && supportsDataFilter()) {
-                if (ConfirmationDialog.showConfirmDialogNoToggle(
-                    ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+                if (ConfirmationDialog.confirmAction(
                     viewerPanel.getShell(),
                     ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
                     ConfirmationDialog.WARNING,
-                    columnElement.getName()) != IDialogConstants.YES_ID)
+                    columnElement.getName()) != IDialogConstants.YES_ID) 
                 {
                     return;
                 }
             }
             constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
             constraint.setOrderDescending(forceOrder == ColumnOrder.DESC);
-        } else if (!constraint.isOrderDescending() && forceOrder != ColumnOrder.NONE) {
+        } else if (forceOrder == ColumnOrder.ASC) {
+            constraint.setOrderDescending(false);
+        } else if (forceOrder == ColumnOrder.DESC) {
             constraint.setOrderDescending(true);
         } else {
+            // Reset order
             for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
                 if (con2.getOrderPosition() > constraint.getOrderPosition()) {
                     con2.setOrderPosition(con2.getOrderPosition() - 1);
@@ -2403,8 +2405,7 @@ public class ResultSetViewer extends Viewer
         if (!isDirty()) {
             return ISaveablePart2.YES;
         }
-        int result = ConfirmationDialog.showConfirmDialog(
-            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+        int result = ConfirmationDialog.confirmAction(
             viewerPanel.getShell(),
             ResultSetPreferences.CONFIRM_RS_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL);
@@ -2475,7 +2476,8 @@ public class ResultSetViewer extends Viewer
             executionContext == null ||
             !executionContext.isConnected() ||
             !executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA) ||
-            executionContext.getDataSource().getInfo().isReadOnlyData();
+            executionContext.getDataSource().getInfo().isReadOnlyData() ||
+            isUniqueKeyUndefinedButRequired(executionContext);
     }
 
     @Override
@@ -2495,9 +2497,26 @@ public class ResultSetViewer extends Viewer
             return "Data edit restricted";
         }
         if (executionContext.getDataSource().getInfo().isReadOnlyData()) {
+            return "Read-only data container";
+        }
+        if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
             return "Connection is in read-only state";
         }
+        if (isUniqueKeyUndefinedButRequired(executionContext)) {
+            return "No unique key defined";
+        }
         return null;
+    }
+
+    private boolean isUniqueKeyUndefinedButRequired(@NotNull DBCExecutionContext context) {
+        final DBPPreferenceStore store = context.getDataSource().getContainer().getPreferenceStore();
+
+        if (store.getBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING)) {
+            final DBDRowIdentifier identifier = model.getDefaultRowIdentifier();
+            return identifier == null || !identifier.isValidIdentifier();
+        }
+
+        return false;
     }
 
     /**
@@ -2555,8 +2574,18 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void showDistinctFilter(DBDAttributeBinding curAttribute) {
-        showFiltersDistinctMenu(curAttribute, false);
+    public void showColumnMenu(DBDAttributeBinding curAttribute) {
+        MenuManager columnMenu = new MenuManager();
+        //getActivePresentation().setCurrentAttribute(curAttribute);
+        ResultSetRow currentRow = getCurrentRow();
+
+        fillOrderingsMenu(columnMenu, curAttribute, currentRow);
+        fillFiltersMenu(columnMenu, curAttribute, currentRow);
+
+        final Menu contextMenu = columnMenu.createContextMenu(getActivePresentation().getControl());
+        contextMenu.setLocation(Display.getCurrent().getCursorLocation());
+        contextMenu.addMenuListener(MenuListener.menuHiddenAdapter(menuEvent -> UIUtils.asyncExec(columnMenu::dispose)));
+        contextMenu.setVisible(true);
     }
 
     public void showFiltersDistinctMenu(DBDAttributeBinding curAttribute, boolean atKeyboardCursor) {
@@ -2571,12 +2600,10 @@ public class ResultSetViewer extends Viewer
                 // Column enumeration is expensive
             }
         }
-        if (isExpensiveFilter && ConfirmationDialog.showConfirmDialogNoToggle(
-            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+        if (isExpensiveFilter && ConfirmationDialog.confirmAction(
             viewerPanel.getShell(),
-            ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
+            ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
             ConfirmationDialog.QUESTION,
-            ConfirmationDialog.WARNING,
             curAttribute.getName()) != IDialogConstants.YES_ID)
         {
             return;
@@ -3554,8 +3581,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
                 if (panelsDirty) {
-                    int result = ConfirmationDialog.showConfirmDialog(
-                        ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+                    int result = ConfirmationDialog.confirmAction(
                         viewerPanel.getShell(),
                         ResultSetPreferences.CONFIRM_RS_PANEL_RESET,
                         ConfirmationDialog.CONFIRM);
@@ -3920,12 +3946,11 @@ public class ResultSetViewer extends Viewer
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (ConfirmationDialog.showConfirmDialogEx(
-            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+        if (ConfirmationDialog.confirmAction(
             viewerPanel.getShell(),
-            ResultSetPreferences.CONFIRM_RS_FETCH_ALL,
-            ConfirmationDialog.QUESTION,
-            ConfirmationDialog.WARNING) != IDialogConstants.YES_ID)
+            ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_RS_FETCH_ALL,
+            ConfirmationDialog.QUESTION
+        ) != IDialogConstants.YES_ID)
         {
             return;
         }
@@ -4852,6 +4877,10 @@ public class ResultSetViewer extends Viewer
                     "Order by " + attribute.getName() + " " + order.name(), AS_CHECK_BOX);
             this.attribute = attribute;
             this.order = order;
+            if (order != ColumnOrder.NONE) {
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(order != ColumnOrder.ASC ?
+                    UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE));
+            }
         }
 
         @Override

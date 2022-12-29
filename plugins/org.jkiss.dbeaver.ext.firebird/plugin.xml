@@ -46,6 +46,7 @@
 
                     <property name="encoding" value="UTF8"/>
 
+                    <parameter name="supports-embedded-database-creation" value="false"/>
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>

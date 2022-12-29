@@ -37,6 +37,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.LogOutputStream;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -98,11 +99,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String PROP_EXIT_DATA = IApplicationContext.EXIT_DATA_PROPERTY; //$NON-NLS-1$
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
-    private static final String PROP_TRUST_STORE_TYPE = "javax.net.ssl.trustStoreType"; //$NON-NLS-1$
     private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
-
+    
     private final String WORKSPACE_DIR_6; //$NON-NLS-1$
     private final Path FILE_WITH_WORKSPACES;
     public final String WORKSPACE_DIR_CURRENT;
@@ -278,8 +278,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
         TimezoneRegistry.overrideTimezone();
 
-        if (RuntimeUtils.isWindows() && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
-            System.setProperty(PROP_TRUST_STORE_TYPE, VALUE_TRUST_STRORE_TYPE_WINDOWS);
+        if (RuntimeUtils.isWindows()
+            && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
+            && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
+            && ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+        ) {
+            System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, VALUE_TRUST_STRORE_TYPE_WINDOWS);
         }
 
         // Prefs default
@@ -687,14 +691,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
         logLocation = GeneralUtils.replaceVariables(logLocation, new SystemVariablesResolver());
         File debugLogFile = new File(logLocation);
-        if (debugLogFile.exists()) {
-            if (!debugLogFile.delete()) {
-                System.err.println("Can't delete debug log file"); //$NON-NLS-1$
-                return;
-            }
-        }
         try {
-            debugWriter = new FileOutputStream(debugLogFile);
+            debugWriter = new LogOutputStream(debugLogFile);
             oldSystemOut = System.out;
             oldSystemErr = System.err;
             System.setOut(new PrintStream(new ProxyPrintStream(debugWriter, oldSystemOut)));

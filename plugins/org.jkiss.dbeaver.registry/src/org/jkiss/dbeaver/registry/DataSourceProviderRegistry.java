@@ -606,13 +606,15 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     void fireRegistryChange(DataSourceRegistry registry, boolean load) {
+        List<DBPRegistryListener> lCopy;
         synchronized (registryListeners) {
-            for (DBPRegistryListener listener : registryListeners) {
-                if (load) {
-                    listener.handleRegistryLoad(registry);
-                } else {
-                    listener.handleRegistryUnload(registry);
-                }
+            lCopy = new ArrayList<>(registryListeners);
+        }
+        for (DBPRegistryListener listener : lCopy) {
+            if (load) {
+                listener.handleRegistryLoad(registry);
+            } else {
+                listener.handleRegistryUnload(registry);
             }
         }
     }

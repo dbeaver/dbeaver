@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -90,6 +89,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
@@ -141,7 +141,7 @@ import java.util.stream.Collectors;
  * SQL Executor
  */
 public class SQLEditor extends SQLEditorBase implements
-    IDataSourceContainerProviderEx,
+    IDataSourceContainerUpdate,
     DBPEventListener,
     ISaveablePart2,
     DBPDataSourceTask,
@@ -151,6 +151,8 @@ public class SQLEditor extends SQLEditorBase implements
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_PARALLEL_QUERIES_NO_WARN = 1;
+
+    private static final int QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION = 100;
 
     private static final int SQL_EDITOR_CONTROL_INDEX = 1;
     private static final int EXTRA_CONTROL_INDEX = 0;
@@ -224,7 +226,8 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
     private ScriptAutoSaveJob scriptAutoSavejob;
     private boolean isResultSetAutoFocusEnabled = true;
-    
+    private Boolean isDisableFetchResultSet = null;
+
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
     private static class ServerOutputInfo {
@@ -459,8 +462,8 @@ public class SQLEditor extends SQLEditorBase implements
         if (inputDataSource == null) {
             // No datasource. Try to get one from active part
             IWorkbenchPart activePart = getSite().getWorkbenchWindow().getActivePage().getActivePart();
-            if (activePart != this && activePart instanceof IDataSourceContainerProvider) {
-                inputDataSource = ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+            if (activePart != this && activePart instanceof DBPDataSourceContainerProvider) {
+                inputDataSource = ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
             }
         }
         setDataSourceContainer(inputDataSource);
@@ -639,6 +642,12 @@ public class SQLEditor extends SQLEditorBase implements
     public boolean isSmartAutoCommit() {
         return getActivePreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT);
     }
+    
+    @Override
+    public boolean isFoldingEnabled() {
+        return SQLEditorUtils.isSQLSyntaxParserEnabled(getEditorInput())
+            && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+    }
 
     @Override
     public void setSmartAutoCommit(boolean smartAutoCommit) {
@@ -655,9 +664,6 @@ public class SQLEditor extends SQLEditorBase implements
         topBarMan.getControl().redraw();
         bottomBarMan.getControl().redraw();
     }
-
-    
-    
     
     private class OpenContextJob extends AbstractJob {
         private final DBSInstance instance;
@@ -1001,7 +1007,7 @@ public class SQLEditor extends SQLEditorBase implements
         topBar.setData(VIEW_PART_PROP_NAME, this);
         topBarMan = new ToolBarManager(topBar);
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT));
-        //topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW));
+        topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW));
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT));
         topBarMan.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_EXPLAIN_PLAN));
         
@@ -2481,12 +2487,10 @@ public class SQLEditor extends SQLEditorBase implements
                 if (query.getEntityMetadata(false) != null) {
                     targetName = query.getEntityMetadata(false).getEntityName();
                 }
-                if (ConfirmationDialog.showConfirmDialogEx(
-                    ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME),
+                if (ConfirmationDialog.confirmAction(
                     getSite().getShell(),
-                    isDropTable ? SQLPreferenceConstants.CONFIRM_DROP_SQL : SQLPreferenceConstants.CONFIRM_DANGER_SQL,
+                    ConfirmationDialog.WARNING, isDropTable ? SQLPreferenceConstants.CONFIRM_DROP_SQL : SQLPreferenceConstants.CONFIRM_DANGER_SQL,
                     ConfirmationDialog.CONFIRM,
-                    ConfirmationDialog.WARNING,
                     query.getType().name(),
                     targetName) != IDialogConstants.OK_ID)
                 {
@@ -2494,12 +2498,10 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         } else if (newTab && queries.size() > MAX_PARALLEL_QUERIES_NO_WARN) {
-            if (ConfirmationDialog.showConfirmDialogEx(
-                ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME),
+            if (ConfirmationDialog.confirmAction(
                 getSite().getShell(),
-                SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL,
+                ConfirmationDialog.WARNING, SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL,
                 ConfirmationDialog.CONFIRM,
-                ConfirmationDialog.WARNING,
                 queries.size()) != IDialogConstants.OK_ID)
             {
                 return false;
@@ -2639,12 +2641,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (tabsToClose.size() > 1 || (tabsToClose.size() == 1 && keepFirstTab)) {
             int confirmResult = IDialogConstants.YES_ID;
             if (confirmClose) {
-                confirmResult = ConfirmationDialog.showConfirmDialog(
-                    ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME),
+                confirmResult = ConfirmationDialog.confirmAction(
                     getSite().getShell(),
-                    SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE,
-                    ConfirmationDialog.QUESTION_WITH_CANCEL,
-                    tabsToClose.size());
+                    tabsToClose.size(), SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE,
+                    ConfirmationDialog.QUESTION_WITH_CANCEL
+                );
                 if (confirmResult == IDialogConstants.CANCEL_ID || confirmResult < 0) {
                     return IDialogConstants.CANCEL_ID;
                 }
@@ -2726,7 +2727,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         refreshActions();
 
-        refreshEditorIconAndTitle(dsContainer);
+        refreshEditorIconAndTitle();
 
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
@@ -2770,25 +2771,42 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void refreshEditorIconAndTitle(DBPDataSourceContainer dsContainer) {
+    /**
+     * Build and update icon and title
+     */
+    public void refreshEditorIconAndTitle() {
+        DBPDataSourceContainer dsContainer = getDataSourceContainer();
         setPartName(getEditorName());
-
+        
         // Update icon
         if (editorImage != null) {
             editorImage.dispose();
         }
+        
+        DBPImage bottomLeft;
+        DBPImage bottomRight;
+        
         if (executionContext == null) {
             if (dsContainer instanceof DBPStatefulObject && ((DBPStatefulObject) dsContainer).getObjectState() == DBSObjectState.INVALID) {
-                OverlayImageDescriptorLegacy oid = new OverlayImageDescriptorLegacy(baseEditorImage.getImageData());
-                oid.setBottomRight(new ImageDescriptor[] { DBeaverIcons.getImageDescriptor(DBIcon.OVER_ERROR) });
-                editorImage = oid.createImage();
+                bottomRight = DBIcon.OVER_ERROR;
             } else {
-                editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+                bottomRight = null;
             }
         } else {
-            OverlayImageDescriptorLegacy oid = new OverlayImageDescriptorLegacy(baseEditorImage.getImageData());
-            oid.setBottomRight(new ImageDescriptor[] { DBeaverIcons.getImageDescriptor(DBIcon.OVER_SUCCESS) });
-            editorImage = oid.createImage();
+            bottomRight = DBIcon.OVER_SUCCESS;
+        }
+        
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput())) {
+            bottomLeft = null;
+        } else {
+            bottomLeft = DBIcon.OVER_RED_LAMP;
+        }
+        
+        if (bottomLeft != null || bottomRight != null) {
+            DBPImage image = new DBIconComposite(new DBIconBinary(null, baseEditorImage), false, null, null, bottomLeft, bottomRight);
+            editorImage = DBeaverIcons.getImage(image, false);
+        } else {
+            editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
         }
         setTitleImage(editorImage);
     }
@@ -2991,12 +3009,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (jobsRunning > 0) {
             log.warn("There are " + jobsRunning + " SQL job(s) still running in the editor");
 
-            if (ConfirmationDialog.showConfirmDialog(
-                ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME),
+            if (ConfirmationDialog.confirmAction(
                 null,
-                SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE,
-                ConfirmationDialog.QUESTION,
-                jobsRunning) != IDialogConstants.YES_ID)
+                jobsRunning, SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE,
+                ConfirmationDialog.QUESTION
+            ) != IDialogConstants.YES_ID)
             {
                 return ISaveablePart2.CANCEL;
             }
@@ -3397,15 +3414,32 @@ public class SQLEditor extends SQLEditorBase implements
                         null,
                         new StructuredSelection(this));
                 } else {
-                    final SQLQueryJob job = new SQLQueryJob(
-                        getSite(),
-                        isSingleQuery ? SQLEditorMessages.editors_sql_job_execute_query : SQLEditorMessages.editors_sql_job_execute_script,
-                        executionContext,
-                        resultsContainer,
-                        queries,
-                        scriptContext,
-                        this,
-                        listener);
+                    boolean disableFetchCurrentResultSets;
+                    if (queries.size() > QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION) {
+                        if (isDisableFetchResultSet == null) {
+                            UserChoiceResponse rs = DBWorkbench.getPlatformUI().showUserChoice(
+                                SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_title,
+                                SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_question,
+                                List.of(
+                                    SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_yes,
+                                    SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_no
+                                ),
+                                List.of(SQLEditorMessages.sql_editor_confirm_no_fetch_result_for_big_script_remember), 0, 0);
+                            disableFetchCurrentResultSets = rs.choiceIndex == 0;
+                            if (rs.forAllChoiceIndex != null) {
+                                isDisableFetchResultSet = disableFetchCurrentResultSets;
+                            }
+                        } else {
+                            disableFetchCurrentResultSets = isDisableFetchResultSet;
+                        }
+                    } else {
+                        disableFetchCurrentResultSets = false;
+                    }
+                    final SQLQueryJob job = new SQLQueryJob(getSite(),
+                        isSingleQuery ? SQLEditorMessages.editors_sql_job_execute_query
+                            : SQLEditorMessages.editors_sql_job_execute_script,
+                        executionContext, resultsContainer, queries, scriptContext, this, listener,
+                        disableFetchCurrentResultSets);
 
                     if (isSingleQuery) {
                         resultsContainer.query = queries.get(0);
@@ -4190,7 +4224,11 @@ public class SQLEditor extends SQLEditorBase implements
                             // in that case we need to update tab selection and
                             // select new statistics tab
                             // see #16605
-                            setResultTabSelection(results.resultsTab);
+                            // But we need to avoid the result tab with the select statement
+                            // because the statistics window can not be in focus in this case
+                            if (query.getType() != SQLQueryType.SELECT) {
+                                setResultTabSelection(results.resultsTab);
+                            }
                             continue;
                         }
                         if (resultsIndex < result.getExecuteResults().size()) {

@@ -97,7 +97,9 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         if (driver != null && driverText != null) {
             driverText.setText(CommonUtils.toString(driver.getFullName()));
         }
-        UIUtils.setControlVisible(licenseButton, driver != null && !CommonUtils.isEmpty(driver.getLicense()));
+        if (licenseButton != null) {
+            UIUtils.setControlVisible(licenseButton, driver != null && !CommonUtils.isEmpty(driver.getLicense()));
+        }
 
         DataSourceDescriptor dataSource = (DataSourceDescriptor) getSite().getActiveDataSource();
 

@@ -17,24 +17,13 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.jkiss.dbeaver.model.DBPImage;
-
 /**
  * Resource handler info
  */
 public interface DBPResourceHandlerDescriptor {
 
-    String RESOURCE_ROOT_FOLDER_NODE = "resourceRootFolder";
+    DBPResourceTypeDescriptor getResourceType();
 
-    String getId();
+    DBPResourceHandler getHandler();
 
-    String getName();
-
-    DBPImage getIcon();
-
-    boolean isManagable();
-
-    String getDefaultRoot(DBPProject project);
-
-    void setDefaultRoot(DBPProject project, String rootPath);
 }

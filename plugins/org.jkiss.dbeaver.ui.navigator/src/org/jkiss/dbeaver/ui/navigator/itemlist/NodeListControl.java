@@ -27,9 +27,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -65,7 +65,7 @@ import java.util.List;
 /**
  * NodeListControl
  */
-public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceContainerProvider, INavigatorModelView, INavigatorListener {
+public abstract class NodeListControl extends ObjectListControl<DBNNode> implements DBPDataSourceContainerProvider, INavigatorModelView, INavigatorListener {
     private static final Log log = Log.getLog(NodeListControl.class);
 
     private final IWorkbenchSite workbenchSite;

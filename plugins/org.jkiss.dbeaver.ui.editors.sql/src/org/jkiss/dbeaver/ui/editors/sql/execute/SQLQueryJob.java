@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.ui.ISmartTransactionManager;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -130,7 +131,8 @@ public class SQLQueryJob extends DataSourceJob
         @NotNull List<SQLScriptElement> queries,
         @NotNull SQLScriptContext scriptContext,
         @Nullable SQLResultsConsumer resultsConsumer,
-        @Nullable SQLQueryListener listener)
+        @Nullable SQLQueryListener listener,
+        boolean isDisableFetchResultSet)
     {
         super(name, executionContext);
         this.dataContainer = dataContainer;
@@ -145,7 +147,9 @@ public class SQLQueryJob extends DataSourceJob
             DBPPreferenceStore preferenceStore = getDataSourceContainer().getPreferenceStore();
             this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE));
             this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING));
-            this.fetchResultSets = queries.size() == 1 || preferenceStore.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS);
+            this.fetchResultSets = queries.size() == 1 || (
+                preferenceStore.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS) && !isDisableFetchResultSet
+            );
             this.rsMaxRows = preferenceStore.getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
         }
     }

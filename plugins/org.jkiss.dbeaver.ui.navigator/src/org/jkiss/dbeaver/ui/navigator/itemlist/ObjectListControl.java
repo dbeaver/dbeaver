@@ -272,6 +272,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return itemsViewer;
     }
 
+
     public Composite getControl() {
         // Both table and tree are composites so its ok
         return (Composite) itemsViewer.getControl();
@@ -366,6 +367,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
+    public ViewerColumnController<ObjectColumn, Object> getColumnController() {
+        return columnController;
+    }
+
     protected int getDataLoadTimeout() {
         return 4000;
     }
@@ -416,8 +421,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
 
                 IPropertyFilter propertyFilter = new DataSourcePropertyFilter(
-                    ObjectListControl.this instanceof IDataSourceContainerProvider ?
-                        ((IDataSourceContainerProvider) ObjectListControl.this).getDataSourceContainer() :
+                    ObjectListControl.this instanceof DBPDataSourceContainerProvider ?
+                        ((DBPDataSourceContainerProvider) ObjectListControl.this).getDataSourceContainer() :
                         null);
 
                 // Collect all properties
@@ -830,6 +835,17 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return props;
     }
 
+    public void setIsColumnVisibleById(String id, boolean visible) {
+        if (columnController != null) {
+            ObjectColumn[] columnsData = columnController.getColumnsData(ObjectColumn.class);
+            for (int i = 0; i < columnsData.length; i++) {
+                if (columnsData[i].id.equals(id)) {
+                    columnController.setIsColumnVisible(i, visible);
+                }
+            }
+        }
+    }
+
     protected void createColumn(ObjectPropertyDescriptor prop) {
         ObjectColumn objectColumn = null;
         for (ObjectColumn col : columnController.getColumnsData(ObjectColumn.class)) {
@@ -914,12 +930,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             IStructuredSelection selection = itemsViewer.getStructuredSelection();
             if (selection.size() > 1) {
                 StringBuilder buf = new StringBuilder();
-                for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-                    Object object = getObjectValue((OBJECT_TYPE) iter.next());
+                for (Object o : selection) {
+                    Object object = getObjectValue((OBJECT_TYPE) o);
 
                     ObjectColumn nameColumn = null;
                     int columnsCount = columnController.getColumnsCount();
-                    for (int i = 0 ; i < columnsCount; i++) {
+                    for (int i = 0; i < columnsCount; i++) {
                         ObjectColumn column = getColumnByIndex(i);
                         if (column.isNameColumn(object)) {
                             nameColumn = column;
@@ -946,6 +962,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         }
                     }
                     if (buf.length() > 0) buf.append("\n");
+                    if (selection instanceof TreeSelection) {
+                        final TreePath[] paths = ((TreeSelection) selection).getPathsFor(o);
+                        if (!ArrayUtils.isEmpty(paths)) {
+                            final int count = paths[0].getSegmentCount();
+                            for (int i = 1; i < count; i++) {
+                                buf.append('\t');
+                            }
+                        }
+                    }
                     buf.append(objectName);
                 }
                 selectedText = buf.toString();

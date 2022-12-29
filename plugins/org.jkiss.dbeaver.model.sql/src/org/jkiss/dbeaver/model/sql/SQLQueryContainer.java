@@ -18,14 +18,14 @@
 package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 
 import java.util.Map;
 
 /**
  * SQLQuery container.
  */
-public interface SQLQueryContainer extends IDataSourceContainerProvider, DBPContextProvider {
+public interface SQLQueryContainer extends DBPDataSourceContainerProvider, DBPContextProvider {
 
     SQLScriptContext getScriptContext();
 
