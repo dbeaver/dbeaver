@@ -22,7 +22,7 @@
                         label="Db2 for z/OS"
                         icon="icons/db2_zos_icon.png"
                         iconBig="icons/db2_zos_icon_big.png"
-                        category="DB2"
+                        category="Db2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                         defaultPort="50000"

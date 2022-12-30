@@ -25,7 +25,7 @@
                         label="Db2 for IBM i"
                         icon="icons/db2_i_icon.png"
                         iconBig="icons/db2_i_icon_big.png"
-                        category="DB2"
+                        category="Db2"
                         class="com.ibm.as400.access.AS400JDBCDriver"
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
                         defaultPort="446"
