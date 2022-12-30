@@ -1445,7 +1445,7 @@
 
                 <driver
                         id="db2_luw_old"
-                        label="DB2 LUW (Old 8.x)"
+                        label="Db2 for LUW (Old 8.x)"
                         icon="icons/db2_icon.png"
                         iconBig="icons/db2_icon_big.png"
                         category="Db2"
