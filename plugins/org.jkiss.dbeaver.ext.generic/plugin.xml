@@ -188,14 +188,14 @@
 
                 <driver
                         id="db2_iseries"
-                        label="DB2 iSeries/AS 400"
+                        label="Db2 for IBM i"
                         icon="icons/db2_icon.png"
                         iconBig="icons/db2_icon_big.png"
                         category="DB2"
                         class="com.ibm.as400.access.AS400JDBCDriver"
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
                         defaultPort="446"
-                        description="DB2 iSeries/AS 400 driver"
+                        description="IBM Db2 driver for IBM i (replacement for iSeries and AS/400)"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
@@ -1416,7 +1416,7 @@
                 </driver>
                 <driver
                         id="db2"
-                        label="DB2 LUW"
+                        label="Db2 for LUW"
                         icon="icons/db2_icon.png"
                         iconBig="icons/db2_icon_big.png"
                         category="DB2"
@@ -1424,7 +1424,7 @@
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                         defaultPort="50000"
                         webURL="https://www.ibm.com/software/data/db2/express/download.html"
-                        description="DB2 JCC driver">
+                        description="IBM Db2 JCC driver">
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectionTimeout" value="20"/>
@@ -1477,12 +1477,12 @@
                 </driver>
                 <driver
                         id="db2_zos"
-                        label="DB2 z/OS"
+                        label="Db2 for z/OS"
                         category="DB2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                         defaultPort="50000"
-                        description="DB2 z/OS driver"
+                        description="IBM Db2 driver for z/OS"
                         note="Deprecated.">
                 </driver>
 

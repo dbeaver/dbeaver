@@ -24,14 +24,14 @@
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
                 class="org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider"
-                description="DB2 connector"
+                description="Db2 connector"
                 icon="icons/db2_icon.png"
                 id="db2"
-                label="DB2"
+                label="Db2"
                 dialect="db2_luw">
             <tree
                   icon="icons/db2_icon.png"
-                  label="DB2 data source"
+                  label="Db2 data source"
                   path="db2">
                 <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Schema" label="%tree.schemas.node.name" icon="#folder_schema" description="Database schemas">
                     <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
@@ -350,7 +350,7 @@
             <drivers managable="true">
                 <driver
                     id="db2"
-                    label="DB2 LUW"
+                    label="Db2 for LUW"
                     category="DB2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
@@ -360,7 +360,7 @@
                     defaultPort="50000"
                     webURL="https://www-01.ibm.com/support/docview.wss?uid=swg21363866"
                     propertiesURL="https://www.ibm.com/docs/en/db2/latest?topic=pdsdjs-common-data-server-driver-jdbc-sqlj-properties-all-database-products"
-                    description="DB2 for Linux/Unix/Windows driver"
+                    description="IBM Db2 for Linux/Unix/Windows driver"
                     promoted="1"
                     categories="sql">
 
@@ -414,7 +414,7 @@
             class="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
             description="DB2 data types provider"
             id="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
-            label="DB2 data types provider">
+            label="Db2 data types provider">
 
             <datasource id="db2"/>
 
@@ -429,7 +429,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="db2_luw" parent="basic" class="org.jkiss.dbeaver.ext.db2.DB2SQLDialect" label="DB2 LUW" description="IBM DB2 LUW SQL dialect." icon="icons/db2_icon.png">
+        <dialect id="db2_luw" parent="basic" class="org.jkiss.dbeaver.ext.db2.DB2SQLDialect" label="Db2 for LUW" description="IBM Db2 LUW SQL dialect." icon="icons/db2_icon.png">
         </dialect>
     </extension>
 
