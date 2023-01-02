@@ -151,6 +151,12 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
 
     }
 
+    @Nullable
+    @Override
+    public DBDAttributeBinding getFocusAttribute() {
+        return getCurrentAttribute();
+    }
+
     @Override
     public void showAttribute(@NotNull DBDAttributeBinding attribute) {
         // do nothing
