@@ -24,21 +24,21 @@ import java.util.Set;
 
 public class SMCredentials {
     @NotNull
-    private final String smToken;
+    private final String smAccessToken;
     @Nullable
     private final String userId;
     @NotNull
     private final Set<String> permissions;
 
-    public SMCredentials(@NotNull String smToken, @Nullable String userId, @NotNull Set<String> permissions) {
-        this.smToken = smToken;
+    public SMCredentials(@NotNull String smAccessToken, @Nullable String userId, @NotNull Set<String> permissions) {
+        this.smAccessToken = smAccessToken;
         this.userId = userId;
         this.permissions = permissions;
     }
 
     @NotNull
-    public String getSmToken() {
-        return smToken;
+    public String getSmAccessToken() {
+        return smAccessToken;
     }
 
     @Nullable

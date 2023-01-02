@@ -175,13 +175,13 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
             .getActivePart()
             .getSite());
         DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(input);
-        itemListControl = new ItemListControl(
-            tableComposite,
-            SWT.NONE,
-            subSite,
-            node,
-            null
-        );
+        itemListControl = new ItemListControl(tableComposite, SWT.NONE, subSite, node, null) {
+            @NotNull
+            @Override
+            protected String getListConfigId(List<Class<?>> classList) {
+                return "Suggestion/" + super.getListConfigId(classList);
+            }
+        };
         itemListControl.setLayoutData(gridData);
         final Object[] columnNodes = new Object[1];
         AbstractJob abstractJob = new AbstractJob("Populating table tip columns") {

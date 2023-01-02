@@ -42,7 +42,7 @@ class GridColumnRenderer extends AbstractRenderer {
     public static final Image IMAGE_ASTERISK = DBeaverIcons.getImage(UIIcon.SORT_UNKNOWN);
     public static final Image IMAGE_DESC = DBeaverIcons.getImage(UIIcon.SORT_INCREASE);
     public static final Image IMAGE_ASC = DBeaverIcons.getImage(UIIcon.SORT_DECREASE);
-    public static final Image IMAGE_FILTER = DBeaverIcons.getImage(UIIcon.FILTER_SMALL);
+    public static final Image IMAGE_FILTER = DBeaverIcons.getImage(UIIcon.DROP_DOWN);
 
     public static final int SORT_WIDTH = IMAGE_DESC.getBounds().width;
     public static final int FILTER_WIDTH = IMAGE_FILTER.getBounds().width;
@@ -144,25 +144,6 @@ class GridColumnRenderer extends AbstractRenderer {
             gc.setClipping((Rectangle) null);
         }
 
-        if (sortOrder != SWT.NONE) {
-            if (drawSelected) {
-                sortBounds.x = bounds.x + bounds.width - ARROW_MARGIN - sortBounds.width + 1;
-                sortBounds.y = y;
-            } else {
-                sortBounds.x = bounds.x + bounds.width - ARROW_MARGIN - sortBounds.width;
-                sortBounds.y = y;
-            }
-            sortBounds.x += IMAGE_SPACING;
-            paintSort(gc, sortBounds, sortOrder);
-        }
-
-        if (hasFilters) {
-            gc.drawImage(IMAGE_FILTER,
-                bounds.x + bounds.width - filterBounds.width -
-                    (sortOrder != SWT.NONE ? IMAGE_SPACING + sortBounds.width + 1 : ARROW_MARGIN),
-                y);
-        }
-
         {
             // Draw column description
             String text = getColumnDescription(element);
@@ -215,6 +196,22 @@ class GridColumnRenderer extends AbstractRenderer {
             gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
         }
 
+        // Sort icon
+        if (sortOrder != SWT.NONE) {
+            sortBounds.x = bounds.x + bounds.width - sortBounds.width - filterBounds.width - IMAGE_SPACING;
+            sortBounds.y = y;
+            if (drawSelected) {
+                sortBounds.x++;
+            }
+            paintSort(gc, sortBounds, sortOrder);
+        }
+
+        // Drop-down icon
+        if (hasFilters) {
+            gc.drawImage(IMAGE_FILTER, bounds.x + bounds.width - filterBounds.width - IMAGE_SPACING, y);
+            // (sortOrder != SWT.NONE ? IMAGE_SPACING + sortBounds.width + 1 : ARROW_MARGIN)
+        }
+
         gc.setFont(grid.normalFont);
     }
 
@@ -222,7 +219,7 @@ class GridColumnRenderer extends AbstractRenderer {
     {
         switch (sort) {
             case SWT.DEFAULT:
-                gc.drawImage(IMAGE_ASTERISK, bounds.x, bounds.y);
+                //gc.drawImage(IMAGE_ASTERISK, bounds.x, bounds.y);
                 break;
             case SWT.UP:
                 gc.drawImage(IMAGE_ASC, bounds.x, bounds.y);

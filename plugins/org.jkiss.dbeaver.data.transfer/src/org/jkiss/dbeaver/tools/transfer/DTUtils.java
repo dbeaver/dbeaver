@@ -148,6 +148,26 @@ public class DTUtils {
         return null;
     }
 
+    /**
+     * Return merged source entities names as one big target name for the export goals.
+     *
+     * @param queryContainer container which contains a query
+     * @return string representation of entities names
+     */
+    @Nullable
+    public static String getTargetContainersNameFromQuery(@NotNull SQLQueryContainer queryContainer) {
+        SQLScriptElement query = queryContainer.getQuery();
+        if (query instanceof SQLQuery) {
+            List<String> selectEntitiesNames = ((SQLQuery) query).getAllSelectEntitiesNames();
+            if (!CommonUtils.isEmpty(selectEntitiesNames)) {
+                StringJoiner names = new StringJoiner("_");
+                selectEntitiesNames.forEach(names::add);
+                return names.toString();
+            }
+        }
+        return null;
+    }
+
     @Nullable
     private static String transformName(@NotNull SQLDialect dialect, @Nullable String name) {
         if (name == null) {

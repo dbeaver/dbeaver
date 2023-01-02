@@ -14,13 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql;
+package org.jkiss.dbeaver.model.websocket.event;
 
-import org.eclipse.core.internal.content.TextContentDescriber;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-/**
- * SQL content type describer
- */
-public class SQLContentTypeDescriber extends TextContentDescriber {
+public class WSAbstractProjectEvent extends WSEvent {
+    @NotNull
+    protected final String projectId;
 
+    public WSAbstractProjectEvent(
+        @NotNull WSEventType eventType,
+        @Nullable String sessionId,
+        @NotNull String projectId
+    ) {
+        super(eventType, sessionId);
+        this.projectId = projectId;
+    }
+
+    @NotNull
+    public String getProjectId() {
+        return projectId;
+    }
 }

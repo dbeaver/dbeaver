@@ -49,6 +49,8 @@ public final class RuntimeUtils {
     private static final boolean IS_MACOS = Platform.getOS().equals(Platform.OS_MACOSX);
     private static final boolean IS_LINUX = Platform.getOS().equals(Platform.OS_LINUX);
 
+    private static final boolean IS_GTK = Platform.getWS().equals(Platform.WS_GTK);
+
     private static final byte[] NULL_MAC_ADDRESS = new byte[] {0, 0, 0, 0, 0, 0};
 
     private RuntimeUtils() {
@@ -339,6 +341,10 @@ public final class RuntimeUtils {
 
     public static boolean isLinux() {
         return IS_LINUX;
+    }
+    
+    public static boolean isGtk() {
+        return IS_GTK;
     }
 
     public static void setThreadName(String name) {

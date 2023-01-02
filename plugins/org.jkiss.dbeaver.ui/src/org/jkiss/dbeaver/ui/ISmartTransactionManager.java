@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.ui;
 
 /**
  * Smart transaction manager

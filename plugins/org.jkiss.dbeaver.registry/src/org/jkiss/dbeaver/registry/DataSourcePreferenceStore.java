@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * DataSourcePreferenceStore
  */
-public class DataSourcePreferenceStore extends SimplePreferenceStore implements IDataSourceContainerProvider
+public class DataSourcePreferenceStore extends SimplePreferenceStore implements DBPDataSourceContainerProvider
 {
     private final DataSourceDescriptor dataSourceDescriptor;
 

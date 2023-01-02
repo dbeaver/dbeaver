@@ -239,8 +239,8 @@ public class ResultSetViewer extends Viewer
         this.dataReceiver = new ResultSetDataReceiver(this);
         this.dataPropertyListener = event -> {
             DBPDataSourceContainer dataSourceContainer = null;
-            if (event.getSource() instanceof IDataSourceContainerProvider) {
-                dataSourceContainer = ((IDataSourceContainerProvider) event.getSource()).getDataSourceContainer();
+            if (event.getSource() instanceof DBPDataSourceContainerProvider) {
+                dataSourceContainer = ((DBPDataSourceContainerProvider) event.getSource()).getDataSourceContainer();
             }
             handleDataPropertyChange(dataSourceContainer, event.getProperty(), event.getOldValue(), event.getNewValue());
         };
@@ -1865,7 +1865,8 @@ public class ResultSetViewer extends Viewer
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null &&
             (executionContext.getDataSource().getContainer().isConnectionReadOnly() ||
-            executionContext.getDataSource().getInfo().isReadOnlyData()))
+            executionContext.getDataSource().getInfo().isReadOnlyData() ||
+            isUniqueKeyUndefinedButRequired(executionContext)))
         {
             return true;
         }
@@ -2258,22 +2259,24 @@ public class ResultSetViewer extends Viewer
         }
         if (constraint.getOrderPosition() == 0 && forceOrder != ColumnOrder.NONE) {
             if (orderingMode == ResultSetUtils.OrderingMode.SERVER_SIDE && supportsDataFilter()) {
-                if (ConfirmationDialog.showConfirmDialogNoToggle(
-                    ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+                if (ConfirmationDialog.confirmAction(
                     viewerPanel.getShell(),
                     ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
                     ConfirmationDialog.WARNING,
-                    columnElement.getName()) != IDialogConstants.YES_ID)
+                    columnElement.getName()) != IDialogConstants.YES_ID) 
                 {
                     return;
                 }
             }
             constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
             constraint.setOrderDescending(forceOrder == ColumnOrder.DESC);
-        } else if (!constraint.isOrderDescending() && forceOrder != ColumnOrder.NONE) {
+        } else if (forceOrder == ColumnOrder.ASC) {
+            constraint.setOrderDescending(false);
+        } else if (forceOrder == ColumnOrder.DESC) {
             constraint.setOrderDescending(true);
         } else {
+            // Reset order
             for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
                 if (con2.getOrderPosition() > constraint.getOrderPosition()) {
                     con2.setOrderPosition(con2.getOrderPosition() - 1);
@@ -2402,8 +2405,7 @@ public class ResultSetViewer extends Viewer
         if (!isDirty()) {
             return ISaveablePart2.YES;
         }
-        int result = ConfirmationDialog.showConfirmDialog(
-            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+        int result = ConfirmationDialog.confirmAction(
             viewerPanel.getShell(),
             ResultSetPreferences.CONFIRM_RS_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL);
@@ -2474,7 +2476,8 @@ public class ResultSetViewer extends Viewer
             executionContext == null ||
             !executionContext.isConnected() ||
             !executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA) ||
-            executionContext.getDataSource().getInfo().isReadOnlyData();
+            executionContext.getDataSource().getInfo().isReadOnlyData() ||
+            isUniqueKeyUndefinedButRequired(executionContext);
     }
 
     @Override
@@ -2499,7 +2502,21 @@ public class ResultSetViewer extends Viewer
         if (executionContext.getDataSource().getContainer().isConnectionReadOnly()) {
             return "Connection is in read-only state";
         }
+        if (isUniqueKeyUndefinedButRequired(executionContext)) {
+            return "No unique key defined";
+        }
         return null;
+    }
+
+    private boolean isUniqueKeyUndefinedButRequired(@NotNull DBCExecutionContext context) {
+        final DBPPreferenceStore store = context.getDataSource().getContainer().getPreferenceStore();
+
+        if (store.getBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING)) {
+            final DBDRowIdentifier identifier = model.getDefaultRowIdentifier();
+            return identifier == null || !identifier.isValidIdentifier();
+        }
+
+        return false;
     }
 
     /**
@@ -2557,8 +2574,18 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void showDistinctFilter(DBDAttributeBinding curAttribute) {
-        showFiltersDistinctMenu(curAttribute, false);
+    public void showColumnMenu(DBDAttributeBinding curAttribute) {
+        MenuManager columnMenu = new MenuManager();
+        //getActivePresentation().setCurrentAttribute(curAttribute);
+        ResultSetRow currentRow = getCurrentRow();
+
+        fillOrderingsMenu(columnMenu, curAttribute, currentRow);
+        fillFiltersMenu(columnMenu, curAttribute, currentRow);
+
+        final Menu contextMenu = columnMenu.createContextMenu(getActivePresentation().getControl());
+        contextMenu.setLocation(Display.getCurrent().getCursorLocation());
+        contextMenu.addMenuListener(MenuListener.menuHiddenAdapter(menuEvent -> UIUtils.asyncExec(columnMenu::dispose)));
+        contextMenu.setVisible(true);
     }
 
     public void showFiltersDistinctMenu(DBDAttributeBinding curAttribute, boolean atKeyboardCursor) {
@@ -2573,12 +2600,10 @@ public class ResultSetViewer extends Viewer
                 // Column enumeration is expensive
             }
         }
-        if (isExpensiveFilter && ConfirmationDialog.showConfirmDialogNoToggle(
-            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+        if (isExpensiveFilter && ConfirmationDialog.confirmAction(
             viewerPanel.getShell(),
-            ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
+            ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
             ConfirmationDialog.QUESTION,
-            ConfirmationDialog.WARNING,
             curAttribute.getName()) != IDialogConstants.YES_ID)
         {
             return;
@@ -3556,8 +3581,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
                 if (panelsDirty) {
-                    int result = ConfirmationDialog.showConfirmDialog(
-                        ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+                    int result = ConfirmationDialog.confirmAction(
                         viewerPanel.getShell(),
                         ResultSetPreferences.CONFIRM_RS_PANEL_RESET,
                         ConfirmationDialog.CONFIRM);
@@ -3922,12 +3946,11 @@ public class ResultSetViewer extends Viewer
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (ConfirmationDialog.showConfirmDialogEx(
-            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
+        if (ConfirmationDialog.confirmAction(
             viewerPanel.getShell(),
-            ResultSetPreferences.CONFIRM_RS_FETCH_ALL,
-            ConfirmationDialog.QUESTION,
-            ConfirmationDialog.WARNING) != IDialogConstants.YES_ID)
+            ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_RS_FETCH_ALL,
+            ConfirmationDialog.QUESTION
+        ) != IDialogConstants.YES_ID)
         {
             return;
         }
@@ -4854,6 +4877,10 @@ public class ResultSetViewer extends Viewer
                     "Order by " + attribute.getName() + " " + order.name(), AS_CHECK_BOX);
             this.attribute = attribute;
             this.order = order;
+            if (order != ColumnOrder.NONE) {
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(order != ColumnOrder.ASC ?
+                    UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE));
+            }
         }
 
         @Override
