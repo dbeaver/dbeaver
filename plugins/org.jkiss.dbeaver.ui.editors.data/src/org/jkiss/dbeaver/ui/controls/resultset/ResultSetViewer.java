@@ -3325,7 +3325,7 @@ public class ResultSetViewer extends Viewer
     private void fillFiltersMenu(@NotNull IMenuManager filtersMenu, @Nullable DBDAttributeBinding attribute, @Nullable ResultSetRow row)
     {
         if (attribute != null && supportsDataFilter()) {
-            if (row != null) {
+            {
                 filtersMenu.add(new Separator());
 
                 //filtersMenu.add(new FilterByListAction(operator, type, attribute));
