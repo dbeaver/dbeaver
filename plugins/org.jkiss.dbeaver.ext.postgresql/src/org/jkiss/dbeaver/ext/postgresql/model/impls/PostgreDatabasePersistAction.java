@@ -35,8 +35,7 @@ public class PostgreDatabasePersistAction extends SQLDatabasePersistAction {
 
     @Override
     public void afterExecute(DBCSession session, Throwable error)
-        throws DBCException
-    {
+            throws DBCException {
         if ((procedure != null) && ("Create function".equals(this.title))) {
             procedure.setProcWasCreatedOrReplaced(true);
         }

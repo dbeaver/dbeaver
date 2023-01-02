@@ -329,7 +329,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
     
     public void setProcWasCreatedOrReplaced(boolean value) {
-    this.procWasCreatedOrReplaced = value;
+        this.procWasCreatedOrReplaced = value;
     }
     
     public boolean getProcWasNotChanged() {
@@ -710,7 +710,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         if (oldProcWasCreatedOrReplaced) {
             if ((oldOid != 0) && (oldXmin != 0) && (pgProc.oid == oldOid) && (pgProc.xmin == oldXmin)) {
                 pgProc.procWasNotChanged = true;
-                DBWorkbench.getPlatformUI().showWarningMessageBox(PostgreMessages.procedure_warning_name, PostgreMessages.procedure_warning_text);
+                DBWorkbench.getPlatformUI().showWarningMessageBox(PostgreMessages.procedure_warning_name, 
+				    PostgreMessages.procedure_warning_text);
                 this.setProcWasCreatedOrReplaced(false); // let throw warning once
                 pgProc.setProcWasCreatedOrReplaced(false);
             }
