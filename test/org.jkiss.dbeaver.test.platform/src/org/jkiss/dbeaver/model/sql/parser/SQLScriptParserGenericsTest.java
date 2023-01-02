@@ -41,7 +41,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SQLScriptParserGenericsTest {
@@ -93,6 +96,43 @@ public class SQLScriptParserGenericsTest {
             element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
             Assert.assertEquals("begin transaction", element.getText());
         }
+    }
+    
+    @Test
+    public void parseSnowflakeCreateProcedureWithIfStatements() throws DBException {
+        String[] query = new String[]{ 
+            "CREATE OR REPLACE PROCEDURE testproc()\n"
+            + "RETURNS varchar\n"
+            + "LANGUAGE SQL AS\n"
+            + "$$\n"
+            + "  DECLARE\n"
+            + "    i int;\n"
+            + "  BEGIN\n"
+            + "    i:=1;\n"
+            + "    IF (i=1) THEN\n"
+            + "      i:=2;\n"
+            + "    END IF;\n"
+            + "    IF (i=2) THEN\n"
+            + "      i:=3;\n"
+            + "    END IF;\n"
+            + "  END\n"
+            + "$$"
+        };
+        assertParse("snowflake", query);
+    }
+    
+    private void assertParse(String dialectName, String[] expected) throws DBException {
+        String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
+        List<String> expectedParts = new ArrayList<>(expected.length);
+        for (int i = 0; i < expected.length; i++) {
+            if (i + 1 < expected.length && expected[i + 1] == null) {
+                expectedParts.add(expected[i].replaceAll("[\\;]+$", ""));
+                i++;
+            } else {
+                expectedParts.add(expected[i]);
+            }
+        }
+        assertParse(dialectName, source, expectedParts.toArray(new String[0]));
     }
     
     private void assertParse(String dialectName, String query, String[] expected) throws DBException {
