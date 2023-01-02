@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -345,6 +346,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
 
         final IProjectDescription description = eclipseWorkspace.newProjectDescription(project.getName());
+        
+        description.setNatureIds(new String[] {DBeaverNature.NATURE_ID});
+        
         if (!CommonUtils.isEmpty(projectDescription)) {
             description.setComment(projectDescription);
         }
