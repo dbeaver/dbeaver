@@ -16,30 +16,45 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.vertica.internal.VerticaMessages;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.util.Collection;
 import java.util.Locale;
 
 public class VerticaDataSource extends GenericDataSource {
 
+    private static final Log log = Log.getLog(VerticaDataSource.class);
+
+    private static final String VERTICA_GENERAL_WARNING_CODE = "01000";
+    private static final String VERTICA_EXPIRED_PASSWORD_CODE = "100069";
     private Boolean childObjectColumnAvailable;
+    private boolean isPasswordExpireWarningShown;
 
     private NodeCache nodeCache = new NodeCache();
 
@@ -115,6 +130,43 @@ public class VerticaDataSource extends GenericDataSource {
             default:
                 return DBPDataKind.OBJECT;
         }
+    }
+
+    @Override
+    protected Connection openConnection(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose
+    ) throws DBCException {
+        Connection connection = super.openConnection(monitor, context, purpose);
+        try {
+            for (SQLWarning warning = connection.getWarnings();
+                 warning != null && !isPasswordExpireWarningShown;
+                 warning = warning.getNextWarning()
+            ) {
+                if (checkForPasswordWillExpireWarning(warning)) {
+                    isPasswordExpireWarningShown = true;
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Can't get connection warnings", e);
+        }
+        return connection;
+    }
+
+    private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
+        // Example of the message is:
+        // [Vertica][VJDBC](100069) The password for user dbeaver_test3 will expire soon.  Please consider changing it.
+        if (CommonUtils.isNotEmpty(warning.getSQLState()) && VERTICA_GENERAL_WARNING_CODE.equals(warning.getSQLState())
+            && CommonUtils.isNotEmpty(warning.getMessage()) && warning.getMessage().contains("(" + VERTICA_EXPIRED_PASSWORD_CODE + ")"))
+        {
+            DBWorkbench.getPlatformUI().showWarningMessageBox(
+                VerticaMessages.vertica_password_will_expire_warn_name,
+                NLS.bind(VerticaMessages.vertica_password_will_expire_warn_description, warning.getMessage())
+            );
+            return true;
+        }
+        return false;
     }
 
     @Association
