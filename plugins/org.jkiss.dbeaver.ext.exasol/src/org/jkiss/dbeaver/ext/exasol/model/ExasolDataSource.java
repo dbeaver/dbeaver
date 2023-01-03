@@ -130,6 +130,8 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 			//additional where clause to filter virtual schemas
 			schemaSQL += " where not  schema_is_virtual ";
 			
+			String vsAdapterExpressionV8 = "'\"' || ADAPTER_SCRIPT_SCHEMA || '\".\"' || ADAPTER_SCRIPT_NAME || '\"' AS ADAPTER_SCRIPT";
+
 			//build virtual schema cache for >V6 databases
 			virtualSchemaCache = new JDBCObjectSimpleCache<>(
 					ExasolVirtualSchema.class,
@@ -137,7 +139,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 					"	s.SCHEMA_NAME as OBJECT_NAME," + 
 					"	s.SCHEMA_OWNER AS OWNER," + 
 					"CAST(NULL AS TIMESTAMP) AS created, " +
-					"	" + (this.exasolCurrentUserPrivileges.getAtLeastV8() ? "'\"' || ADAPTER_SCRIPT_SCHEMA || '\".\"' || ADAPTER_SCRIPT_NAME || '\"' AS ADAPTER_SCRIPT" : "ADAPTER_SCRIPT") + "," +
+					"	" + (this.exasolCurrentUserPrivileges.getAtLeastV8() ? vsAdapterExpressionV8 : "ADAPTER_SCRIPT") + "," +
 					"	LAST_REFRESH," + 
 					"	LAST_REFRESH_BY," + 
 					"	ADAPTER_NOTES," + 
