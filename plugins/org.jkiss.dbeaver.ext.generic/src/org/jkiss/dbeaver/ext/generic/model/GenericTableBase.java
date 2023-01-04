@@ -58,6 +58,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     private String tableType;
     private boolean isSystem;
+    private boolean isUtility;
     private String description;
     private Long rowCount;
     private List<? extends GenericTrigger> triggers;
@@ -81,6 +82,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
         final GenericMetaModel metaModel = container.getDataSource().getMetaModel();
         this.isSystem = metaModel.isSystemTable(this);
+        this.isUtility = metaModel.isUtilityTable(this);
 
         boolean mergeEntities = container.getDataSource().isMergeEntities();
         if (mergeEntities && dbResult != null) {
@@ -133,6 +135,10 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     public void setSystem(boolean system) {
         isSystem = system;
+    }
+
+    public boolean isUtility() {
+        return isUtility;
     }
 
     @Property(viewable = true, order = 2)

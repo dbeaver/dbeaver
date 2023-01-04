@@ -836,7 +836,7 @@ public class DataSourceDescriptor
             var secret = saveToSecret();
             secretController.setSecretValue(getSecretKeyId(), secret);
             this.secretsContainsDatabaseCreds =
-                isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(this.connectionInfo);
+                isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(getProject(), this.connectionInfo);
         }
         secretsResolved = true;
     }
@@ -848,7 +848,7 @@ public class DataSourceDescriptor
                 String secretValue = secretController.getSecretValue(getSecretKeyId());
                 loadFromSecret(secretValue);
                 this.secretsContainsDatabaseCreds =
-                    isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(this.connectionInfo);
+                    isSavePassword() && this.connectionInfo.getAuthModel().isDatabaseCredentialsPresent(getProject(), this.connectionInfo);
                 if (secretValue == null && !DBWorkbench.isDistributed()) {
                     // Backward compatibility
                     loadFromLegacySecret(secretController);

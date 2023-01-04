@@ -1483,6 +1483,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     @Nullable
+    @Override
     public DBDAttributeBinding getFocusAttribute() {
         return controller.isRecordMode() ?
             (DBDAttributeBinding) spreadsheet.getFocusRowElement() :
