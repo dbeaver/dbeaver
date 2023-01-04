@@ -99,8 +99,7 @@ public interface RMController extends DBPObjectController {
 
     void createProjectDataSourceFolder(
         @NotNull String projectId,
-        @Nullable String parentPath,
-        @NotNull String folderName
+        @NotNull String folderPath
     ) throws DBException;
 
     /**
