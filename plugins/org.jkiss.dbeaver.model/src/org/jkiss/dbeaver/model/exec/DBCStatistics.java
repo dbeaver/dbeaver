@@ -104,7 +104,7 @@ public class DBCStatistics implements DBCExecutionResult {
         return startTime + getTotalTime();
     }
 
-    public long getStartTime(){
+    public long getStartTime (){
         return this.startTime;
     }
 
