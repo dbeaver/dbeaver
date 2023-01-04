@@ -27,7 +27,8 @@ public class VerticaMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, VerticaMessages.class);
     }
 
-    public VerticaMessages() {
+    private VerticaMessages() {
+        // prevents construction
     }
 
     public static String vertica_password_will_expire_warn_name;
