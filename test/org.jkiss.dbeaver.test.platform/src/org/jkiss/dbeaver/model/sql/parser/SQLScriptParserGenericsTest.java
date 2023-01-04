@@ -46,8 +46,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SQLScriptParserGenericsTest {
@@ -127,7 +127,6 @@ public class SQLScriptParserGenericsTest {
     @Test
     public void parseNamedParameters() throws DBException {
         List<String> inputParamNames = List.of("1", "\"SYs_B_1\"", "\"MyVar8\"", "AbC", "\"#d2\"");
-        List<String> expectedParamNames = List.of("1", "SYs_B_1", "MyVar8", "ABC", "#d2");
         List<String> invalidParamNames = List.of("&6^34", "%#2", "\"\"\"\"");
         StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
         inputParamNames.stream().forEach(p -> joiner.add(":" + p));
@@ -139,7 +138,7 @@ public class SQLScriptParserGenericsTest {
         for (SQLQueryParameter sqlQueryParameter : params) {
             actualParamNames.add(sqlQueryParameter.getName());
         }
-        Assert.assertEquals(expectedParamNames, actualParamNames);
+        Assert.assertEquals(List.of("1", "SYs_B_1", "MyVar8", "ABC", "#d2"), actualParamNames);
     }
     
     private void assertParse(String dialectName, String[] expected) throws DBException {
