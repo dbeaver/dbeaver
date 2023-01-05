@@ -778,10 +778,7 @@ public class DBExecUtils {
                     if (bindingMeta.getPseudoAttribute() != null) {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else if (columnName != null) {
-                        SQLSelectItem selectItem = sqlQuery.getSelectItem(columnName);
-                        if (selectItem != null && selectItem.isPlainColumn()) {
-                            tableColumn = attrEntity.getAttribute(monitor, columnName);
-                        }
+                        tableColumn = attrEntity.getAttribute(monitor, columnName);
                     }
 
                     if (tableColumn != null) {
