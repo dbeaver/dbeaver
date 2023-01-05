@@ -711,7 +711,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             if ((oldOid != 0) && (oldXmin != 0) && (pgProc.oid == oldOid) && (pgProc.xmin == oldXmin)) {
                 pgProc.procWasNotChanged = true;
                 DBWorkbench.getPlatformUI().showWarningMessageBox(PostgreMessages.procedure_warning_name, 
-				    PostgreMessages.procedure_warning_text);
+                    PostgreMessages.procedure_warning_text);
                 this.setProcWasCreatedOrReplaced(false); // let throw warning once
                 pgProc.setProcWasCreatedOrReplaced(false);
             }
