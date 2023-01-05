@@ -69,15 +69,15 @@ public class SQLQueryParameterRegistry {
     }
 
     public ParameterInfo getParameter(String name) {
-        return parameterMap.get(name.toUpperCase(Locale.ENGLISH));
+        return parameterMap.get(name);
     }
 
     public void setParameter(String name, String value) {
-        parameterMap.put(name.toUpperCase(Locale.ENGLISH), new ParameterInfo(name, value));
+        parameterMap.put(name, new ParameterInfo(name, value));
     }
 
     public void deleteParameter(String name) {
-        parameterMap.remove(name.toUpperCase(Locale.ENGLISH));
+        parameterMap.remove(name);
     }
 
     private void loadParameters() {
@@ -154,7 +154,7 @@ public class SQLQueryParameterRegistry {
                     curParameterValue = legacyValue;
                 }
                 parameterMap.put(
-                    curParameterName.toUpperCase(),
+                    curParameterName,
                     new ParameterInfo(curParameterName, curParameterValue));
                 curParameterName = null;
                 legacyParameterValue.setLength(0);

@@ -31,7 +31,7 @@ import java.util.Map;
 
 public class WSEventController {
     private final Map<String, List<WSEventHandler>> eventHandlersByType = new HashMap<>();
-    private final List<WSEvent> eventsPool = new ArrayList<>();
+    protected final List<WSEvent> eventsPool = new ArrayList<>();
 
     public WSEventController() {
         var eventHandlers = WSEventHandlersRegistry.getInstance().getEventHandlers();

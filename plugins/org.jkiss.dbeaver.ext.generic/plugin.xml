@@ -84,7 +84,9 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.info.supportsStoredCode()">
                             <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
-                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                <folder label="%tree.procedure_columns.node.name" icon="#columns" description="Procedure parameters">
+                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                </folder>
                             </items>
                             <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
                                 <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
@@ -171,6 +173,7 @@
                     <property id="legacy-sql-dialect" label="Use legacy SQL dialect for DDL" description="Use legacy SQL dialect for DDL" type="boolean" required="false" defaultValue="false"/>
                     <property id="alter-table-add-column" label="Add COLUMN keyword in alter table query" description="Add COLUMN keyword after keyword ADD and before column name in alter table query" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-catalog-name" label="Omit catalog name in queries" description="Omit catalog name in generated queries" type="boolean" required="false" defaultValue="false"/>
+                    <property id="identifier-quotes" label="Identifier quotes" description="Quotes used for escaping identifiers. Syntax is: open1:close1,open2:close2" type="string" required="false" defaultValue=""/>
                 </propertyGroup>
                 <propertyGroup label="Formatting" description="SQL values formats">
                     <property id="native-format-timestamp" label="Timestamp format" description="Format pattern for timestamp columns" type="string" required="false"/>
@@ -680,6 +683,8 @@
                     supportsDistributedMode="false"
                     categories="sql,embedded,file">
 
+                    <parameter name="identifier-quotes" value="[:]"/>
+
                     <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.ucanaccess"/>
 
@@ -832,7 +837,7 @@
                 </driver>
                 <driver
                     id="kyuubi_hive"
-                    label="Apache Kyuubi (Incubating)"
+                    label="Apache Kyuubi"
                     icon="icons/kyuubi_hive_icon.png"
                     iconBig="icons/kyuubi_hive_icon_big.png"
                     class="org.apache.kyuubi.jdbc.KyuubiHiveDriver"

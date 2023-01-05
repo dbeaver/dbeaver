@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -80,7 +81,8 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
     /**
      * Validate that connection contains necessary credentials
      *
+     * @param project
      * @param configuration
      */
-    boolean isDatabaseCredentialsPresent(DBPConnectionConfiguration configuration);
+    boolean isDatabaseCredentialsPresent(DBPProject project, DBPConnectionConfiguration configuration);
 }
