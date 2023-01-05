@@ -14,33 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket;
+package org.jkiss.dbeaver.model.websocket.gson;
 
 import com.google.gson.*;
-import org.jkiss.dbeaver.model.websocket.event.WSEvent;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-public class WSEventDeserializer implements JsonDeserializer<WSEvent> {
+public abstract class WSAbstractClassByIdDeserializer<T> implements JsonDeserializer<T> {
     private static final String EVENT_ID_FIELD = "id";
     private final Gson gson = new Gson();
-    private final Map<String, Class<? extends WSEvent>> eventClassById =
-        Arrays.stream(WSEventType.values())
-            .collect(Collectors.toMap(
-                WSEventType::getEventId,
-                WSEventType::getEventClass
-            ));
+    private final Map<String, Class<? extends T>> eventClassById;
+
+    public WSAbstractClassByIdDeserializer(Map<String, Class<? extends T>> eventClassById) {
+        this.eventClassById = eventClassById;
+    }
 
     @Override
-    public WSEvent deserialize(
-        JsonElement jsonElement,
-        Type type,
-        JsonDeserializationContext jsonDeserializationContext
-    ) throws JsonParseException {
+    public T deserialize(JsonElement jsonElement,
+                         Type type,
+                         JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
         var jsonObject = jsonElement.getAsJsonObject();
         var eventIdElement = jsonObject.get(EVENT_ID_FIELD);
         if (eventIdElement == null) {

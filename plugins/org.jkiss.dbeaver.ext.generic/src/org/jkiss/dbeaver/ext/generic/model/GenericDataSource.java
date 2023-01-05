@@ -531,7 +531,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     List<GenericSchema> tmpSchemas = metaModel.loadSchemas(session, this, null);
                     if (tmpSchemas != null) {
                         this.schemas = new SimpleObjectCache<>();
-                        this.schemas.setCaseSensitive(getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED);
+                        this.schemas.setCaseSensitive(getSQLDialect().storesUnquotedCase() != DBPIdentifierCase.MIXED);
                         this.schemas.setCache(tmpSchemas);
                     }
                 } catch (Throwable e) {
