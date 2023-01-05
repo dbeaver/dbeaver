@@ -352,6 +352,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return schemas == null ? null : schemas.getCachedObject(name);
     }
 
+    public SimpleObjectCache getSchemaCache() {
+        return schemas;
+    }
+
     @Override
     public GenericStructContainer getObject() {
         return this;
