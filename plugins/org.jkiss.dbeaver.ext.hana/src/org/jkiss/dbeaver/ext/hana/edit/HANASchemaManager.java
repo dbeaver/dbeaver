@@ -126,7 +126,7 @@ public class HANASchemaManager extends SQLObjectEditor<HANASchema, HANADataSourc
     ) {
         // RESTRICT drops the schema, but only when there are no objects in it.
         // If RESTRICT is specified while there are still objects in the schema, then an error is returned.
-        // But we will not use CASCADE here - to dangerous.
+        // But we will not use CASCADE here - too dangerous.
         actions.add(
             new SQLDatabasePersistAction(
                 "Drop schema", //$NON-NLS-1$
