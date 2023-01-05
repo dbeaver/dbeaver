@@ -26,8 +26,9 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,20 +102,20 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
 
         // Execute bootstrap queries
         DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-        final Map<String, Boolean> initQueriesMap = new HashMap<>();
+        final List<Pair<String, Boolean>> initQueriesMap = new ArrayList<>();
         for (String query : CommonUtils.safeCollection(bootstrap.getInitQueries())) {
-            initQueriesMap.put(query, bootstrap.isIgnoreErrors());
+            initQueriesMap.add(new Pair<>(query, bootstrap.isIgnoreErrors()));
         }
         for (String query : CommonUtils.safeCollection(getExtraInitQueries())) {
             // For now, we want to avoid exceptions during connection with this type of query.
             // This behavior can be changed in the future on demand.
-            initQueriesMap.put(query, Boolean.TRUE);
+            initQueriesMap.add(new Pair<>(query, Boolean.TRUE));
         }
         if (!CommonUtils.isEmpty(initQueriesMap)) {
             monitor.subTask("Run bootstrap queries");
             try (DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run bootstrap queries")) {
-                for (Map.Entry<String, Boolean> entry : initQueriesMap.entrySet()) {
-                    String query = entry.getKey();
+                for (Pair<String, Boolean> entry : initQueriesMap) {
+                    String query = entry.getFirst();
                     // Replace variables
                     query = GeneralUtils.replaceVariables(query, getDataSource().getContainer().getVariablesResolver(true));
                     try {
@@ -123,7 +124,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
                         }
                     } catch (Exception e) {
                         String message = "Error executing bootstrap query: " + query;
-                        if (entry.getValue()) {
+                        if (entry.getSecond()) {
                             log.warn(message);
                         } else {
                             throw new DBCException(message, e, this);
