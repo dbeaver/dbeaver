@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -378,12 +379,16 @@ public class DataSourceUtils {
             }
         }
         DBPConnectionConfiguration cfg = dataSourceContainer.getConnectionConfiguration();
-        String hostText = getTargetTunnelHostName(cfg);
-        String hostPort = cfg.getHostPort();
-        if (!CommonUtils.isEmpty(hostPort)) {
-            return hostText + ":" + hostPort;
+        if (cfg.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
+            String hostText = getTargetTunnelHostName(cfg);
+            String hostPort = cfg.getHostPort();
+            if (!CommonUtils.isEmpty(hostPort)) {
+                return hostText + ":" + hostPort;
+            }
+            return hostText;
+        } else {
+            return cfg.getUrl();
         }
-        return hostText;
     }
 
     @NotNull
