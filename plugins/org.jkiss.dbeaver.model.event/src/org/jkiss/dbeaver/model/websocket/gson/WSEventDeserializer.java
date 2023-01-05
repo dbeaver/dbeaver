@@ -14,32 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event;
+package org.jkiss.dbeaver.model.websocket.gson;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.event.WSEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
-/**
- * Base websocket client event
- */
-public abstract class WSClientEvent {
-    @NotNull
-    private final String id;
-    @Nullable
-    private final String topicId;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
-    protected WSClientEvent(@NotNull String id, @Nullable String topicId) {
-        this.id = id;
-        this.topicId = topicId;
-    }
-
-    @NotNull
-    public String getId() {
-        return id;
-    }
-
-    @Nullable
-    public String getTopicId() {
-        return topicId;
+public class WSEventDeserializer extends WSAbstractClassByIdDeserializer<WSEvent> {
+    public WSEventDeserializer() {
+        super(Arrays.stream(WSEventType.values())
+            .collect(Collectors.toMap(
+                WSEventType::getEventId,
+                WSEventType::getEventClass
+            )));
     }
 }

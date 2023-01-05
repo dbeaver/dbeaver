@@ -33,7 +33,5 @@ public interface WSConstants {
     }
 
     interface ClientEvents {
-        String TOPIC_SUBSCRIBE = "cb_client_topic_subscribe";
-        String TOPIC_UNSUBSCRIBE = "cb_client_topic_unsubscribe";
     }
 }
