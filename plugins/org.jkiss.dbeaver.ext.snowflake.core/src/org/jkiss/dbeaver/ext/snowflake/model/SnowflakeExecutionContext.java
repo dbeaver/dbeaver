@@ -208,7 +208,7 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
 
     @NotNull
     @Override
-    public List<String> getExtraInitQueries() {
+    protected List<String> getExtraInitQueries() {
         // JDBC Driver throws java.lang.NoClassDefFoundError for class RootAllocator in Arrow Library, while trying to run a select query.
         // So this is official workaround for systems with Java 17 and if Arrow library installation is not possible
         // or if the Operating System is not supported by Arrow.

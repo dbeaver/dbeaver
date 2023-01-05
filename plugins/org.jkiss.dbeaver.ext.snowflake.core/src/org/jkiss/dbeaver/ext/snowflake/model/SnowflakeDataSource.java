@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.snowflake.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
@@ -36,8 +35,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SnowflakeDataSource extends GenericDataSource {
-
-    private static final Log log = Log.getLog(SnowflakeDataSource.class);
 
     public SnowflakeDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SnowflakeMetaModel metaModel)
         throws DBException
