@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -120,6 +121,15 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         }
         this.omitCatalogName = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG_NAME));
         this.supportsMultiInsert = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_MULTI_INSERT));
+
+        final String identifierQuotes = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_IDENTIFIER_QUOTES));
+        if (CommonUtils.isNotEmpty(identifierQuotes)) {
+            setIdentifierQuoteString(
+                Arrays.stream(identifierQuotes.split(","))
+                    .map(pair -> pair.split(":"))
+                    .toArray(String[][]::new)
+            );
+        }
     }
 
     @NotNull
