@@ -718,10 +718,22 @@ public class SQLScriptParser {
                             parameters = new ArrayList<>();
                         }
 
+                        String preparedParamName;
+                        String paramMark = paramName.substring(0, 1);
+                        if (ArrayUtils.contains(syntaxManager.getNamedParameterPrefixes(), paramMark)) {
+                            String rawParamName = paramName.substring(1);
+                            if (sqlDialect.isQuotedIdentifier(rawParamName)) {
+                                preparedParamName = sqlDialect.getUnquotedIdentifier(rawParamName);
+                            } else {
+                                preparedParamName = rawParamName.toUpperCase(Locale.ENGLISH);
+                            }
+                        } else {
+                            preparedParamName = paramName;
+                        }
                         SQLQueryParameter parameter = new SQLQueryParameter(
                             syntaxManager,
                             parameters.size(),
-                            paramName,
+                            preparedParamName,
                             tokenOffset - queryOffset,
                             tokenLength
                         );
