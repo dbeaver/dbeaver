@@ -98,13 +98,14 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                 UserInfo userInfo = null;
                 JSCHUserInfoPromptProvider userInfoPromptProvider = GeneralUtils.adapt(this, JSCHUserInfoPromptProvider.class);
                 if (userInfoPromptProvider != null) {
-                    userInfo = userInfoPromptProvider.createUserInfoPrompt(auth, session);
+                    userInfo = userInfoPromptProvider.createUserInfoPrompt(host, session);
                 }
                 if (userInfo == null) {
                     userInfo = new JschUserInfo(auth);
                 }
 
                 session.setUserInfo(userInfo);
+                session.setHostKeyAlias(host.getHostname());
                 setupHostKeyVerification(session, configuration);
                 session.setServerAliveInterval(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL));
                 session.setTimeout(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT));
