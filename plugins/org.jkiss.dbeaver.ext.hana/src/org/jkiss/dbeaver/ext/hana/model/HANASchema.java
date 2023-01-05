@@ -99,8 +99,8 @@ public class HANASchema extends GenericSchema implements DBPQualifiedObject, DBP
         }
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read relation statistics")) {
             try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
-                "SELECT TABLE_NAME, TABLE_SIZE, RECORD_COUNT\n" +
-                    "FROM SYS.M_TABLES\n" +
+                "SELECT TABLE_NAME, DISK_SIZE\n" +
+                    "FROM SYS.M_TABLE_PERSISTENCE_STATISTICS\n" +
                     "WHERE SCHEMA_NAME = ?\n" +
                     "ORDER BY TABLE_NAME"))
             {

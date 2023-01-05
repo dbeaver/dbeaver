@@ -36,7 +36,6 @@ import java.util.List;
 public class HANATable extends GenericTable implements DBPObjectStatistics {
 
     private long tableSize = -1;
-    private long rowCount = -1;
 
     public HANATable(
         GenericStructContainer container,
@@ -70,8 +69,7 @@ public class HANATable extends GenericTable implements DBPObjectStatistics {
     }
 
     void fetchStatistics(JDBCResultSet dbResult) throws SQLException {
-        tableSize = dbResult.getLong("TABLE_SIZE");
-        rowCount = dbResult.getLong("RECORD_COUNT");
+        tableSize = dbResult.getLong("DISK_SIZE");
     }
 
     @Property(category = DBConstants.CAT_STATISTICS, formatter = ByteNumberFormat.class)
@@ -80,14 +78,6 @@ public class HANATable extends GenericTable implements DBPObjectStatistics {
             ((HANASchema) getSchema()).collectObjectStatistics(monitor, false, false);
         }
         return tableSize;
-    }
-
-    @Property(category = DBConstants.CAT_STATISTICS, formatter = ByteNumberFormat.class)
-    public Long getRowCountNumber(DBRProgressMonitor monitor) throws DBException {
-        if (rowCount == -1) {
-            ((HANASchema) getSchema()).collectObjectStatistics(monitor, false, false);
-        }
-        return rowCount;
     }
 
     @Override
