@@ -18,10 +18,14 @@ package org.jkiss.dbeaver.model.websocket;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEvent;
+import org.jkiss.dbeaver.model.websocket.gson.WSClientEventDeserializer;
+import org.jkiss.dbeaver.model.websocket.gson.WSEventDeserializer;
 
 public class WSUtils {
     public static final Gson gson = new GsonBuilder()
         .registerTypeAdapter(WSEvent.class, new WSEventDeserializer())
+        .registerTypeAdapter(WSClientEvent.class, new WSClientEventDeserializer())
         .create();
 }
