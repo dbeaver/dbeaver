@@ -521,7 +521,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 DataSourceDescriptor dataSource = registry.getDataSource(id);
                 boolean newDataSource = (dataSource == null);
-                DBPConnectionConfiguration oldConnectionConfiguration = null;
+                DataSourceDescriptor oldDataSource = null;
                 if (newDataSource) {
                     DBPDataSourceOrigin origin;
                     Map<String, Object> originProperties = JSONUtils.deserializeProperties(conObject, TAG_ORIGIN);
@@ -544,7 +544,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         driver,
                         new DBPConnectionConfiguration());
                 } else {
-                    oldConnectionConfiguration = new DBPConnectionConfiguration(dataSource.getConnectionConfiguration());
+                    oldDataSource = new DataSourceDescriptor(dataSource, registry);
                     // Clean settings - they have to be loaded later by parser
                     dataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
                     dataSource.getConnectionConfiguration().setHandlers(Collections.emptyList());
@@ -710,7 +710,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     connectionConfigurationChanged = true;
                 } else {
                     parseResults.updatedDataSources.add(dataSource);
-                    if (!dataSource.getConnectionConfiguration().equals(oldConnectionConfiguration)) {
+                    if (!dataSource.equalSettings(oldDataSource)) {
                         connectionConfigurationChanged = true;
                     }
                 }

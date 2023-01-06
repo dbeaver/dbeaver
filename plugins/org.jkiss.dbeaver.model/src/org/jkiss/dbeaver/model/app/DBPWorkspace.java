@@ -51,6 +51,7 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
     List<DBPProject> getProjects();
     DBPProject getActiveProject();
     DBPProject getProject(@NotNull String projectName);
+    DBPProject getProjectById(@NotNull String projectId);
 
     /**
      * Workspace auth context
