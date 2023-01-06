@@ -157,7 +157,6 @@ public final class SQLSchemaManager {
         prefStore.setValue(SQLModelPreferences.SQL_FORMAT_FORMATTER, "default");
 
         BasicSQLDialect sourceDialect = new BasicSQLDialect() {
-
         };
         ddlText = SQLQueryTranslator.translateScript(sourceDialect, targetDatabaseDialect, prefStore, ddlText);
 
@@ -172,7 +171,16 @@ public final class SQLSchemaManager {
                 log.debug("Process [" + line + "]");
             }
             try (Statement dbStat = connection.createStatement()) {
-                dbStat.execute(line);
+                try {
+                    dbStat.execute(line);
+                } catch (SQLException e) {
+                    //TODO: find a better way to avoid migration errors
+                    // 11 migration version sometimes crashes in h2
+                    log.error("Error during sql migration", e);
+                    log.info("Trying to apply the migration again");
+                    dbStat.execute(line);
+                    log.error("The second attempt was successful");
+                }
             }
         }
     }
