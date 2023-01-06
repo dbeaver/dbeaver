@@ -42,6 +42,8 @@ public class ExasolConstants {
     public static final String DRV_CONNECT_TIMEOUT = "connecttimeout";
     public static final String DRV_BACKUP_HOST_LIST = DBConstants.INTERNAL_PROP_PREFIX + "backupHostList";
     public static final String DRV_USE_BACKUP_HOST_LIST = DBConstants.INTERNAL_PROP_PREFIX + "useBackupHostList";
+    public static final String DRV_USE_LEGACY_ENCRYPTION = "exasol.useLegacyEncryption";
+    public static final String DRV_LEGACY_ENCRYPTION = "legacyencryption";
     public static final String CONSUMER_GROUP_CLASS = "org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup";
     public static final String PRIORITY_GROUP_CLASS = "org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup";
 

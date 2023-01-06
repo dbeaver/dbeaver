@@ -84,7 +84,9 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.info.supportsStoredCode()">
                             <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
-                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                <folder label="%tree.procedure_columns.node.name" icon="#columns" description="Procedure parameters">
+                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                </folder>
                             </items>
                             <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
                                 <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
@@ -152,6 +154,7 @@
                     <property id="read-only-data" label="Driver cannot modify data" description="Driver does not support data (e.g. in table) editing." type="boolean" required="false" defaultValue="false"/>
                     <property id="read-only-meta-data" label="Driver cannot modify meta data" description="Driver does not support meta data (e.g. table or column creating) editing." type="boolean" required="false" defaultValue="false"/>
                     <property id="supports-multi-insert" label="Driver supports multi insert mode" description="Driver supports multi insert mode: INSERT VALUES(,,)(,,). Used for the multi insert data import" type="boolean" required="false" defaultValue="false"/>
+                    <property id="supports-embedded-database-creation" label="Can create database from scratch" description="Driver supports creation of the database structure from scratch.\nControls whether the button 'Create' is visible on the connection page.\nUsed by some embedded databases" type="boolean" required="false" defaultValue="true"/>
                 </propertyGroup>
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
@@ -170,6 +173,7 @@
                     <property id="legacy-sql-dialect" label="Use legacy SQL dialect for DDL" description="Use legacy SQL dialect for DDL" type="boolean" required="false" defaultValue="false"/>
                     <property id="alter-table-add-column" label="Add COLUMN keyword in alter table query" description="Add COLUMN keyword after keyword ADD and before column name in alter table query" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-catalog-name" label="Omit catalog name in queries" description="Omit catalog name in generated queries" type="boolean" required="false" defaultValue="false"/>
+                    <property id="identifier-quotes" label="Identifier quotes" description="Quotes used for escaping identifiers. Syntax is: open1:close1,open2:close2" type="string" required="false" defaultValue=""/>
                 </propertyGroup>
                 <propertyGroup label="Formatting" description="SQL values formats">
                     <property id="native-format-timestamp" label="Timestamp format" description="Format pattern for timestamp columns" type="string" required="false"/>
@@ -480,6 +484,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.cache"/>
+                    <file type="jar" path="repo:/drivers/cache/CacheDB.jar" bundle="!drivers.cache"/>
                     <file type="jar" path="drivers/cache" bundle="drivers.cache"/>
                     <file type="license" path="drivers/cache/LICENSE.txt" bundle="drivers.cache"/>
                 </driver>
@@ -678,6 +683,8 @@
                     supportsDistributedMode="false"
                     categories="sql,embedded,file">
 
+                    <parameter name="identifier-quotes" value="[:]"/>
+
                     <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.ucanaccess"/>
 
@@ -830,7 +837,7 @@
                 </driver>
                 <driver
                     id="kyuubi_hive"
-                    label="Apache Kyuubi (Incubating)"
+                    label="Apache Kyuubi"
                     icon="icons/kyuubi_hive_icon.png"
                     iconBig="icons/kyuubi_hive_icon_big.png"
                     class="org.apache.kyuubi.jdbc.KyuubiHiveDriver"

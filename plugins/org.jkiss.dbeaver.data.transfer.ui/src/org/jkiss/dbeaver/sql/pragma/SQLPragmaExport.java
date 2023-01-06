@@ -82,6 +82,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
             new DataTransferState(),
             true,
             true,
+            false,
             false
         );
 

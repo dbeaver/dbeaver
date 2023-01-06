@@ -859,7 +859,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.tools.select.connection" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveDataSourceHandler">
             <activeWhen>
                 <with variable="activeEditor">
-                    <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProvider"/>
+                    <instanceof value="org.jkiss.dbeaver.model.DBPDataSourceContainerProvider"/>
                 </with>
             </activeWhen>
         </handler>
@@ -867,7 +867,7 @@
             <activeWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProvider"/>
+                        <instanceof value="org.jkiss.dbeaver.model.DBPDataSourceContainerProvider"/>
                     </adapt>
                 </with>
             </activeWhen>
@@ -962,6 +962,33 @@
         <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceReadOnly" order="100">
             <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
         </nodeAction>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+                id="entity_revert"
+                title="%confirm.entity_revert.title"
+                description="%confirm.entity_revert.tip"
+                message="%confirm.entity_revert.message"
+                toggleMessage="%confirm.entity.toggleMessage"
+                group="%confirm.object.editor.group.name"/>
+        <confirmation
+                id="close_editor_edit"
+                title="%confirm.close_editor_edit.title"
+                message="%confirm.close_editor_edit.message"
+                group="%confirm.object.editor.group.name"/>
+        <confirmation
+                id="close_entity_edit"
+                title="%confirm.close_entity_edit.title"
+                message="%confirm.close_entity_edit.message"
+                group="%confirm.object.editor.group.name"/>
+        <confirmation
+                id="entity_reject"
+                title="%confirm.entity_reject.title"
+                description="%confirm.entity_reject.tip"
+                message="%confirm.entity_reject.message"
+                toggleMessage="%confirm.entity.toggleMessage"
+                group="%confirm.object.editor.group.name"/>
     </extension>
 
 

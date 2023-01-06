@@ -68,8 +68,8 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                 if (dbnNode != null) {
                     navigatorView.showNode(dbnNode);
                 }
-        } else if (activeEditor instanceof IDataSourceContainerProvider) {
-            DBPDataSourceContainer dsContainer = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
+        } else if (activeEditor instanceof DBPDataSourceContainerProvider) {
+            DBPDataSourceContainer dsContainer = ((DBPDataSourceContainerProvider) activeEditor).getDataSourceContainer();
             @NotNull
             DBSObject activeObject = null;
             if (dsContainer != null) {

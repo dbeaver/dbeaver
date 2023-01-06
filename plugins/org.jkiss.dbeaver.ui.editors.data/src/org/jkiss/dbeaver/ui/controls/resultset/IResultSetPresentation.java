@@ -114,6 +114,9 @@ public interface IResultSetPresentation {
     @Nullable
     DBDAttributeBinding getCurrentAttribute();
 
+    @Nullable
+    DBDAttributeBinding getFocusAttribute();
+
     void setCurrentAttribute(@NotNull DBDAttributeBinding attribute);
 
     void showAttribute(@NotNull DBDAttributeBinding attribute);

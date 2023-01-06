@@ -15,6 +15,7 @@ jobs:
         with:
           pattern: '^(#\d{3,6}|((Merge|dbeaver|cloudbeaver).+?#\d{3,6})|((DB-|CB-|web-)\d+)).*$'
           excludeDescription: 'true'
+          excludeTitle: 'true'
           error: |
             Each commit message must begin with GitHub or Jira ticket reference. Like:
             *  #<issue_number>

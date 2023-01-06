@@ -77,6 +77,8 @@ public class ExasolMessages extends NLS {
 	public static String label_backup_host_list;
 	public static String label_database;
 	public static String label_encrypt;
+	public static String connection_page_checkbox_legacy_encrypt;
+	public static String connection_page_checkbox_legacy_encrypt_tip;
 	public static String label_host_list;
 	public static String label_security;
 	public static String label_use_backup_host_list;

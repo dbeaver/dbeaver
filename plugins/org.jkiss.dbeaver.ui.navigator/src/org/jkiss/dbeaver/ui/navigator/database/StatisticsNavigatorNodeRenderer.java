@@ -453,24 +453,24 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             int xWidth = getTreeWidth(tree);
 
             if (xWidth - occupiedWidth > Math.max(PERCENT_FILL_WIDTH, textSize.x)) {
-                {
-                    CTabFolder tabFolder = UIUtils.getParentOfType(tree, CTabFolder.class);
-                    Color fillColor = tabFolder == null ? UIStyles.getDefaultWidgetBackground() : tabFolder.getBackground();
-                    gc.setBackground(fillColor);
-                    int fillWidth = PERCENT_FILL_WIDTH * percentFull / 100 + 1;
-                    int x = xWidth - fillWidth - 2;
-                    gc.fillRectangle(x, event.y + 2, fillWidth, event.height - 4);
-                }
+                CTabFolder tabFolder = UIUtils.getParentOfType(tree, CTabFolder.class);
+                Color fillColor = tabFolder == null ? UIStyles.getDefaultWidgetBackground() : tabFolder.getBackground();
 
+                // Frame
+                gc.setForeground(fillColor);
+                gc.drawRectangle(xWidth - PERCENT_FILL_WIDTH - 2, event.y + 1, PERCENT_FILL_WIDTH, event.height - 3);
+
+                // Bar
+                final int width = Math.max((int) Math.ceil((PERCENT_FILL_WIDTH - 3) * percentFull / 100.0), 1);
+                gc.setBackground(fillColor);
+                gc.fillRectangle(xWidth - PERCENT_FILL_WIDTH, event.y + 3, width, event.height - 6);
+
+                // Text
                 gc.setForeground(tree.getForeground());
-                int x = xWidth - textSize.x - 2;
-
-                Font oldFont = gc.getFont();
                 gc.setFont(tree.getFont());
-                gc.drawText(sizeText, x + 2, event.y + (event.height - textSize.y) / 2, true);
-                gc.setFont(oldFont);
+                gc.drawText(sizeText, xWidth - textSize.x, event.y + (event.height - textSize.y) / 2, true);
 
-                return Math.max(PERCENT_FILL_WIDTH, textSize.x) + 3;
+                return Math.max(PERCENT_FILL_WIDTH, textSize.x);
             }
         }
 

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension-point id="org.jkiss.dbeaver.ws.event.handler" name="WebSocket event handler"
+                     schema="schema/org.jkiss.dbeaver.ws.event.handler.exsd"/>
+
+</plugin>

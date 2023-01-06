@@ -21,14 +21,6 @@
 
     <extension-point id="org.jkiss.dbeaver.erd.ui.export.format" name="%extension-point.org.jkiss.dbeaver.erd.ui.export.format.name" schema="schema/org.jkiss.dbeaver.ext.erd.export.format.exsd"/>
 
-    <extension point="org.eclipse.core.contenttype.contentTypes">
-        <content-type
-                file-extensions="erd"
-                id="org.jkiss.dbeaver.erd"
-                name="%content-type.org.jkiss.dbeaver.erd.name"
-                priority="normal"/>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
             id="org.jkiss.dbeaver.erd.ui.editor.ERDEditorEmbedded"
@@ -37,18 +29,14 @@
             label="%editor.erd.name"
             description="%editor.erd.description"
             position="additions_end"
-            icon="icons/erd.png">
+            icon="platform:/plugin/org.jkiss.dbeaver.erd.model/icons/erd.png">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSObjectContainer" forceCheck="true" if="context.isEntityContainer(object)"/>
             <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" forceCheck="true"/>
         </editor>
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler id="er-diagrams" class="org.jkiss.dbeaver.erd.ui.navigator.ERDResourceHandler" name="%resourceHandler.erd.ui.navigator.name"
-                 managable="true" icon="icons/erd_folder.png">
-            <root folder="Diagrams"/>
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd"/>
-        </handler>
+        <handler type="er-diagram" class="org.jkiss.dbeaver.erd.ui.navigator.ERDResourceHandler"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
@@ -407,24 +395,14 @@
         </page>
     </extension>
 
-    <extension point="org.eclipse.core.contenttype.contentTypes">
-        <content-type
-            base-type="org.eclipse.core.runtime.text"
-            default-charset="utf-8"
-            file-extensions="erd"
-            id="org.jkiss.dbeaver.erd.content-type-erd"
-            name="%content-type.org.jkiss.dbeaver.erd.content-type-erd.name"
-            priority="normal"/>
-    </extension>
-
     <extension point="org.eclipse.ui.editors">
         <editor name="%editor.org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone.name"
                 extensions="erd"
-                icon="icons/erd.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.erd.model/icons/erd.png"
                 contributorClass="org.jkiss.dbeaver.erd.ui.editor.ERDEditorContributor"
                 class="org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone"
                 id="org.jkiss.dbeaver.erd.ui.editor.ERDEditorStandalone">
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd.content-type-erd"/>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd"/>
         </editor>
     </extension>
 
@@ -436,8 +414,8 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="icons/erd.png"/>
-        <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="icons/erd.png"/>
+        <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="platform:/plugin/org.jkiss.dbeaver.erd.model/icons/erd.png"/>
+        <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="platform:/plugin/org.jkiss.dbeaver.erd.model/icons/erd.png"/>
         <image commandId="org.jkiss.dbeaver.erd.diagram.saveAs" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/picture_save.png"/>
         <image commandId="org.jkiss.dbeaver.erd.toggleHand" icon="platform:/plugin/org.jkiss.dbeaver.erd.ui/icons/move.png"/>
     </extension>
@@ -531,7 +509,7 @@
         <wizard
              category="org.jkiss.dbeaver.core.new.general"
              class="org.jkiss.dbeaver.erd.ui.navigator.DiagramCreateWizard"
-             icon="icons/erd.png"
+             icon="platform:/plugin/org.jkiss.dbeaver.erd.model/icons/erd.png"
              id="org.jkiss.dbeaver.erd.ui.navigator.DiagramCreateWizard"
              name="%wizard.erd.name">
            <description>

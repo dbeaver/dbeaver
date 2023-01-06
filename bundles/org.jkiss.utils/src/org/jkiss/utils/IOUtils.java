@@ -324,6 +324,9 @@ public final class IOUtils {
             }
         }
         Path localFile = targetFolder.resolve(zipEntry.getName());
+        if (!localFile.normalize().startsWith(targetFolder.normalize())) {
+            throw new IOException("Zip entry is outside of the target directory");
+        }
         if (Files.exists(localFile)) {
             // Already extracted?
             return;
@@ -358,6 +361,26 @@ public final class IOUtils {
             if (parent != null) {
                 return parent.toString();
             }
+        }
+        return null;
+    }
+
+    @NotNull
+    public static String getFileNameWithoutExtension(Path file) {
+        String fileName = file.getFileName().toString();
+        int divPos = fileName.lastIndexOf('.');
+        if (divPos != -1) {
+            return fileName.substring(0, divPos);
+        }
+        return fileName;
+    }
+
+    @Nullable
+    public static String getFileExtension(Path file) {
+        String fileName = file.getFileName().toString();
+        int divPos = fileName.lastIndexOf('.');
+        if (divPos != -1) {
+            return fileName.substring(divPos + 1);
         }
         return null;
     }

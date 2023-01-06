@@ -794,6 +794,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     String tableName;
                     if (dataContainer instanceof SQLQueryContainer) {
                         tableName = DTUtils.getTableNameFromQueryContainer(dataContainer.getDataSource(), (SQLQueryContainer) dataContainer);
+                        if (CommonUtils.isEmpty(tableName)) {
+                            tableName = DTUtils.getTargetContainersNameFromQuery((SQLQueryContainer) dataContainer);
+                        }
                     } else {
                         tableName = DTUtils.getTableName(dataContainer.getDataSource(), dataContainer, true);
                     }

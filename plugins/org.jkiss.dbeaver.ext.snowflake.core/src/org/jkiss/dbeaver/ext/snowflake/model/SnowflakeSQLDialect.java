@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
@@ -33,6 +34,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProvider {
+
+    private static final String[][] SNOWFLAKE_BEGIN_END_BLOCK = new String[][]{
+        {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
+        {"IF", SQLConstants.BLOCK_END}
+    };
 
     public SnowflakeSQLDialect() {
         super("Snowflake", "snowflake");
@@ -67,6 +73,11 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
             final TPTokenDefault keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);
             rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "TRANSACTION"}, keywordToken));
         }
+    }
+
+    @Override
+    public String[][] getBlockBoundStrings() {
+        return SNOWFLAKE_BEGIN_END_BLOCK;
     }
 
     @NotNull

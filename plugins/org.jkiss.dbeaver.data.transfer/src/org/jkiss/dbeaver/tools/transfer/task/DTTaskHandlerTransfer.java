@@ -60,7 +60,13 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler {
         DataTransferSettings[] settings = new DataTransferSettings[1];
         try {
             runnableContext.run(true, true, monitor -> {
-                settings[0] = new DataTransferSettings(monitor, task, log, Collections.emptyMap(), new DataTransferState());
+                settings[0] = new DataTransferSettings(
+                    monitor,
+                    task,
+                    log,
+                    Collections.emptyMap(),
+                    new DataTransferState(),
+                    true);
                 settings[0].loadNodeSettings(monitor);
             });
         } catch (InvocationTargetException e) {

@@ -341,8 +341,12 @@ public class Spreadsheet extends LightGrid implements Listener {
                 presentation.changeSorting(event.data, event.stateMask);
                 break;
             case LightGrid.Event_FilterColumn:
-                //showFiltersMenu
-                presentation.showFiltering(event.data);
+                IGridColumn columnByElement = getColumnByElement(event.data);
+                if (columnByElement != null) {
+                    setFocusColumn(columnByElement.getIndex());
+                    redraw();
+                }
+                presentation.handleColumnIconClick(event.data);
                 break;
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and
