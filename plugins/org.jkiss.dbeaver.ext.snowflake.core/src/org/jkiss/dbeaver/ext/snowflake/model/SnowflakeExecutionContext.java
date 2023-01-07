@@ -27,8 +27,7 @@ import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -39,7 +38,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.List;
 
 class SnowflakeExecutionContext extends GenericExecutionContext {
     private static final Log log = Log.getLog(SnowflakeExecutionContext.class);
@@ -206,12 +204,25 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
         }
     }
 
-    @NotNull
     @Override
-    protected List<String> getExtraInitQueries() {
+    protected boolean executeExtraInitQueries(@NotNull DBCSession session) {
         // JDBC Driver throws java.lang.NoClassDefFoundError for class RootAllocator in Arrow Library, while trying to run a select query.
-        // So this is official workaround for systems with Java 17 and if Arrow library installation is not possible
+        // So this is official workaround for systems with Java 17 (and maybe earlier) and if Arrow library installation is not possible
         // or if the Operating System is not supported by Arrow.
-        return List.of("ALTER SESSION SET JDBC_QUERY_RESULT_FORMAT='JSON'");
+        String query = "ALTER SESSION SET JDBC_QUERY_RESULT_FORMAT='JSON'";
+        try {
+            try (DBCStatement dbStat = session.prepareStatement(
+                DBCStatementType.SCRIPT,
+                query,
+                false,
+                false,
+                false))
+            {
+                dbStat.executeStatement();
+            }
+        } catch (Exception e) {
+            log.warn("Error executing initial query.");
+        }
+        return true;
     }
 }

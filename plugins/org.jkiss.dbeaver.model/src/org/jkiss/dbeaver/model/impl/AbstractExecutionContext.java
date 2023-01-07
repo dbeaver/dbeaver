@@ -26,9 +26,7 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,20 +100,11 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
 
         // Execute bootstrap queries
         DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-        final List<Pair<String, Boolean>> initQueriesMap = new ArrayList<>();
-        for (String query : CommonUtils.safeCollection(bootstrap.getInitQueries())) {
-            initQueriesMap.add(new Pair<>(query, bootstrap.isIgnoreErrors()));
-        }
-        for (String query : CommonUtils.safeCollection(getExtraInitQueries())) {
-            // For now, we want to avoid exceptions during connection with this type of query.
-            // This behavior can be changed in the future on demand.
-            initQueriesMap.add(new Pair<>(query, Boolean.TRUE));
-        }
-        if (!CommonUtils.isEmpty(initQueriesMap)) {
+        final List<String> initQueries = bootstrap.getInitQueries();
+        if (!CommonUtils.isEmpty(initQueries)) {
             monitor.subTask("Run bootstrap queries");
             try (DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run bootstrap queries")) {
-                for (Pair<String, Boolean> entry : initQueriesMap) {
-                    String query = entry.getFirst();
+                for (String query : initQueries) {
                     // Replace variables
                     query = GeneralUtils.replaceVariables(query, getDataSource().getContainer().getVariablesResolver(true));
                     try {
@@ -124,7 +113,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
                         }
                     } catch (Exception e) {
                         String message = "Error executing bootstrap query: " + query;
-                        if (entry.getSecond()) {
+                        if (bootstrap.isIgnoreErrors()) {
                             log.warn(message);
                         } else {
                             throw new DBCException(message, e, this);
@@ -132,18 +121,23 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
                     }
                     monitor.worked(1);
                 }
+                executeExtraInitQueries(session);
             }
             return true;
+        } else {
+            boolean executed;
+            try (DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run extra init queries")) {
+                executed = executeExtraInitQueries(session);
+            }
+            return executed;
         }
-        return false;
     }
 
     /**
-     * Returns a list of queries that should be performed before initializing the session.
+     * Executes extra init queries that should be performed before initializing the session.
      */
-    @NotNull
-    protected List<String> getExtraInitQueries() {
-        return List.of();
+    protected boolean executeExtraInitQueries(@NotNull DBCSession session) {
+        return false;
     }
 
     protected void closeContext()
