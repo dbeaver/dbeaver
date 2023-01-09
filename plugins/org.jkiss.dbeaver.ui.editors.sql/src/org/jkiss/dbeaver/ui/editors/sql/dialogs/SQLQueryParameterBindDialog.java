@@ -225,7 +225,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     }
 
                     savedParamValues.put(
-                        param.getName().toUpperCase(Locale.ENGLISH),
+                        param.getName(),
                         new SQLQueryParameterRegistry.ParameterInfo(param.getName(), newValue));
 
                     updateQueryPreview();

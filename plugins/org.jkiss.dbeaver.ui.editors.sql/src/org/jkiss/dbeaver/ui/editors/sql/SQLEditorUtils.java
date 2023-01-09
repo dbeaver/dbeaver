@@ -18,15 +18,9 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -55,13 +49,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * SQLEditor utils
@@ -398,20 +386,28 @@ public class SQLEditorUtils {
     private static class EditorProjectFileInfo extends EditorFileInfo {
         private final IFile projectFile;
         
-        public EditorProjectFileInfo(@Nullable IFile projectFile) {
+        public EditorProjectFileInfo(@NotNull IFile projectFile) {
             this.projectFile = projectFile;
         }
-        
+
         @Nullable
         @Override
         public Object getPropertyValue(@NotNull String propertyName) {
             DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            if (project == null) {
+                log.debug("Project '" + projectFile.getProject() + "' not recognized (property read)");
+                return null;
+            }
             return EditorUtils.getResourceProperty(project, projectFile, propertyName);
         }
         
         @Override
         public void setPropertyValue(@NotNull String propertyName, @NotNull Object value) {
             DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            if (project == null) {
+                log.debug("Project '" + projectFile.getProject() + "' not recognized (property write)");
+                return;
+            }
             EditorUtils.setResourceProperty(project, projectFile, propertyName, value);
         }
         

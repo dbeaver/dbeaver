@@ -40,7 +40,9 @@ public class VerticaChangeUserPasswordManager implements DBAUserPasswordManager 
     public void changeUserPassword(DBRProgressMonitor monitor, String userName, String newPassword, String oldPassword) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
-            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " IDENTIFIED BY " + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword)));
+            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName)
+                + " IDENTIFIED BY " + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword))
+                + " REPLACE " + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(oldPassword)));
         } catch (SQLException e) {
             throw new DBCException("Error changing user password", e);
         }
