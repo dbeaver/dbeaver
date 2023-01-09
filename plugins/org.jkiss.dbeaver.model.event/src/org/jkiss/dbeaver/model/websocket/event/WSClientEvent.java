@@ -16,20 +16,29 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-public class WSClientEvent {
+/**
+ * Base websocket client event
+ */
+public abstract class WSClientEvent {
+    @NotNull
     private final String id;
+    @Nullable
     private final String topicId;
 
-    protected WSClientEvent(String id, String topicId) {
+    protected WSClientEvent(@NotNull String id, @Nullable String topicId) {
         this.id = id;
         this.topicId = topicId;
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @Nullable
     public String getTopicId() {
         return topicId;
     }

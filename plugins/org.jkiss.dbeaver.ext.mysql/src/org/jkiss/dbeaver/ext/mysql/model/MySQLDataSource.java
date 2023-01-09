@@ -256,8 +256,22 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         super.initialize(monitor);
 
         dataTypeCache.getAllObjects(monitor, this);
-        if (isServerVersionAtLeast(5, 7) && dataTypeCache.getCachedObject(MySQLConstants.TYPE_JSON) == null) {
-            dataTypeCache.cacheObject(new JDBCDataType<>(this, java.sql.Types.OTHER, MySQLConstants.TYPE_JSON, MySQLConstants.TYPE_JSON, false, true, 0, 0, 0));
+        if ((!isMariaDB() && isServerVersionAtLeast(5, 7))
+            && dataTypeCache.getCachedObject(MySQLConstants.TYPE_JSON) == null)
+        {
+            // For MariaDB JSON is an alias for LONGTEXT introduced for compatibility reasons with MySQL's JSON data type.
+            // Even if you through the SQL Editor create a JSON column, it will turn into longtext
+            dataTypeCache.cacheObject(
+                new JDBCDataType<>(
+                    this,
+                    java.sql.Types.OTHER,
+                    MySQLConstants.TYPE_JSON,
+                    MySQLConstants.TYPE_JSON,
+                    false,
+                    true,
+                    0,
+                    0,
+                    0));
         }
         if (isMariaDB() && isServerVersionAtLeast(10, 7) && dataTypeCache.getCachedObject(MySQLConstants.TYPE_UUID) == null) {
             // Not supported by MariaDB driver for now (3.0.8). Waiting for the driver support

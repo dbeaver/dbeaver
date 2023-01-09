@@ -488,7 +488,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case CMD_FILTER_MENU_DISTINCT: {
-                DBDAttributeBinding curAttribute = rsv.getActivePresentation().getCurrentAttribute();
+                DBDAttributeBinding curAttribute = rsv.getActivePresentation().getFocusAttribute();
                 if (curAttribute != null) {
                     rsv.showFiltersDistinctMenu(curAttribute, true);
                 }
@@ -555,7 +555,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
 
             case CMD_TOGGLE_ORDER: {
-                final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
+                final DBDAttributeBinding attr = rsv.getActivePresentation().getFocusAttribute();
                 if (attr != null) {
                     rsv.toggleSortOrder(attr, null);
                 }

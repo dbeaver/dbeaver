@@ -173,6 +173,13 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     @Override
+    public boolean isUtilityTable(@NotNull GenericTableBase table) {
+        // Autoindex tables - are some kind of index tables? No information about them. But they broke our ERD diagrams.
+        // Let's hide these "tables" deeper.
+        return table.getName().startsWith("sqlite_autoindex_");
+    }
+
+    @Override
     public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return true;
     }
