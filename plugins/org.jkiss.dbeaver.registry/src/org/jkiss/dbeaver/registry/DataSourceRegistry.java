@@ -603,6 +603,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }
     }
 
+    public void refreshConfig(Collection<String> dataSourceIds) {
+        if (saveInProgress) {
+            return;
+        }
+        loadDataSources(configurationManager.getConfigurationStorages(), configurationManager, true, false);
+    }
+
     @Override
     public Throwable getLastError() {
         Throwable error = this.lastError;
