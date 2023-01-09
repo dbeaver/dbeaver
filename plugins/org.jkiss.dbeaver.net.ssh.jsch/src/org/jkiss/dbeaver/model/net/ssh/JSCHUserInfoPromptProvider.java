@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.net.ssh;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 
 /**
  * JSCH prompter provider
@@ -27,6 +27,6 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 public interface JSCHUserInfoPromptProvider {
 
     @NotNull
-    UserInfo createUserInfoPrompt(@NotNull SSHAuthConfiguration configuration, @NotNull Session session);
+    UserInfo createUserInfoPrompt(@NotNull SSHHostConfiguration configuration, @NotNull Session session);
 
 }

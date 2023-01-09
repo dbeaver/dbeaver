@@ -58,7 +58,7 @@ public final class HippieProposalProcessor {
     public String[] computeCompletionStrings(IDocument document, int offset) {
         try {
             String prefix = getPrefix(document, offset);
-            if (prefix == null || prefix.isEmpty()) {
+            if (prefix == null || prefix.isEmpty() || prefix.charAt(prefix.length() - 1) == '.') {
                 return NO_PROPOSALS;
             }
 

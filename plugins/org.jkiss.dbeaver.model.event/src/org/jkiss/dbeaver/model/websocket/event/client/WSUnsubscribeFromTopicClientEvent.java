@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.model.websocket.event.client;
 
-import org.jkiss.dbeaver.model.websocket.WSConstants;
 import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
+import org.jkiss.dbeaver.model.websocket.event.WSClientEventType;
 
 /**
  * Unsubscribe from event topic
  */
 public class WSUnsubscribeFromTopicClientEvent extends WSClientEvent {
     public WSUnsubscribeFromTopicClientEvent(String topicId) {
-        super(WSConstants.ClientEvents.TOPIC_UNSUBSCRIBE, topicId);
+        super(WSClientEventType.TOPIC_UNSUBSCRIBE.getEventId(), topicId);
     }
 }
