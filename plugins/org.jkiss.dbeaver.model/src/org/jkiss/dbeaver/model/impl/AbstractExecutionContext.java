@@ -125,11 +125,9 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
             }
             return true;
         } else {
-            boolean executed;
             try (DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run extra init queries")) {
-                executed = executeExtraInitQueries(session);
+                return executeExtraInitQueries(session);
             }
-            return executed;
         }
     }
 

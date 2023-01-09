@@ -210,16 +210,8 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
         // So this is official workaround for systems with Java 17 (and maybe earlier) and if Arrow library installation is not possible
         // or if the Operating System is not supported by Arrow.
         String query = "ALTER SESSION SET JDBC_QUERY_RESULT_FORMAT='JSON'";
-        try {
-            try (DBCStatement dbStat = session.prepareStatement(
-                DBCStatementType.SCRIPT,
-                query,
-                false,
-                false,
-                false))
-            {
-                dbStat.executeStatement();
-            }
+        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.SCRIPT, query, false, false, false)) {
+            dbStat.executeStatement();
         } catch (Exception e) {
             log.warn("Error executing initial query.");
         }
