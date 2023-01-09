@@ -55,7 +55,6 @@ public class StatisticsPresentation extends AbstractPresentation {
     @Override
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
         super.createPresentation(controller, parent);
-        UIUtils.createHorizontalLine(parent);
         table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION);
         table.setLinesVisible(!UIStyles.isDarkTheme());
         table.setHeaderVisible(true);
