@@ -362,7 +362,8 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (!configurationManager.isSecure()) {
             // Read secured creds file
             InputStream secureCredsData = configurationManager.readConfiguration(
-                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT,
+                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId()
+                    + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT,
                 dataSourceIds);
             if (secureCredsData != null) {
                 try {

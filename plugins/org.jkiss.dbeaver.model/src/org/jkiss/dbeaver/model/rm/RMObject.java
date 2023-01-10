@@ -68,6 +68,11 @@ public abstract class RMObject implements DBPNamedObject {
         return null;
     }
 
+    /**
+     * Updates resource for child object.
+     * Used to refresh RM cache.
+     * Should be used only by internal procedures
+     */
     public void updateChild(@NotNull String name, @NotNull RMResource resource) {
         if (children != null) {
             for (int i = 0; i < children.length; i++) {

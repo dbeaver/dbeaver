@@ -134,6 +134,9 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     void flushConfig();
     void refreshConfig();
 
+    /**
+     * Refreshes configuration of specified datasources
+     */
     void refreshConfig(@Nullable Collection<String> dataSourceIds);
 
     /**

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
@@ -51,6 +52,11 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
     List<DBPProject> getProjects();
     DBPProject getActiveProject();
     DBPProject getProject(@NotNull String projectName);
+
+    /**
+     * Finds project by ID
+     */
+    @Nullable
     DBPProject getProjectById(@NotNull String projectId);
 
     /**

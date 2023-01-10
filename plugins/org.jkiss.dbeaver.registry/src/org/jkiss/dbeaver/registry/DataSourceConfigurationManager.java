@@ -37,6 +37,10 @@ public interface DataSourceConfigurationManager {
 
     List<DBPDataSourceConfigurationStorage> getConfigurationStorages();
 
+    /**
+     * Reads datasource configuration.
+     * If dataSourceIds is specified then reads only configuration linked with specified datasources.
+     */
     InputStream readConfiguration(
         @NotNull String name,
         @Nullable Collection<String> dataSourceIds) throws DBException, IOException;
