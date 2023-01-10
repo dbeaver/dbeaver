@@ -129,10 +129,6 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
 
     private void loadProfiles() {
         customProfiles = new ArrayList<>();
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
-            log.warn("The user has no permission to load custom data formatter configuration");
-            return;
-        }
         try {
             String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(CONFIG_FILE_NAME);
             if (CommonUtils.isEmpty(content)) {

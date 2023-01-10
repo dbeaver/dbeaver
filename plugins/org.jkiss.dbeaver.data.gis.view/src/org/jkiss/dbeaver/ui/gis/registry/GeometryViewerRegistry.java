@@ -121,10 +121,6 @@ public class GeometryViewerRegistry {
         @NotNull Collection<String> notVisiblePredefinedTilesIds,
         @NotNull Collection<LeafletTilesDescriptor> userDefinedTiles
     ) throws DBException {
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PUBLIC)) {
-            log.warn("The user has no permission to load geometry tiles configuration");
-            return;
-        }
         String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(GEOMETRY_REGISTRY_CONFIG_XML);
         if (CommonUtils.isEmpty(content)) {
             return;
