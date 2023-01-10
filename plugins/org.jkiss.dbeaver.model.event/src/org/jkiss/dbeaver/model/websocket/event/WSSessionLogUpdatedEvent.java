@@ -16,22 +16,8 @@
  */
 package org.jkiss.dbeaver.model.websocket.event;
 
-//TODO: implement event registry and describe possible events in plugin.xml
-public enum WSEventTopic {
-    SERVER_CONFIG("cb_config"),
-    SESSION_LOG("cb_session_log"),
-    DATASOURCE("cb_datasource"),
-    DATASOURCE_FOLDER("cb_datasource_folder"),
-    RM_SCRIPTS("cb_scripts"),
-    PROJECTS("cb_projects");
-
-    private final String topicId;
-
-    WSEventTopic(String topicId) {
-        this.topicId = topicId;
-    }
-
-    public String getTopicId() {
-        return topicId;
+public class WSSessionLogUpdatedEvent extends WSEvent {
+    public WSSessionLogUpdatedEvent() {
+        super(WSEventType.SESSION_LOG_UPDATED);
     }
 }
