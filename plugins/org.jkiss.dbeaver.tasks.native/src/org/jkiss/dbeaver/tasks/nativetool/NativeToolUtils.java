@@ -102,7 +102,7 @@ public abstract class NativeToolUtils {
     }
     
     /**
-     * Appends <code>--host</code> and <code>--port</code> parameters from connection settings to the list of command parameters
+     * Appends {@code --host} and {@code --port} parameters from connection settings to the list of command parameters
      */
     public static void addHostAndPortParamsToCmd(@NotNull DBPDataSourceContainer dataSourceContainer, @NotNull List<String> cmd) {
         DBPConnectionConfiguration connectionInfo = dataSourceContainer.getActualConnectionConfiguration();
