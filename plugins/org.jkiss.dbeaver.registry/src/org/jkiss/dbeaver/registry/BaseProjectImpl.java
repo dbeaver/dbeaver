@@ -437,7 +437,7 @@ public abstract class BaseProjectImpl implements DBPProject {
         }
     }
 
-    void updateResourceCache(IPath oldPath, IPath newPath) {
+    void moveResourceCache(IPath oldPath, IPath newPath) {
         boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {

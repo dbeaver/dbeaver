@@ -230,7 +230,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
             if (movedToPath != null) {
                 IPath oldPath = delta.getProjectRelativePath();
                 IPath newPath = movedToPath.makeRelativeTo(projectMetadata.getEclipseProject().getFullPath());
-                projectMetadata.updateResourceCache(oldPath, newPath);
+                projectMetadata.moveResourceCache(oldPath, newPath);
             } else {
                 projectMetadata.removeResourceFromCache(delta.getProjectRelativePath());
             }
