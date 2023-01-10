@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.commands;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.sql.SQLControlCommand;
@@ -51,15 +52,15 @@ public class SQLCommandSet implements SQLControlCommandHandler {
         return true;
     }
     
-    private String tryParseVariableName(SQLScriptContext ctx, String text, int start) {
+    private String tryParseVariableName(@NotNull SQLScriptContext ctx, @NotNull String text, int start) {
         while (start < text.length() && Character.isWhitespace(text.charAt(start))) {
             start++;
         }
         SQLDialect sqlDialect = ctx.getExecutionContext().getDataSource().getSQLDialect();
         int end = ScriptParameterRule.tryConsumeParameterName(sqlDialect, text, start);
-        if (end > 0) {
+        if (end != -1) {
             String rawParamName = text.substring(start, end);
-            if (end > 0 && sqlDialect.isQuotedIdentifier(rawParamName)) {
+            if (sqlDialect.isQuotedIdentifier(rawParamName)) {
                 return sqlDialect.getUnquotedIdentifier(rawParamName);
             } else {
                 return rawParamName.toUpperCase(Locale.ENGLISH);
