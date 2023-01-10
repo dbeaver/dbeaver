@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLParameterToken;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
@@ -63,11 +64,11 @@ public class ScriptParameterRule implements TPRule {
             buffer.append((char) c);
             c = scanner.read();
             
-            if (isIdentifierQuote((char) c, true, false)) {
+            if (isIdentifierQuote((char) c, true, false, quoteStrings)) {
                 do {
                     buffer.append((char) c);
                     c = scanner.read();
-                    if (isIdentifierQuote((char) c, false, true)) {
+                    if (isIdentifierQuote((char) c, false, true, quoteStrings)) {
                         buffer.append((char) c);
                         c = scanner.read();
                         break;
@@ -89,8 +90,8 @@ public class ScriptParameterRule implements TPRule {
             }
             if (syntaxManager.isParametersEnabled()) {
                 if (buffer.charAt(0) == namedPrefix && buffer.length() > 1) {
-                    if (isIdentifierQuote(buffer.charAt(1), true, false)
-                        && isIdentifierQuote(buffer.charAt(buffer.length() - 1), false, true)
+                    if (isIdentifierQuote(buffer.charAt(1), true, false, quoteStrings)
+                        && isIdentifierQuote(buffer.charAt(buffer.length() - 1), false, true, quoteStrings)
                         && buffer.length() > 3
                     ) {
                         return parameterToken;
@@ -117,7 +118,33 @@ public class ScriptParameterRule implements TPRule {
         return TPTokenAbstract.UNDEFINED;
     }
     
-    private boolean isIdentifierQuote(char c, boolean testStart, boolean testEnd) {
+    public static int tryConsumeParameterName(SQLDialect sqlDialect, CharSequence buffer, int position) {
+        // keep in sync with the above
+        if (position >= buffer.length()) {
+            return -1;
+        }
+        String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
+        char c = buffer.charAt(position);
+        position++;
+        if (isIdentifierQuote(c, true, false, quoteStrings)) {
+            while (position < buffer.length()) {
+                c = buffer.charAt(position);
+                position++;
+                if (isIdentifierQuote(c, false, true, quoteStrings)) {
+                    return position;
+                }
+            }
+            return -1;
+        } else {
+            while (position < buffer.length() && Character.isJavaIdentifierPart(c)) {
+                c = buffer.charAt(position);
+                position++;
+            }
+            return position;
+        }
+    }
+    
+    private static boolean isIdentifierQuote(char c, boolean testStart, boolean testEnd, String[][] quoteStrings) {
         String testStr = Character.toString(c);
         if (testStr.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
             return true;
