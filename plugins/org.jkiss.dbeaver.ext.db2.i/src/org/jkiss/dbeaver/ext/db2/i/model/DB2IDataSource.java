@@ -54,9 +54,9 @@ public class DB2IDataSource extends GenericDataSource {
         @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
-    ) throws DBCException {
+    ) {
         Map<String, String> props = new HashMap<>();
-        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE) ) {
+        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             props.put(APPLICATION_NAME_PROP, GeneralUtils.getProductName());
         }
         return props;

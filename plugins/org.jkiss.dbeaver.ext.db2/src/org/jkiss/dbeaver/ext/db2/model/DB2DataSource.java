@@ -96,7 +96,8 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache = new JDBCObjectSimpleCache<>(DB2Bufferpool.class, C_BP);
     private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache = new JDBCObjectSimpleCache<>(DB2Tablespace.class, C_TS);
 
-    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache = new JDBCObjectSimpleCache<>(DB2RemoteServer.class, C_SV);
+    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache
+        = new JDBCObjectSimpleCache<>(DB2RemoteServer.class, C_SV);
     private final DBSObjectCache<DB2DataSource, DB2Wrapper> wrapperCache = new JDBCObjectSimpleCache<>(DB2Wrapper.class, C_WR);
     private final DBSObjectCache<DB2DataSource, DB2UserMapping> userMappingCache = new JDBCObjectSimpleCache<>(DB2UserMapping.class, C_UM);
 
@@ -105,7 +106,8 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
 
     // Those are dependent of DB2 version
     // This is ok as they will never been called as the folder/menu is hidden in plugin.xml
-    private final DBSObjectCache<DB2DataSource, DB2StorageGroup> storagegroupCache = new JDBCObjectSimpleCache<>(DB2StorageGroup.class, C_SG);
+    private final DBSObjectCache<DB2DataSource, DB2StorageGroup> storagegroupCache
+            = new JDBCObjectSimpleCache<>(DB2StorageGroup.class, C_SG);
     private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<>(DB2Role.class, C_RL);
     private final DBSObjectCache<DB2DataSource, DB2Variable> variableCache = new JDBCObjectSimpleCache<>(DB2Variable.class, C_VR);
 
