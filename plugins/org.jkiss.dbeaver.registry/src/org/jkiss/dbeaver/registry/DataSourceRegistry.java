@@ -603,11 +603,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }
     }
 
-    public void refreshConfig(Collection<String> dataSourceIds) {
+    public void refreshConfig(@Nullable Collection<String> dataSourceIds) {
         if (saveInProgress) {
             return;
         }
-        loadDataSources(configurationManager.getConfigurationStorages(), configurationManager, true, false);
+        loadDataSources(
+            configurationManager.getConfigurationStorages(),
+            configurationManager,
+            dataSourceIds,
+            true,
+            false);
     }
 
     @Override
@@ -705,13 +710,19 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     private void loadDataSources(boolean refresh) {
-        loadDataSources(configurationManager.getConfigurationStorages(), configurationManager, refresh, true);
+        loadDataSources(
+            configurationManager.getConfigurationStorages(),
+            configurationManager,
+            null,
+            refresh,
+            true);
     }
 
     @Override
     public boolean loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
+        @Nullable Collection<String> dataSourceIds,
         boolean refresh,
         boolean purgeUntouched
     ) {
@@ -727,7 +738,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         ParseResults parseResults = new ParseResults();
         // Modern way - search json configs in metadata folder
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
-            if (loadDataSources(cfgStorage, manager, false, parseResults)) {
+            if (loadDataSources(cfgStorage, manager, dataSourceIds, false, parseResults)) {
                 configChanged = true;
             }
         }
@@ -780,6 +791,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     private boolean loadDataSources(
         @NotNull DBPDataSourceConfigurationStorage storage,
         @NotNull DataSourceConfigurationManager manager,
+        @Nullable Collection<String> dataSourceIds,
         boolean refresh,
         @NotNull ParseResults parseResults
     ) {
@@ -791,7 +803,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             } else {
                 serializer = new DataSourceSerializerModern(this);
             }
-            configChanged = serializer.parseDataSources(storage, manager, parseResults, refresh);
+            configChanged = serializer.parseDataSources(storage, manager, parseResults, dataSourceIds, refresh);
             updateProjectNature();
             lastError = null;
         } catch (Exception ex) {

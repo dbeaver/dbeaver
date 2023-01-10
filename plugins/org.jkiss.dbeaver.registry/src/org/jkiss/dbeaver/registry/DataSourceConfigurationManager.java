@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -36,7 +37,9 @@ public interface DataSourceConfigurationManager {
 
     List<DBPDataSourceConfigurationStorage> getConfigurationStorages();
 
-    InputStream readConfiguration(@NotNull String name) throws DBException, IOException;
+    InputStream readConfiguration(
+        @NotNull String name,
+        @Nullable Collection<String> dataSourceIds) throws DBException, IOException;
 
     void writeConfiguration(@NotNull String name, @Nullable byte[] data) throws DBException, IOException;
 

@@ -355,13 +355,15 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
+        @Nullable Collection<String> dataSourceIds,
         boolean refresh
     ) throws DBException, IOException {
         var connectionConfigurationChanged = false;
         if (!configurationManager.isSecure()) {
             // Read secured creds file
             InputStream secureCredsData = configurationManager.readConfiguration(
-                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT,
+                dataSourceIds);
             if (secureCredsData != null) {
                 try {
                     String credJson = loadConfigFile(secureCredsData, true);
@@ -382,7 +384,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (configurationStorage instanceof DataSourceMemoryStorage) {
             configData = ((DataSourceMemoryStorage) configurationStorage).getInputStream();
         } else {
-            configData = configurationManager.readConfiguration(configurationStorage.getStorageName());
+            configData = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds);
         }
         if (configData != null) {
             String configJson = loadConfigFile(configData, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));

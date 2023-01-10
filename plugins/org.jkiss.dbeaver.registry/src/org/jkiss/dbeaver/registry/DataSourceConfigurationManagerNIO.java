@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -110,7 +111,7 @@ public class DataSourceConfigurationManagerNIO implements DataSourceConfiguratio
     }
 
     @Override
-    public InputStream readConfiguration(@NotNull String name) throws IOException {
+    public InputStream readConfiguration(@NotNull String name, Collection<String> dataSourceIds) throws IOException {
         Path path = getConfigurationPath(false).resolve(name);
         if (Files.notExists(path)) {
             // maybe it's .dbeaver-data-sources*.xml in the project folder (DBeaver < 6.1.3 (Legacy))

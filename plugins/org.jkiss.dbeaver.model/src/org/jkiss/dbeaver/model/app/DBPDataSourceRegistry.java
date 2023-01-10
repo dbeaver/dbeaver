@@ -134,7 +134,7 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     void flushConfig();
     void refreshConfig();
 
-    void refreshConfig(Collection<String> dataSourceIds);
+    void refreshConfig(@Nullable Collection<String> dataSourceIds);
 
     /**
      * Returns and nullifies last registry save/load error.

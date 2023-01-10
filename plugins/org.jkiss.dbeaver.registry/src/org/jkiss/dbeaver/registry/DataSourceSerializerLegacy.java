@@ -47,6 +47,7 @@ import org.xml.sax.Attributes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -75,9 +76,9 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
-        boolean refresh
+        Collection<String> dataSourceIds, boolean refresh
     ) throws DBException, IOException {
-        try (InputStream is = configurationManager.readConfiguration(configurationStorage.getStorageName())) {
+        try (InputStream is = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds)) {
             if (is != null) {
                 SAXReader parser = new SAXReader(is);
                 final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);

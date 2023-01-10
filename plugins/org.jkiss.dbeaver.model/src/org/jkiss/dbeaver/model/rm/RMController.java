@@ -69,7 +69,7 @@ public interface RMController extends DBPObjectController {
     /**
      * Returns datasources configuration in modern format
      */
-    String getProjectsDataSources(@NotNull String projectId) throws DBException;
+    String getProjectsDataSources(@NotNull String projectId, @Nullable String[] dataSourceIds) throws DBException;
 
     /**
      * Save datasources. Note: it only adds datasources.

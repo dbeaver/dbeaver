@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -36,6 +37,7 @@ public interface DataSourcePersistentRegistry {
     boolean loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
+        @Nullable Collection<String> dataSourceIds,
         boolean refresh,
         boolean purgeUntouched
     );
