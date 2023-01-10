@@ -285,7 +285,6 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
                 db2Connection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY,
                     CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), context, purpose), 255));
             } catch (Throwable e) {
-                // just ignore
                 log.debug(e);
             }
         }
