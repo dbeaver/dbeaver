@@ -37,7 +37,7 @@ interface DataSourceSerializer
         List<DataSourceDescriptor> localDataSources)
         throws DBException, IOException;
 
-    void parseDataSources(
+    boolean parseDataSources(
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,

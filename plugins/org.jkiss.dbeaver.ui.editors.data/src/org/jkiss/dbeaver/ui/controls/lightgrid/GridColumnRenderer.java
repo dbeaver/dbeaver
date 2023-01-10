@@ -144,36 +144,6 @@ class GridColumnRenderer extends AbstractRenderer {
             gc.setClipping((Rectangle) null);
         }
 
-        if (sortOrder != SWT.NONE) {
-            if (drawSelected) {
-                sortBounds.x = bounds.x + bounds.width - ARROW_MARGIN - sortBounds.width + 1;
-                sortBounds.y = y;
-            } else {
-                sortBounds.x = bounds.x + bounds.width - ARROW_MARGIN - sortBounds.width;
-                sortBounds.y = y;
-            }
-            sortBounds.x += IMAGE_SPACING;
-            paintSort(gc, sortBounds, sortOrder);
-        }
-
-        if (hasFilters) {
-            gc.drawImage(IMAGE_FILTER,
-                bounds.x + bounds.width - filterBounds.width -
-                    (sortOrder != SWT.NONE ? IMAGE_SPACING + sortBounds.width + 1 : ARROW_MARGIN),
-                y);
-        }
-
-        {
-            // Draw column description
-            String text = getColumnDescription(element);
-            if (!CommonUtils.isEmpty(text)) {
-                y += TOP_MARGIN + grid.fontMetrics.getHeight();
-                text = UITextUtils.getShortString(grid.fontMetrics, text, width);
-                gc.setFont(grid.normalFont);
-                gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, isTransparent);
-            }
-        }
-
         // Draw border
         if (PAINT_COLUMN_FOCUS_BORDER && element == grid.getFocusColumnElement()) {
             drawSelected = selected;
@@ -213,6 +183,34 @@ class GridColumnRenderer extends AbstractRenderer {
             gc.setForeground(grid.getLabelProvider().getHeaderBorder(element));
             gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
             gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
+        }
+
+        // Sort icon
+        if (sortOrder != SWT.NONE) {
+            sortBounds.x = bounds.x + bounds.width - sortBounds.width - filterBounds.width - IMAGE_SPACING;
+            sortBounds.y = y;
+            if (drawSelected) {
+                sortBounds.x++;
+            }
+            paintSort(gc, sortBounds, sortOrder);
+        }
+
+        // Drop-down icon
+        if (hasFilters) {
+            gc.drawImage(IMAGE_FILTER, bounds.x + bounds.width - filterBounds.width - IMAGE_SPACING, y);
+            // (sortOrder != SWT.NONE ? IMAGE_SPACING + sortBounds.width + 1 : ARROW_MARGIN)
+        }
+
+
+        {
+            // Draw column description
+            String text = getColumnDescription(element);
+            if (!CommonUtils.isEmpty(text)) {
+                y += TOP_MARGIN + grid.fontMetrics.getHeight();
+                text = UITextUtils.getShortString(grid.fontMetrics, text, width);
+                gc.setFont(grid.normalFont);
+                gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, isTransparent);
+            }
         }
 
         gc.setFont(grid.normalFont);

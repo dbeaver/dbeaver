@@ -453,8 +453,10 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	protected Map<String, String> getInternalConnectionProperties(
 		DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
 	{
-		Map<String, String> props = new HashMap<>();
-		props.putAll(ExasolDataSourceProvider.getConnectionsProps());
+		Map<String, String> props = new HashMap<>(ExasolDataSourceProvider.getConnectionsProps());
+		if (CommonUtils.getBoolean(connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION), false)) {
+			props.put(ExasolConstants.DRV_LEGACY_ENCRYPTION, "1");
+		}
 		return props;
 	}
 

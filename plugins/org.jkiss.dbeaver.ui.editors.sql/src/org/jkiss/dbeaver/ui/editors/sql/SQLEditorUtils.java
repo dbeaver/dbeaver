@@ -18,15 +18,9 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -46,6 +40,8 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeBase;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeDriver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
@@ -53,13 +49,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * SQLEditor utils
@@ -396,20 +386,28 @@ public class SQLEditorUtils {
     private static class EditorProjectFileInfo extends EditorFileInfo {
         private final IFile projectFile;
         
-        public EditorProjectFileInfo(@Nullable IFile projectFile) {
+        public EditorProjectFileInfo(@NotNull IFile projectFile) {
             this.projectFile = projectFile;
         }
-        
+
         @Nullable
         @Override
         public Object getPropertyValue(@NotNull String propertyName) {
             DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            if (project == null) {
+                log.debug("Project '" + projectFile.getProject() + "' not recognized (property read)");
+                return null;
+            }
             return EditorUtils.getResourceProperty(project, projectFile, propertyName);
         }
         
         @Override
         public void setPropertyValue(@NotNull String propertyName, @NotNull Object value) {
             DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(projectFile.getProject());
+            if (project == null) {
+                log.debug("Project '" + projectFile.getProject() + "' not recognized (property write)");
+                return;
+            }
             EditorUtils.setResourceProperty(project, projectFile, propertyName, value);
         }
         
@@ -543,5 +541,29 @@ public class SQLEditorUtils {
             oldServicesEnabled && markWordForSelectionEnabled,
             newServicesEnabled && markWordForSelectionEnabled
         );
+    }
+    
+    /**
+     * Returns type id of the driver of data source container, associated with SQLEditor, 
+     * or {@code null} if editor is not instance of SQLEditor or data source container is null
+     */
+    @Nullable
+    public static String getEditorContextTypeId(@NotNull SQLEditorBase editor) {
+        String contextTypeId = null;
+        if (editor instanceof SQLEditor) {
+            DBPDataSourceContainer dsContainer = ((SQLEditor) editor).getDataSourceContainer();
+            if (dsContainer != null) {
+                contextTypeId = SQLContextTypeDriver.getTypeId(dsContainer.getDriver());
+            }
+        }
+        return contextTypeId;
+    }
+    
+    /**
+     * Checks whether template's context is suitable for the editor context
+     */
+    public static boolean isTemplateContextFitsEditorContext(@NotNull String templateContextTypeId, @Nullable String editorContextId) {
+        return editorContextId != null && templateContextTypeId.equalsIgnoreCase(editorContextId) 
+            || templateContextTypeId.equalsIgnoreCase(SQLContextTypeBase.ID_SQL);
     }
 }

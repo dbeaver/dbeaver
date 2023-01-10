@@ -488,7 +488,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case CMD_FILTER_MENU_DISTINCT: {
-                DBDAttributeBinding curAttribute = rsv.getActivePresentation().getCurrentAttribute();
+                DBDAttributeBinding curAttribute = rsv.getActivePresentation().getFocusAttribute();
                 if (curAttribute != null) {
                     rsv.showFiltersDistinctMenu(curAttribute, true);
                 }
@@ -555,7 +555,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
 
             case CMD_TOGGLE_ORDER: {
-                final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
+                final DBDAttributeBinding attr = rsv.getActivePresentation().getFocusAttribute();
                 if (attr != null) {
                     rsv.toggleSortOrder(attr, null);
                 }
@@ -626,13 +626,13 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     public void updateElement(UIElement element, Map parameters) {
         if (parameters.get(PARAM_EXPORT_WITH_PARAM) != null) {
             final String processorId = ResultSetHandlerOpenWith.getDefaultOpenWithProcessor();
+            final DataTransferProcessorDescriptor descriptor = ResultSetHandlerCopyAs.getActiveProcessor(processorId);
 
-            if (CommonUtils.isEmpty(processorId)) {
+            if (descriptor == null) {
                 element.setText(ActionUtils.findCommandName(CMD_EXPORT));
                 element.setIcon(ActionUtils.findCommandImage(CMD_EXPORT));
                 element.setTooltip(ActionUtils.findCommandDescription(CMD_EXPORT, element.getServiceLocator(), false));
             } else {
-                final DataTransferProcessorDescriptor descriptor = DataTransferRegistry.getInstance().getProcessor(processorId);
                 element.setText(descriptor.getAppName());
                 element.setIcon(DBeaverIcons.getImageDescriptor(descriptor.getIcon()));
                 element.setTooltip(descriptor.getDescription());

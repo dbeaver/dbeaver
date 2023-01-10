@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
@@ -41,7 +42,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SQLScriptParserGenericsTest {
@@ -95,6 +101,60 @@ public class SQLScriptParserGenericsTest {
         }
     }
     
+    @Test
+    public void parseSnowflakeCreateProcedureWithIfStatements() throws DBException {
+        String[] query = new String[]{ 
+            "CREATE OR REPLACE PROCEDURE testproc()\n"
+            + "RETURNS varchar\n"
+            + "LANGUAGE SQL AS\n"
+            + "$$\n"
+            + "  DECLARE\n"
+            + "    i int;\n"
+            + "  BEGIN\n"
+            + "    i:=1;\n"
+            + "    IF (i=1) THEN\n"
+            + "      i:=2;\n"
+            + "    END IF;\n"
+            + "    IF (i=2) THEN\n"
+            + "      i:=3;\n"
+            + "    END IF;\n"
+            + "  END\n"
+            + "$$"
+        };
+        assertParse("snowflake", query);
+    }
+
+    @Test
+    public void parseNamedParameters() throws DBException {
+        List<String> inputParamNames = List.of("1", "\"SYs_B_1\"", "\"MyVar8\"", "AbC", "\"#d2\"");
+        List<String> invalidParamNames = List.of("&6^34", "%#2", "\"\"\"\"");
+        StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
+        inputParamNames.stream().forEach(p -> joiner.add(":" + p));
+        invalidParamNames.stream().forEach(p -> joiner.add(":" + p));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assert.assertEquals(List.of("1", "SYs_B_1", "MyVar8", "ABC", "#d2"), actualParamNames);
+    }
+    
+    private void assertParse(String dialectName, String[] expected) throws DBException {
+        String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
+        List<String> expectedParts = new ArrayList<>(expected.length);
+        for (int i = 0; i < expected.length; i++) {
+            if (i + 1 < expected.length && expected[i + 1] == null) {
+                expectedParts.add(expected[i].replaceAll("[\\;]+$", ""));
+                i++;
+            } else {
+                expectedParts.add(expected[i]);
+            }
+        }
+        assertParse(dialectName, source, expectedParts.toArray(new String[0]));
+    }
+    
     private void assertParse(String dialectName, String query, String[] expected) throws DBException {
         SQLParserContext context = createParserContext(setDialect(dialectName), query);
         int docLen = context.getDocument().getLength();
@@ -116,8 +176,14 @@ public class SQLScriptParserGenericsTest {
     private SQLDialect setDialect(String name) throws DBException {
         SQLDialectRegistry registry = SQLDialectRegistry.getInstance();
         SQLDialect dialect = registry.getDialect(name).createInstance();
+        try {
+            Mockito.when(databaseMetaData.getIdentifierQuoteString()).thenReturn("\"");
+        } catch (SQLException e) {
+            throw new DBException("Can't initialize identifier quote string for dialect " + name, e);
+        }
         ((JDBCSQLDialect) dialect).initDriverSettings(session, dataSource, databaseMetaData);
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+
         return dialect;
     }
 

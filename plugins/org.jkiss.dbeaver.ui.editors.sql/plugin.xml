@@ -13,10 +13,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler id="scripts" class="org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl" name="%resourceHandler.ui.editors.sql.scripts.name" managable="true" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/scripts.png">
-            <root folder="Scripts"/>
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
-        </handler>
+        <handler type="sql-script" class="org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
@@ -53,16 +50,6 @@
                 label="HTML"
                 description="%sql.convert.html.description"
                 class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter"/>
-    </extension>
-
-    <extension point="org.eclipse.core.contenttype.contentTypes">
-        <content-type
-                base-type="org.eclipse.core.runtime.text"
-                file-extensions="sql"
-                id="org.jkiss.dbeaver.sql"
-                name="%content-type.org.jkiss.dbeaver.sql.name"
-                priority="high"
-                describer="org.jkiss.dbeaver.ui.editors.sql.SQLContentTypeDescriber"/>
     </extension>
 
     <extension point="org.eclipse.ui.editors">
@@ -570,7 +557,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSyncConnection">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProviderEx"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.IDataSourceContainerUpdate"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -1274,6 +1261,44 @@
         <generator id="ddlByResultSet" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorDDLFromResultSet" label="CREATE" description="CREATE table" order="6">
             <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
         </generator>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+                id="close_running_query"
+                title="%confirm.close_running_query.title"
+                description="%confirm.close_running_query.tip"
+                message="%confirm.close_running_query.message"
+                toggleMessage="%confirm.sql.toggleMessage"
+                group="%confirm.sql.group.name"/>
+        <confirmation
+                id="dangerous_sql"
+                title="%confirm.dangerous_sql.title"
+                description="%confirm.dangerous_sql.tip"
+                message="%confirm.dangerous_sql.message"
+                toggleMessage="%confirm.sql.toggleMessage"
+                group="%confirm.sql.group.name"/>
+        <confirmation
+                id="drop_sql"
+                title="%confirm.drop_sql.title"
+                description="%confirm.drop_sql.tip"
+                message="%confirm.drop_sql.message"
+                toggleMessage="%confirm.sql.toggleMessage"
+                group="%confirm.sql.group.name"/>
+        <confirmation
+                id="mass_parallel_sql"
+                title="%confirm.mass_parallel_sql.title"
+                description="%confirm.mass_parallel_sql.tip"
+                message="%confirm.mass_parallel_sql.message"
+                toggleMessage="%confirm.sql.toggleMessage"
+                group="%confirm.sql.group.name"/>
+        <confirmation
+                id="close_result_tabs"
+                title="%confirm.close_result_tabs.title"
+                description="%confirm.close_result_tabs.tip"
+                message="%confirm.close_result_tabs.message"
+                toggleMessage="%confirm.sql.toggleMessage"
+                group="%confirm.sql.group.name"/>
     </extension>
 
 </plugin>
