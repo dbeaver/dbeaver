@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -89,7 +90,10 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     public GenericSchema getSchema(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return DBUtils.findObject(getSchemas(monitor), name);
+        return DBUtils.findObject(
+            getSchemas(monitor),
+            name,
+            getDataSource().getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED);
     }
 
     @NotNull

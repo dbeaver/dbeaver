@@ -2195,10 +2195,12 @@ public abstract class LightGrid extends Canvas {
             hoveringOnColumnIcon = overIcon;
         }
 
+        if(overFilter) {
+            setCursor(sortCursor);
+        }
+
         if(overFilter != hoveringOnColumnFilter) {
-        	if(overFilter) 
-        		setCursor(sortCursor);        	
-        	else if(!overSorter) {
+        	if(!overSorter) {
         		columnBeingFiltered = null;
         		setCursor(null);
         	}
@@ -4830,7 +4832,7 @@ public abstract class LightGrid extends Canvas {
                 y + GridColumnRenderer.TOP_MARGIN,
                 arrowWidth,
                 height);
-            GridColumnRenderer.paintSort(gc, sortBounds, sortOrder);
+            GridColumnRenderer.paintSort(gc, sortBounds, sortOrder, true);
         }
     }
 

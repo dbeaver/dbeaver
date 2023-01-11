@@ -137,12 +137,12 @@ class GridColumn implements IGridColumn {
         }
         Rectangle filterBounds = GridColumnRenderer.getFilterControlBounds();
 
-        int filterEnd = bounds.width - GridColumnRenderer.ARROW_MARGIN;
+        int filterEnd = bounds.width - GridColumnRenderer.IMAGE_SPACING;
         int filterBegin = filterEnd - filterBounds.width;
 
-        return
-            x >= filterBegin && x <= filterEnd &&
-                y < bounds.y + filterBounds.height + GridColumnRenderer.TOP_MARGIN;
+        boolean isOverIcon = x >= filterBegin && x <= filterEnd &&
+            y < bounds.y + filterBounds.height + GridColumnRenderer.TOP_MARGIN;
+        return isOverIcon;
     }
 
     public boolean isOverSortArrow(int x, int y) {
