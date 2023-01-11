@@ -16,21 +16,50 @@
  */
 package org.jkiss.dbeaver.ext.db2.zos.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class DB2ZOSDataSource extends GenericDataSource {
 
     private static final Log log = Log.getLog(DB2ZOSDataSource.class);
 
+    private static final String APPLICATION_NAME_PROP = "clientProgramName";
+    
     public DB2ZOSDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
     {
         super(monitor, container, metaModel, new DB2ZOSSQLDialect());
+    }
+    
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) {
+        Map<String, String> props = new HashMap<>();
+        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+            props.put(APPLICATION_NAME_PROP, GeneralUtils.getProductName());
+        }
+        return props;
     }
 
 }
