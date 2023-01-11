@@ -2310,7 +2310,7 @@ public class ResultSetViewer extends Viewer
         }
 
         if (serverSideOrdering && getDataSource() != null && !getDataSource().getInfo().supportsResultSetOrdering()) {
-            ConfirmationDialog.confirmAction(getControl().getShell(), ResultSetPreferences.CONFIRM_ORDER_RESULTSET, ConfirmationDialog.WARNING);
+            ConfirmationDialog.confirmAction(getControl().getShell(), CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE, ConfirmationDialog.WARNING);
             serverSideOrdering = false;
         }
 
