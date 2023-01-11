@@ -287,7 +287,12 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
 
     @NotNull
     public static String makeLocalFolderItemPath(DBPDataSourceFolder folder) {
-        return NodePathType.folder.getPrefix() + folder.getDataSourceRegistry().getProject().getId() + "/" + folder.getFolderPath();
+        return makeLocalFolderItemPath(folder.getDataSourceRegistry().getProject().getId(), folder.getFolderPath());
+    }
+
+    @NotNull
+    public static String makeLocalFolderItemPath(@NotNull String projectId, @NotNull String folderPath) {
+        return NodePathType.folder.getPrefix() + projectId + "/" + folderPath;
     }
 
     @Override

@@ -280,6 +280,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public DataSourceFolder addFolder(DBPDataSourceFolder parent, String name) {
+        return createFolder(parent, name);
+    }
+
+    DataSourceFolder createFolder(DBPDataSourceFolder parent, String name) {
         DataSourceFolder folder = new DataSourceFolder(this, (DataSourceFolder) parent, name, null);
         dataSourceFolders.add(folder);
         return folder;
@@ -347,7 +351,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                     log.warn("Folder '" + path + "' not found");
                     break;
                 } else {
-                    folder = addFolder(parent, name);
+                    folder = createFolder(parent, name);
                 }
             }
             parent = folder;
