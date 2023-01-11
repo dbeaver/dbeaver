@@ -2263,9 +2263,9 @@ public class ResultSetViewer extends Viewer
             if (orderingMode == ResultSetUtils.OrderingMode.SERVER_SIDE && supportsDataFilter()) {
                 if (ConfirmationDialog.confirmAction(
                     viewerPanel.getShell(),
+                    ConfirmationDialog.WARNING,
                     ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
-                    ConfirmationDialog.WARNING,
                     columnElement.getName()) != IDialogConstants.YES_ID) 
                 {
                     return;
@@ -2310,7 +2310,7 @@ public class ResultSetViewer extends Viewer
         }
 
         if (serverSideOrdering && getDataSource() != null && !getDataSource().getInfo().supportsResultSetOrdering()) {
-            ConfirmationDialog.confirmAction(getControl().getShell(), CONFIRM_SERVER_SIDE_ORDERING_UNAVAILABLE, ConfirmationDialog.WARNING);
+            ConfirmationDialog.confirmAction(getControl().getShell(), ResultSetPreferences.CONFIRM_ORDER_RESULTSET, ConfirmationDialog.WARNING);
             serverSideOrdering = false;
         }
 

@@ -2643,7 +2643,8 @@ public class SQLEditor extends SQLEditorBase implements
             if (confirmClose) {
                 confirmResult = ConfirmationDialog.confirmAction(
                     getSite().getShell(),
-                    tabsToClose.size(), SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE,
+                    ConfirmationDialog.WARNING,
+                    SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE,
                     ConfirmationDialog.QUESTION_WITH_CANCEL,
                     tabsToClose.size()
                 );
@@ -3012,7 +3013,8 @@ public class SQLEditor extends SQLEditorBase implements
 
             if (ConfirmationDialog.confirmAction(
                 null,
-                jobsRunning, SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE,
+                ConfirmationDialog.WARNING,
+                SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE,
                 ConfirmationDialog.QUESTION
             ) != IDialogConstants.YES_ID)
             {
