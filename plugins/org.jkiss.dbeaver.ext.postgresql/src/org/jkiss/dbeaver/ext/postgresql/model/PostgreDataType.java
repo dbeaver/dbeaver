@@ -72,6 +72,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         "regrole",
     };
 
+    private static final String[] VECTOR_TYPES = {
+        "int2vector",
+        "oidvector"
+    };
+
     private final boolean alias;
 
     private long typeId;
@@ -883,7 +888,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         }
 
         int valueType;
-        if (ArrayUtils.contains(OID_TYPES, name) || name.equals(PostgreConstants.TYPE_HSTORE)) {
+        if (ArrayUtils.contains(OID_TYPES, name) || ArrayUtils.contains(VECTOR_TYPES, name) || name.equals(PostgreConstants.TYPE_HSTORE)) {
             valueType = Types.VARCHAR;
         } else {
             if (typeCategory == null) {
