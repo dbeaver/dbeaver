@@ -124,7 +124,7 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
         }
         actions.add(
             new SQLDatabasePersistAction(
-                "Rename table",
+                "Rename procedure",
                 "EXEC " + SQLServerUtils.getSystemTableName(procedure.getDatabase(), "sp_rename") +
                     " N'" + procedure.getContainer().getFullyQualifiedName(DBPEvaluationContext.DML) + "." + DBUtils.getQuotedIdentifier(procedure.getDataSource(), command.getOldName()) +
                     "', " + SQLUtils.quoteString(procedure.getDataSource(), command.getNewName())));
