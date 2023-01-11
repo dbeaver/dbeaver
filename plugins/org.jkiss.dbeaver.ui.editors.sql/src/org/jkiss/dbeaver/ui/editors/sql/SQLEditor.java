@@ -2644,7 +2644,8 @@ public class SQLEditor extends SQLEditorBase implements
                 confirmResult = ConfirmationDialog.confirmAction(
                     getSite().getShell(),
                     tabsToClose.size(), SQLPreferenceConstants.CONFIRM_RESULT_TABS_CLOSE,
-                    ConfirmationDialog.QUESTION_WITH_CANCEL
+                    ConfirmationDialog.QUESTION_WITH_CANCEL,
+                    tabsToClose.size()
                 );
                 if (confirmResult == IDialogConstants.CANCEL_ID || confirmResult < 0) {
                     return IDialogConstants.CANCEL_ID;
