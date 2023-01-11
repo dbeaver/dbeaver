@@ -328,6 +328,7 @@
                     <parameter name="serverType" value="postgresql"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
+                    <property name="escapeSyntaxCallMode" value="callIfNoReturn"/>
                 </driver>
                 <!-- Bad driver: it must be declared in generic provider -->
                 <driver
@@ -518,6 +519,7 @@
                     <parameter name="serverType" value="edb"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
+                    <property name="escapeSyntaxCallMode" value="callIfNoReturn"/>
                 </driver>
 
                 <driver
