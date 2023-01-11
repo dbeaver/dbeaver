@@ -739,7 +739,8 @@ public class ResultSetViewer extends Viewer
             if (resultSet instanceof StatResultSet) {
                 // Statistics - let's use special presentation for it
                 if (filtersPanel != null) {
-                    filtersPanel.setVisible(false);
+                    UIUtils.setControlVisible(filtersPanel, false);
+                    UIUtils.setControlVisible(statusBar, false);
                 }
                 availablePresentations = Collections.emptyList();
                 setActivePresentation(new StatisticsPresentation());
@@ -748,7 +749,8 @@ public class ResultSetViewer extends Viewer
             } else {
                 // Regular results
                 if (filtersPanel != null) {
-                    filtersPanel.setVisible(true);
+                    UIUtils.setControlVisible(filtersPanel, true);
+                    UIUtils.setControlVisible(statusBar, true);
                 }
                 IResultSetContext context = new ResultSetContextImpl(this, resultSet);
                 final List<ResultSetPresentationDescriptor> newPresentations;
