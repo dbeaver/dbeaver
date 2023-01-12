@@ -2263,9 +2263,9 @@ public class ResultSetViewer extends Viewer
             if (orderingMode == ResultSetUtils.OrderingMode.SERVER_SIDE && supportsDataFilter()) {
                 if (ConfirmationDialog.confirmAction(
                     viewerPanel.getShell(),
+                    ConfirmationDialog.WARNING,
                     ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
-                    ConfirmationDialog.WARNING,
                     columnElement.getName()) != IDialogConstants.YES_ID) 
                 {
                     return;
