@@ -161,7 +161,7 @@ public class SQLQueryJob extends DataSourceJob
 
     public SQLScriptElement getLastQuery()
     {
-        return queries.isEmpty() ? null : queries.get(0);
+        return queries.isEmpty() ? null : queries.get(queries.size() - 1);
     }
 
     public SQLScriptElement getLastGoodQuery() {

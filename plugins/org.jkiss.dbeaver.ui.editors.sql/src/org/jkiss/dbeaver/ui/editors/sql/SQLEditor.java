@@ -70,8 +70,10 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -120,6 +122,8 @@ import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
+import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
@@ -176,7 +180,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     public static final String VIEW_PART_PROP_NAME = "org.jkiss.dbeaver.ui.editors.sql.SQLEditor";
 
-
+    private static final String REFRESH_DATA_SOURCE_ON_DDL_QUERY_POPUP_ID_PART = "refreshDataSourceOnDdlQuery";
 
     public static final String DEFAULT_TITLE_PATTERN = "<${" + SQLPreferenceConstants.VAR_CONNECTION_NAME + "}> ${" + SQLPreferenceConstants.VAR_FILE_NAME + "}";
     public static final String DEFAULT_SCRIPT_FILE_NAME = "Script";
@@ -4061,6 +4065,7 @@ public class SQLEditor extends SQLEditorBase implements
         private final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
         private int topOffset, visibleLength;
         private boolean closeTabOnError;
+        private boolean ddlQueryMet = false;
         private SQLQueryListener extListener;
 
         private SQLEditorQueryListener(QueryProcessor queryProcessor, boolean closeTabOnError) {
@@ -4134,8 +4139,10 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics) {
             try {
+                SQLQuery query = result.getStatement();
+                ddlQueryMet |= query.getType() == SQLQueryType.DDL;
                 synchronized (runningQueries) {
-                    runningQueries.remove(result.getStatement());
+                    runningQueries.remove(query);
                 }
                 queryProcessor.curJobRunning.decrementAndGet();
                 if (getTotalQueryRunning() <= 0) {
@@ -4147,7 +4154,9 @@ public class SQLEditor extends SQLEditorBase implements
                         updateDirtyFlag();
                     });
                 }
-
+                if (ddlQueryMet && query.equals(queryProcessor.curJob.getLastQuery())) {
+                    prepareMetadataChangedNotification();
+                }
                 if (isDisposed()) {
                     return;
                 }
@@ -4166,6 +4175,37 @@ public class SQLEditor extends SQLEditorBase implements
                     extListener.onEndQuery(session, result, statistics);
                 }
             }
+        }
+        
+        private void prepareMetadataChangedNotification() {
+            DBPDataSource dataSource = getDataSource();
+            if (dataSource == null) {
+                return;
+            }
+            UIUtils.runInUI(m -> {
+                NotificationUtils.sendNotification(
+                    REFRESH_DATA_SOURCE_ON_DDL_QUERY_POPUP_ID_PART + dataSource.getContainer().getId(),
+                    NLS.bind(SQLEditorMessages.sql_editor_refresh_data_source_on_ddl_query_popup_title, dataSource.getName()),
+                    SQLEditorMessages.sql_editor_refresh_data_source_on_ddl_query_popup_text,
+                    DBPMessageType.WARNING,
+                    () -> {
+                        UIUtils.runUIJob("Refreshing data source metadata after statement execution", monitor -> {
+                            DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, dataSource, true);
+                            if (node != null) {
+                                NavigatorHandlerRefresh.refreshNavigator(List.of(node));
+                            } else {
+                                if (dataSource instanceof JDBCDataSource) {
+                                    try {
+                                        ((JDBCDataSource) dataSource).refreshObject(monitor);
+                                    } catch (DBException e) {
+                                        log.error("Unable to refresh metadata", e);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                );
+            });
         }
 
         private void processQueryResult(DBRProgressMonitor monitor, SQLQueryResult result, DBCStatistics statistics) {

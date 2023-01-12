@@ -358,6 +358,9 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_confirm_no_fetch_result_for_big_script_no;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_remember;
 
+    public static String sql_editor_refresh_data_source_on_ddl_query_popup_title;
+    public static String sql_editor_refresh_data_source_on_ddl_query_popup_text;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLEditorMessages.class);
