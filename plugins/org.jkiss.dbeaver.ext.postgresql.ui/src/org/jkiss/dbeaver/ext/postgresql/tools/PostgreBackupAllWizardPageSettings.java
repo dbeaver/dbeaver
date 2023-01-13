@@ -52,7 +52,6 @@ public class PostgreBackupAllWizardPageSettings extends PostgreToolWizardPageSet
                 updateState();
             }
         };
-        PostgreBackupAllSettings settings = wizard.getSettings();
         Group formatGroup = UIUtils.createControlGroup(
             composite,
             PostgreMessages.wizard_backup_all_page_setting_title_setting,
@@ -62,6 +61,7 @@ public class PostgreBackupAllWizardPageSettings extends PostgreToolWizardPageSet
         UIUtils.createControlLabel(formatGroup, PostgreMessages.wizard_backup_all_page_setting_label_encoding);
         encodingCombo = UIUtils.createEncodingCombo(formatGroup, null);
         encodingCombo.addSelectionListener(changeListener);
+        PostgreBackupAllSettings settings = wizard.getSettings();
         encodingCombo.setText(settings.getEncoding());
 
         metadataOnly = UIUtils.createCheckbox(formatGroup,

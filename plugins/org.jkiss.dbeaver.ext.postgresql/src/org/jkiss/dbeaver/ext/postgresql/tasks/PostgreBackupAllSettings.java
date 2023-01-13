@@ -42,6 +42,18 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     implements ExportSettingsExtension<PostgreDatabaseBackupAllInfo> {
 
     private static final Log log = Log.getLog(PostgreBackupAllSettings.class);
+    
+    private static final String PROP_EXPORT_ALL_ENCODING = "pg.export.all.encoding";
+    private static final String PROP_EXPORT_ALL_EXPORT_ONLY_METADATA = "pg.export.all.exportOnlyMetadata";
+    private static final String PROP_EXPORT_ALL_ONLY_GLOBALS = "pg.export.all.exportOnlyGlobals";
+    private static final String PROP_EXPORT_ALL_ONLY_ROLES = "pg.export.all.exportOnlyRoles";
+    private static final String PROP_EXPORT_ALL_ONLY_TABLESPACES = "pg.export.all.exportOnlyTablespaces";
+    private static final String PROP_EXPORT_ALL_NO_PRIVILEGES = "pg.export.all.noPrivileges";
+    private static final String PROP_EXPORT_ALL_NO_OWNER = "pg.export.all.noOwner";
+    private static final String PROP_EXPORT_ALL_ADD_ROLES_PASSWORDS = "pg.export.all.addRolesPasswords";
+    private static final String PROP_EXPORT_OBJECTS_ALL = "exportObjects.all";
+    private static final String PROP_DATASOURCE = "datasource";
+    private static final String PROP_DATABASES = "databases";
 
     private List<PostgreDatabaseBackupAllInfo> exportObjects = new ArrayList<>();
 
@@ -56,6 +68,7 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     private File outputFolder;
 
     @NotNull
+    @Override
     public File getOutputFile(@NotNull PostgreDatabaseBackupAllInfo info) {
         String outputFileName = resolveVars(info.getDataSource(), null, null, getOutputFilePattern());
         return new File(getOutputFolder(info), outputFileName);
@@ -140,6 +153,7 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
         this.addRolesPasswords = addRolesPasswords;
     }
 
+    @Override
     public void fillExportObjectsFromInput() {
         PostgreDataSource dataSource = null;
         List<PostgreDatabase> databases = new ArrayList<>();
@@ -159,23 +173,23 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
         super.loadSettings(runnableContext, store);
-        encoding = store.getString("pg.export.all.encoding");
-        exportOnlyMetadata = store.getBoolean("pg.export.all.exportOnlyMetadata");
-        exportOnlyGlobals = store.getBoolean("pg.export.all.exportOnlyGlobals");
-        exportOnlyRoles = store.getBoolean("pg.export.all.exportOnlyRoles");
-        exportOnlyTablespaces = store.getBoolean("pg.export.all.exportOnlyTablespaces");
-        noPrivileges = store.getBoolean("pg.export.all.noPrivileges");
-        noOwner = store.getBoolean("pg.export.all.noOwner");
-        addRolesPasswords = store.getBoolean("pg.export.all.addRolesPasswords");
+        encoding = store.getString(PROP_EXPORT_ALL_ENCODING);
+        exportOnlyMetadata = store.getBoolean(PROP_EXPORT_ALL_EXPORT_ONLY_METADATA);
+        exportOnlyGlobals = store.getBoolean(PROP_EXPORT_ALL_ONLY_GLOBALS);
+        exportOnlyRoles = store.getBoolean(PROP_EXPORT_ALL_ONLY_ROLES);
+        exportOnlyTablespaces = store.getBoolean(PROP_EXPORT_ALL_ONLY_TABLESPACES);
+        noPrivileges = store.getBoolean(PROP_EXPORT_ALL_NO_PRIVILEGES);
+        noOwner = store.getBoolean(PROP_EXPORT_ALL_NO_OWNER);
+        addRolesPasswords = store.getBoolean(PROP_EXPORT_ALL_ADD_ROLES_PASSWORDS);
 
         if (store instanceof DBPPreferenceMap) {
             // Save input objects to task properties
-            List<Map<String, Object>> objectList = ((DBPPreferenceMap) store).getObject("exportObjects.all");
+            List<Map<String, Object>> objectList = ((DBPPreferenceMap) store).getObject(PROP_EXPORT_OBJECTS_ALL);
             if (!CommonUtils.isEmpty(objectList)) {
                 for (Map<String, Object> object : objectList) {
-                    String catalogId = CommonUtils.toString(object.get("datasource"));
+                    String catalogId = CommonUtils.toString(object.get(PROP_DATASOURCE));
                     if (!CommonUtils.isEmpty(catalogId)) {
-                        List<String> databaseNames = (List<String>) object.get("databases");
+                        List<String> databaseNames = (List<String>) object.get(PROP_DATABASES);
                         PostgreDatabaseBackupAllInfo exportInfo = loadDatabaseExportInfo(runnableContext, catalogId, databaseNames);
                         if (exportInfo != null) {
                             exportObjects.add(exportInfo);
@@ -230,31 +244,31 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     @Override
     public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
         super.saveSettings(runnableContext, store);
-        store.setValue("pg.export.all.encoding", encoding);
-        store.setValue("pg.export.all.exportOnlyMetadata", exportOnlyMetadata);
-        store.setValue("pg.export.all.exportOnlyGlobals", exportOnlyGlobals);
-        store.setValue("pg.export.all.exportOnlyRoles", exportOnlyRoles);
-        store.setValue("pg.export.all.exportOnlyTablespaces", exportOnlyTablespaces);
-        store.setValue("pg.export.all.noPrivileges", noPrivileges);
-        store.setValue("pg.export.all.noOwner", noOwner);
-        store.setValue("pg.export.all.addRolesPasswords", addRolesPasswords);
+        store.setValue(PROP_EXPORT_ALL_ENCODING, encoding);
+        store.setValue(PROP_EXPORT_ALL_EXPORT_ONLY_METADATA, exportOnlyMetadata);
+        store.setValue(PROP_EXPORT_ALL_ONLY_GLOBALS, exportOnlyGlobals);
+        store.setValue(PROP_EXPORT_ALL_ONLY_ROLES, exportOnlyRoles);
+        store.setValue(PROP_EXPORT_ALL_ONLY_TABLESPACES, exportOnlyTablespaces);
+        store.setValue(PROP_EXPORT_ALL_NO_PRIVILEGES, noPrivileges);
+        store.setValue(PROP_EXPORT_ALL_NO_OWNER, noOwner);
+        store.setValue(PROP_EXPORT_ALL_ADD_ROLES_PASSWORDS, addRolesPasswords);
 
         if (store instanceof DBPPreferenceMap && !CommonUtils.isEmpty(exportObjects)) {
             // Save input objects to task properties
             List<Map<String, Object>> objectList = new ArrayList<>();
             for (PostgreDatabaseBackupAllInfo object : exportObjects) {
                 Map<String, Object> objInfo = new LinkedHashMap<>();
-                objInfo.put("datasource", DBUtils.getObjectFullId(object.getDataSource()));
+                objInfo.put(PROP_DATASOURCE, DBUtils.getObjectFullId(object.getDataSource()));
                 if (!CommonUtils.isEmpty(object.getDatabases())) {
                     List<String> tableList = new ArrayList<>();
                     for (PostgreDatabase database : object.getDatabases()) {
                         tableList.add(database.getName());
                     }
-                    objInfo.put("databases", tableList);
+                    objInfo.put(PROP_DATABASES, tableList);
                 }
                 objectList.add(objInfo);
             }
-            ((DBPPreferenceMap) store).getPropertyMap().put("exportObjects.all", objectList);
+            ((DBPPreferenceMap) store).getPropertyMap().put(PROP_EXPORT_OBJECTS_ALL, objectList);
         }
     }
 }

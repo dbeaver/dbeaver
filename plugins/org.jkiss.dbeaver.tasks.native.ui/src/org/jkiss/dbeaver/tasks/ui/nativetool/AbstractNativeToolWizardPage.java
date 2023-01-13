@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNativeToolWizard> extends ActiveWizardPage {
 
@@ -137,7 +136,7 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
         }
         String newExt = getExtension();
         boolean isDotWithEmptyExt = ext.isEmpty() && idxOfExtStart > -1; // {file_name}.
-        if (Objects.equals(ext, newExt) && !isDotWithEmptyExt) {
+        if (!isDotWithEmptyExt && ext.equalsIgnoreCase(newExt)) {
             return;
         }
         if (!newExt.isEmpty()) {

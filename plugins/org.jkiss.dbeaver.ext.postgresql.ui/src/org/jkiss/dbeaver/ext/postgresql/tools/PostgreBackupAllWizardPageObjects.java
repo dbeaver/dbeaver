@@ -65,15 +65,12 @@ public class PostgreBackupAllWizardPageObjects extends AbstractNativeToolWizardP
             databasesTable = new Table(catPanel, SWT.BORDER | SWT.CHECK);
             databasesTable.addListener(SWT.Selection, event -> {
                 TableItem item = (TableItem) event.item;
-                PostgreDatabase database = (PostgreDatabase) item.getData();
                 if (event.detail == SWT.CHECK) {
                     databasesTable.select(databasesTable.indexOf(item));
-                    checkedObjects.remove(database);
                 }
                 updateState();
             });
             GridData gd = new GridData(GridData.FILL_BOTH);
-            //gd.heightHint = 50;
             databasesTable.setLayoutData(gd);
 
             Composite buttonsPanel = UIUtils.createComposite(catPanel, 3);
@@ -139,6 +136,7 @@ public class PostgreBackupAllWizardPageObjects extends AbstractNativeToolWizardP
         }
     }
 
+    @Override
     public void saveState() {
         super.saveState();
         List<PostgreDatabaseBackupAllInfo> objects = wizard.getSettings().getExportObjects();
