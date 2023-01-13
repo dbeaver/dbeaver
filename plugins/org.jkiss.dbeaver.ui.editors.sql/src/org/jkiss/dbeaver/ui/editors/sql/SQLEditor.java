@@ -4155,7 +4155,7 @@ public class SQLEditor extends SQLEditorBase implements
                     });
                 }
                 if (ddlQueryMet && query.equals(queryProcessor.curJob.getLastQuery())) {
-                    prepareMetadataChangedNotification();
+                    showMetadataChangedNotification();
                 }
                 if (isDisposed()) {
                     return;
@@ -4177,7 +4177,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         
-        private void prepareMetadataChangedNotification() {
+        private void showMetadataChangedNotification() {
             DBPDataSource dataSource = getDataSource();
             if (dataSource == null) {
                 return;
@@ -4193,13 +4193,11 @@ public class SQLEditor extends SQLEditorBase implements
                             DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, dataSource, true);
                             if (node != null) {
                                 NavigatorHandlerRefresh.refreshNavigator(List.of(node));
-                            } else {
-                                if (dataSource instanceof JDBCDataSource) {
-                                    try {
-                                        ((JDBCDataSource) dataSource).refreshObject(monitor);
-                                    } catch (DBException e) {
-                                        log.error("Unable to refresh metadata", e);
-                                    }
+                            } else if (dataSource instanceof JDBCDataSource) {
+                                try {
+                                    ((JDBCDataSource) dataSource).refreshObject(monitor);
+                                } catch (DBException e) {
+                                    log.error("Unable to refresh metadata", e);
                                 }
                             }
                         });
