@@ -102,7 +102,7 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
     @Override
     public void setInput(Object input) {
         this.input = input;
-        if (input instanceof DBPNamedObject) {
+        if (input instanceof DBPNamedObject && !infoComposite.isDisposed()) {
             createMetadataFields((DBPNamedObject) input);
             if (input instanceof JDBCTable) {
                 createTreeControl((JDBCTable<?, ?>) input);
@@ -143,23 +143,25 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
                     return;
                 }
                 UIUtils.syncExec(() -> {
-                    PropertyCollector collector = new PropertyCollector(targetObject[0], false);
-                    collector.collectProperties();
-                    for (DBPPropertyDescriptor descriptor : collector.getProperties()) {
-                        String propertyString = DBInfoUtils.getPropertyString(collector, descriptor);
-                        if (CommonUtils.isEmpty(propertyString) || !descriptor.hasFeature(DBConstants.PROP_FEATURE_VIEWABLE)) {
-                            continue;
+                    if (!metadataComposite.isDisposed() && !infoComposite.isDisposed() && !mainComposite.isDisposed()) {
+                        PropertyCollector collector = new PropertyCollector(targetObject[0], false);
+                        collector.collectProperties();
+                        for (DBPPropertyDescriptor descriptor : collector.getProperties()) {
+                            String propertyString = DBInfoUtils.getPropertyString(collector, descriptor);
+                            if (CommonUtils.isEmpty(propertyString) || !descriptor.hasFeature(DBConstants.PROP_FEATURE_VIEWABLE)) {
+                                continue;
+                            }
+                            Composite placeholder = UIUtils.createPlaceholder(metadataComposite, 2);
+                            placeholder.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                            Label label = new Label(placeholder, SWT.READ_ONLY);
+                            label.setText(descriptor.getDisplayName() + ":");
+                            label.setFont(boldFont);
+                            Text valueText = new Text(placeholder, SWT.READ_ONLY);
+                            valueText.setText(propertyString);
                         }
-                        Composite placeholder = UIUtils.createPlaceholder(metadataComposite, 2);
-                        placeholder.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-                        Label label = new Label(placeholder, SWT.READ_ONLY);
-                        label.setText(descriptor.getDisplayName() + ":");
-                        label.setFont(boldFont);
-                        Text valueText = new Text(placeholder, SWT.READ_ONLY);
-                        valueText.setText(propertyString);
+                        infoComposite.layout(true, true);
+                        mainComposite.layout(true, true);
                     }
-                    infoComposite.layout(true, true);
-                    mainComposite.layout(true, true);
                 });
             }
         });
