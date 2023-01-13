@@ -21,7 +21,7 @@ Require-Bundle: org.eclipse.equinox.preferences,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.data,
- org.jkiss.dbeaver.ui.navigator
+ org.jkiss.dbeaver.ui.navigator,
 Export-Package: org.jkiss.dbeaver.ui.search,
   org.jkiss.dbeaver.ui.search.data,
   org.jkiss.dbeaver.ui.search.metadata
