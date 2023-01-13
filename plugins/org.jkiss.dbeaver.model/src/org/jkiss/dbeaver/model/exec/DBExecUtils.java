@@ -778,7 +778,15 @@ public class DBExecUtils {
                     if (bindingMeta.getPseudoAttribute() != null) {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else if (columnName != null) {
-                        tableColumn = attrEntity.getAttribute(monitor, columnName);
+                        if (sqlQuery == null) {
+                            tableColumn = attrEntity.getAttribute(monitor, columnName);
+                        } else {
+                            SQLSelectItem selectItem = sqlQuery.getSelectItem(columnName);
+                            boolean isAllColumns = sqlQuery.getSelectItemCount() == 1 && sqlQuery.getSelectItemAsteriskIndex() != -1;
+                            if (isAllColumns || (selectItem != null && selectItem.isPlainColumn())) {
+                                tableColumn = attrEntity.getAttribute(monitor, columnName);
+                            }
+                        }
                     }
 
                     if (tableColumn != null) {

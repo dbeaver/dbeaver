@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -23,6 +24,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -46,6 +49,10 @@ import java.util.StringJoiner;
 */
 public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implements IFontProvider, IColorProvider
 {
+    public static final String TREE_TABLE_FONT = "org.eclipse.ui.workbench.TREE_TABLE_FONT";
+
+    private final IPropertyChangeListener themeChangeListener;
+
     protected Font normalFont;
     protected Font boldFont;
     protected Font italicFont;
@@ -54,26 +61,24 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     protected Color transientForeground;
     private ILabelDecorator labelDecorator;
 
-    public DatabaseNavigatorLabelProvider(Viewer viewer)
-    {
-        //this.view = view;
-        this.normalFont = viewer.getControl().getFont();
-        this.boldFont = UIUtils.makeBoldFont(normalFont);
-        this.italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
-        //this.boldItalicFont = UIUtils.modifyFont(normalFont, SWT.BOLD | SWT.ITALIC);
+    public DatabaseNavigatorLabelProvider(Viewer viewer) {
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
         this.transientForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED);
+        this.themeChangeListener = e -> {
+            final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+            normalFont = theme.getFontRegistry().get(TREE_TABLE_FONT);
+            boldFont = theme.getFontRegistry().getBold(TREE_TABLE_FONT);
+            italicFont = theme.getFontRegistry().getItalic(TREE_TABLE_FONT);
+            viewer.refresh();
+        };
+        this.themeChangeListener.propertyChange(null);
+
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
     }
 
     @Override
-    public void dispose()
-    {
-        UIUtils.dispose(boldFont);
-        boldFont = null;
-        UIUtils.dispose(italicFont);
-        italicFont = null;
-//        UIUtils.dispose(boldItalicFont);
-//        boldItalicFont = null;
+    public void dispose() {
+        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
         super.dispose();
     }
 
