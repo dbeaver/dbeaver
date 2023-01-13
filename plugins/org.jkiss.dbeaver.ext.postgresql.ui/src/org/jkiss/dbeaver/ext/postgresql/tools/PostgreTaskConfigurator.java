@@ -47,6 +47,8 @@ public class PostgreTaskConfigurator implements DBTTaskConfigurator, DBTTaskConf
         switch (taskConfiguration.getType().getId()) {
             case PostgreSQLTasks.TASK_DATABASE_BACKUP:
                 return new PostgreBackupWizard(taskConfiguration);
+            case PostgreSQLTasks.TASK_DATABASE_BACKUP_ALL:
+                return new PostgreBackupAllWizard(taskConfiguration);
             case PostgreSQLTasks.TASK_DATABASE_RESTORE:
                 return new PostgreRestoreWizard(taskConfiguration);
             case PostgreSQLTasks.TASK_SCRIPT_EXECUTE:

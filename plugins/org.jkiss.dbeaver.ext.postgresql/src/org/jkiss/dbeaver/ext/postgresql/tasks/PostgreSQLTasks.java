@@ -21,6 +21,7 @@ public class PostgreSQLTasks {
 
     public static final String TASK_DATABASE_BACKUP = "pgDatabaseBackup";
     public static final String TASK_DATABASE_RESTORE = "pgDatabaseRestore";
+    public static final String TASK_DATABASE_BACKUP_ALL = "pgDatabaseBackupAll";
     public static final String TASK_SCRIPT_EXECUTE = "pgScriptExecute";
     public static final String TASK_MVIEW_REFRESH = "pgToolRefreshMView";
     public static final String TASK_DATABASE_ANALYZE = "pgToolDatabaseAnalyze";

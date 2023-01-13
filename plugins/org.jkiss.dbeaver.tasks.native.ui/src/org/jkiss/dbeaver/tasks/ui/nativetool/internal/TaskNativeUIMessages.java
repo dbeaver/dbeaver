@@ -37,6 +37,7 @@ public class TaskNativeUIMessages extends NLS {
     public static String tools_wizard_log_io_error;
     public static String tools_wizard_message_client_home_not_found;
     public static String tools_wizard_message_no_client_home;
+    public static String tools_wizard_message_no_output_folder;
     public static String tools_wizard_page_log_task_finished;
     public static String tools_wizard_page_log_task_log_reader;
     public static String tools_wizard_page_log_task_progress;
@@ -49,6 +50,10 @@ public class TaskNativeUIMessages extends NLS {
 
     public static String tools_wizard_page_dialog_button_all;
     public static String tools_wizard_page_dialog_button_none;
+    public static String tools_wizard_page_dialog_folder_pattern;
+    public static String tools_wizard_page_dialog_folder_pattern_tip;
+    public static String tools_wizard_page_dialog_file_pattern;
+    public static String tools_wizard_page_dialog_file_pattern_tip;
     public static String tools_wizard_page_dialog_label_extra_command_args;
     public static String tools_wizard_page_dialog_tooltip_extra_command_args;
 
