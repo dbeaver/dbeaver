@@ -108,15 +108,6 @@ public class SQLQueryParameter {
     }
 
     public String getVarName() {
-        String varName = stripVariablePattern(name);
-        if (!varName.equals(name)) {
-            return varName;
-        }
-        for (String prefix : syntaxManager.getNamedParameterPrefixes()) {
-            if (name.startsWith(prefix)) {
-                return name.substring(prefix.length());
-            }
-        }
         return name;
     }
 

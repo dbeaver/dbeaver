@@ -718,18 +718,27 @@ public class SQLScriptParser {
                             parameters = new ArrayList<>();
                         }
 
-                        String preparedParamName;
+                        String preparedParamName = null;
                         String paramMark = paramName.substring(0, 1);
-                        if (ArrayUtils.contains(syntaxManager.getNamedParameterPrefixes(), paramMark)) {
-                            String rawParamName = paramName.substring(1);
-                            if (sqlDialect.isQuotedIdentifier(rawParamName)) {
-                                preparedParamName = sqlDialect.getUnquotedIdentifier(rawParamName);
-                            } else {
-                                preparedParamName = rawParamName.toUpperCase(Locale.ENGLISH);
+                        if (paramMark.equals("$")) {
+                            String variableName = SQLQueryParameter.stripVariablePattern(paramName);
+                            if (!variableName.equals(paramName)) {
+                                preparedParamName = variableName.toUpperCase(Locale.ENGLISH);
                             }
-                        } else {
-                            preparedParamName = paramName;
+                        } 
+                        if (preparedParamName == null) {
+                            if (ArrayUtils.contains(syntaxManager.getNamedParameterPrefixes(), paramMark)) {
+                                String rawParamName = paramName.substring(1);
+                                if (sqlDialect.isQuotedIdentifier(rawParamName)) {
+                                    preparedParamName = sqlDialect.getUnquotedIdentifier(rawParamName);
+                                } else {
+                                    preparedParamName = rawParamName.toUpperCase(Locale.ENGLISH);
+                                }
+                            } else {
+                                preparedParamName = paramName;
+                            }
                         }
+                        
                         SQLQueryParameter parameter = new SQLQueryParameter(
                             syntaxManager,
                             parameters.size(),

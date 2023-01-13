@@ -36,37 +36,37 @@ public class SQLCommandSet implements SQLControlCommandHandler {
 
     @Override
     public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
-        String parameter = command.getParameter();
-        String varName = tryParseVariableName(scriptContext, parameter, 0);
-        if (varName == null) {
+        SQLDialect sqlDialect = scriptContext.getExecutionContext().getDataSource().getSQLDialect();
+        String parameter = command.getParameter().stripLeading();
+        int varNameEnd = ScriptParameterRule.tryConsumeParameterName(sqlDialect, parameter, 0);
+        if (varNameEnd == -1) {
             throw new DBCException("Missing variable name. Expected syntax:\n@set varName = value or expression");
         }
-        int divPos = parameter.indexOf('=', varName.length());
+        String varName = prepareVarName(sqlDialect, parameter.substring(0, varNameEnd));
+        int divPos = parameter.indexOf('=', varNameEnd);
         if (divPos == -1) {
             throw new DBCException("Bad set syntax. Expected syntax:\n@set varName = value or expression");
         }
+        String shouldBeEmpty= parameter.substring(varNameEnd, divPos).trim();
+        if (shouldBeEmpty.length() > 0) {
+            throw new DBCException(
+                "Unexpected characters " + shouldBeEmpty + " after the variable name " + varName + ". " +
+                "Expected syntax:\n@set varName = value or expression"
+            );
+        }
         String varValue = parameter.substring(divPos + 1).trim();
         varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)));
-        scriptContext.setVariable(varName.trim(), varValue);
+        scriptContext.setVariable(varName, varValue);
 
         return true;
     }
-    
-    private String tryParseVariableName(@NotNull SQLScriptContext ctx, @NotNull String text, int start) {
-        while (start < text.length() && Character.isWhitespace(text.charAt(start))) {
-            start++;
-        }
-        SQLDialect sqlDialect = ctx.getExecutionContext().getDataSource().getSQLDialect();
-        int end = ScriptParameterRule.tryConsumeParameterName(sqlDialect, text, start);
-        if (end != -1) {
-            String rawParamName = text.substring(start, end);
-            if (sqlDialect.isQuotedIdentifier(rawParamName)) {
-                return sqlDialect.getUnquotedIdentifier(rawParamName);
-            } else {
-                return rawParamName.toUpperCase(Locale.ENGLISH);
-            }
+
+    @NotNull
+    public static String prepareVarName(@NotNull SQLDialect sqlDialect, @NotNull String rawName) {
+        if (sqlDialect.isQuotedIdentifier(rawName)) {
+            return sqlDialect.getUnquotedIdentifier(rawName);
         } else {
-            return null;
+            return rawName.toUpperCase(Locale.ENGLISH);
         }
     }
 }

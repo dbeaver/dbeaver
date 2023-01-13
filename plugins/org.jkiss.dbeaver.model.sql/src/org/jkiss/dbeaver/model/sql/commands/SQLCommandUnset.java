@@ -17,9 +17,12 @@
 package org.jkiss.dbeaver.model.sql.commands;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 
 /**
  * Control command handler
@@ -28,7 +31,15 @@ public class SQLCommandUnset implements SQLControlCommandHandler {
 
     @Override
     public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
-        String varName = command.getParameter();
+        SQLDialect sqlDialect = scriptContext.getExecutionContext().getDataSource().getSQLDialect();
+        
+        String parameter = command.getParameter().trim();
+        int varNameEnd = ScriptParameterRule.tryConsumeParameterName(sqlDialect, parameter, 0);
+        if (varNameEnd != parameter.length()) {
+            throw new DBCException("Invalid Unset command. Expected syntax:\n@unset varName");
+        }
+        
+        String varName = SQLCommandSet.prepareVarName(sqlDialect, parameter.substring(0, varNameEnd));
         scriptContext.removeVariable(varName);
 
         return true;
