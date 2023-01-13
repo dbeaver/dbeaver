@@ -47,7 +47,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
         if (divPos == -1) {
             throw new DBCException("Bad set syntax. Expected syntax:\n@set varName = value or expression");
         }
-        String shouldBeEmpty= parameter.substring(varNameEnd, divPos).trim();
+        String shouldBeEmpty = parameter.substring(varNameEnd, divPos).trim();
         if (shouldBeEmpty.length() > 0) {
             throw new DBCException(
                 "Unexpected characters " + shouldBeEmpty + " after the variable name " + varName + ". " +
@@ -61,6 +61,9 @@ public class SQLCommandSet implements SQLControlCommandHandler {
         return true;
     }
 
+    /*
+     * Unquotes variable name if it was quoted, otherwise converts case to upper
+     */
     @NotNull
     public static String prepareVarName(@NotNull SQLDialect sqlDialect, @NotNull String rawName) {
         if (sqlDialect.isQuotedIdentifier(rawName)) {

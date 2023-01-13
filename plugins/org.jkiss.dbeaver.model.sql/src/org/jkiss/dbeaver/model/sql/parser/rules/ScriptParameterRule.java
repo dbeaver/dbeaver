@@ -119,12 +119,16 @@ public class ScriptParameterRule implements TPRule {
         return TPTokenAbstract.UNDEFINED;
     }
     
+    /**
+     * Parse variable name from buffer
+     * Return the position of the last variable name character or -1 if the name is not valid
+     */
     public static int tryConsumeParameterName(@NotNull SQLDialect sqlDialect, @NotNull CharSequence buffer, int position) {
         int endPos = tryConsumeParameterNameImpl(sqlDialect, buffer, position);
         return endPos > position ? endPos : -1;
     }
     
-    private static int tryConsumeParameterNameImpl(@NotNull SQLDialect sqlDialect, CharSequence buffer, int position) {
+    private static int tryConsumeParameterNameImpl(@NotNull SQLDialect sqlDialect, @NotNull CharSequence buffer, int position) {
         String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
  
         // keep in sync with the above
