@@ -28,10 +28,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
@@ -140,6 +142,36 @@ public class SQLScriptParserGenericsTest {
         }
         Assert.assertEquals(List.of("1", "SYs_B_1", "MyVar8", "ABC", "#d2"), actualParamNames);
     }
+    
+    @Test
+    public void parseParameterFromSetCommand() throws DBException {
+        ArrayList<String> expectedCommandsText = new ArrayList<>();
+        expectedCommandsText.add("@set aBc = 1");
+        expectedCommandsText.add("@set \"aBc\" = 2");
+        String script = expectedCommandsText.get(0) + "\n" + expectedCommandsText.get(1);
+
+        SQLParserContext context = createParserContext(setDialect("snowflake"), script);
+        List<SQLScriptElement> elements = SQLScriptParser.parseScript(context.getDataSource(), script);
+        List<SQLControlCommand> commands = new ArrayList<>();
+        List<String> actualCommandsText = new ArrayList<>();
+        for (SQLScriptElement sqlScriptElement : elements) {
+            if (sqlScriptElement instanceof SQLControlCommand) {
+                SQLControlCommand cmd = (SQLControlCommand) sqlScriptElement;
+                commands.add(cmd);
+                actualCommandsText.add(cmd.getText());
+            }
+        }
+        Assert.assertEquals(expectedCommandsText, actualCommandsText);
+        // unquoted
+        String text = commands.get(0).getParameter();
+        int end = ScriptParameterRule.tryConsumeParameterName(context.getDialect(), text, 0);
+        Assert.assertEquals("aBc", text.substring(0, end).trim());
+        // quoted
+        text = commands.get(1).getParameter();
+        end = ScriptParameterRule.tryConsumeParameterName(context.getDialect(),text, 0);
+        Assert.assertEquals("\"aBc\"", text.substring(0, end).trim());
+    }
+    
     
     private void assertParse(String dialectName, String[] expected) throws DBException {
         String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
