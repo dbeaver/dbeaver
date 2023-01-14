@@ -3,7 +3,8 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="databricks" class="org.jkiss.dbeaver.ext.databricks.model.DatabricksMetaModel" driverClass="com.simba.spark.jdbc.Driver"/>
+        <meta id="databricks-simba" class="org.jkiss.dbeaver.ext.databricks.model.DatabricksMetaModel" driverClass="com.simba.spark.jdbc.Driver" dialect="spark"/>
+        <meta id="databricks-native" class="org.jkiss.dbeaver.ext.databricks.model.DatabricksMetaModel" driverClass="com.databricks.client.jdbc.Driver" dialect="spark"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
