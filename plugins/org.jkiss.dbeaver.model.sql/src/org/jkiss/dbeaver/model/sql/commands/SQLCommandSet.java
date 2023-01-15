@@ -16,13 +16,18 @@
  */
 package org.jkiss.dbeaver.model.sql.commands;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Locale;
 
 /**
  * Control command handler
@@ -32,18 +37,36 @@ public class SQLCommandSet implements SQLControlCommandHandler {
     @Override
     public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
         String parameter = command.getParameter();
-        int divPos = parameter.indexOf('=');
+        String varName = tryParseVariableName(scriptContext, parameter, 0);
+        if (varName == null) {
+            throw new DBCException("Missing variable name. Expected syntax:\n@set varName = value or expression");
+        }
+        int divPos = parameter.indexOf('=', varName.length());
         if (divPos == -1) {
             throw new DBCException("Bad set syntax. Expected syntax:\n@set varName = value or expression");
         }
-        String varName = parameter.substring(0, divPos).trim();
         String varValue = parameter.substring(divPos + 1).trim();
         varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)));
-        scriptContext.setVariable(varName, varValue);
+        scriptContext.setVariable(varName.trim(), varValue);
 
         return true;
     }
-
-    ;
-
+    
+    private String tryParseVariableName(@NotNull SQLScriptContext ctx, @NotNull String text, int start) {
+        while (start < text.length() && Character.isWhitespace(text.charAt(start))) {
+            start++;
+        }
+        SQLDialect sqlDialect = ctx.getExecutionContext().getDataSource().getSQLDialect();
+        int end = ScriptParameterRule.tryConsumeParameterName(sqlDialect, text, start);
+        if (end != -1) {
+            String rawParamName = text.substring(start, end);
+            if (sqlDialect.isQuotedIdentifier(rawParamName)) {
+                return sqlDialect.getUnquotedIdentifier(rawParamName);
+            } else {
+                return rawParamName.toUpperCase(Locale.ENGLISH);
+            }
+        } else {
+            return null;
+        }
+    }
 }

@@ -28,6 +28,12 @@ public enum WSEventType {
         WSServerConfigurationChangedEvent.class
     ),
 
+    SESSION_LOG_UPDATED(
+        "cb_session_log_updated",
+        WSEventTopic.SESSION_LOG,
+        WSSessionLogUpdatedEvent.class
+    ),
+
     DATASOURCE_CREATED("cb_datasource_created", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),
     DATASOURCE_UPDATED("cb_datasource_updated", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),
     DATASOURCE_DELETED("cb_datasource_deleted", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),

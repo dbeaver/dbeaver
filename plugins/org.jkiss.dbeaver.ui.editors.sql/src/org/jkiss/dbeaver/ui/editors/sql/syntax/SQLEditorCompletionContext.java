@@ -117,6 +117,11 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
     }
 
     @Override
+    public boolean isShowValues() {
+        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SHOW_VALUES);
+    }
+
+    @Override
     public SQLCompletionProposalBase createProposal(
         @NotNull SQLCompletionRequest request,
         @NotNull String displayString,

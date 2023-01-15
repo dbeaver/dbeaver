@@ -66,6 +66,8 @@ public interface SQLCompletionContext {
 
     boolean isHideDuplicates();
 
+    boolean isShowValues();
+
     SQLCompletionProposalBase createProposal(
         @NotNull SQLCompletionRequest request,
         @NotNull String displayString,
