@@ -102,7 +102,7 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
     @Override
     public void setInput(Object input) {
         this.input = input;
-        if (input instanceof DBPNamedObject && !infoComposite.isDisposed()) {
+        if (input instanceof DBPNamedObject && !infoComposite.isDisposed() && !tableComposite.isDisposed()) {
             createMetadataFields((DBPNamedObject) input);
             if (input instanceof JDBCTable) {
                 createTreeControl((JDBCTable<?, ?>) input);
