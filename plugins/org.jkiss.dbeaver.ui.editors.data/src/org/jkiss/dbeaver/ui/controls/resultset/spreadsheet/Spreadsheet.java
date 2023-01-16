@@ -127,9 +127,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
-                if (e.button == 3) {
-                    Spreadsheet.this.forceFocus();
-                }
+                Spreadsheet.this.forceFocus();
             }
        });
         
