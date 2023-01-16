@@ -213,7 +213,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                                             isLike || (
                                                 !CommonUtils.isEmpty(prevDelimiter) &&
                                                 !prevDelimiter.endsWith(")")));
-                                    if (waitsForValue) {
+                                    if (waitsForValue && request.getContext().isShowValues()) {
                                         makeProposalsFromAttributeValues(
                                             dataSource,
                                             wordDetector,

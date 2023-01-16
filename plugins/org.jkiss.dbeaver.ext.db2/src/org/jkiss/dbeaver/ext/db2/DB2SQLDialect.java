@@ -61,7 +61,7 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
     private static final boolean LOAD_ROUTINES_FROM_SYSCAT = false;
 
     public DB2SQLDialect() {
-        super("DB2 LUW", "db2_luw");
+        super("Db2 for LUW", "db2_luw");
     }
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
