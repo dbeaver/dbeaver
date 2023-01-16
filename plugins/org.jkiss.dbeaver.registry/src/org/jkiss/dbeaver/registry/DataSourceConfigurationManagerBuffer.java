@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 
 public class DataSourceConfigurationManagerBuffer implements DataSourceConfigurationManager {
@@ -46,7 +47,7 @@ public class DataSourceConfigurationManagerBuffer implements DataSourceConfigura
     }
 
     @Override
-    public InputStream readConfiguration(@NotNull String name) throws DBException, IOException {
+    public InputStream readConfiguration(@NotNull String name, Collection<String> dataSourceIds) throws DBException, IOException {
         if (data == null) {
             return null;
         }

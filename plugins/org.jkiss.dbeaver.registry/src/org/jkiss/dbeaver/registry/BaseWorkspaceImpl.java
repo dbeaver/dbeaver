@@ -162,6 +162,15 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspaceEclipse {
         return getProject(eProject);
     }
 
+    public DBPProject getProjectById(@NotNull String projectId) {
+        for (DBPProject project : getProjects()) {
+            if (projectId.equals(project.getId())) {
+                return project;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void addProjectListener(DBPProjectListener listener) {
         synchronized (projectListeners) {
