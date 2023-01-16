@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -89,7 +90,10 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     public GenericSchema getSchema(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return DBUtils.findObject(getSchemas(monitor), name);
+        return DBUtils.findObject(
+            getSchemas(monitor),
+            name,
+            getDataSource().getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED);
     }
 
     @NotNull

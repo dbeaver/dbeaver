@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.junit.Assert;
@@ -140,6 +142,52 @@ public class SQLScriptParserGenericsTest {
         }
         Assert.assertEquals(List.of("1", "SYs_B_1", "MyVar8", "ABC", "#d2"), actualParamNames);
     }
+    
+    @Test
+    public void parseVariables() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrE#%&@T", "a@c=");
+        StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
+        inputParamNames.stream().forEach(p -> joiner.add("${" + p + "}"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assert.assertEquals(List.of("ABC", "PRE#%&@T", "A@C="), actualParamNames);
+    }
+    
+    @Test
+    public void parseParameterFromSetCommand() throws DBException {
+        List<String> varNames = List.of("aBc", "\"aBc\"", "\"a@c=\"");
+        ArrayList<String> expectedCommandsText = new ArrayList<>();
+        String script = "";
+        for (int i = 0; i < varNames.size(); i++) {
+            expectedCommandsText.add("@set " + varNames.get(i) + " = 1");
+            script += expectedCommandsText.get(i) + "\n";
+        }
+        SQLParserContext context = createParserContext(setDialect("snowflake"), script);
+        List<SQLScriptElement> elements = SQLScriptParser.parseScript(context.getDataSource(), script);
+        List<SQLControlCommand> commands = new ArrayList<>();
+        List<String> actualCommandsText = new ArrayList<>();
+        for (SQLScriptElement sqlScriptElement : elements) {
+            if (sqlScriptElement instanceof SQLControlCommand) {
+                SQLControlCommand cmd = (SQLControlCommand) sqlScriptElement;
+                commands.add(cmd);
+                actualCommandsText.add(cmd.getText());
+            }
+        }
+        Assert.assertEquals(expectedCommandsText, actualCommandsText);
+        String text;
+        int end;
+        for (int i = 0; i < varNames.size(); i++) {
+            text = commands.get(i).getParameter();
+            end = ScriptParameterRule.tryConsumeParameterName(context.getDialect(), text, 0);
+            Assert.assertEquals(varNames.get(i), text.substring(0, end).trim());
+        }
+    }
+    
     
     private void assertParse(String dialectName, String[] expected) throws DBException {
         String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());

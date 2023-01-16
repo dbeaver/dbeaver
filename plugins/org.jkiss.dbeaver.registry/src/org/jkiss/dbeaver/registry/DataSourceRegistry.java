@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -280,6 +280,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public DataSourceFolder addFolder(DBPDataSourceFolder parent, String name) {
+        return createFolder(parent, name);
+    }
+
+    DataSourceFolder createFolder(DBPDataSourceFolder parent, String name) {
         DataSourceFolder folder = new DataSourceFolder(this, (DataSourceFolder) parent, name, null);
         dataSourceFolders.add(folder);
         return folder;
@@ -347,7 +351,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                     log.warn("Folder '" + path + "' not found");
                     break;
                 } else {
-                    folder = addFolder(parent, name);
+                    folder = createFolder(parent, name);
                 }
             }
             parent = folder;

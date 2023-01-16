@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,9 +72,7 @@ public class DashboardChartComposite extends BaseChartComposite {
             manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardConstants.CMD_VIEW_DASHBOARD));
             manager.add(new Separator());
         }
-        super.fillContextMenu(manager);
         if (!UIUtils.isInDialog(this)) {
-            manager.add(new Separator());
             MenuManager viewMenu = new MenuManager(UIDashboardMessages.dashboard_chart_composite_menu_manager_text);
             List<DashboardViewType> viewTypes = DashboardRegistry.getInstance().getSupportedViewTypes(dashboardContainer.getDashboardDataType());
             for (DashboardViewType viewType : viewTypes) {
@@ -104,6 +102,8 @@ public class DashboardChartComposite extends BaseChartComposite {
             manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardConstants.CMD_REMOVE_DASHBOARD));
             manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardConstants.CMD_RESET_DASHBOARD));
         }
+        manager.add(new Separator());
+        super.fillContextMenu(manager);
     }
 
     @Override

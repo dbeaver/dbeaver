@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLParameterToken;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
@@ -63,11 +65,11 @@ public class ScriptParameterRule implements TPRule {
             buffer.append((char) c);
             c = scanner.read();
             
-            if (isIdentifierQuote((char) c, true, false)) {
+            if (isIdentifierQuote((char) c, true, false, quoteStrings)) {
                 do {
                     buffer.append((char) c);
                     c = scanner.read();
-                    if (isIdentifierQuote((char) c, false, true)) {
+                    if (isIdentifierQuote((char) c, false, true, quoteStrings)) {
                         buffer.append((char) c);
                         c = scanner.read();
                         break;
@@ -89,8 +91,8 @@ public class ScriptParameterRule implements TPRule {
             }
             if (syntaxManager.isParametersEnabled()) {
                 if (buffer.charAt(0) == namedPrefix && buffer.length() > 1) {
-                    if (isIdentifierQuote(buffer.charAt(1), true, false)
-                        && isIdentifierQuote(buffer.charAt(buffer.length() - 1), false, true)
+                    if (isIdentifierQuote(buffer.charAt(1), true, false, quoteStrings)
+                        && isIdentifierQuote(buffer.charAt(buffer.length() - 1), false, true, quoteStrings)
                         && buffer.length() > 3
                     ) {
                         return parameterToken;
@@ -117,7 +119,41 @@ public class ScriptParameterRule implements TPRule {
         return TPTokenAbstract.UNDEFINED;
     }
     
-    private boolean isIdentifierQuote(char c, boolean testStart, boolean testEnd) {
+    /**
+     * Parse variable name from buffer
+     * Return the position of the last variable name character or -1 if the name is not valid
+     */
+    public static int tryConsumeParameterName(@NotNull SQLDialect sqlDialect, @NotNull CharSequence buffer, int position) {
+        int endPos = tryConsumeParameterNameImpl(sqlDialect, buffer, position);
+        return endPos > position ? endPos : -1;
+    }
+    
+    private static int tryConsumeParameterNameImpl(@NotNull SQLDialect sqlDialect, @NotNull CharSequence buffer, int position) {
+        String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
+ 
+        // keep in sync with the above
+        int c = position < buffer.length() ? buffer.charAt(position) : TPCharacterScanner.EOF;
+        position++;
+        if (isIdentifierQuote((char) c, true, false, quoteStrings)) {
+            do {
+                c = position < buffer.length() ? buffer.charAt(position) : TPCharacterScanner.EOF;
+                position++;
+                if (isIdentifierQuote((char) c, false, true, quoteStrings)) {
+                    c = position < buffer.length() ? buffer.charAt(position) : TPCharacterScanner.EOF;
+                    position++;
+                    break;
+                }
+            } while (c != TPCharacterScanner.EOF);
+        } else {
+            while (c != TPCharacterScanner.EOF && Character.isJavaIdentifierPart(c)) {
+                c = position < buffer.length() ? buffer.charAt(position) : TPCharacterScanner.EOF;
+                position++;
+            }
+        }
+        return position - 1;
+    }
+    
+    private static boolean isIdentifierQuote(char c, boolean testStart, boolean testEnd, String[][] quoteStrings) {
         String testStr = Character.toString(c);
         if (testStr.equals(SQLConstants.STR_QUOTE_DOUBLE)) {
             return true;

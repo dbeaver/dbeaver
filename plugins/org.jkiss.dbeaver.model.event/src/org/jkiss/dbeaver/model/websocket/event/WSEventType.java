@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,12 @@ public enum WSEventType {
         "cb_config_changed",
         WSEventTopic.SERVER_CONFIG,
         WSServerConfigurationChangedEvent.class
+    ),
+
+    SESSION_LOG_UPDATED(
+        "cb_session_log_updated",
+        WSEventTopic.SESSION_LOG,
+        WSSessionLogUpdatedEvent.class
     ),
 
     DATASOURCE_CREATED("cb_datasource_created", WSEventTopic.DATASOURCE, WSDataSourceEvent.class),

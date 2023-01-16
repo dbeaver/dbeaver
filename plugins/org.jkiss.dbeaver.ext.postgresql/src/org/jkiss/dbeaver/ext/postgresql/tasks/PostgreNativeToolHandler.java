@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolHandler;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
+import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -56,14 +57,11 @@ public abstract class PostgreNativeToolHandler<SETTINGS extends AbstractNativeTo
         if (isVerbose()) {
             cmd.add("--verbose");
         }
-        DBPConnectionConfiguration connectionInfo = settings.getDataSourceContainer().getActualConnectionConfiguration();
-        cmd.add("--host=" + connectionInfo.getHostName());
-        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-            cmd.add("--port=" + connectionInfo.getHostPort());
-        }
+        DBPDataSourceContainer dataSourceContainer = settings.getDataSourceContainer();
+        NativeToolUtils.addHostAndPortParamsToCmd(dataSourceContainer, cmd);
         String toolUserName = settings.getToolUserName();
         if (CommonUtils.isEmpty(toolUserName)) {
-            toolUserName = connectionInfo.getUserName();
+            toolUserName = dataSourceContainer.getActualConnectionConfiguration().getUserName();
         }
         cmd.add("--username=" + toolUserName);
 
