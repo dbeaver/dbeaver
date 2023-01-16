@@ -104,6 +104,11 @@ public class DBCStatistics implements DBCExecutionResult {
         return startTime + getTotalTime();
     }
 
+    public long getStartTime() {
+        return this.startTime;
+
+    }
+
     public int getStatementsCount() {
         return statementsCount;
     }
