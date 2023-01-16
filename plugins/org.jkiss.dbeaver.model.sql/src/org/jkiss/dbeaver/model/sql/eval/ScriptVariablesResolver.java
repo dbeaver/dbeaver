@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql.eval;
 
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.sql.commands.SQLCommandSet;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.CommonUtils;
 
@@ -33,6 +34,10 @@ public class ScriptVariablesResolver implements IVariableResolver {
 
     @Override
     public String get(String name) {
-        return CommonUtils.toString(scriptContext.getVariable(name));
+        String varName = SQLCommandSet.prepareVarName(
+            scriptContext.getExecutionContext().getDataSource().getSQLDialect(),
+            name
+        );
+        return CommonUtils.toString(scriptContext.getVariable(varName));
     }
 }

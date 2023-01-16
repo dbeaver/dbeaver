@@ -121,7 +121,7 @@ public class EnterNameDialog extends Dialog {
         return dialog.chooseName();
     }
 
-    private void updateButtonsState() {
+    protected void updateButtonsState() {
         Button button = getButton(IDialogConstants.OK_ID);
         if (button != null && propNameText != null) {
             button.setEnabled(!CommonUtils.isEmptyTrimmed(propNameText.getText()));
