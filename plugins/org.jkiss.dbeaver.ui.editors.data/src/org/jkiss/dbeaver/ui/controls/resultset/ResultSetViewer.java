@@ -740,6 +740,8 @@ public class ResultSetViewer extends Viewer
                 // Statistics - let's use special presentation for it
                 if (filtersPanel != null) {
                     UIUtils.setControlVisible(filtersPanel, false);
+                }
+                if (statusBar != null) {
                     UIUtils.setControlVisible(statusBar, false);
                 }
                 availablePresentations = Collections.emptyList();
@@ -750,6 +752,8 @@ public class ResultSetViewer extends Viewer
                 // Regular results
                 if (filtersPanel != null) {
                     UIUtils.setControlVisible(filtersPanel, true);
+                }
+                if (statusBar != null) {
                     UIUtils.setControlVisible(statusBar, true);
                 }
                 IResultSetContext context = new ResultSetContextImpl(this, resultSet);
