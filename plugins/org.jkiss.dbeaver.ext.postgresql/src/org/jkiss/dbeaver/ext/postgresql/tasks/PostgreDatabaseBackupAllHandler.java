@@ -57,11 +57,9 @@ public class PostgreDatabaseBackupAllHandler
         if (PostgreSQLTasks.TASK_DATABASE_BACKUP_ALL.equals(task.getType().getId())) {
             for (PostgreDatabaseBackupAllInfo exportObject : settings.getExportObjects()) {
                 final File dir = settings.getOutputFolder(exportObject);
-                if (!dir.exists()) {
-                    if (!dir.mkdirs()) {
-                        log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
-                        return false;
-                    }
+                if (!dir.exists() && !dir.mkdirs()) {
+                    log.error("Can't create directory '" + dir.getAbsolutePath() + "'");
+                    return false;
                 }
             }
         }

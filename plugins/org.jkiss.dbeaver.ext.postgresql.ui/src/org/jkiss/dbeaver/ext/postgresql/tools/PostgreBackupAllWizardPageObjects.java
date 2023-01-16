@@ -113,7 +113,7 @@ public class PostgreBackupAllWizardPageObjects extends AbstractNativeToolWizardP
         checkedObjects.clear();
         databasesTable.removeAll();
 
-        Set<PostgreDatabase> activeDatabases = new LinkedHashSet<>();
+        Set<PostgreDatabase> activeDatabases = new HashSet<>();
         for (PostgreDatabaseBackupAllInfo info : wizard.getSettings().getExportObjects()) {
             dataSource = info.getDataSource();
             List<PostgreDatabase> databases = info.getDatabases();

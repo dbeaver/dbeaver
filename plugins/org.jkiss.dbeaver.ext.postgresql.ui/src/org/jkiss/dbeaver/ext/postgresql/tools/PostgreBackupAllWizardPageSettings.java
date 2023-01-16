@@ -16,11 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupAllSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -46,12 +47,7 @@ public class PostgreBackupAllWizardPageSettings extends PostgreToolWizardPageSet
     @Override
     public void createControl(Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
-        SelectionListener changeListener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateState();
-            }
-        };
+        SelectionListener changeListener = SelectionListener.widgetSelectedAdapter(e -> updateState());
         Group formatGroup = UIUtils.createControlGroup(
             composite,
             PostgreMessages.wizard_backup_all_page_setting_title_setting,

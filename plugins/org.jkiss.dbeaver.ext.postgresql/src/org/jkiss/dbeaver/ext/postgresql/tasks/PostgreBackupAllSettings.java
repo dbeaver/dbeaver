@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -76,7 +77,7 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
 
     @NotNull
     @Override
-    public List<PostgreDatabaseBackupAllInfo> getExportObjects() {
+    public final List<PostgreDatabaseBackupAllInfo> getExportObjects() {
         return exportObjects;
     }
 
@@ -201,9 +202,9 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     }
 
     private PostgreDatabaseBackupAllInfo loadDatabaseExportInfo(
-        DBRRunnableContext runnableContext,
+        @NotNull DBRRunnableContext runnableContext,
         @NotNull String catalogId,
-        List<String> databaseNames)
+        @Nullable List<String> databaseNames)
     {
         PostgreDatabaseBackupAllInfo[] exportInfo = new PostgreDatabaseBackupAllInfo[1];
         try {
