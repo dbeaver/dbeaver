@@ -118,7 +118,11 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                 }
             }
         }
-
+        
+        return refreshInNavigator(this, refreshObjects);
+    }
+    
+    public static boolean refreshInNavigator(Object source, List<DBNNode> refreshObjects) {
         // Check for open editors with selected objects
         if (!refreshObjects.isEmpty()) {
             for (IEditorReference er : UIUtils.getActiveWorkbenchWindow().getActivePage().getEditorReferences()) {
@@ -128,7 +132,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                     for (Iterator<DBNNode> iter = refreshObjects.iterator(); iter.hasNext(); ) {
                         DBNNode nextNode = iter.next();
                         if (nextNode == editorNode || editorNode.isChildOf(nextNode) || nextNode.isChildOf(editorNode)) {
-                            if (((IRefreshablePart) editorPart).refreshPart(this, true) == IRefreshablePart.RefreshResult.CANCELED) {
+                            if (((IRefreshablePart) editorPart).refreshPart(source, true) == IRefreshablePart.RefreshResult.CANCELED) {
                                 return true;
                             }
                             iter.remove();

@@ -4192,7 +4192,7 @@ public class SQLEditor extends SQLEditorBase implements
                         UIUtils.runUIJob("Refreshing data source metadata after statement execution", monitor -> {
                             DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, dataSource, true);
                             if (node != null) {
-                                NavigatorHandlerRefresh.refreshNavigator(List.of(node));
+                                NavigatorHandlerRefresh.refreshInNavigator(SQLEditor.this, List.of(node));
                             } else if (dataSource instanceof JDBCDataSource) {
                                 try {
                                     ((JDBCDataSource) dataSource).refreshObject(monitor);
