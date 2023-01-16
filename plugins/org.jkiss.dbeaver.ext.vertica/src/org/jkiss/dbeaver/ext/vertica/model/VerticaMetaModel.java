@@ -216,10 +216,11 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+        boolean avoidCommentsReading = ((VerticaDataSource) container.getDataSource()).avoidCommentsReading();
         JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT s.*, c.comment FROM v_catalog.sequences s\n" +
-                "LEFT JOIN v_catalog.comments c\n" +
-                "ON s.sequence_id = c.object_id\n" +
+            "SELECT s.*" + (avoidCommentsReading ? "" : ", c.comment") + " FROM v_catalog.sequences s\n" +
+                (avoidCommentsReading ? "" : "LEFT JOIN v_catalog.comments c\n" +
+                "ON s.sequence_id = c.object_id\n") +
                 "WHERE sequence_schema=? ORDER BY sequence_name");
         dbStat.setString(1, container.getSchema().getName());
         return dbStat;
@@ -258,19 +259,20 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException, DBException {
         JDBCPreparedStatement dbStat;
+        boolean avoidCommentsReading = ((VerticaDataSource) owner.getDataSource()).avoidCommentsReading();
         dbStat = session.prepareStatement("SELECT col.constraint_name as PK_NAME, col.table_name as TABLE_NAME, col.column_name as COLUMN_NAME, " +
-                "c.ordinal_position as KEY_SEQ, col.constraint_type, tc.predicate, col.is_enabled \n" +
-                "FROM v_catalog.constraint_columns col\n" +
-                "LEFT JOIN v_catalog.columns c ON\n" +
-                "c.table_id = col.table_id\n" +
-                //"LEFT JOIN v_catalog.comments com ON com.object_id = col.constraint_id"
-                // v_catalog.comments dramatically reduces data loading speed. Maybe we can use another table or use lazy cache for constraints too
-                "JOIN v_catalog.table_constraints tc ON\n" +
-                "tc.constraint_id = col.constraint_id \n" +
-                "AND col.column_name = c.column_name \n" +
-                "WHERE col.constraint_type IN ('u','p','c')\n" +
-                "AND col.table_schema = ?" + (forParent != null ? " AND col.table_name = ?" : "") +
-                " ORDER BY col.table_id, KEY_SEQ, PK_NAME");
+            "c.ordinal_position as KEY_SEQ, col.constraint_type, tc.predicate, col.is_enabled\n" +
+            (avoidCommentsReading ? "" : ",com.comment\n") +
+            "FROM v_catalog.constraint_columns col\n" +
+            "LEFT JOIN v_catalog.columns c ON\n" +
+            "c.table_id = col.table_id\n" +
+            (avoidCommentsReading ? "" : "LEFT JOIN v_catalog.comments com ON com.object_id = col.constraint_id\n") +
+            "JOIN v_catalog.table_constraints tc ON\n" +
+            "tc.constraint_id = col.constraint_id \n" +
+            "AND col.column_name = c.column_name \n" +
+            "WHERE col.constraint_type IN ('u','p','c')\n" +
+            "AND col.table_schema = ?" + (forParent != null ? " AND col.table_name = ?" : "") +
+            " ORDER BY col.table_id, KEY_SEQ, PK_NAME");
         if (forParent != null) {
             dbStat.setString(1, forParent.getSchema().getName());
             dbStat.setString(2, forParent.getName());
