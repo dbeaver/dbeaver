@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
@@ -118,30 +119,38 @@ public class ScriptParameterRule implements TPRule {
         return TPTokenAbstract.UNDEFINED;
     }
     
-    public static int tryConsumeParameterName(SQLDialect sqlDialect, CharSequence buffer, int position) {
-        // keep in sync with the above
-        if (position >= buffer.length()) {
-            return -1;
-        }
+    /**
+     * Parse variable name from buffer
+     * Return the position of the last variable name character or -1 if the name is not valid
+     */
+    public static int tryConsumeParameterName(@NotNull SQLDialect sqlDialect, @NotNull CharSequence buffer, int position) {
+        int endPos = tryConsumeParameterNameImpl(sqlDialect, buffer, position);
+        return endPos > position ? endPos : -1;
+    }
+    
+    private static int tryConsumeParameterNameImpl(@NotNull SQLDialect sqlDialect, @NotNull CharSequence buffer, int position) {
         String[][] quoteStrings = sqlDialect.getIdentifierQuoteStrings();
-        char c = buffer.charAt(position);
+ 
+        // keep in sync with the above
+        int c = position < buffer.length() ? buffer.charAt(position) : TPCharacterScanner.EOF;
         position++;
-        if (isIdentifierQuote(c, true, false, quoteStrings)) {
-            while (position < buffer.length()) {
-                c = buffer.charAt(position);
+        if (isIdentifierQuote((char) c, true, false, quoteStrings)) {
+            do {
+                c = position < buffer.length() ? buffer.charAt(position) : TPCharacterScanner.EOF;
                 position++;
-                if (isIdentifierQuote(c, false, true, quoteStrings)) {
-                    return position;
+                if (isIdentifierQuote((char) c, false, true, quoteStrings)) {
+                    c = position < buffer.length() ? buffer.charAt(position) : TPCharacterScanner.EOF;
+                    position++;
+                    break;
                 }
-            }
-            return -1;
+            } while (c != TPCharacterScanner.EOF);
         } else {
-            while (position < buffer.length() && Character.isJavaIdentifierPart(c)) {
-                c = buffer.charAt(position);
+            while (c != TPCharacterScanner.EOF && Character.isJavaIdentifierPart(c)) {
+                c = position < buffer.length() ? buffer.charAt(position) : TPCharacterScanner.EOF;
                 position++;
             }
-            return position;
         }
+        return position - 1;
     }
     
     private static boolean isIdentifierQuote(char c, boolean testStart, boolean testEnd, String[][] quoteStrings) {

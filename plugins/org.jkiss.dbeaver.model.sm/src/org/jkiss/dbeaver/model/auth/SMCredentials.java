@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,20 @@ public class SMCredentials {
     private final String smAccessToken;
     @Nullable
     private final String userId;
+    @Nullable
+    private final String smSessionId;
     @NotNull
     private final Set<String> permissions;
 
-    public SMCredentials(@NotNull String smAccessToken, @Nullable String userId, @NotNull Set<String> permissions) {
+    public SMCredentials(
+        @NotNull String smAccessToken,
+        @Nullable String userId,
+        @Nullable String smSessionId,
+        @NotNull Set<String> permissions
+    ) {
         this.smAccessToken = smAccessToken;
         this.userId = userId;
+        this.smSessionId = smSessionId;
         this.permissions = permissions;
     }
 
@@ -49,6 +57,11 @@ public class SMCredentials {
     @NotNull
     public Set<String> getPermissions() {
         return permissions;
+    }
+
+    @Nullable
+    public String getSmSessionId() {
+        return smSessionId;
     }
 
     public boolean hasPermission(String permission) {
