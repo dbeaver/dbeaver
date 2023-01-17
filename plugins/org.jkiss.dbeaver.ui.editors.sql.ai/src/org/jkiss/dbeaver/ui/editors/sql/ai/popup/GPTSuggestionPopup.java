@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.client.GPTAPIClient;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -46,7 +47,7 @@ import java.util.Stack;
 
 public class GPTSuggestionPopup extends AbstractPopupPanel {
     private static final Log log = Log.getLog(GPTSuggestionPopup.class);
-
+    private Job activeJob;
     private final SQLEditor editorContext;
     private Text resultText;
     private boolean loading = false;
@@ -68,59 +69,69 @@ public class GPTSuggestionPopup extends AbstractPopupPanel {
     protected Composite createDialogArea(Composite parent) {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
         Text inputField = new Text(placeholder, SWT.NONE);
-        inputField.addModifyListener(new ModifyListener() {
-            // We want only the latest modify event
-            private Job activeJob;
-            @Override
-            public void modifyText(ModifyEvent e) {
-                if (activeJob != null) {
-                    activeJob.cancel();
-                }
-                activeJob = new Job("Processing gpt request") {
-                    @Override
-                    protected IStatus run(IProgressMonitor monitor) {
-                        // We want to have a delayed modify response to avoid sending too many requests
-                        try {
-                            DBCExecutionContext executionContext = editorContext.getExecutionContext();
-                            DBSObject object;
-                            if (executionContext == null
-                                || executionContext.getContextDefaults() == null
-                                || executionContext.getContextDefaults().getDefaultSchema() != null) {
-                                object = null;
-                            } else {
-                                object = executionContext.getContextDefaults().getDefaultSchema();
-                            }
-                            Optional<String> completion = GPTAPIClient.requestCompletion(inputField.getText(), monitor,
-                                object);
-                            if (completion.isPresent()) {
-                                resultText.setText(completion.get());
-                            } else {
-                                resultText.setText("");
-                            }
-                            return Status.OK_STATUS;
-                        } catch (DBException ex) {
-                            log.error(ex);
-                            return Status.error(ex.getMessage());
-                        }
-                    }
-                };
-                activeJob.schedule();
-            }
-        });
+
         inputField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
             }
         });
+        inputField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         resultText = new Text(placeholder, SWT.READ_ONLY | SWT.V_SCROLL | SWT.MULTI | SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = UIUtils.getFontHeight(placeholder.getFont()) * 12;
-        gd.widthHint = UIUtils.getFontHeight(placeholder.getFont()) * 12;
+        gd.heightHint = UIUtils.getFontHeight(placeholder.getFont()) * 40;
+        gd.widthHint = UIUtils.getFontHeight(placeholder.getFont()) * 40;
         resultText.setLayoutData(gd);
-
+        // We want only the latest modify event
+        inputField.addModifyListener(e -> {
+            if (activeJob != null) {
+                activeJob.cancel();
+            }
+            if (inputField.isDisposed() || inputField.getText().isEmpty()) {
+                return;
+            }
+            activeJob = new Job("Processing gpt request") {
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    // We want to have a delayed modify response to avoid sending too many requests
+                    try {
+                        DBCExecutionContext executionContext = editorContext.getExecutionContext();
+                        DBSObjectContainer object;
+                        if (executionContext == null || executionContext.getContextDefaults() == null) {
+                            object = null;
+                        } else {
+                            if (executionContext.getContextDefaults().getDefaultSchema() == null) {
+                                object = executionContext.getContextDefaults().getDefaultCatalog();
+                            } else {
+                                object = executionContext.getContextDefaults().getDefaultSchema();
+                            }
+                            if (executionContext.getDataSource() instanceof DBSObjectContainer) {
+                                object = ((DBSObjectContainer) executionContext.getDataSource());
+                            }
+                        }
+                        String[] result = new String[1];
+                        UIUtils.syncExec(() -> result[0] = inputField.getText());
+                        Optional<String> completion = GPTAPIClient.requestCompletion(result[0], monitor,
+                            object);
+                        UIUtils.syncExec(() -> {
+                            if (completion.isPresent()) {
+                                resultText.setText(completion.get());
+                            } else {
+                                resultText.setText("");
+                            }
+                        });
+                        return Status.OK_STATUS;
+                    } catch (DBException ex) {
+                        log.error(ex);
+                        return Status.error(ex.getMessage());
+                    }
+                }
+            };
+            activeJob.schedule();
+        });
         return super.createDialogArea(parent);
     }
+
 
 
 

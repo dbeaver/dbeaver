@@ -20,15 +20,14 @@ import com.theokanning.openai.OpenAiService;
 import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.code.Nullable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
-import org.jkiss.dbeaver.model.ai.internal.GTPActivator;
 import org.jkiss.dbeaver.model.ai.formatter.GPTRequestFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import retrofit2.HttpException;
@@ -74,7 +73,7 @@ public class GPTAPIClient {
     public static Optional<String> requestCompletion(
         @NotNull String request,
         @NotNull IProgressMonitor monitor,
-        @NotNull DBSObject context
+        @Nullable DBSObjectContainer context
     ) throws DBException, HttpException {
 
         if (!getPreferenceStore().getBoolean(GPTPreferences.GPT_ENABLED)) {
@@ -84,7 +83,7 @@ public class GPTAPIClient {
             initGPTApiClientInstance();
         }
         String modifiedRequest;
-        modifiedRequest = GPTRequestFormatter.addSchemaMetadataToRequest(request ,context);
+        modifiedRequest = GPTRequestFormatter.addDBMetadataToRequest(request, context, monitor);
         if (monitor.isCanceled()) {
             return Optional.empty();
         }
@@ -107,7 +106,8 @@ public class GPTAPIClient {
             return Optional.empty();
         } try {
             List<CompletionChoice> choices = CLIENT_INSTANCE.createCompletion(completionRequest).getChoices();
-            return choices.stream().findFirst().map(CompletionChoice::getText);
+            Optional<CompletionChoice> choice = choices.stream().findFirst();
+            return choice.map(completionChoice -> completionChoice.getText().substring(completionChoice.getIndex()));
         } catch (HttpException exception) {
             if (exception.code() == 429) {
                 try {

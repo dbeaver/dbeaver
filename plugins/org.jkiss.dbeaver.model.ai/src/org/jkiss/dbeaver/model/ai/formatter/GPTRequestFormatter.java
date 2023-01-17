@@ -16,17 +16,66 @@
  */
 package org.jkiss.dbeaver.model.ai.formatter;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+
+import java.util.Iterator;
+import java.util.List;
 
 public class GPTRequestFormatter
 {
-    public static String addSchemaMetadataToRequest(String request, DBSObject context) {
-        if (context == null) {
+    public static String addDBMetadataToRequest(
+        String request, DBSObjectContainer context, IProgressMonitor monitor
+    ) throws DBException {
+        if (context == null || context.getDataSource() == null) {
             return request;
         }
-        String modifiedRequest = request;
-        return modifiedRequest;
+        DefaultProgressMonitor defaultProgressMonitor = new DefaultProgressMonitor(monitor);
+        StringBuilder additionalMetadata = new StringBuilder();
+        additionalMetadata.append("Use SQL\n");
+        additionalMetadata.append("Use dialect for ").append(context.getDataSource().getName()).append("\n");
+        generateObjectDescription(additionalMetadata, context, defaultProgressMonitor);
+        return additionalMetadata + request;
+    }
+
+
+    private static void generateObjectDescription(
+        @NotNull StringBuilder request,
+        @NotNull DBSObject object,
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBException {
+        if (object instanceof JDBCTable) {
+            request.append("Table: ").append(((JDBCTable<?, ?>) object)
+                .getFullyQualifiedName(DBPEvaluationContext.DDL));
+            List<? extends DBSEntityAttribute> attributes = ((JDBCTable<?, ?>) object).getAttributes(monitor);
+            if (attributes != null) {
+                request.append("(");
+                for (int i = 0; i < attributes.size(); i++) {
+                    if (i != 0) {
+                        request.append(", ");
+                    }
+                    DBSEntityAttribute attribute = attributes.get(i);
+                    request.append(attribute.getName());
+                }
+                request.append(")");
+            }
+            request.append("\n");
+        } else if (object instanceof DBSObjectContainer) {
+            request.append(object instanceof DBSSchema ? "Schema: " : "Catalog: ").append(object.getName()).append(
+                "\n");
+            for (DBSObject child : ((DBSObjectContainer) object).getChildren(monitor)) {
+                generateObjectDescription(request, child, monitor);
+            }
+        }
     }
 
     private GPTRequestFormatter() {
