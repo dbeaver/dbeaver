@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -355,13 +355,16 @@ class DataSourceSerializerModern implements DataSourceSerializer
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
+        @Nullable Collection<String> dataSourceIds,
         boolean refresh
     ) throws DBException, IOException {
         var connectionConfigurationChanged = false;
         if (!configurationManager.isSecure()) {
             // Read secured creds file
             InputStream secureCredsData = configurationManager.readConfiguration(
-                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId() + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT);
+                DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_PREFIX + configurationStorage.getStorageSubId()
+                    + DBPDataSourceRegistry.CREDENTIALS_CONFIG_FILE_EXT,
+                dataSourceIds);
             if (secureCredsData != null) {
                 try {
                     String credJson = loadConfigFile(secureCredsData, true);
@@ -382,7 +385,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
         if (configurationStorage instanceof DataSourceMemoryStorage) {
             configData = ((DataSourceMemoryStorage) configurationStorage).getInputStream();
         } else {
-            configData = configurationManager.readConfiguration(configurationStorage.getStorageName());
+            configData = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds);
         }
         if (configData != null) {
             String configJson = loadConfigFile(configData, CommonUtils.toBoolean(registry.getProject().isEncryptedProject()));
@@ -521,7 +524,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
 
                 DataSourceDescriptor dataSource = registry.getDataSource(id);
                 boolean newDataSource = (dataSource == null);
-                DBPConnectionConfiguration oldConnectionConfiguration = null;
+                DataSourceDescriptor oldDataSource = null;
                 if (newDataSource) {
                     DBPDataSourceOrigin origin;
                     Map<String, Object> originProperties = JSONUtils.deserializeProperties(conObject, TAG_ORIGIN);
@@ -544,7 +547,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                         driver,
                         new DBPConnectionConfiguration());
                 } else {
-                    oldConnectionConfiguration = new DBPConnectionConfiguration(dataSource.getConnectionConfiguration());
+                    oldDataSource = new DataSourceDescriptor(dataSource, registry);
                     // Clean settings - they have to be loaded later by parser
                     dataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
                     dataSource.getConnectionConfiguration().setHandlers(Collections.emptyList());
@@ -710,7 +713,7 @@ class DataSourceSerializerModern implements DataSourceSerializer
                     connectionConfigurationChanged = true;
                 } else {
                     parseResults.updatedDataSources.add(dataSource);
-                    if (!dataSource.getConnectionConfiguration().equals(oldConnectionConfiguration)) {
+                    if (!dataSource.equalSettings(oldDataSource)) {
                         connectionConfigurationChanged = true;
                     }
                 }

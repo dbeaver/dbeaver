@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -98,6 +98,8 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_delete_variables;
     public static String action_assign_variables_error_duplicated_title;
     public static String action_assign_variables_error_duplicated_info;
+    public static String action_assign_variables_error_invalid_title;
+    public static String action_assign_variables_error_invalid_info;
 
     public static String action_popup_sqleditor_layout_horizontal;
     public static String action_popup_sqleditor_layout_vertical;
