@@ -120,7 +120,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         } else if (!params.isGlobalSearch()) {
             // Limit object search with search path
             for (String sn : executionContext.getSearchPath()) {
-                PostgreSchema schema = database.getSchema(monitor, PostgreUtils.getRealSchemaName(database, sn));
+                PostgreSchema schema = database.getSchema(monitor, PostgreUtils.getRealSchemaName(executionContext, sn));
                 if (schema != null) {
                     nsList.add(schema);
                 }
@@ -190,7 +190,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
         String sql = buildFindQuery(queryParams);
-
+System.out.println(sql);
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParams(dbStat, params, schemas, params.isSearchInDefinitions());
@@ -201,6 +201,8 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                     final String tableName = JDBCUtils.safeGetString(dbResult, "relname");
                     final PostgreClass.RelKind tableType = PostgreClass.RelKind.valueOf(JDBCUtils.safeGetString(dbResult, "relkind"));
                     final PostgreSchema tableSchema = database.getSchema(session.getProgressMonitor(), schemaId);
+                    System.out.println(tableName + " #" + tableId + " @" + schemaId + " capturing " + tableSchema.getClass().getName() + "@" + Integer.toHexString(tableSchema.hashCode()));
+                    System.out.println(" from " + database.getClass().getName() + "@" + Integer.toHexString(database.hashCode()));
                     if (tableSchema == null) {
                         log.debug("Can't resolve table '" + tableName + "' - owner schema " + schemaId + " not found");
                         continue;
@@ -213,7 +215,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             PostgreTableBase table = tableSchema.getTable(monitor, tableId);
                             if (table == null) {
-                                throw new DBException("Table '" + tableName + "' not found in schema '" + tableSchema.getName() + "'");
+                                throw new DBException("Table '" + tableName + "' not found in schema '" + tableSchema.getName() + "' by id " + tableId);
                             }
                             return table;
                         }

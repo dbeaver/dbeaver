@@ -808,8 +808,8 @@ public class PostgreUtils {
                 PostgreConstants.TYPE_GEOGRAPHY.equals(typeName);
     }
 
-    public static String getRealSchemaName(PostgreDatabase database, String name) {
-        return name.replace(PostgreConstants.USER_VARIABLE, database.getMetaContext().getActiveUser());
+    public static String getRealSchemaName(PostgreExecutionContext metaContext, String name) {
+        return name.replace(PostgreConstants.USER_VARIABLE, metaContext.getActiveUser());
     }
 
     /**
