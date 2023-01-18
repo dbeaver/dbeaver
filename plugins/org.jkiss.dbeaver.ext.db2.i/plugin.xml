@@ -5,13 +5,13 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
-        <!-- DB2 i -->
+        <!-- DB2 for IBM i -->
         <datasource
                 class="org.jkiss.dbeaver.ext.db2.i.DB2IDataSourceProvider"
                 description="%datasource.db2_i.description"
                 id="db2_i"
                 parent="generic"
-                label="DB2 iSeries"
+                label="Db2 for IBM i data source"
                 icon="icons/db2_i_icon.png"
                 dialect="db2_i">
             <treeInjection path="generic/catalog/schema/table"
@@ -22,14 +22,14 @@
 
                 <driver
                         id="db2_iseries"
-                        label="DB2 iSeries/AS 400"
+                        label="Db2 for IBM i"
                         icon="icons/db2_i_icon.png"
                         iconBig="icons/db2_i_icon_big.png"
-                        category="DB2"
+                        category="Db2"
                         class="com.ibm.as400.access.AS400JDBCDriver"
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
                         defaultPort="446"
-                        description="IBM DB2 iSeries/AS 400 driver"
+                        description="IBM Db2 driver for IBM i (replacement for iSeries and AS/400)"
                         categories="sql">
                     <replace provider="generic" driver="db2_iseries"/>
 
@@ -59,7 +59,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="db2_i" parent="generic" class="org.jkiss.dbeaver.ext.db2.i.model.DB2ISQLDialect" label="DB2 i" description="IBM DB2 i SQL dialect." icon="icons/db2_i_icon.png">
+        <dialect id="db2_i" parent="generic" class="org.jkiss.dbeaver.ext.db2.i.model.DB2ISQLDialect" label="Db2 i" description="IBM Db2 for i SQL dialect." icon="icons/db2_i_icon.png">
         </dialect>
     </extension>
 

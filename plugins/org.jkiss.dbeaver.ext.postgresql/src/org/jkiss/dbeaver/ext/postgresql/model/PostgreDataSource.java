@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -486,7 +486,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     // Patch URL with new database name
                     if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
                         conConfig.setDatabaseName(instance.getName());
-                        conConfig.setUrl(getContainer().getDriver().getConnectionURL(conConfig));
+                        final DBPDriver driver = getContainer().getDriver();
+                        String newURL = JDBCURL.generateUrlByTemplate(driver, conConfig);
+                        if (CommonUtils.isEmpty(newURL)) {
+                            newURL = driver.getDataSourceProvider().getConnectionURL(driver, conConfig);
+                        }
+                        conConfig.setUrl(newURL);
                     }
 
                     pgConnection = super.openConnection(monitor, context, purpose);
