@@ -259,14 +259,11 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException, DBException {
         JDBCPreparedStatement dbStat;
-        boolean avoidCommentsReading = ((VerticaDataSource) owner.getDataSource()).avoidCommentsReading();
         dbStat = session.prepareStatement("SELECT col.constraint_name as PK_NAME, col.table_name as TABLE_NAME, col.column_name as COLUMN_NAME, " +
             "c.ordinal_position as KEY_SEQ, col.constraint_type, tc.predicate, col.is_enabled\n" +
-            (avoidCommentsReading ? "" : ",com.comment\n") +
             "FROM v_catalog.constraint_columns col\n" +
             "LEFT JOIN v_catalog.columns c ON\n" +
             "c.table_id = col.table_id\n" +
-            (avoidCommentsReading ? "" : "LEFT JOIN v_catalog.comments com ON com.object_id = col.constraint_id\n") +
             "JOIN v_catalog.table_constraints tc ON\n" +
             "tc.constraint_id = col.constraint_id \n" +
             "AND col.column_name = c.column_name \n" +
@@ -299,14 +296,12 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public GenericUniqueKey createConstraintImpl(GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
         String checkExpression = "";
-        String comment = null;
         boolean isEnabled = false;
         if (dbResult != null) {
             checkExpression = JDBCUtils.safeGetString(dbResult, "predicate");
-            comment = JDBCUtils.safeGetString(dbResult, "comment");
             isEnabled = JDBCUtils.safeGetBoolean(dbResult, "is_enabled");
         }
-        return new VerticaConstraint(table, constraintName, comment, constraintType, persisted, CommonUtils.notEmpty(checkExpression).trim(), isEnabled);
+        return new VerticaConstraint(table, constraintName, null, constraintType, persisted, CommonUtils.notEmpty(checkExpression).trim(), isEnabled);
     }
 
     @Override

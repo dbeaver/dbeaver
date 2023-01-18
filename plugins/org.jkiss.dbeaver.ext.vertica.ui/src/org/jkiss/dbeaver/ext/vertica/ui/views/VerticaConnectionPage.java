@@ -16,24 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.vertica.ui.views;
 
-import org.eclipse.swt.SWT;
+import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage;
-import org.jkiss.dbeaver.ext.vertica.VerticaConstants;
-import org.jkiss.dbeaver.ext.vertica.ui.internal.VerticaUIMessages;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 
 public class VerticaConnectionPage extends GenericConnectionPage {
-
-    private Button disableCommentsReading;
 
     private final Image logoImage;
 
@@ -53,38 +42,10 @@ public class VerticaConnectionPage extends GenericConnectionPage {
     }
 
     @Override
-    public void createAdvancedSettingsGroup(Composite composite) {
-        Group advancedSettings = new Group(composite, SWT.NONE);
-        advancedSettings.setText(VerticaUIMessages.connection_page_group_performance);
-        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-        gridData.horizontalSpan = 4;
-        advancedSettings.setLayoutData(gridData);
-        advancedSettings.setLayout(new GridLayout(1, false));
-
-        disableCommentsReading = UIUtils.createCheckbox(
-            advancedSettings,
-            VerticaUIMessages.connection_page_group_checkbox_disable_comments,
-            VerticaUIMessages.connection_page_group_checkbox_disable_comments_tip,
-            false,
-            1);
-    }
-
-    @Override
-    public void loadSettings() {
-        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
-        disableCommentsReading.setSelection(CommonUtils.toBoolean(
-            connectionInfo.getProviderProperty(VerticaConstants.PROP_DISABLE_COMMENTS_READING)));
-        super.loadSettings();
-    }
-
-    @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
-        DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        if (disableCommentsReading != null) {
-            connectionInfo.setProviderProperty(
-                VerticaConstants.PROP_DISABLE_COMMENTS_READING,
-                String.valueOf(disableCommentsReading.getSelection()));
-        }
-        super.saveSettings(dataSource);
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
+        return new IDialogPage[] {
+            new VerticaConnectionPageAdvanced(),
+            new DriverPropertiesDialogPage(this)
+        };
     }
 }
