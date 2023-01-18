@@ -72,6 +72,8 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         if (position == RulePosition.KEYWORDS) {
             final TPTokenDefault keywordToken = new TPTokenDefault(SQLTokenType.T_KEYWORD);
             rules.add(new SQLMultiWordRule(new String[]{"BEGIN", "TRANSACTION"}, keywordToken));
+            rules.add(new SQLMultiWordRule(new String[]{"IF", "EXISTS"}, keywordToken));
+            rules.add(new SQLMultiWordRule(new String[]{"IF", "NOT", "EXISTS"}, keywordToken));
         }
     }
 

@@ -125,6 +125,40 @@ public class SQLScriptParserGenericsTest {
         };
         assertParse("snowflake", query);
     }
+    
+    @Test
+    public void parseSnowflakeIfExistsStatements() throws DBException {
+        String[] query = new String[]{ 
+            "DROP TABLE\r\n"
+            + "IF\n"
+            + "EXISTS dim_appt;",
+            null,
+            "DROP TABLE\n"
+            + "IF EXISTS dim_test;",
+            null,
+            "IF (i=1) THEN\n"
+            + "i:=2;\n"
+            + "END IF;",
+            null,
+            "IF (i=2) THEN\n"
+            + "i:=1;\n"
+            + "END IF;",
+            null,
+            "CREATE TABLE IF NOT EXISTS MART_FLSEDW_CI.DEPLOYMENT_SCRIPTS\n"
+            + "(\r\n"
+            + "    DEPLOYMENT_SCRIPTS_ID INTEGER IDENTITY(1,1) NOT NULL\n"
+            + "    , MODEL VARCHAR NOT NULL\n"
+            + "    , TYPE VARCHAR NOT NULL\n"
+            + "    , EXECUTION_DATE TIMESTAMP_LTZ NOT NULL DEFAULT CURRENT_TIMESTAMP\n"
+            + "    , SCRIPT VARCHAR NOT NULL\n"
+            + "    , HASHDIFF BINARY(16)\n"
+            + ");",
+            null,
+            "ALTER PROCEDURE IF EXISTS procedure1(FLOAT) RENAME TO procedure2;",
+            null
+        };
+        assertParse("snowflake", query);
+    }
 
     @Test
     public void parseNamedParameters() throws DBException {

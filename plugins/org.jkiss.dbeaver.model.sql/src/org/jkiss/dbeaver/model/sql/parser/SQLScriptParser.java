@@ -211,7 +211,7 @@ public class SQLScriptParser {
                     }
                 }
 
-                if (isPredicateEvaluationEnabled) {
+                if (isPredicateEvaluationEnabled && !token.isEOF()) {
                     SQLParserActionKind actionKind = predicateEvaluator.evaluatePredicates();
                     if (actionKind == SQLParserActionKind.BEGIN_BLOCK) {
                         // header blocks seems optional and we are in the block either way
