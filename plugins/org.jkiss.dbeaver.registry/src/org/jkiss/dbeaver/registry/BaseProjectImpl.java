@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -387,7 +388,7 @@ public abstract class BaseProjectImpl implements DBPProject {
                 resourceProperties.put(newResourcePath, resProps);
             }
         }
-        flushMetadata();
+        flushMetadata(false); // wait for the file to be written
     }
 
     @Override
@@ -544,7 +545,7 @@ public abstract class BaseProjectImpl implements DBPProject {
                         resourceProperties = mdCache;
                     }
                 } catch (Throwable e) {
-                    log.error("Error reading project '" + getName() + "' metadata from "  + mdFile.toAbsolutePath(), e);
+                    log.error("Error reading project '" + getName() + "' metadata from " + mdFile.toAbsolutePath(), e);
                 }
             }
             if (resourceProperties == null) {
@@ -554,6 +555,10 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     protected void flushMetadata() {
+        flushMetadata(true);
+    }
+
+    protected void flushMetadata(boolean async) {
         if (inMemory) {
             return;
         }
@@ -561,7 +566,11 @@ public abstract class BaseProjectImpl implements DBPProject {
             if (metadataSyncJob == null) {
                 metadataSyncJob = new ProjectSyncJob();
             }
-            metadataSyncJob.schedule(100);
+            if (async) {
+                metadataSyncJob.schedule(100);
+            } else {
+                metadataSyncJob.run(new VoidProgressMonitor());
+            }
         }
     }
 
