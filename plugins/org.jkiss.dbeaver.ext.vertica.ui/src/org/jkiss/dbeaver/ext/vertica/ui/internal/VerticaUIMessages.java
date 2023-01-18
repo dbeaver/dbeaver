@@ -14,13 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.vertica;
+package org.jkiss.dbeaver.ext.vertica.ui.internal;
 
-public class VerticaConstants {
+import org.eclipse.osgi.util.NLS;
 
-    public static String TYPE_FLEX_TABLE = "FLEX TABLE";
-    public static String TYPE_SYSTEM_TABLE = "SYSTEM TABLE";
+public class VerticaUIMessages extends NLS {
 
-    public static final String PROP_DISABLE_COMMENTS_READING = "disable-comments-reading@";
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.vertica.ui.internal.VerticaUIMessages"; //$NON-NLS-1$
 
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, VerticaUIMessages.class);
+    }
+
+    private VerticaUIMessages() {
+        // prevents construction
+    }
+
+    public static String connection_page_group_performance;
+    public static String connection_page_group_checkbox_disable_comments;
+    public static String connection_page_group_checkbox_disable_comments_tip;
 }

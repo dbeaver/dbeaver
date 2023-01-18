@@ -98,7 +98,9 @@ public class VerticaTable extends GenericTable implements DBPObjectStatistics, D
     @LazyProperty(cacheValidator = CommentsValidator.class)
     public String getDescription(DBRProgressMonitor monitor) throws DBException {
         if (description == null) {
-            VerticaUtils.readTableAndColumnsDescriptions(monitor, getDataSource(), this, false);
+            if (!((VerticaDataSource) getDataSource()).avoidCommentsReading()) {
+                VerticaUtils.readTableAndColumnsDescriptions(monitor, getDataSource(), this, false);
+            }
             if (description == null) {
                 description = "";
             }
