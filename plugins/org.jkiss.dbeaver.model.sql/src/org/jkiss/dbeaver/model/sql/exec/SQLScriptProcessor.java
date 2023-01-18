@@ -286,7 +286,7 @@ public class SQLScriptProcessor {
                 Throwable[] warnings = statement.getStatementWarnings();
                 if (warnings != null) {
                     for (Throwable warning : warnings) {
-                        scriptContext.getOutputWriter().println(warning.getMessage());
+                        scriptContext.getOutputWriter().println(null, warning.getMessage());
                     }
                 }
             } catch (Throwable e) {
