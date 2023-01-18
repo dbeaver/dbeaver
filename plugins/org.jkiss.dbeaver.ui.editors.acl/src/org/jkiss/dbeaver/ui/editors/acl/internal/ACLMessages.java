@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2017 Liu, Yuanyuan (liuyuanyuan@highgo.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
