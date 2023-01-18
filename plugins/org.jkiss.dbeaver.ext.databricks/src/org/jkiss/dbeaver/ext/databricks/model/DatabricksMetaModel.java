@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.databricks.DatabricksDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -59,12 +60,11 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase
-            sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Databricks view/table source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SHOW CREATE TABLE " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
+                "SHOW CREATE TABLE " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.next()) {
@@ -85,5 +85,10 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
         }
+    }
+
+    @Override
+    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+        return getTableDDL(monitor, sourceObject, options);
     }
 }
