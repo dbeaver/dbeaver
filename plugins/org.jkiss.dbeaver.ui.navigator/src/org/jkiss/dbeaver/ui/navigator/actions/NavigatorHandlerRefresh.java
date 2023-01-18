@@ -32,6 +32,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -123,11 +124,13 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
         return prepareRefresh(this, refreshObjects);
     }
     
-    public static RefreshStatus refresh(Object source, List<? extends DBNNode> refreshObjects) {
+    @NotNull
+    public static RefreshStatus refresh(@NotNull Object source, @NotNull List<? extends DBNNode> refreshObjects) {
         return prepareRefresh(source, refreshObjects);
     }
     
-    private static RefreshStatus prepareRefresh(Object source, List<? extends DBNNode> refreshObjects) {
+    @NotNull
+    private static RefreshStatus prepareRefresh(@NotNull Object source, @NotNull List<? extends DBNNode> refreshObjects) {
         // Check for open editors with selected objects
         if (!refreshObjects.isEmpty()) {
             for (IEditorReference er : UIUtils.getActiveWorkbenchWindow().getActivePage().getEditorReferences()) {

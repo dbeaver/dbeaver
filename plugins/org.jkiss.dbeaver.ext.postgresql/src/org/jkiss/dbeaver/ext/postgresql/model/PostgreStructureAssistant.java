@@ -190,7 +190,6 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
         String sql = buildFindQuery(queryParams);
-System.out.println(sql);
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParams(dbStat, params, schemas, params.isSearchInDefinitions());
@@ -201,8 +200,6 @@ System.out.println(sql);
                     final String tableName = JDBCUtils.safeGetString(dbResult, "relname");
                     final PostgreClass.RelKind tableType = PostgreClass.RelKind.valueOf(JDBCUtils.safeGetString(dbResult, "relkind"));
                     final PostgreSchema tableSchema = database.getSchema(session.getProgressMonitor(), schemaId);
-                    System.out.println(tableName + " #" + tableId + " @" + schemaId + " capturing " + tableSchema.getClass().getName() + "@" + Integer.toHexString(tableSchema.hashCode()));
-                    System.out.println(" from " + database.getClass().getName() + "@" + Integer.toHexString(database.hashCode()));
                     if (tableSchema == null) {
                         log.debug("Can't resolve table '" + tableName + "' - owner schema " + schemaId + " not found");
                         continue;
