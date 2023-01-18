@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,12 +55,16 @@ public class ExasolCurrentUserPrivileges {
         return majorVersion;
     }
 
-    public Boolean getatLeastV5() {
+    public Boolean getAtLeastV5() {
         return majorVersion >= 5;
     }
 
-    public Boolean getatLeastV6() {
+    public Boolean getAtLeastV6() {
         return majorVersion >= 6;
+    }
+
+    public Boolean getAtLeastV8() {
+        return majorVersion >= 8;
     }
     
     public Boolean getUserHasDictionaryAccess() {
@@ -122,12 +126,12 @@ public class ExasolCurrentUserPrivileges {
     
     public Boolean hasPriorityGroups()
     {
-    	return getatLeastV6() && getMinorVersion() >= 1  && getMajorVersion() < 7;
+    	return getAtLeastV6() && getMinorVersion() >= 1  && getMajorVersion() < 7;
     }
     
     public Boolean hasPasswordPolicy()
     {
-    	return (getatLeastV6() && getMinorVersion() >= 1) || getMajorVersion() >= 7;
+    	return (getAtLeastV6() && getMinorVersion() >= 1) || getMajorVersion() >= 7;
     }
     
     public Boolean hasConsumerGroups()
