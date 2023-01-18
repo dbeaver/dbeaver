@@ -31,6 +31,7 @@ public class DatabricksSQLDialect extends GenericSQLDialect {
         super("SparkSQL", "spark");
     }
 
+    private static final String[] SPARK_EXTRA_KEYWORDS = {"SHOW"};
 
     //see https://docs.databricks.com/sql/language-manual/sql-ref-functions-builtin-alpha.html
     private static final String[] SPARK_FUNCTIONS = {
@@ -469,6 +470,7 @@ public class DatabricksSQLDialect extends GenericSQLDialect {
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
+        addSQLKeywords(Arrays.asList(SPARK_EXTRA_KEYWORDS));
         addFunctions(Arrays.asList(SPARK_FUNCTIONS));
     }
 
