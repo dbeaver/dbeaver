@@ -28,16 +28,14 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSObject>
     implements ExportSettingsExtension<PostgreDatabaseBackupAllInfo> {
@@ -71,7 +69,12 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     @NotNull
     @Override
     public File getOutputFile(@NotNull PostgreDatabaseBackupAllInfo info) {
-        String outputFileName = resolveVars(info.getDataSource(), null, null, getOutputFilePattern());
+        DBSObjectContainer container = getContainerObject(info.getDatabases());
+        String outputFileName = resolveVars(
+            container != null ? container : info.getDataSource(),
+            null,
+            null,
+            getOutputFilePattern());
         return new File(getOutputFolder(info), outputFileName);
     }
 
@@ -85,9 +88,20 @@ public class PostgreBackupAllSettings extends AbstractImportExportSettings<DBSOb
     @Override
     public File getOutputFolder(@NotNull PostgreDatabaseBackupAllInfo info) {
         if (outputFolder == null) {
-            outputFolder = new File(resolveVars(info.getDataSource(), null, null, getOutputFolderPattern()));
+            DBSObjectContainer container = getContainerObject(info.getDatabases());
+            outputFolder = new File(resolveVars(
+                container != null ? container : info.getDataSource(), null, null, getOutputFolderPattern()));
         }
         return outputFolder;
+    }
+
+    @Nullable
+    private DBSObjectContainer getContainerObject(@Nullable List<PostgreDatabase> databases) {
+        final Iterator<? extends PostgreDatabase> iterator = databases == null ? null : databases.iterator();
+        if (iterator != null && iterator.hasNext()) {
+            return iterator.next();
+        }
+        return null;
     }
 
     public String getEncoding() {
