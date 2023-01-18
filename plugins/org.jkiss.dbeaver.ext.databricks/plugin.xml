@@ -35,6 +35,7 @@
 
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-multi-insert" value="true"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
 
             </drivers>
