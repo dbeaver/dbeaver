@@ -1087,7 +1087,7 @@ public class DataSourceDescriptor
         }
     }
 
-    private void resolveSecretsIfNeeded() throws DBException {
+    public void resolveSecretsIfNeeded() throws DBException {
         if (secretsResolved || !getProject().isUseSecretStorage()) {
             return;
         }
