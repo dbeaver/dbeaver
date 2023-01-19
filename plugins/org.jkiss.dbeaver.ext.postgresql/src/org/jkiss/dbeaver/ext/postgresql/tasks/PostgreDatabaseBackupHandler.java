@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.registry.task.TaskPreferenceStore;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -133,18 +132,6 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
                 // Use explicit quotes in case of quoted identifiers (#5950)
                 cmd.add(escapeCLIIdentifier(DBUtils.getQuotedIdentifier(schema)));
             }
-        }
-    }
-
-    private static String escapeCLIIdentifier(String name) {
-        if (RuntimeUtils.isWindows()) {
-            // On Windows it is simple
-            return "\"" + name.replace("\"", "\\\"") + "\"";
-        } else {
-            // On Unixes it is more tricky (https://unix.stackexchange.com/questions/30903/how-to-escape-quotes-in-shell)
-            //return "\"" + name.replace("\"", "\"\\\"\"") + "\"";
-            return name;
-            //return "\"" + name.replace("\"", "\\\"") + "\"";
         }
     }
 

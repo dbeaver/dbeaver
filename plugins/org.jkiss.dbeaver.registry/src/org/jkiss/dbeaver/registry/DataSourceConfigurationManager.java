@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -36,7 +37,13 @@ public interface DataSourceConfigurationManager {
 
     List<DBPDataSourceConfigurationStorage> getConfigurationStorages();
 
-    InputStream readConfiguration(@NotNull String name) throws DBException, IOException;
+    /**
+     * Reads datasource configuration.
+     * If dataSourceIds is specified then reads only configuration linked with specified datasources.
+     */
+    InputStream readConfiguration(
+        @NotNull String name,
+        @Nullable Collection<String> dataSourceIds) throws DBException, IOException;
 
     void writeConfiguration(@NotNull String name, @Nullable byte[] data) throws DBException, IOException;
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,10 +86,8 @@ class GridColumnRenderer extends AbstractRenderer {
 
         boolean hasFilters = grid.getContentProvider().isElementSupportsFilter(element);
 
-        //GridColumn col = grid.getColumnByElement(cell.col);
-        //AbstractRenderer arrowRenderer = col.getSortRenderer();
         int sortOrder = grid.getContentProvider().getSortOrder(element);
-        final Rectangle sortBounds = getSortControlBounds();
+        final Rectangle sortBounds = sortOrder == SWT.NONE ? null : getSortControlBounds();
         final Rectangle filterBounds = getFilterControlBounds();
 
         boolean flat = true;
@@ -192,7 +190,7 @@ class GridColumnRenderer extends AbstractRenderer {
             if (drawSelected) {
                 sortBounds.x++;
             }
-            paintSort(gc, sortBounds, sortOrder);
+            paintSort(gc, sortBounds, sortOrder, false);
         }
 
         // Drop-down icon
@@ -216,11 +214,13 @@ class GridColumnRenderer extends AbstractRenderer {
         gc.setFont(grid.normalFont);
     }
 
-    public static void paintSort(GC gc, Rectangle bounds, int sort)
+    public static void paintSort(GC gc, Rectangle bounds, int sort, boolean forcePaintDefault)
     {
         switch (sort) {
             case SWT.DEFAULT:
-                //gc.drawImage(IMAGE_ASTERISK, bounds.x, bounds.y);
+                if (forcePaintDefault) {
+                    gc.drawImage(IMAGE_ASTERISK, bounds.x, bounds.y);
+                }
                 break;
             case SWT.UP:
                 gc.drawImage(IMAGE_ASC, bounds.x, bounds.y);

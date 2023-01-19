@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -739,7 +739,10 @@ public class ResultSetViewer extends Viewer
             if (resultSet instanceof StatResultSet) {
                 // Statistics - let's use special presentation for it
                 if (filtersPanel != null) {
-                    filtersPanel.setVisible(false);
+                    UIUtils.setControlVisible(filtersPanel, false);
+                }
+                if (statusBar != null) {
+                    UIUtils.setControlVisible(statusBar, false);
                 }
                 availablePresentations = Collections.emptyList();
                 setActivePresentation(new StatisticsPresentation());
@@ -748,7 +751,10 @@ public class ResultSetViewer extends Viewer
             } else {
                 // Regular results
                 if (filtersPanel != null) {
-                    filtersPanel.setVisible(true);
+                    UIUtils.setControlVisible(filtersPanel, true);
+                }
+                if (statusBar != null) {
+                    UIUtils.setControlVisible(statusBar, true);
                 }
                 IResultSetContext context = new ResultSetContextImpl(this, resultSet);
                 final List<ResultSetPresentationDescriptor> newPresentations;
@@ -2261,9 +2267,9 @@ public class ResultSetViewer extends Viewer
             if (orderingMode == ResultSetUtils.OrderingMode.SERVER_SIDE && supportsDataFilter()) {
                 if (ConfirmationDialog.confirmAction(
                     viewerPanel.getShell(),
+                    ConfirmationDialog.WARNING,
                     ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
-                    ConfirmationDialog.WARNING,
                     columnElement.getName()) != IDialogConstants.YES_ID) 
                 {
                     return;
