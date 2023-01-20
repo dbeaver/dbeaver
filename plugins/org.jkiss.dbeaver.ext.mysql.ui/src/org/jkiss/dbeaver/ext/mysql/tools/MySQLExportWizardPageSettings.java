@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,22 +24,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLExportSettings;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
-import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
-import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
-import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Arrays;
 
 
 class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportWizard> {
 
-    private Text outputFolderText;
-    private Text outputFileText;
     private Combo methodCombo;
     private Button noCreateStatementsCheck;
     private Button addDropStatementsCheck;
@@ -56,15 +46,6 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         super(wizard, MySQLUIMessages.tools_db_export_wizard_page_settings_page_name);
         setTitle(MySQLUIMessages.tools_db_export_wizard_page_settings_page_name);
         setDescription((MySQLUIMessages.tools_db_export_wizard_page_settings_page_description));
-    }
-
-    @Override
-    protected boolean determinePageCompletion() {
-        if (wizard.getSettings().getOutputFolderPattern() == null) {
-            setErrorMessage("Output folder not configured");
-            return false;
-        }
-        return super.determinePageCompletion();
     }
 
     @Override
@@ -109,26 +90,8 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         noData.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
-        outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_label_out_text, e -> updateState());
-        outputFileText = UIUtils.createLabelText(outputGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_label_file_name_pattern_text, wizard.getSettings().getOutputFilePattern());
-        UIUtils.setContentProposalToolTip(outputFileText, MySQLUIMessages.tools_db_export_wizard_page_settings_label_file_name_pattern_tip, NativeToolUtils.ALL_VARIABLES);
-        ContentAssistUtils.installContentProposal(
-            outputFileText,
-            new SmartTextContentAdapter(),
-            new StringContentProposalProvider(Arrays.stream(NativeToolUtils.ALL_VARIABLES).map(GeneralUtils::variablePattern).toArray(String[]::new)));
-        UIUtils.setContentProposalToolTip(outputFolderText, MySQLUIMessages.tools_db_export_wizard_page_settings_label_file_name_pattern_tip, NativeToolUtils.ALL_VARIABLES);
-        ContentAssistUtils.installContentProposal(
-            outputFolderText,
-            new SmartTextContentAdapter(),
-            new StringContentProposalProvider(Arrays.stream(NativeToolUtils.ALL_VARIABLES).map(GeneralUtils::variablePattern).toArray(String[]::new)));
-
-
+        createOutputFolderInput(outputGroup, wizard.getSettings());
         createExtraArgsInput(outputGroup);
-
-        if (wizard.getSettings().getOutputFolderPattern() != null) {
-            outputFolderText.setText(wizard.getSettings().getOutputFolderPattern());
-        }
-
         outputFileText.addModifyListener(e -> {
             wizard.getSettings().setOutputFilePattern(outputFileText.getText());
         });

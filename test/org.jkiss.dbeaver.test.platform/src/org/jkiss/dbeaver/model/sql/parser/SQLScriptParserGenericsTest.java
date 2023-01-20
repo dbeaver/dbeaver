@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,6 +125,40 @@ public class SQLScriptParserGenericsTest {
         };
         assertParse("snowflake", query);
     }
+    
+    @Test
+    public void parseSnowflakeIfExistsStatements() throws DBException {
+        String[] query = new String[]{ 
+            "DROP TABLE\r\n"
+            + "IF\n"
+            + "EXISTS dim_appt;",
+            null,
+            "DROP TABLE\n"
+            + "IF EXISTS dim_test;",
+            null,
+            "IF (i=1) THEN\n"
+            + "i:=2;\n"
+            + "END IF;",
+            null,
+            "IF (i=2) THEN\n"
+            + "i:=1;\n"
+            + "END IF;",
+            null,
+            "CREATE TABLE IF NOT EXISTS MART_FLSEDW_CI.DEPLOYMENT_SCRIPTS\n"
+            + "(\r\n"
+            + "    DEPLOYMENT_SCRIPTS_ID INTEGER IDENTITY(1,1) NOT NULL\n"
+            + "    , MODEL VARCHAR NOT NULL\n"
+            + "    , TYPE VARCHAR NOT NULL\n"
+            + "    , EXECUTION_DATE TIMESTAMP_LTZ NOT NULL DEFAULT CURRENT_TIMESTAMP\n"
+            + "    , SCRIPT VARCHAR NOT NULL\n"
+            + "    , HASHDIFF BINARY(16)\n"
+            + ");",
+            null,
+            "ALTER PROCEDURE IF EXISTS procedure1(FLOAT) RENAME TO procedure2;",
+            null
+        };
+        assertParse("snowflake", query);
+    }
 
     @Test
     public void parseNamedParameters() throws DBException {
@@ -144,12 +178,29 @@ public class SQLScriptParserGenericsTest {
     }
     
     @Test
+    public void parseVariables() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrE#%&@T", "a@c=");
+        StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
+        inputParamNames.stream().forEach(p -> joiner.add("${" + p + "}"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assert.assertEquals(List.of("ABC", "PRE#%&@T", "A@C="), actualParamNames);
+    }
+    
+    @Test
     public void parseParameterFromSetCommand() throws DBException {
+        List<String> varNames = List.of("aBc", "\"aBc\"", "\"a@c=\"");
         ArrayList<String> expectedCommandsText = new ArrayList<>();
-        expectedCommandsText.add("@set aBc = 1");
-        expectedCommandsText.add("@set \"aBc\" = 2");
-        String script = expectedCommandsText.get(0) + "\n" + expectedCommandsText.get(1);
-
+        String script = "";
+        for (int i = 0; i < varNames.size(); i++) {
+            expectedCommandsText.add("@set " + varNames.get(i) + " = 1");
+            script += expectedCommandsText.get(i) + "\n";
+        }
         SQLParserContext context = createParserContext(setDialect("snowflake"), script);
         List<SQLScriptElement> elements = SQLScriptParser.parseScript(context.getDataSource(), script);
         List<SQLControlCommand> commands = new ArrayList<>();
@@ -162,14 +213,13 @@ public class SQLScriptParserGenericsTest {
             }
         }
         Assert.assertEquals(expectedCommandsText, actualCommandsText);
-        // unquoted
-        String text = commands.get(0).getParameter();
-        int end = ScriptParameterRule.tryConsumeParameterName(context.getDialect(), text, 0);
-        Assert.assertEquals("aBc", text.substring(0, end).trim());
-        // quoted
-        text = commands.get(1).getParameter();
-        end = ScriptParameterRule.tryConsumeParameterName(context.getDialect(),text, 0);
-        Assert.assertEquals("\"aBc\"", text.substring(0, end).trim());
+        String text;
+        int end;
+        for (int i = 0; i < varNames.size(); i++) {
+            text = commands.get(i).getParameter();
+            end = ScriptParameterRule.tryConsumeParameterName(context.getDialect(), text, 0);
+            Assert.assertEquals(varNames.get(i), text.substring(0, end).trim());
+        }
     }
     
     

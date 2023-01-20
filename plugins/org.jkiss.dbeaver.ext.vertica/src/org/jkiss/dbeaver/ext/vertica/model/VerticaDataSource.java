@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.vertica.VerticaConstants;
 import org.jkiss.dbeaver.ext.vertica.internal.VerticaMessages;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -191,6 +192,10 @@ public class VerticaDataSource extends GenericDataSource {
     public boolean isChildCommentColumnAvailable(@NotNull DBRProgressMonitor monitor) {
         // child_object is very helpful column in v_catalog.comments table, but it's not childObjectColumnAvailable in Vertica versions < 9.3 and in some other cases
         if (childObjectColumnAvailable == null) {
+            if (avoidCommentsReading()) {
+                childObjectColumnAvailable = false;
+                return false;
+            }
             try {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Check child comment column existence")) {
                     try (final JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -205,6 +210,15 @@ public class VerticaDataSource extends GenericDataSource {
             }
         }
         return childObjectColumnAvailable;
+    }
+
+    /**
+     *
+     * v_catalog.comments dramatically reduces data loading speed. User can disable metadata objects comments reading to avoid it.
+     */
+    boolean avoidCommentsReading() {
+        return CommonUtils.toBoolean(
+            getContainer().getConnectionConfiguration().getProviderProperty(VerticaConstants.PROP_DISABLE_COMMENTS_READING));
     }
 
 
