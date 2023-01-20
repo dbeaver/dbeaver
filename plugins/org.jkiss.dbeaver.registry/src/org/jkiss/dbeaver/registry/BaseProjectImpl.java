@@ -411,7 +411,10 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @NotNull
     private static String normalizeResourcePath(@NotNull String resourcePath) {
-        while (resourcePath.startsWith("/")) resourcePath = resourcePath.substring(1);
+        while (resourcePath.startsWith("/")) {
+            resourcePath = resourcePath.substring(1);
+        }
+        resourcePath = resourcePath.replace('\\', '/');
         return resourcePath;
     }
 
