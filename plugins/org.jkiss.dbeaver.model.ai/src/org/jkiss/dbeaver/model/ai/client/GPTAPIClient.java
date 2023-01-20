@@ -19,13 +19,13 @@ package org.jkiss.dbeaver.model.ai.client;
 import com.theokanning.openai.OpenAiService;
 import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
 import org.jkiss.dbeaver.model.ai.formatter.GPTRequestFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -71,7 +71,7 @@ public class GPTAPIClient {
     @NotNull
     public static Optional<String> requestCompletion(
         @NotNull String request,
-        @NotNull IProgressMonitor monitor,
+        @NotNull DBRProgressMonitor monitor,
         @Nullable DBSObjectContainer context
     ) throws DBException, HttpException {
 
@@ -81,8 +81,7 @@ public class GPTAPIClient {
         if (CLIENT_INSTANCE == null) {
             initGPTApiClientInstance();
         }
-        String modifiedRequest;
-        modifiedRequest = GPTRequestFormatter.addDBMetadataToRequest(request, context, monitor);
+        String modifiedRequest = GPTRequestFormatter.addDBMetadataToRequest(request, context, monitor);
         if (monitor.isCanceled()) {
             return Optional.empty();
         }

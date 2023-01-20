@@ -19,10 +19,19 @@ package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.ai.client.GPTAPIClient;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.ai.popup.GPTSuggestionPopup;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 
 public class GPTExecuteHandler extends AbstractHandler {
 
@@ -31,10 +40,43 @@ public class GPTExecuteHandler extends AbstractHandler {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         GPTSuggestionPopup gptSuggestionPopup = new GPTSuggestionPopup(
             HandlerUtil.getActiveShell(event),
-            GPTMessages.gpt_dialog_title,
-            editor
+            GPTMessages.gpt_dialog_title
         );
-        gptSuggestionPopup.open();
+        if (gptSuggestionPopup.open() == IDialogConstants.OK_ID) {
+            doAutoCompletion(editor, gptSuggestionPopup.getInputText());
+        }
         return null;
+    }
+
+    private void doAutoCompletion(SQLEditor editor, String inputText) {
+        DBCExecutionContext executionContext = editor.getExecutionContext();
+        DBSObjectContainer object;
+        if (executionContext == null || executionContext.getContextDefaults() == null) {
+            object = null;
+        } else {
+            if (executionContext.getContextDefaults().getDefaultSchema() == null) {
+                object = executionContext.getContextDefaults().getDefaultCatalog();
+            } else {
+                object = executionContext.getContextDefaults().getDefaultSchema();
+            }
+            if (executionContext.getDataSource() instanceof DBSObjectContainer) {
+                object = ((DBSObjectContainer) executionContext.getDataSource());
+            }
+        }
+
+        DBSObjectContainer finalObject = object;
+        try {
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    Optional<String> completion = GPTAPIClient.requestCompletion(inputText, monitor, finalObject);
+
+                    System.out.println(completion.get());
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Auto completion error", null, e.getTargetException());
+        }
     }
 }

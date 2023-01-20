@@ -16,34 +16,31 @@
  */
 package org.jkiss.dbeaver.model.ai.formatter;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
-import java.util.Iterator;
 import java.util.List;
 
 public class GPTRequestFormatter
 {
     public static String addDBMetadataToRequest(
-        String request, DBSObjectContainer context, IProgressMonitor monitor
+        String request, DBSObjectContainer context, DBRProgressMonitor monitor
     ) throws DBException {
         if (context == null || context.getDataSource() == null) {
             return request;
         }
-        DefaultProgressMonitor defaultProgressMonitor = new DefaultProgressMonitor(monitor);
+
         StringBuilder additionalMetadata = new StringBuilder();
         additionalMetadata.append("Use SQL\n");
         additionalMetadata.append("Use dialect for ").append(context.getDataSource().getName()).append("\n");
-        generateObjectDescription(additionalMetadata, context, defaultProgressMonitor);
+        generateObjectDescription(additionalMetadata, context, monitor);
         return additionalMetadata + request;
     }
 
