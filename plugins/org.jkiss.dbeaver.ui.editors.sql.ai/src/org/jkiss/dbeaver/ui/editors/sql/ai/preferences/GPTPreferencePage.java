@@ -23,19 +23,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
 import org.jkiss.dbeaver.model.ai.internal.GPTConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-
-import org.jkiss.dbeaver.model.ai.internal.GTPActivator;
 import org.jkiss.dbeaver.ui.editors.sql.ai.internal.GPTMessages;
-import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -74,13 +69,10 @@ public class GPTPreferencePage extends TargetPrefPage implements IWorkbenchPrefe
         temperatureText.setText(String.valueOf(store.getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE)));
         maxTokensText.setText(String.valueOf(store.getInt(GPTPreferences.GPT_MODEL_MAX_TOKENS)));
         enableGPTCheck.notifyListeners(SWT.Selection, new Event());
-        try {
-            String secretValue = DBSSecretController.getGlobalSecretController()
-                .getSecretValue(GPTPreferences.GPT_API_TOKEN);
-            tokenText.setText(secretValue == null ? "" : secretValue);
-        } catch (DBException e) {
-            log.error("Error loading token value", e);
-        }
+
+        String secretValue = DBWorkbench.getPlatform().getPreferenceStore()
+            .getString(GPTPreferences.GPT_API_TOKEN);
+        tokenText.setText(secretValue == null ? "" : secretValue);
     }
 
     @Override
@@ -90,12 +82,7 @@ public class GPTPreferencePage extends TargetPrefPage implements IWorkbenchPrefe
         store.setValue(GPTPreferences.GPT_MODEL_TEMPERATURE, temperatureText.getText());
         store.setValue(GPTPreferences.GPT_MODEL_MAX_TOKENS, maxTokensText.getText());
         if (!CommonUtils.isEmpty(tokenText.getText())) {
-            try {
-                DBSSecretController.getGlobalSecretController().setSecretValue(GPTPreferences.GPT_API_TOKEN, tokenText.getText());
-                DBSSecretController.getGlobalSecretController().flushChanges();
-            } catch (DBException e) {
-                log.error("Error saving token value", e);
-            }
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(GPTPreferences.GPT_API_TOKEN, tokenText.getText());
         }
     }
 

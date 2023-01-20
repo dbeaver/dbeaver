@@ -20,18 +20,16 @@ import com.theokanning.openai.OpenAiService;
 import com.theokanning.openai.completion.CompletionChoice;
 import com.theokanning.openai.completion.CompletionRequest;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.jkiss.code.Nullable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
 import org.jkiss.dbeaver.model.ai.formatter.GPTRequestFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import retrofit2.HttpException;
-
 
 import java.time.Duration;
 import java.util.List;
@@ -58,12 +56,13 @@ public class GPTAPIClient {
     }
 
     private static String acquireToken() throws DBException {
-        return DBSSecretController.getGlobalSecretController().getSecretValue(GPTPreferences.GPT_API_TOKEN);
+        return DBWorkbench.getPlatform().getPreferenceStore().getString(GPTPreferences.GPT_API_TOKEN);
     }
 
     /**
      * Request completion from GPT API uses parameters from {@link GPTPreferences} for model settings\
      * Adds current schema metadata to starting query
+     *
      * @param request request text
      * @param monitor execution monitor
      * @param context context object
@@ -101,10 +100,11 @@ public class GPTAPIClient {
 
     @NotNull
     private static Optional<String> tryCreateCompletion(@NotNull CompletionRequest completionRequest, int attempt)
-    throws HttpException {
-        if(attempt == MAX_REQUEST_ATTEMPTS) {
+        throws HttpException {
+        if (attempt == MAX_REQUEST_ATTEMPTS) {
             return Optional.empty();
-        } try {
+        }
+        try {
             List<CompletionChoice> choices = CLIENT_INSTANCE.createCompletion(completionRequest).getChoices();
             Optional<CompletionChoice> choice = choices.stream().findFirst();
             return choice.map(completionChoice -> completionChoice.getText().substring(completionChoice.getIndex()));
