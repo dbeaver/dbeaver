@@ -50,7 +50,9 @@ public abstract class PostgreNativeToolHandler<SETTINGS extends AbstractNativeTo
     public void fillProcessParameters(SETTINGS settings, PROCESS_ARG process_arg, List<String> cmd) throws IOException {
         File dumpBinary = RuntimeUtils.getNativeClientBinary(settings.getClientHome(), PostgreConstants.BIN_FOLDER,
             this instanceof PostgreDatabaseBackupHandler ? "pg_dump" :
-                this instanceof PostgreDatabaseRestoreHandler ? "pg_restore" : "psql"); //$NON-NLS-1$
+                this instanceof PostgreDatabaseRestoreHandler ? "pg_restore" :
+                    this instanceof PostgreDatabaseBackupAllHandler ? "pg_dumpall" :
+                    "psql"); //$NON-NLS-1$
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
 
@@ -73,5 +75,17 @@ public abstract class PostgreNativeToolHandler<SETTINGS extends AbstractNativeTo
     }
 
     protected abstract boolean isExportWizard();
+
+    static String escapeCLIIdentifier(String name) {
+        if (RuntimeUtils.isWindows()) {
+            // On Windows it is simple
+            return "\"" + name.replace("\"", "\\\"") + "\"";
+        } else {
+            // On Unixes it is more tricky (https://unix.stackexchange.com/questions/30903/how-to-escape-quotes-in-shell)
+            //return "\"" + name.replace("\"", "\"\\\"\"") + "\"";
+            return name;
+            //return "\"" + name.replace("\"", "\\\"") + "\"";
+        }
+    }
 
 }

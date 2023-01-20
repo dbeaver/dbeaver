@@ -25,6 +25,8 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridLayout;
@@ -122,8 +124,14 @@ public class Spreadsheet extends LightGrid implements Listener {
 
         hookContextMenu();
         hookAccessibility();
-
-        {
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                Spreadsheet.this.forceFocus();
+            }
+       });
+        
+       {
             super.addDisposeListener(e -> {
                 if (clipboard != null && !clipboard.isDisposed()) {
                     clipboard.dispose();

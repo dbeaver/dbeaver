@@ -21,4 +21,6 @@ public class VerticaConstants {
     public static String TYPE_FLEX_TABLE = "FLEX TABLE";
     public static String TYPE_SYSTEM_TABLE = "SYSTEM TABLE";
 
+    public static final String PROP_DISABLE_COMMENTS_READING = "disable-comments-reading@";
+
 }
