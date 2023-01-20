@@ -26,9 +26,10 @@ public class WSAbstractProjectEvent extends WSEvent {
     public WSAbstractProjectEvent(
         @NotNull WSEventType eventType,
         @Nullable String sessionId,
+        @Nullable String userId,
         @NotNull String projectId
     ) {
-        super(eventType, sessionId);
+        super(eventType, sessionId, userId);
         this.projectId = projectId;
     }
 

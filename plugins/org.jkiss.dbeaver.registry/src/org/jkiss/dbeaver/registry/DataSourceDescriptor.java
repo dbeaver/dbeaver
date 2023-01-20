@@ -1636,7 +1636,12 @@ public class DataSourceDescriptor
         return
             CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
                 CommonUtils.equalOrEmptyStrings(this.description, source.description) &&
-                CommonUtils.equalObjects(this.savePassword, source.savePassword) &&
+                equalConfiguration(source);
+    }
+
+    public boolean equalConfiguration(DataSourceDescriptor source) {
+        return
+            CommonUtils.equalObjects(this.savePassword, source.savePassword) &&
                 CommonUtils.equalObjects(this.sharedCredentials, source.sharedCredentials) &&
                 CommonUtils.equalObjects(this.connectionReadOnly, source.connectionReadOnly) &&
                 CommonUtils.equalObjects(this.forceUseSingleConnection, source.forceUseSingleConnection) &&
