@@ -144,7 +144,7 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
         @NotNull GenericStructContainer owner,
         @Nullable GenericTableBase forParent
     ) throws SQLException {
-        boolean recognizeWildCards = isRecognizeWildCards(session, owner);
+        boolean recognizeWildCards = supportsWildcards(session, owner);
         GenericSchema schema = owner.getSchema();
         String schemaName = getSchemaNameForPattern(session, recognizeWildCards, schema);
         String tableName = getTableNameForPattern(session, owner, forParent, recognizeWildCards);
@@ -159,7 +159,7 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
         @NotNull GenericStructContainer owner,
         @Nullable GenericTableBase forParent
     ) throws SQLException {
-        boolean recognizeWildCards = isRecognizeWildCards(session, owner);
+        boolean recognizeWildCards = supportsWildcards(session, owner);
         GenericSchema schema = owner.getSchema();
         String schemaName = getSchemaNameForPattern(session, recognizeWildCards, schema);
         String tableName = getTableNameForPattern(session, owner, forParent, recognizeWildCards);
@@ -168,7 +168,7 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
             .getSourceStatement();
     }
 
-    private boolean isRecognizeWildCards(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws SQLException {
+    private boolean supportsWildcards(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws SQLException {
         // Snowflake driver do not recognize wild cards patterns before version 3.13.19 - and 19 here is the number of patch, not minor
         if (owner.getDataSource().isDriverVersionAtLeast(3, 13)) {
             String driverVersion = session.getMetaData().getDriverVersion();
