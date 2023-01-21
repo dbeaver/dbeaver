@@ -48,6 +48,10 @@ public class GPTSuggestionPopup extends AbstractPopupPanel {
     @Override
     protected Composite createDialogArea(Composite parent) {
         Composite placeholder = super.createDialogArea(parent);
+
+        Label hintLabel = new Label(placeholder, SWT.NONE);
+        hintLabel.setText("Enter a text in a human language, it will be translated into SQL.");
+
         inputField = new Text(placeholder, SWT.BORDER | SWT.MULTI);
         //inputField.setLayoutData(new GridData(GridData.FILL_BOTH));
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -55,7 +59,6 @@ public class GPTSuggestionPopup extends AbstractPopupPanel {
         gd.widthHint = UIUtils.getFontHeight(placeholder.getFont()) * 40;
         inputField.setLayoutData(gd);
 
-        inputField.setMessage("Enter a text in a human language");
         inputField.addModifyListener(e -> inputText = inputField.getText());
         inputField.addListener(SWT.KeyDown, event -> {
             if (event.keyCode == SWT.CR && event.stateMask == 0) {
