@@ -47,6 +47,10 @@ public class GPTAPIClient {
 
     private final static Map<String, OpenAiService> clientInstances = new HashMap<>();
 
+    public static boolean isValidConfiguration() {
+        return !CommonUtils.isEmpty(acquireToken());
+    }
+
     /**
      * Initializes OpenAiService instance using token provided by {@link GPTPreferences} GTP_TOKEN_PATH
      */
@@ -58,7 +62,7 @@ public class GPTAPIClient {
         return new OpenAiService(token, Duration.ofSeconds(30));
     }
 
-    private static String acquireToken() throws DBException {
+    private static String acquireToken() {
         return DBWorkbench.getPlatform().getPreferenceStore().getString(GPTPreferences.GPT_API_TOKEN);
     }
 
@@ -160,5 +164,9 @@ public class GPTAPIClient {
 
     private GPTAPIClient() {
 
+    }
+
+    public static void resetServices() {
+        clientInstances.clear();
     }
 }

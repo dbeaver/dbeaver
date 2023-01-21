@@ -24,13 +24,13 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
+import org.jkiss.dbeaver.model.ai.client.GPTAPIClient;
 import org.jkiss.dbeaver.model.ai.internal.GPTConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.ai.internal.GPTMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
@@ -63,9 +63,10 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         store.setValue(GPTPreferences.GPT_MODEL, modelCombo.getText());
         store.setValue(GPTPreferences.GPT_MODEL_TEMPERATURE, temperatureText.getText());
         store.setValue(GPTPreferences.GPT_MODEL_MAX_TOKENS, maxTokensText.getText());
-        if (!CommonUtils.isEmpty(tokenText.getText())) {
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(GPTPreferences.GPT_API_TOKEN, tokenText.getText());
+        if (!tokenText.getText().equals(store.getString(GPTPreferences.GPT_API_TOKEN))) {
+            GPTAPIClient.resetServices();
         }
+        store.setValue(GPTPreferences.GPT_API_TOKEN, tokenText.getText());
         return true;
     }
 

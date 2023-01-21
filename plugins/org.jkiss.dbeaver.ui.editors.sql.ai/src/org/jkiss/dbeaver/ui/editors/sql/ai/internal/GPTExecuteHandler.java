@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.ai.popup.GPTSuggestionPopup;
+import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.GPTPreferencePage;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -61,6 +62,14 @@ public class GPTExecuteHandler extends AbstractHandler {
 
     private void doAutoCompletion(SQLEditor editor, String inputText) {
         if (CommonUtils.isEmptyTrimmed(inputText)) {
+            return;
+        }
+
+        if (!GPTAPIClient.isValidConfiguration()) {
+            UIUtils.showPreferencesFor(editor.getSite().getShell(), null, GPTPreferencePage.PAGE_ID);
+        }
+        if (!GPTAPIClient.isValidConfiguration()) {
+            DBWorkbench.getPlatformUI().showError("Bad GPT configuration", "You must specify OpenAI API token in preferences");
             return;
         }
 
