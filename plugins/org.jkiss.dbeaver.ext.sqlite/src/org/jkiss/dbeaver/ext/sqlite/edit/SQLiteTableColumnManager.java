@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -96,7 +97,8 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager implemen
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename column",
-                "ALTER TABLE " + DBUtils.getQuotedIdentifier(column.getTable()) + " RENAME COLUMN " +
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME "
+                    + "COLUMN " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) +
                     " TO " + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName())));
     }

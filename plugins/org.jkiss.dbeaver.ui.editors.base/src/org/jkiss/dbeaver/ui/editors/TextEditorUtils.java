@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -106,14 +105,16 @@ public class TextEditorUtils {
             @Override
             public void focusLost(FocusEvent e) {
                 if (activated[0]) {
-                    enableHostEditorKeyBindings(partSite, true);
+                    if (!PlatformUI.getWorkbench().isClosing()) {
+                        enableHostEditorKeyBindings(partSite, true);
+                    }
                     activated[0] = false;
                 }
             }
         });
         control.addDisposeListener(e -> {
             if (activated[0]) {
-                if (!DBWorkbench.getPlatform().isShuttingDown()) {
+                if (!PlatformUI.getWorkbench().isClosing()) {
                     enableHostEditorKeyBindings(partSite, true);
                 }
                 activated[0] = false;

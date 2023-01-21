@@ -66,7 +66,7 @@
                 id="org.jkiss.dbeaver.ext.sqlite.model.data.SQLiteValueHandlerProvider"
                 label="SQLite data types provider">
 
-            <datasource class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteDataSource"/>
+            <datasource id="sqlite"/>
             <type name="*"/>
         </provider>
     </extension>

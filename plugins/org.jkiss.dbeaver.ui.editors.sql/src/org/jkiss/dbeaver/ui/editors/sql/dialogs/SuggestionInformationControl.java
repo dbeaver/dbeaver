@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
     @Override
     public void setInput(Object input) {
         this.input = input;
-        if (input instanceof DBPNamedObject) {
+        if (input instanceof DBPNamedObject && !infoComposite.isDisposed() && !tableComposite.isDisposed()) {
             createMetadataFields((DBPNamedObject) input);
             if (input instanceof JDBCTable) {
                 createTreeControl((JDBCTable<?, ?>) input);
@@ -143,23 +143,25 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
                     return;
                 }
                 UIUtils.syncExec(() -> {
-                    PropertyCollector collector = new PropertyCollector(targetObject[0], false);
-                    collector.collectProperties();
-                    for (DBPPropertyDescriptor descriptor : collector.getProperties()) {
-                        String propertyString = DBInfoUtils.getPropertyString(collector, descriptor);
-                        if (CommonUtils.isEmpty(propertyString) || !descriptor.hasFeature(DBConstants.PROP_FEATURE_VIEWABLE)) {
-                            continue;
+                    if (!metadataComposite.isDisposed() && !infoComposite.isDisposed() && !mainComposite.isDisposed()) {
+                        PropertyCollector collector = new PropertyCollector(targetObject[0], false);
+                        collector.collectProperties();
+                        for (DBPPropertyDescriptor descriptor : collector.getProperties()) {
+                            String propertyString = DBInfoUtils.getPropertyString(collector, descriptor);
+                            if (CommonUtils.isEmpty(propertyString) || !descriptor.hasFeature(DBConstants.PROP_FEATURE_VIEWABLE)) {
+                                continue;
+                            }
+                            Composite placeholder = UIUtils.createPlaceholder(metadataComposite, 2);
+                            placeholder.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                            Label label = new Label(placeholder, SWT.READ_ONLY);
+                            label.setText(descriptor.getDisplayName() + ":");
+                            label.setFont(boldFont);
+                            Text valueText = new Text(placeholder, SWT.READ_ONLY);
+                            valueText.setText(propertyString);
                         }
-                        Composite placeholder = UIUtils.createPlaceholder(metadataComposite, 2);
-                        placeholder.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-                        Label label = new Label(placeholder, SWT.READ_ONLY);
-                        label.setText(descriptor.getDisplayName() + ":");
-                        label.setFont(boldFont);
-                        Text valueText = new Text(placeholder, SWT.READ_ONLY);
-                        valueText.setText(propertyString);
+                        infoComposite.layout(true, true);
+                        mainComposite.layout(true, true);
                     }
-                    infoComposite.layout(true, true);
-                    mainComposite.layout(true, true);
                 });
             }
         });
@@ -175,13 +177,13 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
             .getActivePart()
             .getSite());
         DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(input);
-        itemListControl = new ItemListControl(
-            tableComposite,
-            SWT.NONE,
-            subSite,
-            node,
-            null
-        );
+        itemListControl = new ItemListControl(tableComposite, SWT.NONE, subSite, node, null) {
+            @NotNull
+            @Override
+            protected String getListConfigId(List<Class<?>> classList) {
+                return "Suggestion/" + super.getListConfigId(classList);
+            }
+        };
         itemListControl.setLayoutData(gridData);
         final Object[] columnNodes = new Object[1];
         AbstractJob abstractJob = new AbstractJob("Populating table tip columns") {

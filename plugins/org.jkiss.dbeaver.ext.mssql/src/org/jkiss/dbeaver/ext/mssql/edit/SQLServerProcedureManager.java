@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
@@ -26,13 +27,16 @@ import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -41,7 +45,8 @@ import java.util.Map;
 /**
  * SQLServerProcedureManager
  */
-public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerProcedure, SQLServerSchema> {
+public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerProcedure, SQLServerSchema>
+    implements DBEObjectRenamer<SQLServerProcedure> {
 
     @Nullable
     @Override
@@ -106,10 +111,39 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
     }
 
     @Override
+    protected void addObjectRenameActions(
+        @Nullable DBRProgressMonitor monitor,
+        @Nullable DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @Nullable Map<String, Object> options
+    ) {
+        final SQLServerProcedure procedure = command.getObject();
+        if (procedure.getDatabase() == null) {
+            return;
+        }
+        actions.add(
+            new SQLDatabasePersistAction(
+                "Rename procedure",
+                "EXEC " + SQLServerUtils.getSystemTableName(procedure.getDatabase(), "sp_rename") +
+                    " N'" + procedure.getContainer().getFullyQualifiedName(DBPEvaluationContext.DML) + "." + DBUtils.getQuotedIdentifier(procedure.getDataSource(), command.getOldName()) +
+                    "', " + SQLUtils.quoteString(procedure.getDataSource(), command.getNewName())));
+    }
+
+    @Override
     protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<SQLServerProcedure, PropertyHandler> command, Map<String, Object> options) throws DBException {
         final SQLServerProcedure procedure = command.getObject();
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             SQLServerDatabase database = procedure.getContainer().getDatabase();
+            if (procedure.getDatabase() == null) {
+                return;
+            }
+            String procedureType;
+            if (procedure.getProcedureType().equals(DBSProcedureType.FUNCTION)) {
+                procedureType = "function";
+            } else {
+                procedureType = "procedure";
+            }
             boolean isUpdate = SQLServerUtils.isCommentSet(
                 monitor,
                 database,
@@ -122,9 +156,18 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
                     "EXEC " + SQLServerUtils.getSystemTableName(database, isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
                         " 'MS_Description', " + SQLUtils.quoteString(procedure, procedure.getDescription()) + "," +
                         " 'schema', " + SQLUtils.quoteString(procedure, procedure.getContainer().getName()) + "," +
-                        " 'procedure', " + SQLUtils.quoteString(procedure, procedure.getName())));
+                        "'" + procedureType + "' ," + SQLUtils.quoteString(procedure, procedure.getName())));
         }
     }
 
+    @Override
+    public void renameObject(
+        @NotNull DBECommandContext commandContext,
+        @NotNull SQLServerProcedure object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) throws DBException {
+        processObjectRename(commandContext, object, options, newName);
+    }
 }
 
