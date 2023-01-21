@@ -20,5 +20,6 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.ui.editors.base
 Bundle-ClassPath: .
+Bundle-Activator: org.jkiss.dbeaver.ui.editors.sql.ai.internal.GTPActivator
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.sql.ai
 
