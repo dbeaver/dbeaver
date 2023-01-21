@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolHandler;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
+import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -49,21 +50,20 @@ public abstract class PostgreNativeToolHandler<SETTINGS extends AbstractNativeTo
     public void fillProcessParameters(SETTINGS settings, PROCESS_ARG process_arg, List<String> cmd) throws IOException {
         File dumpBinary = RuntimeUtils.getNativeClientBinary(settings.getClientHome(), PostgreConstants.BIN_FOLDER,
             this instanceof PostgreDatabaseBackupHandler ? "pg_dump" :
-                this instanceof PostgreDatabaseRestoreHandler ? "pg_restore" : "psql"); //$NON-NLS-1$
+                this instanceof PostgreDatabaseRestoreHandler ? "pg_restore" :
+                    this instanceof PostgreDatabaseBackupAllHandler ? "pg_dumpall" :
+                    "psql"); //$NON-NLS-1$
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
 
         if (isVerbose()) {
             cmd.add("--verbose");
         }
-        DBPConnectionConfiguration connectionInfo = settings.getDataSourceContainer().getActualConnectionConfiguration();
-        cmd.add("--host=" + connectionInfo.getHostName());
-        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-            cmd.add("--port=" + connectionInfo.getHostPort());
-        }
+        DBPDataSourceContainer dataSourceContainer = settings.getDataSourceContainer();
+        NativeToolUtils.addHostAndPortParamsToCmd(dataSourceContainer, cmd);
         String toolUserName = settings.getToolUserName();
         if (CommonUtils.isEmpty(toolUserName)) {
-            toolUserName = connectionInfo.getUserName();
+            toolUserName = dataSourceContainer.getActualConnectionConfiguration().getUserName();
         }
         cmd.add("--username=" + toolUserName);
 
@@ -75,5 +75,17 @@ public abstract class PostgreNativeToolHandler<SETTINGS extends AbstractNativeTo
     }
 
     protected abstract boolean isExportWizard();
+
+    static String escapeCLIIdentifier(String name) {
+        if (RuntimeUtils.isWindows()) {
+            // On Windows it is simple
+            return "\"" + name.replace("\"", "\\\"") + "\"";
+        } else {
+            // On Unixes it is more tricky (https://unix.stackexchange.com/questions/30903/how-to-escape-quotes-in-shell)
+            //return "\"" + name.replace("\"", "\"\\\"\"") + "\"";
+            return name;
+            //return "\"" + name.replace("\"", "\\\"") + "\"";
+        }
+    }
 
 }

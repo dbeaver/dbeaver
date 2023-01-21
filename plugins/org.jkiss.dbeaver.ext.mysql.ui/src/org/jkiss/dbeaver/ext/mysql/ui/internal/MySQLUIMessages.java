@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -117,9 +117,6 @@ public final class MySQLUIMessages extends NLS {
     public static String tools_db_export_wizard_page_settings_group_show_views;
     public static String tools_db_export_wizard_page_settings_group_output;
     public static String tools_db_export_wizard_page_settings_group_settings;
-    public static String tools_db_export_wizard_page_settings_label_out_text;
-    public static String tools_db_export_wizard_page_settings_label_file_name_pattern_text;
-    public static String tools_db_export_wizard_page_settings_label_file_name_pattern_tip;
     public static String tools_db_export_wizard_page_settings_page_description;
     public static String tools_db_export_wizard_page_settings_page_name;
     public static String tools_db_export_wizard_task_name;

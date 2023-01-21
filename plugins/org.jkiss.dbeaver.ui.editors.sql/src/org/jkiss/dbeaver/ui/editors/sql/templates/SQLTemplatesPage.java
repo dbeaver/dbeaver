@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,11 +36,13 @@ import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.templates.AbstractTemplatesPage;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ProxyPageSite;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewerConfiguration;
@@ -294,13 +296,23 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
      * @return an array of valid context id
      */
     @Override
-    protected String[] getContextTypeIds(IDocument document, int offset)
-    {
-        DBPDataSource dataSource = sqlEditor.getDataSource();
-        if (dataSource == null) {
+    protected String[] getContextTypeIds(IDocument document, int offset) {
+        DBPDriver driver = null;
+        if (sqlEditor instanceof SQLEditor) {
+            DBPDataSourceContainer dsContainer = ((SQLEditor) sqlEditor).getDataSourceContainer();
+            if (dsContainer != null) {
+                driver = dsContainer.getDriver();
+            }
+        }
+        if (driver == null) {
+            DBPDataSource dataSource = sqlEditor.getDataSource();
+            if (dataSource != null) {
+                driver = dataSource.getContainer().getDriver();
+            }
+        }
+        if (driver == null) {
             return new String[]{SQLContextTypeBase.ID_SQL};
         } else {
-            DBPDriver driver = dataSource.getContainer().getDriver();
             return new String[]{
                 SQLContextTypeBase.ID_SQL,
                 SQLContextTypeProvider.getTypeId(driver.getProviderId()),

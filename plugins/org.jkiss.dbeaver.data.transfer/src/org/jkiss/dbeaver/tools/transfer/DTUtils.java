@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,6 +143,26 @@ public class DTUtils {
                 }
                 nameBuilder.append(entity);
                 return nameBuilder.toString();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return merged source entities names as one big target name for the export goals.
+     *
+     * @param queryContainer container which contains a query
+     * @return string representation of entities names
+     */
+    @Nullable
+    public static String getTargetContainersNameFromQuery(@NotNull SQLQueryContainer queryContainer) {
+        SQLScriptElement query = queryContainer.getQuery();
+        if (query instanceof SQLQuery) {
+            List<String> selectEntitiesNames = ((SQLQuery) query).getAllSelectEntitiesNames();
+            if (!CommonUtils.isEmpty(selectEntitiesNames)) {
+                StringJoiner names = new StringJoiner("_");
+                selectEntitiesNames.forEach(names::add);
+                return names.toString();
             }
         }
         return null;

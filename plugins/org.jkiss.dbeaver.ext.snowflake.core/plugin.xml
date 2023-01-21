@@ -79,15 +79,6 @@
             <datasource id="snowflake"/>
             <datasource id="snowflake_ee"/>
         </authModel>
-        <authModel
-            id="snowflake_externalbrowser"
-            label="SSO (Browser)"
-            description="SSO authentication in web browser."
-            class="org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelExternalBrowser"
-            desktop="true">
-            <datasource id="snowflake"/>
-            <datasource id="snowflake_ee"/>
-        </authModel>
     </extension>
 
 </plugin>

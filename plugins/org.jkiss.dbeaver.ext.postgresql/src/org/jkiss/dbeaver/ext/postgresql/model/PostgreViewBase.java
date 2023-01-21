@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -125,6 +126,15 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
                 }
             }
 
+        }
+        if (isPersisted()) {
+            Collection<PostgreTrigger> triggers = getTriggers(monitor);
+            if (!CommonUtils.isEmpty(triggers)) {
+                actions.add(new SQLDatabasePersistActionComment(getDataSource(), "View Triggers"));
+                for (PostgreTrigger trigger : triggers) {
+                    actions.add(new SQLDatabasePersistAction("Create trigger", trigger.getObjectDefinitionText(monitor, options)));
+                }
+            }
         }
         if (isPersisted() && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
             PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -184,6 +184,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.password();
     }
 
+    public boolean isNonSecuredProperty() {
+        return propInfo.nonSecuredProperty();
+    }
+
     public IPropertyValueTransformer getValueTransformer()
     {
         return valueTransformer;
@@ -245,6 +249,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (this.isHref()) features.add(DBConstants.PROP_FEATURE_HREF);
         if (this.isViewable()) features.add(DBConstants.PROP_FEATURE_VIEWABLE);
         if (this.isPassword()) features.add(DBConstants.PROP_FEATURE_PASSWORD);
+        if (this.isNonSecuredProperty()) features.add(DBConstants.PROP_FEATURE_NON_SECURED);
 
         return features.toArray(new String[0]);
     }

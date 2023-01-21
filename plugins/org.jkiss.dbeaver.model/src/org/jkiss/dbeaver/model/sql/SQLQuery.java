@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,6 +80,7 @@ public class SQLQuery implements SQLScriptElement {
     private List<SQLSelectItem> selectItems;
     private String queryTitle;
     private String extraErrorMessage;
+    private List<String> allSelectEntitiesNames = new ArrayList<>();
 
     public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text) {
         this(dataSource, text, 0, text.length());
@@ -164,6 +165,9 @@ public class SQLQuery implements SQLScriptElement {
                         if (hasDirectSelects || !hasSubSelects) {
                             fillSingleSource((Table) fromItem);
                         }
+                    }
+                    if (!CommonUtils.isEmpty(plainSelect.getJoins()) && fromItem instanceof Table) {
+                        createTargetName(plainSelect, (Table) fromItem);
                     }
                     // Extract select items info
                     final List<SQLSelectItem> items = CommonUtils.safeList(plainSelect.getSelectItems()).stream()
@@ -316,6 +320,35 @@ public class SQLQuery implements SQLScriptElement {
             }
         }
         return -1;
+    }
+
+    /**
+     * Sometime we want to know all source containers names from the query if it is Select statement and it has JOINs.
+     * For the data transfer target file name, as example.
+     * Contains only entities names without schema/catalog identifiers.
+     *
+     * @param plainSelect plain Select class
+     */
+    private void createTargetName(@NotNull PlainSelect plainSelect, @NotNull Table fromItem) {
+        String fromItemName = fromItem.getName();
+        if (CommonUtils.isNotEmpty(fromItemName)) {
+            allSelectEntitiesNames.add(fromItemName);
+        }
+        List<Join> joins = plainSelect.getJoins();
+        for (Join join : joins) {
+            FromItem rightItem = join.getRightItem();
+            if (rightItem instanceof Table) {
+                String name = ((Table) rightItem).getName();
+                if (CommonUtils.isNotEmpty(name)) {
+                    allSelectEntitiesNames.add(name);
+                }
+            }
+        }
+    }
+
+    @NotNull
+    public List<String> getAllSelectEntitiesNames() {
+        return allSelectEntitiesNames;
     }
 
     @NotNull

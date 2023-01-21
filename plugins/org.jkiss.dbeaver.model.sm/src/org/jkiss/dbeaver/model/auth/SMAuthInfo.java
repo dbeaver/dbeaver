@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class SMAuthInfo {
     private final String redirectUrl;
 
     @Nullable
-    private final String smAuthToken;
+    private final String smAccessToken;
     @Nullable
     private final String smRefreshToken;
     @Nullable
@@ -51,7 +51,7 @@ public class SMAuthInfo {
         @NotNull String authAttemptId,
         @NotNull Map<SMAuthConfigurationReference, Object> authData,
         @Nullable String redirectUrl,
-        @Nullable String smAuthToken,
+        @Nullable String smAccessToken,
         @Nullable String smRefreshToken,
         @Nullable String authRole,
         @Nullable SMAuthPermissions authPermissions
@@ -61,7 +61,7 @@ public class SMAuthInfo {
         this.authAttemptId = authAttemptId;
         this.authData = authData;
         this.redirectUrl = redirectUrl;
-        this.smAuthToken = smAuthToken;
+        this.smAccessToken = smAccessToken;
         this.smRefreshToken = smRefreshToken;
         this.authRole = authRole;
         this.authPermissions = authPermissions;
@@ -110,7 +110,7 @@ public class SMAuthInfo {
         return new Builder()
             .setAuthStatus(SMAuthStatus.SUCCESS)
             .setAuthAttemptId(authAttemptId)
-            .setSmAuthToken(accessToken)
+            .setSmAccessToken(accessToken)
             .setSmRefreshToken(refreshToken)
             .setAuthData(authData)
             .setAuthPermissions(smAuthPermissions)
@@ -120,8 +120,8 @@ public class SMAuthInfo {
 
 
     @Nullable
-    public String getSmAuthToken() {
-        return smAuthToken;
+    public String getSmAccessToken() {
+        return smAccessToken;
     }
 
     @Nullable
@@ -171,7 +171,7 @@ public class SMAuthInfo {
         private String authAttemptId;
         private Map<SMAuthConfigurationReference, Object> authData;
         private String redirectUrl;
-        private String smAuthToken;
+        private String smAccessToken;
         private String smRefreshToken;
         private String authRole;
         private SMAuthPermissions authPermissions;
@@ -204,8 +204,8 @@ public class SMAuthInfo {
             return this;
         }
 
-        public Builder setSmAuthToken(String smAuthToken) {
-            this.smAuthToken = smAuthToken;
+        public Builder setSmAccessToken(String smAccessToken) {
+            this.smAccessToken = smAccessToken;
             return this;
         }
 
@@ -226,7 +226,7 @@ public class SMAuthInfo {
 
         public SMAuthInfo build() {
             return new SMAuthInfo(
-                authStatus, error, authAttemptId, authData, redirectUrl, smAuthToken, smRefreshToken, authRole, authPermissions);
+                authStatus, error, authAttemptId, authData, redirectUrl, smAccessToken, smRefreshToken, authRole, authPermissions);
         }
     }
 }

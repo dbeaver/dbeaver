@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,23 @@ public abstract class RMObject implements DBPNamedObject {
             }
         }
         return null;
+    }
+
+    /**
+     * Updates resource for child object.
+     * Used to refresh RM cache.
+     * Should be used only by internal procedures
+     */
+    public void updateChild(@NotNull String name, @NotNull RMResource resource) {
+        if (children != null) {
+            for (int i = 0; i < children.length; i++) {
+                RMResource child = children[i];
+                if (child.getName().equals(name)) {
+                    children[i] = resource;
+                    break;
+                }
+            }
+        }
     }
 
     public void addChild(RMResource child) {
