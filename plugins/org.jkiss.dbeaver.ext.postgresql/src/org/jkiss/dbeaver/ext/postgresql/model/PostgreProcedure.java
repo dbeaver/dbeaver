@@ -488,7 +488,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     tableParams
                     	.stream()
                     	.map(it -> {
-                    	        String typeName = it.getParameterType().getAliasForFullTypeName();
+                    	        String typeName = it.getParameterType().getFullyQualifiedName(DBPEvaluationContext.DDL); //getAliasForFullTypeName();
                     		return String.format(
                     			"%1$" + (maxParamNameLen == 0 ? "" : "-" + maxParamNameLen) + "s %2$s", it.getName(), typeName
                     		);
