@@ -26,7 +26,7 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.ai.client.GPTAPIClient;
+import org.jkiss.dbeaver.model.ai.client.GPTClient;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -65,10 +65,10 @@ public class GPTExecuteHandler extends AbstractHandler {
             return;
         }
 
-        if (!GPTAPIClient.isValidConfiguration()) {
+        if (!GPTClient.isValidConfiguration()) {
             UIUtils.showPreferencesFor(editor.getSite().getShell(), null, GPTPreferencePage.PAGE_ID);
         }
-        if (!GPTAPIClient.isValidConfiguration()) {
+        if (!GPTClient.isValidConfiguration()) {
             DBWorkbench.getPlatformUI().showError("Bad GPT configuration", "You must specify OpenAI API token in preferences");
             return;
         }
@@ -93,7 +93,7 @@ public class GPTExecuteHandler extends AbstractHandler {
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    completionResult[0] = GPTAPIClient.requestCompletion(inputText, monitor, finalObject);
+                    completionResult[0] = GPTClient.requestCompletion(inputText, monitor, finalObject);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }

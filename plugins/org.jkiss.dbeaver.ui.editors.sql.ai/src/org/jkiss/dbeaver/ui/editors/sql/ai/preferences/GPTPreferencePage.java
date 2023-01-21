@@ -24,8 +24,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
-import org.jkiss.dbeaver.model.ai.client.GPTAPIClient;
-import org.jkiss.dbeaver.model.ai.internal.GPTConstants;
+import org.jkiss.dbeaver.model.ai.client.GPTClient;
+import org.jkiss.dbeaver.model.ai.internal.GPTModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -47,7 +47,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     @Override
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        modelCombo.select(GPTConstants.GPTModel.returnByName(store.getString(GPTPreferences.GPT_MODEL)).ordinal());
+        modelCombo.select(GPTModel.getByName(store.getString(GPTPreferences.GPT_MODEL)).ordinal());
         temperatureText.setText(String.valueOf(store.getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE)));
         maxTokensText.setText(String.valueOf(store.getInt(GPTPreferences.GPT_MODEL_MAX_TOKENS)));
 
@@ -64,7 +64,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         store.setValue(GPTPreferences.GPT_MODEL_TEMPERATURE, temperatureText.getText());
         store.setValue(GPTPreferences.GPT_MODEL_MAX_TOKENS, maxTokensText.getText());
         if (!tokenText.getText().equals(store.getString(GPTPreferences.GPT_API_TOKEN))) {
-            GPTAPIClient.resetServices();
+            GPTClient.resetServices();
         }
         store.setValue(GPTPreferences.GPT_API_TOKEN, tokenText.getText());
         return true;
@@ -101,7 +101,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
                 GPTMessages.gpt_preference_page_combo_engine,
                 SWT.READ_ONLY
             );
-            for (GPTConstants.GPTModel model : GPTConstants.GPTModel.values()) {
+            for (GPTModel model : GPTModel.values()) {
                 modelCombo.add(model.getName());
             }
             {

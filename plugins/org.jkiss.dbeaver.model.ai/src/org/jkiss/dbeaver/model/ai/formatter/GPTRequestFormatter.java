@@ -30,6 +30,10 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 
 public class GPTRequestFormatter {
+
+    /**
+     * Add completion metadata to request
+     */
     public static String addDBMetadataToRequest(
         DBRProgressMonitor monitor,
         String request,
@@ -41,7 +45,9 @@ public class GPTRequestFormatter {
 
         StringBuilder additionalMetadata = new StringBuilder();
         //additionalMetadata.append("Use SQL\n");
-        additionalMetadata.append("### ").append(context.getDataSource().getSQLDialect().getDialectName()).append(" SQL tables, with their properties:\n#\n");
+        additionalMetadata.append("### ")
+            .append(context.getDataSource().getSQLDialect().getDialectName())
+            .append(" SQL tables, with their properties:\n#\n");
         generateObjectDescription(monitor, additionalMetadata, context);
         additionalMetadata.append("#\n###").append(request.trim()).append("\nSELECT");
         return additionalMetadata.toString();

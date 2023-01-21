@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
-import org.jkiss.dbeaver.model.ai.internal.GPTConstants;
+import org.jkiss.dbeaver.model.ai.internal.GPTModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -28,7 +28,7 @@ public class GPTPreferencesInitializer extends AbstractPreferenceInitializer {
     @Override
     public void initializeDefaultPreferences() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL, GPTConstants.GPTModel.TEXT_DAVINCI02.getName());
+        PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL, GPTModel.TEXT_DAVINCI02.getName());
         PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL_MAX_TOKENS, 250);
         PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL_TEMPERATURE, 0.0f);
     }

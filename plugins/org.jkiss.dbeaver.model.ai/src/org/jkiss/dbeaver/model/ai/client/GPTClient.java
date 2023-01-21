@@ -39,13 +39,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class GPTAPIClient {
-    private static final Log log = Log.getLog(GPTAPIClient.class);
+public class GPTClient {
+    private static final Log log = Log.getLog(GPTClient.class);
 
     //How many retries may be done if code 429 happens
     private static final int MAX_REQUEST_ATTEMPTS = 3;
 
-    private final static Map<String, OpenAiService> clientInstances = new HashMap<>();
+    private static final Map<String, OpenAiService> clientInstances = new HashMap<>();
 
     public static boolean isValidConfiguration() {
         return !CommonUtils.isEmpty(acquireToken());
@@ -148,7 +148,7 @@ public class GPTAPIClient {
 
     private static CompletionRequest createCompletionRequest(@NotNull String request) {
         int maxTokens = getPreferenceStore().getInt(GPTPreferences.GPT_MODEL_MAX_TOKENS);
-        Double temperature = 0.0;//getPreferenceStore().getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE);
+        Double temperature = getPreferenceStore().getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE);
         String model = getPreferenceStore().getString(GPTPreferences.GPT_MODEL);
         return CompletionRequest.builder()
             .prompt(request)
@@ -162,10 +162,13 @@ public class GPTAPIClient {
             .build();
     }
 
-    private GPTAPIClient() {
+    private GPTClient() {
 
     }
 
+    /**
+     * Resets GPT client cache
+     */
     public static void resetServices() {
         clientInstances.clear();
     }

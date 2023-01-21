@@ -14,5 +14,4 @@ Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.model.ai
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.bundle.gpt3
-Bundle-Activator: org.jkiss.dbeaver.model.ai.internal.GTPActivator
 
