@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
 import org.jkiss.dbeaver.model.ai.formatter.GPTRequestFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -33,7 +34,9 @@ import org.jkiss.utils.CommonUtils;
 import retrofit2.HttpException;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class GPTAPIClient {
@@ -42,20 +45,17 @@ public class GPTAPIClient {
     //How many retries may be done if code 429 happens
     private static final int MAX_REQUEST_ATTEMPTS = 3;
 
-    private static OpenAiService CLIENT_INSTANCE = null;
+    private final static Map<String, OpenAiService> clientInstances = new HashMap<>();
 
     /**
      * Initializes OpenAiService instance using token provided by {@link GPTPreferences} GTP_TOKEN_PATH
      */
-    private static void initGPTApiClientInstance() throws DBException {
-        if (CLIENT_INSTANCE != null) {
-            return;
-        }
+    private static OpenAiService initGPTApiClientInstance() throws DBException {
         String token = acquireToken();
         if (CommonUtils.isEmpty(token)) {
             throw new DBException("Empty API token value");
         }
-        CLIENT_INSTANCE = new OpenAiService(token, Duration.ofSeconds(30));
+        return new OpenAiService(token, Duration.ofSeconds(30));
     }
 
     private static String acquireToken() throws DBException {
@@ -71,18 +71,19 @@ public class GPTAPIClient {
      * @param context context object
      * @return resulting string
      */
-    @NotNull
     public static String requestCompletion(
         @NotNull String request,
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBSObjectContainer context
     ) throws DBException {
-
-        if (!getPreferenceStore().getBoolean(GPTPreferences.GPT_ENABLED)) {
-            throw new DBException("GPT engine disabled");
+        if (context == null || context.getDataSource() == null) {
+            throw new DBException("No datasource container");
         }
-        if (CLIENT_INSTANCE == null) {
-            initGPTApiClientInstance();
+        DBPDataSourceContainer container = context.getDataSource().getContainer();
+        OpenAiService service = clientInstances.get(container.getId());
+        if (service == null) {
+            service = initGPTApiClientInstance();
+            clientInstances.put(container.getId(), service);
         }
         String modifiedRequest = GPTRequestFormatter.addDBMetadataToRequest(monitor, request, context);
         if (monitor.isCanceled()) {
@@ -92,24 +93,26 @@ public class GPTAPIClient {
         monitor.subTask("Request GPT completion");
         try {
             if (monitor.isCanceled()) {
-                return "";
+                return null;
             }
-            return tryCreateCompletion(completionRequest, 0);
+            return tryCreateCompletion(service, completionRequest, 0);
         } finally {
             monitor.done();
         }
     }
 
-    @NotNull
-    private static String tryCreateCompletion(@NotNull CompletionRequest completionRequest, int attempt) {
+    private static String tryCreateCompletion(@NotNull OpenAiService service, @NotNull CompletionRequest completionRequest, int attempt) {
         if (attempt == MAX_REQUEST_ATTEMPTS) {
             log.error("Maximum GPT completion attempts reached");
-            return "";
+            return null;
         }
         try {
-            List<CompletionChoice> choices = CLIENT_INSTANCE.createCompletion(completionRequest).getChoices();
+            List<CompletionChoice> choices = service.createCompletion(completionRequest).getChoices();
             Optional<CompletionChoice> choice = choices.stream().findFirst();
             String completionText = choice.orElseThrow().getText();
+            if (CommonUtils.isEmpty(completionText)) {
+                return null;
+            }
             String prompt = completionRequest.getPrompt();
             if (completionText.startsWith(prompt)) {
                 completionText = "SELECT " + completionText.substring(prompt.length());
@@ -126,9 +129,9 @@ public class GPTAPIClient {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
-                    return "";
+                    return null;
                 }
-                return tryCreateCompletion(completionRequest, attempt + 1);
+                return tryCreateCompletion(service, completionRequest, attempt + 1);
             } else {
                 throw exception;
             }
@@ -141,7 +144,7 @@ public class GPTAPIClient {
 
     private static CompletionRequest createCompletionRequest(@NotNull String request) {
         int maxTokens = getPreferenceStore().getInt(GPTPreferences.GPT_MODEL_MAX_TOKENS);
-        Double temperature = getPreferenceStore().getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE);
+        Double temperature = 0.0;//getPreferenceStore().getDouble(GPTPreferences.GPT_MODEL_TEMPERATURE);
         String model = getPreferenceStore().getString(GPTPreferences.GPT_MODEL);
         return CompletionRequest.builder()
             .prompt(request)

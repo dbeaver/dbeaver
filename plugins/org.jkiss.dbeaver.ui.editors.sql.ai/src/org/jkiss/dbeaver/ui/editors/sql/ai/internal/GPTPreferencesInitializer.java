@@ -28,9 +28,8 @@ public class GPTPreferencesInitializer extends AbstractPreferenceInitializer {
     @Override
     public void initializeDefaultPreferences() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_ENABLED, false);
-        PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL, GPTConstants.GPTModel.CODE_CUSHMAN.getName());
-        PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL_MAX_TOKENS, 150);
+        PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL, GPTConstants.GPTModel.TEXT_DAVINCI02.getName());
+        PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL_MAX_TOKENS, 250);
         PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL_TEMPERATURE, 0.0f);
     }
 }

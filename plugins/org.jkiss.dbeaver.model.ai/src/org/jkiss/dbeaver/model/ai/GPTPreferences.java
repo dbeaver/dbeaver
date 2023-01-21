@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.ai;
 
 public class GPTPreferences {
-    public static final String GPT_ENABLED = "gpt.enabled";
     public static final String GPT_API_TOKEN = "gpt.token";
     public static final String GPT_MODEL = "gpt.model";
     public static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";

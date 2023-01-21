@@ -17,21 +17,31 @@
 package org.jkiss.dbeaver.ui.editors.sql.ai.popup;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GPTSuggestionPopup extends AbstractPopupPanel {
+
+    private static final Map<String, List<String>> queryHistory = new HashMap<>();
+
+    private final DBPDataSourceContainer dataSourceContainer;
     private Text inputField;
     private String inputText;
 
-    public GPTSuggestionPopup(@NotNull Shell parentShell, @NotNull String title) {
+    public GPTSuggestionPopup(@NotNull Shell parentShell, @NotNull String title, @NotNull DBPDataSourceContainer dataSourceContainer) {
         super(parentShell, title);
+        this.dataSourceContainer = dataSourceContainer;
         setModeless(true);
     }
 
@@ -45,12 +55,35 @@ public class GPTSuggestionPopup extends AbstractPopupPanel {
         gd.widthHint = UIUtils.getFontHeight(placeholder.getFont()) * 40;
         inputField.setLayoutData(gd);
 
+        inputField.setMessage("Enter a text in a human language");
         inputField.addModifyListener(e -> inputText = inputField.getText());
-        inputField.addKeyListener(KeyListener.keyReleasedAdapter(keyEvent -> {
-            if (keyEvent.keyCode == SWT.CR) {
+        inputField.addListener(SWT.KeyDown, event -> {
+            if (event.keyCode == SWT.CR && event.stateMask == 0) {
+                event.doit = false;
                 okPressed();
             }
-        }));
+        });
+
+        Composite historyPanel = UIUtils.createComposite(placeholder, 2);
+        historyPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Combo historyCombo = new Combo(historyPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
+        historyCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        Button applyButton = new Button(historyPanel, SWT.PUSH);
+        applyButton.setText("Translate");
+        applyButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> okPressed()));
+
+        closeOnFocusLost(inputField, historyCombo, applyButton);
+
+        List<String> queries = queryHistory.get(dataSourceContainer.getId());
+        if (!CommonUtils.isEmpty(queries)) {
+            for (String query : queries) {
+                historyCombo.add(query);
+            }
+            historyCombo.select(0);
+            inputField.setText(queries.get(0));
+            inputField.selectAll();
+        }
 
         return placeholder;
     }
@@ -67,4 +100,17 @@ public class GPTSuggestionPopup extends AbstractPopupPanel {
     public String getInputText() {
         return inputText;
     }
+
+    @Override
+    protected void okPressed() {
+        inputText = inputField.getText().trim();
+        if (!CommonUtils.isEmpty(inputText)) {
+            List<String> queries = queryHistory.computeIfAbsent(dataSourceContainer.getId(), k -> new ArrayList<>());
+            queries.remove(inputText);
+            queries.add(0, inputText);
+        }
+
+        super.okPressed();
+    }
+
 }

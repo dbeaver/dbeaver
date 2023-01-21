@@ -25,6 +25,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.client.GPTAPIClient;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.ai.popup.GPTSuggestionPopup;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -41,9 +43,15 @@ public class GPTExecuteHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
+        DBPDataSourceContainer dataSourceContainer = editor.getDataSourceContainer();
+        if (dataSourceContainer == null) {
+            DBWorkbench.getPlatformUI().showError("No datasource", "Connection must be associated with the SQL script");
+            return null;
+        }
         GPTSuggestionPopup gptSuggestionPopup = new GPTSuggestionPopup(
             HandlerUtil.getActiveShell(event),
-            "GPT-3 smart completion"
+            "GPT-3 smart completion",
+            dataSourceContainer
         );
         if (gptSuggestionPopup.open() == IDialogConstants.OK_ID) {
             doAutoCompletion(editor, gptSuggestionPopup.getInputText());
@@ -52,6 +60,10 @@ public class GPTExecuteHandler extends AbstractHandler {
     }
 
     private void doAutoCompletion(SQLEditor editor, String inputText) {
+        if (CommonUtils.isEmptyTrimmed(inputText)) {
+            return;
+        }
+
         DBCExecutionContext executionContext = editor.getExecutionContext();
         DBSObjectContainer object;
         if (executionContext == null || executionContext.getContextDefaults() == null) {
@@ -79,6 +91,10 @@ public class GPTExecuteHandler extends AbstractHandler {
             });
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError("Auto completion error", null, e.getTargetException());
+            return;
+        }
+
+        if (CommonUtils.isEmptyTrimmed(completionResult[0])) {
             return;
         }
 

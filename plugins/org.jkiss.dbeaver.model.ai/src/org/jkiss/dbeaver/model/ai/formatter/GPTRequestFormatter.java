@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class GPTRequestFormatter {
         String request,
         DBSObjectContainer context
     ) throws DBException {
-        if (context == null || context.getDataSource() == null) {
+        if (context == null || context.getDataSource() == null || CommonUtils.isEmptyTrimmed(request)) {
             return request;
         }
 
