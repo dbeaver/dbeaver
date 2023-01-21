@@ -22,6 +22,7 @@ import com.theokanning.openai.completion.CompletionRequest;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
 import org.jkiss.dbeaver.model.ai.formatter.GPTRequestFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -36,6 +37,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class GPTAPIClient {
+    private static final Log log = Log.getLog(GPTAPIClient.class);
+
     //How many retries may be done if code 429 happens
     private static final int MAX_REQUEST_ATTEMPTS = 3;
 
@@ -69,27 +72,27 @@ public class GPTAPIClient {
      * @return resulting string
      */
     @NotNull
-    public static Optional<String> requestCompletion(
+    public static String requestCompletion(
         @NotNull String request,
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBSObjectContainer context
-    ) throws DBException, HttpException {
+    ) throws DBException {
 
         if (!getPreferenceStore().getBoolean(GPTPreferences.GPT_ENABLED)) {
-            return Optional.empty();
+            throw new DBException("GPT engine disabled");
         }
         if (CLIENT_INSTANCE == null) {
             initGPTApiClientInstance();
         }
-        String modifiedRequest = GPTRequestFormatter.addDBMetadataToRequest(request, context, monitor);
+        String modifiedRequest = GPTRequestFormatter.addDBMetadataToRequest(monitor, request, context);
         if (monitor.isCanceled()) {
-            return Optional.empty();
+            return "";
         }
         CompletionRequest completionRequest = createCompletionRequest(modifiedRequest);
         monitor.subTask("Request GPT completion");
         try {
             if (monitor.isCanceled()) {
-                return Optional.empty();
+                return "";
             }
             return tryCreateCompletion(completionRequest, 0);
         } finally {
@@ -98,23 +101,34 @@ public class GPTAPIClient {
     }
 
     @NotNull
-    private static Optional<String> tryCreateCompletion(@NotNull CompletionRequest completionRequest, int attempt)
-        throws HttpException {
+    private static String tryCreateCompletion(@NotNull CompletionRequest completionRequest, int attempt) {
         if (attempt == MAX_REQUEST_ATTEMPTS) {
-            return Optional.empty();
+            log.error("Maximum GPT completion attempts reached");
+            return "";
         }
         try {
             List<CompletionChoice> choices = CLIENT_INSTANCE.createCompletion(completionRequest).getChoices();
             Optional<CompletionChoice> choice = choices.stream().findFirst();
-            return choice.map(completionChoice -> completionChoice.getText().substring(completionChoice.getIndex()));
-        } catch (HttpException exception) {
-            if (exception.code() == 429) {
+            String completionText = choice.orElseThrow().getText();
+            String prompt = completionRequest.getPrompt();
+            if (completionText.startsWith(prompt)) {
+                completionText = "SELECT " + completionText.substring(prompt.length());
+            } else {
+                int selIndex = completionText.lastIndexOf("SELECT ");
+                if (selIndex != -1) {
+                    completionText = completionText.substring(selIndex);
+                }
+            }
+
+            return completionText.trim();
+        } catch (Exception exception) {
+            if (exception instanceof HttpException && ((HttpException) exception).code() == 429) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
-                    return Optional.empty();
+                    return "";
                 }
-                return tryCreateCompletion(completionRequest, ++attempt);
+                return tryCreateCompletion(completionRequest, attempt + 1);
             } else {
                 throw exception;
             }

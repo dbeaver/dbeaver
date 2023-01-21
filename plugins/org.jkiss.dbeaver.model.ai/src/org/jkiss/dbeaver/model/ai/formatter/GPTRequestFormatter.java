@@ -19,40 +19,41 @@ package org.jkiss.dbeaver.model.ai.formatter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
 import java.util.List;
 
-public class GPTRequestFormatter
-{
+public class GPTRequestFormatter {
     public static String addDBMetadataToRequest(
-        String request, DBSObjectContainer context, DBRProgressMonitor monitor
+        DBRProgressMonitor monitor,
+        String request,
+        DBSObjectContainer context
     ) throws DBException {
         if (context == null || context.getDataSource() == null) {
             return request;
         }
 
         StringBuilder additionalMetadata = new StringBuilder();
-        additionalMetadata.append("Use SQL\n");
-        additionalMetadata.append("Use dialect for ").append(context.getDataSource().getName()).append("\n");
-        generateObjectDescription(additionalMetadata, context, monitor);
-        return additionalMetadata + request;
+        //additionalMetadata.append("Use SQL\n");
+        additionalMetadata.append("### ").append(context.getDataSource().getSQLDialect().getDialectName()).append(" SQL tables, with their properties:\n#\n");
+        generateObjectDescription(monitor, additionalMetadata, context);
+        additionalMetadata.append("#\n###").append(request.trim()).append("\nSELECT");
+        return additionalMetadata.toString();
     }
 
 
     private static void generateObjectDescription(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull StringBuilder request,
-        @NotNull DBSObject object,
-        @NotNull DBRProgressMonitor monitor
+        @NotNull DBSObject object
     ) throws DBException {
         if (object instanceof JDBCTable) {
-            request.append("Table: ").append(((JDBCTable<?, ?>) object)
-                .getFullyQualifiedName(DBPEvaluationContext.DDL));
+            request.append("# ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
             List<? extends DBSEntityAttribute> attributes = ((JDBCTable<?, ?>) object).getAttributes(monitor);
             if (attributes != null) {
                 request.append("(");
@@ -67,10 +68,8 @@ public class GPTRequestFormatter
             }
             request.append("\n");
         } else if (object instanceof DBSObjectContainer) {
-            request.append(object instanceof DBSSchema ? "Schema: " : "Catalog: ").append(object.getName()).append(
-                "\n");
             for (DBSObject child : ((DBSObjectContainer) object).getChildren(monitor)) {
-                generateObjectDescription(request, child, monitor);
+                generateObjectDescription(monitor, request, child);
             }
         }
     }

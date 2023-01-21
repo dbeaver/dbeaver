@@ -20,6 +20,10 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextSelection;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.ai.client.GPTAPIClient;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -31,7 +35,6 @@ import org.jkiss.dbeaver.ui.editors.sql.ai.popup.GPTSuggestionPopup;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
 
 public class GPTExecuteHandler extends AbstractHandler {
 
@@ -40,7 +43,7 @@ public class GPTExecuteHandler extends AbstractHandler {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         GPTSuggestionPopup gptSuggestionPopup = new GPTSuggestionPopup(
             HandlerUtil.getActiveShell(event),
-            GPTMessages.gpt_dialog_title
+            "GPT-3 smart completion"
         );
         if (gptSuggestionPopup.open() == IDialogConstants.OK_ID) {
             doAutoCompletion(editor, gptSuggestionPopup.getInputText());
@@ -64,19 +67,36 @@ public class GPTExecuteHandler extends AbstractHandler {
             }
         }
 
+        String[] completionResult = new String[1];
         DBSObjectContainer finalObject = object;
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    Optional<String> completion = GPTAPIClient.requestCompletion(inputText, monitor, finalObject);
-
-                    System.out.println(completion.get());
+                    completionResult[0] = GPTAPIClient.requestCompletion(inputText, monitor, finalObject);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
             });
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError("Auto completion error", null, e.getTargetException());
+            return;
+        }
+
+        ISelection selection = editor.getSelectionProvider().getSelection();
+        IDocument document = editor.getDocument();
+        if (document != null && selection instanceof TextSelection) {
+            try {
+                int offset = ((TextSelection) selection).getOffset();
+                int length = ((TextSelection) selection).getLength();
+                String completion = completionResult[0];
+                document.replace(
+                    offset,
+                    length,
+                    completion);
+                editor.getSelectionProvider().setSelection(new TextSelection(offset + completion.length(), 0));
+            } catch (BadLocationException e) {
+                DBWorkbench.getPlatformUI().showError("Insert SQL", "Error inserting SQL completion in text editor", e);
+            }
         }
     }
 }
