@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.editors.sql.ai.preferences;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -37,6 +39,7 @@ import java.util.Locale;
 public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
     private static final Log log = Log.getLog(GPTPreferencePage.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.gpt";
+    private static final String API_KEY_URL = "https://beta.openai.com/account/api-keys";
 
     private Text tokenText;
 
@@ -63,7 +66,9 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         store.setValue(GPTPreferences.GPT_MODEL, modelCombo.getText());
         store.setValue(GPTPreferences.GPT_MODEL_TEMPERATURE, temperatureText.getText());
         store.setValue(GPTPreferences.GPT_MODEL_MAX_TOKENS, maxTokensText.getText());
-        if (!tokenText.getText().equals(store.getString(GPTPreferences.GPT_API_TOKEN))) {
+        if (!modelCombo.getText().equals(store.getString(GPTPreferences.GPT_MODEL)) ||
+            !tokenText.getText().equals(store.getString(GPTPreferences.GPT_API_TOKEN))
+        ) {
             GPTClient.resetServices();
         }
         store.setValue(GPTPreferences.GPT_API_TOKEN, tokenText.getText());
@@ -87,6 +92,15 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             tokenText = UIUtils.createLabelText(authorizationGroup, GPTMessages.gpt_preference_page_selector_token,
                 "", SWT.BORDER | SWT.PASSWORD);
             tokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Link link = UIUtils.createLink(authorizationGroup, "Copy-paste API token from <a>" + API_KEY_URL + "</a>", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.openWebBrowser(API_KEY_URL);
+                }
+            });
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            link.setLayoutData(gd);
             authorizationGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
         {
@@ -104,6 +118,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             for (GPTModel model : GPTModel.values()) {
                 modelCombo.add(model.getName());
             }
+            UIUtils.createInfoLabel(modelGroup, "code-davinci model suits the best for SQL code completion", GridData.FILL_HORIZONTAL, 2);
             {
                 Group modelAdvancedGroup = UIUtils.createControlGroup(placeholder,
                     GPTMessages.gpt_preference_page_group_model_advanced,
@@ -117,6 +132,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
                     "0.0"
                 );
                 temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
+                UIUtils.createInfoLabel(modelAdvancedGroup, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 2);
 
                 maxTokensText = UIUtils.createLabelText(modelAdvancedGroup,
                     GPTMessages.gpt_preference_page_text_max_tokens,
