@@ -16,10 +16,15 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+/**
+ * GPT preference constants
+ */
 public class GPTPreferences {
     public static final String GPT_API_TOKEN = "gpt.token";
     public static final String GPT_MODEL = "gpt.model";
     public static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
     public static final String GPT_MODEL_MAX_TOKENS = "gpt.model.maxTokens";
+    public static final String GPT_EXECUTE_IMMEDIATELY = "gpt.execute.immediately";
+    public static final String GPT_LOG_QUERY = "gpt.log.query";
 }
 

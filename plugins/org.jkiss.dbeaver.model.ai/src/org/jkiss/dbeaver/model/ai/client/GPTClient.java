@@ -96,7 +96,9 @@ public class GPTClient {
         CompletionRequest completionRequest = createCompletionRequest(modifiedRequest);
         monitor.subTask("Request GPT completion");
         try {
-            log.debug("GPT request:\n" + completionRequest.getPrompt());
+            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(GPTPreferences.GPT_LOG_QUERY)) {
+                log.debug("GPT request:\n" + completionRequest.getPrompt());
+            }
             if (monitor.isCanceled()) {
                 return null;
             }

@@ -26,6 +26,7 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.GPTPreferences;
 import org.jkiss.dbeaver.model.ai.client.GPTClient;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -122,6 +123,10 @@ public class GPTExecuteHandler extends AbstractHandler {
             } catch (BadLocationException e) {
                 DBWorkbench.getPlatformUI().showError("Insert SQL", "Error inserting SQL completion in text editor", e);
             }
+        }
+
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(GPTPreferences.GPT_EXECUTE_IMMEDIATELY)) {
+            editor.processSQL(false, false);
         }
     }
 }

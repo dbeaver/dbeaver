@@ -31,5 +31,7 @@ public class GPTPreferencesInitializer extends AbstractPreferenceInitializer {
         PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL, GPTModel.CODE_DAVINCI.getName());
         PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL_MAX_TOKENS, 250);
         PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_MODEL_TEMPERATURE, 0.0f);
+        PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_EXECUTE_IMMEDIATELY, false);
+        PrefUtils.setDefaultPreferenceValue(store, GPTPreferences.GPT_LOG_QUERY, false);
     }
 }
