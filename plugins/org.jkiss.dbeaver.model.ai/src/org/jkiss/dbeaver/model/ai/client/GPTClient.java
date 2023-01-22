@@ -43,7 +43,7 @@ public class GPTClient {
     private static final Log log = Log.getLog(GPTClient.class);
 
     //How many retries may be done if code 429 happens
-    private static final int MAX_REQUEST_ATTEMPTS = 3;
+    private static final int MAX_REQUEST_ATTEMPTS = 2;
 
     private static final Map<String, OpenAiService> clientInstances = new HashMap<>();
 
@@ -96,6 +96,7 @@ public class GPTClient {
         CompletionRequest completionRequest = createCompletionRequest(modifiedRequest);
         monitor.subTask("Request GPT completion");
         try {
+            log.debug("GPT request:\n" + completionRequest.getPrompt());
             if (monitor.isCanceled()) {
                 return null;
             }
@@ -117,15 +118,7 @@ public class GPTClient {
             if (CommonUtils.isEmpty(completionText)) {
                 return null;
             }
-            String prompt = completionRequest.getPrompt();
-            if (completionText.startsWith(prompt)) {
-                completionText = "SELECT " + completionText.substring(prompt.length());
-            } else {
-                int selIndex = completionText.lastIndexOf("SELECT ");
-                if (selIndex != -1) {
-                    completionText = completionText.substring(selIndex);
-                }
-            }
+            completionText = "SELECT " + completionText.trim() + ";";
 
             return completionText.trim();
         } catch (Exception exception) {
@@ -158,7 +151,7 @@ public class GPTClient {
             .presencePenalty(0.0)
             .stop(List.of("#", ";"))
             .model(model)
-            .echo(true)
+            //.echo(true)
             .build();
     }
 

@@ -18,13 +18,13 @@ package org.jkiss.dbeaver.model.ai.formatter;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -59,23 +59,32 @@ public class GPTRequestFormatter {
         @NotNull StringBuilder request,
         @NotNull DBSObject object
     ) throws DBException {
-        if (object instanceof JDBCTable) {
-            request.append("# ").append(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
-            List<? extends DBSEntityAttribute> attributes = ((JDBCTable<?, ?>) object).getAttributes(monitor);
+        if (object instanceof DBSEntity) {
+            request.append("# ").append(DBUtils.getQuotedIdentifier(object));
+            List<? extends DBSEntityAttribute> attributes = ((DBSEntity) object).getAttributes(monitor);
             if (attributes != null) {
                 request.append("(");
-                for (int i = 0; i < attributes.size(); i++) {
-                    if (i != 0) {
-                        request.append(", ");
+                boolean firstAttr = true;
+                for (DBSEntityAttribute attribute : attributes) {
+                    if (DBUtils.isHiddenObject(attribute)) {
+                        continue;
                     }
-                    DBSEntityAttribute attribute = attributes.get(i);
+                    if (!firstAttr) {
+                        request.append(",");
+                    }
+                    firstAttr = false;
                     request.append(attribute.getName());
                 }
                 request.append(")");
             }
-            request.append("\n");
+            request.append(";\n");
         } else if (object instanceof DBSObjectContainer) {
+            monitor.subTask("Load cache of " + object.getName());
+            ((DBSObjectContainer) object).cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES);
             for (DBSObject child : ((DBSObjectContainer) object).getChildren(monitor)) {
+                if (DBUtils.isSystemObject(child) || DBUtils.isHiddenObject(child) || child instanceof DBSTablePartition) {
+                    continue;
+                }
                 generateObjectDescription(monitor, request, child);
             }
         }

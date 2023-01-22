@@ -22,8 +22,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
+import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.GPTPreferencePage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -49,8 +51,17 @@ public class GPTSuggestionPopup extends AbstractPopupPanel {
     protected Composite createDialogArea(Composite parent) {
         Composite placeholder = super.createDialogArea(parent);
 
-        Label hintLabel = new Label(placeholder, SWT.NONE);
+        Composite hintPanel = UIUtils.createComposite(placeholder, 2);
+        hintPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Label hintLabel = new Label(hintPanel, SWT.NONE);
         hintLabel.setText("Enter a text in a human language, it will be translated into SQL.");
+        hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        {
+            ToolBar tb = new ToolBar(hintPanel, SWT.FLAT);
+            UIUtils.createToolItem(tb, "Configure", UIIcon.CONFIGURATION,
+                SelectionListener.widgetSelectedAdapter(
+                    selectionEvent -> UIUtils.showPreferencesFor(getShell(), null, GPTPreferencePage.PAGE_ID)));
+        }
 
         inputField = new Text(placeholder, SWT.BORDER | SWT.MULTI);
         //inputField.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -87,6 +98,8 @@ public class GPTSuggestionPopup extends AbstractPopupPanel {
             inputField.setText(queries.get(0));
             inputField.selectAll();
         }
+
+        inputField.setFocus();
 
         return placeholder;
     }

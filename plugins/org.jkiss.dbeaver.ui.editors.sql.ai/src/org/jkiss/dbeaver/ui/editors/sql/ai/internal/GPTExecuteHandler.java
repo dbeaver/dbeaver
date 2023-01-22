@@ -83,7 +83,7 @@ public class GPTExecuteHandler extends AbstractHandler {
             } else {
                 object = executionContext.getContextDefaults().getDefaultSchema();
             }
-            if (executionContext.getDataSource() instanceof DBSObjectContainer) {
+            if (object == null) {
                 object = ((DBSObjectContainer) executionContext.getDataSource());
             }
         }
