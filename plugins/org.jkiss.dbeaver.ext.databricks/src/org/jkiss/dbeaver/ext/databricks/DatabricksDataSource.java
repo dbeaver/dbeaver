@@ -27,8 +27,10 @@ public class DatabricksDataSource extends GenericDataSource {
 
     private static final Log log = Log.getLog(DatabricksDataSource.class);
 
-    public DatabricksDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
-        throws DBException {
+    public DatabricksDataSource(DBRProgressMonitor monitor,
+                                DBPDataSourceContainer container,
+                                GenericMetaModel metaModel) throws
+                                                            DBException {
         super(monitor, container, metaModel, new DatabricksSQLDialect());
     }
 

@@ -84,6 +84,9 @@ public class DatabricksSQLDialect extends GenericSQLDialect {
             "XPATH_DOUBLE", "XPATH_FLOAT", "XPATH_INT", "XPATH_LONG", "XPATH_NUMBER", "XPATH_SHORT", "XPATH_STRING", "XXHASH64", "YEAR",
             "ZIP_WITH"};
 
+    /**
+     * Initialize driver settings properly
+     */
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         addSQLKeywords(Arrays.asList(SPARK_EXTRA_KEYWORDS));
