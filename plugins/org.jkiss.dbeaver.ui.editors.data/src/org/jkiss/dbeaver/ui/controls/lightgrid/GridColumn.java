@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,12 +137,12 @@ class GridColumn implements IGridColumn {
         }
         Rectangle filterBounds = GridColumnRenderer.getFilterControlBounds();
 
-        int filterEnd = bounds.width - GridColumnRenderer.ARROW_MARGIN;
+        int filterEnd = bounds.width - GridColumnRenderer.IMAGE_SPACING;
         int filterBegin = filterEnd - filterBounds.width;
 
-        return
-            x >= filterBegin && x <= filterEnd &&
-                y < bounds.y + filterBounds.height + GridColumnRenderer.TOP_MARGIN;
+        boolean isOverIcon = x >= filterBegin && x <= filterEnd &&
+            y < bounds.y + filterBounds.height + GridColumnRenderer.TOP_MARGIN;
+        return isOverIcon;
     }
 
     public boolean isOverSortArrow(int x, int y) {

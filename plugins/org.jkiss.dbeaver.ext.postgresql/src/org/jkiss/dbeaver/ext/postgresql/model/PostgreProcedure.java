@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
@@ -45,6 +47,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -101,6 +104,18 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         @Nullable
         public String getKeyword() {
             return keyword;
+        }
+    }
+
+    enum TransitionModifies {
+        r("READ_ONLY"),
+        s("SHAREABLE"),
+        w("READ_WRITE");
+
+        private final String keyword;
+
+        TransitionModifies(String keyword) {
+            this.keyword = keyword;
         }
     }
 
@@ -288,6 +303,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         if (dataSource.getServerType().supportsStoredProcedures()) {
             String proKind = JDBCUtils.safeGetString(dbResult, "prokind");
             kind = CommonUtils.valueOf(PostgreProcedureKind.class, proKind, PostgreProcedureKind.f);
+            if (kind == PostgreProcedureKind.a) {
+                isAggregate = true;
+            }
         } else {
             if (isAggregate) {
                 kind = PostgreProcedureKind.a;
@@ -417,7 +435,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     {
         String procDDL;
         boolean omitHeader = CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE);
-        if (isPersisted() && (!getDataSource().getServerType().supportsFunctionDefRead() || omitHeader)) {
+        if (isPersisted() && (!getDataSource().getServerType().supportsFunctionDefRead() || omitHeader) && !isAggregate) {
             if (procSrc == null) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
                     procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM pg_proc where oid = ?", getObjectId());
@@ -434,12 +452,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     PostgreDataType returnType = getReturnType();
                     String returnTypeName = returnType == null ? null : returnType.getFullTypeName();
                     body = generateFunctionDeclaration(getLanguage(monitor), returnTypeName, "\n\t-- Enter function body here\n");
-                } else if (oid == 0 || isAggregate) {
+                } else if (oid == 0) {
                     // No OID so let's use old (bad) way
                     body = this.procSrc;
                 } else {
                     if (isAggregate) {
-                        body = "-- Aggregate function";
+                        configureAggregateQuery(monitor);
                     } else {
                         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
                             body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
@@ -466,6 +484,122 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         }
 
         return procDDL;
+    }
+
+    private void configureAggregateQuery(DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read aggregate function body")) {
+            String query = "SELECT (pg_identify_object('pg_proc'::regclass, aggfnoid, 0)).identity,\n" +
+                "aggtransfn::regproc,\n" +
+                "format_type(aggtranstype, NULL) as aggtranstype,\n" +
+                "CASE aggfinalfn WHEN '-'::regproc THEN NULL ELSE aggfinalfn::text END,\n" +
+                "CASE aggsortop WHEN 0 THEN NULL ELSE oprname END,\n" +
+                "agginitval, " +
+                (getDataSource().isServerVersionAtLeast(9, 4) ? "aggmtransfn, aggminvtransfn,\n" +
+                "aggfinalextra, aggmfinalextra, aggserialfn, aggdeserialfn, aggmfinalfn,\n" +
+                "format_type(aggmtranstype, NULL) as aggmtranstype\n" : "") +
+                (getDataSource().isServerVersionAtLeast(11, 0) ? ",aggfinalmodify, aggmfinalmodify " : "") +
+                "FROM pg_aggregate\n" +
+                "LEFT JOIN pg_operator ON pg_operator.oid = aggsortop\n" +
+                "WHERE aggfnoid = ?::regproc";
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
+                dbStat.setString(1, getFullyQualifiedName(DBPEvaluationContext.DDL));
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        String fullName = JDBCUtils.safeGetString(dbResult, "identity");
+                        String aggtransfn = JDBCUtils.safeGetString(dbResult, "aggtransfn"); // Transition function
+
+                        // Data type of the aggregate function's internal transition (state) data
+                        String aggtranstype = JDBCUtils.safeGetString(dbResult, "aggtranstype");
+                        String aggfinalfn = JDBCUtils.safeGetString(dbResult, "aggfinalfn"); // Final function
+                        String oprname = JDBCUtils.safeGetString(dbResult, "oprname"); // Associated sort operator
+
+                        // The initial value of the transition state
+                        String initval = JDBCUtils.safeGetString(dbResult, "agginitval");
+
+                        // Forward transition function for moving-aggregate mode
+                        String mtransfn = JDBCUtils.safeGetString(dbResult, "aggmtransfn");
+                        String mtranstype = JDBCUtils.safeGetString(dbResult, "aggmtranstype");
+
+                        // Inverse transition function for moving-aggregate mode
+                        String minvtransfn = JDBCUtils.safeGetString(dbResult, "aggminvtransfn");
+
+                        String serialfn = JDBCUtils.safeGetString(dbResult, "aggserialfn");
+                        String deserialfn = JDBCUtils.safeGetString(dbResult, "aggdeserialfn");
+                        String mfinalfn = JDBCUtils.safeGetString(dbResult, "aggmfinalfn");
+
+                        TransitionModifies finalmodify = null;
+                        TransitionModifies mfinalmodify = null;
+                        if (getDataSource().isServerVersionAtLeast(11, 0)) {
+                            // Whether aggfinalfn modifies the transition state value:
+                            // r if it is read-only, s if the aggtransfn cannot be applied after the aggfinalfn,
+                            // or w if it writes on the value
+                            finalmodify = TransitionModifies.valueOf(
+                                JDBCUtils.safeGetString(dbResult, "aggfinalmodify"));
+                            mfinalmodify = TransitionModifies.valueOf(
+                                JDBCUtils.safeGetString(dbResult, "aggmfinalmodify")); // For the aggmfinalfn
+                        }
+
+                        boolean finalextra = JDBCUtils.safeGetBoolean(dbResult, "aggfinalextra"); // arguments to aggfinalfn
+                        boolean mfinalextra = JDBCUtils.safeGetBoolean(dbResult, "aggmfinalextra"); // arguments to aggmfinalfn
+
+                        StringBuilder aggregateBody = new StringBuilder("CREATE OR REPLACE AGGREGATE ");
+                        final String delim = ",\n\t";
+                        final String notResult = "-";
+                        aggregateBody.append(fullName).append(" (\n")
+                            .append("\tSFUNC = ").append(aggtransfn).append(delim)
+                            .append("STYPE = ").append(aggtranstype);
+                        if (CommonUtils.isNotEmpty(aggfinalfn)) {
+                            aggregateBody.append(delim).append("FINALFUNC = ").append(aggfinalfn);
+                            if (finalextra) {
+                                aggregateBody.append(delim).append("FINALFUNC_EXTRA");
+                            }
+                            if (finalmodify != null) {
+                                aggregateBody.append(delim).append("FINALFUNC_MODIFY = ").append(finalmodify.keyword);
+                            }
+                        }
+                        if (CommonUtils.isNotEmpty(serialfn) && !notResult.equals(serialfn)) {
+                            aggregateBody.append(delim).append("SERIALFUNC = ").append(serialfn);
+                        }
+                        if (CommonUtils.isNotEmpty(deserialfn) && !notResult.equals(deserialfn)) {
+                            aggregateBody.append(delim).append("DESERIALFUNC = ").append(deserialfn);
+                        }
+                        if (CommonUtils.isNotEmpty(initval)) {
+                            if (!Pattern.matches("[0-9]+", initval)) {
+                                // Quote non numeric values
+                                initval = "'" + initval + "'";
+                            }
+                            aggregateBody.append(delim).append("INITCOND = ").append(initval);
+                        }
+                        if (CommonUtils.isNotEmpty(mtransfn) && !notResult.equals(mtransfn)) {
+                            aggregateBody.append(delim).append("MSFUNC = ").append(mtransfn);
+                            if (CommonUtils.isNotEmpty(mtranstype) && !notResult.equals(mtranstype)) {
+                                aggregateBody.append(delim).append("MSTYPE = ").append(mtranstype);
+                            }
+                        }
+                        if (CommonUtils.isNotEmpty(minvtransfn) && !notResult.equals(minvtransfn)) {
+                            aggregateBody.append(delim).append("MINVFUNC = ").append(minvtransfn);
+                        }
+                        if (CommonUtils.isNotEmpty(mfinalfn) && !notResult.equals(mfinalfn)) {
+                            aggregateBody.append(delim).append("MFINALFUNC = ").append(mfinalfn);
+                            if (mfinalextra) {
+                                aggregateBody.append(delim).append("MFINALFUNC_EXTRA");
+                            }
+                            if (mfinalmodify != null) {
+                                aggregateBody.append(delim).append("MFINALFUNC_MODIFY = ").append(mfinalmodify.keyword);
+                            }
+                        }
+                        if (CommonUtils.isNotEmpty(oprname)) {
+                            aggregateBody.append(delim).append("SORTOP = ").append(oprname);
+                        }
+                        aggregateBody.append("\n)");
+                        body = aggregateBody.toString();
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Error reading aggregate function body", e);
+            body = "-- Aggregate function";
+        }
     }
 
     protected String generateFunctionDeclaration(PostgreLanguage language, String returnTypeName, String functionBody) {

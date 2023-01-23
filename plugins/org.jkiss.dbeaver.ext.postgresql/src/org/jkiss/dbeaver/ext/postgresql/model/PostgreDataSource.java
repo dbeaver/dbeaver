@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.AsyncServerOutputReader;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
@@ -159,7 +159,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         getDefaultInstance().checkInstanceConnection(monitor, false);
         try {
             // Preload some settings, if available
-            settingCache.getObject(monitor, this, PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
+            settingCache.getAllObjects(monitor, this);
         } catch (DBException e) {
             // ignore
         }
@@ -486,7 +486,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     // Patch URL with new database name
                     if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
                         conConfig.setDatabaseName(instance.getName());
-                        conConfig.setUrl(getContainer().getDriver().getConnectionURL(conConfig));
+                        final DBPDriver driver = getContainer().getDriver();
+                        String newURL = JDBCURL.generateUrlByTemplate(driver, conConfig);
+                        if (CommonUtils.isEmpty(newURL)) {
+                            newURL = driver.getDataSourceProvider().getConnectionURL(driver, conConfig);
+                        }
+                        conConfig.setUrl(newURL);
                     }
 
                     pgConnection = super.openConnection(monitor, context, purpose);
@@ -551,7 +556,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new PostgreStructureAssistant(this));
         } else if (adapter == DBCServerOutputReader.class) {
-            return adapter.cast(new AsyncServerOutputReader());
+            return adapter.cast(new PostgreServerOutputReader());
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new PostgreSessionManager(this));
         } else if (adapter == DBCQueryPlanner.class) {

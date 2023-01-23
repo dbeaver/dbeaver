@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -280,6 +280,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
 
     @Override
     public DataSourceFolder addFolder(DBPDataSourceFolder parent, String name) {
+        return createFolder(parent, name);
+    }
+
+    DataSourceFolder createFolder(DBPDataSourceFolder parent, String name) {
         DataSourceFolder folder = new DataSourceFolder(this, (DataSourceFolder) parent, name, null);
         dataSourceFolders.add(folder);
         return folder;
@@ -347,7 +351,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
                     log.warn("Folder '" + path + "' not found");
                     break;
                 } else {
-                    folder = addFolder(parent, name);
+                    folder = createFolder(parent, name);
                 }
             }
             parent = folder;
@@ -603,6 +607,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         }
     }
 
+    public void refreshConfig(@Nullable Collection<String> dataSourceIds) {
+        if (saveInProgress) {
+            return;
+        }
+        loadDataSources(
+            configurationManager.getConfigurationStorages(),
+            configurationManager,
+            dataSourceIds,
+            true,
+            false);
+    }
+
     @Override
     public Throwable getLastError() {
         Throwable error = this.lastError;
@@ -698,13 +714,19 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     }
 
     private void loadDataSources(boolean refresh) {
-        loadDataSources(configurationManager.getConfigurationStorages(), configurationManager, refresh, true);
+        loadDataSources(
+            configurationManager.getConfigurationStorages(),
+            configurationManager,
+            null,
+            refresh,
+            true);
     }
 
     @Override
     public boolean loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
+        @Nullable Collection<String> dataSourceIds,
         boolean refresh,
         boolean purgeUntouched
     ) {
@@ -720,7 +742,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
         ParseResults parseResults = new ParseResults();
         // Modern way - search json configs in metadata folder
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
-            if (loadDataSources(cfgStorage, manager, false, parseResults)) {
+            if (loadDataSources(cfgStorage, manager, dataSourceIds, false, parseResults)) {
                 configChanged = true;
             }
         }
@@ -773,6 +795,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
     private boolean loadDataSources(
         @NotNull DBPDataSourceConfigurationStorage storage,
         @NotNull DataSourceConfigurationManager manager,
+        @Nullable Collection<String> dataSourceIds,
         boolean refresh,
         @NotNull ParseResults parseResults
     ) {
@@ -784,7 +807,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry, DataSourcePers
             } else {
                 serializer = new DataSourceSerializerModern(this);
             }
-            configChanged = serializer.parseDataSources(storage, manager, parseResults, refresh);
+            configChanged = serializer.parseDataSources(storage, manager, parseResults, dataSourceIds, refresh);
             updateProjectNature();
             lastError = null;
         } catch (Exception ex) {

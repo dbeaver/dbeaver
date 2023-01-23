@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 //TODO: implement event registry and describe possible events in plugin.xml
 public enum WSEventTopic {
     SERVER_CONFIG("cb_config"),
+    SESSION_LOG("cb_session_log"),
     DATASOURCE("cb_datasource"),
     DATASOURCE_FOLDER("cb_datasource_folder"),
     RM_SCRIPTS("cb_scripts"),

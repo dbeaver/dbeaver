@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,8 @@ public class ExasolMessages extends NLS {
 	public static String label_backup_host_list;
 	public static String label_database;
 	public static String label_encrypt;
+	public static String connection_page_checkbox_legacy_encrypt;
+	public static String connection_page_checkbox_legacy_encrypt_tip;
 	public static String label_host_list;
 	public static String label_security;
 	public static String label_use_backup_host_list;

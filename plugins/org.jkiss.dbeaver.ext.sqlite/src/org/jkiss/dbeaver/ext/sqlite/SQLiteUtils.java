@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class SQLiteUtils {
     public static String readMasterDefinition(DBRProgressMonitor monitor, DBSObject sourceObject, SQLiteObjectType objectType, String sourceObjectName, GenericTableBase table) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Load SQLite description")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT sql FROM " + (sourceObject.getParentObject() != null ?
+                "SELECT sql FROM " + (sourceObject.getParentObject() instanceof GenericSchema ?
                                       DBUtils.getQuotedIdentifier(sourceObject.getParentObject()) + "." : "")
                     + "sqlite_master WHERE type=? AND tbl_name=?" + (sourceObjectName != null ? " AND name=?" : "")
                     + "\n" + "UNION ALL\n" + "SELECT sql FROM "

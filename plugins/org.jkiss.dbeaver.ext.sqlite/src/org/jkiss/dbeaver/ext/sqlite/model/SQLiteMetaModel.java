@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -170,6 +170,13 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     @Override
     public boolean isSystemTable(GenericTableBase table) {
         return table.getName().startsWith("sqlite_");
+    }
+
+    @Override
+    public boolean isUtilityTable(@NotNull GenericTableBase table) {
+        // Autoindex tables - are some kind of index tables? No information about them. But they broke our ERD diagrams.
+        // Let's hide these "tables" deeper.
+        return table.getName().startsWith("sqlite_autoindex_");
     }
 
     @Override

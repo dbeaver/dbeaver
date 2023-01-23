@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,21 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
-import java.io.PrintWriter;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
  * Default output reader.
  * Dumps SQL warnings
  */
-public class DefaultServerOutputReader implements DBCServerOutputReader
-{
+public class DefaultServerOutputReader implements DBCServerOutputReader {
     @Override
     public boolean isServerOutputEnabled() {
         return true;
@@ -43,27 +44,27 @@ public class DefaultServerOutputReader implements DBCServerOutputReader
     }
 
     @Override
-    public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @Nullable DBCExecutionResult executionResult, @Nullable DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
+    public void readServerOutput(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext context,
+        @Nullable DBCExecutionResult executionResult,
+        @Nullable DBCStatement statement,
+        @NotNull DBCOutputWriter output
+    ) throws DBCException {
         if (executionResult != null) {
             dumpWarnings(output, executionResult.getWarnings());
         }
     }
 
-    protected void dumpWarnings(@NotNull PrintWriter output, List<Throwable> warnings) {
+    protected void dumpWarnings(@NotNull DBCOutputWriter output, List<Throwable> warnings) {
         if (warnings != null && warnings.size() > 0) {
             for (Throwable warning : warnings) {
-                if (warning instanceof SQLException) {
-                    if (false) {
-                        // Do not print SQL state. It breaks output.
-                        String sqlState = ((SQLException) warning).getSQLState();
-                        if (!CommonUtils.isEmpty(sqlState)) {
-                            output.print(sqlState + ": ");
-                        }
-                    }
-                }
-                output.println(warning.getMessage());
+                dumpWarning(output, warning);
             }
         }
     }
 
+    protected void dumpWarning(@NotNull DBCOutputWriter output, @NotNull Throwable warning) {
+        output.println(null, warning.getMessage());
+    }
 }

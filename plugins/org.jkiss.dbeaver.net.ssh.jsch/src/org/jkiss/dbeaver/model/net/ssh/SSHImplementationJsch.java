@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,13 +98,14 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
                 UserInfo userInfo = null;
                 JSCHUserInfoPromptProvider userInfoPromptProvider = GeneralUtils.adapt(this, JSCHUserInfoPromptProvider.class);
                 if (userInfoPromptProvider != null) {
-                    userInfo = userInfoPromptProvider.createUserInfoPrompt(auth, session);
+                    userInfo = userInfoPromptProvider.createUserInfoPrompt(host, session);
                 }
                 if (userInfo == null) {
                     userInfo = new JschUserInfo(auth);
                 }
 
                 session.setUserInfo(userInfo);
+                session.setHostKeyAlias(host.getHostname());
                 setupHostKeyVerification(session, configuration);
                 session.setServerAliveInterval(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL));
                 session.setTimeout(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT));
