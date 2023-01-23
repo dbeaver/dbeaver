@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -211,7 +211,7 @@ public class SQLScriptParser {
                     }
                 }
 
-                if (isPredicateEvaluationEnabled) {
+                if (isPredicateEvaluationEnabled && !token.isEOF()) {
                     SQLParserActionKind actionKind = predicateEvaluator.evaluatePredicates();
                     if (actionKind == SQLParserActionKind.BEGIN_BLOCK) {
                         // header blocks seems optional and we are in the block either way
@@ -718,18 +718,27 @@ public class SQLScriptParser {
                             parameters = new ArrayList<>();
                         }
 
-                        String preparedParamName;
+                        String preparedParamName = null;
                         String paramMark = paramName.substring(0, 1);
-                        if (ArrayUtils.contains(syntaxManager.getNamedParameterPrefixes(), paramMark)) {
-                            String rawParamName = paramName.substring(1);
-                            if (sqlDialect.isQuotedIdentifier(rawParamName)) {
-                                preparedParamName = sqlDialect.getUnquotedIdentifier(rawParamName);
-                            } else {
-                                preparedParamName = rawParamName.toUpperCase(Locale.ENGLISH);
+                        if (paramMark.equals("$")) {
+                            String variableName = SQLQueryParameter.stripVariablePattern(paramName);
+                            if (!variableName.equals(paramName)) {
+                                preparedParamName = variableName.toUpperCase(Locale.ENGLISH);
                             }
-                        } else {
-                            preparedParamName = paramName;
+                        } 
+                        if (preparedParamName == null) {
+                            if (ArrayUtils.contains(syntaxManager.getNamedParameterPrefixes(), paramMark)) {
+                                String rawParamName = paramName.substring(1);
+                                if (sqlDialect.isQuotedIdentifier(rawParamName)) {
+                                    preparedParamName = sqlDialect.getUnquotedIdentifier(rawParamName);
+                                } else {
+                                    preparedParamName = rawParamName.toUpperCase(Locale.ENGLISH);
+                                }
+                            } else {
+                                preparedParamName = paramName;
+                            }
                         }
+                        
                         SQLQueryParameter parameter = new SQLQueryParameter(
                             syntaxManager,
                             parameters.size(),

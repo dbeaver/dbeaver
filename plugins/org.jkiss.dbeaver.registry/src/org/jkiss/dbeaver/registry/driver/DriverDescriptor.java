@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1604,11 +1604,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
                 Path srcLocalFile = library.getLocalFile();
                 if (srcLocalFile == null) {
-                    log.warn("\t-Driver library file '" + library.getPath() + "' is missing");
+                    if (library.getType() != DBPDriverLibrary.FileType.license) {
+                        log.warn("\t-Driver '" + getFullId() + "' library file '" + library.getPath() + "' is missing");
+                    }
                     continue;
                 }
                 if (!Files.exists(srcLocalFile)) {
-                    log.warn("\tDriver library file '" + srcLocalFile.toAbsolutePath() + "' doesn't exist");
+                    if (library.getType() != DBPDriverLibrary.FileType.license) {
+                        log.warn("\tDriver '" + getFullId() + "' library file '" + srcLocalFile.toAbsolutePath() + "' doesn't exist");
+                    }
                     continue;
                 }
 

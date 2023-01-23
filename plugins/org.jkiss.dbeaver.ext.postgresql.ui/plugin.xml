@@ -198,6 +198,15 @@
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
             <tool
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolBackupAll"
+                    description="%tools.backup.all.db.description"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolBackupAll"
+                    label="%tools.backup.all.db.name"
+                    icon="#export"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+            </tool>
+            <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolRestore"
                     description="%tools.restore.db.description"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolRestore"
@@ -302,6 +311,7 @@
     <extension point="org.jkiss.dbeaver.task.ui">
         <configurator type="pgDatabaseBackup" class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreTaskConfigurator"/>
         <configurator type="pgDatabaseRestore" class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreTaskConfigurator"/>
+        <configurator type="pgDatabaseBackupAll" class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreTaskConfigurator"/>
         <configurator type="pgScriptExecute" class="org.jkiss.dbeaver.ext.postgresql.tools.PostgreTaskConfigurator"/>
     </extension>
 
