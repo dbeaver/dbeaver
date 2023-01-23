@@ -122,7 +122,6 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private long oid;
     private long xmin;
     private boolean procWasCreatedOrReplaced;
-    private boolean procWasNotChanged;
     private PostgreProcedureKind kind;
     private String procSrc;
     private String body;
@@ -166,7 +165,6 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         this.oid = JDBCUtils.safeGetLong(dbResult, "poid");
         this.xmin = JDBCUtils.safeGetLong(dbResult, "pxmin");
         this.procWasCreatedOrReplaced = false;
-        this.procWasNotChanged = false;
         setName(JDBCUtils.safeGetString(dbResult, "proname"));
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "proowner");
         this.languageId = JDBCUtils.safeGetLong(dbResult, "prolang");
@@ -338,6 +336,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return oid;
     }
     
+    @Property(order = 6)    
     public long getXmin() {
         return xmin;
     }
@@ -350,10 +349,6 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         this.procWasCreatedOrReplaced = value;
     }
     
-    public boolean getProcWasNotChanged() {
-        return procWasNotChanged;
-    }    
-
     @Override
     public DBSProcedureType getProcedureType()
     {
@@ -843,7 +838,6 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         PostgreProcedure pgProc = getContainer().getProceduresCache().refreshObject(monitor, getContainer(), this);
         if (oldProcWasCreatedOrReplaced) {
             if ((oldOid != 0) && (oldXmin != 0) && (pgProc.oid == oldOid) && (pgProc.xmin == oldXmin)) {
-                pgProc.procWasNotChanged = true;
                 DBWorkbench.getPlatformUI().showWarningMessageBox(PostgreMessages.procedure_warning_name, 
                     PostgreMessages.procedure_warning_text);
                 this.setProcWasCreatedOrReplaced(false); // let throw warning once
