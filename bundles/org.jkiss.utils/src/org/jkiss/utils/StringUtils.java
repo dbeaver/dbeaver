@@ -18,15 +18,15 @@ package org.jkiss.utils;
 
 import org.jkiss.code.NotNull;
 
-import java.nio.file.Path;
+import java.util.regex.Pattern;
 
-public class PathUtils {
+public class StringUtils {
+
+    private static final Pattern REVERSE_BACKSLASH_PREFIX_REGEX = Pattern.compile("^/+");
 
     @NotNull
-    public static Path replacePathStart(@NotNull Path path, @NotNull Path replacement) {
-        if (path.getNameCount() == replacement.getNameCount()) {
-            return replacement;
-        }
-        return replacement.resolve(path.subpath(replacement.getNameCount(), path.getNameCount()));
+    public static String normalizeResourcePath(@NotNull String path) {
+        return REVERSE_BACKSLASH_PREFIX_REGEX.matcher(path).replaceFirst("")
+                .replace('\\', '/');
     }
 }
