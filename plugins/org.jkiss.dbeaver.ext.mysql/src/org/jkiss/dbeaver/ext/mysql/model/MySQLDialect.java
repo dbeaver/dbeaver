@@ -127,7 +127,7 @@ public class MySQLDialect extends JDBCSQLDialect {
         "ST_POLYFROMTEXT"
     };
     
-    private static final Pattern QUOTED_IDENTIFIER_PATTERN = Pattern.compile("[0-9]+");
+    private static final Pattern ONE_OR_MORE_DIGITS_PATTERN = Pattern.compile("[0-9]+");
 
     private static String[] EXEC_KEYWORDS =  { "CALL" };
     private int lowerCaseTableNames;
@@ -199,7 +199,7 @@ public class MySQLDialect extends JDBCSQLDialect {
 
     @Override
     public boolean mustBeQuoted(String str, boolean forceCaseSensitive) {
-        Matcher matcher = QUOTED_IDENTIFIER_PATTERN.matcher(str);
+        Matcher matcher = ONE_OR_MORE_DIGITS_PATTERN.matcher(str);
         if (matcher.lookingAt()) { // we should quote numeric names and names starts with number
             return true;
         }
