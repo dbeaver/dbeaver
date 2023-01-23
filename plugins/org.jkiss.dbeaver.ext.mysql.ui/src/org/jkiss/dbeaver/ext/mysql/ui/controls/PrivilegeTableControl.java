@@ -98,7 +98,7 @@ public class PrivilegeTableControl extends Composite {
         }, new EditingSupport(tableViewer) {
             @Override
             protected CellEditor getCellEditor(Object element) {
-                return new CustomCheckboxCellEditor(tableViewer.getTable());
+                return new CustomCheckboxCellEditor(tableViewer.getTable(), true);
             }
 
             @Override

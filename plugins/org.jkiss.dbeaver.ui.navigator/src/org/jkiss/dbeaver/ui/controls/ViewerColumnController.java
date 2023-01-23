@@ -393,10 +393,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     public void autoSizeColumns() {
         UIUtils.asyncExec(() -> {
             Control control = this.viewer.getControl();
-            if (control instanceof Tree) {
-                UIUtils.packColumns((Tree) control, true, null);
-            } else if (control instanceof Table) {
-                UIUtils.packColumns((Table) control, true);
+            if (!control.isDisposed()) {
+                if (control instanceof Tree) {
+                    UIUtils.packColumns((Tree) control, true, null);
+                } else if (control instanceof Table) {
+                    UIUtils.packColumns((Table) control, true);
+                }
             }
         });
     }

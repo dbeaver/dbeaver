@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
+
 import java.io.PrintWriter;
 import java.util.List;
 
@@ -69,7 +72,8 @@ public interface DBCScriptContext {
 
     void setData(String key, Object value);
 
-    PrintWriter getOutputWriter();
+    @NotNull
+    DBCOutputWriter getOutputWriter();
 
     void addListener(DBCScriptContextListener listener);
 

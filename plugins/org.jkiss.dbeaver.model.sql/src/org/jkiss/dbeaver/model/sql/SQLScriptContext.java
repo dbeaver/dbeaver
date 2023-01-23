@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
+import org.jkiss.dbeaver.model.impl.OutputWriterAdapter;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
@@ -58,7 +60,7 @@ public class SQLScriptContext implements DBCScriptContext {
     @Nullable
     private final File sourceFile;
     @NotNull
-    private final PrintWriter outputWriter;
+    private final DBCOutputWriter outputWriter;
 
     private SQLParametersProvider parametersProvider;
     private boolean ignoreParameters;
@@ -70,10 +72,20 @@ public class SQLScriptContext implements DBCScriptContext {
         @NotNull Writer outputWriter,
         @Nullable SQLParametersProvider parametersProvider)
     {
+        this(parentContext, contextProvider, sourceFile, new OutputWriterAdapter(new PrintWriter(outputWriter)), parametersProvider);
+    }
+
+    public SQLScriptContext(
+        @Nullable SQLScriptContext parentContext,
+        @NotNull DBPContextProvider contextProvider,
+        @Nullable File sourceFile,
+        @NotNull DBCOutputWriter outputWriter,
+        @Nullable SQLParametersProvider parametersProvider
+    ) {
         this.parentContext = parentContext;
         this.contextProvider = contextProvider;
         this.sourceFile = sourceFile;
-        this.outputWriter = new PrintWriter(outputWriter);
+        this.outputWriter = outputWriter;
         this.parametersProvider = parametersProvider;
     }
 
@@ -215,7 +227,7 @@ public class SQLScriptContext implements DBCScriptContext {
 
     @Override
     @NotNull
-    public PrintWriter getOutputWriter() {
+    public DBCOutputWriter getOutputWriter() {
         return outputWriter;
     }
 
