@@ -816,6 +816,14 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             inParameters.addAll(parameters);
         }
         //getMaxParameterLength(parameters, inParameters);
+        DBPPreferenceStore prefStore;
+        DBPDataSource dataSource = proc.getDataSource();
+        if (dataSource != null) {
+            prefStore = dataSource.getContainer().getPreferenceStore();
+        } else {
+            prefStore = DBWorkbench.getPlatform().getPreferenceStore();
+        }
+        String namedParameterPrefix = prefStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);        
         boolean useBrackets = useBracketsForExec(proc);
         if (useBrackets) sql.append("{ ");
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
@@ -829,10 +837,10 @@ public abstract class AbstractSQLDialect implements SQLDialect {
                             sql.append(", ");
                         }
                         if (castParams) {
-                            sql.append("cast(:").append(CommonUtils.escapeIdentifier(parameter.getName()))
+                            sql.append("cast(").append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()))
                                 .append(" as ").append(typeName).append(")");
                         } else {
-                            sql.append(":").append(CommonUtils.escapeIdentifier(parameter.getName()));
+                            sql.append(namedParameterPrefix).append(CommonUtils.escapeIdentifier(parameter.getName()));
                         }
                         break;
                     case RETURN:

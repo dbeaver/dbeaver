@@ -828,7 +828,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Override
     public boolean supportsObjectDefinitionOption(String option) {
-        return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option) || DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option);
+        return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option) || DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option) 
+                || DBPScriptObject.OPTION_CAST_PARAMS.equals(option);
     }
 
     @Override
