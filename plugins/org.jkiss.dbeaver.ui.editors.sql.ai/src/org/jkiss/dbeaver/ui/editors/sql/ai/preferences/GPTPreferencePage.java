@@ -102,7 +102,10 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             tokenText = UIUtils.createLabelText(authorizationGroup, GPTMessages.gpt_preference_page_selector_token,
                 "", SWT.BORDER | SWT.PASSWORD);
             tokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Link link = UIUtils.createLink(authorizationGroup, "Copy-paste API token from <a>" + API_KEY_URL + "</a>", new SelectionAdapter() {
+            Link link = UIUtils.createLink(
+                authorizationGroup,
+                "Copy-paste API token from <a>" + API_KEY_URL + "</a>",
+                new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     UIUtils.openWebBrowser(API_KEY_URL);
