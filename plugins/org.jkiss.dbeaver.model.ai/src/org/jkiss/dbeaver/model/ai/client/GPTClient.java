@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
 import org.jkiss.dbeaver.model.ai.formatter.GPTRequestFormatter;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -70,16 +71,17 @@ public class GPTClient {
      * Request completion from GPT API uses parameters from {@link GPTPreferences} for model settings\
      * Adds current schema metadata to starting query
      *
-     * @param request request text
-     * @param monitor execution monitor
-     * @param context context object
+     * @param request          request text
+     * @param monitor          execution monitor
+     * @param context          context object
+     * @param executionContext
      * @return resulting string
      */
     public static String requestCompletion(
         @NotNull String request,
         @NotNull DBRProgressMonitor monitor,
-        @Nullable DBSObjectContainer context
-    ) throws DBException {
+        @Nullable DBSObjectContainer context,
+        @NotNull DBCExecutionContext executionContext) throws DBException {
         if (context == null || context.getDataSource() == null) {
             throw new DBException("No datasource container");
         }
@@ -89,7 +91,7 @@ public class GPTClient {
             service = initGPTApiClientInstance();
             clientInstances.put(container.getId(), service);
         }
-        String modifiedRequest = GPTRequestFormatter.addDBMetadataToRequest(monitor, request, context);
+        String modifiedRequest = GPTRequestFormatter.addDBMetadataToRequest(monitor, request, executionContext, context);
         if (monitor.isCanceled()) {
             return "";
         }

@@ -94,7 +94,7 @@ public class GPTExecuteHandler extends AbstractHandler {
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    completionResult[0] = GPTClient.requestCompletion(inputText, monitor, finalObject);
+                    completionResult[0] = GPTClient.requestCompletion(inputText, monitor, finalObject, executionContext);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }

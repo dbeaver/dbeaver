@@ -20,11 +20,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -39,6 +41,7 @@ public class GPTRequestFormatter {
     public static String addDBMetadataToRequest(
         DBRProgressMonitor monitor,
         String request,
+        DBCExecutionContext executionContext,
         DBSObjectContainer context
     ) throws DBException {
         if (context == null || context.getDataSource() == null || CommonUtils.isEmptyTrimmed(request)) {
@@ -51,6 +54,12 @@ public class GPTRequestFormatter {
             .append(context.getDataSource().getSQLDialect().getDialectName())
             .append(" SQL tables, with their properties:\n#\n");
         generateObjectDescription(monitor, additionalMetadata, context);
+        if (executionContext != null && executionContext.getContextDefaults() != null) {
+            DBSSchema defaultSchema = executionContext.getContextDefaults().getDefaultSchema();
+            if (defaultSchema != null) {
+                additionalMetadata.append("#\n# Current schema is ").append(defaultSchema.getName()).append("\n");
+            }
+        }
         additionalMetadata.append("#\n###").append(request.trim()).append("\nSELECT");
         return additionalMetadata.toString();
     }
