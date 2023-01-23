@@ -30,9 +30,11 @@ import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.utils.Pair;
 
 import javax.crypto.SecretKey;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
@@ -141,6 +143,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     void setResourceProperty(@NotNull String resourcePath, @NotNull String propName, @Nullable Object propValue);
 
     void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath);
+
+    void moveResourcePropertiesBatch(@NotNull Collection<Pair<String, String>> oldToNewPaths);
 
     void refreshProject(DBRProgressMonitor monitor);
 

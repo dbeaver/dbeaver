@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -386,6 +387,22 @@ public abstract class BaseProjectImpl implements DBPProject {
             Map<String, Object> resProps = resourceProperties.remove(oldResourcePath);
             if (resProps != null) {
                 resourceProperties.put(newResourcePath, resProps);
+            }
+        }
+        flushMetadata(false); // wait for the file to be written
+    }
+
+    @Override
+    public final void moveResourcePropertiesBatch(@NotNull Collection<Pair<String, String>> oldToNewPaths) {
+        loadMetadata();
+        synchronized (metadataSync) {
+            for (var pathsPair : oldToNewPaths) {
+                final var oldResourcePath = normalizeResourcePath(pathsPair.getFirst());
+                final var newResourcePath = normalizeResourcePath(pathsPair.getSecond());
+                final var resProps = resourceProperties.remove(oldResourcePath);
+                if (resProps != null) {
+                    resourceProperties.put(newResourcePath, resProps);
+                }
             }
         }
         flushMetadata(false); // wait for the file to be written
