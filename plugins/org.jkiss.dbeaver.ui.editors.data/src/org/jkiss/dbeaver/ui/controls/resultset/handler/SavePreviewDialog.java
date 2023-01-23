@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,18 +26,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSaveReport;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.DetailsViewDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class SavePreviewDialog extends DetailsViewDialog {
     private ResultSetSaveReport saveReport;
 
     public SavePreviewDialog(@NotNull ResultSetViewer viewer, boolean showCascadeSettings, @NotNull ResultSetSaveReport saveReport) {
-        super(viewer.getControl().getShell(), "Preview changes", UIIcon.SQL_SCRIPT);
+        super(viewer.getControl().getShell(), "Preview changes", DBIcon.STATUS_WARNING);
 
         this.viewer = viewer;
         this.showCascadeSettings = showCascadeSettings;
@@ -91,10 +92,10 @@ public class SavePreviewDialog extends DetailsViewDialog {
         {
             Composite msgComposite = UIUtils.createComposite(messageGroup, 2);
             Label imgLabel = new Label(msgComposite, SWT.NONE);
-            imgLabel.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+            imgLabel.setImage(DBeaverIcons.getImage(DBIcon.STATUS_WARNING));
             Label msgText = new Label(msgComposite, SWT.NONE);
             msgText.setText("You are about to save your changes into the database (" + viewer.getDataSource().getContainer().getName() + ").\n" +
-                changesReport + ".\nAre you sure you want to proceed?");
+                (CommonUtils.isEmpty(changesReport) ? "" : "\t" + changesReport + ".") + "\nAre you sure you want to proceed?");
         }
 
         //UIUtils.createHorizontalLine(messageGroup);
@@ -137,22 +138,14 @@ public class SavePreviewDialog extends DetailsViewDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
-        parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
-        createDetailsButton(parent);
-        ((GridData) detailsButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
-
-        Label spacer = new Label(parent, SWT.NONE);
-        GridData gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        gd.minimumWidth = 50;
-        spacer.setLayoutData(gd);
-
-        ((GridLayout) parent.getLayout()).numColumns++;
-        ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
-
-        createButton(parent, IDialogConstants.OK_ID, UINavigatorMessages.dialog_filter_save_button, true);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+    protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
+        if (alignment == SWT.LEAD) {
+            createDetailsButton(parent);
+            ((GridData) detailsButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
+        } else {
+            createButton(parent, IDialogConstants.OK_ID, UINavigatorMessages.dialog_filter_save_button, false);
+            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+        }
     }
 
     @Override

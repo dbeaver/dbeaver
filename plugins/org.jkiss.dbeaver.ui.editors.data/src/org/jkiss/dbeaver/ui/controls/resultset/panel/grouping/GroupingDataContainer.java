@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class GroupingDataContainer implements DBSDataContainer {
         if (ArrayUtils.isEmpty(attributes)) {
             return "Grouping";
         } else {
-            return "Grouping[" + String.join(",", attributes) + "]";
+            return "GROUP BY " + String.join(",", attributes);
         }
     }
 
@@ -71,7 +71,7 @@ public class GroupingDataContainer implements DBSDataContainer {
 
     @Override
     public String[] getSupportedFeatures() {
-        return new String[] {FEATURE_DATA_SELECT};
+        return new String[] {FEATURE_DATA_SELECT, FEATURE_DATA_FILTER};
     }
 
     @NotNull
@@ -157,5 +157,10 @@ public class GroupingDataContainer implements DBSDataContainer {
 
     public void setGroupingAttributes(@Nullable String[] attributes) {
         this.attributes = attributes;
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }

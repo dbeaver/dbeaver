@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -32,7 +33,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.lang.reflect.Method;
@@ -65,8 +68,12 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
         @NotNull DBSTypedObject type,
         int index
     ) throws DBCException {
+        boolean showDateAsDate = CommonUtils.getBoolean(
+            session.getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SHOW_DATE_AS_DATE),
+            false);
         if (resultSet instanceof JDBCResultSet) {
-            if (OracleConstants.TYPE_NAME_DATE.equals(type.getTypeName()) && !formatSettings.isUseNativeDateTimeFormat()) {
+            if (showDateAsDate && OracleConstants.TYPE_NAME_DATE.equals(type.getTypeName())
+                && !formatSettings.isUseNativeDateTimeFormat()) {
                 try {
                     return ((JDBCResultSet) resultSet).getDate(index + 1);
                 } catch (SQLException e) {
@@ -190,7 +197,16 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     @NotNull
     protected String getFormatterId(DBSTypedObject column)
     {
-        if (OracleConstants.TYPE_NAME_DATE.equals(column.getTypeName())) {
+        boolean showDateAsDate = false;
+        if (column instanceof DBSObject) {
+            DBPDataSource dataSource = ((DBSObject) column).getDataSource();
+            if (dataSource != null) {
+                showDateAsDate = CommonUtils.getBoolean(
+                    dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SHOW_DATE_AS_DATE),
+                    false);
+            }
+        }
+        if (showDateAsDate && OracleConstants.TYPE_NAME_DATE.equals(column.getTypeName())) {
             return DBDDataFormatter.TYPE_NAME_DATE;
         }
 

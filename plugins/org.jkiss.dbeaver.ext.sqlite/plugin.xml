@@ -38,6 +38,7 @@
                     <replace provider="generic" driver="sqlite_jdbc"/>
 
                     <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.sqlite.xerial"/>
                     <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
                     <file type="jar" path="drivers/sqlite/xerial" bundle="drivers.sqlite.xerial"/>
 
@@ -65,7 +66,7 @@
                 id="org.jkiss.dbeaver.ext.sqlite.model.data.SQLiteValueHandlerProvider"
                 label="SQLite data types provider">
 
-            <datasource class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteDataSource"/>
+            <datasource id="sqlite"/>
             <type name="*"/>
         </provider>
     </extension>

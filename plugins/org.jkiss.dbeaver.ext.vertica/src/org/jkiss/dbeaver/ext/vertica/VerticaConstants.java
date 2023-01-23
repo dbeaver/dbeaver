@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,5 +20,7 @@ public class VerticaConstants {
 
     public static String TYPE_FLEX_TABLE = "FLEX TABLE";
     public static String TYPE_SYSTEM_TABLE = "SYSTEM TABLE";
+
+    public static final String PROP_DISABLE_COMMENTS_READING = "disable-comments-reading@";
 
 }

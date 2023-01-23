@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,6 +171,11 @@ public abstract class BaseProjectImpl implements DBPProject {
         return false;
     }
 
+    @Override
+    public boolean isPrivateProject() {
+        return true;
+    }
+
     @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
@@ -329,11 +334,6 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @Nullable
     @Override
-    public Object getResourceProperty(@NotNull IResource resource, @NotNull String propName) {
-        return getResourceProperty(getResourcePath(resource), propName);
-    }
-
-    @Nullable
     public Map<String, Object> getResourceProperties(@NotNull String resourcePath) {
         loadMetadata();
         resourcePath = normalizeResourcePath(resourcePath);
@@ -371,6 +371,20 @@ public abstract class BaseProjectImpl implements DBPProject {
                     // No changes
                     return;
                 }
+            }
+        }
+        flushMetadata();
+    }
+
+    @Override
+    public void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath) {
+        loadMetadata();
+        oldResourcePath = normalizeResourcePath(oldResourcePath);
+        newResourcePath = normalizeResourcePath(newResourcePath);
+        synchronized (metadataSync) {
+            Map<String, Object> resProps = resourceProperties.remove(oldResourcePath);
+            if (resProps != null) {
+                resourceProperties.put(newResourcePath, resProps);
             }
         }
         flushMetadata();
@@ -423,7 +437,7 @@ public abstract class BaseProjectImpl implements DBPProject {
         }
     }
 
-    void updateResourceCache(IPath oldPath, IPath newPath) {
+    void moveResourceCache(IPath oldPath, IPath newPath) {
         boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {

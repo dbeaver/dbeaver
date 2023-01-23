@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,8 @@ public final class RuntimeUtils {
     private static final boolean IS_WINDOWS = Platform.getOS().equals(Platform.OS_WIN32);
     private static final boolean IS_MACOS = Platform.getOS().equals(Platform.OS_MACOSX);
     private static final boolean IS_LINUX = Platform.getOS().equals(Platform.OS_LINUX);
+
+    private static final boolean IS_GTK = Platform.getWS().equals(Platform.WS_GTK);
 
     private static final byte[] NULL_MAC_ADDRESS = new byte[] {0, 0, 0, 0, 0, 0};
 
@@ -339,6 +341,10 @@ public final class RuntimeUtils {
 
     public static boolean isLinux() {
         return IS_LINUX;
+    }
+    
+    public static boolean isGtk() {
+        return IS_GTK;
     }
 
     public static void setThreadName(String name) {

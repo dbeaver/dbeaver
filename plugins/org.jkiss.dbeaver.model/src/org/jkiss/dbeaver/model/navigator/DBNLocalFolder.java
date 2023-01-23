@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -134,7 +135,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
 
     @Override
     public String getNodeItemPath() {
-        return NodePathType.folder.getPrefix() + getOwnerProject().getId() + "/" + folder.getFolderPath();
+        return makeLocalFolderItemPath(folder);
     }
 
     @Override
@@ -217,7 +218,11 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
                 if (node instanceof DBNDataSource) {
                     ((DBNDataSource) node).moveToFolder(getOwnerProject(), folder);
                 } else if (node instanceof DBNLocalFolder) {
-                    ((DBNLocalFolder) node).getFolder().setParent(this.getFolder());
+                    DBPDataSourceFolder nodeFolder = ((DBNLocalFolder) node).getFolder();
+                    getDataSourceRegistry().moveFolder(
+                        nodeFolder.getFolderPath(),
+                        generateNewFolderPath(this.getFolder(), nodeFolder.getName())
+                    );
                 }
             } else {
                 if (node instanceof DBNDataSource) {
@@ -239,7 +244,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
-        folder.setName(newName);
+        getDataSourceRegistry().moveFolder(folder.getFolderPath(), generateNewFolderPath(folder.getParent(), newName));
         DBNModel.updateConfigAndRefreshDatabases(this);
     }
 
@@ -272,9 +277,31 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         dataSources.addAll(getDataSources());
     }
 
+    public String generateNewFolderPath(DBPDataSourceFolder newParent, String newName) {
+        var folderPath = Path.of(getFolder().getFolderPath());
+        if (newParent != null) {
+            return normalizePath(Path.of(newParent.getFolderPath()).resolve(newName).toString());
+        }
+        return normalizePath(folderPath.getFileName().resolveSibling(newName).toString());
+    }
+
+    @NotNull
+    public static String makeLocalFolderItemPath(DBPDataSourceFolder folder) {
+        return makeLocalFolderItemPath(folder.getDataSourceRegistry().getProject().getId(), folder.getFolderPath());
+    }
+
+    @NotNull
+    public static String makeLocalFolderItemPath(@NotNull String projectId, @NotNull String folderPath) {
+        return NodePathType.folder.getPrefix() + projectId + "/" + folderPath;
+    }
+
     @Override
     public String toString() {
         return folder.getFolderPath();
+    }
+
+    private String normalizePath(@NotNull String folderPath) {
+        return folderPath.replace("\\", "/");
     }
 
 }

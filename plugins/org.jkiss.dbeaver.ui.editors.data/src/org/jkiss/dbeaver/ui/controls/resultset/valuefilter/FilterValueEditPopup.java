@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -95,11 +96,11 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
         DBSEntityReferrer descReferrer = ResultSetUtils.getEnumerableConstraint(filter.getAttribute());
 
-        Composite group = (Composite) super.createDialogArea(parent);
+        Composite group = super.createDialogArea(parent);
         {
             Composite labelComposite = UIUtils.createComposite(group, 2);
             labelComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -153,12 +154,26 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
         Table table = filter.getTableViewer().getTable();
 
         ViewerColumnController<?, ?> columnController = new ViewerColumnController<>("sqlFilterValueEditPopup", filter.getTableViewer());
-        columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_value_label, ResultSetMessages.dialog_filter_value_edit_table_value_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                return filter.getAttribute().getValueHandler().getValueDisplayString(filter.getAttribute(), ((DBDLabelValuePair) element).getValue(), DBDDisplayFormat.UI);
-            }
-        });
+        columnController.addColumn(
+            ResultSetMessages.dialog_filter_value_edit_table_value_label,
+            ResultSetMessages.dialog_filter_value_edit_table_value_description,
+            SWT.LEFT,
+            true,
+            true,
+            filter.getAttribute().getDataKind() == DBPDataKind.NUMERIC,
+            null,
+            new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    return filter.getAttribute().getValueHandler().getValueDisplayString(
+                        filter.getAttribute(),
+                        ((DBDLabelValuePair) element).getValue(),
+                        DBDDisplayFormat.UI
+                    );
+                }
+            },
+            null
+        );
         if (descReferrer != null) {
             columnController.addColumn(ResultSetMessages.dialog_filter_value_edit_table_description_label, ResultSetMessages.dialog_filter_value_edit_table_description_description, SWT.LEFT, true, true, new ColumnLabelProvider() {
                 @Override

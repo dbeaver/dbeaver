@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -213,7 +213,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                                             isLike || (
                                                 !CommonUtils.isEmpty(prevDelimiter) &&
                                                 !prevDelimiter.endsWith(")")));
-                                    if (waitsForValue) {
+                                    if (waitsForValue && request.getContext().isShowValues()) {
                                         makeProposalsFromAttributeValues(
                                             dataSource,
                                             wordDetector,
@@ -1061,7 +1061,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         return tableRefs;
     }
 
-    private static boolean isNamePartToken(TPToken tok) {
+    /**
+     * Checks if token is the name part token
+     */
+    public static boolean isNamePartToken(TPToken tok) {
         return tok.getData() == SQLTokenType.T_QUOTED
             || tok.getData() == SQLTokenType.T_KEYWORD
             || tok.getData() == SQLTokenType.T_OTHER;

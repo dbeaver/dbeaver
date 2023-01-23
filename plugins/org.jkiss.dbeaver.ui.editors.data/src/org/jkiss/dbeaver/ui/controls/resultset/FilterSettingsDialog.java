@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,12 +100,12 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
         getShell().setText(ResultSetMessages.controls_resultset_filter_title);
         getShell().setImage(DBeaverIcons.getImage(UIIcon.FILTER));
 
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite composite = super.createDialogArea(parent);
 
         TabFolder tabFolder = new TabFolder(composite, SWT.NONE);
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));

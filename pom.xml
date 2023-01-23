@@ -9,14 +9,15 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>22.2.4</dbeaver-version>
+        <dbeaver-version>22.3.3</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-        <tycho-version>3.0.0</tycho-version>
+        <tycho-version>3.0.1</tycho-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
         <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
-        <eclipse-p2-repo.url>https://download.eclipse.org/releases/2022-09/</eclipse-p2-repo.url>
+        <eclipse-p2-repo.url>https://download.eclipse.org/releases/2022-12/</eclipse-p2-repo.url>
+        <orbit-repo.url>https://download.eclipse.org/tools/orbit/downloads/drops/R20221123021534/repository/</orbit-repo.url>
 
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>
@@ -39,14 +40,17 @@
             <url>${eclipse-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
+        <repository>
+            <id>orbit-repo</id>
+            <url>${orbit-repo.url}</url>
+            <layout>p2</layout>
+        </repository>
     </repositories>
 
     <build>
         <sourceDirectory>${project.basedir}/src</sourceDirectory>
         <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
         <plugins>
-
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>

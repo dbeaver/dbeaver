@@ -81,8 +81,10 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLView" label="%tree.views.node.name" icon="#folder_view" description="%tree.views.node.tip">
                             <items label="%tree.view.node.name" path="view" property="views" icon="#view">
-                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
-                                </items>
+                                <folder label="%tree.columns.node.name" icon="#columns" description="View columns" >
+                                    <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip" virtual="true">
@@ -93,8 +95,10 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure" label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.tip">
                             <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
-                                <items label="Parameters" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true">
-                                </items>
+                                <folder label="%tree.procedure_columns.node.name" icon="#columns" description="Procedure columns" >
+                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true">
+                                    </items>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPackage" label="%tree.packages.node.name" icon="#packages" description="%tree.packages.node.description" visibleIf="object.dataSource.mariaDB">
@@ -182,6 +186,7 @@
                     <replace provider="mysql" driver="mysql3"/>
 
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql5" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
@@ -208,6 +213,7 @@
                         promoted="1"
                         categories="sql">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.29]" bundle="!drivers.mysql"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
@@ -232,7 +238,8 @@
                     propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
                     description="Driver for MySQL NDB cluster"
                     categories="sql">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE" bundle="!drivers.mysql"/>
+                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE" bundle="!drivers.mysql"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
@@ -256,6 +263,7 @@
                     promoted="1"
                     categories="sql">
                     <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[3.0.7]" bundle="!drivers.mariadb"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.mariadb"/>
 
                     <file type="license" path="drivers/mariadb/LICENSE.txt" bundle="drivers.mariadb"/>
                     <file type="jar" path="drivers/mariadb" bundle="drivers.mariadb"/>
@@ -408,7 +416,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">
-        <category id="mysql" name="MySQL" description="%category.mysql.description" icon="icons/mysql_icon.png"/>
+        <category id="mysql" name="MySQL" description="%org.jkiss.dbeaver.task.category.mysql.description" icon="icons/mysql_icon.png"/>
         <category id="mysqlTool" parent="mysql" name="%org.jkiss.dbeaver.task.category.mysqlTool.name" description="%org.jkiss.dbeaver.task.category.mysqlTool.description" icon="icons/mysql_icon.png"/>
 
         <task id="mysqlDatabaseBackup" name="%task.mysqlDatabaseBackup.name" description="%task.mysqlDatabaseBackup.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql" handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler">

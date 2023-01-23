@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.completion;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -70,7 +71,7 @@ public class SQLCompletionProposalBase {
     protected int cursorPosition;
 
     private DBPKeywordType proposalType;
-    private String additionalProposalInfo;
+    private Object additionalProposalInfo;
 
     private DBPImage image;
     private DBPNamedObject object;
@@ -100,7 +101,7 @@ public class SQLCompletionProposalBase {
         this.cursorPosition = cursorPosition;
         this.image = image;
         this.proposalType = proposalType;
-        this.additionalProposalInfo = description;
+        this.additionalProposalInfo = object;
 
         setPosition(wordPartDetector);
 
@@ -126,11 +127,14 @@ public class SQLCompletionProposalBase {
         final char structSeparator = context.getSyntaxManager().getStructSeparator();
         DBPDataSource dataSource = context.getDataSource();
 
-        boolean useFQName = dataSource != null && context.isUseFQNames() && replacementString.indexOf(structSeparator) != -1;
+        final boolean proposalContainsStructSeparator = replacementString.indexOf(structSeparator) >= 0;
+        boolean useFQName = dataSource != null && context.isUseFQNames() && proposalContainsStructSeparator;
         if (useFQName) {
             replacementOffset = wordDetector.getStartOffset();
             replacementLength = wordDetector.getLength();
-        } else if (!fullWord.equals(replacementString) && !replacementString.contains(String.valueOf(structSeparator))) {
+        } else if ((!proposalContainsStructSeparator && !fullWord.equals(replacementString))
+            || dataSource != null && containsQuotedIdentifier(dataSource, replacementString)
+        ) {
             // Replace only last part
             int startOffset = fullWord.lastIndexOf(structSeparator, curOffset - 1);
             if (startOffset == -1) {
@@ -236,10 +240,10 @@ public class SQLCompletionProposalBase {
     }
 
     public Object getAdditionalInfo(DBRProgressMonitor monitor) {
-        if (additionalProposalInfo == null) {
+        if (additionalProposalInfo == null && object == null) {
             additionalProposalInfo = SQLCompletionHelper.readAdditionalProposalInfo(monitor, context, object, new String[]{displayString}, proposalType);
         }
-        return additionalProposalInfo;
+        return object != null ? object : additionalProposalInfo;
     }
 
     public String getDisplayString() {
@@ -297,4 +301,24 @@ public class SQLCompletionProposalBase {
         return displayString;
     }
 
+    // The proposal may contain identifier containing alias. Let's handle it using this ugly hack for now
+    private static boolean containsQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String string) {
+        final String[][] quotes = dataSource.getSQLDialect().getIdentifierQuoteStrings();
+        if (quotes == null) {
+            return false;
+        }
+        if (DBUtils.isQuotedIdentifier(dataSource, string)) {
+            return true;
+        }
+        for (String[] pair : quotes) {
+            if (!string.startsWith(pair[0])) {
+                continue;
+            }
+            final int last = string.lastIndexOf(pair[1]);
+            if (last > 0 && DBUtils.isQuotedIdentifier(dataSource, string.substring(0, last + 1))) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

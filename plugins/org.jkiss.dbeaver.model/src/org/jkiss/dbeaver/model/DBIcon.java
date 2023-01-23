@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,6 +141,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon OVER_ERROR = new DBIcon("over_error", "over/error_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_UNKNOWN = new DBIcon("over_condition", "over/conditional_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_LAMP = new DBIcon("over_lamp", "over/lamp_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OVER_RED_LAMP = new DBIcon("over_redlamp", "over/redlamp_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_KEY = new DBIcon("over_key", "over/key_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_LOCK = new DBIcon("over_lock", "over/lock_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_EXTERNAL = new DBIcon("over_external", "over/external_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$

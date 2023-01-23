@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -51,7 +49,7 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
     private List<PostgreCharset> allEncodings;
     private List<PostgreCollation> allCollations;
     private List<PostgreTablespace> allTablespaces;
-    private List<String> allTemplates;
+    private Set<String> allTemplates;
 
     private String name;
     private PostgreRole owner;
@@ -140,9 +138,8 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                     allUsers = supportsRoles ? new ArrayList<>(database.getUsers(monitor)) : null;
                     allEncodings = supportsEncodings ? new ArrayList<>(database.getEncodings(monitor)) : null;
                     allTablespaces = supportsTablespaces ? new ArrayList<>(database.getTablespaces(monitor)) : null;
-                    allTemplates = new ArrayList<>(dataSource.getTemplateDatabases(monitor));
+                    allTemplates = new TreeSet<>(dataSource.getTemplateDatabases(monitor));
                     allTemplates.addAll(dataSource.getDatabases().stream().map(PostgreDatabase::getName).collect(Collectors.toList()));
-                    allTemplates.sort(Comparator.naturalOrder());
 
                     final PostgreRole dba = supportsRoles ? database.getDBA(monitor) : null;
                     final String defUserName = dba == null ? "" : dba.getName();

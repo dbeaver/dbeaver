@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.Workbench;
+import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -53,12 +55,18 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
@@ -70,11 +78,12 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ResultSetHandlerMain
  */
-public class ResultSetHandlerMain extends AbstractHandler {
+public class ResultSetHandlerMain extends AbstractHandler implements IElementUpdater {
 
     public static final String CMD_TOGGLE_PANELS = "org.jkiss.dbeaver.core.resultset.grid.togglePreview";
     public static final String CMD_ACTIVATE_PANELS = "org.jkiss.dbeaver.core.resultset.grid.activatePreview";
@@ -101,8 +110,10 @@ public class ResultSetHandlerMain extends AbstractHandler {
     public static final String CMD_CELL_SET_DEFAULT = "org.jkiss.dbeaver.core.resultset.cell.setDefault";
     public static final String CMD_CELL_RESET = "org.jkiss.dbeaver.core.resultset.cell.reset";
     public static final String CMD_APPLY_CHANGES = "org.jkiss.dbeaver.core.resultset.applyChanges";
+    public static final String CMD_APPLY_AND_COMMIT_CHANGES = "org.jkiss.dbeaver.core.resultset.applyAndCommitChanges";
     public static final String CMD_REJECT_CHANGES = "org.jkiss.dbeaver.core.resultset.rejectChanges";
     public static final String CMD_GENERATE_SCRIPT = "org.jkiss.dbeaver.core.resultset.generateScript";
+    public static final String CMD_TOGGLE_CONFIRM_SAVE = "org.jkiss.dbeaver.core.resultset.toggleConfirmSave";
     public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
     public static final String CMD_FILTER_MENU = "org.jkiss.dbeaver.core.resultset.filterMenu";
     public static final String CMD_FILTER_MENU_DISTINCT = "org.jkiss.dbeaver.core.resultset.filterMenu.distinct";
@@ -118,6 +129,8 @@ public class ResultSetHandlerMain extends AbstractHandler {
     public static final String CMD_ZOOM_OUT = "org.eclipse.ui.edit.text.zoomOut";
 
     public static final String CMD_TOGGLE_ORDER = "org.jkiss.dbeaver.core.resultset.toggleOrder";
+
+    public static final String PARAM_EXPORT_WITH_PARAM = "exportWithParameter";
 
     public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart != null) {
@@ -276,13 +289,19 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 rsv.updatePanelsContent(false);
                 break;
             }
-            case CMD_APPLY_CHANGES: {
+            case CMD_APPLY_CHANGES:
+            case CMD_APPLY_AND_COMMIT_CHANGES: {
                 if (dataSource == null) {
                     return null;
                 }
                 ResultSetSaveSettings saveSettings = new ResultSetSaveSettings();
 
                 rsv.applyChanges(null, saveSettings);
+
+                if (actionId.equals(CMD_APPLY_AND_COMMIT_CHANGES)) {
+                    // Do commit
+                    ActionUtils.runCommand(ConnectionCommands.CMD_COMMIT, rsv.getSite());
+                }
 
                 break;
             }
@@ -299,6 +318,11 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 if (saveSettings != null) {
                     rsv.applyChanges(null, saveSettings);
                 }
+                break;
+            }
+            case CMD_TOGGLE_CONFIRM_SAVE: {
+                DBPPreferenceStore store = rsv.getPreferenceStore();
+                store.setValue(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE, !store.getBoolean(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE));
                 break;
             }
             case CMD_COPY_COLUMN_NAMES: {
@@ -464,7 +488,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_FILTER_MENU_DISTINCT: {
-                DBDAttributeBinding curAttribute = rsv.getActivePresentation().getCurrentAttribute();
+                DBDAttributeBinding curAttribute = rsv.getActivePresentation().getFocusAttribute();
                 if (curAttribute != null) {
                     rsv.showFiltersDistinctMenu(curAttribute, true);
                 }
@@ -487,6 +511,15 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_EXPORT: {
+                if (event.getParameter(PARAM_EXPORT_WITH_PARAM) != null) {
+                    String defProc = ResultSetHandlerOpenWith.getDefaultOpenWithProcessor();
+                    if (!CommonUtils.isEmpty(defProc)) {
+                        // Run "open with"
+                        ActionUtils.runCommand(
+                            ResultSetHandlerOpenWith.CMD_OPEN_WITH, null, Map.of(ResultSetHandlerOpenWith.PARAM_PROCESSOR_ID, defProc), rsv.getSite());
+                        return null;
+                    }
+                }
                 List<Integer> selectedRows = new ArrayList<>();
                 for (ResultSetRow selectedRow : rsv.getSelection().getSelectedRows()) {
                     selectedRows.add(selectedRow.getRowNumber());
@@ -522,7 +555,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
             }
 
             case CMD_TOGGLE_ORDER: {
-                final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
+                final DBDAttributeBinding attr = rsv.getActivePresentation().getFocusAttribute();
                 if (attr != null) {
                     rsv.toggleSortOrder(attr, null);
                 }
@@ -587,6 +620,24 @@ public class ResultSetHandlerMain extends AbstractHandler {
             return FontDescriptor.createFrom(initialFontData);
         }
         return FontDescriptor.createFrom(initialFontData).setHeight(destFontSize);
+    }
+
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
+        if (parameters.get(PARAM_EXPORT_WITH_PARAM) != null) {
+            final String processorId = ResultSetHandlerOpenWith.getDefaultOpenWithProcessor();
+            final DataTransferProcessorDescriptor descriptor = ResultSetHandlerCopyAs.getActiveProcessor(processorId);
+
+            if (descriptor == null) {
+                element.setText(ActionUtils.findCommandName(CMD_EXPORT));
+                element.setIcon(ActionUtils.findCommandImage(CMD_EXPORT));
+                element.setTooltip(ActionUtils.findCommandDescription(CMD_EXPORT, element.getServiceLocator(), false));
+            } else {
+                element.setText(descriptor.getAppName());
+                element.setIcon(DBeaverIcons.getImageDescriptor(descriptor.getIcon()));
+                element.setTooltip(descriptor.getDescription());
+            }
+        }
     }
 
     static class GotoLineDialog extends InputDialog {

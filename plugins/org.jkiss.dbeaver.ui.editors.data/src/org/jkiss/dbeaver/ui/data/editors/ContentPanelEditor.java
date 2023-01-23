@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,6 +125,31 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         if (streamEditor == null) {
             // Editor not yet initialized
             return;
+        }
+        if (content instanceof DBDContent) {
+            streamManagers = ValueManagerRegistry.getInstance().getApplicableStreamManagers(
+                new VoidProgressMonitor(),
+                valueController.getValueType(),
+                ((DBDContent) content)
+            );
+            // Check if existing manager is valid for the current value
+            // If not, update current stream manager
+            if (streamManagers != null && !streamManagers.containsKey(curStreamManager)) {
+                if (curStreamManager != null) {
+                    if (streamEditor != null) {
+                        streamEditor.disposeEditor();
+                        streamEditor = null;
+                    }
+                    if (editorControl != null) {
+                        editorControl.dispose();
+                        editorControl = null;
+                    }
+                    curStreamManager = null;
+                    control.dispose();
+                }
+                control = createControl(valueController.getEditPlaceholder());
+                valueController.getEditPlaceholder().layout(true, true);
+            }
         }
         if (isStringValue()) {
             // It is a string

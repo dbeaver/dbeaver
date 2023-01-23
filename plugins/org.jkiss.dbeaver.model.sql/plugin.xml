@@ -67,4 +67,21 @@
         </dialect>
     </extension>
 
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                file-extensions="sql"
+                id="org.jkiss.dbeaver.sql"
+                name="SQL Script"
+                priority="high"
+                describer="org.jkiss.dbeaver.model.sql.SQLContentTypeDescriber"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resourceType">
+        <type id="sql-script" name="SQL script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/scripts.png" managable="true">
+            <root folder="Scripts"/>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
+        </type>
+    </extension>
+
 </plugin>

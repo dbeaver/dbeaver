@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.vertica.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -77,15 +78,21 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
     @Override
     protected void findObjectsByMask(@NotNull JDBCExecutionContext executionContext, @NotNull JDBCSession session, @NotNull DBSObjectType objectType, @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> references) throws DBException, SQLException {
         GenericSchema parentSchema = params.isGlobalSearch() ? null : params.getParentObject() instanceof GenericSchema ? (GenericSchema) params.getParentObject() : null;
+        boolean avoidCommentsReading = false;
+        JDBCDataSource dataSource = executionContext.getDataSource();
+        if (dataSource instanceof VerticaDataSource) {
+            avoidCommentsReading = ((VerticaDataSource) dataSource).avoidCommentsReading();
+        }
+        boolean searchInComments = !avoidCommentsReading && params.isSearchInComments();
 
         if (objectType == RelationalObjectType.TYPE_TABLE || objectType == RelationalObjectType.TYPE_VIEW) {
-            findTablesAndViewsByMask(session, parentSchema, params, references);
+            findTablesAndViewsByMask(session, parentSchema, params, references, searchInComments);
         }
         if (objectType == VerticaObjectType.SEQUENCE) {
-            findSequencesByMask(session, parentSchema, params, references);
+            findSequencesByMask(session, parentSchema, params, references, searchInComments);
         }
         if (objectType == RelationalObjectType.TYPE_CONSTRAINT) {
-            findConstraintsByMask(session, parentSchema, params, references);
+            findConstraintsByMask(session, parentSchema, params, references, searchInComments);
         }
         if (objectType == RelationalObjectType.TYPE_TABLE_COLUMN) {
             findTableColumnsByMask(session, parentSchema, params, references);
@@ -94,15 +101,20 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
             findViewColumnsByMask(session, parentSchema, params, references);
         }
         if (objectType == VerticaObjectType.PROJECTION) {
-            findProjectionsByMask(session, parentSchema, params, references);
+            findProjectionsByMask(session, parentSchema, params, references, searchInComments);
         }
         if (objectType == VerticaObjectType.NODE) {
-            findNodesByMask(session, params, references);
+            findNodesByMask(session, params, references, searchInComments);
         }
     }
 
-    private void findTablesAndViewsByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
-                                          List<DBSObjectReference> result) throws SQLException {
+    private void findTablesAndViewsByMask(
+        @NotNull JDBCSession session,
+        @Nullable GenericSchema parentSchema,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> result,
+        boolean searchInComments
+    ) throws SQLException {
         List<DBSObjectType> objectTypesList = Arrays.asList(params.getObjectTypes());
         StringBuilder objectTypeClause = new StringBuilder(100);
 
@@ -114,7 +126,6 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
             if (addTables) objectTypeClause.append(",");
             objectTypeClause.append("'VIEW'");
         }
-        boolean searchInComments = params.isSearchInComments();
 
         String sql = "SELECT schema_name, table_name, CASE WHEN table_type = 'SYSTEM TABLE' THEN 'SYSTEM_TABLE' ELSE table_type END, remarks" +
             "\nFROM v_catalog.all_tables WHERE " + (searchInComments ? "(" : "") + "TABLE_NAME";
@@ -140,7 +151,7 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                     final String schemaName = dbResult.getString(1);
                     final String objectName = dbResult.getString(2);
                     final String tableType = dbResult.getString(3);
-                    final String description = dbResult.getString(4);
+                    final String description = searchInComments ? dbResult.getString(4) : "";
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
                     if (schema == null) {
                         continue; // filtered
@@ -161,12 +172,17 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
         }
     }
 
-    private void findSequencesByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
-                                     List<DBSObjectReference> result) throws SQLException {
-        boolean searchInComments = params.isSearchInComments();
-
-        String sql = "SELECT s.sequence_schema, s.sequence_name, c.\"comment\" FROM v_catalog.sequences s\n" +
-            "LEFT JOIN v_catalog.comments c ON s.sequence_id = c.object_id WHERE " + (searchInComments ? "(" : "") + " s.sequence_name";
+    private void findSequencesByMask(
+        @NotNull JDBCSession session,
+        @Nullable GenericSchema parentSchema,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> result,
+        boolean searchInComments
+    ) throws SQLException {
+        String sql = "SELECT s.sequence_schema, s.sequence_name" + (searchInComments ? ", c.\"comment\"" : "")
+            + " FROM v_catalog.sequences s\n" +
+            (searchInComments ? "LEFT JOIN v_catalog.comments c ON s.sequence_id = c.object_id\n" : "") +
+            "WHERE " + (searchInComments ? "(" : "") + " s.sequence_name";
         sql += params.isCaseSensitive() ? " LIKE ?" : " ILIKE ?";
         if (searchInComments) {
             sql += " OR c.\"comment\"" + (params.isCaseSensitive() ? " LIKE ?" : " ILIKE ?") + ")";
@@ -187,7 +203,7 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String schemaName = dbResult.getString(1);
                     final String objectName = dbResult.getString(2);
-                    final String description = dbResult.getString(3);
+                    final String description = searchInComments ? dbResult.getString(3) : "";
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
                     if (schema == null) {
                         continue; // filtered
@@ -208,13 +224,15 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
         }
     }
 
-    private void findConstraintsByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
-                                       List<DBSObjectReference> result) throws SQLException {
-        boolean searchInComments = params.isSearchInComments();
-        String sql = "SELECT s.schema_name, al.table_name, tc.constraint_name, tc.constraint_type, c.\"comment\" FROM v_catalog.table_constraints tc\n" +
+    private void findConstraintsByMask(@NotNull JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                       @NotNull List<DBSObjectReference> result, boolean searchInComments) throws SQLException {
+        String sql = "SELECT s.schema_name, al.table_name, tc.constraint_name, tc.constraint_type" +
+            (searchInComments ? ",c.\"comment\"" : "") +
+            " FROM v_catalog.table_constraints tc\n" +
             "LEFT JOIN v_catalog.all_tables al ON al.table_id = tc.table_id\n" +
             "LEFT JOIN v_catalog.schemata s ON tc.constraint_schema_id = s.schema_id\n" +
-            "LEFT JOIN v_catalog.comments c ON tc.constraint_id = c.object_id WHERE " + (searchInComments ? "(" : "") + "tc.constraint_name";
+            (searchInComments ? "LEFT JOIN v_catalog.comments c ON tc.constraint_id = c.object_id " : "") +
+            " WHERE " + (searchInComments ? "(" : "") + "tc.constraint_name";
         sql += params.isCaseSensitive() ? " LIKE ?" : " ILIKE ?";
         if (searchInComments) {
             sql += " OR c.\"comment\"" + (params.isCaseSensitive() ? " LIKE ?" : " ILIKE ?") + ")";
@@ -237,7 +255,7 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                     final String tableName = dbResult.getString(2);
                     final String objectName = dbResult.getString(3);
                     final String constraintType = dbResult.getString(4);
-                    final String description = dbResult.getString(5);
+                    final String description = searchInComments ? dbResult.getString(5) : "";
                     final boolean isFK = constraintType.equals("f");
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
                     if (schema == null) {
@@ -269,11 +287,11 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
         }
     }
 
-    private void findProjectionsByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
-                                       List<DBSObjectReference> result) throws SQLException {
-        boolean searchInComments = params.isSearchInComments();
-        String sql = "SELECT p.projection_schema, p.projection_name, c.\"comment\" FROM v_catalog.projections p\n" +
-            "LEFT JOIN v_catalog.comments c ON p.projection_id = c.object_id\n" +
+    private void findProjectionsByMask(@NotNull JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
+                                       @NotNull List<DBSObjectReference> result, boolean searchInComments) throws SQLException {
+        String sql = "SELECT p.projection_schema, p.projection_name" + (searchInComments ? ",c.\"comment\"" : "") +
+            " FROM v_catalog.projections p\n" +
+            (searchInComments ? "LEFT JOIN v_catalog.comments c ON p.projection_id = c.object_id\n" : "") +
             "WHERE " + (searchInComments ? "(" : "") + "p.projection_name";
         sql += params.isCaseSensitive() ? " LIKE ?" : " ILIKE ?";
         if (searchInComments) {
@@ -295,7 +313,7 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String schemaName = dbResult.getString(1);
                     final String objectName = dbResult.getString(2);
-                    final String description = dbResult.getString(3);
+                    final String description = searchInComments ? dbResult.getString(3) : "";
                     VerticaSchema schema = (VerticaSchema) (parentSchema != null ? parentSchema : dataSource.getSchema(schemaName));
                     if (schema == null) {
                         continue; // filtered
@@ -316,10 +334,15 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
         }
     }
 
-    private void findNodesByMask(JDBCSession session, @NotNull ObjectsSearchParams params, List<DBSObjectReference> result) throws SQLException {
-        boolean searchInComments = params.isSearchInComments();
-        String sql = "SELECT n.node_name, c.\"comment\" FROM v_catalog.nodes n \n" +
-            "LEFT JOIN v_catalog.comments c ON n.node_id = c.object_id\n" +
+    private void findNodesByMask(
+        @NotNull JDBCSession session,
+        @NotNull ObjectsSearchParams params,
+        List<DBSObjectReference> result,
+        boolean searchInComments
+    ) throws SQLException {
+        String sql = "SELECT n.node_name" + (searchInComments ? ", c.\"comment\"" : "") +
+            " FROM v_catalog.nodes n \n" +
+            (searchInComments ? "LEFT JOIN v_catalog.comments c ON n.node_id = c.object_id\n" : "") +
             "WHERE n.node_name";
         sql += params.isCaseSensitive() ? " LIKE ?" : " ILIKE ?";
         if (searchInComments) {
@@ -336,7 +359,7 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
                     final String objectName = dbResult.getString(1);
-                    final String description = dbResult.getString(2);
+                    final String description = searchInComments ? dbResult.getString(2) : "";
                     result.add(new AbstractObjectReference<>(objectName, dataSource, description, VerticaNode.class, VerticaObjectType.NODE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {

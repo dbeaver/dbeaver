@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -98,16 +99,18 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
             pageListener.pageOpened(page);
         }
 
-        // Register as datasource listener in all datasources
-        // We need it because at this moment there could be come already loaded registries (on startup)
-        DataSourceProviderRegistry.getInstance().addDataSourceRegistryListener(this);
-        for (DBPDataSourceRegistry registry : DBUtils.getAllRegistries(false)) {
-            handleRegistryLoad(registry);
-        }
-        // We'll miss a lot of DBP events because  we'll be activated only after UI will be instantiated
-        // So we need to update toolbar explicitly right after UI will initialize
-        UIUtils.asyncExec(this::updateToolbar);
-        UIUtils.asyncExec(DataSourceToolbarUtils::triggerRefreshReadonlyElement);
+        UIExecutionQueue.queueExec(() -> {
+            // Register as datasource listener in all datasources
+            // We need it because at this moment there could be come already loaded registries (on startup)
+            DataSourceProviderRegistry.getInstance().addDataSourceRegistryListener(this);
+            for (DBPDataSourceRegistry registry : DBUtils.getAllRegistries(false)) {
+                handleRegistryLoad(registry);
+            }
+            // We'll miss a lot of DBP events because  we'll be activated only after UI will be instantiated
+            // So we need to update toolbar explicitly right after UI will initialize
+            updateToolbar();
+            DataSourceToolbarUtils.triggerRefreshReadonlyElement();
+        });
     }
 
     public void dispose() {

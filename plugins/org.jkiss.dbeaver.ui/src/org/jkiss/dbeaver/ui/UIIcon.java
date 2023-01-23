@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ public class UIIcon {
 
     public static final DBIcon DBEAVER_LOGO = new DBIcon("dbeaver_logo", "dbeaver_logo_medium.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DBEAVER_LOGO_SMALL = new DBIcon("dbeaver_logo_small", "dbeaver_logo_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon DBEAVER_MARKETPLACE = new DBIcon("dbeaver_marketplace", "actions/marketplace.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon SEPARATOR_V = new DBIcon("separator_v", "misc/separator_v.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SEPARATOR_H = new DBIcon("separator_h", "misc/separator_h.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -219,10 +218,6 @@ public class UIIcon {
 
     public static final DBIcon PAGES = new DBIcon("pages", "misc/pages.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TEXTFIELD = new DBIcon("textfield", "misc/textfield.png"); //$NON-NLS-1$ //$NON-NLS-2$
-
-    public static final DBIcon ACTION_USER = new DBIcon("action_user", "actions/user.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon ACTION_USER_ADD = new DBIcon("action_user_add", "actions/user_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon ACTION_USER_DELETE = new DBIcon("action_user_delete", "actions/user_delete.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon ACTION_OBJECT_ADD = new DBIcon("action_object_add", "misc/object_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ACTION_OBJECT_DELETE = new DBIcon("action_object_delete", "misc/object_remove.png"); //$NON-NLS-1$ //$NON-NLS-2$

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -47,6 +45,7 @@ import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
@@ -248,19 +247,9 @@ public class DatabaseTasksTree {
             }
         });
         taskColumnController.createColumns(true);
+        new DefaultViewerToolTipSupport(taskViewer);
 
         taskViewer.setContentProvider(new TreeListContentProvider());
-
-
-        DBPProjectListener projectListener = new DBPProjectListener() {
-            @Override
-            public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
-                refresh();
-            }
-        };
-        DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
-        taskTree.addDisposeListener(e ->
-            DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener));
     }
 
     public TreeViewer getViewer() {

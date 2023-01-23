@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2017 Liu, Yuanyuan (liuyuanyuan@highgo.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,15 +49,33 @@ public class PostgreMessages extends NLS {
     public static String wizard_backup_page_setting_checkbox_create_database;
     public static String wizard_backup_page_setting_checkbox_create_database_tip;
     public static String wizard_backup_page_setting_group_output;
-    public static String wizard_backup_page_setting_label_output_folder_pattern;
-    public static String wizard_backup_page_setting_label_file_name_pattern;
-    public static String wizard_backup_page_setting_label_file_name_pattern_output;
     public static String wizard_backup_page_setting_group_security;
     public static String wizard_backup_page_setting_group_security_label_info;
     public static String wizard_backup_page_setting_group_security_btn_authentication;
     public static String wizard_backup_page_setting_authentication_save_password;
     public static String wizard_backup_page_setting_authentication_save_password_tip;
     public static String wizard_backup_page_setting_group_security_btn_reset_default;
+
+    public static String wizard_backup_all_page_global_backup_name;
+    public static String wizard_backup_all_page_global_backup_tip;
+
+    public static String wizard_backup_all_page_setting_title;
+    public static String wizard_backup_all_page_setting_title_setting;
+    public static String wizard_backup_all_page_setting_label_encoding;
+    public static String wizard_backup_all_page_setting_checkbox_only_metadata;
+    public static String wizard_backup_all_page_setting_checkbox_only_metadata_tip;
+    public static String wizard_backup_all_page_setting_checkbox_only_global;
+    public static String wizard_backup_all_page_setting_checkbox_only_global_tip;
+    public static String wizard_backup_all_page_setting_checkbox_only_roles;
+    public static String wizard_backup_all_page_setting_checkbox_only_roles_tip;
+    public static String wizard_backup_all_page_setting_checkbox_only_tablespaces;
+    public static String wizard_backup_all_page_setting_checkbox_only_tablespaces_tip;
+    public static String wizard_backup_all_page_setting_checkbox_no_privileges;
+    public static String wizard_backup_all_page_setting_checkbox_no_privileges_tip;
+    public static String wizard_backup_all_page_setting_checkbox_no_owner;
+    public static String wizard_backup_all_page_setting_checkbox_no_owner_tip;
+    public static String wizard_backup_all_page_setting_checkbox_add_passwords;
+    public static String wizard_backup_all_page_setting_checkbox_add_passwords_tip;
 
     /* wizard restore*/
     public static String wizard_restore_title;
@@ -223,6 +241,9 @@ public class PostgreMessages extends NLS {
     public static String dialog_query_planner_settings_timing_tip;
     public static String dialog_query_planner_settings_summary;
     public static String dialog_query_planner_settings_summary_tip;
+
+    public static String dialog_connection_pgpass_hostname_override;
+    public static String dialog_connection_pgpass_hostname_override_tip;
 
     static {
         // initialize resource bundle

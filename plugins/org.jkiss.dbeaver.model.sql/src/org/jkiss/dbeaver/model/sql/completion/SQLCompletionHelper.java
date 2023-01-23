@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.completion;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -35,7 +36,23 @@ public class SQLCompletionHelper {
 
     public static final int ADDITIONAL_INFO_WAIT_TIMEOUT = 3000;
 
-    public static String readAdditionalProposalInfo(@Nullable DBRProgressMonitor monitor, SQLCompletionContext context, DBPNamedObject object, final String[] keywords, final DBPKeywordType keywordType) {
+    /**
+     * @param monitor monitor
+     * @param context completion context
+     * @param object object to get information from
+     * @param keywords list of keywords
+     * @param keywordType type of keyword
+     *
+     * @return Information about the object
+     */
+    @Nullable
+    public static Object readAdditionalProposalInfo(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull SQLCompletionContext context,
+        @Nullable DBPNamedObject object,
+        String[] keywords,
+        @Nullable DBPKeywordType keywordType
+    ) {
         if (object != null) {
             if (monitor == null) {
                 String[] desc = new String[1];

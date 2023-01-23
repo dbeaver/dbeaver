@@ -318,6 +318,7 @@
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/com.github.waffle:waffle-jna:RELEASE[1.9.1]" if="properties.gsslib=='sspi'" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="license" path="https://raw.githubusercontent.com/pgjdbc/pgjdbc/master/LICENSE" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -327,6 +328,7 @@
                     <parameter name="serverType" value="postgresql"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
+                    <property name="escapeSyntaxCallMode" value="callIfNoReturn"/>
                 </driver>
                 <!-- Bad driver: it must be declared in generic provider -->
                 <driver
@@ -377,6 +379,7 @@
                     categories="timeseries"
                     dialect="postgresql">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
+                    <file type="license" path="https://raw.githubusercontent.com/pgjdbc/pgjdbc/master/LICENSE" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -403,6 +406,7 @@
                     categories="sql"
                     dialect="postgresql">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
+                    <file type="license" path="https://raw.githubusercontent.com/pgjdbc/pgjdbc/master/LICENSE" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -429,6 +433,7 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
+                    <file type="license" path="https://raw.githubusercontent.com/pgjdbc/pgjdbc/master/LICENSE" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -454,6 +459,7 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
+                    <file type="license" path="https://raw.githubusercontent.com/pgjdbc/pgjdbc/master/LICENSE" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -485,6 +491,7 @@
                     <!-- Drivers after 1.2.45 seems to be broken -->
 <!--                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.45.1069/RedshiftJDBC42-no-awssdk-1.2.45.1069.jar" bundle="!drivers.redshift"/>-->
                     <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.1.0.3]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.redshift"/>
                     <file type="jar" path="drivers/redshift" bundle="drivers.redshift"/>
 
                     <parameter name="serverType" value="redshift"/>
@@ -512,6 +519,7 @@
                     <parameter name="serverType" value="edb"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
+                    <property name="escapeSyntaxCallMode" value="callIfNoReturn"/>
                 </driver>
 
                 <driver
@@ -531,6 +539,7 @@
                         categories="sql,cloud">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.0]" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/com.google.cloud.sql:postgres-socket-factory:RELEASE"/>
+                    <file type="license" path="https://raw.githubusercontent.com/pgjdbc/pgjdbc/master/LICENSE" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
@@ -560,6 +569,7 @@
                     <dist os="win32" targetPath="clients/postgresql/win/14" remotePath="repo:/drivers/postgresql/client/win/14" resourcePath="clients/postgresql/win/14">
                         <file type="exec" name="psql.exe"/>
                         <file type="exec" name="pg_dump.exe"/>
+                        <file type="exec" name="pg_dumpall.exe"/>
                         <file type="exec" name="pg_restore.exe"/>
                         <file type="lib" name="libcrypto-1_1-x64.dll"/>
                         <file type="lib" name="libiconv-2.dll"/>
@@ -678,6 +688,12 @@
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
+        </task>
+        <task id="pgDatabaseBackupAll" name="%task.pgDatabaseBackupAll.name" description="%task.pgDatabaseBackupAll.description"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql"
+              handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupAllHandler">
+            <datasource id="postgresql"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         </task>
         <task id="pgScriptExecute" name="%task.pgScriptExecute.name" description="%task.pgScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteHandler">
             <datasource id="postgresql"/>

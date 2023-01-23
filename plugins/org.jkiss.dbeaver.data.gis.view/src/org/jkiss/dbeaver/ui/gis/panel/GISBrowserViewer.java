@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.gis.panel;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
@@ -27,6 +31,7 @@ import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IDataController;
@@ -36,7 +41,9 @@ import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeometryViewer {
 
@@ -141,6 +148,33 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         leafletViewer.setGeometryData(geometries.toArray(new DBGeometry[0]));
     }
 
+    @Override
+    public void dispose() {
+        // Edge uses callbacks which have a lowest priority in UI
+        // So if dispose is sent during that operation this will lead to initialization
+        // on already disposed composite, we don't want this at all
+        // We can prevent this error by delaying dispose in independent thread operation to allow Edge to finish its
+        // initialization to be disposed properly
+        //FIXME That should be removed as soon as Edge will be fixed, this is an awfull hack
+        if (leafletViewer.getBrowser() != null) {
+            super.dispose();
+        } else {
+            new Job("Disposing browser") {
+                @Override
+                protected IStatus run(IProgressMonitor monitor) {
+                    while (leafletViewer.isBrowserCreating()) {
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException ex) {
+                            break;
+                        }
+                    }
+                    UIUtils.syncExec(GISBrowserViewer.super::dispose);
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
+        }
+    }
     @Override
     public boolean isReadOnly() {
         return true;

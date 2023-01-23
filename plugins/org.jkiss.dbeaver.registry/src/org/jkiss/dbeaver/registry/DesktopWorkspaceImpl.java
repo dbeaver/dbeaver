@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,18 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -80,20 +84,10 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         this.handlerDescriptors.clear();
     }
 
-    private ResourceHandlerDescriptor getHandlerDescriptor(String id) {
+    private DBPResourceHandler getResourceHandler(DBPResourceTypeDescriptor resourceType) {
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
-            if (rhd.getId().equals(id)) {
-                return rhd;
-            }
-        }
-        return null;
-    }
-
-    private ResourceHandlerDescriptor getHandlerDescriptorByRootPath(DBPProject project, String path) {
-        for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
-            String defaultRoot = rhd.getDefaultRoot(project);
-            if (defaultRoot != null && defaultRoot.equals(path)) {
-                return rhd;
+            if (rhd.getTypeId().equals(resourceType.getId())) {
+                return rhd.getHandler();
             }
         }
         return null;
@@ -133,9 +127,9 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             IPath relativePath = resource.getFullPath().makeRelativeTo(project.getRootResource().getFullPath());
             while (relativePath.segmentCount() > 0) {
                 String folderPath = relativePath.toString();
-                ResourceHandlerDescriptor handlerDescriptor = getHandlerDescriptorByRootPath(project, folderPath);
-                if (handlerDescriptor != null) {
-                    handler = handlerDescriptor.getHandler();
+                ResourceTypeDescriptor resType = ResourceTypeRegistry.getInstance().getResourceTypeByRootPath(project, folderPath);
+                if (resType != null) {
+                    handler = getResourceHandler(resType);
                 }
                 relativePath = relativePath.removeLastSegments(1);
             }
@@ -165,7 +159,11 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
             DBPResourceHandler handler = rhd.getHandler();
             if (handler != null && handler.getClass() == handlerType) {
-                String defaultRoot = rhd.getDefaultRoot(project);
+                DBPResourceTypeDescriptor resourceType = rhd.getResourceType();
+                if (resourceType == null) {
+                    return null;
+                }
+                String defaultRoot = resourceType.getDefaultRoot(project);
                 if (defaultRoot == null) {
                     // No root
                     return null;
@@ -184,7 +182,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
                     try {
                         realFolder.create(true, true, new NullProgressMonitor());
                     } catch (CoreException e) {
-                        log.error("Can not create '" + rhd.getName() + "' root folder '" + realFolder.getName() + "'", e);
+                        log.error("Can not create '" + resourceType.getName() + "' root folder '" + realFolder.getName() + "'", e);
                         return realFolder;
                     }
                 }
@@ -195,20 +193,15 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     }
 
     @Override
-    public DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors() {
-        DBPResourceHandlerDescriptor[] result = new DBPResourceHandlerDescriptor[handlerDescriptors.size()];
-        for (int i = 0; i < handlerDescriptors.size(); i++) {
-            result[i] = handlerDescriptors.get(i);
-        }
-        return result;
-    }
-
-    @Override
     public IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor rhd, boolean forceCreate) {
         if (project == null || project.getRootResource() == null) {
             return null;
         }
-        String defaultRoot = rhd.getDefaultRoot(project);
+        DBPResourceTypeDescriptor resourceType = rhd.getResourceType();
+        if (resourceType == null) {
+            return null;
+        }
+        String defaultRoot = resourceType.getDefaultRoot(project);
         if (defaultRoot == null) {
             // No root
             return null;
@@ -219,7 +212,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             try {
                 realFolder.create(true, true, new NullProgressMonitor());
             } catch (CoreException e) {
-                log.error("Can't create '" + rhd.getName() + "' root folder '" + realFolder.getName() + "'", e);
+                log.error("Can't create '" + resourceType.getName() + "' root folder '" + realFolder.getName() + "'", e);
                 return realFolder;
             }
         }
@@ -276,6 +269,43 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
         } catch (Throwable e) {
             log.error("Error refreshing workspce contents", e);
+        }
+    }
+
+    @NotNull
+    @Override
+    public DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException {
+        IProject project = null;
+        try {
+            project = getEclipseWorkspace().getRoot().getProject(name);
+            NullProgressMonitor monitor = new NullProgressMonitor();
+            if (project.exists()) {
+                project.create(monitor);
+            }
+            final IProjectDescription pDescription = getEclipseWorkspace().newProjectDescription(project.getName());
+            if (!CommonUtils.isEmpty(description)) {
+                pDescription.setComment(description);
+            }
+            pDescription.setNatureIds(new String[]{DBeaverNature.NATURE_ID});
+            project.setDescription(pDescription, monitor);
+            project.open(monitor);
+        } catch (Exception e) {
+            throw new DBException("Error creating Eclipse project", e);
+        }
+
+        return getProject(project);
+    }
+
+    @Override
+    public void deleteProject(@NotNull DBPProject project, boolean deleteContents) throws DBException {
+        IProject eclipseProject = project.getEclipseProject();
+        if (eclipseProject == null) {
+            throw new DBException("Project '" + project.getName() + "' is not an Eclipse project");
+        }
+        try {
+            eclipseProject.delete(deleteContents, true, new NullProgressMonitor());
+        } catch (CoreException e) {
+            throw new DBException("Error deleting Eclipse project '" + project.getName() + "'", e);
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings);
     
-    void showDistinctFilter(DBDAttributeBinding curAttribute);
+    void showColumnMenu(DBDAttributeBinding curAttribute);
 
     void toggleSortOrder(@NotNull DBDAttributeBinding columnElement, @Nullable ColumnOrder forceOrder);
 
@@ -187,6 +187,8 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     void updateStatusMessage();
 
     void updateEditControls();
+
+    void updateToolbar();
 
     ////////////////////////////////////////
     // Presentation & panels

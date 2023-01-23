@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,9 @@ import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * DatabaseEditorPropertyTester
@@ -78,8 +78,8 @@ public class DataSourcePropertyTester extends PropertyTester {
                     boolean isConnected;
                     if (context != null) {
                         isConnected = context.getDataSource().getContainer().isConnected();
-                    } else if (receiver instanceof IDataSourceContainerProvider) {
-                        DBPDataSourceContainer container = ((IDataSourceContainerProvider) receiver).getDataSourceContainer();
+                    } else if (receiver instanceof DBPDataSourceContainerProvider) {
+                        DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) receiver).getDataSourceContainer();
                         isConnected = container != null && container.isConnected();
                     } else {
                         isConnected = false;
@@ -105,8 +105,10 @@ public class DataSourcePropertyTester extends PropertyTester {
                     if (context == null || !context.isConnected()) {
                         return false;
                     } else {
-                        return context.getDataSource().getContainer().getDriver()
-                            .getDataSourceProvider() instanceof DBPDataSourceProviderSynchronizable;
+                        final var container = context.getDataSource().getContainer();
+                        final var provider = container.getDriver().getDataSourceProvider();
+                        final var providerSynchronizable = GeneralUtils.adapt(provider, DBPDataSourceProviderSynchronizable.class);
+                        return providerSynchronizable != null && providerSynchronizable.isSynchronizationEnabled(container);
                     }
                 case PROP_SUPPORTS_TRANSACTIONS: {
                     if (context == null || !context.isConnected()) {

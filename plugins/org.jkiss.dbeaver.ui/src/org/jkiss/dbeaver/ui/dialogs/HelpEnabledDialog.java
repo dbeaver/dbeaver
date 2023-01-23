@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -25,13 +24,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * Dialog with enabled help
  */
-public abstract class HelpEnabledDialog extends TrayDialog {
+public abstract class HelpEnabledDialog extends BaseDialog {
 
     protected final String helpContextID;
 
     protected HelpEnabledDialog(Shell shell, String helpContextID)
     {
-        super(shell);
+        super(shell, null, null);
         this.helpContextID = helpContextID;
     }
 

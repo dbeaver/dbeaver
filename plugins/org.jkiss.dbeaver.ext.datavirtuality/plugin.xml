@@ -36,6 +36,7 @@
                         webURL="https://https://datavirtuality.com/docs/"
                         categories="sql,analytic">
                     <file type="jar" path="https://datavirtuality.com/wp-content/uploads/sites/2/2020/03/datavirtuality-jdbc_2.3.8.jar"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
                 </driver>
             </drivers>
         </datasource>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,6 +135,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     @Override
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
+        applyDialogFont(contents);
 
         // Show the first page first - it may initialize state required later
         showPage((IWizardPage) pagesTree.getItem(0).getData());
@@ -280,6 +281,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 // Create page contents
                 page.createControl(pageArea);
                 pageControl = page.getControl();
+                applyDialogFont(pageControl);
+
                 if (pageControl != null) {
                     //Point pageSize = pageControl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
                     //if (pageSize.x > maxSize.x) maxSize.x = pageSize.x;
@@ -304,6 +307,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
             prevPage = page;
             pageArea.layout();
+            prevPage.getControl().setFocus();
             if (pageCreated && isAutoLayoutAvailable()) {
                 UIUtils.asyncExec(() -> {
                     if (wizard.getContainer().getShell() != null) {

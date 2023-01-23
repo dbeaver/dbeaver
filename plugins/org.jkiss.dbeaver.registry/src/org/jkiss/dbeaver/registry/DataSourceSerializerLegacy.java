@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import org.xml.sax.Attributes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -71,13 +72,13 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
     }
 
     @Override
-    public void parseDataSources(
+    public boolean parseDataSources(
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DataSourceRegistry.ParseResults parseResults,
-        boolean refresh
+        Collection<String> dataSourceIds, boolean refresh
     ) throws DBException, IOException {
-        try (InputStream is = configurationManager.readConfiguration(configurationStorage.getStorageName())) {
+        try (InputStream is = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds)) {
             if (is != null) {
                 SAXReader parser = new SAXReader(is);
                 final DataSourcesParser dsp = new DataSourcesParser(registry, configurationStorage, refresh, parseResults);
@@ -86,6 +87,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
         } catch (Exception ex) {
             throw new DBException("Datasource config parse error", ex);
         }
+        return false;
     }
 
     @Nullable
@@ -130,13 +132,14 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                     String name = atts.getValue(RegistryConstants.ATTR_NAME);
                     String description = atts.getValue(RegistryConstants.ATTR_DESCRIPTION);
                     String parentFolder = atts.getValue(RegistryConstants.ATTR_PARENT);
-                    DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true);
-                    DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true) : parent.getChild(name);
+                    DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true, parseResults);
+                    DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true, parseResults) : parent.getChild(name);
                     if (folder == null) {
                         folder = new DataSourceFolder(registry, parent, name, description);
-                        registry.addDataSourceFolder(folder);
+                        parseResults.addedFolders.add(folder);
                     } else {
                         folder.setDescription(description);
+                        parseResults.updatedFolders.add(folder);
                     }
                     break;
                 }
@@ -193,7 +196,7 @@ class DataSourceSerializerLegacy implements DataSourceSerializer
                     curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
                     final String folderPath = atts.getValue(RegistryConstants.ATTR_FOLDER);
                     if (folderPath != null) {
-                        curDataSource.setFolder(registry.findFolderByPath(folderPath, true));
+                        curDataSource.setFolder(registry.findFolderByPath(folderPath, true, parseResults));
                     }
                     curDataSource.setLockPasswordHash(atts.getValue(RegistryConstants.ATTR_LOCK_PASSWORD));
                     {

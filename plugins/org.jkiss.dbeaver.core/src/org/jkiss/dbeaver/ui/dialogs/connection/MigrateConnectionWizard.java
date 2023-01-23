@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -32,7 +33,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -62,8 +63,8 @@ public class MigrateConnectionWizard extends Wizard
         if (selection != null && !selection.isEmpty()) {
             for (Iterator<?> iter = selection.iterator(); iter.hasNext(); ) {
                 Object item = iter.next();
-                if (item instanceof IDataSourceContainerProvider) {
-                    selectedConnections.add(((IDataSourceContainerProvider) item).getDataSourceContainer());
+                if (item instanceof DBPDataSourceContainerProvider) {
+                    selectedConnections.add(((DBPDataSourceContainerProvider) item).getDataSourceContainer());
                 } else if (item instanceof DBPDataSourceContainer) {
                     selectedConnections.add((DBPDataSourceContainer) item);
                 } else if (item instanceof DBSObject) {
@@ -192,6 +193,7 @@ public class MigrateConnectionWizard extends Wizard
         public void createControl(Composite parent)
         {
             Composite placeholder = UIUtils.createPlaceholder(parent, 1);
+            Dialog.applyDialogFont(placeholder);
             driverSelectViewer = new DriverSelectViewer(
                 placeholder,
                 this,

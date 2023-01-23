@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import java.io.IOException;
 public class SSHTunnelImpl implements DBWTunnel {
 
     private static final Log log = Log.getLog(SSHTunnelImpl.class);
-    private static final String DEF_IMPLEMENTATION = "jsch";
+    private static final String DEF_IMPLEMENTATION = "sshj";
 
     private DBWHandlerConfiguration configuration;
     private SSHImplementation implementation;

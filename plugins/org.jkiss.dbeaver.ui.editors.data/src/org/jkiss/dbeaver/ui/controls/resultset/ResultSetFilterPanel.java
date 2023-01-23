@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private final ToolBar filterToolbar;
     private final ToolItem filtersClearButton;
     private final ToolItem filtersSaveButton;
-    private final ToolItem refreshButton;
     private final ToolItem historyBackButton;
     private final ToolItem historyForwardButton;
 
@@ -269,7 +268,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filtersSaveButton.setEnabled(false);
 
             ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-            filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.CONFIG_TABLE));
+            filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
             filtersCustomButton.setToolTipText(ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS, viewer.getSite(), false));
             filtersCustomButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -278,21 +277,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
             });
             filtersCustomButton.setEnabled(true);
-
-            UIUtils.createToolBarSeparator(filterToolbar, SWT.VERTICAL);
-
-            refreshButton = rsv.getAutoRefresh().populateRefreshButton(
-                filterToolbar,
-                ResultSetMessages.controls_resultset_viewer_action_refresh + " (" +
-                    ActionUtils.findCommandDescription(IWorkbenchCommandConstants.FILE_REFRESH, viewer.getSite(), true) + ")",
-                UIIcon.REFRESH,
-                () -> {
-                    if (!viewer.isRefreshInProgress()) {
-                        viewer.refreshData(null);
-                    }
-                }
-            );
-            refreshButton.setEnabled(false);
 
             UIUtils.createToolBarSeparator(filterToolbar, SWT.VERTICAL);
 
@@ -390,7 +374,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         try {
             filterToolbar.setEnabled(enable);
             this.filterExpandPanel.setEnabled(enable);
-            refreshButton.setEnabled(enable);
             historyPanel.setEnabled(enable);
             filtersText.setEditable(viewer.supportsDataFilter());
             executePanel.setEnabled(enable);

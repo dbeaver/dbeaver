@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ import java.util.ResourceBundle;
 public abstract class SQLEditorBase extends BaseTextEditor implements DBPContextProvider, IErrorVisualizer, DBPPreferenceListener {
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
-    private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
+    public static final long MAX_FILE_LENGTH_FOR_RULES = 1024 * 1000 * 2; // 2MB
 
     static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
@@ -176,14 +176,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             ((IDocumentProviderExtension) provider).isReadOnly(getEditorInput());
     }
 
-    static boolean isBigScript(@Nullable IEditorInput editorInput) {
+    public static boolean isBigScript(@Nullable IEditorInput editorInput) {
         if (editorInput != null) {
             File file = EditorUtils.getLocalFileFromInput(editorInput);
-            return file != null && file.length() > MAX_FILE_LENGTH_FOR_RULES;
+            return file != null && file.length() > getBigScriptFileLengthBoundary();
         }
         return false;
     }
-
+    
+    static long getBigScriptFileLengthBoundary() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getLong(SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY);
+    }
+    
     static boolean isReadEmbeddedBinding() {
         return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ);
     }
@@ -224,8 +228,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public DBPPreferenceStore getActivePreferenceStore() {
-        if (this instanceof IDataSourceContainerProvider) {
-            DBPDataSourceContainer container = ((IDataSourceContainerProvider) this).getDataSourceContainer();
+        if (this instanceof DBPDataSourceContainerProvider) {
+            DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) this).getDataSourceContainer();
             if (container != null) {
                 return container.getPreferenceStore();
             }
@@ -370,7 +374,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 }
 
                 private boolean within(@NotNull IRegion region, int index) {
-                    return region.getLength() > 0 && region.getOffset() >= index && index < region.getOffset() + region.getLength();
+                    return region.getLength() > 0 && index >= region.getOffset() && index < region.getOffset() + region.getLength();
                 }
             });
         }
@@ -512,7 +516,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             ruler,
             overviewRuler,
             true,
-            styles);
+            styles,
+            this::getActivePreferenceStore
+        );
     }
 
     @Override
@@ -674,7 +680,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         IDocument document = getDocument();
         syntaxManager.init(dialect, getActivePreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(getDataSource(), SQLEditorBase.isBigScript(getEditorInput()));
+        ruleManager.loadRules(getDataSource(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
         ruleScanner.refreshRules(getDataSource(), ruleManager);
         parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
 
@@ -1015,7 +1021,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public boolean isFoldingEnabled() {
-        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+        return SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput())
+            && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
     /**

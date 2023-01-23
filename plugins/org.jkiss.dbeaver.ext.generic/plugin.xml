@@ -84,7 +84,9 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.info.supportsStoredCode()">
                             <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
-                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                <folder label="%tree.procedure_columns.node.name" icon="#columns" description="Procedure parameters">
+                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                </folder>
                             </items>
                             <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
                                 <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
@@ -152,6 +154,7 @@
                     <property id="read-only-data" label="Driver cannot modify data" description="Driver does not support data (e.g. in table) editing." type="boolean" required="false" defaultValue="false"/>
                     <property id="read-only-meta-data" label="Driver cannot modify meta data" description="Driver does not support meta data (e.g. table or column creating) editing." type="boolean" required="false" defaultValue="false"/>
                     <property id="supports-multi-insert" label="Driver supports multi insert mode" description="Driver supports multi insert mode: INSERT VALUES(,,)(,,). Used for the multi insert data import" type="boolean" required="false" defaultValue="false"/>
+                    <property id="supports-embedded-database-creation" label="Can create database from scratch" description="Driver supports creation of the database structure from scratch.\nControls whether the button 'Create' is visible on the connection page.\nUsed by some embedded databases" type="boolean" required="false" defaultValue="true"/>
                 </propertyGroup>
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
@@ -170,6 +173,7 @@
                     <property id="legacy-sql-dialect" label="Use legacy SQL dialect for DDL" description="Use legacy SQL dialect for DDL" type="boolean" required="false" defaultValue="false"/>
                     <property id="alter-table-add-column" label="Add COLUMN keyword in alter table query" description="Add COLUMN keyword after keyword ADD and before column name in alter table query" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-catalog-name" label="Omit catalog name in queries" description="Omit catalog name in generated queries" type="boolean" required="false" defaultValue="false"/>
+                    <property id="identifier-quotes" label="Identifier quotes" description="Quotes used for escaping identifiers. Syntax is: open1:close1,open2:close2" type="string" required="false" defaultValue=""/>
                 </propertyGroup>
                 <propertyGroup label="Formatting" description="SQL values formats">
                     <property id="native-format-timestamp" label="Timestamp format" description="Format pattern for timestamp columns" type="string" required="false"/>
@@ -185,14 +189,14 @@
 
                 <driver
                         id="db2_iseries"
-                        label="DB2 iSeries/AS 400"
+                        label="Db2 for IBM i"
                         icon="icons/db2_icon.png"
                         iconBig="icons/db2_icon_big.png"
-                        category="DB2"
+                        category="Db2"
                         class="com.ibm.as400.access.AS400JDBCDriver"
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
                         defaultPort="446"
-                        description="DB2 iSeries/AS 400 driver"
+                        description="IBM Db2 driver for IBM i (replacement for iSeries and AS/400)"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
 
@@ -260,6 +264,7 @@
                     categories="sql">
 
                     <file type="jar" path="maven:/com.ibm.informix:jdbc:RELEASE[4.50.4.1]" bundle="!drivers.informix"/>
+                    <file type="license" path="https://raw.githubusercontent.com/ibmdb/node-ibm_db/master/LICENSE" bundle="!drivers.informix"/>
 
                     <file type="jar" path="drivers/informix" bundle="drivers.informix"/>
                     <file type="license" path="drivers/informix/LICENSE.txt" bundle="drivers.informix"/>
@@ -358,6 +363,7 @@
                     <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.derby"/>
 
                     <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
@@ -389,7 +395,9 @@
                     <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
                     <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.15.2.0]" bundle="!drivers.derby"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.derby"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
+                    <file type="license" path="drivers/derby/LICENSE.txt" bundle="drivers.derby"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
@@ -475,6 +483,8 @@
                     description="InterSystems Cache"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.cache"/>
+                    <file type="jar" path="repo:/drivers/cache/CacheDB.jar" bundle="!drivers.cache"/>
                     <file type="jar" path="drivers/cache" bundle="drivers.cache"/>
                     <file type="license" path="drivers/cache/LICENSE.txt" bundle="drivers.cache"/>
                 </driver>
@@ -505,8 +515,11 @@
                     iconBig="icons/ingres_icon_big.png"
                     categories="sql">
                     <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE" bundle="!drivers.ingres"/>
-                    <parameter name="supports-truncate" value="false"/>
+                    <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.ingres"/>
                     <file type="jar" path="drivers/ingres" bundle="drivers.ingres"/>
+                    <file type="license" path="drivers/ingres/LICENSE.txt" bundle="drivers.ingres"/>
+
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
                 <!-- SQLite -->
                 <driver
@@ -554,6 +567,7 @@
                         promoted="1"
                         categories="sql,embedded">
                     <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE"/>
+                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE"/>
                 </driver>
 
                 <!-- Teradata -->
@@ -617,7 +631,9 @@
                     <parameter name="read-only-meta-data" value="true"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.csvjdbc"/>
                     <file type="jar" path="drivers/csvjdbc" bundle="drivers.csvjdbc"/>
+                    <file type="license" path="drivers/csvjdbc/LICENSE.txt" bundle="drivers.csvjdbc"/>
                 </driver>
                 <driver
                     id="csvjdbc_dbf"
@@ -667,7 +683,10 @@
                     supportsDistributedMode="false"
                     categories="sql,embedded,file">
 
+                    <parameter name="identifier-quotes" value="[:]"/>
+
                     <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.ucanaccess"/>
 
                     <file type="license" path="drivers/ucanaccess/LICENSE.txt" bundle="drivers.ucanaccess"/>
                     <file type="jar" path="drivers/ucanaccess" bundle="drivers.ucanaccess"/>
@@ -699,6 +718,7 @@
                     webURL="http://www.nuodb.com/"
                     categories="sql,cloud">
                     <file type="jar" path="maven:/com.nuodb.jdbc:nuodb-jdbc:RELEASE"/>
+                    <file type="license" path="https://raw.githubusercontent.com/nuodb/nuodb-odbc/main/LICENSE"/>
                 </driver>
                 <driver
                     id="sap_hana"
@@ -735,6 +755,7 @@
                     singleConnection="true">
                     <parameter name="omit-type-cache" value="true"/>
                     <file type="jar" path="maven:/org.apache.phoenix:phoenix-client:RELEASE[4.14.1-HBase-1.4]" ignore-dependencies="true"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
                 </driver>
                 <driver
                     id="gemfire_xd"
@@ -809,13 +830,14 @@
                     singleConnection="true">
                     <file type="jar" path="maven:/org.spark-project.hive:hive-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
                 </driver>
                 <driver
                     id="kyuubi_hive"
-                    label="Apache Kyuubi (Incubating)"
+                    label="Apache Kyuubi"
                     icon="icons/kyuubi_hive_icon.png"
                     iconBig="icons/kyuubi_hive_icon_big.png"
                     class="org.apache.kyuubi.jdbc.KyuubiHiveDriver"
@@ -847,6 +869,7 @@
                     categories="hadoop"
                     singleConnection="true">
                     <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
@@ -908,6 +931,7 @@
                     webURL="https://github.com/openlink/virtuoso-opensource"
                     categories="sql,object">
                     <file type="jar" path="https://github.com/openlink/virtuoso-opensource/raw/develop/7/libsrc/JDBCDriverType4/virtjdbc4.jar"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt"/>
                 </driver>
 
                 <!-- Machbase -->
@@ -962,6 +986,7 @@
                     webURL="https://github.com/orientechnologies/orientdb-jdbc"
                     categories="graph">
                     <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE[1.7]"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
 
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
@@ -980,6 +1005,7 @@
                     webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
                     categories="graph">
                     <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
+                    <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt"/>
                     <parameter name="supports-truncate" value="false"/>
                     <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
                 </driver>
@@ -998,6 +1024,7 @@
                     webURL="https://prestodb.io/"
                     categories="sql,bigdata,hadoop">
                     <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
 
                     <parameter name="use-search-string-escape" value="true"/>
                     <parameter name="supports-ddl-transactions" value="false"/>
@@ -1042,7 +1069,9 @@
                     webURL="https://trino.io/"
                     categories="sql,bigdata,hadoop">
                     <file type="jar" path="maven:/io.trino:trino-jdbc:RELEASE" bundle="!drivers.trino"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.trino"/>
                     <file type="jar" path="drivers/trino" bundle="drivers.trino"/>
+                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.trino"/>
                     <parameter name="read-only-meta-data" value="true"/>
                     <parameter name="use-search-string-escape" value="true"/>
                     <parameter name="krb5.show-service" value="true"/>
@@ -1150,6 +1179,7 @@
                         webURL="https://apacheignite-sql.readme.io/docs/jdbc-driver"
                         categories="hadoop">
                     <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
                 </driver>
 
                 <!-- OmniSci MapD -->
@@ -1390,15 +1420,15 @@
                 </driver>
                 <driver
                         id="db2"
-                        label="DB2 LUW"
+                        label="Db2 for LUW"
                         icon="icons/db2_icon.png"
                         iconBig="icons/db2_icon_big.png"
-                        category="DB2"
+                        category="Db2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                         defaultPort="50000"
                         webURL="https://www.ibm.com/software/data/db2/express/download.html"
-                        description="DB2 JCC driver">
+                        description="IBM Db2 JCC driver">
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectionTimeout" value="20"/>
@@ -1419,10 +1449,10 @@
 
                 <driver
                         id="db2_luw_old"
-                        label="DB2 LUW (Old 8.x)"
+                        label="Db2 for LUW (Old 8.x)"
                         icon="icons/db2_icon.png"
                         iconBig="icons/db2_icon_big.png"
-                        category="DB2"
+                        category="Db2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                         defaultPort="50000"
@@ -1451,12 +1481,12 @@
                 </driver>
                 <driver
                         id="db2_zos"
-                        label="DB2 z/OS"
-                        category="DB2"
+                        label="Db2 for z/OS"
+                        category="Db2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                         defaultPort="50000"
-                        description="DB2 z/OS driver"
+                        description="IBM Db2 driver for z/OS"
                         note="Deprecated.">
                 </driver>
 

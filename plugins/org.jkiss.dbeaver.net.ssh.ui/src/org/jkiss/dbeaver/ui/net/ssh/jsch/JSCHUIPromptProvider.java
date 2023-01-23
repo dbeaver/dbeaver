@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import com.jcraft.jsch.UserInfo;
 import org.eclipse.jsch.ui.UserInfoPrompter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.net.ssh.JSCHUserInfoPromptProvider;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
+import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.net.ssh.SSHUIMessages;
 import org.jkiss.utils.CommonUtils;
@@ -31,16 +33,16 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
 
     @NotNull
     @Override
-    public UserInfo createUserInfoPrompt(@NotNull SSHAuthConfiguration configuration, @NotNull Session session) {
+    public UserInfo createUserInfoPrompt(@NotNull SSHHostConfiguration configuration, @NotNull Session session) {
         return new UIPrompter(configuration, session);
     }
 
     private static class UIPrompter extends UserInfoPrompter {
         private static final Log log = Log.getLog(JSCHUIPromptProvider.class);
 
-        private final SSHAuthConfiguration configuration;
+        private final SSHHostConfiguration configuration;
 
-        UIPrompter(@NotNull SSHAuthConfiguration configuration, Session session) {
+        UIPrompter(@NotNull SSHHostConfiguration configuration, Session session) {
             super(session);
             this.configuration = configuration;
         }
@@ -48,20 +50,20 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
         @Override
         public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt, boolean[] echo) {
             if (shouldUsePassword()) {
-                setPassword(configuration.getPassword());
+                setPassword(configuration.getAuthConfiguration().getPassword());
             }
             return super.promptKeyboardInteractive(destination, name, instruction, prompt, echo);
         }
 
         @Override
         public boolean promptPassword(String message) {
-            setPassword(configuration.getPassword());
+            setPassword(configuration.getAuthConfiguration().getPassword());
             return true;
         }
 
         @Override
         public boolean promptPassphrase(String message) {
-            setPassphrase(configuration.getPassword());
+            setPassphrase(configuration.getAuthConfiguration().getPassword());
             return true;
         }
 
@@ -73,12 +75,26 @@ public class JSCHUIPromptProvider implements JSCHUserInfoPromptProvider {
         }
 
         private boolean shouldUsePassword() {
-            return configuration.getType().usesPassword() && (configuration.isSavePassword() || CommonUtils.isNotEmpty(configuration.getPassword()));
+            final SSHAuthConfiguration auth = configuration.getAuthConfiguration();
+            return auth.getType().usesPassword() && (auth.isSavePassword() || CommonUtils.isNotEmpty(auth.getPassword()));
         }
 
         @Override
         public boolean promptYesNo(String question) {
-            return DBWorkbench.getPlatformUI().confirmAction(SSHUIMessages.jsch_remote_host_identifier_changed_warning_title, question);
+            // HACK: There's a bug in JSCH: in the message, it includes the original hostname instead of its alias
+            if (question.startsWith("The authenticity of host '")) {
+                final int index = question.indexOf('\'', 26);
+                final String hostname = question.substring(26, index);
+                if (hostname.equals(DBConstants.HOST_LOCALHOST)) {
+                    question = question.substring(0, 26) + configuration.getHostname() + question.substring(index);
+                }
+            }
+
+            return DBWorkbench.getPlatformUI().confirmAction(
+                SSHUIMessages.jsch_remote_host_identifier_changed_warning_title,
+                question,
+                true
+            );
         }
     }
 }

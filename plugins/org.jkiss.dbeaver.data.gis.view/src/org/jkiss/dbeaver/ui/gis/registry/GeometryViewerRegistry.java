@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ import java.util.stream.Stream;
 public class GeometryViewerRegistry {
     private static final String GEOMETRY_REGISTRY_CONFIG_XML = "geometry_registry_config.xml";
     private static final Log log = Log.getLog(GeometryViewerRegistry.class);
-    private static final GeometryViewerRegistry INSTANCE = new GeometryViewerRegistry(Platform.getExtensionRegistry());
 
     private static final String KEY_ROOT = "config";
     private static final String KEY_NON_VISIBLE_PREDEFINED_TILES = "notVisiblePredefinedTiles";
@@ -56,6 +55,8 @@ public class GeometryViewerRegistry {
     private static final String KEY_LAYERS_DEF = "layersDefinition";
     private static final String KEY_IS_VISIBLE = "isVisible";
 
+    private static GeometryViewerRegistry instance;
+
     private final Map<String, GeometryViewerDescriptor> viewers = new HashMap<>();
     private final List<LeafletTilesDescriptor> predefinedTiles = new ArrayList<>();
     private final List<LeafletTilesDescriptor> userDefinedTiles = new ArrayList<>();
@@ -64,8 +65,17 @@ public class GeometryViewerRegistry {
     @Nullable
     private LeafletTilesDescriptor defaultLeafletTiles;
 
-    public static GeometryViewerRegistry getInstance() {
-        return INSTANCE;
+    @NotNull
+    public static synchronized GeometryViewerRegistry getInstance() {
+        if (instance == null) {
+            instance = new GeometryViewerRegistry(Platform.getExtensionRegistry());
+
+            if (instance.defaultLeafletTiles == null) {
+                instance.autoAssignDefaultLeafletTiles();
+            }
+        }
+
+        return instance;
     }
 
     private GeometryViewerRegistry(@NotNull IExtensionRegistry registry) {
@@ -94,9 +104,6 @@ public class GeometryViewerRegistry {
                     .filter(tile -> tile.getId().equals(defTilesId))
                     .findAny()
                     .orElse(null);
-            }
-            if (defaultLeafletTiles == null) {
-                autoAssignDefaultLeafletTiles();
             }
         } catch (Throwable e) {
             log.error("Error initializing registry", e);

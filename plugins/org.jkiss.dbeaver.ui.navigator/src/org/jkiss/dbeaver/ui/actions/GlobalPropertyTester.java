@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class GlobalPropertyTester extends PropertyTester {
             case PROP_BUNDLE_INSTALLED:
                 return Platform.getBundle((String)args[0]) != null;
             case PROP_CAN_CREATE_PROJECT:
-                return !DBWorkbench.isDistributed();
+                return canManageProjects();
             case PROP_CAN_CREATE_CONNECTION:
             {
                 for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
@@ -86,6 +86,10 @@ public class GlobalPropertyTester extends PropertyTester {
             }
         }
         return false;
+    }
+
+    public static boolean canManageProjects() {
+        return !DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN);
     }
 
     public static void firePropertyChange(String propName)

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,14 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.LogOutputStream;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -44,7 +46,9 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
 
     private Button logsDebugEnabled;
     private TextWithOpenFile logsDebugLocation;
-
+    private Spinner logFilesMaxSizeSpinner;
+    private Spinner logFilesMaxCountSpinner;
+    
     @Override
     public void init(IWorkbench workbench)
     {
@@ -72,6 +76,25 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
                     GeneralUtils.variablePattern(SystemVariablesResolver.VAR_HOME)));
             logsDebugLocation.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+            final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+            UIUtils.createControlLabel(groupLogs, CoreMessages.pref_page_logs_files_max_size_label);
+            logFilesMaxSizeSpinner = new Spinner(groupLogs, SWT.BORDER);
+            logFilesMaxSizeSpinner.setDigits(0);
+            logFilesMaxSizeSpinner.setIncrement(10);
+            logFilesMaxSizeSpinner.setMinimum(0);
+            logFilesMaxSizeSpinner.setMaximum(Integer.MAX_VALUE);
+            long bigScriptSize = preferenceStore.getLong(LogOutputStream.LOGS_MAX_FILE_SIZE);
+            logFilesMaxSizeSpinner.setSelection((int) (bigScriptSize / 1024));
+
+            UIUtils.createControlLabel(groupLogs, CoreMessages.pref_page_logs_files_max_count_label);
+            logFilesMaxCountSpinner = new Spinner(groupLogs, SWT.BORDER);
+            logFilesMaxCountSpinner.setDigits(0);
+            logFilesMaxCountSpinner.setIncrement(1);
+            logFilesMaxCountSpinner.setMinimum(0);
+            logFilesMaxCountSpinner.setMaximum(Integer.MAX_VALUE);
+            int debugLogFilesMaxCount = preferenceStore.getInt(LogOutputStream.LOGS_MAX_FILES_COUNT);
+            logFilesMaxCountSpinner.setSelection(debugLogFilesMaxCount);
+
             Label tipLabel = UIUtils.createLabel(groupLogs, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart);
             tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false , 2, 1));
         }
@@ -82,23 +105,30 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
     }
 
     @Override
-    protected void performDefaults()
-    {
+    protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         logsDebugEnabled.setSelection(store.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED));
         logsDebugLocation.setText(store.getString(DBeaverPreferences.LOGS_DEBUG_LOCATION));
 
+        long bigScriptSize = DBWorkbench.getPlatform().getPreferenceStore().getLong(LogOutputStream.LOGS_MAX_FILE_SIZE);
+        logFilesMaxSizeSpinner.setSelection((int) (bigScriptSize / 1024));
+
+        int debugLogFilesMaxCount = DBWorkbench.getPlatform().getPreferenceStore().getInt(LogOutputStream.LOGS_MAX_FILES_COUNT);
+        logFilesMaxCountSpinner.setSelection(debugLogFilesMaxCount);
+
         super.performDefaults();
     }
 
     @Override
-    public boolean performOk()
-    {
+    public boolean performOk() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         store.setValue(DBeaverPreferences.LOGS_DEBUG_ENABLED, logsDebugEnabled.getSelection());
         store.setValue(DBeaverPreferences.LOGS_DEBUG_LOCATION, logsDebugLocation.getText());
+
+        store.setValue(LogOutputStream.LOGS_MAX_FILE_SIZE, logFilesMaxSizeSpinner.getSelection() * 1024L);
+        store.setValue(LogOutputStream.LOGS_MAX_FILES_COUNT, logFilesMaxCountSpinner.getSelection());
 
         PrefUtils.savePreferenceStore(store);
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,18 @@ public final class MessageBoxBuilder {
     @NotNull
     public MessageBoxBuilder setReplies(@NotNull Reply... replies) {
         this.replies = new ArrayList<>(Arrays.asList(replies));
+        return this;
+    }
+
+    /**
+     * Sets replies for the dialog. Replaces previously set replies.
+     *
+     * @param replies to set
+     * @return builder
+     */
+    @NotNull
+    public MessageBoxBuilder setReplies(@NotNull List<Reply> replies) {
+        this.replies = new ArrayList<>(replies);
         return this;
     }
 

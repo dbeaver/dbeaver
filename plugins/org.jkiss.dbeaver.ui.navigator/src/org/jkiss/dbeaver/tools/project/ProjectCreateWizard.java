@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -42,13 +44,19 @@ import java.lang.reflect.InvocationTargetException;
 
 public class ProjectCreateWizard extends BasicNewProjectResourceWizard implements INewWizard {
 
-    private ProjectCreateData data = new ProjectCreateData();
+    private final ProjectCreateData data = new ProjectCreateData();
     private WizardPrefPage projectSettingsPage;
+    private IProject project;
+    private ProjectCreateRemotePage remoteProjectPage;
 
     public ProjectCreateWizard() {
 	}
 
-	@Override
+    public IProject getProject() {
+        return project;
+    }
+
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         super.init(workbench, selection);
         setWindowTitle(UINavigatorMessages.dialog_project_create_wizard_title);
@@ -57,10 +65,16 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
 
     @Override
     public void addPages() {
-        super.addPages();
-        final PrefPageProjectResourceSettings projectSettingsPref = new PrefPageProjectResourceSettings();
-        projectSettingsPage = new WizardPrefPage(projectSettingsPref, "Resources", "Project resources");
-        addPage(projectSettingsPage);
+        if (DBWorkbench.isDistributed()) {
+            remoteProjectPage = new ProjectCreateRemotePage("RemoteProjectCreate");
+            addPage(remoteProjectPage);
+        } else {
+            super.addPages();
+
+            final PrefPageProjectResourceSettings projectSettingsPref = new PrefPageProjectResourceSettings();
+            projectSettingsPage = new WizardPrefPage(projectSettingsPref, "Resources", "Project resources");
+            addPage(projectSettingsPage);
+        }
     }
 
     @Override
@@ -73,13 +87,30 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
 
     @Override
 	public boolean performFinish() {
+        if (DBWorkbench.isDistributed()) {
+            try {
+                DBPProject newProject = DBPPlatformDesktop.getInstance().getWorkspace().createProject(
+                    remoteProjectPage.getProjectName(),
+                    remoteProjectPage.getProjectDescription()
+                );
+                project = newProject.getEclipseProject();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    UINavigatorMessages.dialog_project_create_wizard_error_cannot_create,
+                    UINavigatorMessages.dialog_project_create_wizard_error_cannot_create_message,
+                    e);
+                return false;
+            }
+
+            return true;
+        }
         if (super.performFinish()) {
             try {
                 UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {
-                            createProject(monitor);
+                            project = createProject(monitor);
                         } catch (Exception e) {
                             throw new InvocationTargetException(e);
                         }
@@ -100,8 +131,7 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
         }
 	}
 
-    private void createProject(DBRProgressMonitor monitor) throws DBException, CoreException
-    {
+    private IProject createProject(DBRProgressMonitor monitor) throws CoreException {
         final IProgressMonitor nestedMonitor = RuntimeUtils.getNestedMonitor(monitor);
         final IProject project = getNewProject();
 
@@ -115,6 +145,7 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
         if (!project.isOpen()) {
             project.open(nestedMonitor);
         }
+        return project;
     }
 
 }

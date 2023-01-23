@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class ConfirmationRegistry {
         return confirmations.values();
     }
 
-    public int confirmAction(@Nullable Shell shell, @NotNull String id, int type, @NotNull Object... args) {
+    public int confirmAction(@Nullable Shell shell, @NotNull String id, int type, int imageType, @NotNull Object... args) {
         final ConfirmationDescriptor descriptor = confirmations.get(id);
 
         if (descriptor == null) {
@@ -67,7 +67,7 @@ public class ConfirmationRegistry {
 
         return ConfirmationDialog.open(
             type,
-            type,
+            imageType == -1 ? type : imageType,
             shell,
             NLS.bind(descriptor.getTitle(), args),
             NLS.bind(descriptor.getMessage(), args),

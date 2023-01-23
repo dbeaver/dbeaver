@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import javax.net.ssl.SSLHandshakeException;
 
 class DriverDownloadAutoPage extends DriverDownloadPage {
 
@@ -195,11 +197,13 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                     result = new UITask<Integer>() {
                         @Override
                         protected Integer runTask() {
-                            DownloadErrorDialog dialog = new DownloadErrorDialog(
-                                    null,
-                                    lib.getDisplayName(),
-                                    UIConnectionMessages.dialog_driver_download_auto_page_download_failed_msg,
-                                    e);
+                            String message;
+                            if (RuntimeUtils.isWindows() && e instanceof SSLHandshakeException) {
+                                message = UIConnectionMessages.dialog_driver_download_auto_page_download_failed_cert_msg;
+                            } else {
+                                message = UIConnectionMessages.dialog_driver_download_auto_page_download_failed_msg;
+                            }
+                            DownloadErrorDialog dialog = new DownloadErrorDialog(null, lib.getDisplayName(), message, e);
                             return dialog.open();
                         }
                     }.execute();

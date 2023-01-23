@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -606,13 +606,15 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     void fireRegistryChange(DataSourceRegistry registry, boolean load) {
+        List<DBPRegistryListener> lCopy;
         synchronized (registryListeners) {
-            for (DBPRegistryListener listener : registryListeners) {
-                if (load) {
-                    listener.handleRegistryLoad(registry);
-                } else {
-                    listener.handleRegistryUnload(registry);
-                }
+            lCopy = new ArrayList<>(registryListeners);
+        }
+        for (DBPRegistryListener listener : lCopy) {
+            if (load) {
+                listener.handleRegistryLoad(registry);
+            } else {
+                listener.handleRegistryUnload(registry);
             }
         }
     }

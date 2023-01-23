@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ public class SQLContextInformer
         }
 
         SQLWordPartDetector wordDetector = new SQLWordPartDetector(document, syntaxManager, region.getOffset());
-        wordRegion = wordDetector.detectIdentifier(document, region);
+        wordRegion = wordDetector.extractIdentifier(document, region, editor.getRuleManager());
 
         if (wordRegion.word.length() == 0) {
             return;
@@ -334,9 +334,10 @@ public class SQLContextInformer
                                     if (objReferences.size() == 1) {
                                         childContainer = objReferences.get(0).resolveObject(monitor);
                                     }
-                                    if (childContainer == null) {
-                                        return false;
-                                    }
+                                    // We still can find it, unless search for schema_name.table_name doesn't work
+                                    // if (childContainer == null) {
+                                    //     return false;
+                                    // }
                                 }
                             }
                             if (childContainer instanceof DBSObjectContainer) {

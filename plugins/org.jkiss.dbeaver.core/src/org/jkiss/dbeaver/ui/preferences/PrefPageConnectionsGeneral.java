@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,12 +50,15 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral;
 import org.jkiss.dbeaver.ui.dialogs.connection.NavigatorSettingsStorage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
 public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage, NavigatorSettingsStorage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
+    private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
+    
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
     private Combo navigatorSettingsCombo;
     private Text connectionDefaultNamePatternText;
@@ -123,12 +126,28 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 GridData.FILL_HORIZONTAL,
                 300
             );
-            useWinTrustStoreCheck = UIUtils.createCheckbox(
-                settings,
-                CoreMessages.pref_page_connections_use_win_cert_label,
-                ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
-            );
-            useWinTrustStoreCheck.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_tip);
+            
+
+            if (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
+                || (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
+                && !System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE).equalsIgnoreCase(VALUE_TRUST_STRORE_TYPE_WINDOWS))
+            ) {
+                Composite winTrustStoreComposite = UIUtils.createComposite(settings, 1);
+                useWinTrustStoreCheck = UIUtils.createCheckbox(
+                    winTrustStoreComposite,
+                    CoreMessages.pref_page_connections_use_win_cert_label,
+                    ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+                );
+                winTrustStoreComposite.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_disabled_tip);
+                useWinTrustStoreCheck.setEnabled(false);
+            } else {
+                useWinTrustStoreCheck = UIUtils.createCheckbox(
+                    settings,
+                    CoreMessages.pref_page_connections_use_win_cert_label,
+                    ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+                );
+                useWinTrustStoreCheck.setToolTipText(CoreMessages.pref_page_connections_use_win_cert_tip);
+            }
         }
         
         {

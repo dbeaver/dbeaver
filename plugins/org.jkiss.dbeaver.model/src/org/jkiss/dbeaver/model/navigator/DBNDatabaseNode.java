@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import java.util.*;
 /**
  * DBNDatabaseNode
  */
-public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DBSWrapper, DBPContextProvider, IDataSourceContainerProvider {
+public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DBSWrapper, DBPContextProvider, DBPDataSourceContainerProvider {
 
     private static final DBNDatabaseNode[] EMPTY_NODES = new DBNDatabaseNode[0];
 

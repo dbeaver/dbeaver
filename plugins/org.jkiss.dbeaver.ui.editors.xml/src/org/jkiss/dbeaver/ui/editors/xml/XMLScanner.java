@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,19 @@
  */
 package org.jkiss.dbeaver.ui.editors.xml;
 
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.*;
-import org.eclipse.jface.text.source.ISharedTextColors;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
 
 
 public class XMLScanner extends RuleBasedScanner {
 
-	public XMLScanner(ISharedTextColors manager) {
+	XMLScanner(ColorRegistry manager) {
 		IToken procInstr =
 			new Token(
 				new TextAttribute(
-					manager.getColor(XMLSourceViewerConfiguration.COLOR_PROC_INSTR)));
+					manager.get(XMLSourceViewerConfiguration.COLOR_XML_STRING)));
 
 		IRule[] rules = new IRule[2];
 		//Add rule for processing instructions

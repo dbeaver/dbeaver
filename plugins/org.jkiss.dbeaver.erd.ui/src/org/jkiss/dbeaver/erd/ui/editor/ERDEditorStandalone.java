@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,15 +42,14 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
-import java.util.ResourceBundle;
 
 /**
  * Standalone ERD editor
@@ -98,8 +97,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
     @Override
     public void refreshDiagram(boolean force, boolean refreshMetadata) {
         if (isDirty()) {
-            if (ConfirmationDialog.showConfirmDialog(
-                ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+            if (ConfirmationDialog.confirmAction(
                 null,
                 NavigatorPreferences.CONFIRM_ENTITY_REVERT,
                 ConfirmationDialog.QUESTION,
@@ -158,16 +156,14 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
             return;
         }
         diagramLoadingJob = LoadingJob.createService(
-            new AbstractLoadService<EntityDiagram>("Load diagram '" + getEditorInput().getName() + "'") {
+            new AbstractLoadService<>("Load diagram '" + getEditorInput().getName() + "'") {
                 @Override
-                public EntityDiagram evaluate(DBRProgressMonitor monitor) {
+                public EntityDiagram evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
                         return loadContentFromFile(monitor);
                     } catch (DBException e) {
-                        log.error(e);
+                        throw new InvocationTargetException(e);
                     }
-
-                    return null;
                 }
 
                 @Override
@@ -216,7 +212,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         try (final InputStreamReader isr = new InputStreamReader(localFile.getContents(), GeneralUtils.UTF8_CHARSET)) {
             DiagramLoader.load(progressMonitor, getDiagramProject(), diagramPart, isr);
         } catch (Exception e) {
-            log.error("Error loading ER diagram from '" + localFile.getName() + "'", e);
+            throw new DBException("Error loading ER diagram from '" + localFile.getName() + "'", e);
         }
 
         return entityDiagram;

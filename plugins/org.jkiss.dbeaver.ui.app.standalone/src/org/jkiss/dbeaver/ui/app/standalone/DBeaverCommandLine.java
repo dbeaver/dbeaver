@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.actions.datasource.ConnectionCommands;
+import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.InstanceClient;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -258,7 +258,7 @@ public class DBeaverCommandLine
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.setWidth(120);
             helpFormatter.setOptionComparator((o1, o2) -> 0);
-            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2020-2022 DBeaver Corp", true);
+            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2020-2023 DBeaver Corp", true);
             return true;
         }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -197,7 +197,7 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
-    public UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status) {
+    public UserResponse showError(@Nullable final String title, @Nullable final String message, @NotNull final IStatus status) {
         IStatus rootStatus = status;
         for (IStatus s = status; s != null; ) {
             if (s.getException() instanceof DBException) {
@@ -222,8 +222,12 @@ public class DesktopUI implements DBPPlatformUI {
         // log.debug(message);
         Runnable runnable = () -> {
             // Display the dialog
-            StandardErrorDialog dialog = new StandardErrorDialog(UIUtils.getActiveWorkbenchShell(),
-                    title, message, status, IStatus.ERROR);
+            StandardErrorDialog dialog = new StandardErrorDialog(
+                UIUtils.getActiveWorkbenchShell(),
+                Objects.requireNonNull(title, "Error"),
+                message,
+                status,
+                IStatus.ERROR);
             dialog.open();
         };
         UIUtils.syncExec(runnable);
@@ -231,7 +235,7 @@ public class DesktopUI implements DBPPlatformUI {
     }
 
     @Override
-    public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull Throwable error) {
+    public UserResponse showError(@Nullable String title, @Nullable String message, @NotNull Throwable error) {
         return showError(title, message, GeneralUtils.makeExceptionStatus(error));
     }
 
@@ -296,7 +300,7 @@ public class DesktopUI implements DBPPlatformUI {
         @NotNull List<String> labels,
         @NotNull List<String> forAllLabels,
         @Nullable Integer previousChoice,
-        @NotNull int defaultChoice
+        int defaultChoice
     ) {
         final List<Reply> reply = labels.stream()
             .map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s))
@@ -426,8 +430,12 @@ public class DesktopUI implements DBPPlatformUI {
 
     @Override
     public DBNNode selectObject(@NotNull Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
-        Shell shell = (parentShell instanceof Shell ? (Shell)parentShell : UIUtils.getActiveWorkbenchShell());
-        return ObjectBrowserDialog.selectObject(shell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes);
+        DBNNode[] result = new DBNNode[1];
+        UIUtils.syncExec(() -> {
+            Shell shell = (parentShell instanceof Shell ? (Shell)parentShell : UIUtils.getActiveWorkbenchShell());
+            result[0] = ObjectBrowserDialog.selectObject(shell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes);
+        });
+        return result[0];
     }
 
     @Override
@@ -511,11 +519,13 @@ public class DesktopUI implements DBPPlatformUI {
             protected IStatus run(DBRProgressMonitor monitor) {
                 monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
                 try {
+                    UIExecutionQueue.blockQueue();
                     runnable.run(monitor);
                     return Status.OK_STATUS;
                 } catch (Exception ex) {
                     return GeneralUtils.makeExceptionStatus(ex);
                 } finally {
+                    UIExecutionQueue.unblockQueue();
                     monitor.done();
                 }
             }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.e4.ui.model.application.ui.MElementContainer;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
@@ -30,7 +29,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -50,8 +49,8 @@ public class DataSourceToolbarUtils
             return null;
         }
 
-        if (activeEditor instanceof IDataSourceContainerProvider) {
-            return ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
+        if (activeEditor instanceof DBPDataSourceContainerProvider) {
+            return ((DBPDataSourceContainerProvider) activeEditor).getDataSourceContainer();
         }
         return null;
     }
@@ -62,9 +61,9 @@ public class DataSourceToolbarUtils
             boolean showConnectionSelector = false;
             IEditorPart activeEditor = window.getActivePage().getActiveEditor();
             DBPDataSourceContainer dataSourceContainer = null;
-            if (activeEditor instanceof IDataSourceContainerProvider) {
+            if (activeEditor instanceof DBPDataSourceContainerProvider) {
                 showConnectionSelector = true;
-                dataSourceContainer = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
+                dataSourceContainer = ((DBPDataSourceContainerProvider) activeEditor).getDataSourceContainer();
             }
             DBPProject resourceProj = activeEditor == null ? null : EditorUtils.getFileProject(activeEditor.getEditorInput());
             boolean canChangeConn = resourceProj == null || resourceProj.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);

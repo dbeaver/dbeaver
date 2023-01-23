@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,6 +143,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             }
         }
     }
+
+    public void setIsColumnVisible(int index, boolean visible) {
+        columns.get(index).visible = visible;
+        ViewerColumnRegistry.getInstance().updateConfig(configId, columns);
+    }
+
 
     public boolean isClickOnHeader()
     {
@@ -387,10 +393,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     public void autoSizeColumns() {
         UIUtils.asyncExec(() -> {
             Control control = this.viewer.getControl();
-            if (control instanceof Tree) {
-                UIUtils.packColumns((Tree) control, true, null);
-            } else if (control instanceof Table) {
-                UIUtils.packColumns((Table) control, true);
+            if (!control.isDisposed()) {
+                if (control instanceof Tree) {
+                    UIUtils.packColumns((Tree) control, true, null);
+                } else if (control instanceof Table) {
+                    UIUtils.packColumns((Table) control, true);
+                }
             }
         });
     }

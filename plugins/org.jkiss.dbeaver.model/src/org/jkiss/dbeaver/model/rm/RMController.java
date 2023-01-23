@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,13 +69,25 @@ public interface RMController extends DBPObjectController {
     /**
      * Returns datasources configuration in modern format
      */
-    String getProjectsDataSources(@NotNull String projectId) throws DBException;
+    String getProjectsDataSources(@NotNull String projectId, @Nullable String[] dataSourceIds) throws DBException;
 
     /**
-     * Save datasources. Not: it only adds or updates existing datasources.
+     * Save datasources. Note: it only adds datasources.
+     *
      * @param configuration configuration in modern format.
      */
-    void saveProjectDataSources(
+    void createProjectDataSources(
+        @NotNull String projectId,
+        @NotNull String configuration,
+        @Nullable List<String> dataSourceIds) throws DBException;
+
+
+    /**
+     * Save datasources. Note: it only updates existing datasources.
+     *
+     * @param configuration configuration in modern format.
+     */
+    boolean updateProjectDataSources(
         @NotNull String projectId,
         @NotNull String configuration,
         @Nullable List<String> dataSourceIds) throws DBException;
@@ -84,6 +96,38 @@ public interface RMController extends DBPObjectController {
      * Delete datasource by Ids
      */
     void deleteProjectDataSources(@NotNull String projectId, @NotNull String[] dataSourceIds) throws DBException;
+
+    void createProjectDataSourceFolder(
+        @NotNull String projectId,
+        @NotNull String folderPath
+    ) throws DBException;
+
+    /**
+     * Delete project datasource folders.
+     *
+     * @param projectId    the project id
+     * @param folderPaths  the folder paths
+     * @param dropContents the drop contents
+     * @throws DBException the db exception
+     */
+    void deleteProjectDataSourceFolders(
+        @NotNull String projectId,
+        @NotNull String[] folderPaths,
+        boolean dropContents
+    ) throws DBException;
+
+    /**
+     * Moves project datasource folder
+     *
+     * @param projectId  id of the project
+     * @param oldPath old path of the moving folder
+     * @param newPath new path of the moving folder
+     */
+    void moveProjectDataSourceFolder(
+        @NotNull String projectId,
+        @NotNull String oldPath,
+        @NotNull String newPath
+    ) throws DBException;
 
     ////////////////////////////////////////////
     // Resources

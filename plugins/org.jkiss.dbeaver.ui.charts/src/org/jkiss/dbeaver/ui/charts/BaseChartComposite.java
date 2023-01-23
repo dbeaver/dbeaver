@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,17 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ExtensionFactory;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.Zoomable;
 import org.jfree.chart.swt.ChartComposite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.charts.internal.UIChartsMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 
 /**
@@ -77,18 +81,18 @@ public class BaseChartComposite extends ChartComposite {
     }
 
     protected void fillContextMenu(IMenuManager manager) {
-        boolean zoomable = getChart().getPlot() instanceof Zoomable;
-        if (zoomable) {
+        final Zoomable zoomable = GeneralUtils.adapt(getChart().getPlot(), Zoomable.class);
+        if (zoomable != null) {
             manager.add(new Action(UIChartsMessages.base_chart_composite_action_zoom_in, DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_IN)) {
                 @Override
                 public void runWithEvent(Event e) {
-                    zoomInBoth(e.x, e.y);
+                    doZoom(zoomable, getChartCanvas().toControl(getDisplay().getCursorLocation()), getZoomInFactor());
                 }
             });
             manager.add(new Action(UIChartsMessages.base_chart_composite_action_zoom_out, DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_OUT)) {
                 @Override
                 public void runWithEvent(Event e) {
-                    zoomOutBoth(e.x, e.y);
+                    doZoom(zoomable, getChartCanvas().toControl(getDisplay().getCursorLocation()), getZoomOutFactor());
                 }
             });
             manager.add(new Action(UIChartsMessages.base_chart_composite_action_zoom_reset, DBeaverIcons.getImageDescriptor(UIIcon.ZOOM)) {
@@ -144,6 +148,19 @@ public class BaseChartComposite extends ChartComposite {
                     //showChartConfigDialog();
                 }
             });
+        }
+    }
+
+    private void doZoom(@NotNull Zoomable zoomable, @NotNull Point origin, double factor) {
+        final PlotRenderingInfo info = getChartRenderingInfo().getPlotInfo();
+        final Point2D anchor = translateScreenToJava2D(new java.awt.Point(origin.x, origin.y));
+
+        if (zoomable.isDomainZoomable()) {
+            zoomable.zoomDomainAxes(factor, info, anchor, true);
+        }
+
+        if (zoomable.isRangeZoomable()) {
+            zoomable.zoomRangeAxes(factor, info, anchor, true);
         }
     }
 

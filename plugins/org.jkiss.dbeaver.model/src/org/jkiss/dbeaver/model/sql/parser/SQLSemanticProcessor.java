@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.sql.SQLDialectQueryGenerator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -59,8 +60,6 @@ import java.util.List;
 public class SQLSemanticProcessor {
 
     private static final Log log = Log.getLog(SQLSemanticProcessor.class);
-
-    private static final String NESTED_QUERY_AlIAS = "z_q";
 
     private static final boolean ALLOW_COMPLEX_PARSING = false;
 
@@ -125,19 +124,17 @@ public class SQLSemanticProcessor {
         }
     }
 
-    // Applying filters changes query formatting (thus it changes column names in expressions)
-    // Solution - always wrap query in subselect + add patched WHERE and ORDER
-    // It is configurable
+    /**
+     *  Applying filters changes query formatting (thus it changes column names in expressions)
+     *  Solution - always wrap query in subselect + add patched WHERE and ORDER
+     *  It is configurable
+     *
+     * @deprecated Use {@link SQLDialectQueryGenerator#getQueryWithAppliedFilters(DBRProgressMonitor, DBPDataSource, String, DBDDataFilter)} instead
+     */
+    @Deprecated
     public static String addFiltersToQuery(DBRProgressMonitor monitor, final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
-        if (isForceFilterSubQuery(dataSource)) {
-            return wrapQuery(dataSource, sqlQuery, dataFilter);
-        }
-        String newQuery = injectFiltersToQuery(monitor, dataSource, sqlQuery, dataFilter);
-        if (newQuery == null) {
-            // Let's try subquery though.
-            return wrapQuery(dataSource, sqlQuery, dataFilter);
-        }
-        return newQuery;
+        return dataSource.getSQLDialect().getQueryGenerator().getQueryWithAppliedFilters(monitor, dataSource, sqlQuery,
+            dataFilter);
     }
 
     public static boolean isForceFilterSubQuery(DBPDataSource dataSource) {
@@ -159,21 +156,13 @@ public class SQLSemanticProcessor {
         return null;
     }
 
+
+    /**
+     *
+     * @deprecated Use {@link SQLDialectQueryGenerator#getWrappedFilterQuery(DBPDataSource, String, DBDDataFilter)} instead
+     */
     public static String wrapQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
-        // Append filter conditions to query
-        StringBuilder modifiedQuery = new StringBuilder(sqlQuery.length() + 100);
-        modifiedQuery.append("SELECT * FROM (\n");
-        modifiedQuery.append(sqlQuery);
-        modifiedQuery.append("\n) ").append(NESTED_QUERY_AlIAS);
-        if (dataFilter.hasConditions()) {
-            modifiedQuery.append(" WHERE ");
-            SQLUtils.appendConditionString(dataFilter, dataSource, NESTED_QUERY_AlIAS, modifiedQuery, true, true);
-        }
-        if (dataFilter.hasOrdering()) {
-            modifiedQuery.append(" ORDER BY "); //$NON-NLS-1$
-            SQLUtils.appendOrderString(dataFilter, dataSource, NESTED_QUERY_AlIAS, true, modifiedQuery);
-        }
-        return modifiedQuery.toString();
+        return dataSource.getSQLDialect().getQueryGenerator().getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
     }
 
     private static boolean patchSelectQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws JSQLParserException, DBException {

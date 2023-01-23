@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,4 +75,10 @@ public interface DBPDataSourceProviderSynchronizable extends DBPDataSourceProvid
         @NotNull DBPDataSourceContainer container
     ) throws DBException;
 
+    /**
+     * Checks whether the synchronization is enabled for the local data source.
+     *
+     * @return {@code true} if the local data source is synchronizable, {@code false} otherwise
+     */
+    boolean isSynchronizationEnabled(@NotNull DBPDataSourceContainer container);
 }

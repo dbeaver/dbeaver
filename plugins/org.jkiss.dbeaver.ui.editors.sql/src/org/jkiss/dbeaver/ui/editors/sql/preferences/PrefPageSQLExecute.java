@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -220,7 +220,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
             namedParameterPrefixText = UIUtils.createLabelText(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_named_parameter_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             namedParameterPrefixText.setTextLimit(1);
             controlCommandPrefixText = UIUtils.createLabelText(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_control_command_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
-            controlCommandPrefixText.setTextLimit(1);
             enableParametersInEmbeddedCode = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl_tip, false, 2);
             enableVariables = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_enable_variables, SQLEditorMessages.pref_page_sql_editor_enable_variables_tip, false, 2);
 

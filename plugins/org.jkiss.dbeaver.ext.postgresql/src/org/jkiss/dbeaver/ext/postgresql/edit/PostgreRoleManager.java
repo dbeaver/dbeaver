@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach.PostgreServerCockroachDB;
@@ -61,7 +62,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
 
     @Override
     protected PostgreRole createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
-        return new PostgreRole(((PostgreDataSource) container).getDefaultInstance(), "NewRole", "", true);
+        return new PostgreRole((PostgreDatabase) container, "NewRole", "", true);
     }
 
     @Override

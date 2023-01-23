@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -220,7 +220,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             pathText.addModifyListener(textListener);
 
             Composite buttonsPanel = new Composite(settingsGroup, SWT.NONE);
-            gl = new GridLayout(2, true);
+            gl = new GridLayout(1, true);
             gl.marginHeight = 0;
             gl.marginWidth = 0;
             buttonsPanel.setLayout(gl);
@@ -238,25 +238,33 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 }
             });
 
-            UIUtils.createDialogButton(buttonsPanel, GenericMessages.dialog_connection_create_button, null, GenericMessages.dialog_connection_create_button_tip, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    final String path = showDatabaseFileSelectorDialog(SWT.SAVE);
-                    if (path != null) {
-                        pathText.setText(path);
-                        if (canCreateEmbeddedDatabase()) {
-                            createEmbeddedDatabase();
+            if (CommonUtils.toBoolean(site.getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_EMBEDDED_DATABASE_CREATION))) {
+                gl.numColumns += 1;
+                UIUtils.createDialogButton(
+                    buttonsPanel,
+                    GenericMessages.dialog_connection_create_button,
+                    null,
+                    GenericMessages.dialog_connection_create_button_tip,
+                    new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            final String path = showDatabaseFileSelectorDialog(SWT.SAVE);
+                            if (path != null) {
+                                pathText.setText(path);
+                                if (canCreateEmbeddedDatabase()) {
+                                    createEmbeddedDatabase();
+                                }
+                            }
                         }
-                    }
-                }
-            });
+                    });
+            }
 
             addControlToGroup(GROUP_PATH, pathLabel);
             addControlToGroup(GROUP_PATH, pathText);
             addControlToGroup(GROUP_PATH, buttonsPanel);
         }
 
-        {
+        if (isAuthEnabled()) {
             createAuthPanel(addrGroup, 4);
             addControlToGroup(GROUP_LOGIN, getAuthPanelComposite());
         }

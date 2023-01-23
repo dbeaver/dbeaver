@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,13 +35,11 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -69,7 +67,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void showMessageBox(String title, String message, boolean error) {
+    public void showMessageBox(@NotNull String title, String message, boolean error) {
         System.out.println(title + (message == null ? "" : ": " + message));
     }
 
@@ -98,6 +96,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         return false;
     }
     
+    @NotNull
     @Override
     public UserChoiceResponse showUserChoice(
         @NotNull final String title,
@@ -105,7 +104,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         @NotNull List<String> labels,
         @NotNull List<String> forAllLabels,
         @Nullable Integer previousChoice,
-        @NotNull int defaultChoice
+        int defaultChoice
     ) {
         return new UserChoiceResponse(defaultChoice, null);
     }

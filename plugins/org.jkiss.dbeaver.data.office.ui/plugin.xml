@@ -22,16 +22,4 @@
         </handler>
     </extension>
 
-    <extension point="org.eclipse.ui.menus">
-
-        <!-- Results viewer status bar additions -->
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=presentations">
-            <command commandId="org.jkiss.dbeaver.core.resultset.openWith" style="push" mode="FORCE_TEXT" label="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.toolbar.label">
-                <parameter name="processorId" value="stream_consumer:stream.xlsx">
-                </parameter>
-            </command>
-        </menuContribution>
-
-    </extension>
-
 </plugin>

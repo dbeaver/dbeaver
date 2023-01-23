@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -352,6 +352,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return schemas == null ? null : schemas.getCachedObject(name);
     }
 
+    public SimpleObjectCache getSchemaCache() {
+        return schemas;
+    }
+
     @Override
     public GenericStructContainer getObject() {
         return this;
@@ -527,7 +531,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                     List<GenericSchema> tmpSchemas = metaModel.loadSchemas(session, this, null);
                     if (tmpSchemas != null) {
                         this.schemas = new SimpleObjectCache<>();
-                        this.schemas.setCaseSensitive(getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED);
+                        this.schemas.setCaseSensitive(getSQLDialect().storesUnquotedCase() != DBPIdentifierCase.MIXED);
                         this.schemas.setCache(tmpSchemas);
                     }
                 } catch (Throwable e) {

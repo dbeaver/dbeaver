@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,12 @@ public class SWTBrowserRegistry {
         "Windows 7", //$NON-NLS-1$
         "Windows 8", //$NON-NLS-1$
         "Windows 8.1", //$NON-NLS-1$
+        "Windows Server 2008", //$NON-NLS-1$
+        "Windows Server 2008 R2", //$NON-NLS-1$
+        "Windows Server 2012", //$NON-NLS-1$
+        "Windows Server 2012 R2", //$NON-NLS-1$
+        "Windows Server 2016", //$NON-NLS-1$
+        "Windows Server 2019", //$NON-NLS-1$
     };
 
     public enum BrowserSelection {

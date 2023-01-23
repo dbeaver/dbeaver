@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,21 @@ package org.jkiss.dbeaver.model.sql.parser;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Region;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
+import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
+import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
+import org.jkiss.utils.Pair;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Determines whether a given character is valid as part of an SQL identifier.
@@ -114,7 +124,8 @@ public class SQLIdentifierDetector extends TPWordDetector {
     }
 
 
-    public WordRegion detectIdentifier(IDocument document, IRegion region) {
+    @NotNull
+    private WordRegion detectIdentifier(@NotNull IDocument document, @NotNull IRegion region) {
         final WordRegion id = new WordRegion(region.getOffset());
         int docLength = document.getLength();
 
@@ -172,6 +183,98 @@ public class SQLIdentifierDetector extends TPWordDetector {
 
         public boolean isEmpty() {
             return word.isEmpty();
+        }
+    }
+
+    /**
+     * Returns identifier under cursor position or empty word region
+     */
+    @NotNull
+    public WordRegion extractIdentifier(@NotNull IDocument document, @NotNull IRegion region, @Nullable SQLRuleManager ruleManager) {
+        if (ruleManager == null) {
+            return detectIdentifier(document, region);
+        }
+        
+        final WordRegion id = new WordRegion(region.getOffset());
+        try {
+            IRegion line = document.getLineInformationOfOffset(region.getOffset());
+        
+            final TPRuleBasedScanner scanner = new TPRuleBasedScanner();
+            scanner.setRules(ruleManager.getAllRules());
+            scanner.setRange(document, line.getOffset(), line.getLength());
+            
+            List<Pair<TPToken, Region>> tokens = new ArrayList<>();
+            int tokenIndex = -1;
+    
+            TPToken token = scanner.nextToken();
+            while (!token.isEOF()) {
+                if (token instanceof TPTokenAbstract && !token.isWhitespace()) {
+                    if (scanner.getTokenOffset() <= region.getOffset() && scanner.getTokenEndOffset() > region.getOffset()) {
+                        if (!SQLCompletionAnalyzer.isNamePartToken(token)) {
+                            return id; // there is no identifier at the given position
+                        }
+                        tokenIndex = tokens.size();
+                    }
+                    tokens.add(new Pair<>(token, new Region(scanner.getTokenOffset(), scanner.getTokenLength())));
+                }
+                token = scanner.nextToken();
+            }
+            if (tokenIndex == -1) {
+                return id;
+            }
+            
+            LinkedList<String> parts = new LinkedList<>();
+            {
+                Region r = tokens.get(tokenIndex).getSecond();
+                String word = document.get(r.getOffset(), r.getLength());
+                parts.add(word);
+                id.word = word;
+                id.wordStart = r.getOffset();
+                id.wordEnd = r.getOffset() + r.getLength();
+                id.identStart = id.wordStart;
+                id.identEnd = id.wordEnd;
+            }
+            // Explore identifier to the left
+            for (int i = tokenIndex; i - 2 >= 0;) {
+                i--;
+                Region maybeSepRegion = tokens.get(i).getSecond();
+                String maybeSepText = document.get(maybeSepRegion.getOffset(), maybeSepRegion.getLength());
+                if (maybeSepText.indexOf(structSeparator) < 0) {
+                    break;
+                }
+                i--;
+                if (!SQLCompletionAnalyzer.isNamePartToken(tokens.get(i).getFirst())) {
+                    break;
+                }
+                Region prefixWordRegion = tokens.get(i).getSecond();
+                String prefixWord = document.get(prefixWordRegion.getOffset(), prefixWordRegion.getLength());
+                parts.addFirst(maybeSepText);
+                parts.addFirst(prefixWord);
+                id.identStart = prefixWordRegion.getOffset();
+            }
+            // Explore identifier to the right
+            for (int i = tokenIndex; i + 2 < tokens.size();) {
+                i++;
+                Region maybeSepRegion = tokens.get(i).getSecond();
+                String maybeSepText = document.get(maybeSepRegion.getOffset(), maybeSepRegion.getLength());
+                if (maybeSepText.indexOf(structSeparator) < 0) {
+                    break;
+                }
+                i++;
+                if (!SQLCompletionAnalyzer.isNamePartToken(tokens.get(i).getFirst())) {
+                    break;
+                }
+                Region suffixWordRegion = tokens.get(i).getSecond();
+                String suffixWord = document.get(suffixWordRegion.getOffset(), suffixWordRegion.getLength());
+                parts.addLast(maybeSepText);
+                parts.addLast(suffixWord);
+                id.identEnd = suffixWordRegion.getOffset() + suffixWordRegion.getLength();
+            }
+
+            id.identifier = String.join("", parts);
+            return id;
+        } catch (BadLocationException e) {
+            return id;
         }
     }
 }

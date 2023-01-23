@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,10 @@ public class GeneralUtils {
         '8', '9', 'a', 'b',
         'c', 'd', 'e', 'f'
     };
-
+    
+    public static final String PROP_TRUST_STORE = "javax.net.ssl.trustStore"; //$NON-NLS-1$
+    public static final String PROP_TRUST_STORE_TYPE = "javax.net.ssl.trustStoreType"; //$NON-NLS-1$
+    
     static {
         // Compose byte to hex map
         for (int i = 0; i < 256; ++i) {
@@ -486,17 +489,24 @@ public class GeneralUtils {
             return string;
         }
         // We save resolved vars here to avoid resolve recursive cycles
-        List<String> resolvedVars = null;
+        Map<String, String> resolvedVars = null;
         try {
             Matcher matcher = VAR_PATTERN.matcher(string);
             int pos = 0;
             while (matcher.find(pos)) {
                 pos = matcher.end();
                 String varName = matcher.group(2);
-                if (resolvedVars != null && resolvedVars.contains(varName)) {
-                    continue;
+                String varValue = null;
+                if (resolvedVars != null) {
+                    varValue = resolvedVars.get(varName); 
+                    if (varValue != null) {
+                        string = substituteVariable(string, matcher, varValue);
+                        matcher = VAR_PATTERN.matcher(string);
+                        pos = 0;
+                        continue;
+                    }
                 }
-                String varValue = resolver.get(varName);
+                varValue = resolver.get(varName);
                 if (varValue == null) {
                     varValue = matcher.group(3);
                     if (varValue != null && varValue.startsWith(":")) {
@@ -505,14 +515,10 @@ public class GeneralUtils {
                 }
                 if (varValue != null) {
                     if (resolvedVars == null) {
-                        resolvedVars = new ArrayList<>();
-                        resolvedVars.add(varName);
+                        resolvedVars = new HashMap<>();
+                        resolvedVars.put(varName, varValue);
                     }
-                    if (matcher.start() == 0 && matcher.end() >= string.length() - 1) {
-                        string = varValue;
-                    } else {
-                        string = string.substring(0, matcher.start()) + varValue + string.substring(matcher.end());
-                    }
+                    string = substituteVariable(string, matcher, varValue);
                     matcher = VAR_PATTERN.matcher(string);
                     pos = 0;
                 }
@@ -521,6 +527,15 @@ public class GeneralUtils {
         } catch (Exception e) {
             log.warn("Error matching regex", e);
             return string;
+        }
+    }
+
+    @NotNull
+    private static String substituteVariable(@NotNull String string, @NotNull Matcher matcher, @NotNull String varValue) {
+        if (matcher.start() == 0 && matcher.end() >= string.length() - 1) {
+            return varValue;
+        } else {
+            return string.substring(0, matcher.start()) + varValue + string.substring(matcher.end());
         }
     }
 
@@ -533,6 +548,9 @@ public class GeneralUtils {
     }
 
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested) {
+        if (ex instanceof CoreException) {
+            return ((CoreException) ex).getStatus();
+        }
         // Skip chain of nested DBExceptions. Show only last message
         while (ex.getCause() != null && ex.getMessage() != null && ex.getMessage().equals(ex.getCause().getMessage())) {
             ex = ex.getCause();

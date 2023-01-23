@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -134,7 +134,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
             Composite layoutGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_result_view, 2, GridData.FILL_HORIZONTAL, 0);
             ((GridData)layoutGroup.getLayoutData()).horizontalSpan = 2;
 
-            closeTabOnErrorCheck = UIUtils.createCheckbox(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_close_results_tab_on_error, null, false, 2);
+            closeTabOnErrorCheck = UIUtils.createCheckbox(
+                layoutGroup,
+                SQLEditorMessages.pref_page_sql_editor_label_close_results_tab_on_error,
+                SQLEditorMessages.pref_page_sql_editor_label_close_results_tab_on_error_tip,
+                false,
+                2);
             replaceCurrentTab = UIUtils.createCheckbox(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_replace_on_single_query_exec_view, SQLEditorMessages.pref_page_sql_editor_label_replace_on_single_query_exec_view_tip, true, 2);
 
             resultsOrientationCombo = UIUtils.createLabelCombo(layoutGroup, SQLEditorMessages.pref_page_sql_editor_label_results_orientation, SQLEditorMessages.pref_page_sql_editor_label_results_orientation_tip, SWT.READ_ONLY | SWT.DROP_DOWN);

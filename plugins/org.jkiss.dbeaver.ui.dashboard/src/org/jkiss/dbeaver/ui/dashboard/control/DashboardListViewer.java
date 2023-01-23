@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.util.Collections;
 import java.util.List;
 
-public class DashboardListViewer extends StructuredViewer implements IDataSourceContainerProvider, DashboardViewContainer {
+public class DashboardListViewer extends StructuredViewer implements DBPDataSourceContainerProvider, DashboardViewContainer {
 
     private final IWorkbenchSite site;
     private final DBPDataSourceContainer dataSourceContainer;
