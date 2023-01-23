@@ -710,7 +710,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     // Column "typcategory" appeared only in PG version 8.4 and before we relied on DB version to verify the conditions, but it was not the most universal solution.
     // So make a separate request to the database for checking.
-    boolean supportsSysTypCategoryColumn(JDBCSession session) {
+    public boolean supportsSysTypCategoryColumn(JDBCSession session) {
         if (supportTypColumn == null) {
             if (!dataSource.isServerVersionAtLeast(10, 0)) {
                 try {
