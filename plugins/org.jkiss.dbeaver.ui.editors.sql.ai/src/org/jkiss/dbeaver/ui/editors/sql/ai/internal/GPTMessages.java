@@ -30,6 +30,7 @@ public class GPTMessages extends NLS {
     public static String gpt_preference_page_combo_engine;
     public static String gpt_preference_page_text_temperature;
     public static String gpt_preference_page_text_max_tokens;
+    public static String gpt_preference_page_text_max_tables;
 
     public static String gpt_dialog_title;
 

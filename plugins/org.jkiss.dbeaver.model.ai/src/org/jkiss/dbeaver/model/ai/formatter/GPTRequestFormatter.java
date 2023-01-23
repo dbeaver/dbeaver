@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.ai.formatter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.ai.GPTPreferences;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -81,11 +83,16 @@ public class GPTRequestFormatter {
         } else if (object instanceof DBSObjectContainer) {
             monitor.subTask("Load cache of " + object.getName());
             ((DBSObjectContainer) object).cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES);
+            int totalChildren = 0, maxChildren = DBWorkbench.getPlatform().getPreferenceStore().getInt(GPTPreferences.GPT_MAX_TABLES);
             for (DBSObject child : ((DBSObjectContainer) object).getChildren(monitor)) {
                 if (DBUtils.isSystemObject(child) || DBUtils.isHiddenObject(child) || child instanceof DBSTablePartition) {
                     continue;
                 }
+                totalChildren++;
                 generateObjectDescription(monitor, request, child);
+                if (maxChildren > 0 && totalChildren > maxChildren) {
+                    break;
+                }
             }
         }
     }

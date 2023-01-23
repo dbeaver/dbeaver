@@ -48,6 +48,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private Text maxTokensText;
     private Button executeQueryImmediately;
     private Button logQueryCheck;
+    private Text maxTablesText;
 
     @Override
     protected void performDefaults() {
@@ -57,6 +58,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         maxTokensText.setText(String.valueOf(store.getInt(GPTPreferences.GPT_MODEL_MAX_TOKENS)));
         executeQueryImmediately.setSelection(store.getBoolean(GPTPreferences.GPT_EXECUTE_IMMEDIATELY));
         logQueryCheck.setSelection(store.getBoolean(GPTPreferences.GPT_LOG_QUERY));
+        maxTablesText.setText(String.valueOf(store.getInt(GPTPreferences.GPT_MAX_TABLES)));
 
         String secretValue = DBWorkbench.getPlatform().getPreferenceStore()
             .getString(GPTPreferences.GPT_API_TOKEN);
@@ -72,6 +74,8 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         store.setValue(GPTPreferences.GPT_MODEL_MAX_TOKENS, maxTokensText.getText());
         store.setValue(GPTPreferences.GPT_EXECUTE_IMMEDIATELY, executeQueryImmediately.getSelection());
         store.setValue(GPTPreferences.GPT_LOG_QUERY, logQueryCheck.getSelection());
+        store.setValue(GPTPreferences.GPT_MAX_TABLES, maxTablesText.getText());
+
         if (!modelCombo.getText().equals(store.getString(GPTPreferences.GPT_MODEL)) ||
             !tokenText.getText().equals(store.getString(GPTPreferences.GPT_API_TOKEN))
         ) {
@@ -149,6 +153,7 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
                 temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
                 modelAdvancedGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+                maxTablesText = UIUtils.createLabelText(modelAdvancedGroup, GPTMessages.gpt_preference_page_text_max_tables, null);
                 executeQueryImmediately = UIUtils.createCheckbox(modelAdvancedGroup, "Execute SQL immediately", "Try to execute translated SQL immediately after completion", false, 2);
                 logQueryCheck = UIUtils.createCheckbox(modelAdvancedGroup, "Write GPT queries to debug log", "Write GPT queries with metadata info in debug logs", false, 2);
             }
