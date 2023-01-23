@@ -91,8 +91,11 @@ public class GPTRequestFormatter {
             request.append(";\n");
         } else if (object instanceof DBSObjectContainer) {
             monitor.subTask("Load cache of " + object.getName());
-            ((DBSObjectContainer) object).cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES);
-            int totalChildren = 0, maxChildren = DBWorkbench.getPlatform().getPreferenceStore().getInt(GPTPreferences.GPT_MAX_TABLES);
+            ((DBSObjectContainer) object).cacheStructure(
+                monitor,
+                DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES);
+            int totalChildren = 0;
+            int maxChildren = DBWorkbench.getPlatform().getPreferenceStore().getInt(GPTPreferences.GPT_MAX_TABLES);
             for (DBSObject child : ((DBSObjectContainer) object).getChildren(monitor)) {
                 if (DBUtils.isSystemObject(child) || DBUtils.isHiddenObject(child) || child instanceof DBSTablePartition) {
                     continue;

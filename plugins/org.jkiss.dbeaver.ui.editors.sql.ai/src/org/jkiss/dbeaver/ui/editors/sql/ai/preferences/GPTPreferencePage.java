@@ -154,8 +154,18 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
                 modelAdvancedGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
                 maxTablesText = UIUtils.createLabelText(modelAdvancedGroup, GPTMessages.gpt_preference_page_text_max_tables, null);
-                executeQueryImmediately = UIUtils.createCheckbox(modelAdvancedGroup, "Execute SQL immediately", "Try to execute translated SQL immediately after completion", false, 2);
-                logQueryCheck = UIUtils.createCheckbox(modelAdvancedGroup, "Write GPT queries to debug log", "Write GPT queries with metadata info in debug logs", false, 2);
+                executeQueryImmediately = UIUtils.createCheckbox(
+                    modelAdvancedGroup,
+                    "Execute SQL immediately",
+                    "Try to execute translated SQL immediately after completion",
+                    false,
+                    2);
+                logQueryCheck = UIUtils.createCheckbox(
+                    modelAdvancedGroup,
+                    "Write GPT queries to debug log",
+                    "Write GPT queries with metadata info in debug logs",
+                    false,
+                    2);
             }
         }
 

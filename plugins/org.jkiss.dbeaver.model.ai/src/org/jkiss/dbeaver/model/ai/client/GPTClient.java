@@ -74,7 +74,6 @@ public class GPTClient {
      * @param request          request text
      * @param monitor          execution monitor
      * @param context          context object
-     * @param executionContext
      * @return resulting string
      */
     public static String requestCompletion(
