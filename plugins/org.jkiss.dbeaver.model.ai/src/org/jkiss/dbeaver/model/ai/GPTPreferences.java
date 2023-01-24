@@ -27,5 +27,6 @@ public class GPTPreferences {
     public static final String GPT_EXECUTE_IMMEDIATELY = "gpt.execute.immediately";
     public static final String GPT_LOG_QUERY = "gpt.log.query";
     public static final String GPT_MAX_TABLES = "gpt.max.tables";
+    public static final String GPT_TRANSFER_CONFIRMED = "gpt.meta.transfer.confirmed";
 }
 

@@ -21,6 +21,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -44,6 +45,7 @@ public class GPTSuggestionPopup extends AbstractPopupPanel {
     public GPTSuggestionPopup(@NotNull Shell parentShell, @NotNull String title, @NotNull DBPDataSourceContainer dataSourceContainer) {
         super(parentShell, title);
         this.dataSourceContainer = dataSourceContainer;
+        setImage(DBIcon.AI);
         setModeless(true);
     }
 

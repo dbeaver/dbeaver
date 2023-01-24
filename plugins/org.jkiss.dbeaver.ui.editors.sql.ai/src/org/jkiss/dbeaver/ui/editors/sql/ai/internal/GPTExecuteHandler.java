@@ -25,6 +25,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.GPTPreferences;
 import org.jkiss.dbeaver.model.ai.client.GPTClient;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.GPTPreferencePage;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 public class GPTExecuteHandler extends AbstractHandler {
@@ -45,11 +47,40 @@ public class GPTExecuteHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
+
         DBPDataSourceContainer dataSourceContainer = editor.getDataSourceContainer();
         if (dataSourceContainer == null) {
             DBWorkbench.getPlatformUI().showError("No datasource", "Connection must be associated with the SQL script");
             return null;
         }
+
+        if (!GPTClient.isValidConfiguration()) {
+            UIUtils.showPreferencesFor(editor.getSite().getShell(), null, GPTPreferencePage.PAGE_ID);
+        }
+        if (!GPTClient.isValidConfiguration()) {
+            DBWorkbench.getPlatformUI().showError("Bad GPT configuration", "You must specify OpenAI API token in preferences");
+            return null;
+        }
+
+        // Show info transfer warning
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(GPTPreferences.GPT_TRANSFER_CONFIRMED)) {
+            if (UIUtils.confirmAction(editor.getSite().getShell(), "Transfer information to OpenAI",
+                "In order to perform AI smart completion DBeaver needs to transfer\n" +
+                    "your database metadata information (table and column names) to OpenAI API.\n" +
+                    "Do you confirm?",
+                DBIcon.AI))
+            {
+                DBWorkbench.getPlatform().getPreferenceStore().setValue(GPTPreferences.GPT_TRANSFER_CONFIRMED, true);
+                try {
+                    DBWorkbench.getPlatform().getPreferenceStore().save();
+                } catch (IOException e) {
+                    DBWorkbench.getPlatformUI().showError("Preferences save error", null, e);
+                }
+            } else {
+                return null;
+            }
+        }
+
         GPTSuggestionPopup gptSuggestionPopup = new GPTSuggestionPopup(
             HandlerUtil.getActiveShell(event),
             "GPT-3 smart completion",
@@ -63,14 +94,6 @@ public class GPTExecuteHandler extends AbstractHandler {
 
     private void doAutoCompletion(SQLEditor editor, String inputText) {
         if (CommonUtils.isEmptyTrimmed(inputText)) {
-            return;
-        }
-
-        if (!GPTClient.isValidConfiguration()) {
-            UIUtils.showPreferencesFor(editor.getSite().getShell(), null, GPTPreferencePage.PAGE_ID);
-        }
-        if (!GPTClient.isValidConfiguration()) {
-            DBWorkbench.getPlatformUI().showError("Bad GPT configuration", "You must specify OpenAI API token in preferences");
             return;
         }
 
