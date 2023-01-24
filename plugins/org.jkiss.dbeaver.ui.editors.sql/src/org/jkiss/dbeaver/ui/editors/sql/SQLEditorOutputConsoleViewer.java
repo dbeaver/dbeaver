@@ -19,14 +19,15 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.TextConsoleViewer;
 import org.eclipse.ui.themes.ITheme;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
@@ -43,12 +44,12 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
     private boolean hasNewOutput;
     private PrintWriter writer;
 
-    public SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, CTabFolder resultTabs, int styles) {
-        this(site, resultTabs, new MessageConsole("sql-output", null));
+    public SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, Composite parent, int styles) {
+        this(site, parent, new MessageConsole("sql-output", null));
     }
 
-    protected SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, CTabFolder resultTabs, MessageConsole console) {
-        super(resultTabs, console);
+    protected SQLEditorOutputConsoleViewer(IWorkbenchPartSite site, Composite parent, MessageConsole console) {
+        super(parent, console);
         this.console = console;
         this.getText().setMargins(5, 5, 5, 5);
         this.console.setWaterMarks(1024*1024*10, 1024*1024*20);
@@ -93,6 +94,11 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
 
     public PrintWriter getOutputWriter() {
         return writer;
+    }
+
+    @NotNull
+    public MessageConsole getConsole() {
+        return console;
     }
 
     public void scrollToEnd() {

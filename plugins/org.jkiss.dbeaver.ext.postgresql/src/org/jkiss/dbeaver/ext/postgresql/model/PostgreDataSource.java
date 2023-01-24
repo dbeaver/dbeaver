@@ -37,8 +37,8 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.AsyncServerOutputReader;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
@@ -159,7 +159,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         getDefaultInstance().checkInstanceConnection(monitor, false);
         try {
             // Preload some settings, if available
-            settingCache.getObject(monitor, this, PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
+            settingCache.getAllObjects(monitor, this);
         } catch (DBException e) {
             // ignore
         }
@@ -556,7 +556,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new PostgreStructureAssistant(this));
         } else if (adapter == DBCServerOutputReader.class) {
-            return adapter.cast(new AsyncServerOutputReader());
+            return adapter.cast(new PostgreServerOutputReader());
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new PostgreSessionManager(this));
         } else if (adapter == DBCQueryPlanner.class) {

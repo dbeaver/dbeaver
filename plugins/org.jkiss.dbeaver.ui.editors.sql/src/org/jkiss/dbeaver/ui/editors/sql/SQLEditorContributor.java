@@ -91,8 +91,10 @@ public class SQLEditorContributor extends TextEditorActionContributor
     @Override
     public void dispose()
     {
-        setActiveEditor(null);
-
+        if (activeEditorPart != null) {
+            activeEditorPart.setStatusField(null, SQLEditorBase.STATS_CATEGORY_SELECTION_STATE);
+        }
+        activeEditorPart = null;
         super.dispose();
     }
 
@@ -105,12 +107,12 @@ public class SQLEditorContributor extends TextEditorActionContributor
             return;
         }
         if (targetEditor instanceof SQLEditorBase) {
-        	activeEditorPart = (SQLEditorBase)targetEditor;
+            activeEditorPart = (SQLEditorBase)targetEditor;
         } else {
             if (activeEditorPart != null) {
                 activeEditorPart.setStatusField(null, SQLEditorBase.STATS_CATEGORY_SELECTION_STATE);
             }
-        	activeEditorPart = null;
+            activeEditorPart = null;
         }
 
         if (activeEditorPart != null) {

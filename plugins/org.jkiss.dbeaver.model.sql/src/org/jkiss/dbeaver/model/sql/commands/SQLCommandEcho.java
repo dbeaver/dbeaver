@@ -34,7 +34,7 @@ public class SQLCommandEcho implements SQLControlCommandHandler {
         if (parameter != null) {
             parameter = GeneralUtils.replaceVariables(parameter, new ScriptVariablesResolver(scriptContext));
         }
-        scriptContext.getOutputWriter().println(parameter);
+        scriptContext.getOutputWriter().println(null, parameter);
 
         return true;
     }
