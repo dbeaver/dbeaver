@@ -16,12 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.import_config.wizards;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -38,12 +44,9 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectListDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public abstract class ConfigImportWizard extends Wizard implements IImportWizard {
+	private static final Log log = Log.getLog(ConfigImportWizard.class);
+
 	
 	private ConfigImportWizardPage mainPage;
     private Map<String, DriverDescriptor> driverClassMap = new HashMap<>();
@@ -208,10 +211,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
 
     protected void adaptConnectionUrl(ImportConnectionInfo connectionInfo) throws DBException
     {
-        String sampleURL = connectionInfo.getDriverInfo().getSampleURL();
-        if (connectionInfo.getDriver() != null) {
-            sampleURL = connectionInfo.getDriver().getSampleURL();
-        }
+        
         //connectionInfo.getDriver()
         String url = connectionInfo.getUrl();
         if (url == null) {
@@ -228,7 +228,96 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             conConfig.setDatabaseName(connectionInfo.getDatabase());
             url = connectionInfo.getDriver().getConnectionURL(conConfig);
             connectionInfo.setUrl(url);
+            return;
+        }
+        
+        
+        
+        try{
+            parseUrlAccordingToDriver(connectionInfo);
+            return;
+        }catch (Exception e) {
+            log.error(e.getMessage(),e);
+        }
+        
+        /**
+         * Here parsing was not succesful, but url is not nul, we import as it is.
+         */
+        log.info("Import url as is it for url:"+url);
+        
+    }
+
+    /**
+     * Try to parse url by driver sample url, which note is not he only possible way to define a valid url.
+     * @throws DBException in case url does not reflect the sample one from driver.
+     */
+    private void parseUrlAccordingToDriver(ImportConnectionInfo connectionInfo) throws DBException {
+        String url = connectionInfo.getUrl();
+        
+        String sampleURL = connectionInfo.getDriverInfo().getSampleURL();
+        if (connectionInfo.getDriver() != null) {
+            sampleURL = connectionInfo.getDriver().getSampleURL();
+        }
+        final JDBCURL.MetaURL metaURL = JDBCURL.parseSampleURL(sampleURL);
+        List<String> urlComponents = metaURL.getUrlComponents();
+        for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
+            String component = urlComponents.get(i);
+            log.info("urlComponents:"+component);
+            
+            int sourceOffset = 0;
+            if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' &&
+                    metaURL.getAvailableProperties().contains(component.substring(1, component.length() - 1))) {
+                    // Property
+                    int partEnd;
+                    if (i < urlComponentsSize - 1) {
+                        // Find next component
+                        final String nextComponent = urlComponents.get(i + 1);
+                        partEnd = url.indexOf(nextComponent, sourceOffset);
+                        if (partEnd == -1) {
+                            if (nextComponent.equals(":")) {
+                                // Try to find another divider - dbvis sometimes contains bad sample URLs (e.g. for Oracle)
+                                partEnd = url.indexOf("/", sourceOffset);
+                            }
+                            if (partEnd == -1) {
+                                if (connectionInfo.getHost() == null) {
+                                    throw new DBException("Can't parse URL '" + url + "' with pattern '" + sampleURL + "'. String '" + nextComponent + "' not found after '" + component);
+                                } else {
+                                    // We have connection properties anyway
+                                    url = null;
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        partEnd = url.length();
+                    }
+
+                    String propertyValue = url.substring(sourceOffset, partEnd);
+                    switch (component) {
+                        case "{host}":
+                            connectionInfo.setHost(propertyValue);
+                            break;
+                        case "{port}":
+                            connectionInfo.setPort(propertyValue);
+                            break;
+                        case "{database}":
+                            connectionInfo.setDatabase(propertyValue);
+                            break;
+                        default:
+                            if (connectionInfo.getHost() == null) {
+                                throw new DBException("Unsupported property " + component);
+                            }
+                    }
+                    sourceOffset = partEnd;
+                } else {
+                    // Static string
+                    sourceOffset += component.length();
+                }
         }
     }
+    
+    
+    
+    
 
 }
