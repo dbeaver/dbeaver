@@ -126,7 +126,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     public void setShowPartitionsDDL(boolean showPartitionsDDL) {
         this.showPartitionsDDL = showPartitionsDDL;
     }
-	
+
     public boolean isShowCastParams() {
         return showCastParams;
     }
