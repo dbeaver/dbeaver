@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+    <description name="DBeaver - AI (GPT) integration" url="https://dbeaver.io/update/ai/latest">DBeaver - AI (GPT) integration</description>
+
+    <feature id="org.jkiss.dbeaver.ext.ai.feature">
+        <category name="org.jkiss.dbeaver.ai.category"/>
+    </feature>
+    <category-def name="org.jkiss.dbeaver.ai.category" label="DBeaver AI (GPT) Support"/>
+</site>
