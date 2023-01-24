@@ -92,7 +92,11 @@ public class DB2Sqlca {
      * @return An instance of {@link DB2Sqlca} if one can be produced from the
      *         connection, otherwise {@code null}.
      */
-    static @Nullable DB2Sqlca from(@NotNull SQLWarning warning) throws SQLException {
+    static @Nullable DB2Sqlca from(@Nullable SQLWarning warning) throws SQLException {
+        if (warning == null) {
+            return null;
+        }
+
         try {
             Object value = BeanUtils.invokeObjectMethod(warning, "getSqlca");
             if (value != null) {
