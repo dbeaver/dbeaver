@@ -45,10 +45,9 @@ import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectListDialog;
 import org.jkiss.utils.CommonUtils;
 
 public abstract class ConfigImportWizard extends Wizard implements IImportWizard {
-	private static final Log log = Log.getLog(ConfigImportWizard.class);
-
-	
-	private ConfigImportWizardPage mainPage;
+    private static final Log log = Log.getLog(ConfigImportWizard.class);
+    
+    private ConfigImportWizardPage mainPage;
     private Map<String, DriverDescriptor> driverClassMap = new HashMap<>();
 
     public ConfigImportWizard() {
@@ -231,27 +230,26 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             return;
         }
         
-        
-        
-        try{
+        try {
             parseUrlAsDriverSampleUrl(connectionInfo);
             return;
-        }catch (Exception e) {
-            log.error(e.getMessage(),e);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
         
-        /**
+        /*
          * Here parsing was not successful.
          * URL is not null and not agree with sampleURL from drive. 
          * Still we proceed to import cause can be any other valid url format for the driver.
          */
-        log.info("Import url as is it for url:"+url);
+        log.info("Import url as is it for url:" + url);
         
     }
 
     /**
      * Try to parse url by driver sample url. 
      * NOTE sampleURL is not the only possible way to define a valid url.
+     * 
      * @throws DBException in case url does not reflect the sample one from driver.
      */
     private void parseUrlAsDriverSampleUrl(ImportConnectionInfo connectionInfo) throws DBException {
@@ -265,7 +263,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         List<String> urlComponents = metaURL.getUrlComponents();
         for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
             String component = urlComponents.get(i);
-            log.info("urlComponents:"+component);
+            log.info("urlComponents:" + component);
             
             int sourceOffset = 0;
             if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' &&
