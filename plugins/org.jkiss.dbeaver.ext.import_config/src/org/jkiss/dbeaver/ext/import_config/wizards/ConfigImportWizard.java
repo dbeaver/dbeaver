@@ -234,24 +234,27 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         
         
         try{
-            parseUrlAccordingToDriver(connectionInfo);
+            parseUrlAsDriverSampleUrl(connectionInfo);
             return;
         }catch (Exception e) {
             log.error(e.getMessage(),e);
         }
         
         /**
-         * Here parsing was not succesful, but url is not nul, we import as it is.
+         * Here parsing was not successful.
+         * URL is not null and not agree with sampleURL from drive. 
+         * Still we proceed to import cause can be any other valid url format for the driver.
          */
         log.info("Import url as is it for url:"+url);
         
     }
 
     /**
-     * Try to parse url by driver sample url, which note is not he only possible way to define a valid url.
+     * Try to parse url by driver sample url. 
+     * NOTE sampleURL is not the only possible way to define a valid url.
      * @throws DBException in case url does not reflect the sample one from driver.
      */
-    private void parseUrlAccordingToDriver(ImportConnectionInfo connectionInfo) throws DBException {
+    private void parseUrlAsDriverSampleUrl(ImportConnectionInfo connectionInfo) throws DBException {
         String url = connectionInfo.getUrl();
         
         String sampleURL = connectionInfo.getDriverInfo().getSampleURL();
