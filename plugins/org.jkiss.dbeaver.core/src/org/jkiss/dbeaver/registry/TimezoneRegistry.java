@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 public class TimezoneRegistry {
 
-    public static String userDefaultTimezone = "";
+    private static String userDefaultTimezone = "";
 
     private TimezoneRegistry() {
     }
@@ -73,6 +73,11 @@ public class TimezoneRegistry {
         Instant instant = Instant.now();
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of(id));
         return  String.format("%s (UTC%s)", id, zonedDateTime.getOffset());
+    }
+
+    @NotNull
+    public static String getUserDefaultTimezone() {
+        return userDefaultTimezone;
     }
 
     @NotNull
