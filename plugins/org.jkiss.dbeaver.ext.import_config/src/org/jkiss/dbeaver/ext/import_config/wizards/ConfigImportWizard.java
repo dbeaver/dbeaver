@@ -16,11 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.import_config.wizards;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
@@ -43,6 +38,11 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectListDialog;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class ConfigImportWizard extends Wizard implements IImportWizard {
     private static final Log log = Log.getLog(ConfigImportWizard.class);
@@ -249,7 +249,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
     /**
      * Try to parse url by driver sample url. 
      * NOTE sampleURL is not the only possible way to define a valid url.
-     * 
+     *
      * @throws DBException in case url does not reflect the sample one from driver.
      */
     private void parseUrlAsDriverSampleUrl(ImportConnectionInfo connectionInfo) throws DBException {
