@@ -123,12 +123,12 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
         return showPartitionsDDL;
     }
 
-    public boolean isShowCastParams() {
-        return showCastParams;
-    }
-
     public void setShowPartitionsDDL(boolean showPartitionsDDL) {
         this.showPartitionsDDL = showPartitionsDDL;
+    }
+	
+    public boolean isShowCastParams() {
+        return showCastParams;
     }
 
     public void setShowCastParams(boolean showCastParams) {

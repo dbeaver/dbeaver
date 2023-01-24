@@ -310,7 +310,7 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
         return showPartitionsDDL;
     }
 
-    protected Boolean getShowCastParams() {
+    protected boolean getShowCastParams() {
         if (showCastParams == null) {
             showCastParams = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_CAST_PARAMS);
         }

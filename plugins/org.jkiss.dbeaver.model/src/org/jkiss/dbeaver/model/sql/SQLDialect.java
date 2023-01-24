@@ -444,8 +444,12 @@ public interface SQLDialect {
     /**
      * Generates stored procedure call. Parameters (optionally) can be surrounded by cast(:param as paramType).
      */
-    void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters,
-                                     boolean castParams);
+    void generateStoredProcedureCall(
+        StringBuilder sql, 
+        DBSProcedure proc, 
+        Collection<? extends DBSProcedureParameter> parameters,
+        boolean castParams
+    );
 
     boolean isDisableScriptEscapeProcessing();
 
