@@ -35,7 +35,7 @@
 	</extension>
 
 	<extension point="org.eclipse.ui.commandImages">
-		<image commandId="org.jkiss.dbeaver.ui.editors.sql.ai.show.gpt" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/run.png"/>
+		<image commandId="org.jkiss.dbeaver.ui.editors.sql.ai.show.gpt" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/misc/ai.png"/>
 	</extension>
 	<extension point="org.eclipse.ui.handlers">
 		<handler commandId="org.jkiss.dbeaver.ui.editors.sql.ai.show.gpt" class="org.jkiss.dbeaver.ui.editors.sql.ai.internal.GPTExecuteHandler">
