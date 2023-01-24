@@ -19,7 +19,7 @@
             <drivers managable="true">
 
                 <driver
-                        id="databricks-simba"
+                        id="databricks"
                         label="Azure Databricks (Simba)"
                         icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon.png"
                         iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon_big.png"
@@ -50,10 +50,6 @@
 
                     <file type="jar" path="maven:/com.databricks:databricks-jdbc:RELEASE[2.6.32]"
                           bundle="!drivers.databricks"/>
-                    <file type="jar" path="drivers/databricks" bundle="drivers.databricks"/>
-                    <file type="license" path="https://www.databricks.com/jdbc-odbc-driver-license"
-                          bundle="drivers.databricks"/>
-                    <file type="license" path="drivers/databricks/EULA.txt" bundle="drivers.databricks"/>
 
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-multi-insert" value="true"/>
