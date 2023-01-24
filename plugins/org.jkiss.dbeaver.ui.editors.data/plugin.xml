@@ -1151,9 +1151,50 @@
         <confirmation
             id="org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable"
             title="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.title"
+            description="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.tip"
             message="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.message"
             toggleMessage="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.toggleMessage"
-            group="Object editor"/>
+            group="Object Editor"/>
+        <confirmation
+                id="keep_statement_open"
+                title="%confirm.keep_statement_open.title"
+                description="%confirm.keep_statement_open.tip"
+                message="%confirm.keep_statement_open.message"
+                toggleMessage="%confirm.resultSet.toggleMessage"
+                group="%confirm.resultSet.group.name"/>
+        <confirmation
+                id="order_resultset"
+                title="%confirm.order_resultset.title"
+                description="%confirm.order_resultset.tip"
+                message="%confirm.order_resultset.message"
+                toggleMessage="%confirm.resultSet.toggleMessage"
+                group="%confirm.resultSet.group.name"/>
+        <confirmation
+                id="filter_resultset"
+                title="%confirm.filter_resultset.title"
+                description="%confirm.filter_resultset.tip"
+                message="%confirm.filter_resultset.message"
+                toggleMessage="%confirm.resultSet.toggleMessage"
+                group="%confirm.resultSet.group.name"/>
+        <confirmation
+                id="fetch_all_rows"
+                title="%confirm.fetch_all_rows.title"
+                description="%confirm.fetch_all_rows.tip"
+                message="%confirm.fetch_all_rows.message"
+                toggleMessage="%confirm.resultSet.toggleMessage"
+                group="%confirm.resultSet.group.name"/>
+        <confirmation
+                id="reset_panels_content"
+                title="%confirm.reset_panels_content.title"
+                description="%confirm.reset_panels_content.tip"
+                message="%confirm.reset_panels_content.message"
+                toggleMessage="%confirm.resultSet.toggleMessage"
+                group="%confirm.resultSet.group.name"/>
+        <confirmation
+                id="close_resultset_edit"
+                title="%confirm.close_resultset_edit.title"
+                message="%confirm.close_resultset_edit.message"
+                group="%confirm.resultSet.group.name"/>
     </extension>
 
 </plugin>

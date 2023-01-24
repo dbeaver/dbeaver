@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,26 +21,6 @@ import org.eclipse.osgi.util.NLS;
 
 public class SQLEditorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages"; //$NON-NLS-1$
-
-    public static String confirm_close_running_query_title;
-    public static String confirm_close_running_query_message;
-    public static String confirm_close_running_query_toggleMessage;
-
-    public static String confirm_close_result_tabs_title;
-    public static String confirm_close_result_tabs_message;
-    public static String confirm_close_result_tabs_toggleMessage;
-
-    public static String confirm_dangerous_sql_title;
-    public static String confirm_dangerous_sql_message;
-    public static String confirm_dangerous_sql_toggleMessage;
-
-    public static String confirm_drop_sql_title;
-    public static String confirm_drop_sql_message;
-    public static String confirm_drop_sql_toggleMessage;
-
-    public static String confirm_mass_parallel_sql_title;
-    public static String confirm_mass_parallel_sql_message;
-    public static String confirm_mass_parallel_sql_toggleMessage;
 
     public static String dialog_view_sql_button_copy;
     public static String dialog_view_sql_button_persist;
@@ -118,6 +98,8 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_delete_variables;
     public static String action_assign_variables_error_duplicated_title;
     public static String action_assign_variables_error_duplicated_info;
+    public static String action_assign_variables_error_invalid_title;
+    public static String action_assign_variables_error_invalid_info;
 
     public static String action_popup_sqleditor_layout_horizontal;
     public static String action_popup_sqleditor_layout_vertical;
@@ -155,6 +137,7 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_save_active_schema_tip;
     public static String pref_page_sql_editor_group_result_view;
     public static String pref_page_sql_editor_label_close_results_tab_on_error;
+    public static String pref_page_sql_editor_label_close_results_tab_on_error_tip;
     public static String pref_page_sql_editor_label_auto_open_output_view;
     public static String pref_page_sql_editor_label_auto_open_output_view_tip;
     public static String pref_page_sql_editor_label_size_warning_threshold;
@@ -241,6 +224,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_insert_table_alias;
     public static String pref_page_sql_completion_label_show_server_help_topics;
     public static String pref_page_sql_completion_label_show_server_help_topics_tip;
+    public static String pref_page_sql_completion_label_show_values;
+    public static String pref_page_sql_completion_label_show_values_tip;
     public static String pref_page_sql_completion_group_folding;
     public static String pref_page_sql_completion_group_misc;
     public static String pref_page_sql_completion_label_folding_enabled;
@@ -376,6 +361,9 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_confirm_no_fetch_result_for_big_script_yes;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_no;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_remember;
+
+    public static String sql_editor_panel_output_filter_message;
+    public static String sql_editor_panel_output_filter_hint;
 
     static {
         // initialize resource bundle

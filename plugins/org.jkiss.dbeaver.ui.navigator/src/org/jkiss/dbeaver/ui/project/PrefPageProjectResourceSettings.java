@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,9 +42,10 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
+import org.jkiss.dbeaver.model.app.DBPResourceTypeDescriptor;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.registry.ResourceTypeRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -187,7 +188,7 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
     protected void performDefaults() {
         resourceTable.removeAll();
         DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
-        for (DBPResourceHandlerDescriptor descriptor : workspace.getResourceHandlerDescriptors()) {
+        for (DBPResourceTypeDescriptor descriptor : ResourceTypeRegistry.getInstance().getResourceTypes()) {
             if (!descriptor.isManagable()) {
                 continue;
             }
@@ -222,7 +223,7 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
         DBPProject projectMeta = getProjectMeta();
         if (projectMeta != null) {
             for (TableItem item : resourceTable.getItems()) {
-                DBPResourceHandlerDescriptor descriptor = (DBPResourceHandlerDescriptor) item.getData();
+                DBPResourceTypeDescriptor descriptor = (DBPResourceTypeDescriptor) item.getData();
                 String rootPath = item.getText(1);
                 if (!CommonUtils.equalObjects(descriptor.getDefaultRoot(projectMeta), rootPath)) {
                     IResource oldResource = project.findMember(descriptor.getDefaultRoot(projectMeta));

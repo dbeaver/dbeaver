@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ui.dashboard.model;
 
 import org.eclipse.ui.IWorkbenchSite;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Dashboard view container
  */
-public interface DashboardViewContainer extends IDataSourceContainerProvider {
+public interface DashboardViewContainer extends DBPDataSourceContainerProvider {
 
     List<? extends DashboardGroupContainer> getGroups();
 

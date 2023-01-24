@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,9 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
-                "ALTER TABLE " + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + //$NON-NLS-1$
+                "ALTER TABLE " + (command.getObject().getSchema() != null ?
+                                  DBUtils.getQuotedIdentifier(dataSource, command.getObject().getSchema().getName())
+                                      + "." : "") + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) +//$NON-NLS-1$
                     " RENAME TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
         );
     }

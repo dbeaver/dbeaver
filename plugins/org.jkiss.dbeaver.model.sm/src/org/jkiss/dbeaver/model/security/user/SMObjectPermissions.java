@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,20 @@ package org.jkiss.dbeaver.model.security.user;
 
 import org.jkiss.code.NotNull;
 
-import java.util.Set;
+import java.util.Collection;
 
 public class SMObjectPermissions {
     @NotNull
     private final String objectId;
     @NotNull
-    private final Set<String> permissions;
+    private final String[] permissions;
 
-    public SMObjectPermissions(@NotNull String objectId, @NotNull Set<String> permissions) {
+    public SMObjectPermissions(@NotNull String objectId, @NotNull Collection<String> permissions) {
+        this.objectId = objectId;
+        this.permissions = permissions.toArray(new String[0]);
+    }
+
+    public SMObjectPermissions(@NotNull String objectId, @NotNull String[] permissions) {
         this.objectId = objectId;
         this.permissions = permissions;
     }
@@ -37,7 +42,7 @@ public class SMObjectPermissions {
     }
 
     @NotNull
-    public Set<String> getPermissions() {
+    public String[] getPermissions() {
         return permissions;
     }
 }

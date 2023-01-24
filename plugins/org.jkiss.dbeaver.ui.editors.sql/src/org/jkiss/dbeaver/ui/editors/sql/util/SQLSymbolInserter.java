@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 
 import java.util.ArrayList;
@@ -128,8 +129,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
     }
 
     @Override
-    public void verifyKey(VerifyEvent event)
-    {
+    public void verifyKey(VerifyEvent event) {
 
         if (!event.doit) {
             return;
@@ -249,8 +249,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                     log.debug(e);
                 }
                 break;
-            case SWT.TAB:
-            {
+            case SWT.TAB: {
                 try {
                     int curOffset = offset;
 //                    if (curOffset == document.getLength()) {
@@ -266,8 +265,11 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                     if (curOffset != offset) {
                         String templateName = document.get(curOffset, offset - curOffset);
                         SQLTemplatesPage templatesPage = editor.getTemplatesPage();
+                        String contextId = SQLEditorUtils.getEditorContextTypeId(editor);
                         Template template = templatesPage.getTemplateStore().findTemplate(templateName);
-                        if (template != null && template.isAutoInsertable()) {
+                        if (template != null && template.isAutoInsertable()
+                            && SQLEditorUtils.isTemplateContextFitsEditorContext(template.getContextTypeId(), contextId)
+                        ) {
                             sourceViewer.setSelectedRange(curOffset, offset - curOffset);
                             templatesPage.insertTemplate(template, document);
                             event.doit = false;

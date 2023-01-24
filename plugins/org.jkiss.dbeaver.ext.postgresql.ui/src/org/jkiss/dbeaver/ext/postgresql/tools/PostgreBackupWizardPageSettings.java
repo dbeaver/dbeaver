@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,28 +21,19 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupRestoreSettings;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupSettings;
-import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
-import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
-import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.Objects;
 
 
 class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<PostgreBackupWizard> {
 
-    private Text outputFolderText;
-    private Text outputFileText;
     private Combo formatCombo;
     private Combo compressCombo;
     private Combo encodingCombo;
@@ -57,15 +48,6 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         super(wizard, PostgreMessages.wizard_backup_page_setting_title_setting);
         setTitle(PostgreMessages.wizard_backup_page_setting_title);
         setDescription(PostgreMessages.wizard_backup_page_setting_description);
-    }
-
-    @Override
-    protected boolean determinePageCompletion() {
-        if (wizard.getSettings().getOutputFolderPattern() == null) {
-            setErrorMessage("Output folder not specified");
-            return false;
-        }
-        return super.determinePageCompletion();
     }
 
     @Override
@@ -157,28 +139,7 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         createDatabase.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_setting_group_output, 2, GridData.FILL_HORIZONTAL, 0);
-        outputFolderText = DialogUtils.createOutputFolderChooser(
-            outputGroup,
-            PostgreMessages.wizard_backup_page_setting_label_output_folder_pattern,
-            settings.getOutputFolderPattern() != null ? settings.getOutputFolderPattern() : null,
-            e -> updateState());
-        outputFileText = UIUtils.createLabelText(
-            outputGroup,
-            PostgreMessages.wizard_backup_page_setting_label_file_name_pattern,
-            settings.getOutputFilePattern());
-        UIUtils.setContentProposalToolTip(outputFileText, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern_output, NativeToolUtils.ALL_VARIABLES);
-        ContentAssistUtils.installContentProposal(
-            outputFileText,
-            new SmartTextContentAdapter(),
-            new StringContentProposalProvider(Arrays.stream(NativeToolUtils.ALL_VARIABLES).map(GeneralUtils::variablePattern).toArray(String[]::new)));
-        outputFileText.addModifyListener(e -> settings.setOutputFilePattern(outputFileText.getText()));
-        UIUtils.setContentProposalToolTip(outputFolderText, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern_output, NativeToolUtils.LIMITED_VARIABLES);
-        ContentAssistUtils.installContentProposal(
-            outputFolderText,
-            new SmartTextContentAdapter(),
-            new StringContentProposalProvider(Arrays.stream(NativeToolUtils.LIMITED_VARIABLES).map(GeneralUtils::variablePattern).toArray(String[]::new)));
-        fixOutputFileExtension();
-
+        createOutputFolderInput(outputGroup, settings);
         createExtraArgsInput(outputGroup);
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
@@ -187,28 +148,9 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         setControl(composite);
     }
 
-    private void fixOutputFileExtension() {
-        String text = outputFileText.getText();
-        String name;
-        String ext;
-        int idxOfExtStart = text.lastIndexOf('.');
-        if (idxOfExtStart > -1 && idxOfExtStart <= text.length()) {
-            name = text.substring(0, idxOfExtStart);
-            ext = text.substring(idxOfExtStart + 1);
-        } else {
-            name = text;
-            ext = "";
-        }
-        String newExt = getChosenExportFormat().getExt();
-        boolean isDotWithEmptyExt = ext.isEmpty() && idxOfExtStart > -1; // {file_name}.
-        if (Objects.equals(ext, newExt) && !isDotWithEmptyExt) {
-            return;
-        }
-        if (!newExt.isEmpty()) {
-            newExt = "." + newExt;
-        }
-        text = name + newExt;
-        outputFileText.setText(text);
+    @Override
+    protected String getExtension() {
+        return getChosenExportFormat().getExt();
     }
 
     @Override

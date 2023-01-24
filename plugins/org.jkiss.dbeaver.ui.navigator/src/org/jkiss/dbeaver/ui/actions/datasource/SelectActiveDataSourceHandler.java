@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -53,13 +54,13 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
 {
     private static final int MAX_MENU_ITEM_SIZE = 25;
 
-    static IDataSourceContainerProviderEx getDataSourceContainerProvider(IWorkbenchPart workbenchPart) {
+    static IDataSourceContainerUpdate getDataSourceContainerProvider(IWorkbenchPart workbenchPart) {
         DBPContextProvider contextProvider = GeneralUtils.adapt(workbenchPart, DBPContextProvider.class);
         if (contextProvider == null) {
             return null;
         }
-        if (contextProvider instanceof IDataSourceContainerProviderEx) {
-            return (IDataSourceContainerProviderEx)contextProvider;
+        if (contextProvider instanceof IDataSourceContainerUpdate) {
+            return (IDataSourceContainerUpdate)contextProvider;
         } else {
             return null;
         }
@@ -97,7 +98,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
 
     public static void openDataSourceSelector(IWorkbenchWindow workbenchWindow, DBPProject activeProject, DBPDataSourceContainer dataSource) {
         IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
-        if (!(activeEditor instanceof IDataSourceContainerProviderEx)) {
+        if (!(activeEditor instanceof IDataSourceContainerUpdate)) {
             return;
         }
 
@@ -113,7 +114,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
             return;
         }
 
-        ((IDataSourceContainerProviderEx) activeEditor).setDataSourceContainer(newDataSource);
+        ((IDataSourceContainerUpdate) activeEditor).setDataSourceContainer(newDataSource);
     }
 
     @Override
@@ -183,7 +184,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                 return;
             }
             IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
-            if (!(activeEditor instanceof IDataSourceContainerProviderEx)) {
+            if (!(activeEditor instanceof IDataSourceContainerUpdate)) {
                 return;
             }
 
@@ -212,7 +213,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                 DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(ds);
                 menuItems.add(
                     new ActionContributionItem(
-                        createDataSourceChangeAction((IDataSourceContainerProviderEx) activeEditor, curDataSource, ds, dsNode)));
+                        createDataSourceChangeAction((IDataSourceContainerUpdate) activeEditor, curDataSource, ds, dsNode)));
             }
             if (!driverMap.isEmpty()) {
                 menuItems.add(new Separator());
@@ -225,7 +226,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                     for (DBPDataSourceContainer ds : de.getValue()) {
                         driverMenu.add(
                             createDataSourceChangeAction(
-                                (IDataSourceContainerProviderEx) activeEditor, curDataSource, ds, null));
+                                (IDataSourceContainerUpdate) activeEditor, curDataSource, ds, null));
                     }
                     menuItems.add(driverMenu);
                 }
@@ -235,7 +236,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                 for (DBPDataSourceContainer ds : singleDataSources) {
                     menuItems.add(
                         new ActionContributionItem(
-                            createDataSourceChangeAction((IDataSourceContainerProviderEx) activeEditor, curDataSource, ds, DBNUtils.getNodeByObject(ds))));
+                            createDataSourceChangeAction((IDataSourceContainerUpdate) activeEditor, curDataSource, ds, DBNUtils.getNodeByObject(ds))));
                 }
             }
             // Cut too long lists
@@ -253,7 +254,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
             }
         }
 
-        private Action createDataSourceChangeAction(IDataSourceContainerProviderEx activeEditor, DBPDataSourceContainer curDataSource, DBPDataSourceContainer newDataSource, DBNDatabaseNode dsNode) {
+        private Action createDataSourceChangeAction(IDataSourceContainerUpdate activeEditor, DBPDataSourceContainer curDataSource, DBPDataSourceContainer newDataSource, DBNDatabaseNode dsNode) {
             return new Action(newDataSource.getName(), Action.AS_CHECK_BOX) {
                 {
                     if (dsNode != null) {

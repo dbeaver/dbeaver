@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -778,7 +778,15 @@ public class DBExecUtils {
                     if (bindingMeta.getPseudoAttribute() != null) {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else if (columnName != null) {
-                        tableColumn = attrEntity.getAttribute(monitor, columnName);
+                        if (sqlQuery == null) {
+                            tableColumn = attrEntity.getAttribute(monitor, columnName);
+                        } else {
+                            SQLSelectItem selectItem = sqlQuery.getSelectItem(columnName);
+                            boolean isAllColumns = sqlQuery.getSelectItemCount() == 1 && sqlQuery.getSelectItemAsteriskIndex() != -1;
+                            if (isAllColumns || (selectItem != null && selectItem.isPlainColumn())) {
+                                tableColumn = attrEntity.getAttribute(monitor, columnName);
+                            }
+                        }
                     }
 
                     if (tableColumn != null) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
@@ -46,16 +46,16 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType)
     {
         if (adapterType == DBPDataSourceContainer.class) {
-            if (adaptableObject instanceof IDataSourceContainerProvider) {
-                return adapterType.cast(((IDataSourceContainerProvider) adaptableObject).getDataSourceContainer());
+            if (adaptableObject instanceof DBPDataSourceContainerProvider) {
+                return adapterType.cast(((DBPDataSourceContainerProvider) adaptableObject).getDataSourceContainer());
             }
             if (adaptableObject instanceof IEditorPart) {
                 adaptableObject = ((IEditorPart) adaptableObject) .getEditorInput();
             }
             if (adaptableObject instanceof DBPDataSourceContainer) {
                 return adapterType.cast(adaptableObject);
-            } else if (adaptableObject instanceof IDataSourceContainerProvider) {
-                return adapterType.cast(((IDataSourceContainerProvider) adaptableObject).getDataSourceContainer());
+            } else if (adaptableObject instanceof DBPDataSourceContainerProvider) {
+                return adapterType.cast(((DBPDataSourceContainerProvider) adaptableObject).getDataSourceContainer());
             } else if (adaptableObject instanceof IEditorInput) {
                 return adapterType.cast(EditorUtils.getInputDataSource((IEditorInput) adaptableObject));
             }

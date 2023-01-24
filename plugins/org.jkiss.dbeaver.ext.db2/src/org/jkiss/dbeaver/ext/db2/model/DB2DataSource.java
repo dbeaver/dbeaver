@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,48 +75,53 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
 
     private static final Log log = Log.getLog(DB2DataSource.class);
 
-    private static final String                                  GET_SESSION_USER   = "VALUES(SESSION_USER)";
+    private static final String GET_SESSION_USER = "VALUES(SESSION_USER)";
 
-    private static final String                                  C_SCHEMA           = "SELECT * FROM SYSCAT.SCHEMATA ORDER BY SCHEMANAME WITH UR";
-    private static final String                                  C_DT               = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE = 'S' ORDER BY TYPESCHEMA,TYPENAME WITH UR";
-    private static final String                                  C_BP               = "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR";
-    private static final String                                  C_TS               = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
-    private static final String                                  C_SG               = "SELECT * FROM SYSCAT.STOGROUPS ORDER BY SGNAME WITH UR";
-    private static final String                                  C_RL               = "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR";
-    private static final String                                  C_VR               = "SELECT * FROM SYSCAT.VARIABLES WHERE VARMODULENAME IS NULL ORDER BY VARNAME WITH UR";
+    private static final String C_SCHEMA = "SELECT * FROM SYSCAT.SCHEMATA ORDER BY SCHEMANAME WITH UR";
+    private static final String C_DT = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE = 'S' ORDER BY TYPESCHEMA,TYPENAME WITH UR";
+    private static final String C_BP = "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR";
+    private static final String C_TS = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
+    private static final String C_SG = "SELECT * FROM SYSCAT.STOGROUPS ORDER BY SGNAME WITH UR";
+    private static final String C_RL = "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR";
+    private static final String C_VR = "SELECT * FROM SYSCAT.VARIABLES WHERE VARMODULENAME IS NULL ORDER BY VARNAME WITH UR";
 
-    private static final String                                  C_SV               = "SELECT * FROM SYSCAT.SERVERS ORDER BY SERVERNAME WITH UR";
-    private static final String                                  C_WR               = "SELECT * FROM SYSCAT.WRAPPERS ORDER BY WRAPNAME WITH UR";
-    private static final String                                  C_UM               = "SELECT * FROM SYSCAT.USEROPTIONS WHERE OPTION = 'REMOTE_AUTHID' ORDER BY SERVERNAME,AUTHID WITH UR";
+    private static final String C_SV = "SELECT * FROM SYSCAT.SERVERS ORDER BY SERVERNAME WITH UR";
+    private static final String C_WR = "SELECT * FROM SYSCAT.WRAPPERS ORDER BY WRAPNAME WITH UR";
+    private static final String C_UM = "SELECT * FROM SYSCAT.USEROPTIONS WHERE OPTION = 'REMOTE_AUTHID' ORDER BY SERVERNAME,AUTHID WITH UR";
 
-    private final DBSObjectCache<DB2DataSource, DB2Schema>       schemaCache        = new JDBCObjectSimpleCache<>(DB2Schema.class, C_SCHEMA);
-    private final DBSObjectCache<DB2DataSource, DB2DataType>     dataTypeCache      = new JDBCObjectSimpleCache<>(DB2DataType.class, C_DT);
-    private final DBSObjectCache<DB2DataSource, DB2Bufferpool>   bufferpoolCache    = new JDBCObjectSimpleCache<>(DB2Bufferpool.class, C_BP);
-    private final DBSObjectCache<DB2DataSource, DB2Tablespace>   tablespaceCache    = new JDBCObjectSimpleCache<>(DB2Tablespace.class, C_TS);
+    private static final String APPLICATION_NAME_PROP = "clientProgramName";
 
-    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache  = new JDBCObjectSimpleCache<>(DB2RemoteServer.class, C_SV);
-    private final DBSObjectCache<DB2DataSource, DB2Wrapper>      wrapperCache       = new JDBCObjectSimpleCache<>(DB2Wrapper.class, C_WR);
-    private final DBSObjectCache<DB2DataSource, DB2UserMapping>  userMappingCache   = new JDBCObjectSimpleCache<>(DB2UserMapping.class, C_UM);
+    private final DBSObjectCache<DB2DataSource, DB2Schema> schemaCache = new JDBCObjectSimpleCache<>(DB2Schema.class, C_SCHEMA);
+    private final DBSObjectCache<DB2DataSource, DB2DataType> dataTypeCache = new JDBCObjectSimpleCache<>(DB2DataType.class, C_DT);
+    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache = new JDBCObjectSimpleCache<>(DB2Bufferpool.class, C_BP);
+    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache = new JDBCObjectSimpleCache<>(DB2Tablespace.class, C_TS);
 
-    private final DB2GranteeCache                                groupCache         = new DB2GranteeCache(DB2AuthIDType.G);
-    private final DB2GranteeCache                                userCache          = new DB2GranteeCache(DB2AuthIDType.U);
+    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache
+        = new JDBCObjectSimpleCache<>(DB2RemoteServer.class, C_SV);
+    private final DBSObjectCache<DB2DataSource, DB2Wrapper> wrapperCache = new JDBCObjectSimpleCache<>(DB2Wrapper.class, C_WR);
+    private final DBSObjectCache<DB2DataSource, DB2UserMapping> userMappingCache = new JDBCObjectSimpleCache<>(DB2UserMapping.class, C_UM);
+
+    private final DB2GranteeCache groupCache = new DB2GranteeCache(DB2AuthIDType.G);
+    private final DB2GranteeCache userCache = new DB2GranteeCache(DB2AuthIDType.U);
 
     // Those are dependent of DB2 version
     // This is ok as they will never been called as the folder/menu is hidden in plugin.xml
-    private final DBSObjectCache<DB2DataSource, DB2StorageGroup> storagegroupCache  = new JDBCObjectSimpleCache<>(DB2StorageGroup.class, C_SG);
-    private final DBSObjectCache<DB2DataSource, DB2Role>         roleCache          = new JDBCObjectSimpleCache<>(DB2Role.class, C_RL);
-    private final DBSObjectCache<DB2DataSource, DB2Variable>     variableCache      = new JDBCObjectSimpleCache<>(DB2Variable.class, C_VR);
+    private final DBSObjectCache<DB2DataSource, DB2StorageGroup> storagegroupCache
+            = new JDBCObjectSimpleCache<>(DB2StorageGroup.class, C_SG);
+    private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<>(DB2Role.class, C_RL);
+    private final DBSObjectCache<DB2DataSource, DB2Variable> variableCache = new JDBCObjectSimpleCache<>(DB2Variable.class, C_VR);
 
-    private List<DB2Parameter>                                   listDBParameters;
-    private List<DB2Parameter>                                   listDBMParameters;
-    private List<DB2XMLString>                                   listXMLStrings;
 
-    private DB2CurrentUserPrivileges                             db2CurrentUserPrivileges;
+    private List<DB2Parameter> listDBParameters;
+    private List<DB2Parameter> listDBMParameters;
+    private List<DB2XMLString> listXMLStrings;
 
-    private String                                               schemaForExplainTables;
+    private DB2CurrentUserPrivileges db2CurrentUserPrivileges;
 
-    private Double                                               version;                                                                                                                  // Database
-    private char                                                 serverVariant;
+    private String schemaForExplainTables;
+
+    private Double version;
+    private char serverVariant;
     private volatile transient boolean hasStatistics;
     // Version
 
@@ -259,12 +264,20 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
-    {
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Map<String, String> props = new HashMap<>();
         props.putAll(DB2DataSourceProvider.getConnectionsProps());
         if (getContainer().isConnectionReadOnly()) {
             props.put(DB2Constants.PROP_READ_ONLY, "true");
+        }
+        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+            props.put(APPLICATION_NAME_PROP, GeneralUtils.getProductName());
         }
         return props;
     }
@@ -279,7 +292,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, IA
                 db2Connection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY,
                     CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), context, purpose), 255));
             } catch (Throwable e) {
-                // just ignore
+                log.debug(e);
             }
         }
 

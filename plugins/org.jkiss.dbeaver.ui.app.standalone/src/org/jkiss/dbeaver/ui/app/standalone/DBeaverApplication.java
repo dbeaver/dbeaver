@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.LogOutputStream;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -101,7 +102,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String VALUE_TRUST_STRORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
-
+    
     private final String WORKSPACE_DIR_6; //$NON-NLS-1$
     private final Path FILE_WITH_WORKSPACES;
     public final String WORKSPACE_DIR_CURRENT;
@@ -690,14 +691,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
         logLocation = GeneralUtils.replaceVariables(logLocation, new SystemVariablesResolver());
         File debugLogFile = new File(logLocation);
-        if (debugLogFile.exists()) {
-            if (!debugLogFile.delete()) {
-                System.err.println("Can't delete debug log file"); //$NON-NLS-1$
-                return;
-            }
-        }
         try {
-            debugWriter = new FileOutputStream(debugLogFile);
+            debugWriter = new LogOutputStream(debugLogFile);
             oldSystemOut = System.out;
             oldSystemErr = System.err;
             System.setOut(new PrintStream(new ProxyPrintStream(debugWriter, oldSystemOut)));

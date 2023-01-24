@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -194,20 +194,6 @@ public class UINavigatorMessages extends NLS {
 
     public static String confirm_local_folder_delete_title;
     public static String confirm_local_folder_delete_message;
-
-    public static String confirm_entity_reject_title;
-    public static String confirm_entity_reject_message;
-    public static String confirm_entity_reject_toggleMessage;
-
-    public static String confirm_entity_revert_title;
-    public static String confirm_entity_revert_message;
-    public static String confirm_entity_revert_toggleMessage;
-
-    public static String confirm_close_editor_edit_title;
-    public static String confirm_close_editor_edit_message;
-
-    public static String confirm_close_entity_edit_title;
-    public static String confirm_close_entity_edit_message;
 
     public static String label_configure_columns;
 

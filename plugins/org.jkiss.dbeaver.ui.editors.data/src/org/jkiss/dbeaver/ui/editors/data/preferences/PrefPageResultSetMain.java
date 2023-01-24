@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,6 +65,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
     private Button keepStatementOpenCheck;
     private Button alwaysUseAllColumns;
+    private Button disableEditingOnMissingKey;
     private Button newRowsAfter;
     private Button refreshAfterUpdate;
     private Button useNavigatorFilters;
@@ -97,6 +98,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT) ||
             store.contains(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT) ||
             store.contains(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
+            store.contains(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING) ||
             store.contains(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
             store.contains(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(ResultSetPreferences.KEEP_STATEMENT_OPEN) ||
@@ -182,7 +184,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             miscGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             keepStatementOpenCheck = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_database_general_checkbox_keep_cursor, false);
-            alwaysUseAllColumns = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
             newRowsAfter = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_new_rows_after, false);
             refreshAfterUpdate = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
             useNavigatorFilters = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters_tip, false, 1);
@@ -214,11 +215,47 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
         }
 
+        {
+            final Group group = UIUtils.createControlGroup(
+                leftPane,
+                ResultSetMessages.pref_page_content_editor_group_editing,
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
+
+            alwaysUseAllColumns = UIUtils.createCheckbox(
+                group,
+                ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns,
+                false
+            );
+
+            disableEditingOnMissingKey = UIUtils.createCheckbox(
+                group,
+                ResultSetMessages.pref_page_content_editor_checkbox_disable_editing_if_key_missing,
+                false
+            );
+
+            alwaysUseAllColumns.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    updateOptionsEnablement();
+                }
+            });
+        }
+
         return composite;
     }
 
     private void updateOptionsEnablement() {
         readQueryReferences.setEnabled(readQueryMetadata.isEnabled() && readQueryMetadata.getSelection());
+
+        if (alwaysUseAllColumns.getSelection()) {
+            disableEditingOnMissingKey.setEnabled(false);
+            disableEditingOnMissingKey.setSelection(false);
+        } else {
+            disableEditingOnMissingKey.setEnabled(true);
+        }
     }
 
     @Override
@@ -243,6 +280,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
             keepStatementOpenCheck.setSelection(store.getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN));
             alwaysUseAllColumns.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS));
+            disableEditingOnMissingKey.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING));
             newRowsAfter.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER));
             refreshAfterUpdate.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE));
             useNavigatorFilters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS));
@@ -280,6 +318,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
             store.setValue(ResultSetPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
+            store.setValue(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING, disableEditingOnMissingKey.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER, newRowsAfter.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE, refreshAfterUpdate.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS, useNavigatorFilters.getSelection());
@@ -314,6 +353,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
         store.setToDefault(ResultSetPreferences.KEEP_STATEMENT_OPEN);
         store.setToDefault(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS);
+        store.setToDefault(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING);
         store.setToDefault(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER);
         store.setToDefault(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS);

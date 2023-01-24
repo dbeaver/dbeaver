@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.editors.text.TextEditorPreferenceConstants;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
@@ -229,8 +228,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public DBPPreferenceStore getActivePreferenceStore() {
-        if (this instanceof IDataSourceContainerProvider) {
-            DBPDataSourceContainer container = ((IDataSourceContainerProvider) this).getDataSourceContainer();
+        if (this instanceof DBPDataSourceContainerProvider) {
+            DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) this).getDataSourceContainer();
             if (container != null) {
                 return container.getPreferenceStore();
             }

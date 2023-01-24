@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.erd.ui;
 
 import org.eclipse.draw2dl.PrintFigureOperation;
-import org.jkiss.dbeaver.erd.ui.internal.ERDUIActivator;
 
 /**
  * ERD constants
@@ -78,8 +77,6 @@ public class ERDUIConstants {
 
     public static final String CMD_SAVE_AS = "org.jkiss.dbeaver.erd.diagram.saveAs";
     public static final String CONFIRM_OPEN_EXPORTED_FILE = "erd_open_exported_file";
-
-    public static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + ERDUIActivator.PLUGIN_ID + "/icons/";
 
     public static final int DEFAULT_NOTE_BORDER_WIDTH = 1;
     public static final int DEFAULT_ENTITY_BORDER_WIDTH = 2;

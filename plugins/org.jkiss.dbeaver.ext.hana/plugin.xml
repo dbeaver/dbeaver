@@ -145,6 +145,7 @@
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.hana.edit.HANATableManager" objectType="org.jkiss.dbeaver.ext.hana.model.HANATable"/>
         <manager class="org.jkiss.dbeaver.ext.hana.edit.HANATableColumnManager" objectType="org.jkiss.dbeaver.ext.hana.model.HANATableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.hana.edit.HANASchemaManager" objectType="org.jkiss.dbeaver.ext.hana.model.HANASchema"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

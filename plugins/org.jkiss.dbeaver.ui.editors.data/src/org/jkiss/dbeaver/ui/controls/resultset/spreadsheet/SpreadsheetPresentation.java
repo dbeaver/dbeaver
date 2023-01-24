@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1438,16 +1438,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
     ///////////////////////////////////////////////
     // Filtering
 
-    void showFiltering(Object columnElement) {
+    void handleColumnIconClick(Object columnElement) {
         if (!(columnElement instanceof DBDAttributeBinding)) {
             log.debug("Unable to show distinct filter for columnElement" + columnElement);
             return;
         }
         DBDAttributeBinding attributeBinding = (DBDAttributeBinding) columnElement;
-        if (!getSelection().getSelectedAttributes().contains(attributeBinding)) {
-            spreadsheet.deselectAll();
-        }
-        controller.showDistinctFilter(attributeBinding);
+        controller.showColumnMenu(attributeBinding);
     }
 
     ///////////////////////////////////////////////
@@ -1486,6 +1483,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     @Nullable
+    @Override
     public DBDAttributeBinding getFocusAttribute() {
         return controller.isRecordMode() ?
             (DBDAttributeBinding) spreadsheet.getFocusRowElement() :

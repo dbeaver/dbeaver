@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,12 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.app.DefaultValueEncryptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -387,7 +389,23 @@ public abstract class BaseProjectImpl implements DBPProject {
                 resourceProperties.put(newResourcePath, resProps);
             }
         }
-        flushMetadata();
+        flushMetadata(false); // wait for the file to be written
+    }
+
+    @Override
+    public final void moveResourcePropertiesBatch(@NotNull Collection<Pair<String, String>> oldToNewPaths) {
+        loadMetadata();
+        synchronized (metadataSync) {
+            for (var pathsPair : oldToNewPaths) {
+                final var oldResourcePath = normalizeResourcePath(pathsPair.getFirst());
+                final var newResourcePath = normalizeResourcePath(pathsPair.getSecond());
+                final var resProps = resourceProperties.remove(oldResourcePath);
+                if (resProps != null) {
+                    resourceProperties.put(newResourcePath, resProps);
+                }
+            }
+        }
+        flushMetadata(false); // wait for the file to be written
     }
 
     @Override
@@ -410,7 +428,10 @@ public abstract class BaseProjectImpl implements DBPProject {
 
     @NotNull
     private static String normalizeResourcePath(@NotNull String resourcePath) {
-        while (resourcePath.startsWith("/")) resourcePath = resourcePath.substring(1);
+        while (resourcePath.startsWith("/")) {
+            resourcePath = resourcePath.substring(1);
+        }
+        resourcePath = resourcePath.replace('\\', '/');
         return resourcePath;
     }
 
@@ -437,7 +458,7 @@ public abstract class BaseProjectImpl implements DBPProject {
         }
     }
 
-    void updateResourceCache(IPath oldPath, IPath newPath) {
+    void moveResourceCache(IPath oldPath, IPath newPath) {
         boolean cacheChanged = false;
         synchronized (metadataSync) {
             if (resourceProperties != null) {
@@ -544,7 +565,7 @@ public abstract class BaseProjectImpl implements DBPProject {
                         resourceProperties = mdCache;
                     }
                 } catch (Throwable e) {
-                    log.error("Error reading project '" + getName() + "' metadata from "  + mdFile.toAbsolutePath(), e);
+                    log.error("Error reading project '" + getName() + "' metadata from " + mdFile.toAbsolutePath(), e);
                 }
             }
             if (resourceProperties == null) {
@@ -554,6 +575,10 @@ public abstract class BaseProjectImpl implements DBPProject {
     }
 
     protected void flushMetadata() {
+        flushMetadata(true);
+    }
+
+    protected void flushMetadata(boolean async) {
         if (inMemory) {
             return;
         }
@@ -561,7 +586,11 @@ public abstract class BaseProjectImpl implements DBPProject {
             if (metadataSyncJob == null) {
                 metadataSyncJob = new ProjectSyncJob();
             }
-            metadataSyncJob.schedule(100);
+            if (async) {
+                metadataSyncJob.schedule(100);
+            } else {
+                metadataSyncJob.run(new VoidProgressMonitor());
+            }
         }
     }
 

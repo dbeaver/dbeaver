@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.app.standalone.actions.EmergentExitAction;
-import org.jkiss.dbeaver.ui.app.standalone.actions.ResetUISettingsAction;
-import org.jkiss.dbeaver.ui.app.standalone.actions.ResetWorkspaceStateAction;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
@@ -265,8 +263,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             fileMenu.add(openWorkspaceAction);
 
             fileMenu.add(new Separator());
-            fileMenu.add(new ResetUISettingsAction(workbenchWindow));
-            fileMenu.add(new ResetWorkspaceStateAction(workbenchWindow));
             fileMenu.add(new EmergentExitAction(workbenchWindow));
 
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));

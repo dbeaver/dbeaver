@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IRevertableEditor, ITabbedFolderContainer, IDataSourceContainerProvider, IEntityEditorContext
+    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IRevertableEditor, ITabbedFolderContainer, DBPDataSourceContainerProvider, IEntityEditorContext
 {
     public static final String ID = "org.jkiss.dbeaver.ui.editors.entity.EntityEditor"; //$NON-NLS-1$
 
@@ -417,8 +417,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public void revertChanges()
     {
         if (isDirty()) {
-            if (ConfirmationDialog.showConfirmDialog(
-                ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+            if (ConfirmationDialog.confirmAction(
                 null,
                 NavigatorPreferences.CONFIRM_ENTITY_REVERT,
                 ConfirmationDialog.QUESTION,
@@ -448,8 +447,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     //return;
                     // Undo of last command in command context will close editor
                     // Let's ask user about it
-                    if (ConfirmationDialog.showConfirmDialog(
-                        ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+                    if (ConfirmationDialog.confirmAction(
                             null,
                             NavigatorPreferences.CONFIRM_ENTITY_REJECT,
                             ConfirmationDialog.QUESTION,
@@ -742,8 +740,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
 
         String subEditorsString = changedSubEditors.isEmpty() ? "" : "(" + String.join(", ", changedSubEditors) + ")";
-        final int result = ConfirmationDialog.showConfirmDialog(
-            ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+        final int result = ConfirmationDialog.confirmAction(
             getSite().getShell(),
             NavigatorPreferences.CONFIRM_ENTITY_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL,
@@ -886,8 +883,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         boolean isPersistedObject = databaseObject != null && databaseObject.isPersisted();
 
         if (force && isPersistedObject && isDirty() && showConfirmation) {
-            if (ConfirmationDialog.showConfirmDialog(
-                ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+            if (ConfirmationDialog.confirmAction(
                 null,
                 NavigatorPreferences.CONFIRM_ENTITY_REVERT,
                 ConfirmationDialog.QUESTION,

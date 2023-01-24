@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -361,6 +361,26 @@ public final class IOUtils {
             if (parent != null) {
                 return parent.toString();
             }
+        }
+        return null;
+    }
+
+    @NotNull
+    public static String getFileNameWithoutExtension(Path file) {
+        String fileName = file.getFileName().toString();
+        int divPos = fileName.lastIndexOf('.');
+        if (divPos != -1) {
+            return fileName.substring(0, divPos);
+        }
+        return fileName;
+    }
+
+    @Nullable
+    public static String getFileExtension(Path file) {
+        String fileName = file.getFileName().toString();
+        int divPos = fileName.lastIndexOf('.');
+        if (divPos != -1) {
+            return fileName.substring(divPos + 1);
         }
         return null;
     }

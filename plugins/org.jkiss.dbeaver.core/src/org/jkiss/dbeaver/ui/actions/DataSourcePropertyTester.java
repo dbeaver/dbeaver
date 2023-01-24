@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,8 +78,8 @@ public class DataSourcePropertyTester extends PropertyTester {
                     boolean isConnected;
                     if (context != null) {
                         isConnected = context.getDataSource().getContainer().isConnected();
-                    } else if (receiver instanceof IDataSourceContainerProvider) {
-                        DBPDataSourceContainer container = ((IDataSourceContainerProvider) receiver).getDataSourceContainer();
+                    } else if (receiver instanceof DBPDataSourceContainerProvider) {
+                        DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) receiver).getDataSourceContainer();
                         isConnected = container != null && container.isConnected();
                     } else {
                         isConnected = false;

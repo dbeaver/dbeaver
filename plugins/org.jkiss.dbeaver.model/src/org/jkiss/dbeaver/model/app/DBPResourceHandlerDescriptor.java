@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2023 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,13 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.jkiss.dbeaver.model.DBPImage;
-
 /**
  * Resource handler info
  */
 public interface DBPResourceHandlerDescriptor {
 
-    String RESOURCE_ROOT_FOLDER_NODE = "resourceRootFolder";
+    DBPResourceTypeDescriptor getResourceType();
 
-    String getId();
+    DBPResourceHandler getHandler();
 
-    String getName();
-
-    DBPImage getIcon();
-
-    boolean isManagable();
-
-    String getDefaultRoot(DBPProject project);
-
-    void setDefaultRoot(DBPProject project, String rootPath);
 }
