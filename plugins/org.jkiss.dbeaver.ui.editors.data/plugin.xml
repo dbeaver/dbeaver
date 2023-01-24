@@ -1166,7 +1166,7 @@
                 id="order_resultset"
                 title="%confirm.order_resultset.title"
                 description="%confirm.order_resultset.tip"
-                message="%cconfirm.order_resultset.message"
+                message="%confirm.order_resultset.message"
                 toggleMessage="%confirm.resultSet.toggleMessage"
                 group="%confirm.resultSet.group.name"/>
         <confirmation
