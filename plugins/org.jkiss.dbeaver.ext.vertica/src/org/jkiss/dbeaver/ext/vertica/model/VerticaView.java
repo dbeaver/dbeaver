@@ -77,7 +77,9 @@ public class VerticaView extends GenericView implements DBPSystemObject, DBPObje
     @LazyProperty(cacheValidator = CommentsValidator.class)
     public String getDescription(DBRProgressMonitor monitor) throws DBException {
         if (description == null) {
-            VerticaUtils.readTableAndColumnsDescriptions(monitor, getDataSource(), this, true);
+            if (!((VerticaDataSource) getDataSource()).avoidCommentsReading()) {
+                VerticaUtils.readTableAndColumnsDescriptions(monitor, getDataSource(), this, true);
+            }
             if (description == null) {
                 description = "";
             }
