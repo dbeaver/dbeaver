@@ -70,6 +70,10 @@ public class DBDDataSet {
         this.draft = draft;
     }
 
+    public void addQuery(DBDDataSetQuery query) {
+        this.queries.add(query);
+    }
+
     public List<DBDDataSetQuery> getQueries() {
         return queries;
     }

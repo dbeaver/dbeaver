@@ -7,7 +7,8 @@ Bundle-Version: 1.0.3.qualifier
 Bundle-Release-Date: 20230123
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jkiss.dbeaver.model.dataset
+Export-Package: org.jkiss.dbeaver.model.dataset,
+ org.jkiss.dbeaver.model.dataset.storage
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,

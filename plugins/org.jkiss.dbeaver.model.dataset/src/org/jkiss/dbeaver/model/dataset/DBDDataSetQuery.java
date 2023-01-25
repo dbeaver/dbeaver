@@ -33,11 +33,14 @@ public class DBDDataSetQuery {
 
     // Query ID
     @NotNull
-    private String id;
+    private final String id;
     private String description;
     // Query datasource
     @NotNull
     private DBPDataSourceContainer dataSourceContainer;
+
+    private String catalog;
+    private String schema;
     // Query text
     @NotNull
     private String queryText;
@@ -49,16 +52,13 @@ public class DBDDataSetQuery {
     private final Map<String, String> properties = new LinkedHashMap<>();
     private final DBDDataViewSettings viewSettings = new DBDDataViewSettings();
 
-    public DBDDataSetQuery() {
+    public DBDDataSetQuery(@NotNull String id) {
+        this.id = id;
     }
 
     @NotNull
     public String getId() {
         return id;
-    }
-
-    public void setId(@NotNull String id) {
-        this.id = id;
     }
 
     public String getDescription() {
@@ -76,6 +76,22 @@ public class DBDDataSetQuery {
 
     public void setDataSourceContainer(@NotNull DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
+    }
+
+    public String getCatalog() {
+        return catalog;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setCatalog(String catalog) {
+        this.catalog = catalog;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
     }
 
     @NotNull
