@@ -15,7 +15,7 @@ package org.jkiss.dbeaver.ext.postgresql;
 
 import org.eclipse.osgi.util.NLS;
 
-public class PostgreMessages extends NLS {
+public class PostgreSQLMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.PostgresResources"; //$NON-NLS-1$
 
     public static String procedure_warning_name;
@@ -23,10 +23,10 @@ public class PostgreMessages extends NLS {
 
     static {
         // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, PostgreMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, PostgreSQLMessages.class);
     }
 
-    private PostgreMessages() {
+    private PostgreSQLMessages() {
     }
 
 }

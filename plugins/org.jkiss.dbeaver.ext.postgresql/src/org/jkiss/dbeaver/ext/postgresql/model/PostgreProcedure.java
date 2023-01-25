@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreSQLMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.model.*;
@@ -838,8 +838,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         PostgreProcedure pgProc = getContainer().getProceduresCache().refreshObject(monitor, getContainer(), this);
         if (oldProcWasCreatedOrReplaced) {
             if ((oldOid != 0) && (oldXmin != 0) && (pgProc.oid == oldOid) && (pgProc.xmin == oldXmin)) {
-                DBWorkbench.getPlatformUI().showWarningMessageBox(PostgreMessages.procedure_warning_name, 
-                    PostgreMessages.procedure_warning_text);
+                DBWorkbench.getPlatformUI().showWarningMessageBox(PostgreSQLMessages.procedure_warning_name, 
+                    PostgreSQLMessages.procedure_warning_text);
                 this.setProcWasCreatedOrReplaced(false); // let throw warning once
                 pgProc.setProcWasCreatedOrReplaced(false);
             }
