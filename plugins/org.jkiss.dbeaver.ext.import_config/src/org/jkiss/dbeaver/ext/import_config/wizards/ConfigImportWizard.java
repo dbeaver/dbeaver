@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
@@ -193,6 +194,13 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         config.setHostName(connectionInfo.getHost());
         config.setHostPort(connectionInfo.getPort());
         config.setDatabaseName(connectionInfo.getDatabase());
+        //It allows to specify whether connection url should be used directly or not after connection creation.
+        if (CommonUtils.isEmpty(connectionInfo.getHost())) {
+            config.setConfigurationType(DBPDriverConfigurationType.URL);
+        } else {
+            config.setConfigurationType(DBPDriverConfigurationType.MANUAL);
+        }
+        
         DataSourceDescriptor dataSource = new DataSourceDescriptor(
             dataSourceRegistry,
             DataSourceDescriptor.generateNewId(connectionInfo.getDriver()),
