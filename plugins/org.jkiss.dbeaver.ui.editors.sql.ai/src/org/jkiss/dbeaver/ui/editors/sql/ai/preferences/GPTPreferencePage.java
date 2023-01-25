@@ -107,9 +107,9 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
                 "Copy-paste API token from <a>" + API_KEY_URL + "</a>",
                 new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
-                    UIUtils.openWebBrowser(API_KEY_URL);
-                }
+                    public void widgetSelected(SelectionEvent e) {
+                        UIUtils.openWebBrowser(API_KEY_URL);
+                    }
             });
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
