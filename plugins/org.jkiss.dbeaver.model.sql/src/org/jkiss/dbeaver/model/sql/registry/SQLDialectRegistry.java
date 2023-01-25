@@ -153,12 +153,12 @@ public class SQLDialectRegistry
     public void applyDialectCustomisation(SQLDialectDescriptor dialectDescriptor) {
         customDialects.put(dialectDescriptor.getId(), dialectDescriptor);
         SQLDialectDescriptor originalDescriptor = dialects.get(dialectDescriptor.getId());
-        originalDescriptor.getDMLKeywords().addAll(dialectDescriptor.getDMLKeywords());
-        originalDescriptor.getDDLKeywords().addAll(dialectDescriptor.getDDLKeywords());
-        originalDescriptor.getDataTypes().addAll(dialectDescriptor.getDataTypes());
-        originalDescriptor.getFunctions().addAll(dialectDescriptor.getFunctions());
-        originalDescriptor.getExecuteKeywords().addAll(dialectDescriptor.getExecuteKeywords());
-        originalDescriptor.getTransactionKeywords().addAll(dialectDescriptor.getTransactionKeywords());
+        originalDescriptor.setDmlKeywords(dialectDescriptor.getDMLKeywords(false));
+        originalDescriptor.setDdlKeywords(dialectDescriptor.getDDLKeywords(false));
+        originalDescriptor.setTypes(dialectDescriptor.getDataTypes(false));
+        originalDescriptor.setFunctions(dialectDescriptor.getFunctions(false));
+        originalDescriptor.setExecKeywords(dialectDescriptor.getExecuteKeywords(false));
+        originalDescriptor.setTxnKeywords(dialectDescriptor.getTransactionKeywords(false));
         originalDescriptor.setScriptDelimiter(originalDescriptor.getScriptDelimiter());
     }
 

@@ -46,7 +46,7 @@ public class SQLDialectDescriptorSerializer {
     public static final String ATTR_DIALECTS_VALUE_TYPES = "types"; //$NON-NLS-1$
 
 
-    public static final String DIALECTS_FILE_NAME = "dialect.json";
+    public static final String DIALECTS_FILE_NAME = "dialects.json";
 
     private static final Gson CONFIG_GSON = new GsonBuilder()
         .setLenient()
@@ -75,9 +75,10 @@ public class SQLDialectDescriptorSerializer {
         }
     }
 
-    private static void serializeDialect(@NotNull JsonWriter jsonWriter,
-        @NotNull SQLDialectDescriptor dialectDescriptor) throws
-            IOException {
+    private static void serializeDialect(
+        @NotNull JsonWriter jsonWriter,
+        @NotNull SQLDialectDescriptor dialectDescriptor
+    ) throws IOException {
         jsonWriter.name(dialectDescriptor.getId());
         jsonWriter.beginObject();
 //        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_DESCRIPTION, dialectDescriptor.getDescription());
@@ -87,15 +88,19 @@ public class SQLDialectDescriptorSerializer {
 //        JSONUtils.fieldNE(jsonWriter, ATTR_DIALECTS_ICON, dialectDescriptor.getIcon().getLocation());
 
         JSONUtils.field(jsonWriter, ATTR_DIALECTS_VALUE_SCRIPT_SEPARATOR, dialectDescriptor.getScriptDelimiter());
-        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS, dialectDescriptor.getReservedWords());
+        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS,
+            dialectDescriptor.getReservedWords(false));
         JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS_EXEC,
-            dialectDescriptor.getReservedWords()
+            dialectDescriptor.getReservedWords(false)
         );
-        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS_DDL, dialectDescriptor.getDDLKeywords());
-        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS_DML, dialectDescriptor.getDMLKeywords());
-        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_FUNCTIONS, dialectDescriptor.getFunctions());
-        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_TYPES, dialectDescriptor.getDataTypes());
-        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_TXN_KEYWORDS, dialectDescriptor.getTransactionKeywords());
+        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS_DDL,
+            dialectDescriptor.getDDLKeywords(false));
+        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_KEYWORDS_DML,
+            dialectDescriptor.getDMLKeywords(false));
+        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_FUNCTIONS, dialectDescriptor.getFunctions(false));
+        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_VALUE_TYPES, dialectDescriptor.getDataTypes(false));
+        JSONUtils.serializeStringList(jsonWriter, ATTR_DIALECTS_TXN_KEYWORDS,
+            dialectDescriptor.getTransactionKeywords(false));
         jsonWriter.endObject();
     }
 

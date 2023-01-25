@@ -145,17 +145,13 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
 
     private void createDialectItem(Tree dialectTable, TreeItem parentItem, SQLDialectDescriptor dialect) {
         TreeItem di;
-        if (!dialect.isHidden()) {
-            di = parentItem == null ? new TreeItem(dialectTable, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
-            if (SQLDialectRegistry.getInstance().getCustomDialect(dialect.getId()) != null) {
-                di.setFont(boldFont);
-            }
-            di.setText(dialect.getLabel());
-            di.setImage(DBeaverIcons.getImage(dialect.getIcon()));
-            di.setData(dialect);
-        } else {
-            di = parentItem;
+        di = parentItem == null ? new TreeItem(dialectTable, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
+        if (SQLDialectRegistry.getInstance().getCustomDialect(dialect.getId()) != null) {
+            di.setFont(boldFont);
         }
+        di.setText(dialect.getLabel());
+        di.setImage(DBeaverIcons.getImage(dialect.getIcon()));
+        di.setData(dialect);
         // Dialect already has an existing customization
         Set<SQLDialectMetadata> subDialects = dialect.getSubDialects(true);
         ArrayList<SQLDialectMetadata> dialects = new ArrayList<>(subDialects);
@@ -186,7 +182,7 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
         if (curDialect == null) {
             return;
         }
-        SQLDialectDescriptor customDialect = SQLDialectRegistry.getInstance().getCustomDialect(curDialect.getId());
+        SQLDialectDescriptor customDialect = SQLDialectRegistry.getInstance().getDialect(curDialect.getId());
         if (customDialect == null) {
             setFieldsToEmpty();
             return;
@@ -194,13 +190,13 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
         if (dialectText != null) {
             dialectText.setText(curDialect.getLabel());
         }
-        reservedWordsText.setText(String.join(",", customDialect.getReservedWords()));
-        dataTypesText.setText(String.join(",", customDialect.getDataTypes()));
-        functionNamesText.setText(String.join(",", customDialect.getFunctions()));
-        ddlKeywordsText.setText(String.join(",", customDialect.getDDLKeywords()));
-        dmlKeywordsText.setText(String.join(",", customDialect.getDMLKeywords()));
-        executeKeywordsText.setText(String.join(",", customDialect.getExecuteKeywords()));
-        transactionKeywordsText.setText(String.join(",", customDialect.getTransactionKeywords()));
+        reservedWordsText.setText(String.join(",", customDialect.getReservedWords(false)));
+        dataTypesText.setText(String.join(",", customDialect.getDataTypes(false)));
+        functionNamesText.setText(String.join(",", customDialect.getFunctions(false)));
+        ddlKeywordsText.setText(String.join(",", customDialect.getDDLKeywords(false)));
+        dmlKeywordsText.setText(String.join(",", customDialect.getDMLKeywords(false)));
+        executeKeywordsText.setText(String.join(",", customDialect.getExecuteKeywords(false)));
+        transactionKeywordsText.setText(String.join(",", customDialect.getTransactionKeywords(false)));
         //blockStatementsText.setText(String.join(",", curDialect.getBlockBoundStrings()));
 
         statementDelimiterText.setText(customDialect.getScriptDelimiter());
@@ -239,13 +235,13 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
                 customSQLDialectDescriptor = new SQLDialectDescriptor(curDialect.getId());
                 SQLDialectRegistry.getInstance().getCustomDialects().put(curDialect.getId(), customSQLDialectDescriptor);
             }
-            customSQLDialectDescriptor.setKeywords(Set.of(reservedWordsText.getText().split(",")));
-            customSQLDialectDescriptor.setDmlKeywords(Set.of(dmlKeywordsText.getText().split(",")));
-            customSQLDialectDescriptor.setDdlKeywords(Set.of(ddlKeywordsText.getText().split(",")));
-            customSQLDialectDescriptor.setFunctions(Set.of(functionNamesText.getText().split(",")));
-            customSQLDialectDescriptor.setExecKeywords(Set.of(executeKeywordsText.getText().split(",")));
-            customSQLDialectDescriptor.setTxnKeywords(Set.of(transactionKeywordsText.getText().split(",")));
-            customSQLDialectDescriptor.setTypes(Set.of(dataTypesText.getText().split(",")));
+            customSQLDialectDescriptor.setKeywords(Set.of(reservedWordsText.getText().trim().split(",")));
+            customSQLDialectDescriptor.setDmlKeywords(Set.of(dmlKeywordsText.getText().trim().split(",")));
+            customSQLDialectDescriptor.setDdlKeywords(Set.of(ddlKeywordsText.getText().trim().split(",")));
+            customSQLDialectDescriptor.setFunctions(Set.of(functionNamesText.getText().trim().split(",")));
+            customSQLDialectDescriptor.setExecKeywords(Set.of(executeKeywordsText.getText().trim().split(",")));
+            customSQLDialectDescriptor.setTxnKeywords(Set.of(transactionKeywordsText.getText().trim().split(",")));
+            customSQLDialectDescriptor.setTypes(Set.of(dataTypesText.getText().trim().split(",")));
             customSQLDialectDescriptor.setScriptDelimiter(statementDelimiterText.getText());
             //store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ, bindEmbeddedReadCheck.getSelection());
             SQLDialectRegistry.getInstance().applyDialectCustomisation(customSQLDialectDescriptor);

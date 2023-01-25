@@ -47,25 +47,25 @@ public interface SQLDialectMetadata {
     SQLDialect createInstance() throws DBException;
 
     @NotNull
-    Set<String> getReservedWords();
+    Set<String> getReservedWords(boolean nested);
 
     @NotNull
-    Set<String> getDataTypes();
+    Set<String> getDataTypes(boolean nested);
 
     @NotNull
-    Set<String> getFunctions();
+    Set<String> getFunctions(boolean nested);
 
     @NotNull
-    Set<String> getDDLKeywords();
+    Set<String> getDDLKeywords(boolean nested);
 
     @NotNull
-    Set<String> getDMLKeywords();
+    Set<String> getDMLKeywords(boolean nested);
 
     @NotNull
-    Set<String> getExecuteKeywords();
+    Set<String> getExecuteKeywords(boolean nested);
 
     @NotNull
-    Set<String> getTransactionKeywords();
+    Set<String> getTransactionKeywords(boolean nested);
 
     @NotNull
     String getScriptDelimiter();

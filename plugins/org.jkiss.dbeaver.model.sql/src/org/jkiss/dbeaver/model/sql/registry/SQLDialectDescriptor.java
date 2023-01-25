@@ -175,44 +175,97 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
 
     @Override
     @NotNull
-    public Set<String> getReservedWords() {
-        return keywords;
+    public Set<String> getReservedWords(boolean nested) {
+        if (!nested) {
+            return keywords;
+        }
+        HashSet<String> nestedKeywords = new HashSet<>(keywords);
+        if (parentDialect != null) {
+            nestedKeywords.addAll(parentDialect.getReservedWords(true));
+        }
+        return nestedKeywords;
     }
 
     @Override
     @NotNull
-    public Set<String> getDataTypes() {
-        return types;
+    public Set<String> getDataTypes(boolean nested) {
+        if (!nested) {
+            return types;
+        }
+        HashSet<String> nestedTypes = new HashSet<>(types);
+        if (parentDialect != null) {
+            nestedTypes.addAll(parentDialect.getDataTypes(true));
+        }
+        return nestedTypes;
+
     }
 
     @Override
     @NotNull
-    public Set<String> getFunctions() {
-        return functions;
+    public Set<String> getFunctions(boolean nested) {
+        if (!nested) {
+            return functions;
+        }
+        HashSet<String> nestedFunctions = new HashSet<>(functions);
+        if (parentDialect != null) {
+            nestedFunctions.addAll(parentDialect.getFunctions(true));
+        }
+        return nestedFunctions;
+
     }
 
     @Override
     @NotNull
-    public Set<String> getDDLKeywords() {
-        return ddlKeywords;
+    public Set<String> getDDLKeywords(boolean nested) {
+        if (!nested) {
+            return ddlKeywords;
+        }
+        HashSet<String> nestedDDLKeywords = new HashSet<>(ddlKeywords);
+        if (parentDialect != null) {
+            nestedDDLKeywords.addAll(parentDialect.getDDLKeywords(true));
+        }
+        return nestedDDLKeywords;
     }
 
     @NotNull
     @Override
-    public Set<String> getDMLKeywords() {
-        return dmlKeywords;
+    public Set<String> getDMLKeywords(boolean nested) {
+        if (!nested) {
+            return dmlKeywords;
+        }
+        HashSet<String> nestedDMLKeywords = new HashSet<>(dmlKeywords);
+        if (parentDialect != null) {
+            nestedDMLKeywords.addAll(parentDialect.getDMLKeywords(true));
+        }
+        return nestedDMLKeywords;
+
     }
 
     @NotNull
     @Override
-    public Set<String> getExecuteKeywords() {
-        return execKeywords;
+    public Set<String> getExecuteKeywords(boolean nested) {
+        if (!nested) {
+            return execKeywords;
+        }
+        HashSet<String> nestedExecuteKeywords = new HashSet<>(execKeywords);
+        if (parentDialect != null) {
+            nestedExecuteKeywords.addAll(parentDialect.getExecuteKeywords(true));
+        }
+        return nestedExecuteKeywords;
     }
 
     @Override
     @NotNull
-    public Set<String> getTransactionKeywords() {
-        return txnKeywords;
+    public Set<String> getTransactionKeywords(boolean nested) {
+        if (!nested) {
+            return txnKeywords;
+        }
+        HashSet<String> nestedTXNKeywords = new HashSet<>(execKeywords);
+        if (parentDialect != null) {
+            nestedTXNKeywords.addAll(parentDialect.getTransactionKeywords(true));
+        }
+        return nestedTXNKeywords;
+
     }
 
     @Override
@@ -253,15 +306,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         if (subDialects == null) {
             return Collections.emptySet();
         }
-        Set<SQLDialectMetadata> subs = new HashSet<>();
-        for (SQLDialectDescriptor sd : subDialects) {
-            if (sd.isHidden) {
-                subs.addAll(sd.getSubDialects(false));
-            } else {
-                subs.add(sd);
-            }
-        }
-        return subs;
+        return new HashSet<>(subDialects);
     }
 
     @Override
@@ -296,10 +341,6 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         this.scriptDelimiter = scriptDelimiter;
     }
 
-    public void setSubDialects(Set<SQLDialectDescriptor> subDialects) {
-        this.subDialects = subDialects;
-    }
-
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }
@@ -311,7 +352,7 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
     public void setDdlKeywords(Set<String> ddlKeywords) {
         this.ddlKeywords = ddlKeywords;
     }
-
+    
     public void setId(String id) {
         this.id = id;
     }
@@ -352,20 +393,9 @@ public class SQLDialectDescriptor extends AbstractContextDescriptor implements S
         this.functions = functions;
     }
 
-    public void setInsertMethodNames(List<String> insertMethodNames) {
-        this.insertMethodNames = insertMethodNames;
-    }
-
-    public void setInsertReplaceMethods(DBDInsertReplaceMethod[] insertReplaceMethods) {
-        this.insertReplaceMethods = insertReplaceMethods;
-    }
-
-    public void setInsertMethodDescriptors(List<SQLInsertReplaceMethodDescriptor> insertMethodDescriptors) {
-        this.insertMethodDescriptors = insertMethodDescriptors;
-    }
-
     @Override
     public String toString() {
         return label + " (" + id + ")";
     }
+
 }
