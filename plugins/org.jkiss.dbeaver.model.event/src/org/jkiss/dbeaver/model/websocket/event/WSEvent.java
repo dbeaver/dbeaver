@@ -58,4 +58,13 @@ public abstract class WSEvent {
     public String getTopicId() {
         return topicId;
     }
+
+    @Nullable
+    public String getUserId() {
+        return userId;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
 }
