@@ -162,21 +162,35 @@ public class DashboardRegistry {
     }
 
     /**
-     * Find dashboard matchign source. Source can be {@link DBPDataSourceContainer}, {@link DBPDataSourceProviderDescriptor} or {@link DBPDriver}
+     * Find dashboard matching source.
+     * Source can be {@link DBPDataSourceContainer}, {@link DBPDataSourceProviderDescriptor} or {@link DBPDriver}
      */
     public List<DashboardDescriptor> getDashboards(DBPNamedObject source, boolean defaultOnly) {
+        if (source == null) {
+            return List.of();
+        }
         if (source instanceof DBPDataSourceContainer) {
             source = ((DBPDataSourceContainer) source).getDriver();
         }
-        String providerId, driverId, driverClass;
+        String providerId = null;
+        String driverId = null;
+        String driverClass = null;
         if (source instanceof DBPDataSourceProviderDescriptor) {
             providerId = ((DBPDataSourceProviderDescriptor) source).getId();
             driverId = null;
             driverClass = null;
-        } else {
-            providerId = ((DBPDriver)source).getProviderId();
-            driverId = ((DBPDriver)source).getId();
-            driverClass = ((DBPDriver)source).getDriverClassName();
+        } else if (source instanceof DBPDriver) {
+            DBPDriver dbpDriver = (DBPDriver) source;
+            DBPDataSourceProviderDescriptor parentProvider = dbpDriver.getProviderDescriptor().getParentProvider();
+            if (parentProvider != null) {
+                // For now all dashboards we have - not children providers.
+                // If dashboard code is in EE repository - then it will work only for EE, even if parent in CE.
+                providerId = parentProvider.getId();
+            } else {
+                providerId = dbpDriver.getProviderId();
+            }
+            driverId = dbpDriver.getId();
+            driverClass = dbpDriver.getDriverClassName();
         }
 
         List<DashboardDescriptor> result = new ArrayList<>();
