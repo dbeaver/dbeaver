@@ -68,7 +68,6 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     @Override
     public boolean performOk() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
         store.setValue(GPTPreferences.GPT_MODEL, modelCombo.getText());
         store.setValue(GPTPreferences.GPT_MODEL_TEMPERATURE, temperatureText.getText());
         store.setValue(GPTPreferences.GPT_MODEL_MAX_TOKENS, maxTokensText.getText());
@@ -106,11 +105,11 @@ public class GPTPreferencePage extends AbstractPrefPage implements IWorkbenchPre
                 authorizationGroup,
                 "Copy-paste API token from <a>" + API_KEY_URL + "</a>",
                 new SelectionAdapter() {
-                @Override
+                    @Override
                     public void widgetSelected(SelectionEvent e) {
                         UIUtils.openWebBrowser(API_KEY_URL);
                     }
-            });
+                });
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             link.setLayoutData(gd);
