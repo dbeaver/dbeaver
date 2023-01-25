@@ -85,9 +85,8 @@ public class GPTSuggestionPopup extends AbstractPopupPanel {
         Combo historyCombo = new Combo(historyPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
         historyCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Button applyButton = new Button(historyPanel, SWT.PUSH);
-        applyButton.setText("Translate");
-        applyButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> okPressed()));
+        Button applyButton = UIUtils.createDialogButton(historyPanel, "Translate",
+            SelectionListener.widgetSelectedAdapter(selectionEvent -> okPressed()));
 
         closeOnFocusLost(inputField, historyCombo, applyButton);
 
@@ -99,6 +98,8 @@ public class GPTSuggestionPopup extends AbstractPopupPanel {
             historyCombo.select(0);
             inputField.setText(queries.get(0));
             inputField.selectAll();
+        } else {
+            historyCombo.setEnabled(false);
         }
 
         inputField.setFocus();
